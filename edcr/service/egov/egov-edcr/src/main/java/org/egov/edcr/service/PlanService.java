@@ -107,7 +107,9 @@ public class PlanService {
         plan.setCoreArea(dcrApplication.getCoreArea());
         LOG.info("coreArea : " + plan.getCoreArea());
 
+        LOG.info("Setting mdms master data");
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+        LOG.info("mdms master data set successfully");
         plan = applyRules(plan, amd, cityDetails);
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
@@ -277,9 +279,9 @@ public class PlanService {
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
                 features, edcrRequest.getTenantId());
         plan.setCoreArea(dcrApplication.getCoreArea());
-        LOG.info("coreArea" + plan.getCoreArea());
+        LOG.info("coreArea : -> " + plan.getCoreArea());
         plan.setEdcrRequest(edcrRequest);
-        // Competency Check Role Wise
+        LOG.info("Competency Check Role Wise");
         BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
 
         if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
@@ -306,7 +308,7 @@ public class PlanService {
 
             //return (Plan) planDetail;
         // remove requestInfo before plan processing
-        edcrRequest.setRequestInfo(null);
+        //edcrRequest.setRequestInfo(null);
         //Setting edcr Data to Plan        
         //plan.setEdcrRequest(edcrRequest);
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
@@ -316,6 +318,7 @@ public class PlanService {
         }else {
         	plan = applyRules(plan, amd, cityDetails,features);
         }
+        LOG.info("Competency Role Checked successfully ");
         
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
@@ -419,6 +422,7 @@ public class PlanService {
     }
 
     private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails) {
+    	LOG.info("Inside apply Rules");
 
         // check whether valid amendments are present
         int index = -1;
@@ -471,6 +475,7 @@ public class PlanService {
                     || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY))
                 return plan;
         }
+        LOG.info("Exit from apply Rules");
         return plan;
     }
     

@@ -357,7 +357,7 @@ public class ExtractService {
 
 	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea,
 			Plan plan) {
-
+		LOG.info("Inside validateRolesWisePlotArea ");
 		DXFDocument doc = getDxfDocument(dxfFile);
 
 		//Extract plot area if not provided
@@ -439,9 +439,11 @@ public class ExtractService {
 		if (plan.getErrors().isEmpty()) {
 			LOG.info("All roles validated successfully for plot area: {}", plotArea);
 		}
+		LOG.info("exits validateRolesWisePlotArea ");
 	}
 
 	private BigDecimal extractPlotDetails(DXFDocument doc) {
+		LOG.info("Inside extractPlotDetails");
 		List<DXFLWPolyline> plotBoundaries = Util.getPolyLinesByLayer(doc, "PLOT_BOUNDARY");
 		BigDecimal area = BigDecimal.valueOf(0.0);
 		if (!plotBoundaries.isEmpty()) {
@@ -459,6 +461,8 @@ public class ExtractService {
 			// pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			// pl.addError("PLOT_BOUNDARY", OBJECTNOTDEFINED + "PLOT_BOUNDARY");
 		}
+		LOG.info("extracted plotArea : " + area);
+		LOG.info("exit extractPlotDetails");
 		return area;
 	}
 

@@ -355,97 +355,192 @@ public class ExtractService {
 //      //return (Plan) planDetail;
 //  }
 
-	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea,
-			Plan plan) {
-		LOG.info("Inside validateRolesWisePlotArea ");
-		
-		//Extract plot area if not provided
-		LOG.info("Plot area is : " + plotArea);
-		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
-			LOG.info("before getDxf document");		
-			DXFDocument doc = getDxfDocument(dxfFile);
-			LOG.info("successfully get getDxf document");
-			LOG.info("Plot area is null , extracting plot Area : " + plotArea);
-			plotArea = extractPlotDetails(doc);
-			LOG.info("extracted Plot area : " + plotArea);
-		}
-		LOG.info("Roles info Size : " + roles.size());
-
-		//Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-		// Iterate through roles and validate via MDMS configuration
-		for (Role role : roles) {
-			String roleCode = role.getCode();
-			LOG.info("fetching role wise data for  : " + roleCode);
-			// Skip if MDMS not enabled
-//			if (!Boolean.TRUE.equals(mdmsEnabled)) {
-//				continue;
+//	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea,
+//			Plan plan) {
+//		LOG.info("Inside validateRolesWisePlotArea ");
+//		
+//		//Extract plot area if not provided
+//		LOG.info("Plot area is : " + plotArea);
+//		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+//			LOG.info("before getDxf document");		
+//			DXFDocument doc = getDxfDocument(dxfFile);
+//			LOG.info("successfully get getDxf document");
+//			LOG.info("Plot area is null , extracting plot Area : " + plotArea);
+//			plotArea = extractPlotDetails(doc);
+//			LOG.info("extracted Plot area : " + plotArea);
+//		}
+//		LOG.info("Roles info Size : " + roles.size());
+//
+//		//Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+//		// Iterate through roles and validate via MDMS configuration
+//		for (Role role : roles) {
+//			String roleCode = role.getCode();
+//			LOG.info("fetching role wise data for  : " + roleCode);
+//			// Skip if MDMS not enabled
+////			if (!Boolean.TRUE.equals(mdmsEnabled)) {
+////				continue;
+////			}
+//
+//			try {
+//				//Fetch MDMS data for this role
+//				Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), plan.getEdcrRequest().getTenantId(),
+//						roleCode);
+//
+//				if (mdmsData!=null) {
+//					// Parse MDMS response
+//					Map<String, List<Map<String, Object>>> mdmsResponse = BpaMdmsUtil.mdmsResponseMapper(mdmsData,
+//							String.format(MdmsFilter.ROLE_FILTER, roleCode));
+//					
+//					if (mdmsResponse.isEmpty()) {
+//						LOG.warn("Empty role data from MDMS for role: {}", roleCode);
+//						continue;
+//					}
+//
+//					// Extract the role configuration
+//					List<Map<String, Object>> rolesList = mdmsResponse.values().iterator().next();
+//					if (rolesList.isEmpty())
+//						continue;
+//
+//					Map<String, Object> roleData = rolesList.get(0);
+//					Boolean isScrutinizeAllow = roleData.get("isScrutinizeAllow") != null
+//							? Boolean.valueOf(roleData.get("isScrutinizeAllow").toString())
+//							: Boolean.FALSE;
+//
+//					//Skip roles not allowed for scrutiny
+//					if (!isScrutinizeAllow) {
+//						plan.getErrors().put("Not authorized to scrutinize",
+//								"Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
+//						continue;
+//					}else {
+//						// Extract max allowed plot area and scrutiny flag
+//						BigDecimal maxAllowedPlotArea = roleData.get("maxAllowedPlotArea") != null
+//								? new BigDecimal(roleData.get("maxAllowedPlotArea").toString())
+//								: BigDecimal.ZERO;
+//						
+//						//Validate plot area limit
+//						if (plotArea.compareTo(maxAllowedPlotArea) > 0) {
+//							plan.getErrors().put("Not authorized to scrutinize",
+//									"Your role [" + roleCode + "] allows maximum plot area of " + maxAllowedPlotArea
+//											+ " Sqm, but provided plot area is " + plotArea + " Sqm.");
+//						} 
+//							//else {
+////							LOG.info("Role [{}] authorized for plot area {} (limit: {})", roleCode, plotArea,
+////									maxAllowedPlotArea);
+////						}
+//					}					
+//				}else {
+//					LOG.info("No MDMS data found for role: {}", roleCode);
+//					plan.getErrors().put("Not authorized to scrutinize",
+//							"Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
+//					continue;
+//				}
+//
+//			} catch (Exception e) {
+//				LOG.error("Error fetching role details from MDMS for role: {}", roleCode, e);
 //			}
+//		}
+//
+//		// If no roles were recognized or authorized, log warning
+//		if (plan.getErrors().isEmpty()) {
+//			LOG.info("All roles validated successfully for plot area: {}", plotArea);
+//		}
+//		LOG.info("exits validateRolesWisePlotArea ");
+//	}
+	
+	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea, Plan plan) {
+	    LOG.info("Inside validateRolesWisePlotArea ");
+	    LOG.info("Plot area is : {}", plotArea);
 
-			try {
-				//Fetch MDMS data for this role
-				Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), plan.getEdcrRequest().getTenantId(),
-						roleCode);
+	    // Extract plot area if not provided
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	        LOG.info("Plot area is null or zero. Attempting to extract from DXF...");
 
-				if (mdmsData!=null) {
-					// Parse MDMS response
-					Map<String, List<Map<String, Object>>> mdmsResponse = BpaMdmsUtil.mdmsResponseMapper(mdmsData,
-							String.format(MdmsFilter.ROLE_FILTER, roleCode));
-					
-					if (mdmsResponse.isEmpty()) {
-						LOG.warn("Empty role data from MDMS for role: {}", roleCode);
-						continue;
-					}
+	        if (dxfFile == null) {
+	            LOG.error("DXF file is null. Cannot extract plot area.");
+	            plan.getErrors().put("DXF File Missing", "DXF file is required to extract plot area.");
+	            return;
+	        }
 
-					// Extract the role configuration
-					List<Map<String, Object>> rolesList = mdmsResponse.values().iterator().next();
-					if (rolesList.isEmpty())
-						continue;
+	        DXFDocument doc = getDxfDocument(dxfFile);
+	        if (doc == null) {
+	            LOG.error("Failed to load DXFDocument. Extraction aborted.");
+	            plan.getErrors().put("DXF Load Failed", "Unable to parse DXF file for plot area extraction.");
+	            return;
+	        }
 
-					Map<String, Object> roleData = rolesList.get(0);
-					Boolean isScrutinizeAllow = roleData.get("isScrutinizeAllow") != null
-							? Boolean.valueOf(roleData.get("isScrutinizeAllow").toString())
-							: Boolean.FALSE;
+	        plotArea = extractPlotDetails(doc);
+	        LOG.info("Extracted Plot Area: {}", plotArea);
+	    }
 
-					//Skip roles not allowed for scrutiny
-					if (!isScrutinizeAllow) {
-						plan.getErrors().put("Not authorized to scrutinize",
-								"Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
-						continue;
-					}else {
-						// Extract max allowed plot area and scrutiny flag
-						BigDecimal maxAllowedPlotArea = roleData.get("maxAllowedPlotArea") != null
-								? new BigDecimal(roleData.get("maxAllowedPlotArea").toString())
-								: BigDecimal.ZERO;
-						
-						//Validate plot area limit
-						if (plotArea.compareTo(maxAllowedPlotArea) > 0) {
-							plan.getErrors().put("Not authorized to scrutinize",
-									"Your role [" + roleCode + "] allows maximum plot area of " + maxAllowedPlotArea
-											+ " Sqm, but provided plot area is " + plotArea + " Sqm.");
-						} 
-							//else {
-//							LOG.info("Role [{}] authorized for plot area {} (limit: {})", roleCode, plotArea,
-//									maxAllowedPlotArea);
-//						}
-					}					
-				}else {
-					LOG.info("No MDMS data found for role: {}", roleCode);
-					plan.getErrors().put("Not authorized to scrutinize",
-							"Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
-					continue;
-				}
+	    // Safe check for roles
+	    if (roles == null || roles.isEmpty()) {
+	        LOG.warn("No roles provided for validation. Skipping role-wise plot area check.");
+	        plan.getErrors().put("Role Missing", "No roles assigned to current user.");
+	        return;
+	    }
 
-			} catch (Exception e) {
-				LOG.error("Error fetching role details from MDMS for role: {}", roleCode, e);
-			}
-		}
+	    LOG.info("Roles info Size : {}", roles.size());
 
-		// If no roles were recognized or authorized, log warning
-		if (plan.getErrors().isEmpty()) {
-			LOG.info("All roles validated successfully for plot area: {}", plotArea);
-		}
-		LOG.info("exits validateRolesWisePlotArea ");
+	    // Iterate through roles and validate via MDMS configuration
+	    for (Role role : roles) {
+	        if (role == null) continue; // extra safety
+	        String roleCode = role.getCode();
+	        LOG.info("Fetching role wise data for: {}", roleCode);
+	        
+	        try {
+	        	LOG.info("fetching roles data from mdms");
+	            Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), plan.getEdcrRequest().getTenantId(), roleCode);
+
+	            if (mdmsData != null) {
+	                Map<String, List<Map<String, Object>>> mdmsResponse =
+	                        BpaMdmsUtil.mdmsResponseMapper(mdmsData, String.format(MdmsFilter.ROLE_FILTER, roleCode));
+
+	                if (mdmsResponse.isEmpty()) {
+	                    LOG.warn("Empty role data from MDMS for role: {}", roleCode);
+	                    continue;
+	                }
+
+	                List<Map<String, Object>> rolesList = mdmsResponse.values().iterator().next();
+	                if (rolesList.isEmpty()) continue;
+
+	                Map<String, Object> roleData = rolesList.get(0);
+	                Boolean isScrutinizeAllow = roleData.get("isScrutinizeAllow") != null
+	                        ? Boolean.valueOf(roleData.get("isScrutinizeAllow").toString())
+	                        : Boolean.FALSE;
+
+	                if (!isScrutinizeAllow) {
+	                    plan.getErrors().put("Not authorized to scrutinize",
+	                            "Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
+	                    continue;
+	                } else {
+	                    BigDecimal maxAllowedPlotArea = roleData.get("maxAllowedPlotArea") != null
+	                            ? new BigDecimal(roleData.get("maxAllowedPlotArea").toString())
+	                            : BigDecimal.ZERO;
+
+	                    if (plotArea != null && plotArea.compareTo(maxAllowedPlotArea) > 0) {
+	                        plan.getErrors().put("Not authorized to scrutinize",
+	                                "Your role [" + roleCode + "] allows maximum plot area of " + maxAllowedPlotArea
+	                                        + " Sqm, but provided plot area is " + plotArea + " Sqm.");
+	                    }
+	                }
+	            } else {
+	                LOG.info("No MDMS data found for role: {}", roleCode);
+	                plan.getErrors().put("Not authorized to scrutinize",
+	                        "Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
+	            }
+
+	        } catch (Exception e) {
+	            LOG.error("Error fetching role details from MDMS for role: {}", roleCode, e);
+	        }
+	    }
+
+	    if (plan.getErrors().isEmpty()) {
+	        LOG.info("All roles validated successfully for plot area: {}", plotArea);
+	    }
+
+	    LOG.info("Exits validateRolesWisePlotArea ");
 	}
+
 
 	private BigDecimal extractPlotDetails(DXFDocument doc) {
 		LOG.info("Inside extractPlotDetails");

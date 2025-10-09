@@ -327,7 +327,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </div>
         )}
         {/* Cards grid with see more */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, margin: "12px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
           {adsForLocation.slice(0, visibleCount).map((ad, idx) => (
             <AdCard
               key={ad.id || idx}

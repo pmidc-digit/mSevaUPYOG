@@ -107,9 +107,9 @@ function ADSSummary({ t }) {
               {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
-          {renderRow(TT("ES_NEW_APPLICATION_APPLICANT_NAME"), applicant?.applicantName)}
+          {renderRow(TT("NOC_APPLICANT_NAME_LABEL"), applicant?.applicantName)}
           {renderRow(TT("ADS_MOBILE_NUMBER"), applicant?.applicantMobileNo)}
-          {renderRow(TT("ADS_EMAIL_ID"), applicant?.applicantEmailId)}
+          {renderRow(TT("CORE_EMAIL_ID"), applicant?.applicantEmailId)}
           {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
           {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
         </div>

@@ -358,11 +358,16 @@ public class ExtractService {
 	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea,
 			Plan plan) {
 		LOG.info("Inside validateRolesWisePlotArea ");
-		DXFDocument doc = getDxfDocument(dxfFile);
-
+		
 		//Extract plot area if not provided
+		LOG.info("Plot area is : " + plotArea);
 		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+			LOG.info("before getDxf document");		
+			DXFDocument doc = getDxfDocument(dxfFile);
+			LOG.info("successfully get getDxf document");
+			LOG.info("Plot area is null , extracting plot Area : " + plotArea);
 			plotArea = extractPlotDetails(doc);
+			LOG.info("extracted Plot area : " + plotArea);
 		}
 		LOG.info("Roles info Size : " + roles.size());
 

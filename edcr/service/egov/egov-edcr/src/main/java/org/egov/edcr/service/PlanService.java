@@ -107,9 +107,9 @@ public class PlanService {
         plan.setCoreArea(dcrApplication.getCoreArea());
         LOG.info("coreArea : " + plan.getCoreArea());
 
-        LOG.info("Setting mdms master data");
+       
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
-        LOG.info("mdms master data set successfully");
+        
         plan = applyRules(plan, amd, cityDetails);
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
@@ -311,7 +311,9 @@ public class PlanService {
         //edcrRequest.setRequestInfo(null);
         //Setting edcr Data to Plan        
         //plan.setEdcrRequest(edcrRequest);
+        LOG.info("Setting mdms master data");
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+        LOG.info("mdms master data set successfully");
 //        plan = applyRules(plan, amd, cityDetails);
         if(plan.getErrors().containsKey("Not authorized to scrutinize")) {
         	

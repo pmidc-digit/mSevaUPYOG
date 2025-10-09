@@ -77,7 +77,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     callCreateAPI({ ...currentStepData, siteDetails:{...data} });
     }
 
-   onGoNext();
+  // onGoNext();
 
   };
 

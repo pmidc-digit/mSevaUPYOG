@@ -24,6 +24,7 @@ import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 import NOCModal from "../../../pageComponents/NOCModal";
+import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -141,17 +142,28 @@ const CitizenApplicationOverview = () => {
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
 
-    console.log("acknowledgementData", acknowledgementData);
-    Digit.Utils.pdf.generate(acknowledgementData);
+    //console.log("acknowledgementData", acknowledgementData);
+    //Digit.Utils.pdf.generate(acknowledgementData);
+    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
 
   };
 
-  const getFloorLabel = (index) => {
+const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
-  const suffixes = ["st", "nd", "rd"];
-  const suffix = suffixes[(index - 1) % 10 - 1] || "th";
-  return `${index}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`; // e.g., "1st Floor"
-  };
+
+  const floorNumber = index;
+  const lastDigit = floorNumber % 10;
+  const lastTwoDigits = floorNumber % 100;
+
+  let suffix = "th";
+  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+    if (lastDigit === 1) suffix = "st";
+    else if (lastDigit === 2) suffix = "nd";
+    else if (lastDigit === 3) suffix = "rd";
+  }
+
+  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
 
   //here workflow details
   const [showToast, setShowToast] = useState(null);
@@ -364,9 +376,9 @@ const CitizenApplicationOverview = () => {
                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"}/>
               }
 
-              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>{
+              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>(
                <Row label={getFloorLabel(index)} text={floor.value || "N/A"}/>
-              })}
+              ))}
 
               {detail?.buildingStatus == "Built Up" && 
                <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"}/>
@@ -418,7 +430,7 @@ const CitizenApplicationOverview = () => {
         ))}
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <div style={{ display: "flex", gap: "16px" }}>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
@@ -427,6 +439,15 @@ const CitizenApplicationOverview = () => {
             <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
           )}
         </div>
+      </Card> */}
+      
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+         <StatusTable>
+          {displayData?.Documents?.length >0 && 
+           <NOCDocumentTableView documents={displayData.Documents}/>
+          }
+         </StatusTable>
       </Card>
 
       {workflowDetails?.data?.timeline && (

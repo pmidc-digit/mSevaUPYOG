@@ -109,8 +109,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       bookingStatus: "BOOKING_CREATED",
       businessService: "ADV",
       address: {
-        pincode: data.pincode || "",
-        addressLine1: data.address || "",
+        pincode: data?.pincode || "",
+        addressLine1: data?.address || "",
       },
       applicantDetail: {
         applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),

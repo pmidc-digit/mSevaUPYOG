@@ -29,7 +29,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
           {t("ADS_NO_ADVERTISMENT_DETAILS")}
         </p>
       ) : (
-        cartDetails.map((item, idx) => {
+        cartDetails?.map((item, idx) => {
           const isOpen = expanded?.includes(item.ad.id);
           return (
             <div

@@ -153,11 +153,11 @@ const selfdeclarationform = `
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${currentStepData?.createdResponse?.landInfo?.address?.locality?.name?.split("-")?.[0]?.trim() || "NA"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      This site falls in Ward Number <b>${ward}</b>, zone number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} construction is permissible in this area.
+      This site falls in Ward Number <b>${ward}</b>, Zone Number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} construction is permissible in this area.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">

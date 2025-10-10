@@ -58,6 +58,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [development, setDevelopment] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "0";
       });
+    const [userSelected, setUser] = useState(null);
     
     
       const [otherCharges, setOtherCharges] = useState(() => {
@@ -96,6 +97,28 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
     let acceptFormat = ".pdf";
+
+    useEffect(() => {
+          if (!userSelected) {
+            return;
+          }
+          Digit.SessionStorage.set("citizen.userRequestObject", user);
+          Digit.UserService.setUser(userSelected);
+          setCitizenDetail(userSelected?.info, userSelected?.access_token, state);
+      }, [userSelected]);
+    
+      const setCitizenDetail = (userObject, token, tenantId) => {
+        let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
+        localStorage.setItem("Citizen.tenant-id", tenantId);
+        localStorage.setItem("tenant-id", tenantId);
+        localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
+        localStorage.setItem("locale", locale);
+        localStorage.setItem("Citizen.locale", locale);
+        localStorage.setItem("token", token);
+        localStorage.setItem("Citizen.token", token);
+        localStorage.setItem("user-info", JSON.stringify(userObject));
+        localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
+      };
 
     useEffect(() => {
       if (currentStepData?.createdResponse?.additionalDetails) {
@@ -475,8 +498,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         console.log("OTP++++++++>");
         try {
             setSetOtpLoading(true)
-            const response = await Digit.UserService.authenticate(requestData);
-            if (response.ResponseInfo.status === "Access Token generated successfully") {
+            // const response = await Digit.UserService.authenticate(requestData);
+            const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+            if (ResponseInfo.status === "Access Token generated successfully") {
                 setIsOTPVerified(true);
                 setOTPSuccess(t("VERIFIED"));
                 setOTPError(false);
@@ -484,6 +508,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 setOTPVerifiedTimestamp(currentTimestamp);
                 sessionStorage.setItem("otpVerifiedTimestamp", currentTimestamp.toISOString());
                 setSetOtpLoading(false);
+                setUser({ info, ...tokens });
             } else {
                 setIsOTPVerified(false);
                 setOTPError(t("WRONG OTP"));

@@ -143,3 +143,7 @@ export const getPattern = type => {
       return /^[a-zA-Z0-9-/]{0,64}$/;
   }
 };
+
+export const pdfDownloadLinkUpdated = (documents = {}, fileStoreId = "") => {
+  return documents[fileStoreId] || "";
+};

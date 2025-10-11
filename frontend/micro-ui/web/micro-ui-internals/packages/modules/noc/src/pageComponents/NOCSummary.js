@@ -4,6 +4,8 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
 import NOCDocument from "./NOCDocument";
+import NOCImageView from "./NOCImageView";
+import NOCDocumentTableView from "./NOCDocumentTableView";
 
 function NOCSummary({ currentStepData:formData, t }) {
   const { pathname: url } = useLocation();
@@ -59,12 +61,22 @@ function NOCSummary({ currentStepData:formData, t }) {
     </div>
   );
 
-  const getFloorLabel = (index) => {
+const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
-  const suffixes = ["st", "nd", "rd"];
-  const suffix = suffixes[(index - 1) % 10 - 1] || "th";
-  return `${index}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`; // e.g., "1st Floor"
-  };
+
+  const floorNumber = index;
+  const lastDigit = floorNumber % 10;
+  const lastTwoDigits = floorNumber % 100;
+
+  let suffix = "th";
+  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+    if (lastDigit === 1) suffix = "st";
+    else if (lastDigit === 2) suffix = "nd";
+    else if (lastDigit === 3) suffix = "rd";
+  }
+
+  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
 
 
   const userInfo = Digit.UserService.getUser();
@@ -76,8 +88,11 @@ function NOCSummary({ currentStepData:formData, t }) {
   return (
     <div style={pageStyle}>
 
+          <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
+          <div style={sectionStyle}>
+           <NOCImageView documents={formData?.documents?.documents?.documents}/>
+          </div>
       
-        
           <h2 style={headingStyle}>{t("NOC_APPLICANT_DETAILS")}</h2>
           <div style={sectionStyle}>
             {renderLabel(t("NOC_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
@@ -158,7 +173,7 @@ function NOCSummary({ currentStepData:formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
+      {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
         {Array.isArray(formData?.documents?.documents?.documents) && formData.documents.documents.documents.length > 0 ? (
           <div className="documentsContainerStyle">
@@ -167,6 +182,11 @@ function NOCSummary({ currentStepData:formData, t }) {
         ) : (
           <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
         )}
+      </div> */}
+
+      <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div style={sectionStyle}>
+        {formData?.documents?.documents?.documents?.length > 0 && <NOCDocumentTableView documents={formData?.documents?.documents?.documents}/>}
       </div>
     </div>
   );

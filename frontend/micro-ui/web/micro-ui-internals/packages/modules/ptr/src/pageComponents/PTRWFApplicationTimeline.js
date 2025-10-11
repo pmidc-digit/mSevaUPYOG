@@ -44,14 +44,14 @@ const PTRWFApplicationTimeline = (props) => {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         source: props.application?.channel || "",
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+        mobileNumber: checkpoint?.assigner?.mobileNumber,
       };
       return <PTRWFCaption data={caption} />;
     } else if (checkpoint.state) {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+        name: checkpoint?.assigner?.name,
+        mobileNumber: checkpoint?.assigner?.mobileNumber,
         // comment: latestComment,
         comment: checkpoint.state === "INITIATED" ? null : checkpoint?.wfComment?.[0],
         wfDocuments: checkpoint?.wfDocuments,

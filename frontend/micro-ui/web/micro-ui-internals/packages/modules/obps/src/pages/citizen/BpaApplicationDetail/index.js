@@ -232,7 +232,7 @@ const BpaApplicationDetail = () => {
     },
   })
 
-  console.log("datata=====", workflowDetails)
+  console.log("datata=====", workflowDetails, data)
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
@@ -1925,7 +1925,7 @@ useEffect(() => {
               <React.Fragment>
                 <div>
                   <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-                  <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+                  <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} />
                   <br></br>
                   {showMobileInput && (
                     <React.Fragment>

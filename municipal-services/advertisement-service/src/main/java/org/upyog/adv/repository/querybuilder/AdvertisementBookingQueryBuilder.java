@@ -35,16 +35,15 @@ public class AdvertisementBookingQueryBuilder {
 	private static final String slotDetailsQuery = "select * from public.eg_adv_cart_detail where booking_id in (";
 
 	private static final String documentDetailsQuery = "select * from public.eg_adv_document_detail  where booking_id in (";
-	
-	private static final String ADVERTISEMENT_SLOTS_AVAILABILITY_QUERY = 
-		    "SELECT eabd.tenant_id, eacd.add_type, eacd.face_area, eacd.location, eacd.night_light, eacd.status, eacd.booking_date\n"
-		    + "FROM eg_adv_booking_detail eabd\n"
-		    + "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id\n"
-		    + "LEFT JOIN eg_adv_payment_timer eapt ON eabd.booking_id = eapt.booking_id\n"
-		    + "WHERE eabd.tenant_id = ?\n"
-		    + "AND eacd.status IN ('BOOKED', 'PENDING_FOR_PAYMENT')\n"
-		    + "AND eacd.booking_date >= ?::DATE\n"
-		    + "AND eacd.booking_date <= ?::DATE\n";
+
+	private static final String ADVERTISEMENT_SLOTS_AVAILABILITY_QUERY =
+			"SELECT eabd.tenant_id, eabd.booking_id, eabd.advertisementId, eacd.add_type, eacd.face_area, eacd.location, eacd.night_light, eacd.status, eacd.booking_date\n"
+					+ "FROM eg_adv_booking_detail eabd\n"
+					+ "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id\n"
+					+ "WHERE eabd.tenant_id = ?\n"
+					+ "AND eabd.booking_status NOT IN ('CANCELLED', 'REJECTED', 'DRAFT', 'BOOKING_EXPIRED', 'PAYMENT_FAILED')\n"
+					+ "AND eacd.booking_date >= ?::DATE\n"
+					+ "AND eacd.booking_date <= ?::DATE\n";
 
 	public static final String BOOKING_UPDATE_QUERY = "UPDATE public.eg_adv_booking_detail "
 	        + "SET booking_status= ?, receipt_no = ?,payment_date = ?, lastmodifiedby = ?, lastmodifiedtime = ?, "
@@ -77,12 +76,12 @@ public class AdvertisementBookingQueryBuilder {
 	public static final String DRAFTID_DELETE_TIMER = 
 		    "DELETE FROM eg_adv_draft_detail " +	
 		    		"WHERE ? - createdtime > ? AND draft_id = ?";
-	
-	public static final String GET_TIMER_DATA = 
-		    "SELECT booking_id, booking_date, booking_start_date, booking_end_date, createdby, add_type, location, face_area, night_light, status\n"
-		    + " FROM eg_adv_payment_timer "
-		    + " WHERE booking_date >= ?::DATE "
-		    + " AND booking_date <= ?::DATE ";
+
+	public static final String GET_TIMER_DATA =
+			"SELECT booking_id, booking_date, booking_start_date, booking_end_date, createdby, add_type, location, face_area, night_light, advertisementId, status\n"
+					+ " FROM eg_adv_payment_timer "
+					+ " WHERE booking_date >= ?::DATE "
+					+ " AND booking_date <= ?::DATE ";
 		    
 	private static final String FETCH_BOOKINGID_TO_DELETE = "SELECT booking_id FROM eg_adv_payment_timer WHERE ? - createdtime > ?";
 	

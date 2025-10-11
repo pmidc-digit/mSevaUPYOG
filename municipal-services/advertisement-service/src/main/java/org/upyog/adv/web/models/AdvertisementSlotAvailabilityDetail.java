@@ -27,7 +27,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Builder
 @ToString
-@EqualsAndHashCode(of = { "addType", "location", "faceArea","nightLight", "bookingDate"})
+@EqualsAndHashCode(of = { "addType", "location", "faceArea", "nightLight", "bookingDate", "advertisementId" })
 public class AdvertisementSlotAvailabilityDetail {
 
 	private String addType;

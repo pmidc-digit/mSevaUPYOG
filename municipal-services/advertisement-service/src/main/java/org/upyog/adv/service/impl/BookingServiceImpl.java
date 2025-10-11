@@ -294,12 +294,21 @@ public class BookingServiceImpl implements BookingService {
 		});
 
 		// Set advertisement status to 'BOOKED' if already booked
+		// Set advertisement status to 'BOOKED' if already booked
+// Create a map for quick lookup of booked slots with their actual booking IDs
+		Map<AdvertisementSlotAvailabilityDetail, AdvertisementSlotAvailabilityDetail> bookedSlotsMap =
+				availabiltityDetails.stream()
+						.collect(Collectors.toMap(Function.identity(), Function.identity(), (a, b) -> a));
+
 		availabiltityDetailsResponse.forEach(detail -> {
 			if (availabiltityDetails.contains(detail)) {
+				AdvertisementSlotAvailabilityDetail bookedSlot = bookedSlotsMap.get(detail);
 				detail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
-				detail.setBookingId(criteria.getBookingId());
+				// Set the actual booking ID from the database, not the search criteria
+				if (bookedSlot != null && bookedSlot.getBookingId() != null) {
+					detail.setBookingId(bookedSlot.getBookingId());
+				}
 			}
-
 		});
 
 		log.info("Availability details response after updating status: " + availabiltityDetailsResponse);
@@ -325,7 +334,7 @@ public class BookingServiceImpl implements BookingService {
 			bookedSlotsFromTimer.forEach(detail -> {
 				AdvertisementSlotAvailabilityDetail availabilityDetail = AdvertisementSlotAvailabilityDetail.builder()
 						.addType(detail.getAddType()).location(detail.getLocation()).faceArea(detail.getFaceArea())
-						.nightLight(detail.getNightLight()).bookingDate(detail.getBookingDate()).build();
+						.nightLight(detail.getNightLight()).bookingDate(detail.getBookingDate()).advertisementId(detail.getAdvertisementId()).build();
 
 				// Check if the timerDetails set contains this booking and if it's created by
 				// the current user

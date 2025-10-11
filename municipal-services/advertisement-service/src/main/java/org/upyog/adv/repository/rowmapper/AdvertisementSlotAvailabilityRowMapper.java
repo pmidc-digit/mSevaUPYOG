@@ -17,15 +17,17 @@ public class AdvertisementSlotAvailabilityRowMapper implements ResultSetExtracto
 	public List<AdvertisementSlotAvailabilityDetail> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<AdvertisementSlotAvailabilityDetail> availabiltityDetails = new ArrayList<>();
 		while (rs.next()) {
-		
+
 			AdvertisementSlotAvailabilityDetail availabiltityDetail = AdvertisementSlotAvailabilityDetail.builder()
 					.bookingDate(rs.getString("booking_date"))
 					.addType(rs.getString("add_type"))
 					.faceArea(rs.getString("face_area"))
 					.location(rs.getString("location"))
-					.nightLight(rs.getBoolean("night_light")) 
+					.nightLight(rs.getBoolean("night_light"))
 					.slotStaus(rs.getString("status"))
 					.tenantId(rs.getString("tenant_id"))
+					.bookingId(rs.getString("booking_id"))
+					.advertisementId(rs.getString("advertisementId")) // ⭐ ADD THIS LINE
 					.build();
 			availabiltityDetails.add(availabiltityDetail);
 		}

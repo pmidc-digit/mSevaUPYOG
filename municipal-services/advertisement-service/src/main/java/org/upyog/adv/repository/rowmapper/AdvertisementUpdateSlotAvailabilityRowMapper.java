@@ -28,6 +28,7 @@ public class AdvertisementUpdateSlotAvailabilityRowMapper implements ResultSetEx
 					.bookingStartDate(rs.getString("booking_start_date"))
 					.bookingEndDate(rs.getString("booking_end_date"))
 					.uuid(rs.getString("createdby"))
+					.advertisementId(rs.getString("advertisementId"))
 					.build();
 			availabiltityDetails.add(availabiltityDetail);
 		}

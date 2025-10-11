@@ -25,6 +25,7 @@ import NOCDocument from "../../../pageComponents/NOCDocument";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -32,6 +33,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
+    time: checkpoint?.auditDetails?.timing,
     name: checkpoint?.assigner?.name,
     mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
@@ -69,7 +71,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div style={{ marginTop: "8px" }}>,
+        {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
         {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
@@ -448,6 +451,19 @@ const getFloorLabel = (index) => {
            <NOCDocumentTableView documents={displayData.Documents}/>
           }
          </StatusTable>
+      </Card>
+
+      <Card>
+       <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+          {applicationDetails?.Noc?.[0]?.nocDetails &&  (
+              <NOCFeeEstimationDetails 
+                  formData={{
+                    apiData:{...applicationDetails},
+                    applicationDetails:{...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails},
+                    siteDetails: {...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails} 
+                  }}
+              />
+            )}
       </Card>
 
       {workflowDetails?.data?.timeline && (

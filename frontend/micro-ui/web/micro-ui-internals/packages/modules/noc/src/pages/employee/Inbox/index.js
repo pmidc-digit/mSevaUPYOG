@@ -122,7 +122,7 @@ const Inbox = ({ parentRoute }) => {
     }
   },[])
   
-  console.log("data in noc==>", data);
+ // console.log("data in noc==>", data);
 
   // let table = [];
   const [table, setTable] = useState([]);

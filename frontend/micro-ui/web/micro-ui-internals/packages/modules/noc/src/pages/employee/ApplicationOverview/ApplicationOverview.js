@@ -25,6 +25,7 @@ import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -32,6 +33,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
+    time: checkpoint?.auditDetails?.timing,
     name: checkpoint?.assigner?.name,
     mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
@@ -70,6 +72,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       )}
 
       <div style={{ marginTop: "8px" }}>
+        {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
         {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
@@ -101,9 +104,7 @@ const NOCEmployeeApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    //moduleCode: "noc-service",
     moduleCode: "obpas_noc",
-    //role: "EMPLOYEE",
   });
 
   console.log("workflowDetails here=>", workflowDetails);
@@ -451,17 +452,16 @@ const getFloorLabel = (index) => {
       </Card>
 
       <Card>
-       <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-          {displayData?.coordinates?.map((detail, index) => (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-              <StatusTable>
-                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-                </StatusTable>
-              </div>
-            ))}
+       <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+          {applicationDetails?.Noc?.[0]?.nocDetails &&  (
+              <NOCFeeEstimationDetails 
+                  formData={{
+                    apiData:{...applicationDetails},
+                    applicationDetails:{...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails},
+                    siteDetails: {...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails} 
+                  }}
+              />
+            )}
       </Card>
 
       {workflowDetails?.data?.timeline && (

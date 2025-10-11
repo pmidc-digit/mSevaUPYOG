@@ -254,6 +254,7 @@ import useRoadType from "./noc/useRoadType";
 import useNOCTenants from "./noc/useTenants";
 import useNOCDocumentSearch from "./noc/useNOCDocumentsSearch";
 import useNocType from "./noc/useNocType";
+import useNOCFeeCalculator from "./noc/useNOCFeeCalculator";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -715,6 +716,7 @@ const noc = {
   useTenants: useNOCTenants,
   useNOCDocumentSearch,
   useNocType,
+  useNOCFeeCalculator
 };
 
 const ndc = {

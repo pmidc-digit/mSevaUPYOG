@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
 import NOCModal from "../../../pageComponents/NOCModal";
+import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -286,12 +287,22 @@ const NOCEmployeeApplicationOverview = () => {
     setShowModal(false);
   };
 
-  const getFloorLabel = (index) => {
+const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
-  const suffixes = ["st", "nd", "rd"];
-  const suffix = suffixes[(index - 1) % 10 - 1] || "th";
-  return `${index}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`; // e.g., "1st Floor"
-  };
+
+  const floorNumber = index;
+  const lastDigit = floorNumber % 10;
+  const lastTwoDigits = floorNumber % 100;
+
+  let suffix = "th";
+  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+    if (lastDigit === 1) suffix = "st";
+    else if (lastDigit === 2) suffix = "nd";
+    else if (lastDigit === 3) suffix = "rd";
+  }
+
+  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
 
   if (isLoading) {
     return <Loader />;
@@ -419,7 +430,7 @@ const NOCEmployeeApplicationOverview = () => {
             ))}
     </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <div style={{ display: "flex", gap: "16px" }}>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
@@ -428,6 +439,29 @@ const NOCEmployeeApplicationOverview = () => {
             <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
           )}
         </div>
+      </Card> */}
+
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+         <StatusTable>
+          {displayData?.Documents?.length >0 && 
+           <NOCDocumentTableView documents={displayData.Documents}/>
+          }
+         </StatusTable>
+      </Card>
+
+      <Card>
+       <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
+          {displayData?.coordinates?.map((detail, index) => (
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+                </StatusTable>
+              </div>
+            ))}
       </Card>
 
       {workflowDetails?.data?.timeline && (

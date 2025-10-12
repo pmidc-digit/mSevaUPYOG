@@ -611,6 +611,37 @@ const PTRApplicationDetails = () => {
     });
   }
 
+  const formatPetAge = (ageValue, t) => {
+    if (ageValue === null || ageValue === undefined || ageValue === "") return t("CS_NA");
+
+    const ageStr = String(ageValue).trim();
+    // accept numeric-like strings only
+    if (!/^\d+(\.\d+)?$/.test(ageStr)) return t("CS_NA");
+
+    const [yearsPart, decPart] = ageStr.split(".");
+    let years = Number(yearsPart) || 0;
+    let months = 0;
+
+    if (decPart) {
+      if (decPart.length === 1) {
+        // .5 -> 5 months
+        months = parseInt(decPart, 10);
+      } else {
+        // take first two digits: .11 -> 11 months, .5x -> 50 -> will be handled below
+        months = parseInt(decPart.slice(0, 2), 10);
+      }
+      if (isNaN(months)) months = 0;
+    }
+
+    // Clamp months to 0..11 (or convert overflow to years if you prefer)
+    if (months > 11) months = 11;
+
+    if (years === 0 && months === 0) return t("CS_NA");
+    if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
+    if (months === 0) return `${years} year${years > 1 ? "s" : ""}`;
+    return `${years} year${years > 1 ? "s" : ""} and ${months} month${months > 1 ? "s" : ""}`;
+  };
+
   return (
     <React.Fragment>
       <div>
@@ -653,6 +684,8 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_PET_NAME")} text={pet_details?.petDetails?.petName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={pet_details?.petDetails?.petType || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={pet_details?.petDetails?.breedType || t("CS_NA")} />
+             <Row className="border-none" label={t("PTR_PET_AGE")} text={formatPetAge(pet_details?.petDetails?.petAge, t) || t("CS_NA")} />
+           
             <Row
               className="border-none"
               label={t("PTR_PET_GENDER")}
@@ -664,15 +697,42 @@ const PTRApplicationDetails = () => {
               className="border-none"
               label={t("PTR_VACCINATED_DATE")}
               // text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")}
-              text={
-                pet_details?.petDetails?.lastVaccineDate
-                  ? new Date(Number(pet_details?.petDetails?.lastVaccineDate)).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })
-                  : t("CS_NA")
-              }
+              // text={
+              //   pet_details?.petDetails?.lastVaccineDate
+              //     ? new Date(Number(pet_details?.petDetails?.lastVaccineDate)).toLocaleDateString("en-IN", {
+              //         day: "2-digit",
+              //         month: "2-digit",
+              //         year: "numeric",
+              //       })
+              //     : t("CS_NA")
+              // }
+              text={(() => {
+                const rawDate = pet_details?.petDetails?.lastVaccineDate;
+                if (!rawDate) return t("CS_NA");
+
+                let dateObj;
+
+                // Check if it's numeric (timestamp) or ISO-like (string date)
+                if (!isNaN(rawDate)) {
+                  // Convert numeric string to number
+                  const timestamp = Number(rawDate);
+                  // Handle timestamps in seconds (10 digits) or milliseconds (13 digits)
+                  dateObj = new Date(timestamp < 1e12 ? timestamp * 1000 : timestamp);
+                } else {
+                  // Parse "YYYY-MM-DD" or similar string
+                  dateObj = new Date(rawDate);
+                }
+
+                // Check if valid date
+                if (isNaN(dateObj.getTime())) return t("CS_NA");
+
+                // Return in DD/MM/YYYY format
+                return dateObj.toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                });
+              })()}
             />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />

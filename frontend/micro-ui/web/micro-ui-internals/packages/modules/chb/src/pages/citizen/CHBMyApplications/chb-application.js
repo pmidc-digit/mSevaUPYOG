@@ -11,18 +11,6 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
 
   console.log("application", application);
 
-  const { data: slotSearchData, refetch } = Digit.Hooks.chb.useChbSlotSearch({
-    tenantId: application?.tenantId,
-    filters: {
-      bookingId: application?.bookingId,
-      communityHallCode: application?.communityHallCode,
-      bookingStartDate: application?.bookingSlotDetails?.[0]?.bookingDate,
-      bookingEndDate: application?.bookingSlotDetails?.[application.bookingSlotDetails.length - 1]?.bookingDate,
-      hallCode: application?.bookingSlotDetails?.[0]?.hallCode,
-      isTimerRequired: true,
-    },
-    enabled: false, // Disable automatic refetch
-  });
   /*
   const [timeRemaining, setTimeRemaining] = useState(application?.timerValue);
   // Initialize time remaining on mount or when application changes

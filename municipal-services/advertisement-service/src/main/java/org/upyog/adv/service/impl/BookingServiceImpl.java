@@ -350,10 +350,11 @@ public class BookingServiceImpl implements BookingService {
 			availabilityDetailsResponse.stream()
 				.filter(responseSlot -> isSlotMatching(responseSlot, timerDetail))
 				.findFirst()
-				.ifPresent(matchedSlot -> {
-					boolean isCreatedByCurrentUser = timerDetail.getUuid().equals(requestInfo.getUserInfo().getUuid());
-					boolean existingBookingId = timerDetail.getBookingId() != null && 
-						timerDetail.getBookingId().equals(criteria.getBookingId());
+			.ifPresent(matchedSlot -> {
+				boolean isCreatedByCurrentUser = timerDetail.getUuid() != null && 
+					timerDetail.getUuid().equals(requestInfo.getUserInfo().getUuid());
+				boolean existingBookingId = timerDetail.getBookingId() != null && 
+					timerDetail.getBookingId().equals(criteria.getBookingId());
 
 					boolean existingDraftId = false;
 					String draftId = getDraftId(availabilityDetailsResponse, requestInfo);

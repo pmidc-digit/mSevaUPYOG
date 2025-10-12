@@ -3,9 +3,7 @@ package org.upyog.adv.service.impl;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -288,28 +286,43 @@ public class BookingServiceImpl implements BookingService {
 					"Booking is not allowed for this number of days.");
 		}
 
+		// Fetch advertisement details from MDMS to enrich slots
+		List<Advertisements> advertisementsList = mdmsUtil.fetchAdvertisementsData(requestInfo, criteria.getTenantId());
+		Advertisements advertisementData = null;
+		if (advertisementsList != null && criteria.getAdvertisementId() != null) {
+			String advertisementIdStr = criteria.getAdvertisementId();
+			advertisementData = advertisementsList.stream()
+				.filter(ad -> ad.getId() != null && ad.getId().toString().equals(advertisementIdStr))
+				.findFirst()
+				.orElse(null);
+		}
+
 		// Create a slot availability detail for each date
+		final Advertisements finalAdvertisementData = advertisementData;
 		totalDates.forEach(date -> {
-			availabiltityDetailsResponse.add(createAdvertisementSlotAvailabiltityDetail(criteria, date));
+			AdvertisementSlotAvailabilityDetail slot = createAdvertisementSlotAvailabiltityDetail(criteria, date);
+			// Enrich with advertisement details
+			if (finalAdvertisementData != null) {
+				enrichSlotWithAdvertisementDetails(slot, finalAdvertisementData);
+			}
+			availabiltityDetailsResponse.add(slot);
 		});
 
-		// Set advertisement status to 'BOOKED' if already booked
-		// Set advertisement status to 'BOOKED' if already booked
-// Create a map for quick lookup of booked slots with their actual booking IDs
-		Map<AdvertisementSlotAvailabilityDetail, AdvertisementSlotAvailabilityDetail> bookedSlotsMap =
-				availabiltityDetails.stream()
-						.collect(Collectors.toMap(Function.identity(), Function.identity(), (a, b) -> a));
-
-		availabiltityDetailsResponse.forEach(detail -> {
-			if (availabiltityDetails.contains(detail)) {
-				AdvertisementSlotAvailabilityDetail bookedSlot = bookedSlotsMap.get(detail);
+	// Set advertisement status to 'BOOKED' if already booked
+	// Match slots based on critical fields: advertisementId, bookingDate, and other attributes
+	availabiltityDetailsResponse.forEach(detail -> {
+		// Find matching booked slot from database
+		availabiltityDetails.stream()
+			.filter(dbDetail -> isSlotMatching(detail, dbDetail))
+			.findFirst()
+			.ifPresent(bookedSlot -> {
+				// Mark as BOOKED and set the actual booking ID from database
 				detail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
-				// Set the actual booking ID from the database, not the search criteria
-				if (bookedSlot != null && bookedSlot.getBookingId() != null) {
+				if (bookedSlot.getBookingId() != null) {
 					detail.setBookingId(bookedSlot.getBookingId());
 				}
-			}
-		});
+			});
+	});
 
 		log.info("Availability details response after updating status: " + availabiltityDetailsResponse);
 
@@ -324,45 +337,41 @@ public class BookingServiceImpl implements BookingService {
 				requestInfo);
 		if (bookedSlotsFromTimer == null || bookedSlotsFromTimer.isEmpty()) {
 			log.info("Timer details are null or empty, returning availability details as is.");
+			return availabilityDetailsResponse;
 		}
 
-		Map<AdvertisementSlotAvailabilityDetail, AdvertisementSlotAvailabilityDetail> slotDetailsMap = availabilityDetailsResponse
-				.stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
 		log.info("Timer Details from db : " + bookedSlotsFromTimer);
 
-		if (bookedSlotsFromTimer != null)
-			bookedSlotsFromTimer.forEach(detail -> {
-				AdvertisementSlotAvailabilityDetail availabilityDetail = AdvertisementSlotAvailabilityDetail.builder()
-						.addType(detail.getAddType()).location(detail.getLocation()).faceArea(detail.getFaceArea())
-						.nightLight(detail.getNightLight()).bookingDate(detail.getBookingDate()).advertisementId(detail.getAdvertisementId()).build();
-
-				// Check if the timerDetails set contains this booking and if it's created by
-				// the current user
-				// Update the slot status based on the comparison
-				if (availabilityDetailsResponse.contains(availabilityDetail)) {
-
-					AdvertisementSlotAvailabilityDetail slotAvailabilityDetail = slotDetailsMap.get(availabilityDetail);
-
-					boolean isCreatedByCurrentUser = detail.getUuid().equals(requestInfo.getUserInfo().getUuid());
-					boolean existingBookingId = detail.getBookingId().equals(criteria.getBookingId());
+		// Check each timer entry against availability response using smart matching
+		bookedSlotsFromTimer.forEach(timerDetail -> {
+			// Find matching slot in availability response using smart matching
+			availabilityDetailsResponse.stream()
+				.filter(responseSlot -> isSlotMatching(responseSlot, timerDetail))
+				.findFirst()
+				.ifPresent(matchedSlot -> {
+					boolean isCreatedByCurrentUser = timerDetail.getUuid().equals(requestInfo.getUserInfo().getUuid());
+					boolean existingBookingId = timerDetail.getBookingId() != null && 
+						timerDetail.getBookingId().equals(criteria.getBookingId());
 
 					boolean existingDraftId = false;
 					String draftId = getDraftId(availabilityDetailsResponse, requestInfo);
-					if (!StringUtils.isBlank(criteria.getDraftId())) {
+					if (!StringUtils.isBlank(criteria.getDraftId()) && !StringUtils.isBlank(draftId)) {
 						existingDraftId = draftId.equals(criteria.getDraftId());
 					}
+					
+					// If user is checking their own timer hold, show as AVAILABLE so they can modify
+					// Otherwise, show as BOOKED to prevent others from selecting
 					if (isCreatedByCurrentUser && (existingBookingId || existingDraftId)) {
-						log.info("inside booking created by me with same booking id ");
-						slotAvailabilityDetail.setSlotStaus(BookingStatusEnum.AVAILABLE.toString());
+						log.info("Slot held by current user with same booking/draft id - showing as AVAILABLE");
+						matchedSlot.setSlotStaus(BookingStatusEnum.AVAILABLE.toString());
 					} else {
-						slotAvailabilityDetail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
+						log.info("Slot held by another user or different booking - showing as BOOKED");
+						matchedSlot.setSlotStaus(BookingStatusEnum.BOOKED.toString());
 					}
-				}
-
-			});
+				});
+		});
 
 		return availabilityDetailsResponse;
-
 	}
 
 	@Override
@@ -383,8 +392,71 @@ public class BookingServiceImpl implements BookingService {
 				.addType(criteria.getAddType()).faceArea(criteria.getFaceArea()).location(criteria.getLocation())
 				.nightLight(criteria.getNightLight()).slotStaus(BookingStatusEnum.AVAILABLE.toString()).advertisementId(criteria.getAdvertisementId())
 				.tenantId(criteria.getTenantId()).bookingDate(BookingUtil.parseLocalDateToString(date, "yyyy-MM-dd"))
+				.bookingFromTime(criteria.getBookingFromTime())
+				.bookingToTime(criteria.getBookingToTime())
 				.build();
 		return availabiltityDetail;
+	}
+
+	/**
+	 * Enriches a slot with advertisement details from MDMS
+	 */
+	private void enrichSlotWithAdvertisementDetails(AdvertisementSlotAvailabilityDetail slot, Advertisements advertisement) {
+		if (advertisement.getAmount() != null) {
+			slot.setAmount(advertisement.getAmount().doubleValue());
+		}
+		slot.setAdvertisementName(advertisement.getName());
+		if (advertisement.getPoleNo() != null) {
+			try {
+				slot.setPoleNo(Integer.parseInt(advertisement.getPoleNo()));
+			} catch (NumberFormatException e) {
+				log.warn("Unable to parse pole number: " + advertisement.getPoleNo());
+			}
+		}
+		slot.setImageSrc(advertisement.getImageSrc());
+		slot.setWidth(advertisement.getWidth());
+		slot.setHeight(advertisement.getHeight());
+		slot.setLightType(advertisement.getLight());
+	}
+
+	/**
+	 * Helper method to match slots based on critical fields
+	 * Matches on: advertisementId, bookingDate, and optional fields (addType, location, faceArea, nightLight)
+	 */
+	private boolean isSlotMatching(AdvertisementSlotAvailabilityDetail searchSlot, 
+			AdvertisementSlotAvailabilityDetail dbSlot) {
+		
+		// Primary match: advertisementId and bookingDate must match
+		if (!Objects.equals(searchSlot.getAdvertisementId(), dbSlot.getAdvertisementId())) {
+			return false;
+		}
+		
+		if (!Objects.equals(searchSlot.getBookingDate(), dbSlot.getBookingDate())) {
+			return false;
+		}
+		
+		// Secondary match: if search criteria has these fields, they must match DB
+		if (StringUtils.isNotBlank(searchSlot.getAddType()) && 
+			!Objects.equals(searchSlot.getAddType(), dbSlot.getAddType())) {
+			return false;
+		}
+		
+		if (StringUtils.isNotBlank(searchSlot.getLocation()) && 
+			!Objects.equals(searchSlot.getLocation(), dbSlot.getLocation())) {
+			return false;
+		}
+		
+		if (StringUtils.isNotBlank(searchSlot.getFaceArea()) && 
+			!Objects.equals(searchSlot.getFaceArea(), dbSlot.getFaceArea())) {
+			return false;
+		}
+		
+		if (searchSlot.getNightLight() != null && 
+			!Objects.equals(searchSlot.getNightLight(), dbSlot.getNightLight())) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	// This method updates booking from the booking number, searches the booking num

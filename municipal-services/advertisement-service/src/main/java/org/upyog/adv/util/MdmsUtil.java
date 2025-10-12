@@ -230,6 +230,21 @@ public class MdmsUtil {
 	}
 
 	/**
+	 * Fetch advertisements data from MDMS for slot search enrichment
+	 * @param requestInfo
+	 * @param tenantId
+	 * @return List of advertisements
+	 */
+	public List<Advertisements> fetchAdvertisementsData(RequestInfo requestInfo, String tenantId) {
+		try {
+			return getAdvertisements(requestInfo, tenantId, config.getModuleName(), null);
+		} catch (JsonProcessingException e) {
+			log.error("Error fetching advertisements data from MDMS", e);
+			return new ArrayList<>();
+		}
+	}
+
+	/**
 	 * Fetch tax rates from MDMS
 	 */
 	public List<CalculationType> getTaxRatesMasterList(RequestInfo requestInfo, String tenantId, String moduleName,

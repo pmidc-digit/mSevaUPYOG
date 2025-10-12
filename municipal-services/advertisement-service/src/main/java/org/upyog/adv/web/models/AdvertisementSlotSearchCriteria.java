@@ -50,8 +50,8 @@ public class AdvertisementSlotSearchCriteria {
 	// for same day
 	private boolean isMultipleSlotsAvaialable;
 
-//	private String fromTime;
-//
-//	private String toTime;
+	private String bookingFromTime;
+
+	private String bookingToTime;
 
 }

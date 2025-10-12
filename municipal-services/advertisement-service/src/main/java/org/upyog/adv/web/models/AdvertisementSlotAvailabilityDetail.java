@@ -51,9 +51,9 @@ public class AdvertisementSlotAvailabilityDetail {
 	private String bookingEndDate;
 	private String advertisementId;
 
-//	private String fromTime;
-//
-//	private String toTime;
+	private String bookingFromTime;
+
+	private String bookingToTime;
 
 	private String tenantId;
 
@@ -61,6 +61,21 @@ public class AdvertisementSlotAvailabilityDetail {
 	private String slotStaus;
 	
 	private String uuid;
+	
+	// Additional advertisement details
+	private Double amount;
+	
+	private String advertisementName;
+	
+	private Integer poleNo;
+	
+	private String imageSrc;
+	
+	private Integer width;
+	
+	private Integer height;
+	
+	private String lightType;
 	
 	public Boolean isNightLight() {
 	        return nightLight;

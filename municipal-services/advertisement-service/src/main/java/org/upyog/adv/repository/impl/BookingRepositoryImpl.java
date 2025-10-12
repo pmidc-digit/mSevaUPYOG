@@ -473,14 +473,14 @@ public class BookingRepositoryImpl implements BookingRepository {
 			query.append(location).append(" = ? ");
 			paramsList.add(criteria.getLocation());
 		}
-		if (StringUtils.isNotBlank(criteria.getAddType())) {
-			query.append(nightLight).append(" = ? ");
-			paramsList.add(criteria.getNightLight());
-		}
-		if(StringUtils.isNotBlank((criteria.getAdvertisementId()))){
-			query.append(" AND eabd.advertisementId = ? ");
-			paramsList.add(criteria.getAdvertisementId());
-		}
+	if (StringUtils.isNotBlank(criteria.getAddType())) {
+		query.append(nightLight).append(" = ? ");
+		paramsList.add(criteria.getNightLight());
+	}
+	if(StringUtils.isNotBlank((criteria.getAdvertisementId()))){
+		query.append(" AND eacd.advertisementId = ? ");
+		paramsList.add(criteria.getAdvertisementId());
+	}
 
 
 		log.info("getBookingDetails : Final query: " + query);

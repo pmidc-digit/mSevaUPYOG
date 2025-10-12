@@ -13,7 +13,8 @@ function PTRSummary({ t }) {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
-  console.log("formData", formData);
+   
+
 
   const pageStyle = {
     padding: "2rem",
@@ -124,9 +125,12 @@ function PTRSummary({ t }) {
           {renderRow(t("PTR_COLOR"), pet?.petColor)}
           {renderRow(t("PTR_VACCINATION_NUMBER"), pet?.vaccinationNumber)}
           {renderRow(t("PTR_VACCINATION_DATE"), pet?.lastVaccineDate)}
+           {renderRow(t("PTR_CLINIC_NAME"), pet?. clinicName)}
+            {renderRow(t("PTR_DOCTOR_NAME"), pet?.doctorName)}
         </div>
       </Card>
 
+    
       <Card className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>

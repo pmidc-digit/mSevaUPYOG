@@ -17,12 +17,13 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams, Link } from "react-router-dom";
 import ADSDocument from "../../pageComponents/ADSDocument";
 import ApplicationTable from "../../components/ApplicationTable";
-import { pdfDownloadLink } from "../../utils";
+import { pdfDownloadLink, transformAdsData } from "../../utils";
 import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
+import ADSCartDetails from "../../pageComponents/ADSCartDetails";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,
@@ -65,21 +66,19 @@ const ADSApplicationDetails = () => {
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
-  const { tenants } = storeData || {};
-
-  const { isLoading, isError, error, data: adsData, refetch } = Digit.Hooks.ads.useADSSearch({
+  const { isLoading, error, data: adsData, refetch } = Digit.Hooks.ads.useADSSearch({
     tenantId,
     filters: { bookingNo: acknowledgementIds },
   });
-  const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
+  useEffect(() => {
+    refetch();
+  }, [acknowledgementIds, refetch]);
+  const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
-
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
   const application = ads_details;
-
-  sessionStorage.setItem("ads", JSON.stringify(application));
 
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -305,22 +304,7 @@ const ADSApplicationDetails = () => {
 
   let dowloadOptions = [];
 
-  const columns = [
-    { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
-    // { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
-    { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
-    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
-    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
-  ];
-  const adslistRows =
-    ads_details?.cartDetails?.map((slot) => ({
-      addType: `${t(slot.addType)}`,
-      faceArea: `${t(slot.faceArea)}`,
-      nightLight: `${t(slot.nightLight ? "Yes" : "No")}`,
-      bookingDate: `${t(slot.bookingDate)}`,
-      bookingStatus: `${t(slot.status)}`,
-    })) || [];
+  const cartData = transformAdsData(ads_details?.cartDetails);
 
   return (
     <React.Fragment>
@@ -337,10 +321,7 @@ const ADSApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <StatusTable>
-            <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
-          </StatusTable>
-
+          <StatusTable></StatusTable>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
@@ -348,36 +329,16 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
+            <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
+            <Row className="border-none" label={t("BOOKING_STATUS")} text={ads_details?.bookingStatus} />
+            {ads_details?.receiptNo && (
+              <Row className="border-none" label={t("CITIZEN_SUCCESS_ADVT_HOARDINGS_PAYMENT_RECEIPT_NO")} text={ads_details?.receiptNo} />
+            )}
           </StatusTable>
 
-          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_ADDRESS_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row className="border-none" label={t("ADS_HOUSE_NO")} text={ads_details?.address?.houseNo || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_HOUSE_NAME")} text={ads_details?.address?.houseName || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_STREET_NAME")} text={ads_details?.address?.streetName || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_ADDRESS_LINE1")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_ADDRESS_LINE2")} text={ads_details?.address?.addressLine2 || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_LANDMARK")} text={ads_details?.address?.landmark || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_CITY")} text={ads_details?.address?.city || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_LOCALITY")} text={ads_details?.address?.locality || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
-          </StatusTable> */}
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_CART_DETAILS")}</CardSubHeader>
-          <ApplicationTable
-            t={t}
-            data={adslistRows}
-            columns={columns}
-            getCellProps={(cellInfo) => ({
-              style: {
-                minWidth: "150px",
-                padding: "10px",
-                fontSize: "16px",
-                paddingLeft: "20px",
-              },
-            })}
-            isPaginationRequired={false}
-            totalRecords={adslistRows.length}
-          />
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
+          <ADSCartDetails cartDetails={cartData ?? []} t={t} />
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
             {docs?.length > 0 ? (

@@ -311,3 +311,69 @@ export function getMinDateForType(scheduleType) {
   // fallback
   return today.toISOString().split("T")[0];
 }
+
+
+// Transforms raw booking data into grouped ad objects with enriched metadata and slot arrays
+export function transformAdsData(adsData) {
+  const grouped = {};
+
+  adsData?.forEach(item => {
+    const adId = item?.advertisementId;
+
+    if (!grouped[adId]) {
+      grouped[adId] = {
+        ad: {
+          id: Number(adId),
+          ...item,
+        },
+        slots: []
+      };
+    }
+
+    grouped[adId]?.slots.push({
+      addType: item?.addType,
+      location: item?.location,
+      faceArea: item?.faceArea,
+      nightLight: item?.nightLight,
+      bookingId: item?.bookingId,
+      timerValue: 0,
+      bookingDate: item?.bookingDate,
+      bookingStartDate: item?.bookingDate,
+      bookingEndDate: item?.bookingDate,
+      advertisementId: item?.advertisementId,
+      slotStaus: item?.status,
+      bookingFromTime: item?.bookingFromTime,
+      bookingToTime: item?.bookingToTime
+    });
+  });
+
+  // Update bookingStartDate and bookingEndDate for each ad
+  Object.values(grouped)?.forEach(group => {
+    const dates = group?.slots.map(s => new Date(s?.bookingDate));
+    const minDate = new Date(Math?.min(...dates));
+    const maxDate = new Date(Math?.max(...dates));
+    const format = d => d.toISOString().split("T")[0];
+
+    group.ad.bookingStartDate = format(minDate);
+    group.ad.bookingEndDate = format(maxDate);
+    group.ad.startDate = format(minDate);
+    group.ad.endDate = format(maxDate);
+  });
+
+  return Object.values(grouped);
+}
+
+// Formats a raw key into a readable label with spacing and capitalization
+export const formatLabel = (key) => {
+  const spaced = key
+    ?.replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before capital letters
+    ?.replace(/_/g, " ") // Replace underscores with spaces
+    ?.replace(/([a-z])([0-9])/gi, "$1 $2"); // Add space before digits
+
+  return spaced
+    ?.split(" ") // Split into words
+    ?.map(word => word?.charAt(0)?.toUpperCase() + word?.slice(1)) // Capitalize each word
+    ?.join(" "); // Join back into a single string
+};
+
+

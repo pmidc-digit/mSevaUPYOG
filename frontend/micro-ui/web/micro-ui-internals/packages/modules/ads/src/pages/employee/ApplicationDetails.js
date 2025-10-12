@@ -21,18 +21,17 @@ import ADSModal from "../../pageComponents/ADSModal";
 import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
-import { pdfDownloadLink } from "../../utils";
+import { formatLabel, pdfDownloadLink, transformAdsData } from "../../utils";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
+import ADSCartDetails from "../../pageComponents/ADSCartDetails";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
   // const [wfActions, setWfActions] = useState([]);
-
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [appDetails, setAppDetails] = useState({});
-
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
@@ -60,57 +59,6 @@ const ApplicationDetails = () => {
     const single = extract(assignee);
     return single ? [single] : null;
   }
-
-  const getFileUrl = (fileStoreId, pdfFilesMap) => {
-    if (!fileStoreId || !pdfFilesMap) return null;
-
-    // Handle different response formats from Filefetch API
-    let raw = pdfFilesMap[fileStoreId];
-
-    // If not found by fileStoreId, try searching through the entire map
-    if (!raw) {
-      // Check if pdfFilesMap is an array of file objects
-      if (Array.isArray(pdfFilesMap)) {
-        const fileObj = pdfFilesMap.find(
-          (file) => file?.fileStoreId === fileStoreId || file?.fileId === fileStoreId || file?.documentDetailId === fileStoreId
-        );
-        raw = fileObj?.url || fileObj?.fileUrl || null;
-      }
-      // Check if pdfFilesMap is a single file object
-      else if (typeof pdfFilesMap === "object" && pdfFilesMap.url) {
-        raw = pdfFilesMap.url;
-      }
-    }
-
-    if (!raw) return null;
-
-    // Handle comma-separated URLs (different formats)
-    if (typeof raw === "string" && raw.includes(",")) {
-      const urls = raw.split(",").map((url) => url.trim());
-      // Return the first non-thumbnail URL
-      const mainUrl = urls.find(
-        (url) =>
-          !url.toLowerCase().includes("large") &&
-          !url.toLowerCase().includes("medium") &&
-          !url.toLowerCase().includes("small") &&
-          !url.toLowerCase().includes("thumbnail")
-      );
-      return mainUrl || urls[0];
-    }
-
-    // Handle array of URLs
-    if (Array.isArray(raw)) return raw[0];
-
-    // Handle object with URL properties
-    if (typeof raw === "object") {
-      return raw.url || raw.fileUrl || raw[0] || null;
-    }
-
-    // Handle string URL
-    if (typeof raw === "string") return raw;
-
-    return null;
-  };
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   useEffect(() => {
@@ -129,7 +77,6 @@ const ApplicationDetails = () => {
       .filter(Boolean);
 
     if (!filesArray?.length) {
-      setPdfFiles({});
       setFilesLoading(false);
       return;
     }
@@ -236,39 +183,26 @@ const ApplicationDetails = () => {
     })) || [];
 
   useEffect(() => {
-    const adsObject = bookingObj;
-    if (adsObject) {
+    if (bookingObj) {
       const applicantData = {
-        applicationNo: adsObject?.bookingNo,
-        name: adsObject?.applicantDetail?.applicantName,
-        email: adsObject?.applicantDetail?.applicantEmailId,
-        mobile: adsObject?.applicantDetail?.applicantMobileNo,
-        address: adsObject?.address?.addressLine1,
-        pincode: adsObject?.address?.pincode,
-        bookingStatus: adsObject?.bookingStatus,
-        paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
-        receiptNo: adsObject?.receiptNo,
-        auditDetails: adsObject?.auditDetails,
+        applicationNo: bookingObj?.bookingNo,
+        name: bookingObj?.applicantDetail?.applicantName,
+        email: bookingObj?.applicantDetail?.applicantEmailId,
+        mobile: bookingObj?.applicantDetail?.applicantMobileNo,
+        address: bookingObj?.address?.addressLine1,
+        pincode: bookingObj?.address?.pincode,
+        bookingStatus: bookingObj?.bookingStatus,
+        paymentDate: bookingObj?.paymentDate ? new Date(bookingObj.paymentDate).toLocaleDateString() : "",
+        receiptNo: bookingObj?.receiptNo,
+        auditDetails: bookingObj?.auditDetails,
       };
-
-      const Documents = removeDuplicatesByUUID(adsObject?.documents || []);
-      const AdsDetails =
-        adsObject?.cartDetails?.map((item) => ({
-          adType: item?.addType,
-          location: item?.location,
-          faceArea: item?.faceArea,
-          bookingDate: item?.bookingDate,
-          bookingTime: `${item?.bookingFromTime} - ${item?.bookingToTime}`,
-          nightLight: item?.nightLight ? t("YES") : t("NO"),
-          status: item?.status,
-        })) || [];
-
-      setDisplayData({ applicantData, Documents, AdsDetails });
+      const Documents = removeDuplicatesByUUID(bookingObj?.documents || []);
+      setDisplayData({ applicantData, Documents });
     } else {
       // if the bookingObj disappears, clear the displayData to avoid showing stale UI
       setDisplayData({});
     }
-  }, [bookingObj, t]);
+  }, [bookingObj]);
 
   useEffect(() => {
     // derive loading state from the hook + whether we have the normalized object
@@ -464,11 +398,13 @@ const ApplicationDetails = () => {
     });
   }
 
+  const cartData = transformAdsData(bookingObj?.cartDetails);
   const [expired, setExpired] = useState(false);
 
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
+
 
   return (
     <div className={"employee-main-application-details"}>
@@ -505,10 +441,10 @@ const ApplicationDetails = () => {
             />
           </div>
         )}
-        <CardSubHeader>{t("ADS_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
+        <CardSubHeader>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
-            Object.entries(displayData.applicantData)
+            Object.entries(displayData?.applicantData)
               // filter out empty, null, undefined, or empty arrays/objects
               .filter(([_, value]) => {
                 if (value === null || value === undefined) return false;
@@ -522,7 +458,7 @@ const ApplicationDetails = () => {
               .map(([key, value]) => (
                 <Row
                   key={key}
-                  label={t(key?.toUpperCase())}
+                 label={t(formatLabel(key))}
                   text={
                     Array.isArray(value)
                       ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
@@ -532,26 +468,13 @@ const ApplicationDetails = () => {
                   }
                 />
               ))}
+       
         </StatusTable>
       </Card>
 
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
-        {displayData?.AdsDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("ADS_AD_TYPE")} text={t(detail.adType) || detail.adType} />
-              {/* <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} /> */}
-              <Row label={t("ADS_LOCATION")} text={detail.location ? t(detail.location) : "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea ? t(detail.faceArea.replaceAll("_", " ")) : "N/A"} />
-              <Row label={t("CHB_BOOKING_DATE")} text={detail.bookingDate || "N/A"} />
-              {/* <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} /> */}
-              <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight ? "Yes" : "No"} />
-              <Row label={t("ADS_STATUS")} text={t(detail.status) || detail.status} />
-            </StatusTable>
-          </div>
-        ))}
+        <ADSCartDetails cartDetails={cartData ?? []} t={t} />
       </Card>
 
       <Card>

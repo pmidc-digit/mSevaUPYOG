@@ -263,19 +263,20 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </div>
       )}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <LabelFieldPair>
-          <CardLabel>
-            {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>
-          </CardLabel>
-          <div>
+        {/* <LabelFieldPair> */}
+        <CardLabel>
+          {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div style={{width:"100%"}}>
+          {isCitizen && (
             <style>
               {`
-               .form-field{
-               width:100% !important
-               }
-               .select-wrap{
-        width:100% !important;
-        }
+      .form-field {
+        width: 100% !important;
+      }
+      .select-wrap {
+        width: 100% !important;
+      }
       .select {
         border: 1px solid #b4b4b4 !important;
         border-radius: 8px !important;
@@ -285,28 +286,29 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         border: 1px solid #2947a3 !important;
         border-radius: 8px !important;
       }
-       
     `}
             </style>
-            <Controller
-              control={control}
-              name="siteId"
-              rules={{ required: t("ADS_SITE_NAME_REQUIRED") }} // ✅ validation rule
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  option={locationOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={(e) => {
-                    props.onChange(e);
-                    filterAds(e);
-                  }}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
+          )}
+
+          <Controller
+            control={control}
+            name="siteId"
+            rules={{ required: t("ADS_SITE_NAME_REQUIRED") }} // ✅ validation rule
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                option={locationOptions}
+                optionKey="name"
+                selected={props.value}
+                select={(e) => {
+                  props.onChange(e);
+                  filterAds(e);
+                }}
+              />
+            )}
+          />
+        </div>
+        {/* </LabelFieldPair> */}
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
         {guidance && adsForLocation?.length > 0 && (
@@ -369,15 +371,15 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         )}
 
         {/* Geo Location */}
-        <LabelFieldPair>
-          <CardLabel>{t("CS_COMPLAINT_DETAILS_GEO_LOCATION")}</CardLabel>
-          <Controller
-            control={control}
-            name="geoLocation"
-            // rules={{ required: "Geo Location is required" }}
-            render={(props) => <ADSAddressField value={props.value} onChange={props.onChange} t={t} />}
-          />
-        </LabelFieldPair>
+        {/* <LabelFieldPair> */}
+        <CardLabel>{t("CS_COMPLAINT_DETAILS_GEO_LOCATION")}</CardLabel>
+        <Controller
+          control={control}
+          name="geoLocation"
+          // rules={{ required: "Geo Location is required" }}
+          render={(props) => <ADSAddressField value={props.value} onChange={props.onChange} t={t} />}
+        />
+        {/* </LabelFieldPair> */}
         {/* {errors.geoLocation && <CardLabelError style={errorStyle}>{errors.geoLocation.message}</CardLabelError>} */}
 
         <ActionBar>

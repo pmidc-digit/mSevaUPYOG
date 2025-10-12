@@ -10,10 +10,10 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
   const [showToast, setShowToast] = useState(null);
 
   const handleMakePayment = () => {
-    history.push(`/digit-ui/citizen/payment/collect/adv-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}`)
+    // history.push(`/digit-ui/citizen/payment/collect/adv-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
-
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -28,13 +28,15 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
 
   return (
     <Card>
-     {application.bookingStatus === "PENDING_FOR_PAYMENT"&& application?.auditDetails?.createdTime && <div style={{display:"flex",justifyContent:"flex-end"}}>
-        <ReservationTimer
-          t={t}
-          createTime={application?.auditDetails?.createdTime} // supply when reservation created
-          onExpire={(val) => setExpired(val)}
-        />
-      </div>}
+      {application.bookingStatus === "PENDING_FOR_PAYMENT" && application?.auditDetails?.createdTime && (
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <ReservationTimer
+            t={t}
+            createTime={application?.auditDetails?.createdTime} // supply when reservation created
+            onExpire={(val) => setExpired(val)}
+          />
+        </div>
+      )}
       <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
       <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
       {/* <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} /> */}
@@ -46,10 +48,8 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
           <SubmitBar label={buttonLabel} />
         </Link>
         {/* application.bookingStatus === "BOOKING_CREATED" */}
-        {(
-          application.bookingStatus === "/mybookingsPAYMENT_FAILED" ||
-          application.bookingStatus === "PENDING_FOR_PAYMENT") && (
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} disabled={expired}/>
+        {(application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
+          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} disabled={expired} />
         )}
       </div>
 

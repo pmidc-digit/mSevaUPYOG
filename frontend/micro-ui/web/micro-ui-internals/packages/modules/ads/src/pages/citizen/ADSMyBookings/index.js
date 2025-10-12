@@ -25,15 +25,19 @@ export const ADSMyApplications = () => {
 
   // Make initial filters user-scoped (like PTR) and ensure both branches include mobileNumber
   let initialFilters = !isNaN(parseInt(filter))
-    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
+    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId,mobileNumber: user?.mobileNumber, }
+    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId,mobileNumber: user?.mobileNumber, };
 
   useEffect(() => {
     setFilters(initialFilters);
   }, [filter]);
 
   // Use the search hook with stable filters (no UI for searching)
-  const { isLoading, data } = Digit.Hooks.ads.useADSSearch({ filters });
+  const { isLoading, data,refetch } = Digit.Hooks.ads.useADSSearch({ filters });
+
+  useEffect(()=>{
+    refetch()
+  },[])
 
   if (isLoading) return <Loader />;
 

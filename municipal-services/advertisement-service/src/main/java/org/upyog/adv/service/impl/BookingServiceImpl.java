@@ -308,7 +308,7 @@ public class BookingServiceImpl implements BookingService {
 			availabiltityDetailsResponse.add(slot);
 		});
 
-	// Set slot status to match the actual booking status from database
+	// Set advertisement status to 'BOOKED' if already booked
 	// Match slots based on critical fields: advertisementId, bookingDate, and other attributes
 	availabiltityDetailsResponse.forEach(detail -> {
 		// Find matching booked slot from database
@@ -316,10 +316,8 @@ public class BookingServiceImpl implements BookingService {
 			.filter(dbDetail -> isSlotMatching(detail, dbDetail))
 			.findFirst()
 			.ifPresent(bookedSlot -> {
-				// Copy the actual booking status (BOOKING_IN_PROGRESS, PENDING_FOR_PAYMENT, BOOKED, etc.)
-				if (bookedSlot.getSlotStaus() != null) {
-					detail.setSlotStaus(bookedSlot.getSlotStaus());
-				}
+				// Mark as BOOKED and set the actual booking ID from database
+				detail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
 				if (bookedSlot.getBookingId() != null) {
 					detail.setBookingId(bookedSlot.getBookingId());
 				}
@@ -350,11 +348,10 @@ public class BookingServiceImpl implements BookingService {
 			availabilityDetailsResponse.stream()
 				.filter(responseSlot -> isSlotMatching(responseSlot, timerDetail))
 				.findFirst()
-			.ifPresent(matchedSlot -> {
-				boolean isCreatedByCurrentUser = timerDetail.getUuid() != null && 
-					timerDetail.getUuid().equals(requestInfo.getUserInfo().getUuid());
-				boolean existingBookingId = timerDetail.getBookingId() != null && 
-					timerDetail.getBookingId().equals(criteria.getBookingId());
+				.ifPresent(matchedSlot -> {
+					boolean isCreatedByCurrentUser = timerDetail.getUuid().equals(requestInfo.getUserInfo().getUuid());
+					boolean existingBookingId = timerDetail.getBookingId() != null &&
+						timerDetail.getBookingId().equals(criteria.getBookingId());
 
 					boolean existingDraftId = false;
 					String draftId = getDraftId(availabilityDetailsResponse, requestInfo);
@@ -362,38 +359,15 @@ public class BookingServiceImpl implements BookingService {
 						existingDraftId = draftId.equals(criteria.getDraftId());
 					}
 					
-				// If slot already has a booking status from DB (not AVAILABLE), check the status
-				String currentStatus = matchedSlot.getSlotStaus();
-				if (!BookingStatusEnum.AVAILABLE.toString().equals(currentStatus)) {
-					// If the slot is BOOKED (payment completed), NEVER show as AVAILABLE to anyone
-					if (BookingStatusEnum.BOOKED.toString().equals(currentStatus)) {
-						log.info("Slot is BOOKED (payment completed) - keeping as BOOKED for everyone including same user");
-						return; // Don't allow same user to rebook completed bookings
-					}
-					
-					// For other statuses (BOOKING_IN_PROGRESS, PENDING_FOR_PAYMENT), 
-					// allow same user to see as AVAILABLE only if it's their exact same booking
+					// If user is checking their own timer hold, show as AVAILABLE so they can modify
+					// Otherwise, show as BOOKED to prevent others from selecting
 					if (isCreatedByCurrentUser && (existingBookingId || existingDraftId)) {
-						log.info("Slot is {} by same user with same booking/draft - allowing modification", currentStatus);
+						log.info("Slot held by current user with same booking/draft id - showing as AVAILABLE");
 						matchedSlot.setSlotStaus(BookingStatusEnum.AVAILABLE.toString());
-						return;
+					} else {
+						log.info("Slot held by another user or different booking - showing as BOOKED");
+						matchedSlot.setSlotStaus(BookingStatusEnum.BOOKED.toString());
 					}
-					
-					// For other users or different bookings, preserve the actual status
-					log.info("Slot already has booking status: {} - preserving it", currentStatus);
-					return;
-				}
-				
-				// Timer-only holds (no DB record yet) - apply timer logic
-				// If user is checking their own timer hold, show as AVAILABLE so they can modify
-				// Otherwise, show as BOOKED to prevent others from selecting
-				if (isCreatedByCurrentUser && (existingBookingId || existingDraftId)) {
-					log.info("Timer slot held by current user with same booking/draft id - showing as AVAILABLE");
-					matchedSlot.setSlotStaus(BookingStatusEnum.AVAILABLE.toString());
-				} else {
-					log.info("Timer slot held by another user or different booking - showing as BOOKED");
-					matchedSlot.setSlotStaus(BookingStatusEnum.BOOKED.toString());
-				}
 				});
 		});
 

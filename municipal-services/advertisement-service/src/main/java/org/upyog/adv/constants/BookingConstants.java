@@ -3,7 +3,7 @@ package org.upyog.adv.constants;
 import java.math.BigDecimal;
 
 public class BookingConstants {
-	public static final String BOOKING_IN_PROGRESS = "Your advertisement booking is in progress";
+	public static final String BOOKING_CREATED = "Your advertisement booking created successfully";
 	public static final String ADVERTISEMENT_BOOKING_LIST = "Your advertisement booking list fetched successfully";
 
 	public static final String INVALID_TENANT = "INVALID TENANT";
@@ -98,7 +98,7 @@ public class BookingConstants {
 
 	public static final String CHB_PAYMENT_LINK = "{CHB_PAYMENT_LINK}";
 	
-	public static final String BOOKING_IN_PROGRESS_STATUS = "BOOKING_IN_PROGRESS";
+	public static final String BOOKING_CREATED_STATUS = "BOOKING_CREATED";
 	
 	public static final String BOOKED_STATUS = "BOOKED";
 	

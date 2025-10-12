@@ -70,10 +70,10 @@ public class AdvertisementServiceApiController {
 			bookingDetail = bookingService.createAdvertisementDraftApplication(bookingRequest);
 		} else {
 
-			bookingDetail = bookingService.createBooking(bookingRequest);
-		}
-		ResponseInfo info = BookingUtil.createReponseInfo(bookingRequest.getRequestInfo(),
-				BookingConstants.BOOKING_CREATED, StatusEnum.SUCCESSFUL);
+		bookingDetail = bookingService.createBooking(bookingRequest);
+	}
+	ResponseInfo info = BookingUtil.createReponseInfo(bookingRequest.getRequestInfo(),
+			BookingConstants.BOOKING_IN_PROGRESS, StatusEnum.SUCCESSFUL);
 		AdvertisementResponse response = AdvertisementResponse.builder().responseInfo(info).build();
 		response.addNewBookingApplication(bookingDetail);
 		return new ResponseEntity<AdvertisementResponse>(response, HttpStatus.OK);

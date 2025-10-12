@@ -177,12 +177,12 @@ public class NotificationUtil {
 
 		BookingStatusEnum notificationType = BookingStatusEnum.valueOf(actionStatus);
 
-		switch (notificationType) {
+	switch (notificationType) {
 
-		case BOOKING_CREATED:
-			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-			link = getActionLink(bookingDetail, actionStatus);
-			break;
+	case BOOKING_IN_PROGRESS:
+		messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
+		link = getActionLink(bookingDetail, actionStatus);
+		break;
 
 		case BOOKED:
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
@@ -214,7 +214,7 @@ public class NotificationUtil {
 
 	public String getActionLink(BookingDetail bookingDetail, String action) {
 		String link = null;
-		if (BookingConstants.BOOKING_CREATED_STATUS.equals(action)) {
+		if (BookingConstants.BOOKING_IN_PROGRESS_STATUS.equals(action)) {
 			// Payment Link
 			link = config.getUiAppHost() + config.getPayLinkSMS().replace("$consumerCode", bookingDetail.getBookingNo())
 					.replace("$mobile", bookingDetail.getApplicantDetail().getApplicantMobileNo())

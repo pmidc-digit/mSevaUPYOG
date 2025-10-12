@@ -37,7 +37,7 @@ public class AdvertisementBookingQueryBuilder {
 	private static final String documentDetailsQuery = "select * from public.eg_adv_document_detail  where booking_id in (";
 
 	private static final String ADVERTISEMENT_SLOTS_AVAILABILITY_QUERY =
-			"SELECT eabd.tenant_id, eabd.booking_id, eacd.advertisementId, eacd.add_type, eacd.face_area, eacd.location, eacd.night_light, eacd.status, eacd.booking_date\n"
+			"SELECT eabd.tenant_id, eabd.booking_id, eacd.advertisementId, eacd.add_type, eacd.face_area, eacd.location, eacd.night_light, eabd.booking_status, eacd.booking_date\n"
 					+ "FROM eg_adv_booking_detail eabd\n"
 					+ "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id\n"
 					+ "WHERE eabd.tenant_id = ?\n"

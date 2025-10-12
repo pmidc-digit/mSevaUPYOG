@@ -2,7 +2,7 @@ package org.upyog.adv.enums;
 
 public enum BookingStatusEnum {
 	AVAILABLE,
-	BOOKING_CREATED,
+	BOOKING_IN_PROGRESS,
 	BOOKED,
 	CANCELLATION_REQUESTED,
 	PENDING_FOR_PAYMENT,

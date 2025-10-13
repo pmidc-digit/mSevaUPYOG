@@ -389,7 +389,7 @@ console.log(isCitizenEditable, "EDIT per");
             name="PermanentAddress"
             onChange={selectPermanentAddress}
             value={PermanentAddress}
-            disable={!isCitizenEditable}
+            // disable={!isCitizenEditable}
           />
 
             <CheckBox
@@ -425,7 +425,7 @@ console.log(isCitizenEditable, "EDIT per");
             selected={selectedState}
             select={SelectState}
             // disable={true}
-            disable={!isCitizenEditable}
+            // disable={!isCitizenEditable}
           />
          
           </div>
@@ -440,7 +440,7 @@ console.log(isCitizenEditable, "EDIT per");
             selected={selectedDistrict}
             select={SelectDistrict}
             // disable={true}
-            disable={!isCitizenEditable}
+            // disable={!isCitizenEditable}
           />
           </div>}
 
@@ -456,7 +456,7 @@ console.log(isCitizenEditable, "EDIT per");
               value={pinCode}
               onChange={SelectPincode}
               // disable={name && !isOpenLinkFlow ? true : false}
-              disable={!isCitizenEditable}
+              // disable={!isCitizenEditable}
               {...(validation = {
                 isRequired: true,
                 pattern: "^[0-9]{6}$",

@@ -189,9 +189,6 @@ public class ESignService {
             logger.error("Error in Encryption/Signing", e);
             throw new RuntimeException("Error in Encryption/Signing", e);
         }
-        String tenantSuffix = tenantId.contains(".") ? tenantId.split("\\.")[1] : tenantId;
-        String aspTxnID = fileStoreIds + "_" + tenantSuffix;
-
 
         DateFormat dateFormats = new SimpleDateFormat("yy-mm");
         dateFormats.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
@@ -201,7 +198,7 @@ public class ESignService {
         responseForm.setType("1");
         responseForm.setDescription("Y");
         responseForm.seteSignRequest(xmlData);
-        responseForm.setAspTxnID(aspTxnID);
+        responseForm.setAspTxnID("" + fileStoreIds);
         responseForm.setContentType("application/xml");
 
         logger.info("Document upload processed successfully, transaction ID: {}", responseForm.getAspTxnID());
@@ -235,24 +232,6 @@ public class ESignService {
             throw new IllegalStateException("Parsed user certificate is null");
         }
 
-        
-        String fileStoreId;
-        String tenantSuffix;
-
-        if (espTxnID.contains("_")) {
-            String[] parts = espTxnID.split("_", 2); // Split into 2 parts
-            fileStoreId = parts[0];
-            tenantSuffix = parts[1];
-        } else {
-            // fallback if no delimiter
-            fileStoreId = espTxnID;
-            tenantSuffix = env.getProperty("default.tenant.id", "pb"); // default tenant
-        }
-
-        // Reconstruct full tenantId if needed
-        String tenantId = tenantSuffix; 
-        
-        
         String subjectDN = userCert.getSubjectX500Principal().getName();
         Map<String, String> certFields = new HashMap<>();
         LdapName ldapDN = new LdapName(subjectDN);
@@ -272,8 +251,8 @@ public class ESignService {
         }
 
         // 3️⃣ Download PDF from filestore
-//        String fileStoreId = espTxnID;
-//        String tenantId = env.getProperty("default.tenant.id", "pb");
+        String fileStoreId = espTxnID;
+        String tenantId = env.getProperty("default.tenant.id", "pb");
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);
         byte[] pdfBytes = downloadPdfFromUrlAsBytes(pdfUrl);
 

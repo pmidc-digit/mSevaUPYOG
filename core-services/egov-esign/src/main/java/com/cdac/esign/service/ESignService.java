@@ -190,7 +190,7 @@ public class ESignService {
             throw new RuntimeException("Error in Encryption/Signing", e);
         }
         String tenantSuffix = tenantId.contains(".") ? tenantId.split("\\.")[1] : tenantId;
-        String aspTxnID = fileStoreIds + "_" + tenantSuffix;
+        String aspTxnID = fileStoreIds + "-" + tenantSuffix;
 
 
         DateFormat dateFormats = new SimpleDateFormat("yy-mm");
@@ -239,8 +239,8 @@ public class ESignService {
         String fileStoreId;
         String tenantSuffix;
 
-        if (espTxnID.contains("_")) {
-            String[] parts = espTxnID.split("_", 2); // Split into 2 parts
+        if (espTxnID.contains("-")) {
+            String[] parts = espTxnID.split("-", 2); // Split into 2 parts
             fileStoreId = parts[0];
             tenantSuffix = parts[1];
         } else {

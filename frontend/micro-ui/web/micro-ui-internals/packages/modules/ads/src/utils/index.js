@@ -324,6 +324,7 @@ export function transformAdsData(adsData) {
       grouped[adId] = {
         ad: {
           id: Number(adId),
+          name: item?.advertisementName,
           ...item,
         },
         slots: []
@@ -343,7 +344,8 @@ export function transformAdsData(adsData) {
       advertisementId: item?.advertisementId,
       slotStaus: item?.status,
       bookingFromTime: item?.bookingFromTime,
-      bookingToTime: item?.bookingToTime
+      bookingToTime: item?.bookingToTime,
+      advertisementName: item?.advertisementName
     });
   });
 

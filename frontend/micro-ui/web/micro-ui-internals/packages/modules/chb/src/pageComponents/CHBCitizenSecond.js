@@ -185,7 +185,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   select={(e) => {
                     props.onChange(e);
                     fiterHalls(e);
+                    // Reset dependent fields properly
                     setValue("hallCode", null);
+                    setValue("startDate", "");
+                    setSlots([]); // also clear any previous slots
+                    setShowInfo(false); // hide extra info until hallCode re-selected
                   }}
                   selected={props.value}
                   option={CHBLocations?.CHB?.CommunityHalls}

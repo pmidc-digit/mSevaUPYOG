@@ -292,15 +292,26 @@ const PTRApplicationDetails = () => {
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">Token No</span>
-                        <span class="detail-value">${petData?.id || "Not Specified"}</span>
+                        <span class="detail-value">${petData?.petToken || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">License Issued date</span>
-                        <span class="detail-value">${currentDate}</span>
+                        <span class="detail-label">Issue Date</span>
+                         <span className="detail-value">
+                       ${
+                         petData?.auditDetails?.lastModifiedTime
+                           ? new Date(petData.auditDetails?.lastModifiedTime).toLocaleDateString("en-GB")
+                           : "N/A"
+                       }
+                      </span>
                       </div>
+
+
                       <div class="detail-row">
                         <span class="detail-label">License Valid Upto</span>
-                        <span class="detail-value">31-03-2025</span>
+                      <span className="detail-value">
+                       ${petData?.validityDate ? new Date(petData.validityDate * 1000).toLocaleDateString("en-GB") : "N/A"}
+                        
+                      </span>
                       </div>
                     </div>
                   </div>
@@ -324,11 +335,11 @@ const PTRApplicationDetails = () => {
                 <div class="owner-section">
                   <div class="detail-row">
                     <span class="detail-label">Owner Name</span>
-                    <span class="detail-value">${petData?.fatherName || "Not Specified"}</span>
+                    <span class="detail-value">${petData?.owner?.name || "Not Specified"}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Father/Spouse Name</span>
-                    <span class="detail-value">${petData?.fatherName || petData?.fatherOrHusbandName || "Not Specified"}</span>
+                    <span class="detail-value">${petData?.fatherName || petData?.owner?.fatherOrHusbandName || "Not Specified"}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Address</span>
@@ -595,7 +606,7 @@ const PTRApplicationDetails = () => {
     onClick: () => downloadAcknowledgement(),
   });
 
-  if (reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") {
+  if (reciept_data?.Payments[0]?.paymentStatus === "NEW") {
     dowloadOptions.push({
       label: t("PTR_CERTIFICATE"),
       onClick: () => {

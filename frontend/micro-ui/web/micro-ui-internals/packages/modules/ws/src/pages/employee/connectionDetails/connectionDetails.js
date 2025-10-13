@@ -274,9 +274,7 @@ useEffect(() => {
   }, [showActionToast]);
 
   // Issue 8 Fix: Connection workflow validation
-  // checkWorkflow is derived from applicationDetails.isApplicationApproved
-  // This now correctly checks for active blocking workflows instead of terminated ones
-  // See WS/Search.js connectionDetails function for the corrected logic
+ 
   const checkApplicationStatus = applicationDetails?.applicationData?.status === "Active" ? true : false;
   const checkWorkflow = applicationDetails?.isApplicationApproved;
 
@@ -342,11 +340,6 @@ useEffect(() => {
     setDisplayMenu(false);
   };
   Digit.Hooks.useClickOutside(actionMenuRef, closeActionMenu, displayMenu);
-
-  /**
-   * Issue 8 Fix: Disconnection button with workflow validation
-   * Allows disconnection for active connections with proper workflow checks
-   */
   const getDisconnectionButton = () => {
     let pathname = `/digit-ui/employee/ws/new-disconnection`;
 

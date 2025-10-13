@@ -70,28 +70,22 @@ function ApplicationDetailsContent({
   const ownersSequences = applicationDetails?.applicationData?.owners;
 
   // ISSUE 9 FIX: Fetch payment history for WS applications
-  // Payment history was not displaying because the payment data fetch was missing
-  // Added payment API integration to show payment history in application details
-  useEffect(() => {
+   useEffect(() => {
     const fetchPaymentHistory = async () => {
-      // WS PAYMENT INTEGRATION: Only fetch payments for WS module applications
       if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
         try {
-          // BUSINESS SERVICE MAPPING: Map serviceType to correct business service code
           const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
-
-          // PAYMENT API CALL: Use the correct payment search API structure matching the working curl
-          // This API call retrieves all payment records for the given connection
+          
           const requestParams = {
-            tenantId: applicationData?.tenantId || tenantId,
+          tenantId: applicationData?.tenantId || tenantId,
+          filters: {
             consumerCodes: applicationData?.connectionNo,
-            businessService: businessService,
-            consumerCode: applicationData?.connectionNo,
+            consumerCode: applicationData?.connectionNo
+          },
+          BusinessService: businessService  
           };
 
           const paymentData = await Digit.WSService.paymentsearch(requestParams);
-
-          // PAYMENT DATA PROCESSING: Handle different response structures from the payment API
           if (Array.isArray(paymentData) && paymentData.length > 0) {
             setPayments(paymentData);
           } else if (paymentData?.Payments && paymentData.Payments.length > 0) {
@@ -450,27 +444,31 @@ function ApplicationDetailsContent({
     alert("access property");
   };
 
-  useEffect(() => {
-    try {
-      let filters = {
-        consumerCodes: propertyId,
-        // tenantId: tenantId
-      };
-      const auth = true;
-      if (moduleCode === "BPREG") {
-        Digit.OBPSService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
-          setPayments(response?.Payments);
-          console.log(response);
-        });
-      } else {
-        Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
-          setPayments(response?.Payments);
-        });
-      }
-    } catch (error) {
-      // Error handling for payment search
-    }
-  }, []);
+   useEffect(()=>{
+   try{
+   if(moduleCode === "WS") {
+     return; // Skip for WS module
+   }
+   
+   let filters={
+    consumerCodes:propertyId,
+   // tenantId: tenantId
+   }
+   const auth=true
+   if(moduleCode==="BPREG"){
+    Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+      setPayments(response?.Payments)
+    })
+   }else{
+    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+      setPayments(response?.Payments)
+    })
+   }
+  }
+   catch(error){
+   // Error handling for payment search
+   }
+   },[])
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -705,13 +703,9 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
-      {/* ISSUE 9 FIX: Payment History Component Integration
-            This component displays the payment history fetched by the useEffect above
-            Shows payment details including amount, date, receipt number, and payment mode
-            Only displays when payments data is available from the API call */}
-      <PaymentHistory payments={payments} />
-      <ApplicationHistory applicationData={applicationDetails?.applicationData} />
+        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
+        <PaymentHistory payments={payments}/>
+        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

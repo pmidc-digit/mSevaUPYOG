@@ -329,7 +329,8 @@ public class ESignService {
         // ✍️ Perform the digital signature
         try {
             logger.info("Attempting to sign PDF...");
-            signer.signDetached(digest, pks, chain, null, null, tsaClient, 0, PdfSigner.CryptoStandard.CADES);
+           // signer.signDetached(digest, pks, chain, null, null, tsaClient, 0, PdfSigner.CryptoStandard.CADES);
+            signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CADES);
             logger.info("PDF signing complete.");
         } catch (Exception e) {
             logger.error("Signing failed:", e);

@@ -79,6 +79,7 @@ import com.itextpdf.signatures.IExternalDigest;
 import com.itextpdf.signatures.IExternalSignature;
 import com.itextpdf.signatures.IExternalSignatureContainer;
 import com.itextpdf.signatures.ITSAClient;
+import com.itextpdf.signatures.PdfPKCS7;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PrivateKeySignature;
@@ -226,25 +227,18 @@ public class ESignService {
             throw new RuntimeException("eSign failed: " + errCode + " - " + errMsg);
         }
 
-        // 2️⃣ Extract signer info
+        // 2️⃣ Extract signer certificate
         String userCertBase64 = xmlDoc.getElementsByTagName("UserX509Certificate").item(0).getTextContent();
         byte[] certBytes = Base64.getDecoder().decode(userCertBase64.replaceAll("\\s+", ""));
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate userCert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certBytes));
 
-        if (userCert == null) {
-            throw new IllegalStateException("Parsed user certificate is null");
-        }
-
+        // Extract DN fields for stamping
         String subjectDN = userCert.getSubjectX500Principal().getName();
-        Map<String, String> certFields = new HashMap<>();
         LdapName ldapDN = new LdapName(subjectDN);
-        for (Rdn rdn : ldapDN.getRdns()) {
-            certFields.put(rdn.getType(), rdn.getValue().toString());
-        }
-
+        Map<String, String> certFields = new HashMap<>();
+        for (Rdn rdn : ldapDN.getRdns()) certFields.put(rdn.getType(), rdn.getValue().toString());
         String cn = certFields.getOrDefault("CN", "Temp User");
-        String o = certFields.getOrDefault("O", "Temp Org");
         String st = certFields.getOrDefault("ST", "Temp State");
         String c = certFields.getOrDefault("C", "IN");
         String location = st + ", " + c;
@@ -254,17 +248,16 @@ public class ESignService {
             reason = xmlDoc.getElementsByTagName("SignReason").item(0).getTextContent();
         }
 
-        // 3️⃣ Download PDF from filestore
+        // 3️⃣ Download PDF
         String fileStoreId = espTxnID;
         String tenantId = env.getProperty("default.tenant.id", "pb");
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);
         byte[] pdfBytes = downloadPdfFromUrlAsBytes(pdfUrl);
 
-        // 4️⃣ Stamp PDF text on first page
+        // 4️⃣ Stamp PDF text (optional) before signing
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfDocument pdfDoc = new PdfDocument(new PdfReader(new ByteArrayInputStream(pdfBytes)), new PdfWriter(baos));
         com.itextpdf.layout.Document docLayout = new com.itextpdf.layout.Document(pdfDoc);
-
         PdfPage firstPage = pdfDoc.getPage(1);
         Rectangle pageSize = firstPage.getPageSize();
 
@@ -273,116 +266,48 @@ public class ESignService {
         float x = pageSize.getRight() - width - 20;
         float y = pageSize.getBottom() + 20;
 
-       
-        docLayout.close();
-        pdfDoc.close();
+        // You can add text or graphics here using docLayout
+        docLayout.close(); // must close before signing
 
-        // 5️⃣ Apply certified PKCS7 signature (locks PDF)
-        PdfReader reader = new PdfReader(new ByteArrayInputStream(baos.toByteArray()));
-        ByteArrayOutputStream signedBaos = new ByteArrayOutputStream();
-        PdfSigner signer = new PdfSigner(reader, signedBaos, new StampingProperties().useAppendMode());
-        signer.setFieldName("sigField_" + System.currentTimeMillis());
-        signer.getSignatureAppearance()
-        .setReason(reason)
-        .setLocation(location)
-        .setPageRect(new Rectangle(x, y, width, height))
-        .setCertificate(userCert)
-        .setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
+        // 5️⃣ Load private key for signing
+        String pemKey = env.getProperty("esign.private.key");
+        if (pemKey == null || pemKey.trim().isEmpty()) throw new IllegalStateException("esign.private.key is not configured");
+        PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
 
-		/*
-		 * String pemKey = env.getProperty("esign.private.key"); if (pemKey == null ||
-		 * pemKey.trim().isEmpty()) { throw new
-		 * IllegalStateException("esign.private.key is not configured"); }
-		 */
-
-		/*
-		 * PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey); if (privateKey ==
-		 * null) { throw new IllegalStateException("Private key could not be loaded"); }
-		 */
-
-        // ✅ Load CA certificate
+        // Load CA certificate for the chain
         X509Certificate caCert;
         try (InputStream caInputStream = getClass().getClassLoader().getResourceAsStream("eSign_Staging_Public.cer")) {
-            if (caInputStream == null) throw new IllegalStateException("CA certificate file not found");
+            if (caInputStream == null) throw new IllegalStateException("CA certificate not found");
             caCert = (X509Certificate) cf.generateCertificate(caInputStream);
-        }
-
-        if (caCert == null) {
-            throw new IllegalStateException("CA certificate is null after loading");
         }
 
         Certificate[] chain = new Certificate[]{userCert, caCert};
 
-        // ✅ External signature and digest
-     //   IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
-       // IExternalDigest digest = new BouncyCastleDigest();
-
-        // ✅ Timestamp client - OPTIONAL
-        ITSAClient tsaClient;
-        try {
-            tsaClient = new TSAClientBouncyCastle(env.getProperty("timestamp.service.url", "http://timestamp.digicert.com"));
-        } catch (Exception e) {
-            logger.warn("⚠️ TSA client could not be initialized, proceeding without timestamp: {}", e.getMessage());
-            tsaClient = null; // optionally set to null if unavailable
-        }
-
-		/*
-		 * // ✅ Final null safety checks if (digest == null || pks == null || chain ==
-		 * null || chain.length == 0 || signer == null) { throw new
-		 * IllegalStateException("One or more signing components are null"); }
-		 */
-
-        // ✍️ Perform the digital signature
-        try {
-            logger.info("Injecting eSign PKCS#7 signature from XML response...");
-
-            // Extract PKCS#7 signature from eSign XML
-            NodeList sigNodeList = xmlDoc.getElementsByTagName("Signature");
-            if (sigNodeList.getLength() == 0) {
-                sigNodeList = xmlDoc.getElementsByTagName("Pkcs7Response");
-            }
-            if (sigNodeList.getLength() == 0) {
-                throw new IllegalStateException("No Signature or Pkcs7Response tag found in eSign response");
-            }
-
-            String pkcs7Base64 = sigNodeList.item(0).getTextContent().replaceAll("\\s+", "");
-            final byte[] pkcs7Bytes = Base64.getDecoder().decode(pkcs7Base64); // make final for use in anonymous class
-
-            // Use anonymous class instead of lambda
-            IExternalSignatureContainer external = new IExternalSignatureContainer() {
-                @Override
-                public byte[] sign(InputStream data) throws GeneralSecurityException {
-                    return pkcs7Bytes;
-                }
-                
-                @Override
-                public void modifySigningDictionary(PdfDictionary signDic) {
-                }
-            };
-
-            // Ensure certificate and metadata appear in PDF
-            signer.getSignatureAppearance()
+        // 6️⃣ Sign PDF using private key
+        PdfReader reader = new PdfReader(new ByteArrayInputStream(baos.toByteArray()));
+        ByteArrayOutputStream signedBaos = new ByteArrayOutputStream();
+        PdfSigner signer = new PdfSigner(reader, signedBaos, new StampingProperties().useAppendMode());
+        signer.setFieldName("sigField_" + System.currentTimeMillis());
+        
+        PdfSignatureAppearance appearance = signer.getSignatureAppearance();
+        appearance.setReason(reason)
+                  .setLocation(location)
+                  .setPageRect(new Rectangle(x, y, width, height))
                   .setCertificate(userCert)
-                  .setReason(reason)
-                  .setLocation(location);
+                  .setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
 
-            // Estimate buffer size
-            int estimatedSize = pkcs7Bytes.length + 8192;
+       
+        IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
+        IExternalDigest digest = new BouncyCastleDigest();
 
-            // Inject the PKCS#7 into PDF
-            signer.signExternalContainer(external, estimatedSize);
+        signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CADES);
 
-            logger.info("✅ eSign PKCS#7 signature successfully embedded into PDF with signer info.");
+        pdfDoc.close();
 
-        } catch (Exception e) {
-            logger.error("❌ Failed to embed eSign PKCS#7 signature: {}", e.getMessage(), e);
-            throw new RuntimeException("PDF signing with eSign PKCS#7 failed", e);
-        }
-
-        // 6️⃣ Upload signed PDF
+        // 7️⃣ Upload signed PDF
         String fileStoreResponse = uploadPdfToFilestore(signedBaos.toByteArray(), tenantId);
 
-        // 7️⃣ Extract fileStoreId and return URL
+        // Extract fileStoreId and return URL
         String finalFileStoreId = "";
         if (fileStoreResponse.contains("fileStoreId")) {
             int idx = fileStoreResponse.indexOf("fileStoreId");

@@ -8,12 +8,11 @@ function PTRSummary({ t }) {
   const formData = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData || {});
   const owner = formData?.ownerDetails || {};
   const pet = formData?.petDetails || {};
+  console.log('pet', pet)
   const docs = formData?.documents?.documents?.documents || [];
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-
-  console.log("formData", formData);
 
   const pageStyle = {
     padding: "2rem",
@@ -121,9 +120,12 @@ function PTRSummary({ t }) {
           {renderRow(t("PTR_PET_TYPE"), pet?.petType?.name || pet?.petType?.code)}
           {renderRow(t("PTR_BREED_TYPE"), pet?.breedType?.name || pet?.breedType?.code)}
           {renderRow(t("PTR_PET_GENDER"), pet?.petGender?.name || pet?.petGender?.code)}
+          {renderRow(t("PTR_PET_AGE"), pet?.petAge)}
           {renderRow(t("PTR_COLOR"), pet?.petColor)}
           {renderRow(t("PTR_VACCINATION_NUMBER"), pet?.vaccinationNumber)}
           {renderRow(t("PTR_VACCINATION_DATE"), pet?.lastVaccineDate)}
+          {renderRow(t("PTR_CLINIC_NAME"), pet?.clinicName)}
+          {renderRow(t("PTR_DOCTOR_NAME"), pet?.doctorName)}
         </div>
       </Card>
 

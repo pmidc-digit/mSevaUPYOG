@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import org.springframework.core.io.ByteArrayResource;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
@@ -30,6 +31,7 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.NodeList;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +57,7 @@ import com.cdac.esign.form.RequestXmlForm;
 
 import com.cdac.esign.xmlparser.AspXmlGenerator;
 import com.cdac.esign.xmlparser.XmlSigning;
+import com.itextpdf.kernel.pdf.PdfDictionary;
 //iText 7 core
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -74,6 +77,7 @@ import com.itextpdf.signatures.BouncyCastleDigest;
 import com.itextpdf.signatures.DigestAlgorithms;
 import com.itextpdf.signatures.IExternalDigest;
 import com.itextpdf.signatures.IExternalSignature;
+import com.itextpdf.signatures.IExternalSignatureContainer;
 import com.itextpdf.signatures.ITSAClient;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PdfSignatureAppearance;
@@ -285,15 +289,16 @@ public class ESignService {
         .setCertificate(userCert)
         .setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
 
-        String pemKey = env.getProperty("esign.private.key");
-        if (pemKey == null || pemKey.trim().isEmpty()) {
-            throw new IllegalStateException("esign.private.key is not configured");
-        }
+		/*
+		 * String pemKey = env.getProperty("esign.private.key"); if (pemKey == null ||
+		 * pemKey.trim().isEmpty()) { throw new
+		 * IllegalStateException("esign.private.key is not configured"); }
+		 */
 
-        PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
-        if (privateKey == null) {
-            throw new IllegalStateException("Private key could not be loaded");
-        }
+		/*
+		 * PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey); if (privateKey ==
+		 * null) { throw new IllegalStateException("Private key could not be loaded"); }
+		 */
 
         // ✅ Load CA certificate
         X509Certificate caCert;
@@ -309,8 +314,8 @@ public class ESignService {
         Certificate[] chain = new Certificate[]{userCert, caCert};
 
         // ✅ External signature and digest
-        IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
-        IExternalDigest digest = new BouncyCastleDigest();
+     //   IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
+       // IExternalDigest digest = new BouncyCastleDigest();
 
         // ✅ Timestamp client - OPTIONAL
         ITSAClient tsaClient;
@@ -321,20 +326,57 @@ public class ESignService {
             tsaClient = null; // optionally set to null if unavailable
         }
 
-        // ✅ Final null safety checks
-        if (digest == null || pks == null || chain == null || chain.length == 0 || signer == null) {
-            throw new IllegalStateException("One or more signing components are null");
-        }
+		/*
+		 * // ✅ Final null safety checks if (digest == null || pks == null || chain ==
+		 * null || chain.length == 0 || signer == null) { throw new
+		 * IllegalStateException("One or more signing components are null"); }
+		 */
 
         // ✍️ Perform the digital signature
         try {
-            logger.info("Attempting to sign PDF...");
-           // signer.signDetached(digest, pks, chain, null, null, tsaClient, 0, PdfSigner.CryptoStandard.CADES);
-            signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CADES);
-            logger.info("PDF signing complete.");
+            logger.info("Injecting eSign PKCS#7 signature from XML response...");
+
+            // Extract PKCS#7 signature from eSign XML
+            NodeList sigNodeList = xmlDoc.getElementsByTagName("Signature");
+            if (sigNodeList.getLength() == 0) {
+                sigNodeList = xmlDoc.getElementsByTagName("Pkcs7Response");
+            }
+            if (sigNodeList.getLength() == 0) {
+                throw new IllegalStateException("No Signature or Pkcs7Response tag found in eSign response");
+            }
+
+            String pkcs7Base64 = sigNodeList.item(0).getTextContent().replaceAll("\\s+", "");
+            final byte[] pkcs7Bytes = Base64.getDecoder().decode(pkcs7Base64); // make final for use in anonymous class
+
+            // Use anonymous class instead of lambda
+            IExternalSignatureContainer external = new IExternalSignatureContainer() {
+                @Override
+                public byte[] sign(InputStream data) throws GeneralSecurityException {
+                    return pkcs7Bytes;
+                }
+                
+                @Override
+                public void modifySigningDictionary(PdfDictionary signDic) {
+                }
+            };
+
+            // Ensure certificate and metadata appear in PDF
+            signer.getSignatureAppearance()
+                  .setCertificate(userCert)
+                  .setReason(reason)
+                  .setLocation(location);
+
+            // Estimate buffer size
+            int estimatedSize = pkcs7Bytes.length + 8192;
+
+            // Inject the PKCS#7 into PDF
+            signer.signExternalContainer(external, estimatedSize);
+
+            logger.info("✅ eSign PKCS#7 signature successfully embedded into PDF with signer info.");
+
         } catch (Exception e) {
-            logger.error("Signing failed:", e);
-            throw new RuntimeException("Signing failed", e);
+            logger.error("❌ Failed to embed eSign PKCS#7 signature: {}", e.getMessage(), e);
+            throw new RuntimeException("PDF signing with eSign PKCS#7 failed", e);
         }
 
         // 6️⃣ Upload signed PDF

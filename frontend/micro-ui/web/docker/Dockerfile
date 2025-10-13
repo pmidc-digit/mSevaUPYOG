@@ -14,14 +14,14 @@ RUN yarn add @mseva/digit-ui-module-core@1.0.42
 RUN yarn add @mseva/digit-ui-module-common@1.0.91
 RUN yarn add @mseva/digit-ui-module-ws@1.0.10
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.5
-RUN yarn add @mseva/digit-ui-module-ptr@1.1.13
+RUN yarn add @mseva/digit-ui-module-ptr@1.1.15
 RUN yarn add @mseva/digit-ui-module-swach@1.0.45
 RUN yarn add @mseva/digit-ui-module-pt@1.0.35
 RUN yarn add @mseva/digit-ui-module-tl@1.0.18
 RUN yarn add @mseva/digit-ui-module-obps@1.0.53
 RUN yarn add @mseva/digit-ui-module-sv@1.0.72
-RUN yarn add @mseva/upyog-ui-module-ads@1.0.86
-RUN yarn add @mseva/upyog-ui-module-chb@1.0.79
+RUN yarn add @mseva/upyog-ui-module-ads@1.0.87
+RUN yarn add @mseva/upyog-ui-module-chb@1.0.80
 RUN yarn add @mseva/upyog-ui-module-asset@1.0.65
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.56
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.3

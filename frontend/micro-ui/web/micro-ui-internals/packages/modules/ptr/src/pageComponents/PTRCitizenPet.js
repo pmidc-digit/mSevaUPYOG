@@ -69,6 +69,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   }
 
   const onSubmit = async (data) => {
+    const pathParts = window.location.pathname.split("/");
+    const id = pathParts[pathParts.length - 1];
+    const checkForRenew = id == "renew-application";
     if (validateStep) {
       const validationErrors = validateStep(data);
       console.log("validationErrors", validationErrors);
@@ -110,7 +113,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         pincode,
         addressId: currentStepData.ownerDetails.address,
       },
-      applicationType: "NEWAPPLICATION",
+      applicationType: checkForRenew ? "RENEWAPPLICATION" : "NEWAPPLICATION",
       ownerName: name, //change to ownerName
       fatherName: filteredOwnerDetails?.fatherOrHusbandName,
       mobileNumber: filteredOwnerDetails?.mobileNumber,
@@ -124,7 +127,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     const pick = (newV, oldV) => (newV !== undefined && newV !== null && newV !== "" ? newV : oldV);
     const existing = apiDataCheck?.[0] || currentStepData?.responseData?.[0] || {};
 
-    if (existing?.applicationNumber) {
+    if (existing?.applicationNumber && !checkForRenew) {
       const existingDocuments =
         existing?.documents && Array.isArray(existing.documents) && existing.documents.length
           ? existing.documents

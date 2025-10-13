@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams, Link } from "react-router-dom";
 import ADSDocument from "../../pageComponents/ADSDocument";
 import ApplicationTable from "../../components/ApplicationTable";
-import { pdfDownloadLink } from "../../utils";
+import { pdfDownloadLink, transformBookingResponseToBookingData } from "../../utils";
 import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
@@ -72,6 +72,10 @@ const ADSApplicationDetails = () => {
     tenantId,
     filters: { bookingNo: acknowledgementIds },
   });
+  console.log("adsData", adsData);
+  const new_data = transformBookingResponseToBookingData(adsData);
+
+  console.log("new_data", new_data);
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
   const BookingApplication = get(adsData, "bookingApplication", []);
@@ -143,30 +147,27 @@ const ADSApplicationDetails = () => {
   }
   // in progress
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "petservice-receipt");
+    let application = new_data;
+    const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "adv-bill");
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
-  // async function getPermissionLetter({ tenantId, payments, ...params }) {
-  //   let application = adsData?.bookingApplication?.[0];
-  //   let fileStoreId = application?.permissionLetterFilestoreId;
-  //   if (!fileStoreId) {
-  //     const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
-  //     const updatedApplication = {
-  //       ...application,
-  //       permissionLetterFilestoreId: response?.filestoreIds[0],
-  //     };
-  //     await mutation.mutateAsync({
-  //       bookingApplication: updatedApplication,
-  //     });
-  //     fileStoreId = response?.filestoreIds[0];
-  //     refetch();
-  //   }
-  //   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-  //   window.open(fileStore[fileStoreId], "_blank");
-  // }
+  async function getPermissionLetter({ tenantId, payments, ...params }) {
+    let application = new_data;
+    let fileStoreId = application?.permissionLetterFilestoreId;
+
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "adv-permissionletter");
+      fileStoreId = response?.filestoreIds[0];
+    }
+
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+      fileStoreIds: fileStoreId,
+    });
+
+    window.open(fileStore[fileStoreId], "_blank");
+  }
 
   const downloadAcknowledgement = async (application) => {
     console.log("application my details", application);
@@ -353,7 +354,12 @@ const ADSApplicationDetails = () => {
       label: t("PTR_FEE_RECIEPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
+    dowloadOptions.push({
+      label: t("CHB_PERMISSION_LETTER"),
+      onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
   }
+
   return (
     <React.Fragment>
       <div>

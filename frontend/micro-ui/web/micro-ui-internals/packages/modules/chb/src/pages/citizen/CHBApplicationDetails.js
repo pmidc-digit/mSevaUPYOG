@@ -201,19 +201,15 @@ const CHBApplicationDetails = () => {
   }
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = data?.hallsBookingApplication?.[0];
+    let application = {
+      hallsBookingApplication: data?.hallsBookingApplication || [],
+    };
+
+    console.log("data in permission", data);
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { hallsBookingApplication: [application] }, "chbpermissionletter");
-      const updatedApplication = {
-        ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
       fileStoreId = response?.filestoreIds[0];
-      refetch();
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
@@ -229,30 +225,23 @@ const CHBApplicationDetails = () => {
   let dowloadOptions = [];
 
   // // Payment Receipt Button on Acknowledgement Page
-  if (reciept_data?.Payments[0]?.paymentStatus !== "DEPOSITED")
-    dowloadOptions.push({
-      label: t("CHB_DOWNLOAD_ACK_FORM"),
-      onClick: () => getChbAcknowledgement(),
-    });
+  // if (reciept_data?.Payments[0]?.paymentStatus !== "NEW")
+  dowloadOptions.push({
+    label: t("CHB_DOWNLOAD_ACK_FORM"),
+    onClick: () => getChbAcknowledgement(),
+  });
 
   //commented out, need later for download receipt and certificate
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("CHB_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
     dowloadOptions.push({
       label: t("CHB_PERMISSION_LETTER"),
       onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-
-  if (reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED")
-    dowloadOptions.push({
-      label: t("CHB_CERTIFICATE"),
-      onClick: () => printCertificate(),
-    });
-
+  }
   const getBookingDateRange = (bookingSlotDetails) => {
     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
       return t("CS_NA");

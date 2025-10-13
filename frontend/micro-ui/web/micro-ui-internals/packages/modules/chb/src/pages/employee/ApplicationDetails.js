@@ -358,21 +358,16 @@ const CHBApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
   }
-
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = data?.hallsBookingApplication?.[0];
+    let application = {
+      hallsBookingApplication: data?.hallsBookingApplication || [],
+    };
+
+    console.log("data in permission", data);
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { hallsBookingApplication: [application] }, "chbpermissionletter");
-      const updatedApplication = {
-        ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
       fileStoreId = response?.filestoreIds[0];
-      refetch();
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
@@ -388,17 +383,22 @@ const CHBApplicationDetails = () => {
   let dowloadOptions = [];
 
   //commented out, need later for download receipt and certificate
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
+  // if (reciept_data?.Payments[0]?.paymentStatus !== "NEW")
+  dowloadOptions.push({
+    label: t("CHB_DOWNLOAD_ACK_FORM"),
+    onClick: () => getChbAcknowledgement(),
+  });
+
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("CHB_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
     dowloadOptions.push({
       label: t("CHB_PERMISSION_LETTER"),
       onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
+  }
 
   const columns = [
     { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
@@ -499,8 +499,8 @@ const CHBApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        {/* <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
+        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+          <Header styles={{ fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -509,7 +509,7 @@ const CHBApplicationDetails = () => {
               options={dowloadOptions}
             />
           )}
-        </div> */}
+        </div>
         <Card>
           {/* <StatusTable>
               

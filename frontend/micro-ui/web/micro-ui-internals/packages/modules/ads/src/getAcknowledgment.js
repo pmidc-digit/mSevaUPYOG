@@ -156,6 +156,8 @@ const getAcknowledgement = async (application, t) => {
                     <th>From Time</th>
                     <th>To Time</th>
                     <th>Night Light</th>
+                    <th>Advertisment Name</th>
+                    <th>Pole No</th>
                   </tr>
                   ${application.cartDetails
                     .map(
@@ -168,6 +170,8 @@ const getAcknowledgement = async (application, t) => {
                       <td>${item.bookingFromTime || "N/A"}</td>
                       <td>${item.bookingToTime || "N/A"}</td>
                       <td>${item.nightLight ? "With Light" : "Without Light"}</td>
+                      <td>${item.advertisementName || "N/A"}</td>
+                      <td>${item.poleNo || "N/A"}</td>
                     </tr>
                   `
                     )

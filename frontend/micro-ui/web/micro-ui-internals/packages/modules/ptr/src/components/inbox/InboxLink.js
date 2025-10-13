@@ -8,8 +8,10 @@ const InboxLinks = ({ parentRoute, businessService }) => {
 
   const allLinks = [
     {
-      text: t("ES_TITLE_NEW_PET_REGISTRATION"),
-      link: "/digit-ui/employee/ptr/petservice/new-application",
+      // text: t("ES_TITLE_NEW_PET_REGISTRATION"),
+      text: "",
+      // link: "/digit-ui/employee/ptr/petservice/new-application",
+      link: "",
       roles: [],
     },
     // {

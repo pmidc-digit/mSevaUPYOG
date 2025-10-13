@@ -22,6 +22,8 @@ import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
+import getAcknowledgement from "../../getAcknowledgment";
+import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
@@ -192,7 +194,7 @@ const ApplicationDetails = () => {
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "ADV",
+      businessService: "adv-services",
       consumerCodes: displayData?.applicantData?.applicationNo || id,
       isEmployee: false,
     },
@@ -247,6 +249,7 @@ const ApplicationDetails = () => {
         bookingStatus: adsObject?.bookingStatus,
         paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
         receiptNo: adsObject?.receiptNo,
+        auditDetails: adsObject?.auditDetails,
       };
 
       const Documents = removeDuplicatesByUUID(adsObject?.documents || []);
@@ -283,6 +286,24 @@ const ApplicationDetails = () => {
     // helpful debug during dev — remove later if noisy
     console.debug("bookingObj (normalized):", bookingObj, "isLoading:", isLoading);
   }, [isLoading, bookingObj]);
+
+  const downloadAcknowledgement = async (application) => {
+    console.log("application my details", application);
+    try {
+      if (!application) {
+        throw new Error("Booking Application data is missing");
+      }
+
+      getAcknowledgement(application, t);
+
+      setShowToast({ key: "success", message: t("ADV_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY") });
+      setError("Acknowledgement Downloaded Successfully");
+    } catch (error) {
+      console.error("Acknowledgement download error:", error);
+      setShowToast({ key: "error", message: `${error.message}` });
+      setError("Something Went Wrong");
+    }
+  };
 
   function onActionSelect(wfAction) {
     if (!wfAction) return;
@@ -394,25 +415,11 @@ const ApplicationDetails = () => {
   };
 
   // ADDED: functions to generate/print the receipt and permission letter (from old file)
-  async function getRecieptSearch({ tenantId: tId, payments }) {
-    try {
-      let application = reciept_data?.bookingApplication?.[0] || {};
-      let fileStoreId = application?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tId, { Payments: [{ ...payments }] }, "advservice-receipt");
-        const updatedApplication = {
-          ...application,
-          paymentReceiptFilestoreId: response?.filestoreIds?.[0],
-        };
-        if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
-        fileStoreId = response?.filestoreIds?.[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } catch (e) {
-      console.error("getRecieptSearch error", e);
-      setShowToast({ key: "error", message: "Unable to fetch receipt" });
-    }
+  async function getRecieptSearch({ tenantId, payments, ...params }) {
+    let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "adv-receipt");
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
   const handleDownload = async (document, tenantid) => {
     try {
@@ -428,39 +435,45 @@ const ApplicationDetails = () => {
       setShowToast({ key: "error", message: "Unable to download document" });
     }
   };
-  async function getPermissionLetter({ tenantId: tId, payments }) {
-    try {
-      let application = reciept_data?.bookingApplication?.[0] || {};
-      let fileStoreId = application?.permissionLetterFilestoreId;
-      if (!fileStoreId) {
-        const response = await Digit.PaymentService.generatePdf(tId, { bookingApplication: [application] }, "advpermissionletter");
-        const updatedApplication = {
-          ...application,
-          permissionLetterFilestoreId: response?.filestoreIds?.[0],
-        };
-        if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
-        fileStoreId = response?.filestoreIds?.[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } catch (e) {
-      console.error("getPermissionLetter error", e);
-      setShowToast({ key: "error", message: "Unable to fetch permission letter" });
-    }
-  }
+  // async function getPermissionLetter({ tenantId: tId, application }) {
+  //   try {
+  //     let fileStoreId = application?.permissionLetterFilestoreId;
+  //     if (!fileStoreId) {
+  //       const response = await Digit.PaymentService.generatePdf(tId, { bookingApplication: [application] }, "advpermissionletter");
+  //       const updatedApplication = {
+  //         ...application,
+  //         permissionLetterFilestoreId: response?.filestoreIds?.[0],
+  //       };
+  //       if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
+  //       fileStoreId = response?.filestoreIds?.[0];
+  //     }
+  //     const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
+  //     window.open(fileStore[fileStoreId], "_blank");
+  //   } catch (e) {
+  //     console.error("getPermissionLetter error", e);
+  //     setShowToast({ key: "error", message: "Unable to fetch permission letter" });
+  //   }
+  // }
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
+
+  downloadOptions.push({
+    label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
+    onClick: () => downloadAcknowledgement(application),
+  });
   if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
     downloadOptions.push({
-      label: t("ADS_FEE_RECEIPT"),
+      label: t("PTR_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-    downloadOptions.push({
-      label: t("ADS_PERMISSION_LETTER"),
-      onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-    });
+    // downloadOptions.push({
+    //   label: t("ADS_PERMISSION_LETTER"),
+    //   onClick: () => getPermissionLetter({ tenantId: tenantId, application }),
+    // });
   }
+
+  const [expired, setExpired] = useState(false);
 
   if (isLoading || isDetailsLoading) {
     return <Loader />;
@@ -492,6 +505,15 @@ const ApplicationDetails = () => {
 
       {/* Existing cards and document rendering (preserved from your new file) */}
       <Card>
+        {displayData?.applicantData?.auditDetails?.createdTime && displayData?.applicantData?.bookingStatus === "PENDING_FOR_PAYMENT" && (
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <ReservationTimer
+              t={t}
+              createTime={displayData?.applicantData?.auditDetails?.createdTime} // supply when reservation created
+              onExpire={(val) => setExpired(val)}
+            />
+          </div>
+        )}
         <CardSubHeader>{t("ADS_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
@@ -504,6 +526,8 @@ const ApplicationDetails = () => {
                 if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0) return false;
                 return true;
               })
+              // 🚫 filter out unwanted keys
+              .filter(([key]) => !["auditDetails", "paymentDate"].includes(key))
               .map(([key, value]) => (
                 <Row
                   key={key}
@@ -526,8 +550,10 @@ const ApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("ADS_AD_TYPE")} text={t(detail.adType) || detail.adType} />
-              <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} />
+              {/* <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
+              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} /> */}
+              <Row label={t("ADS_LOCATION")} text={detail.location ? t(detail.location) : "N/A"} />
+              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea ? t(detail.faceArea.replaceAll("_", " ")) : "N/A"} />
               <Row label={t("CHB_BOOKING_DATE")} text={detail.bookingDate || "N/A"} />
               {/* <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} /> */}
               <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight ? "Yes" : "No"} />
@@ -544,8 +570,8 @@ const ApplicationDetails = () => {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
               {application?.documents.map((doc, idx) => (
                 <div key={idx}>
-                  {t(doc?.documentType)}
                   <ADSDocument value={application?.documents} Code={doc?.documentType} index={idx} />
+                  {t(doc?.documentType)}
                 </div>
               ))}
             </div>
@@ -555,16 +581,6 @@ const ApplicationDetails = () => {
         </>
 
         <ADSWFApplicationTimeline application={application} id={displayData?.applicantData?.applicationNo || id} userType={"employee"} />
-        {showToast && (
-          <Toast
-            error={showToast.key === "error"}
-            label={showToast.label ? t(showToast.label) : showToast.message || showToast}
-            style={{ bottom: "0px" }}
-            onClose={() => {
-              setShowToast(null);
-            }}
-          />
-        )}
       </Card>
 
       {/* BEFORE: !businessLoading && Array.isArray(wfActions) && wfActions.length > 0 */}
@@ -582,7 +598,12 @@ const ApplicationDetails = () => {
               }}
             />
           )}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+            disabled={expired || displayData?.applicantData?.bookingStatus === "BOOKING_CREATED"}
+          />
         </ActionBar>
       )}
 
@@ -615,16 +636,7 @@ const ApplicationDetails = () => {
         />
       ) : null}
 
-      {showToast && (
-        <Toast
-          error={showToast.key === "error"}
-          label={showToast.label ? t(showToast.label) : showToast.message || showToast}
-          style={{ bottom: "0px" }}
-          onClose={() => {
-            setShowToast(null);
-          }}
-        />
-      )}
+      {showToast && <Toast error={showToast.key === "error"} label={error} onClose={() => setShowToast(null)} isDleteBtn={true} />}
 
       {/* OPTIONAL: if you prefer the old template instead of the cards above, uncomment below and pass the correct data shape
       <ApplicationDetailsTemplate

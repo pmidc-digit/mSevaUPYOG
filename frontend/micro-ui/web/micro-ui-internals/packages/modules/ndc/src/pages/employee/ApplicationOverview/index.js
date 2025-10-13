@@ -2,7 +2,6 @@ import {
   Header,
   Row,
   StatusTable,
-  Loader,
   Card,
   CardSubHeader,
   ActionBar,
@@ -27,6 +26,7 @@ import { useParams, useHistory } from "react-router-dom";
 import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
+import { Loader } from "../../../components/Loader";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -85,10 +85,12 @@ const ApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const history = useHistory();
+  const toastRef = useRef(null);
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
+  const [getLable, setLable] = useState(false);
   const { control, handleSubmit, setValue } = useForm();
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
@@ -96,6 +98,13 @@ const ApplicationOverview = () => {
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const [markedPending, setMarkedPending] = useState(false);
   const [amounts, setAmounts] = useState({});
+  const [getWorkflowService, setWorkflowService] = useState([]);
+  const [getLoader, setLoader] = useState(false);
+  const [getEmployees, setEmployees] = useState([]);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [getPropertyId, setPropertyId] = useState(null);
 
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
@@ -166,6 +175,22 @@ const ApplicationOverview = () => {
     },
   };
 
+  useEffect(() => {
+    let WorkflowService = null;
+    (async () => {
+      setLoader(true);
+      WorkflowService = await Digit.WorkflowService.init(tenantId, "ndc-services");
+      setLoader(false);
+      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
+      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      // setComplaintStatus(applicationStatus);
+    })();
+  }, [tenantId]);
+
+  // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
+
+  // console.log("WorkflowService====", WorkflowService);
+
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -182,12 +207,6 @@ const ApplicationOverview = () => {
     workflowDetailsTemp?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
-
-  console.log("actions", actions);
-
-  const [displayMenu, setDisplayMenu] = useState(false);
-  const [selectedAction, setSelectedAction] = useState(null);
-  const [showModal, setShowModal] = useState(false);
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -256,7 +275,36 @@ const ApplicationOverview = () => {
   }, [applicationDetails]);
 
   function onActionSelect(action) {
-    console.log("action====???", action);
+    console.log("action====???", action?.state?.actions);
+    const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
+    const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
+
+    console.log("hasDuePending", hasDuePending);
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+
+    console.log("filterNexState====???", filterNexState[0]?.nextState);
+
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+
+    console.log("filterRoles====???", filterRoles);
+    console.log("action test", action?.action);
+
+    const checkactionApp = action?.action == "APPROVE";
+    ("");
+
+    console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
+
+    if (hasDuePending && checkactionApp) {
+      console.log("alwasy coming appprve");
+      setLable("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
+      setError(true);
+      setShowToast(true);
+
+      return;
+    }
+
+    setEmployees(filterRoles?.[0]?.actions);
 
     const payload = {
       Licenses: [action],
@@ -341,8 +389,10 @@ const ApplicationOverview = () => {
       const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 
       // ✅ Show success first
-      setShowToast({ key: "success", message: "Successfully updated the status" });
-      setError("Successfully updated the status");
+      // setShowToast({ key: "success", message: "Successfully updated the status" });
+      setLable("Successfully updated the status");
+      setError(false);
+      setShowToast(true);
 
       workflowDetails.revalidate();
 
@@ -367,8 +417,6 @@ const ApplicationOverview = () => {
     setShowModal(false);
   };
 
-  const [getPropertyId, setPropertyId] = useState(null);
-
   useEffect(() => {
     if (displayData) {
       const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
@@ -386,9 +434,23 @@ const ApplicationOverview = () => {
     }
   );
 
-  if (isLoading || isDetailsLoading || checkLoading) {
-    return <Loader />;
-  }
+  console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toastRef.current && !toastRef.current.contains(event.target)) {
+        setShowToast(null); // Close toast
+      }
+    };
+
+    if (showToast) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showToast]);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -603,6 +665,7 @@ const ApplicationOverview = () => {
           action={selectedAction}
           tenantId={tenantId}
           state={state}
+          getEmployees={getEmployees}
           id={id}
           applicationDetails={applicationDetails}
           applicationData={applicationDetails?.applicationData}
@@ -618,7 +681,13 @@ const ApplicationOverview = () => {
           closeToastOne={closeToastOne}
         />
       ) : null}
-      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && (
+        <div ref={toastRef}>
+          <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />
+        </div>
+      )}
+      {/* {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />} */}
+      {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
     </div>
   );
 };

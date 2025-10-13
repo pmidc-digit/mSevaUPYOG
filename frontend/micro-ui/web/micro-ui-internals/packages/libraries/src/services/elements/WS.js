@@ -122,7 +122,7 @@ export const WSService = {
       method: "POST",
       auth: auth === false ? auth : true,
       userService: auth === false ? auth : true,
-      params: { tenantId, ...filters },
+      params: { tenantId, businessService: BusinessService, ...filters },
     }),
   meterConnectioncreate: (details, businessService) =>
     Request({

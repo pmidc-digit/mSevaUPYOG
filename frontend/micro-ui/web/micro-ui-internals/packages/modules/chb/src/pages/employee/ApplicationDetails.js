@@ -4,7 +4,6 @@ import {
   CardSectionHeader,
   Header,
   LinkButton,
-  Loader,
   Row,
   StatusTable,
   MultiLink,
@@ -29,6 +28,7 @@ import ApplicationTable from "../../components/inbox/ApplicationTable";
 import { pdfDownloadLink } from "../../utils";
 import NDCDocumentTimline from "../../components/NDCDocument";
 import NDCModal from "../../pageComponents/NDCModal";
+import { Loader } from "../../components/Loader";
 
 import get from "lodash/get";
 import { size } from "lodash";
@@ -39,7 +39,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     name: checkpoint?.assigner?.name,
-    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    // mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
   };
 
@@ -75,7 +75,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       <div style={{ marginTop: "8px" }}>
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
-        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
+        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
         {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
       </div>
     </div>
@@ -91,8 +91,11 @@ const CHBApplicationDetails = () => {
   const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
   const [popup, setpopup] = useState(false);
+  const [getEmployees, setEmployees] = useState([]);
+  const [getWorkflowService, setWorkflowService] = useState([]);
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
+  const [getLoader, setLoader] = useState(false);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -248,15 +251,37 @@ const CHBApplicationDetails = () => {
     }
   }, [data?.hallsBookingApplication]);
 
+  useEffect(() => {
+    let WorkflowService = null;
+    (async () => {
+      setLoader(true);
+      WorkflowService = await Digit.WorkflowService.init(tenantId, "chb-services");
+      setLoader(false);
+      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
+      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      // setComplaintStatus(applicationStatus);
+    })();
+  }, [tenantId]);
+
   function onActionSelect(action) {
     const payload = {
       Licenses: [action],
     };
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+
+    console.log("filterNexState", filterNexState);
+
+    console.log("getWorkflowService", getWorkflowService);
+
+    setEmployees(filterRoles?.[0]?.actions);
+
     const appNo = displayData?.applicantData?.applicationNo;
     if (action?.action == "APPLY") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/NDC/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
     } else {
@@ -299,10 +324,6 @@ const CHBApplicationDetails = () => {
 
   let docs = [];
   docs = application?.documents;
-
-  if (isLoading || auditDataLoading) {
-    return <Loader />;
-  }
 
   const getChbAcknowledgement = async () => {
     const applications = application || {}; // getting application details
@@ -381,6 +402,7 @@ const CHBApplicationDetails = () => {
 
   const columns = [
     { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+    { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
     { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
@@ -389,9 +411,10 @@ const CHBApplicationDetails = () => {
   const slotlistRows =
     chb_details?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
+      hallName: chb_details?.communityHallName,
       hallCode: t(slot.hallCode) + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
-      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
+      bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
 
   const submitAction = async (modalData) => {
@@ -471,10 +494,12 @@ const CHBApplicationDetails = () => {
     }
   };
 
+  const filteredActions = actions?.filter((a) => a.action !== "SUBMIT" && a.action !== "EDIT");
+
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+        {/* <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
@@ -484,7 +509,7 @@ const CHBApplicationDetails = () => {
               options={dowloadOptions}
             />
           )}
-        </div>
+        </div> */}
         <Card>
           {/* <StatusTable>
               
@@ -547,9 +572,7 @@ const CHBApplicationDetails = () => {
                   <React.Fragment key={index}>
                     <div>
                       <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                        {t(doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                      </CardSectionHeader>
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
                     </div>
                   </React.Fragment>
                 ))
@@ -579,18 +602,10 @@ const CHBApplicationDetails = () => {
             )}
           </Card>
         )}
-
-        {actions && (
+        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-              <Menu
-                localeKeyPrefix={`WF_EDITRENEWAL`}
-                options={actions}
-                optionKey={"action"}
-                t={t}
-                onSelect={onActionSelect}
-                // style={MenuStyle}
-              />
+              <Menu localeKeyPrefix={`WF_EDITRENEWAL`} options={filteredActions} optionKey={"action"} t={t} onSelect={onActionSelect} />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
           </ActionBar>
@@ -610,6 +625,7 @@ const CHBApplicationDetails = () => {
             actionData={workflowDetails?.data?.timeline}
             workflowDetails={workflowDetails}
             showToast={showToast}
+            getEmployees={getEmployees}
             closeToast={closeToast}
             errors={error}
             showErrorToast={showErrorToast}
@@ -618,6 +634,7 @@ const CHBApplicationDetails = () => {
           />
         ) : null}
         {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+        {(isLoading || auditDataLoading || getLoader) && <Loader page={true} />}
       </div>
     </React.Fragment>
   );

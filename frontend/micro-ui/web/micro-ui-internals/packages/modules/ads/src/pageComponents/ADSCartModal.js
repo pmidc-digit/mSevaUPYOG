@@ -143,7 +143,9 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                       onClick={() => toggleExpand(item?.ad?.id)}
                       style={{ cursor: "pointer", flex: 1 }}
                     >
-                      {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length}
+                      {item?.ad?.name} 
+                      {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
+                  {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
                       <span style={{ fontSize: "18px", marginLeft: "8px" }}>
                         {isOpen ? "▾" : "▸"}
                       </span>

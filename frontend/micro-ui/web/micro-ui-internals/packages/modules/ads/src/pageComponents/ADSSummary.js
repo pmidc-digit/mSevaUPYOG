@@ -97,6 +97,7 @@ function ADSSummary({ t }) {
     </div>
   );
 
+
   return (
     <div className="application-summary">
       <Card className="summary-section">
@@ -108,7 +109,7 @@ function ADSSummary({ t }) {
             </span>
           </div>
           {renderRow(TT("NOC_APPLICANT_NAME_LABEL"), applicant?.applicantName)}
-          {renderRow(TT("ADS_MOBILE_NUMBER"), applicant?.applicantMobileNo)}
+          {renderRow(TT("CORE_Mobile_Number"), applicant?.applicantMobileNo)}
           {renderRow(TT("CORE_EMAIL_ID"), applicant?.applicantEmailId)}
           {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
           {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}

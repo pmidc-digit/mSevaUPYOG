@@ -45,7 +45,8 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
         <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />
         </Link>
-        {(application.bookingStatus === "BOOKING_CREATED" ||
+        {/* application.bookingStatus === "BOOKING_CREATED" */}
+        {(
           application.bookingStatus === "/mybookingsPAYMENT_FAILED" ||
           application.bookingStatus === "PENDING_FOR_PAYMENT") && (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} disabled={expired}/>

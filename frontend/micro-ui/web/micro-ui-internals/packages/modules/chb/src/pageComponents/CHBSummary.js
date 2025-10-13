@@ -29,6 +29,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
 
   const columns = [
     { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+    { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
     { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
@@ -136,6 +137,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   const slotlistRows =
     formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
+      hallName: formData?.venueDetails?.[0]?.communityHallName,
       hallCode: slot.hallCode + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
       bookingStatus: `${t(slot.status)}`,

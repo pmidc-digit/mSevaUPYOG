@@ -1,5 +1,6 @@
-import { Loader, Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import { Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
+import { Loader } from "../components/Loader";
 
 import { ModalConfig } from "../config/ModalConfig";
 
@@ -42,6 +43,7 @@ const NDCModal = ({
   showErrorToast,
   errorOne,
   closeToastOne,
+  getEmployees,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -53,15 +55,16 @@ const NDCModal = ({
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
 
-  const checkRole = action?.state?.actions;
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
-  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
+  console.log("allRolesNew", allRolesNew);
+  console.log("getEmployees", allRolesNew);
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
       // roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
-      roles: allRoles?.map((role) => ({ code: role })),
+      roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }
@@ -169,7 +172,9 @@ const NDCModal = ({
     }
   }, [action, approvers, financialYears, selectedFinancialYear, uploadedFile]);
 
-  return action && config.form ? (
+  if (!action || !config.form) return null;
+
+  return (
     <Modal
       headerBarMain={<Heading label={t(config.label.heading)} />}
       headerBarEnd={<CloseBtn onClick={closeModal} />}
@@ -177,12 +182,8 @@ const NDCModal = ({
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={t(config.label.submit)}
       actionSaveOnSubmit={() => {}}
-      // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       formId="modal-action"
     >
-      {/* {financialYearsLoading ? (
-        <Loader />
-      ) : ( */}
       <FormComposer
         config={config.form}
         noBoxShadow
@@ -191,14 +192,12 @@ const NDCModal = ({
         onSubmit={submit}
         defaultValues={defaultValues}
         formId="modal-action"
-        // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} />}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
+      {PTALoading && <Loader page={true} />}
     </Modal>
-  ) : (
-    <Loader />
   );
 };
 

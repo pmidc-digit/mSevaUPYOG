@@ -50,7 +50,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   // Prefill from Redux state
   if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
-  console.log("currentStepData", currentStepData);
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
       const created = currentStepData?.CreatedResponse;
@@ -110,8 +109,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       bookingStatus: "BOOKING_CREATED",
       businessService: "ADV",
       address: {
-        pincode: data.pincode || "",
-        addressLine1: data.address || "",
+        pincode: data?.pincode || "",
+        addressLine1: data?.address || "",
       },
       applicantDetail: {
         applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),

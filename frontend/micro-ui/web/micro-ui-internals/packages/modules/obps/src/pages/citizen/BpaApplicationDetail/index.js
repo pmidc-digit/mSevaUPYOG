@@ -77,6 +77,7 @@ const BpaApplicationDetail = () => {
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
+  const [userSelected, setUser] = useState(null);
 
   const user = Digit.UserService.getUser()
 
@@ -232,7 +233,7 @@ const BpaApplicationDetail = () => {
     },
   })
 
-  console.log("datata=====", workflowDetails)
+  console.log("datata=====", workflowDetails, data)
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
@@ -252,6 +253,28 @@ const BpaApplicationDetail = () => {
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
+
+  useEffect(() => {
+      if (!userSelected) {
+        return;
+      }
+      Digit.SessionStorage.set("citizen.userRequestObject", user);
+      Digit.UserService.setUser(userSelected);
+      setCitizenDetail(userSelected?.info, userSelected?.access_token, stateCode);
+  }, [userSelected]);
+
+  const setCitizenDetail = (userObject, token, tenantId) => {
+    let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
+    localStorage.setItem("Citizen.tenant-id", tenantId);
+    localStorage.setItem("tenant-id", tenantId);
+    localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
+    localStorage.setItem("locale", locale);
+    localStorage.setItem("Citizen.locale", locale);
+    localStorage.setItem("token", token);
+    localStorage.setItem("Citizen.token", token);
+    localStorage.setItem("user-info", JSON.stringify(userObject));
+    localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
+  };
 
   const handleTermsLinkClick = (e) => {
     e.preventDefault()
@@ -314,13 +337,15 @@ const BpaApplicationDetail = () => {
   const handleVerifyOTPClick = async () => {
     // Call the API to verify the OTP
     try {
-      const response = await Digit.UserService.authenticate(requestData)
-      if (response.ResponseInfo.status === "Access Token generated successfully") {
+      // const response = await Digit.UserService.authenticate(requestData)
+      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData)
+      if (ResponseInfo.status === "Access Token generated successfully") {
         setIsOTPVerified(true)
         setOTPSuccess(t("VERIFIED"))
         const currentTimestamp = new Date()
         setOTPVerifiedTimestamp(currentTimestamp)
         sessionStorage.setItem("otpVerifiedTimestampcitizen", currentTimestamp.toISOString())
+        setUser({ info, ...tokens });
       } else {
         setIsOTPVerified(false)
         setOTPError(t("WRONG OTP"))
@@ -1925,7 +1950,7 @@ useEffect(() => {
               <React.Fragment>
                 <div>
                   <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-                  <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+                  <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} />
                   <br></br>
                   {showMobileInput && (
                     <React.Fragment>

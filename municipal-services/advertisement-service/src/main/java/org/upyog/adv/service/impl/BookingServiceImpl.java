@@ -166,26 +166,29 @@ public class BookingServiceImpl implements BookingService {
 
 		}
 
-		bookingDetails = bookingRepository.getBookingDetails(advertisementSearchCriteria);
+	bookingDetails = bookingRepository.getBookingDetails(advertisementSearchCriteria);
 
-		for (BookingDetail bookingDetail : bookingDetails) {
-			AdvertisementSearchCriteria criteria = new AdvertisementSearchCriteria();
-			criteria.setTenantId(bookingDetail.getTenantId());
+	for (BookingDetail bookingDetail : bookingDetails) {
+		AdvertisementSearchCriteria criteria = new AdvertisementSearchCriteria();
+		criteria.setTenantId(bookingDetail.getTenantId());
 
-			String bookingId = bookingDetail.getBookingId();
-			List<OwnerInfo> owners = bookingRepository.getOwnerByBookingId(bookingId);
+		String bookingId = bookingDetail.getBookingId();
+		List<OwnerInfo> owners = bookingRepository.getOwnerByBookingId(bookingId);
 
-			if (owners != null && !owners.isEmpty()) {
-				List<String> ownerIds = owners.stream()
-						.map(OwnerInfo::getUuid) // Make sure getUuid() returns the correct value
-						.filter(Objects::nonNull)
-						.collect(Collectors.toList());
-				criteria.setOwnerIds(ownerIds);
-			}
-
-			UserResponse userDetailResponse = userService.getUser(criteria, info);
-			bookingDetail.setOwners(userDetailResponse.getUser());
+		if (owners != null && !owners.isEmpty()) {
+			List<String> ownerIds = owners.stream()
+					.map(OwnerInfo::getUuid) // Make sure getUuid() returns the correct value
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+			criteria.setOwnerIds(ownerIds);
 		}
+
+		UserResponse userDetailResponse = userService.getUser(criteria, info);
+		bookingDetail.setOwners(userDetailResponse.getUser());
+		
+		// Enrich cart details with advertisement information from MDMS
+		enrichCartDetailsWithAdvertisementInfo(bookingDetail, info);
+	}
 
 		// Fetch remaining timer values for the booking details
 		// paymentTimerService.getRemainingTimerValue(bookingDetails);
@@ -417,6 +420,65 @@ public class BookingServiceImpl implements BookingService {
 		slot.setWidth(advertisement.getWidth());
 		slot.setHeight(advertisement.getHeight());
 		slot.setLightType(advertisement.getLight());
+	}
+
+	/**
+	 * Enriches cart details with advertisement information from MDMS
+	 */
+	private void enrichCartDetailsWithAdvertisementInfo(BookingDetail bookingDetail, RequestInfo requestInfo) {
+		if (bookingDetail == null || bookingDetail.getCartDetails() == null || bookingDetail.getCartDetails().isEmpty()) {
+			return;
+		}
+
+		// Fetch advertisement data from MDMS
+		String tenantId = bookingDetail.getTenantId();
+		if (tenantId != null && tenantId.contains(".")) {
+			tenantId = tenantId.split("\\.")[0];
+		}
+		
+		List<Advertisements> advertisementsList = mdmsUtil.fetchAdvertisementsData(requestInfo, tenantId);
+		if (advertisementsList == null || advertisementsList.isEmpty()) {
+			log.warn("No advertisement data found in MDMS for tenant: " + tenantId);
+			return;
+		}
+
+		// Enrich each cart detail with advertisement information
+		for (CartDetail cartDetail : bookingDetail.getCartDetails()) {
+			if (cartDetail.getAdvertisementId() != null) {
+				String advertisementIdStr = cartDetail.getAdvertisementId();
+				Advertisements advertisement = advertisementsList.stream()
+					.filter(ad -> ad.getId() != null && ad.getId().toString().equals(advertisementIdStr))
+					.findFirst()
+					.orElse(null);
+
+				if (advertisement != null) {
+					enrichCartDetailWithAdvertisementData(cartDetail, advertisement);
+				} else {
+					log.warn("Advertisement not found in MDMS for advertisementId: " + advertisementIdStr);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Enriches a single cart detail with advertisement data
+	 */
+	private void enrichCartDetailWithAdvertisementData(CartDetail cartDetail, Advertisements advertisement) {
+		if (advertisement.getAmount() != null) {
+			cartDetail.setAmount(advertisement.getAmount().doubleValue());
+		}
+		cartDetail.setAdvertisementName(advertisement.getName());
+		if (advertisement.getPoleNo() != null) {
+			try {
+				cartDetail.setPoleNo(Integer.parseInt(advertisement.getPoleNo()));
+			} catch (NumberFormatException e) {
+				log.warn("Unable to parse pole number: " + advertisement.getPoleNo());
+			}
+		}
+		cartDetail.setImageSrc(advertisement.getImageSrc());
+		cartDetail.setWidth(advertisement.getWidth());
+		cartDetail.setHeight(advertisement.getHeight());
+		cartDetail.setLightType(advertisement.getLight());
 	}
 
 	/**

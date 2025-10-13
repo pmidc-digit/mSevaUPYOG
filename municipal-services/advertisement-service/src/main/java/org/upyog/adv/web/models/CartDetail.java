@@ -68,4 +68,19 @@ public class CartDetail {
 	@JsonProperty("advertisementId")
 	private String advertisementId = null;
 	
+	// Additional advertisement details enriched from MDMS
+	private Double amount;
+	
+	private String advertisementName;
+	
+	private Integer poleNo;
+	
+	private String imageSrc;
+	
+	private Integer width;
+	
+	private Integer height;
+	
+	private String lightType;
+	
 }

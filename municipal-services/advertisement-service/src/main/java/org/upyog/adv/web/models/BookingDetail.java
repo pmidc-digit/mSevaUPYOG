@@ -67,6 +67,7 @@ public class BookingDetail {
 
 	@NotNull
 	@Valid
+	@JsonProperty("cartDetails")
 	private List<CartDetail> CartDetails;
 
 	@JsonProperty("documents")

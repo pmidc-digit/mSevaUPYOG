@@ -65,7 +65,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   console.log("TimeStamp", otpVerifiedTimestamp, params?.additionalDetails?.TimeStamp, TimeStamp);
 
   const updatedAdditionalDetails = {
-    ...data?.applicationData?.additionalDetails,
+    ...data?.applicationData,
     TimeStamp: otpVerifiedTimestamp,
   };
 
@@ -141,33 +141,24 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
     <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
 
-    <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>,
-      undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.),
-      Ward Number <b>${ward}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
+    <p style="margin-top:-52px;margin-bottom:-32px;margin-left-5px; text-align:justify;">
+  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${data?.applicationData?.landInfo?.address?.locality?.name?.split("-")?.[0]?.trim() || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      I/We hereby declare that the Professional's Name <b>${stakeholderName}</b> <b>${architecttype}</b> having Registration No <b>${architectid}</b>
-      is appointed by me/us and is authorized to make representation/application with regard to aforesaid construction to any of the authorities.
+  I/We hereby declare that the Professional's Name <b>${stakeholderName}</b> <b>${architecttype}</b> having Registration No <b>${architectid}</b> is appointed by me/us and is authorized to make representation/application with regard to aforesaid construction to any of the authorities.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      I/We further declare that I am/We are aware of all the actions taken or representations made by the <b>${architecttype}</b>
-      authorized by me/us.
+  I/We further declare that I am/We are aware of all the actions taken or representations made by the <b>${architecttype}</b> authorized by me/us.
     </p>
 
-    <ol style="margin-top:-52px;margin-bottom:-32px;padding:0; text-align:justify;">
-      <li style="margin-top:-5px;margin-bottom:-5px;">That I am/We are sole owner(s) of the site.</li>
-      <li style="margin-top:-5px;margin-bottom:-5px;">That there is no dispute regarding the site and if any dispute arises, then I/We shall be solely responsible for the same.</li>
-      <li style="margin-top:-5px;margin-bottom:-5px;">That construction of the building will be undertaken as per the approved building plans and structural design given by the Structural Engineer.</li>
+    <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
+      <li style="margin-top:-5px;margin-bottom:-25px;">1. That I am/We are sole owner(s) of the site.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">2. That there is no dispute regarding the site and if any dispute arises, then I/We shall be solely responsible for the same.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">3. That construction of the building will be undertaken as per the approved building plans and structural design given by the Structural Engineer.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">4. That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.</li>
     </ol>
-
-    <p style="margin-top:-30px; text-align:justify;">
-      That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.
-    </p>
-
-    <p style="margin:10px 0; font-style:italic;">This Document is Verified By OTP at <b>${TimeStamp || "<date time>"}</b></p>
 
     <!-- Signature / details table -->
     <table style="width:100%; border-collapse:collapse; margin-top:6px; font-size:14px;">

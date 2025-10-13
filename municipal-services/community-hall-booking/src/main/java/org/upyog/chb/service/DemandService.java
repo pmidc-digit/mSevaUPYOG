@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.egov.common.contract.request.User;
+import org.upyog.chb.web.models.User;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,11 +57,8 @@ public class DemandService {
 		String consumerCode = bookingRequest.getHallsBookingApplication().getBookingNo();
 		
 		CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
-		User user =bookingRequest.getRequestInfo().getUserInfo();
-		
-		User owner = User.builder().name(user.getName()).emailId(user.getEmailId())
-				.mobileNumber(user.getMobileNumber()).tenantId(bookingDetail.getTenantId()).build();
-		
+		User owner = bookingRequest.getHallsBookingApplication().getOwners().get(0);
+
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest);
 		
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);

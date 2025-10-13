@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.egov.common.contract.request.User;
+import org.upyog.chb.web.models.User;
 import org.upyog.chb.web.models.AuditDetails;
 
 import javax.validation.Valid;

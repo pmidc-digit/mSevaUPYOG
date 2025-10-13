@@ -126,6 +126,25 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		// details hydrated after
 		String plainMobile = bookingSearchCriteria.getMobileNumber();
 
+
+        //This is to ensure that when employee creates the application on behalf of citizen then when citizen searches the applications
+        //we must get the applications with the uuid of the citizen irrespective who created it
+        if (info.getUserInfo().getType().equalsIgnoreCase("CITIZEN")
+                && !StringUtils.isEmpty(info.getUserInfo().getUuid())) {
+            // For CITIZEN, do NOT restrict by createdBy. Instead, ensure we filter by owner UUIDs
+            // so applications created by EMPLOYEE on behalf of CITIZEN are also returned.
+            // Remove any auto-set createdBy filter for citizen unless explicitly provided by the client.
+            if (bookingSearchCriteria.getCreatedBy() != null) {
+                bookingSearchCriteria.setCreatedBy(null);
+            }
+
+            // Add the logged-in citizen's UUID to ownerIds filter
+            java.util.Set<String> ownerIds = bookingSearchCriteria.getOwnerIds();
+            if (ownerIds == null) ownerIds = new java.util.HashSet<>();
+            ownerIds.add(info.getUserInfo().getUuid());
+            bookingSearchCriteria.setOwnerIds(ownerIds);
+        }
+
 		// Encrypt applicant mobile for DB side filter (applicant table) THIS IS DONE
 		// THAT IF WE WANT TO SEARCH BY THE MOBILE NUMBER IN THE APPLICANT DETAILS
 		// OR WE CAN GET THE OWNERS ASSOCIATED WITH THAT MOBILENUMBER
@@ -225,6 +244,23 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		// Apply same mobile-number behavior as details search: encrypt applicant mobile and include owner UUIDs
 		criteria = addCreatedByMeToCriteria(criteria, requestInfo);
 		String plainMobile = criteria.getMobileNumber();
+
+        if (requestInfo.getUserInfo().getType().equalsIgnoreCase("CITIZEN")
+                && !StringUtils.isEmpty(requestInfo.getUserInfo().getUuid())) {
+            // For CITIZEN, do NOT restrict by createdBy. Instead, ensure we filter by owner UUIDs
+            // so applications created by EMPLOYEE on behalf of CITIZEN are also returned.
+            // Remove any auto-set createdBy filter for citizen unless explicitly provided by the client.
+            if (criteria.getCreatedBy() != null) {
+                criteria.setCreatedBy(null);
+            }
+
+            // Add the logged-in citizen's UUID to ownerIds filter
+            java.util.Set<String> ownerIds = criteria.getOwnerIds();
+            if (ownerIds == null) ownerIds = new java.util.HashSet<>();
+            ownerIds.add(requestInfo.getUserInfo().getUuid());
+            criteria.setOwnerIds(ownerIds);
+        }
+
 		if (plainMobile != null && plainMobile.trim().length() > 9) {
 			try {
 				// Encrypt applicant mobile for DB filter
@@ -329,6 +365,7 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		Workflow workflowFromRequest =
 				communityHallsBookingRequest.getHallsBookingApplication().getWorkflow();
 
+        //This is making the documents and workflow object null hence the preservation before
 		convertBookingRequest(communityHallsBookingRequest, dbBookingDetail);
 
 		// Restore workflow & documents
@@ -360,20 +397,42 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 		enrichmentService.enrichUpdateBookingRequest(communityHallsBookingRequest, null, existingDocIds);
 
+        //Workflow must be called first if it fails the demand should not be created and slot statuses should not update
+        if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
+                && communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction() != null) {
+            State wfState = workflowService.updateWorkflow(communityHallsBookingRequest, WorkflowStatus.UPDATE);
+            if (wfState != null && wfState.getApplicationStatus() != null) {
+                communityHallsBookingRequest.getHallsBookingApplication().setBookingStatus(wfState.getState());
+                log.info("Synced bookingStatus from WF: {}", wfState.getApplicationStatus());
+            }
+        }
+
+        //Create demand on verified action
 		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
 				&& "VERIFIED"
 						.equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction())) {
 			demandService.createDemand(communityHallsBookingRequest, mdmsData, true);
 		}
+		
+		// Handle NOT_VERIFIED action - mark slots as REJECTED so they don't appear as booked in slot search
+        if(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow()!=null  && "NOT_VERIFIED"
+                .equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction()))
+        {
+              List<BookingSlotDetail> sd =  communityHallsBookingRequest.getHallsBookingApplication().getBookingSlotDetails();
+              if (sd != null && !sd.isEmpty()) {
+                  log.info("NOT_VERIFIED action received - Marking {} slots as REJECTED for bookingNo: {}", 
+                           sd.size(), 
+                           communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
+                  for(BookingSlotDetail slot : sd) {
+                        slot.setStatus("REJECTED");
+                  }
+              } else {
+                  log.warn("NOT_VERIFIED action but no slots found for bookingNo: {}", 
+                           communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
+              }
+        }
 
-		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
-				&& communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction() != null) {
-			State wfState = workflowService.updateWorkflow(communityHallsBookingRequest, WorkflowStatus.UPDATE);
-			if (wfState != null && wfState.getApplicationStatus() != null) {
-				communityHallsBookingRequest.getHallsBookingApplication().setBookingStatus(wfState.getState());
-				log.info("Synced bookingStatus from WF: {}", wfState.getApplicationStatus());
-			}
-		}
+
 
 		// set the payment details
 		if (paymentDetail != null) {

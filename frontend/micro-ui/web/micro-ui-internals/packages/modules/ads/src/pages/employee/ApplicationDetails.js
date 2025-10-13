@@ -21,18 +21,18 @@ import ADSModal from "../../pageComponents/ADSModal";
 import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
-import { pdfDownloadLink } from "../../utils";
+import { formatLabel, pdfDownloadLink, transformAdsData } from "../../utils";
+import getAcknowledgement from "../../getAcknowledgment";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
+import ADSCartDetails from "../../pageComponents/ADSCartDetails";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
   // const [wfActions, setWfActions] = useState([]);
-
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [appDetails, setAppDetails] = useState({});
-
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
@@ -60,57 +60,6 @@ const ApplicationDetails = () => {
     const single = extract(assignee);
     return single ? [single] : null;
   }
-
-  const getFileUrl = (fileStoreId, pdfFilesMap) => {
-    if (!fileStoreId || !pdfFilesMap) return null;
-
-    // Handle different response formats from Filefetch API
-    let raw = pdfFilesMap[fileStoreId];
-
-    // If not found by fileStoreId, try searching through the entire map
-    if (!raw) {
-      // Check if pdfFilesMap is an array of file objects
-      if (Array.isArray(pdfFilesMap)) {
-        const fileObj = pdfFilesMap.find(
-          (file) => file?.fileStoreId === fileStoreId || file?.fileId === fileStoreId || file?.documentDetailId === fileStoreId
-        );
-        raw = fileObj?.url || fileObj?.fileUrl || null;
-      }
-      // Check if pdfFilesMap is a single file object
-      else if (typeof pdfFilesMap === "object" && pdfFilesMap.url) {
-        raw = pdfFilesMap.url;
-      }
-    }
-
-    if (!raw) return null;
-
-    // Handle comma-separated URLs (different formats)
-    if (typeof raw === "string" && raw.includes(",")) {
-      const urls = raw.split(",").map((url) => url.trim());
-      // Return the first non-thumbnail URL
-      const mainUrl = urls.find(
-        (url) =>
-          !url.toLowerCase().includes("large") &&
-          !url.toLowerCase().includes("medium") &&
-          !url.toLowerCase().includes("small") &&
-          !url.toLowerCase().includes("thumbnail")
-      );
-      return mainUrl || urls[0];
-    }
-
-    // Handle array of URLs
-    if (Array.isArray(raw)) return raw[0];
-
-    // Handle object with URL properties
-    if (typeof raw === "object") {
-      return raw.url || raw.fileUrl || raw[0] || null;
-    }
-
-    // Handle string URL
-    if (typeof raw === "string") return raw;
-
-    return null;
-  };
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   useEffect(() => {
@@ -129,7 +78,6 @@ const ApplicationDetails = () => {
       .filter(Boolean);
 
     if (!filesArray?.length) {
-      setPdfFiles({});
       setFilesLoading(false);
       return;
     }
@@ -193,7 +141,7 @@ const ApplicationDetails = () => {
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "ADV",
+      businessService: "adv-services",
       consumerCodes: displayData?.applicantData?.applicationNo || id,
       isEmployee: false,
     },
@@ -236,39 +184,26 @@ const ApplicationDetails = () => {
     })) || [];
 
   useEffect(() => {
-    const adsObject = bookingObj;
-    if (adsObject) {
+    if (bookingObj) {
       const applicantData = {
-        applicationNo: adsObject?.bookingNo,
-        name: adsObject?.applicantDetail?.applicantName,
-        email: adsObject?.applicantDetail?.applicantEmailId,
-        mobile: adsObject?.applicantDetail?.applicantMobileNo,
-        address: adsObject?.address?.addressLine1,
-        pincode: adsObject?.address?.pincode,
-        bookingStatus: adsObject?.bookingStatus,
-        paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
-        receiptNo: adsObject?.receiptNo,
-        auditDetails: adsObject?.auditDetails,
+        applicationNo: bookingObj?.bookingNo,
+        name: bookingObj?.applicantDetail?.applicantName,
+        email: bookingObj?.applicantDetail?.applicantEmailId,
+        mobile: bookingObj?.applicantDetail?.applicantMobileNo,
+        address: bookingObj?.address?.addressLine1,
+        pincode: bookingObj?.address?.pincode,
+        bookingStatus: bookingObj?.bookingStatus,
+        paymentDate: bookingObj?.paymentDate ? new Date(bookingObj.paymentDate).toLocaleDateString() : "",
+        receiptNo: bookingObj?.receiptNo,
+        auditDetails: bookingObj?.auditDetails,
       };
-
-      const Documents = removeDuplicatesByUUID(adsObject?.documents || []);
-      const AdsDetails =
-        adsObject?.cartDetails?.map((item) => ({
-          adType: item?.addType,
-          location: item?.location,
-          faceArea: item?.faceArea,
-          bookingDate: item?.bookingDate,
-          bookingTime: `${item?.bookingFromTime} - ${item?.bookingToTime}`,
-          nightLight: item?.nightLight ? t("YES") : t("NO"),
-          status: item?.status,
-        })) || [];
-
-      setDisplayData({ applicantData, Documents, AdsDetails });
+      const Documents = removeDuplicatesByUUID(bookingObj?.documents || []);
+      setDisplayData({ applicantData, Documents });
     } else {
       // if the bookingObj disappears, clear the displayData to avoid showing stale UI
       setDisplayData({});
     }
-  }, [bookingObj, t]);
+  }, [bookingObj]);
 
   useEffect(() => {
     // derive loading state from the hook + whether we have the normalized object
@@ -285,6 +220,24 @@ const ApplicationDetails = () => {
     // helpful debug during dev — remove later if noisy
     console.debug("bookingObj (normalized):", bookingObj, "isLoading:", isLoading);
   }, [isLoading, bookingObj]);
+
+  const downloadAcknowledgement = async (application) => {
+    console.log("application my details", application);
+    try {
+      if (!application) {
+        throw new Error("Booking Application data is missing");
+      }
+
+      getAcknowledgement(application, t);
+
+      setShowToast({ key: "success", message: t("ADV_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY") });
+      setError("Acknowledgement Downloaded Successfully");
+    } catch (error) {
+      console.error("Acknowledgement download error:", error);
+      setShowToast({ key: "error", message: `${error.message}` });
+      setError("Something Went Wrong");
+    }
+  };
 
   function onActionSelect(wfAction) {
     if (!wfAction) return;
@@ -396,25 +349,11 @@ const ApplicationDetails = () => {
   };
 
   // ADDED: functions to generate/print the receipt and permission letter (from old file)
-  async function getRecieptSearch({ tenantId: tId, payments }) {
-    try {
-      let application = reciept_data?.bookingApplication?.[0] || {};
-      let fileStoreId = application?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tId, { Payments: [{ ...payments }] }, "advservice-receipt");
-        const updatedApplication = {
-          ...application,
-          paymentReceiptFilestoreId: response?.filestoreIds?.[0],
-        };
-        if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
-        fileStoreId = response?.filestoreIds?.[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } catch (e) {
-      console.error("getRecieptSearch error", e);
-      setShowToast({ key: "error", message: "Unable to fetch receipt" });
-    }
+  async function getRecieptSearch({ tenantId, payments, ...params }) {
+    let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "adv-receipt");
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
   const handleDownload = async (document, tenantid) => {
     try {
@@ -430,45 +369,51 @@ const ApplicationDetails = () => {
       setShowToast({ key: "error", message: "Unable to download document" });
     }
   };
-  async function getPermissionLetter({ tenantId: tId, payments }) {
-    try {
-      let application = reciept_data?.bookingApplication?.[0] || {};
-      let fileStoreId = application?.permissionLetterFilestoreId;
-      if (!fileStoreId) {
-        const response = await Digit.PaymentService.generatePdf(tId, { bookingApplication: [application] }, "advpermissionletter");
-        const updatedApplication = {
-          ...application,
-          permissionLetterFilestoreId: response?.filestoreIds?.[0],
-        };
-        if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
-        fileStoreId = response?.filestoreIds?.[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } catch (e) {
-      console.error("getPermissionLetter error", e);
-      setShowToast({ key: "error", message: "Unable to fetch permission letter" });
-    }
-  }
+  // async function getPermissionLetter({ tenantId: tId, application }) {
+  //   try {
+  //     let fileStoreId = application?.permissionLetterFilestoreId;
+  //     if (!fileStoreId) {
+  //       const response = await Digit.PaymentService.generatePdf(tId, { bookingApplication: [application] }, "advpermissionletter");
+  //       const updatedApplication = {
+  //         ...application,
+  //         permissionLetterFilestoreId: response?.filestoreIds?.[0],
+  //       };
+  //       if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
+  //       fileStoreId = response?.filestoreIds?.[0];
+  //     }
+  //     const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
+  //     window.open(fileStore[fileStoreId], "_blank");
+  //   } catch (e) {
+  //     console.error("getPermissionLetter error", e);
+  //     setShowToast({ key: "error", message: "Unable to fetch permission letter" });
+  //   }
+  // }
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
+
+  downloadOptions.push({
+    label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
+    onClick: () => downloadAcknowledgement(application),
+  });
   if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
     downloadOptions.push({
-      label: t("ADS_FEE_RECEIPT"),
+      label: t("PTR_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-    downloadOptions.push({
-      label: t("ADS_PERMISSION_LETTER"),
-      onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-    });
+    // downloadOptions.push({
+    //   label: t("ADS_PERMISSION_LETTER"),
+    //   onClick: () => getPermissionLetter({ tenantId: tenantId, application }),
+    // });
   }
 
+  const cartData = transformAdsData(bookingObj?.cartDetails);
   const [expired, setExpired] = useState(false);
 
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
+
 
   return (
     <div className={"employee-main-application-details"}>
@@ -505,10 +450,10 @@ const ApplicationDetails = () => {
             />
           </div>
         )}
-        <CardSubHeader>{t("ADS_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
+        <CardSubHeader>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
-            Object.entries(displayData.applicantData)
+            Object.entries(displayData?.applicantData)
               // filter out empty, null, undefined, or empty arrays/objects
               .filter(([_, value]) => {
                 if (value === null || value === undefined) return false;
@@ -522,7 +467,7 @@ const ApplicationDetails = () => {
               .map(([key, value]) => (
                 <Row
                   key={key}
-                  label={t(key?.toUpperCase())}
+                 label={t(formatLabel(key))}
                   text={
                     Array.isArray(value)
                       ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
@@ -532,26 +477,13 @@ const ApplicationDetails = () => {
                   }
                 />
               ))}
+       
         </StatusTable>
       </Card>
 
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
-        {displayData?.AdsDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("ADS_AD_TYPE")} text={t(detail.adType) || detail.adType} />
-              {/* <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} /> */}
-              <Row label={t("ADS_LOCATION")} text={detail.location ? t(detail.location) : "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea ? t(detail.faceArea.replaceAll("_", " ")) : "N/A"} />
-              <Row label={t("CHB_BOOKING_DATE")} text={detail.bookingDate || "N/A"} />
-              {/* <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} /> */}
-              <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight ? "Yes" : "No"} />
-              <Row label={t("ADS_STATUS")} text={t(detail.status) || detail.status} />
-            </StatusTable>
-          </div>
-        ))}
+        <ADSCartDetails cartDetails={cartData ?? []} t={t} />
       </Card>
 
       <Card>
@@ -572,16 +504,6 @@ const ApplicationDetails = () => {
         </>
 
         <ADSWFApplicationTimeline application={application} id={displayData?.applicantData?.applicationNo || id} userType={"employee"} />
-        {showToast && (
-          <Toast
-            error={showToast.key === "error"}
-            label={showToast.label ? t(showToast.label) : showToast.message || showToast}
-            style={{ bottom: "0px" }}
-            onClose={() => {
-              setShowToast(null);
-            }}
-          />
-        )}
       </Card>
 
       {/* BEFORE: !businessLoading && Array.isArray(wfActions) && wfActions.length > 0 */}
@@ -637,16 +559,7 @@ const ApplicationDetails = () => {
         />
       ) : null}
 
-      {showToast && (
-        <Toast
-          error={showToast.key === "error"}
-          label={showToast.label ? t(showToast.label) : showToast.message || showToast}
-          style={{ bottom: "0px" }}
-          onClose={() => {
-            setShowToast(null);
-          }}
-        />
-      )}
+      {showToast && <Toast error={showToast.key === "error"} label={error} onClose={() => setShowToast(null)} isDleteBtn={true} />}
 
       {/* OPTIONAL: if you prefer the old template instead of the cards above, uncomment below and pass the correct data shape
       <ApplicationDetailsTemplate

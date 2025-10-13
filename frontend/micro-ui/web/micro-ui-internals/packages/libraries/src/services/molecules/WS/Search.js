@@ -1720,7 +1720,7 @@ export const WSSearch = {
       values: [
         { title: "WS_PROPERTY_TYPE_LABEL", value: propertyDataDetails?.propertyType },
         { title: "WS_PROPERTY_USAGE_TYPE", value: propertyDataDetails?.usageCategory },
-        { title: "PLOT SIZE", value: propertyDataDetails?.landArea },
+        { title: "Plot Size (in sq. yards)", value: propertyDataDetails?.landArea },
         { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
        { title: "City", value: propertyDataDetails?.address?.city },
        { title: "Plot/House/Survey No", value: propertyDataDetails?.address?.doorNo },
@@ -1910,36 +1910,6 @@ export const WSSearch = {
           : [{ title: "WS_CONN_HOLDER_SAME_AS_OWNER_DETAILS", value: t("SCORE_YES") }],
     };
  
-    /**
-     * Issue 8 Fix: Correct disconnection button validation logic
-     * 
-     * PROBLEM:
-     * Previous logic: `isApplicationApproved = workFlowDataDetails?.ProcessInstances?.[0]?.state.isTerminateState`
-     * - This checked if ANY workflow instance was terminated
-     * - For established connections, the original application workflow is always terminated
-     * - This caused false positive "application in progress" errors when trying to disconnect
-     * 
-     * ROOT CAUSE:
-     * - The validation logic was backwards - it checked for terminated workflows instead of active ones
-     * - For legitimate disconnection requests, the original connection workflow would be terminated
-     * - But this was incorrectly interpreted as "no permission for disconnection"
-     * 
-     * SOLUTION:
-     * - Check for ACTIVE workflows that would actually block disconnection actions
-     * - Only block disconnection if there are pending Disconnection/Modification/Reconnection workflows
-     * - Allow disconnection for established connections with no active blocking workflows
-     * 
-     * TECHNICAL IMPLEMENTATION:
-     * - hasActiveBlockingWorkflows: Checks for non-terminated workflows of blocking types
-     * - isApplicationApproved: True when NO active blocking workflows exist
-     * - This allows disconnection for normal established connections
-     * - Still properly blocks disconnection when there are actual conflicting workflows
-     */
-    
-    // Issue 8 Fix: Check if there are any ACTIVE workflows that would block disconnection
-    // Instead of checking if workflows are terminated (which they always are for established connections),
-    // we should check if there are any ACTIVE/PENDING workflows for disconnection, modification, etc.
-    // A connection can have disconnection actions if there are no active workflows blocking it
     const hasActiveBlockingWorkflows = workFlowDataDetails?.ProcessInstances?.some(instance => 
       !instance?.state?.isTerminateState && 
       (instance?.businessService?.includes("Disconnection") || 

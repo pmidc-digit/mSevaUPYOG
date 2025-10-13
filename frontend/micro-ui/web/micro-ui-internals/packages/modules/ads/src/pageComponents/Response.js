@@ -25,10 +25,13 @@ const ADSResponseCitizen = (props) => {
     history.push(isCitizen ? `/digit-ui/citizen/ads-home` : `/digit-ui/employee/ads/inbox`);
   };
 
+
+  // `/digit-ui/citizen/payment/collect/adv-services/${ptrCode}/${tenantId}?tenantId=${tenantId}`
+  // history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}`)
   const handlePayment = () => {
     history.push(
       isCitizen
-        ? `/digit-ui/citizen/payment/collect/adv-services/${ptrCode}/${tenantId}?tenantId=${tenantId}`
+        ? `/digit-ui/citizen/payment/my-bills/adv-services/${applicationData?.bookingNo}`
         : `/digit-ui/employee/payment/collect/adv-services/${ptrCode}/${tenantId}?tenantId=${tenantId}`
     );
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,

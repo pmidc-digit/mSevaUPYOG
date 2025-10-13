@@ -11,6 +11,7 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
   const currentStepData = useSelector(function (state) {
     return state.ads.ADSNewApplicationFormReducer.formData;
   });
@@ -28,9 +29,10 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
   return (
     <React.Fragment>
-      {" "}
+       <div className={!isCitizen && "employeeCard"}>
       <ADSCitizenDetailsNew onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />{" "}
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}{" "}
+      </div>
     </React.Fragment>
   );
 };

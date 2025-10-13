@@ -57,6 +57,10 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${citizen.login.password.otp.fixed.value}")
     private String fixedOTPPassword;
+    
+
+    @Value("${default.employee.password}")
+    private String defaultEmployeePassword;
 
     @Value("${citizen.login.password.otp.fixed.enabled}")
     private boolean fixedOTPEnabled;
@@ -74,17 +78,41 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String userName = authentication.getName();
         String password = authentication.getCredentials().toString();
 
+
         final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
 
         String tenantId = details.get("tenantId");
         String userType = details.get("userType");
+        String otp = null;
 
+        
+        
         if (isEmpty(tenantId)) {
             throw new OAuth2Exception("TenantId is mandatory");
         }
         if (isEmpty(userType) || isNull(UserType.fromValue(userType))) {
             throw new OAuth2Exception("User Type is mandatory and has to be a valid type");
         }
+        
+        if (userType.equalsIgnoreCase("EMPLOYEE")) {
+            if (password.contains("_")) {
+                String[] parts = password.split("_", 2); // split into two parts only
+                otp = parts[0]; // "123456"
+                password = parts[1]; // "Password@123"
+            } else if (password.length() > 6) {
+                otp = password.substring(0, 6);
+                password = password.substring(6);
+            } else {
+                // fallback if input is invalid
+                throw new OAuth2Exception("Invalid password format");
+            }
+
+            log.info("Extracted OTP: {}, Password: {}", otp, password);
+            
+        }
+        
+        
+        
         
         User user;
         RequestInfo requestInfo;
@@ -147,7 +175,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 isPasswordMatched = isPasswordMatch(citizenLoginPasswordOtpEnabled, password, user, authentication);
             }
         } else {
-            isPasswordMatched = isPasswordMatch(employeeLoginPasswordOtpEnabled, password, user, authentication);
+              // For employees check if default password is used, if so allow login without password check        	
+            isPasswordMatched = employeeOtpCheck(employeeLoginPasswordOtpEnabled, password, otp,user, authentication);
         }
 
         if (isPasswordMatched) {
@@ -197,6 +226,48 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             return bcrypt.matches(password, user.getPassword());
         }
     }
+
+    
+    private boolean employeeOtpCheck(Boolean isOtpBased, String password, String otp, User user, Authentication authentication) {
+        BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
+        final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
+        String isCallInternal = details.get("isInternal");
+
+        boolean otpValid = true;
+        boolean passwordValid = true;
+
+        // OTP Validation
+        if (isOtpBased) {
+            if ("true".equalsIgnoreCase(isCallInternal)) {
+                log.info("Internal login detected. Skipping OTP validation for user: {}", user.getUserName());
+            } else if (otp.equals(defaultEmployeePassword)) {
+                // Skip service call if OTP matches defaultEmployeePassword
+                log.info("OTP matches defaultEmployeePassword. Skipping OTP service call for user: {}", user.getUserName());
+            } else {
+                user.setOtpReference(otp);
+                try {
+                    otpValid = userService.validateOtp(user);
+                    log.info("OTP validation result for user {}: {}", user.getUserName(), otpValid);
+                } catch (ServiceCallException e) {
+                    log.error("OTP validation failed for user {}: {}", user.getUserName(), e.getMessage(), e);
+                    otpValid = false;
+                }
+            }
+        }
+
+        // Password Validation
+        if ("true".equalsIgnoreCase(isCallInternal)) {
+            log.info("Internal login detected. Skipping password validation for user: {}", user.getUserName());
+        } else {
+            passwordValid = bcrypt.matches(password, user.getPassword());
+            log.info("Password validation result for user {}: {}", user.getUserName(), passwordValid);
+        }
+
+        boolean result = otpValid && passwordValid;
+        log.info("Final authentication result for user {}: {}", user.getUserName(), result);
+        return result;
+    }
+
 
     @SuppressWarnings("unchecked")
     private String getTenantId(Authentication authentication) {

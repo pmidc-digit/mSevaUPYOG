@@ -29,7 +29,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
+      roles: workflowDetails?.data?.initialActionState?.nextActions?.filter(ele=>ele?.action==action?.action)?.[0]?.assigneeRoles?.map(role=>({code:role})),
+     
       isActive: true,
     },
     { enabled: !action?.isTerminateState }

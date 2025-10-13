@@ -34,11 +34,12 @@ const Response = (props) => {
 
   const handleDownloadPdf = async () => {
     const Property = nocData;
-      //console.log("tenants in NOC", tenants);
+    //console.log("tenants in NOC", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
     // console.log("acknowledgementData in NOC", acknowledgementData);
-    Digit.Utils.pdf.generate(acknowledgementData);
+    // Digit.Utils.pdf.generate(acknowledgementData);
+    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
   };
 
   return (

@@ -6,6 +6,7 @@ import GIS from "./GIS";
 const ADSAddressField = ({ value, onChange, onBlur, t }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [placeName, setPlaceName] = useState("");
+  const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
 
   // reflect incoming value to the display
   useEffect(() => {
@@ -39,13 +40,16 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
 
   return (
     <>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{width:"100%",marginTop:"8px"}}>
         <TextInput
           value={placeName}
           onChange={() => {}}
           onBlur={onBlur}
           disabled={true}
           placeholder={t("ADS_LOCATION")}
+          style={{
+            maxWidth: !isCitizen && "330px", // or undefined if you don’t want any width
+          }}
         />
         {/* <div>
           <button

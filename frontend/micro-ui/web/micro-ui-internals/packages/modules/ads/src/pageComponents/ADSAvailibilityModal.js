@@ -20,6 +20,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
           location: ad?.locationCode,
           nightLight: ad?.light === "With Light" ? "true" : "false",
           isTimerRequired: false,
+          amount: ad?.amount
         },
       ],
     }),
@@ -67,6 +68,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
         location: ad?.name,
         addType: ad?.adType,
+        amount: ad?.amount,
         bookingDate: dateRange?.startDate,
         nightLight: ad?.light === "With Light" ? true : false,
         bookingStartDate: dateRange?.startDate,
@@ -277,7 +279,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
               transition: "background 0.2s",
             }}
           >
-            🛒 {existingForAd?.length > 0 ? t("Update Cart") : t("Add To Cart")}
+            🛒 {existingForAd?.length > 0 ? t("ADS_UPDATE_CART") : t("ADS_ADD_TO_CART")}
           </button>
         </div>
       </div>

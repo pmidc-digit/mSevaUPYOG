@@ -445,7 +445,9 @@ const CHBApplicationDetails = () => {
       filtData.action !== "SENDBACKTOCITIZEN" &&
       filtData.action !== "APPROVE" &&
       filtData.action !== "REJECT" &&
-      filtData.action !== "SENDBACK"
+      filtData.action !== "SENDBACK" &&
+      filtData.action !== "NOT_VERIFIED" &&
+      filtData.action !== "VERIFIED"
     ) {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);

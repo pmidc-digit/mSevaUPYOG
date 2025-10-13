@@ -1,6 +1,6 @@
-import { StatusTable, Header, CardLabel, Loader, SubmitBar, MultiLink, LinkButton } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { StatusTable, Header, CardLabel, Loader, SubmitBar, MultiLink, LinkButton, ActionBar, Menu } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useEffect, useRef, useState } from "react";
+import { useParams, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { pdfDocumentName, pdfDownloadLink, stringReplaceAll } from "../../../utils";
 import ApplicationTimeline from "../../../components/ApplicationTimeline";
@@ -48,6 +48,7 @@ const ApplicationDetails = () => {
   const params = { applicationNumber: appNumber };
   const stateCode = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
+   const [displayMenu, setDisplayMenu] = useState(false);
   const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
@@ -56,7 +57,23 @@ const ApplicationDetails = () => {
     {}
   );
   const [viewTimeline, setViewTimeline] = useState(false);
+  const menuRef = useRef();
+  const applicationDetails= LicenseData
+  console.log(applicationDetails, "UUU");
+ const history=useHistory();
+  let user = Digit.UserService.getUser();
 
+  if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+    const userInfo = userInfos ? JSON.parse(userInfos) : {};
+    user = userInfo?.value;
+  }
+
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+
+
+  
+// useBPAREGApplicationActions
   useEffect(() => {
     if (License?.tradeLicenseDetail?.applicationDocuments?.length) {
       const fileStoresIds = License?.tradeLicenseDetail?.applicationDocuments?.map((document) => document?.fileStoreId);
@@ -82,6 +99,12 @@ const ApplicationDetails = () => {
       }
     }
   }, [License, reciept_data]);
+
+
+
+
+
+
 
   const handleViewTimeline = () => {
     setViewTimeline(true);
@@ -162,6 +185,11 @@ const ApplicationDetails = () => {
     transition: "transform 0.2s, box-shadow 0.2s",
   };
 
+
+
+  
+
+
   return (
     <Fragment>
       <div style={pageStyle}>
@@ -183,7 +211,7 @@ const ApplicationDetails = () => {
 
         {/* Application Details */}
         <div style={sectionStyle}>{renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), License?.applicationNumber)}</div>
-
+        
         {/* License Details */}
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSE_DETAILS_LABEL")}</h2>
@@ -262,8 +290,7 @@ const ApplicationDetails = () => {
           {/* <h2 style={headingStyle}>{t("BPA_TASK_TIMELINE")}</h2> */}
           <ApplicationTimeline id={id} tenantId={License?.tenantId} />
         </div>
-      </div>
-      
+      </div> 
     </Fragment>
   );
 };

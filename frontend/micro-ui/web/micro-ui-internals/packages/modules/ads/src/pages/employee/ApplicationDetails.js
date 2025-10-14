@@ -21,7 +21,7 @@ import ADSModal from "../../pageComponents/ADSModal";
 import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
-import { formatLabel, pdfDownloadLink, transformAdsData } from "../../utils";
+import { formatLabel, pdfDownloadLink, transformAdsData, transformBookingResponseToBookingData } from "../../utils";
 import getAcknowledgement from "../../getAcknowledgment";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 import ADSCartDetails from "../../pageComponents/ADSCartDetails";
@@ -125,6 +125,7 @@ const ApplicationDetails = () => {
   const normalizedAppObject = applicationDetails?.bookingApplication?.[0] ?? [];
   const bookingObj = normalizedAppObject;
   const application = bookingObj || normalizedAppObject || appDetails || null;
+  const new_data = transformBookingResponseToBookingData(applicationDetails);
 
   // derive normalized actions from businessServiceData
   const menuRef = useRef();
@@ -218,11 +219,9 @@ const ApplicationDetails = () => {
     }
 
     // helpful debug during dev — remove later if noisy
-    console.debug("bookingObj (normalized):", bookingObj, "isLoading:", isLoading);
   }, [isLoading, bookingObj]);
 
   const downloadAcknowledgement = async (application) => {
-    console.log("application my details", application);
     try {
       if (!application) {
         throw new Error("Booking Application data is missing");
@@ -350,8 +349,8 @@ const ApplicationDetails = () => {
 
   // ADDED: functions to generate/print the receipt and permission letter (from old file)
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "adv-receipt");
+    let application = new_data;
+    const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "adv-bill");
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
@@ -369,25 +368,22 @@ const ApplicationDetails = () => {
       setShowToast({ key: "error", message: "Unable to download document" });
     }
   };
-  // async function getPermissionLetter({ tenantId: tId, application }) {
-  //   try {
-  //     let fileStoreId = application?.permissionLetterFilestoreId;
-  //     if (!fileStoreId) {
-  //       const response = await Digit.PaymentService.generatePdf(tId, { bookingApplication: [application] }, "advpermissionletter");
-  //       const updatedApplication = {
-  //         ...application,
-  //         permissionLetterFilestoreId: response?.filestoreIds?.[0],
-  //       };
-  //       if (mutation?.mutateAsync) await mutation.mutateAsync({ bookingApplication: updatedApplication });
-  //       fileStoreId = response?.filestoreIds?.[0];
-  //     }
-  //     const fileStore = await Digit.PaymentService.printReciept(tId, { fileStoreIds: fileStoreId });
-  //     window.open(fileStore[fileStoreId], "_blank");
-  //   } catch (e) {
-  //     console.error("getPermissionLetter error", e);
-  //     setShowToast({ key: "error", message: "Unable to fetch permission letter" });
-  //   }
-  // }
+  async function getPermissionLetter({ tenantId, payments, ...params }) {
+    let application = new_data;
+    let fileStoreId = application?.permissionLetterFilestoreId;
+
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "adv-permissionletter");
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
+    }
+
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+      fileStoreIds: fileStoreId,
+    });
+
+    window.open(fileStore[fileStoreId], "_blank");
+  }
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
@@ -398,13 +394,14 @@ const ApplicationDetails = () => {
   });
   if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
     downloadOptions.push({
-      label: t("PTR_FEE_RECEIPT"),
+      label: t("CHB_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-    // downloadOptions.push({
-    //   label: t("ADS_PERMISSION_LETTER"),
-    //   onClick: () => getPermissionLetter({ tenantId: tenantId, application }),
-    // });
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading)
+      downloadOptions.push({
+        label: t("CHB_PERMISSION_LETTER"),
+        onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      });
   }
 
   const cartData = transformAdsData(bookingObj?.cartDetails);
@@ -413,7 +410,6 @@ const ApplicationDetails = () => {
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
-
 
   return (
     <div className={"employee-main-application-details"}>
@@ -467,7 +463,7 @@ const ApplicationDetails = () => {
               .map(([key, value]) => (
                 <Row
                   key={key}
-                 label={t(formatLabel(key))}
+                  label={t(formatLabel(key))}
                   text={
                     Array.isArray(value)
                       ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
@@ -477,7 +473,6 @@ const ApplicationDetails = () => {
                   }
                 />
               ))}
-       
         </StatusTable>
       </Card>
 

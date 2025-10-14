@@ -1,8 +1,9 @@
 import { Banner, Card, CardText, Loader, Row, StatusTable, SubmitBar, DownloadPrefixIcon } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
+import { transformBookingResponseToBookingData } from "../../index";
 
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
@@ -33,8 +34,10 @@ const WrapPaymentComponent = (props) => {
   const queryClient = useQueryClient();
   const { eg_pg_txnid: egId, workflow: workflw, propertyId } = Digit.Hooks.useQueryParams();
   const [printing, setPrinting] = useState(false);
+  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
+
   const [allowFetchBill, setallowFetchBill] = useState(false);
-  const { businessService: business_service, consumerCode, tenantId } = useParams();
+  const { businessService: business_service, consumerCode, tenantId, receiptNumber } = useParams();
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -97,8 +100,6 @@ const WrapPaymentComponent = (props) => {
     refetchOnWindowFocus: false,
   });
 
-  console.log("generatePdfKeyInResponse", generatePdfKey, business_service);
-
   const payments = data?.payments;
 
   useEffect(() => {
@@ -152,7 +153,6 @@ const WrapPaymentComponent = (props) => {
       </Card>
     );
   }
-  console.log("paymentData", data);
   const paymentData = data?.payments?.Payments[0];
   const amount = reciept_data?.paymentDetails?.[0]?.totalAmountPaid;
   const transactionDate = paymentData?.transactionDate;
@@ -258,7 +258,6 @@ const WrapPaymentComponent = (props) => {
         }
         payments.Payments[0].additionalDetails = details;
         paymentArray[0] = payments.Payments[0];
-        console.log("generatedpdfkey", generatePdfKey);
         if (business_service == "WS" || business_service == "SW") {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
         } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
@@ -442,48 +441,80 @@ const WrapPaymentComponent = (props) => {
   };
 
   const printPermissionLetter = async () => {
-    //const tenantId = Digit.ULBService.getCurrentTenantId();
-    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-    const generatePdfKeyForTL = "chbpermissionletter";
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { hallsBookingApplication: [applicationDetails?.hallsBookingApplication[0]] },
-        generatePdfKeyForTL
-      );
-      const updatedApplication = {
-        ...applicationDetails?.hallsBookingApplication[0],
-        permissionLetterFilestoreId: response?.filestoreIds[0],
+    if (chbPermissionLoading) return;
+    setChbPermissionLoading(true);
+    try {
+      const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let application = {
+        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
       };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
+      let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      const generatePdfKeyForTL = "chb-permissionletter";
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          generatePdfKeyForTL
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setChbPermissionLoading(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   };
 
   const printCHBReceipt = async () => {
-    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
-      const updatedApplication = {
-        ...applicationDetails?.hallsBookingApplication[0],
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
+        const updatedApplication = {
+          ...applicationDetails?.hallsBookingApplication[0],
+          paymentReceiptFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   };
 
+  const printADVReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.ADSServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      const new_data = transformBookingResponseToBookingData(applicationDetails);
+      let application = new_data;
+      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "adv-bill"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
   let bannerText;
   if (workflw) {
     bannerText = `CITIZEN_SUCCESS_UC_PAYMENT_MESSAGE`;
@@ -511,8 +542,11 @@ const WrapPaymentComponent = (props) => {
   };
   //New Payment Reciept For PT module with year bifurcations
 
+  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1 };
+  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2 };
+  const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px" };
+
   const printRecieptNew = async (payment) => {
-    console.log("paymentpayment", payment, payment.Payments[0].paymentDetails[0].receiptNumber, payment.Payments[0]);
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
     let paymentArray = [];
@@ -725,9 +759,7 @@ const WrapPaymentComponent = (props) => {
       }
 
       paymentArray[0] = payments.Payments[0];
-      console.log("payments", payments);
       response = await Digit.PaymentService.generatePdf(state, { Payments: paymentArray }, generatePdfKey);
-      console.log("responseresponse", response);
     }
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -806,115 +838,149 @@ const WrapPaymentComponent = (props) => {
           />
         )}
       </StatusTable>
-      <div style={{ display: "flex" }}>
-        {business_service == "TL" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={printReciept}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("TL_RECEIPT")}
-          </div>
-        ) : null}
-        {business_service == "TL" ? (
-          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("TL_CERTIFICATE")}
-          </div>
-        ) : null}
-        {business_service == "sv-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={printReciept}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("SV_FEE_RECIEPT")}
-          </div>
-        ) : null}
-        {business_service == "sv-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={svCertificate}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("SV_CERTIFICATE")}
-          </div>
-        ) : null}
-        {business_service == "sv-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={svIdCard}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("SV_ID_CARD")}
-          </div>
-        ) : null}
+      {/* <div style={{ display: "flex" }}> */}
+      {business_service == "TL" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={printReciept}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("TL_RECEIPT")}
+        </div>
+      ) : null}
+      {business_service == "TL" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("TL_CERTIFICATE")}
+        </div>
+      ) : null}
+      {business_service == "sv-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={printReciept}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("SV_FEE_RECIEPT")}
+        </div>
+      ) : null}
+      {business_service == "sv-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={svCertificate}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("SV_CERTIFICATE")}
+        </div>
+      ) : null}
+      {business_service == "sv-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={svIdCard}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("SV_ID_CARD")}
+        </div>
+      ) : null}
 
-        {business_service == "chb-services" ? (
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
-            <div className="primary-label-btn d-grid" onClick={printCHBReceipt}>
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-                <path d="M0 0h24v24H0V0z" fill="none" />
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-              </svg>
-              {t("CHB_FEE_RECEIPT")}
-            </div>
-            <div className="primary-label-btn d-grid" onClick={printPermissionLetter}>
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-                <path d="M0 0h24v24H0V0z" fill="none" />
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-              </svg>
-              {t("CHB_PERMISSION_LETTER")}
-            </div>
+      {business_service == "chb-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={IconWrapperStyle1} onClick={printing ? undefined : printCHBReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
           </div>
-        ) : null}
-
-        {business_service == "sv-services" && (
-          <Link to={`/digit-ui/citizen`}>
-            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
-          </Link>
-        )}
-
-        {business_service == "chb-services" && (
-          <Link to={`/digit-ui/citizen`}>
-            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-          </Link>
-        )}
-
-        {/*for pett */}
-        {business_service == "pet-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={printReciept}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("PTR_FEE_RECEIPT")}
+          <div style={IconWrapperStyle2} onClick={chbPermissionLoading ? undefined : printPermissionLetter}>
+            {chbPermissionLoading ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_PERMISSION_LETTER")}
+              </>
+            )}
           </div>
-        ) : null}
-        {/* {business_service == "pet-services" ? (
+
+          {business_service == "chb-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+      {business_service == "adv-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={IconWrapperStyle} onClick={printing ? undefined : printADVReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
+          </div>
+          {business_service == "adv-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+
+      {business_service == "sv-services" && (
+        <Link to={`/digit-ui/citizen`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
+        </Link>
+      )}
+
+      {/*for pett */}
+      {business_service == "pet-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={printReciept}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("PTR_FEE_RECEIPT")}
+        </div>
+      ) : null}
+      {/* {business_service == "pet-services" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -923,19 +989,18 @@ const WrapPaymentComponent = (props) => {
           {t("PTR_CERTIFICATE")}
         </div>
       ) : null} */}
-        {/*for pett */}
-        {bpaData?.[0]?.businessService === "BPA_OC" &&
-        (bpaData?.[0]?.status === "APPROVED" || bpaData?.[0]?.status === "PENDING_SANC_FEE_PAYMENT") ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset" }}
-            onClick={(e) => getPermitOccupancyOrderSearch("occupancy-certificate")}
-          >
-            <DownloadPrefixIcon />
-            {t("BPA_OC_CERTIFICATE")}
-          </div>
-        ) : null}
-        {/* {bpaData?.[0]?.businessService === "BPA_LOW" ? (
+      {/*for pett */}
+      {bpaData?.[0]?.businessService === "BPA_OC" && (bpaData?.[0]?.status === "APPROVED" || bpaData?.[0]?.status === "PENDING_SANC_FEE_PAYMENT") ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset" }}
+          onClick={(e) => getPermitOccupancyOrderSearch("occupancy-certificate")}
+        >
+          <DownloadPrefixIcon />
+          {t("BPA_OC_CERTIFICATE")}
+        </div>
+      ) : null}
+      {/* {bpaData?.[0]?.businessService === "BPA_LOW" ? (
           <div
             className="primary-label-btn d-grid"
             style={{ marginLeft: "unset" }}
@@ -954,7 +1019,7 @@ const WrapPaymentComponent = (props) => {
             {t("BPA_PERMIT_ORDER")}
           </div>
         ) : null} */}
-      </div>
+      {/* </div> */}
       {business_service?.includes("PT") && (
         <div style={{ marginTop: "10px" }}>
           <Link
@@ -975,40 +1040,50 @@ const WrapPaymentComponent = (props) => {
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
       ) : null} */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "15px",
-        }}
-      >
-        <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
-        {/* <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
+      {!(business_service === "adv-services" || business_service === "chb-services") && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "15px",
+          }}
         >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div> */}
+          <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+          {/* <div
+      className="link"
+      style={
+        isMobile
+          ? { marginTop: "8px", width: "100%", textAlign: "center" }
+          : { marginTop: "8px" }
+      }
+      onClick={printReciept}
+    >
+      {t("CS_DOWNLOAD_RECEIPT")}
+    </div> */}
 
-        {!(business_service == "TL") ||
-          (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
-        {!(business_service == "TL") ||
-          (!business_service?.includes("PT") && (
+          {!(business_service === "TL") && !business_service?.includes("PT") && (
+            <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
+          )}
+
+          {!(business_service === "TL") && !business_service?.includes("PT") && (
             <div className="link" style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}>
               <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
             </div>
-          ))}
-        {business_service == "TL" && (
+          )}
+
+          {business_service === "TL" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+            </Link>
+          )}
+
+          {/* {business_service == "pet-services" && ( */}
           <Link to={`/digit-ui/citizen`}>
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
           </Link>
-        )}
-        {/* {business_service == "pet-services" && ( */}
-        <Link to={`/digit-ui/citizen`}>
-          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-        </Link>
-      </div>
+        </div>
+      )}
+
       {/* )} */}
     </Card>
   );
@@ -1017,7 +1092,7 @@ const WrapPaymentComponent = (props) => {
 export const FailedPayment = (props) => {
   const { addParams, clearParams } = props;
   const { t } = useTranslation();
-  const { consumerCode } = useParams();
+  const { consumerCode, businessService } = useParams();
 
   const getMessage = () => "Failure !";
   return (
@@ -1040,12 +1115,13 @@ const WrapPaymentZeroComponent = (props) => {
   const { t } = useTranslation();
   const { state = {} } = useLocation();
   const transactionData = state?.transactionData;
-  console.log("StateData: ", transactionData);
   const queryClient = useQueryClient();
   const { eg_pg_txnid: egId, workflow: workflw, propertyId } = Digit.Hooks.useQueryParams();
   const [printing, setPrinting] = useState(false);
+  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
+
   const [allowFetchBill, setallowFetchBill] = useState(false);
-  const { businessService: business_service, consumerCode, tenantId } = useParams();
+  const { businessService: business_service, consumerCode, tenantId, receiptNumber } = useParams();
   const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
     retry: false,
     staleTime: Infinity,
@@ -1105,7 +1181,6 @@ const WrapPaymentZeroComponent = (props) => {
     refetchOnWindowFocus: false,
   });
 
-  console.log("PaymentsData", reciept_data);
   const payments = reciept_data; // changed here
 
   useEffect(() => {
@@ -1195,7 +1270,6 @@ const WrapPaymentZeroComponent = (props) => {
 
   const printReciept = async () => {
     let generatePdfKeyForWs = "ws-onetime-receipt";
-    console.log("PaymentsData", payments, paymentData);
     if (printing) return;
     setPrinting(true);
     let paymentArray = [];
@@ -1243,7 +1317,6 @@ const WrapPaymentZeroComponent = (props) => {
         }
         payments.Payments[0].additionalDetails = details;
         paymentArray[0] = payments.Payments[0];
-        console.log("generatedpdfkey", generatePdfKey);
         if (business_service == "WS" || business_service == "SW") {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
         } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
@@ -1263,7 +1336,6 @@ const WrapPaymentZeroComponent = (props) => {
         }
       }
     }
-    console.log("PaymentsData", response);
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -1402,46 +1474,79 @@ const WrapPaymentZeroComponent = (props) => {
   };
 
   const printPermissionLetter = async () => {
-    //const tenantId = Digit.ULBService.getCurrentTenantId();
-    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-    const generatePdfKeyForTL = "chbpermissionletter";
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { hallsBookingApplication: [applicationDetails?.hallsBookingApplication[0]] },
-        generatePdfKeyForTL
-      );
-      const updatedApplication = {
-        ...applicationDetails?.hallsBookingApplication[0],
-        permissionLetterFilestoreId: response?.filestoreIds[0],
+    if (chbPermissionLoading) return;
+    setChbPermissionLoading(true);
+    try {
+      const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let application = {
+        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
       };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
+      let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      const generatePdfKeyForTL = "chb-permissionletter";
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          generatePdfKeyForTL
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setChbPermissionLoading(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   };
 
   const printCHBReceipt = async () => {
-    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
-      const updatedApplication = {
-        ...applicationDetails?.hallsBookingApplication[0],
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
+        const updatedApplication = {
+          ...applicationDetails?.hallsBookingApplication[0],
+          paymentReceiptFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
+  };
+
+  const printADVReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.ADSServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      const new_data = transformBookingResponseToBookingData(applicationDetails);
+      let application = new_data;
+      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "adv-bill"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
   };
 
   let bannerText;
@@ -1469,6 +1574,10 @@ const WrapPaymentZeroComponent = (props) => {
     padding: "4px 0px",
     justifyContent: "space-between",
   };
+  const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px" };
+  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1 };
+  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2 };
+
   //New Payment Reciept For PT module with year bifurcations
 
   const printRecieptNew = async (payment) => {
@@ -1685,9 +1794,7 @@ const WrapPaymentZeroComponent = (props) => {
       }
 
       paymentArray[0] = payments.Payments[0];
-      console.log("payments", payments);
       response = await Digit.PaymentService.generatePdf(state, { Payments: paymentArray }, generatePdfKey);
-      console.log("responseresponse", response);
     }
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -1758,115 +1865,156 @@ const WrapPaymentZeroComponent = (props) => {
           />
         )}
       </StatusTable>
-      <div style={{ display: "flex" }}>
-        {business_service == "TL" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={printReciept}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("TL_RECEIPT")}
-          </div>
-        ) : null}
-        {business_service == "TL" ? (
-          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("TL_CERTIFICATE")}
-          </div>
-        ) : null}
-        {business_service == "sv-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={printReciept}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("SV_FEE_RECIEPT")}
-          </div>
-        ) : null}
-        {business_service == "sv-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={svCertificate}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("SV_CERTIFICATE")}
-          </div>
-        ) : null}
-        {business_service == "sv-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={svIdCard}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("SV_ID_CARD")}
-          </div>
-        ) : null}
+      {/* <div style={{ display: "flex" }}> */}
+      {business_service == "TL" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={printReciept}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("TL_RECEIPT")}
+        </div>
+      ) : null}
+      {business_service == "TL" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("TL_CERTIFICATE")}
+        </div>
+      ) : null}
+      {business_service == "sv-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={printReciept}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("SV_FEE_RECIEPT")}
+        </div>
+      ) : null}
+      {business_service == "sv-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={svCertificate}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("SV_CERTIFICATE")}
+        </div>
+      ) : null}
+      {business_service == "sv-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={svIdCard}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("SV_ID_CARD")}
+        </div>
+      ) : null}
 
-        {business_service == "chb-services" ? (
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
-            <div className="primary-label-btn d-grid" onClick={printCHBReceipt}>
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-                <path d="M0 0h24v24H0V0z" fill="none" />
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-              </svg>
-              {t("CHB_FEE_RECEIPT")}
-            </div>
-            <div className="primary-label-btn d-grid" onClick={printPermissionLetter}>
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-                <path d="M0 0h24v24H0V0z" fill="none" />
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-              </svg>
-              {t("CHB_PERMISSION_LETTER")}
-            </div>
+      {business_service == "chb-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={IconWrapperStyle1} onClick={printing ? undefined : printCHBReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
           </div>
-        ) : null}
-
-        {business_service == "sv-services" && (
-          <Link to={`/digit-ui/citizen`}>
-            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
-          </Link>
-        )}
-
-        {business_service == "chb-services" && (
-          <Link to={`/digit-ui/citizen`}>
-            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-          </Link>
-        )}
-
-        {/*for pett */}
-        {business_service == "pet-services" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
-            onClick={printReciept}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
-            </svg>
-            {t("PTR_FEE_RECEIPT")}
+          <div style={IconWrapperStyle2} onClick={chbPermissionLoading ? undefined : printPermissionLetter}>
+            {chbPermissionLoading ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_PERMISSION_LETTER")}
+              </>
+            )}
           </div>
-        ) : null}
-        {/* {business_service == "pet-services" ? (
+
+          {business_service == "chb-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+
+      {business_service == "adv-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={IconWrapperStyle} onClick={printing ? undefined : printADVReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
+          </div>
+          {business_service == "adv-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+
+      {business_service == "sv-services" && (
+        <Link to={`/digit-ui/citizen`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
+        </Link>
+      )}
+
+      {business_service == "chb-services" && (
+        <Link to={`/digit-ui/citizen`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+        </Link>
+      )}
+
+      {/*for pett */}
+      {business_service == "pet-services" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+          onClick={printReciept}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("PTR_FEE_RECEIPT")}
+        </div>
+      ) : null}
+      {/* {business_service == "pet-services" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1875,38 +2023,37 @@ const WrapPaymentZeroComponent = (props) => {
           {t("PTR_CERTIFICATE")}
         </div>
       ) : null} */}
-        {/*for pett */}
-        {bpaData?.[0]?.businessService === "BPA_OC" &&
-        (bpaData?.[0]?.status === "APPROVED" || bpaData?.[0]?.status === "PENDING_SANC_FEE_PAYMENT") ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset" }}
-            onClick={(e) => getPermitOccupancyOrderSearch("occupancy-certificate")}
-          >
-            <DownloadPrefixIcon />
-            {t("BPA_OC_CERTIFICATE")}
-          </div>
-        ) : null}
-        {bpaData?.[0]?.businessService === "BPA_LOW" ? (
-          <div
-            className="primary-label-btn d-grid"
-            style={{ marginLeft: "unset" }}
-            onClick={(r) => getPermitOccupancyOrderSearch("buildingpermit-low")}
-          >
-            <DownloadPrefixIcon />
-            {t("BPA_PERMIT_ORDER")}
-          </div>
-        ) : null}
-        {bpaData?.[0]?.businessService === "BPA" &&
-        bpaData?.[0]?.businessService !== "BPA_LOW" &&
-        bpaData?.[0]?.businessService !== "BPA_OC" &&
-        (bpaData?.[0]?.status === "PENDING_SANC_FEE_PAYMENT" || bpaData?.[0]?.status === "APPROVED") ? (
-          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={(r) => getPermitOccupancyOrderSearch("buildingpermit")}>
-            <DownloadPrefixIcon />
-            {t("BPA_PERMIT_ORDER")}
-          </div>
-        ) : null}
-      </div>
+      {/*for pett */}
+      {bpaData?.[0]?.businessService === "BPA_OC" && (bpaData?.[0]?.status === "APPROVED" || bpaData?.[0]?.status === "PENDING_SANC_FEE_PAYMENT") ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset" }}
+          onClick={(e) => getPermitOccupancyOrderSearch("occupancy-certificate")}
+        >
+          <DownloadPrefixIcon />
+          {t("BPA_OC_CERTIFICATE")}
+        </div>
+      ) : null}
+      {bpaData?.[0]?.businessService === "BPA_LOW" ? (
+        <div
+          className="primary-label-btn d-grid"
+          style={{ marginLeft: "unset" }}
+          onClick={(r) => getPermitOccupancyOrderSearch("buildingpermit-low")}
+        >
+          <DownloadPrefixIcon />
+          {t("BPA_PERMIT_ORDER")}
+        </div>
+      ) : null}
+      {bpaData?.[0]?.businessService === "BPA" &&
+      bpaData?.[0]?.businessService !== "BPA_LOW" &&
+      bpaData?.[0]?.businessService !== "BPA_OC" &&
+      (bpaData?.[0]?.status === "PENDING_SANC_FEE_PAYMENT" || bpaData?.[0]?.status === "APPROVED") ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={(r) => getPermitOccupancyOrderSearch("buildingpermit")}>
+          <DownloadPrefixIcon />
+          {t("BPA_PERMIT_ORDER")}
+        </div>
+      ) : null}
+      {/* </div>  */}
       {/* {business_service?.includes("PT") && (
         <div style={{ marginTop: "10px" }}>
           <Link
@@ -1976,7 +2123,6 @@ const WrapPaymentZeroComponent = (props) => {
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       )}
-      {console.log("business_service", business_service)}
       {business_service == "pet-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />

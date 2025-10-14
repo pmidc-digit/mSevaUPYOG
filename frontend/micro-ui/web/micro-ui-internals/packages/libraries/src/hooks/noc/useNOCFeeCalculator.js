@@ -2,10 +2,13 @@ import { useQuery, useQueryClient } from "react-query";
 
 const useNOCFeeCalculator = ({ payload, enabled = true }) => {
   const client = useQueryClient();
+
+  const siteDetails = payload?.CalculationCriteria?.[0]?.NOC?.nocDetails?.additionalDetails?.siteDetails;
+
   const queryKey = [
     "NOC_FEE_CALCULATION",
     payload?.CalculationCriteria?.[0]?.applicationNumber,
-    payload?.CalculationCriteria?.[0]?.Noc?.nocDetails?.additionalDetails?.siteDetails?.specificationPlotArea,
+    JSON.stringify(siteDetails), // ensures deep comparison
   ];
 
   const params = {
@@ -17,7 +20,8 @@ const useNOCFeeCalculator = ({ payload, enabled = true }) => {
 
   return {
     ...result,
-    revalidate: () => client.invalidateQueries(queryKey),
+    // revalidate: () => client.invalidateQueries(queryKey),
+    revalidate: ()=> result.refetch()
   };
 };
 

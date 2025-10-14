@@ -5,8 +5,6 @@ import { useTranslation } from "react-i18next";
 const NOCFeeEstimationDetails = ({ formData }) => {
   const { t } = useTranslation();
 
-  //console.log("formData=>", formData);
-
   const payload = useMemo(
     () => ({
       CalculationCriteria: [
@@ -52,7 +50,7 @@ const NOCFeeEstimationDetails = ({ formData }) => {
         },
       ],
     }),
-    [formData.siteDetails.specificationPlotArea]
+    [formData]
   );
 
   const { isLoading: nocCalculatorLoading, data, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
@@ -64,10 +62,16 @@ const NOCFeeEstimationDetails = ({ formData }) => {
     }
   );
 
+  useEffect(() => {
+   revalidate();
+  }, [formData?.siteDetails]);
+
+
   const applicationFeeDataWithTotal = useMemo(() => {
     if (!data?.Calculation?.[0]?.totalAmount) return [];
 
-    const totalAmount = data?.Calculation?.[0]?.totalAmount || "N/A";
+    //const totalAmount = data?.Calculation?.[0]?.totalAmount || "N/A";
+    const totalAmount= data?.Calculation?.[0]?.taxHeadEstimates?.reduce((acc,item)=> acc+(item?.estimateAmount || 0),0) || "N/A";
 
     return [{ id: "1", title: t("NOC_FEE_LABEL"), amount: totalAmount }];
   }, [data, t]);

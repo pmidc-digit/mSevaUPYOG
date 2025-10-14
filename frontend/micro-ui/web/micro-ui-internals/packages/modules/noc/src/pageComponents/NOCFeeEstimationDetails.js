@@ -13,7 +13,7 @@ const NOCFeeEstimationDetails = ({ formData }) => {
         {
           applicationNumber: formData?.apiData?.Noc?.[0]?.applicationNo,
           tenantId: formData?.apiData?.Noc?.[0]?.tenantId,
-          Noc: {
+          NOC: {
             ...formData?.apiData?.Noc?.[0],
             nocDetails: {
               ...formData.apiData?.Noc?.[0]?.nocDetails,

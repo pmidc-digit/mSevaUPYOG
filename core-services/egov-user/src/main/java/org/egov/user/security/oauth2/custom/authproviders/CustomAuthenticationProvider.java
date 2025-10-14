@@ -225,47 +225,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     }
 
     
-    private boolean employeeOtpCheck(Boolean isOtpBased, String password, String otp, User user, Authentication authentication) {
-        BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
-        final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
-        String isCallInternal = details.get("isInternal");
-
-        boolean otpValid = true;
-        boolean passwordValid = true;
-
-        // OTP Validation
-        if (isOtpBased) {
-            if ("true".equalsIgnoreCase(isCallInternal)) {
-                log.info("Internal login detected. Skipping OTP validation for user: {}", user.getUserName());
-            } else if (otp.equals(defaultEmployeePassword)) {
-                // Skip service call if OTP matches defaultEmployeePassword
-                log.info("OTP matches defaultEmployeePassword. Skipping OTP service call for user: {}", user.getUserName());
-            } else {
-                user.setOtpReference(otp);
-                try {
-                    otpValid = userService.validateOtp(user);
-                    log.info("OTP validation result for user {}: {}", user.getUserName(), otpValid);
-                } catch (ServiceCallException e) {
-                    log.error("OTP validation failed for user {}: {}", user.getUserName(), e.getMessage(), e);
-                    otpValid = false;
-                }
-            }
-        }
-
-        // Password Validation
-        if ("true".equalsIgnoreCase(isCallInternal)) {
-            log.info("Internal login detected. Skipping password validation for user: {}", user.getUserName());
-        } else {
-            passwordValid = bcrypt.matches(password, user.getPassword());
-            log.info("Password validation result for user {}: {}", user.getUserName(), passwordValid);
-        }
-
-        boolean result = otpValid && passwordValid;
-        log.info("Final authentication result for user {}: {}", user.getUserName(), result);
-        return result;
-    }
-
-
+   
     @SuppressWarnings("unchecked")
     private String getTenantId(Authentication authentication) {
         final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();

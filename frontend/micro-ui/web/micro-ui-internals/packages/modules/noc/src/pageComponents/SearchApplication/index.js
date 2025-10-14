@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CardHeader } from "@mseva/digit-ui-react-components";
-import { businessServiceList } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import { filter } from "lodash";
 import SearchApplication from "./Search";
 
-const Search = ({ path }) => {
+const Search = () => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser().info;
   let tenantId;

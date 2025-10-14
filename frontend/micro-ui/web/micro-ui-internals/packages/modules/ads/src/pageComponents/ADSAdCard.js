@@ -191,7 +191,7 @@ const AdCard = ({
             fontSize: 14,
           }}
         >
-           {t("ADS_VIEW_AVAILABIITY")}👁️
+           {t("ADS_VIEW_AVAILABILITY")}👁️
         </button>
 
         {isAdded && (

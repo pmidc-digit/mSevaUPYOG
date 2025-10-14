@@ -1639,7 +1639,15 @@ export const WSSearch = {
     const serviceTypeOfData = serviceType == "WATER" ? "WS" : "SW";
     const collectionNumber = wsDataDetails?.connectionNo;
     const colletionOFData = await WSSearch.colletionData({tenantId, serviceTypeOfData, collectionNumber}, {});
-    const fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
+    
+    // Wrap bill fetch in try-catch to prevent crash when bills don't exist
+    let fetchBills = [];
+    try {
+      fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
+    } catch (error) {
+      // Don't throw error - just set empty array so hook continues to work
+      fetchBills = { Bill: [] };
+    }
 
     const applicationHeaderDetails = {
       title: "WS_COMMON_SERV_DETAIL",

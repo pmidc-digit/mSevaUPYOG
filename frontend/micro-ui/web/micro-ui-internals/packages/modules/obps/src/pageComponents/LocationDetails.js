@@ -52,14 +52,20 @@ const [isFileLoading, setIsFileLoading] = useState(false);
     formData.address = {};
   }
 
-  console.log("formData in location page", formData ,currentStepData);
+  console.log("formData in location page", selectedCity ,currentStepData, allCities);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   useEffect(()=>{
     if(typeof selectedCity === "string"){
-      const city = allCities.find((item) => item.code === selectedCity);
-      if(city) setSelectedCity(city)
+      if(selectedCity?.includes("pb.")){
+        const city = allCities.find((item) => item.code === selectedCity);
+        if(city) setSelectedCity(city);
+      }else{
+        console.log("selectedCity", )
+        const city = allCities.find((item) => item.code.split(".")?.[1] === selectedCity);
+        if(city) setSelectedCity(city);
+      }
     }else if(selectedCity === null){
       if(currentStepData?.createdResponse?.landInfo?.address?.city){
         setSelectedCity(currentStepData?.createdResponse?.landInfo?.address?.city)
@@ -717,14 +723,14 @@ return (
             </div>
           )}
 
-          {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
+          {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 && (
             <div style={{ marginTop: "12px", padding: "8px", border: "1px solid #D6D5D4", borderRadius: 8 }}>
               <strong>📍 Extracted Geo Location</strong>
               <div>Latitude: {Number(geoLocationFromImg.latitude).toFixed(6)}</div>
               <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
             </div>
           )}
-          {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude &&(
+          {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 &&(
             <div style={{ marginTop: "16px" }}>
               <a 
                 href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 

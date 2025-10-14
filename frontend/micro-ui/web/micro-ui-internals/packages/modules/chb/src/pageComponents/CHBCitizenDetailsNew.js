@@ -43,6 +43,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         type: user?.info?.type,
       };
 
+      const owners = [
+        {
+          name: data?.name,
+          mobileNumber: data?.mobileNumber,
+          emailId: data?.emailId,
+          type: "CITIZEN",
+        },
+      ];
+
       const address = {
         addressLine1: data?.address,
         // cityCode: "SPF",
@@ -54,6 +63,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           ...baseApplication,
           applicantDetail,
           address,
+          owners,
         },
       };
 

@@ -1,9 +1,10 @@
 import React, { Fragment, useCallback, useMemo, useEffect, useState, useReducer } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import SearchFormFieldsComponent from "./SearchFormFieldsComponent";
+import SearchFormFieldsComponent from "./SearchFieldComponent";
 import useSearchApplicationTableConfig from "./useTableConfig";
 import SearchApplicationMobileView from "./SearchAtom/mobile";
 import SearchApplicationDesktopView from "./SearchAtom/desktop";
+
 
 const SearchApplication = ({ tenantId, t, onSubmit, data, error, isLoading, Count }) => {
   const [showToast, setShowToast] = useState(null);

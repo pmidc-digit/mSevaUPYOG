@@ -24,9 +24,16 @@ export const ConvertEpochToTimeInHours = (dateEpoch) => {
   const dateFromApi = new Date(dateEpoch);
   let hour = dateFromApi.getHours();
   let min = dateFromApi.getMinutes();
-  let period = hour > 12 ? "PM" : "AM";
-  hour = hour > 12 ? hour - 12 : hour;
-  hour = (hour > 9 ? "" : "0") + hour;
-  min = (min > 9 ? "" : "0") + min;
-  return `${hour}:${min} ${period}`;
+  let period = hour >= 12 ? "PM" : "AM";
+  
+ // Convert to 12-hour format
+  hour = hour % 12;
+  hour = hour === 0 ? 12 : hour;
+  
+  // Pad with leading zeros
+  const hourStr = hour < 10 ? `0${hour}` : `${hour}`;
+  const minStr = min < 10 ? `0${min}` : `${min}`;
+
+  return `${hourStr}:${minStr} ${period}`;
+
 };

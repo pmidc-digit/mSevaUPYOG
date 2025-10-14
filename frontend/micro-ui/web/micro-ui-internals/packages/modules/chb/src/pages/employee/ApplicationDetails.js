@@ -34,7 +34,6 @@ import get from "lodash/get";
 import { size } from "lodash";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
@@ -220,7 +219,6 @@ const CHBApplicationDetails = () => {
 
   useEffect(() => {
     const ndcObject = data?.hallsBookingApplication?.[0];
-    console.log("ndcObject", ndcObject);
     if (ndcObject) {
       const applicantData = {
         name: ndcObject?.owners?.[0]?.name,
@@ -257,7 +255,6 @@ const CHBApplicationDetails = () => {
       setLoader(true);
       WorkflowService = await Digit.WorkflowService.init(tenantId, "chb-services");
       setLoader(false);
-      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
       setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       // setComplaintStatus(applicationStatus);
     })();
@@ -270,10 +267,6 @@ const CHBApplicationDetails = () => {
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-
-    console.log("filterNexState", filterNexState);
-
-    console.log("getWorkflowService", getWorkflowService);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -363,7 +356,6 @@ const CHBApplicationDetails = () => {
       hallsBookingApplication: data?.hallsBookingApplication || [],
     };
 
-    console.log("data in permission", data);
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
@@ -420,8 +412,6 @@ const CHBApplicationDetails = () => {
   const submitAction = async (modalData) => {
     const payloadData = data?.hallsBookingApplication;
 
-    console.log("payloadData====", payloadData);
-
     // ✅ Extract the actual booking object from the array
     const bookingData = Array.isArray(payloadData) ? payloadData[0] : payloadData;
 
@@ -468,7 +458,6 @@ const CHBApplicationDetails = () => {
       },
     };
 
-    console.log("finalPayload", finalPayload);
     // return;
 
     try {

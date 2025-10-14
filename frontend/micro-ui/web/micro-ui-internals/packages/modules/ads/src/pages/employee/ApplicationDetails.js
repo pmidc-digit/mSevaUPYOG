@@ -219,11 +219,9 @@ const ApplicationDetails = () => {
     }
 
     // helpful debug during dev — remove later if noisy
-    console.debug("bookingObj (normalized):", bookingObj, "isLoading:", isLoading);
   }, [isLoading, bookingObj]);
 
   const downloadAcknowledgement = async (application) => {
-    console.log("application my details", application);
     try {
       if (!application) {
         throw new Error("Booking Application data is missing");
@@ -396,7 +394,7 @@ const ApplicationDetails = () => {
   });
   if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
     downloadOptions.push({
-      label: t("PTR_FEE_RECEIPT"),
+      label: t("CHB_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading)

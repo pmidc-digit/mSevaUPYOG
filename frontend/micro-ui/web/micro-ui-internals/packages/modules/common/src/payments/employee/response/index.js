@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { Banner, Card, CardText, SubmitBar, ActionBar, DownloadPrefixIcon, Loader, Menu } from "@mseva/digit-ui-react-components";
 import { useHistory, useParams, Link, LinkLabel } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -29,11 +29,12 @@ export const SuccessfulPayment = (props) => {
   const [selectedAction, setSelectedAction] = useState(null);
   const isFSMResponse = location?.pathname?.includes("payment/success/FSM.TRIP_CHARGES");
   const combineResponseFSM = isFSMResponse ? `${t("PAYMENT_COLLECT_LABEL")} / ${t("PAYMENT_COLLECT")}` : t("PAYMENT_LOCALIZATION_RESPONSE");
+  const [printing, setPrinting] = useState(false);
+  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
 
   props.setLink(combineResponseFSM);
   let { consumerCode, receiptNumber, businessService } = useParams();
 
-  console.log("businessService right now", businessService);
   console.log("consummennene", consumerCode);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   receiptNumber = receiptNumber.replace(/%2F/g, "/");
@@ -178,81 +179,79 @@ export const SuccessfulPayment = (props) => {
   };
 
   const printPermissionLetter = async () => {
-    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    let application = {
-      hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
-    };
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-    const generatePdfKeyForTL = "chb-permissionletter";
-    if (!fileStoreId) {
-      const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
-        generatePdfKeyForTL
-      );
-      fileStoreId = response?.filestoreIds[0];
+    if (chbPermissionLoading) return;
+    setChbPermissionLoading(true);
+    try {
+      const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let application = {
+        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
+      };
+      let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      const generatePdfKeyForTL = "chb-permissionletter";
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          generatePdfKeyForTL
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setChbPermissionLoading(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-  };
-
-  const printADVPermissionLetter = async () => {
-    const applicationDetails = await Digit.ADSServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    const new_data = transformBookingResponseToBookingData(applicationDetails);
-    let application = new_data;
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-    const generatePdfKeyForTL = "adv-permissionletter";
-    if (!fileStoreId) {
-      const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
-      console.log("payments for this particular area", payments);
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
-        generatePdfKeyForTL
-      );
-      fileStoreId = response?.filestoreIds[0];
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   };
 
   const printCHBReceipt = async () => {
-    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
-      let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments }, "chbservice-receipt");
-      const updatedApplication = {
-        ...applicationDetails?.hallsBookingApplication[0],
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+        let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments }, "chbservice-receipt");
+        const updatedApplication = {
+          ...applicationDetails?.hallsBookingApplication[0],
+          paymentReceiptFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   };
 
   const printADVReceipt = async () => {
-    const applicationDetails = await Digit.ADSServices.search({ tenantId, filters: { bookingNo: consumerCode } });
-    const new_data = transformBookingResponseToBookingData(applicationDetails);
-    let application = new_data;
-    let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
-      let response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
-        "adv-bill"
-      );
-      fileStoreId = response?.filestoreIds[0];
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.ADSServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      const new_data = transformBookingResponseToBookingData(applicationDetails);
+      let application = new_data;
+      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "adv-bill"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   };
 
   const svCertificate = async () => {
@@ -652,7 +651,7 @@ export const SuccessfulPayment = (props) => {
         <Banner message={getMessage()} info={t("PAYMENT_LOCALIZATION_RECIEPT_NO")} applicationNumber={receiptNumber} successful={true} />
         <CardText>{getCardText()}</CardText>
         {generatePdfKey ? (
-          <div style={{ display: "flex" }}>
+          <div style={{ display: "flex", justifyContent: "space-evenly" }}>
             {businessService !== "chb-services" && businessService !== "adv-services" && (
               <div
                 className="primary-label-btn d-grid"
@@ -737,38 +736,49 @@ export const SuccessfulPayment = (props) => {
 
             {businessService == "chb-services" ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
-                <div className="primary-label-btn d-grid" onClick={printCHBReceipt}>
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                  </svg>
-                  {t("CHB_FEE_RECEIPT")}
+                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printCHBReceipt}>
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CHB_FEE_RECEIPT")}
+                    </>
+                  )}
                 </div>
-                <div className="primary-label-btn d-grid" onClick={printPermissionLetter}>
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                  </svg>
-                  {t("CHB_PERMISSION_LETTER")}
+                <div className="primary-label-btn d-grid" onClick={chbPermissionLoading ? undefined : printPermissionLetter}>
+                  {chbPermissionLoading ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CHB_PERMISSION_LETTER")}
+                    </>
+                  )}
                 </div>
               </div>
             ) : null}
 
             {businessService == "adv-services" ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
-                <div className="primary-label-btn d-grid" onClick={printADVReceipt}>
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                  </svg>
-                  {t("ADV_FEE_RECEIPT")}
-                </div>
-                <div className="primary-label-btn d-grid" onClick={printADVPermissionLetter}>
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                  </svg>
-                  {t("ADV_PERMISSION_LETTER")}
+                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printADVReceipt}>
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CHB_FEE_RECEIPT")}
+                    </>
+                  )}
                 </div>
               </div>
             ) : null}

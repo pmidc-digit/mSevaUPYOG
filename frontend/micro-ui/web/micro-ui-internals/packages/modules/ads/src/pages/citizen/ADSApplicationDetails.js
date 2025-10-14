@@ -71,10 +71,8 @@ const ADSApplicationDetails = () => {
     tenantId,
     filters: { bookingNo: acknowledgementIds },
   });
-  console.log("adsData", adsData);
   const new_data = transformBookingResponseToBookingData(adsData);
 
-  console.log("new_data", new_data);
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
   useEffect(() => {
@@ -169,7 +167,6 @@ const ADSApplicationDetails = () => {
   }
 
   const downloadAcknowledgement = async (application) => {
-    console.log("application my details", application);
     try {
       if (!application) {
         throw new Error("Booking Application data is missing");
@@ -351,7 +348,7 @@ const ADSApplicationDetails = () => {
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
-      label: t("PTR_FEE_RECIEPT"),
+      label: t("CHB_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
     dowloadOptions.push({

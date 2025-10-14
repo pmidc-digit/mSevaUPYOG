@@ -31,7 +31,6 @@ import { size } from "lodash";
 import { doc } from "prettier";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
@@ -147,8 +146,6 @@ const CHBApplicationDetails = () => {
     }
   );
 
-  console.log("auditResponse", auditResponse);
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -205,7 +202,6 @@ const CHBApplicationDetails = () => {
       hallsBookingApplication: data?.hallsBookingApplication || [],
     };
 
-    console.log("data in permission", data);
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
@@ -279,8 +275,6 @@ const CHBApplicationDetails = () => {
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
-
-  console.log("chb_details?.bookingSlotDetails", chb_details);
 
   const slotlistRows =
     chb_details?.bookingSlotDetails?.map((slot) => ({
@@ -357,7 +351,6 @@ const CHBApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            {console.log("doc===", docs)}
             <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
               {docs?.length > 0 ? (
                 docs?.map((doc, index) => (

@@ -2,8 +2,6 @@ import React, { Fragment } from "react";
 import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, CardLabelError, MobileNumber, CardHeader } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { businessServiceList } from "../../../utils";
-
 
 const SearchFormFieldsComponent = (props) => {
   const { register, control, setValue, getValues, reset, formState, trigger  } = useFormContext()

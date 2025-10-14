@@ -27,11 +27,13 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
+    time: checkpoint?.auditDetails?.timing,
     name: checkpoint?.assigner?.name,
     mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
@@ -69,7 +71,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div style={{ marginTop: "8px" }}>,
+        {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
         {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
@@ -480,6 +483,19 @@ const CitizenApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}</StatusTable>
+      </Card>
+
+      <Card>
+       <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+          {applicationDetails?.Noc?.[0]?.nocDetails &&  (
+              <NOCFeeEstimationDetails 
+                  formData={{
+                    apiData:{...applicationDetails},
+                    applicationDetails:{...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails},
+                    siteDetails: {...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails} 
+                  }}
+              />
+            )}
       </Card>
 
       {workflowDetails?.data?.timeline && (

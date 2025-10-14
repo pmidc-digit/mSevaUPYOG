@@ -14,7 +14,7 @@ export const useNOCCitizenSearchApplication = (params, tenantId, config = {}, t)
   const result = useQuery(["NOC_APPLICATIONS_LIST", params], useNOCSearch(params, tenantId, config), {
     staleTime: Infinity,
     select: (data) => {
-      console.log("data in useNOCCitizenSearchApplication hook ", data);
+      //console.log("data in useNOCCitizenSearchApplication hook ", data);
       const applications = data?.data?.Noc || [];
       const count = data?.data?.count || 0;
 
@@ -46,8 +46,6 @@ export const useNOCSearchApplication = (params, tenantId, config = {}, t) => {
   const result = useQuery(["NOC_SEARCH_APPLICATION", params], useNOCSearch(params, tenantId, config), {
     staleTime: Infinity,
     select: (data) => {
-      // const objData = data?.data;
-      // return objData;
       return{
         resData: data?.data,
         revalidate: () => client.invalidateQueries(["NOC_SEARCH_APPLICATION", params])
@@ -55,6 +53,40 @@ export const useNOCSearchApplication = (params, tenantId, config = {}, t) => {
     },
   });
 
+  return { ...result, revalidate: () => client.invalidateQueries(["NOC_SEARCH_APPLICATION", params]) };
+};
+
+export const useNOCSearchApplicationByIdOrMobile = (params, tenantId, config = {}, t) => {
+  const client = useQueryClient();
+  const result = useQuery(["NOC_SEARCH_APPLICATION_BY_ID_MOBILENO", params], useNOCSearch(params, tenantId, config), {
+    staleTime: Infinity,
+    select: (data) => {
+
+    let tableData;
+
+    if(data?.data?.Noc?.length == 0){
+      tableData=[{ display: "ES_COMMON_NO_DATA" }];
+    }
+    else{
+    tableData = data?.data?.Noc?.map((application) => {
+          return {
+            applicationNo: application?.applicationNo,
+           // date: Digit.DateUtils.ConvertEpochToDate(application?.auditDetails?.lastModifiedBy),
+            date: Digit.DateUtils.ConvertEpochToDate(application?.auditDetails?.createdTime),
+            locality: `${application?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
+            applicationStatus: `${application?.applicationStatus}`,
+          };
+    });
+
+    }
+
+    return {
+        data: tableData,
+        totalCount: data?.data?.count || 0,
+    }
+
+    },
+  });
   return { ...result, revalidate: () => client.invalidateQueries(["NOC_SEARCH_APPLICATION", params]) };
 };
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState,useEffect } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
 const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, cartSlots }) => {
@@ -80,17 +80,27 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
     }
   };
 
+  // When modal opens, seed selectAll from allInCart
+useEffect(() => {
+  if (allInCart) {
+    setSelectAll(true);
+  }
+}, [allInCart]);
+
+
+
   // Table columns
   const columns = [
     {
       Header: () => (
         <input
           type="checkbox"
-          checked={allInCart || selectAll}
+          checked={selectAll}
+          disabled={allBooked}
           // checked={selectAll}
           onChange={(e) => handleSelectAll(e.target.checked)}
           style={{
-            cursor: "pointer",
+            cursor: allBooked ? "not-allowed" : "pointer",
             width: "18px",
             height: "18px",
             accentColor: "#0b74de",
@@ -267,7 +277,6 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
           </button>
           <button
             onClick={handleAddToCart}
-            disabled={selectedSlots?.length === 0}
             style={{
               padding: "10px 18px",
               borderRadius: "6px",

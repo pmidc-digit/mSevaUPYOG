@@ -1,10 +1,7 @@
 package org.egov.echallan.repository.rowmapper;
 
 
-import org.egov.echallan.model.Address;
-import org.egov.echallan.model.AuditDetails;
-import org.egov.echallan.model.Boundary;
-import org.egov.echallan.model.Challan;
+import org.egov.echallan.model.*;
 import org.egov.echallan.model.Challan.StatusEnum;
 import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;
@@ -30,9 +27,9 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
 
     public List<Challan> extractData(ResultSet rs) throws SQLException, DataAccessException {
         Map<String, Challan> challanMap = new LinkedHashMap<>();
-       
+        List<DocumentDetail> documentDetails = new ArrayList<DocumentDetail>();
         while (rs.next()) {
-            String id = rs.getString("challan_id");
+            String id = rs.getString("challan_id_alias");
             Challan currentChallan = challanMap.get(id);
 
             if(currentChallan == null){
@@ -59,6 +56,7 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                 		.taxPeriodTo(taxPeriodto)
                 		.description(rs.getString("description"))
                 		.applicationStatus(StatusEnum.valueOf(rs.getString("applicationstatus")))
+                        .challanStatus(rs.getString("challanStatus"))
 //                        .applicationStatus(rs.getString("applicationstatus"))
                         .receiptNumber(rs.getString("receiptnumber"))
                 		.filestoreid(rs.getString("filestoreid"))
@@ -75,6 +73,7 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                 challanMap.put(id,currentChallan);
             }
             addAddressToChallan(rs, currentChallan);
+            addDocumentToChallan(rs,currentChallan,documentDetails);
 
         }
        
@@ -115,6 +114,27 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
       
     }
 
+
+private void addDocumentToChallan(ResultSet rs,Challan challan,List<DocumentDetail> documentDetails)throws SQLException{
+
+
+        /**
+         * document_detail_id, booking_id, document_type, filestore_id, createdby,
+         * lastmodifiedby, createdtime, lastmodifiedtime
+         */
+        AuditDetails auditdetails = AuditDetails.builder().createdBy(rs.getString("createdby"))
+                .createdTime(rs.getLong("createdtime")).lastModifiedBy(rs.getString("lastmodifiedby"))
+                .lastModifiedTime(rs.getLong("lastmodifiedtime")).build();
+        DocumentDetail details = DocumentDetail.builder().documentDetailId(rs.getString("document_detail_id"))
+                .challanId(rs.getString("challan_id")).documentType(rs.getString("document_type"))
+                .fileStoreId(rs.getString("filestore_id")).auditDetails(auditdetails).build();
+
+        documentDetails.add(details);
+        challan.setUploadedDocumentDetails(documentDetails);
+
+
+
+}
 
 
 

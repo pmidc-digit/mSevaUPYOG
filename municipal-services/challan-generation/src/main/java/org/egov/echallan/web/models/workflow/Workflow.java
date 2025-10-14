@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.egov.echallan.model.DocumentDetail;
 
 
 import java.util.List;
@@ -28,6 +29,10 @@ public class Workflow {
 
   @JsonProperty("comment")
   private String comment;
+
+  @JsonProperty("documents")
+
+  private List<DocumentDetail> documents = null;
 
 
 //  @JsonProperty("documents")

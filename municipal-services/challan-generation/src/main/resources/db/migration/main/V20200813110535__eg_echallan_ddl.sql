@@ -17,7 +17,7 @@ CREATE TABLE  IF NOT EXISTS eg_challan(
   CONSTRAINT uk_eg_challan UNIQUE (id)
 );
 
-CREATE TABLE  IF NOT EXISTS eg_challan_address(
+CREATE TABLE  IF NOT EXISTS eg_challanAddress(
     id character varying(64),
     tenantId character varying(64),
     doorNo character varying(64),
@@ -41,8 +41,8 @@ CREATE TABLE  IF NOT EXISTS eg_challan_address(
     createdTime bigint,
     lastModifiedTime bigint,
 
-    CONSTRAINT uk_eg_challan_address PRIMARY KEY (id),
-    CONSTRAINT fk_eg_challan_address FOREIGN KEY (challanId) REFERENCES eg_challan (id)
+    CONSTRAINT uk_eg_challanAddress PRIMARY KEY (id),
+    CONSTRAINT fk_eg_challanAddress FOREIGN KEY (challanId) REFERENCES eg_challan (id)
       ON UPDATE CASCADE
       ON DELETE CASCADE
 );

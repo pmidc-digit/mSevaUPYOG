@@ -22,18 +22,21 @@ public class ChallanQueryBuilder {
     }
 
     private static final String INNER_JOIN_STRING = " INNER JOIN ";
+    private static final String LEFT_JOIN_STRING = " LEFT JOIN ";
 
-    private static final String QUERY = "SELECT echallan.*,chaladdr.*,echallan.id as challan_id,echallan.tenantid as challan_tenantId,echallan.lastModifiedTime as " +
+    private static final String QUERY = "SELECT echallan.*,chaladdr.*,doc.*, echallan.id as challan_id_alias,echallan.tenantid as challan_tenantId,echallan.lastModifiedTime as " +
             "challan_lastModifiedTime,echallan.createdBy as challan_createdBy,echallan.lastModifiedBy as challan_lastModifiedBy,echallan.createdTime as " +
             "challan_createdTime,chaladdr.id as chaladdr_id," +
-            "echallan.accountId as uuid,echallan.description as description  FROM eg_challan echallan"
+            "echallan.accountId as uuid,echallan.description as description,echallan.challanStatus as challanStatus  FROM eg_challan echallan"
             +INNER_JOIN_STRING
-            +"eg_challan_address chaladdr ON chaladdr.challanid = echallan.id";
+            +"eg_challanAddress chaladdr ON chaladdr.challanid = echallan.id"
+            + LEFT_JOIN_STRING
+            +"eg_challan_document_detail doc ON doc.challan_id = echallan.id";
 
     private static final String COUNT_QUERY = "SELECT COUNT(echallan.id) " +
             "FROM eg_challan echallan"
             +INNER_JOIN_STRING
-            +"eg_challan_address chaladdr ON chaladdr.challanid = echallan.id";
+            +"eg_challanAddress chaladdr ON chaladdr.challanid = echallan.id";
 
       private final String paginationWrapper = "SELECT * FROM " +
               "(SELECT *, DENSE_RANK() OVER (ORDER BY challan_lastModifiedTime DESC , challan_id) offset_ FROM " +

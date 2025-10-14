@@ -95,6 +95,10 @@ public class Challan {
   @JsonProperty("address")
 
   private Address address = null;
+
+    @JsonProperty("documents")
+    @Valid
+    private List<DocumentDetail> uploadedDocumentDetails;
   
   @JsonProperty("filestoreid")
   @SafeHtml

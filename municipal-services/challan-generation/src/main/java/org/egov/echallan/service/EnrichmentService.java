@@ -175,6 +175,17 @@ public class EnrichmentService {
 	     if(fileStoreId!=null) {
 	    	 challanRepository.setInactiveFileStoreId(challan.getTenantId().split("\\.")[0], Collections.singletonList(fileStoreId));
 	     }
+
+        if(challan.getUploadedDocumentDetails()!=null) {
+            challan.getUploadedDocumentDetails().stream().forEach(document -> {
+                if (document.getDocumentDetailId() == null) {
+                    document.setChallanId(challan.getId());
+                    document.setDocumentDetailId(UUID.randomUUID().toString());
+                    document.setAuditDetails(auditDetails);
+                }
+
+            });
+        }
 	     challan.setFilestoreid(null);
 	}
 

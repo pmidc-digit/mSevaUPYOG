@@ -128,9 +128,13 @@
 .select-wrap {
   @apply mb-lg relative;
   max-width: 540px;
+  width:100%;
 
   .select {
-    @apply relative block w-full h-10 border border-solid border-input-border;
+    @apply relative block w-full;
+    height: 3rem;
+    border: 1px solid #b4b4b4;
+    border-radius: 8px;
 
     input[type="text"] {
       width: calc(100% - 32px);

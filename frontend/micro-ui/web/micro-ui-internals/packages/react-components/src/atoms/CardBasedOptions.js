@@ -50,7 +50,7 @@ const CardBasedOptions = ({ header, sideOption, options, styles = {}, style={} }
             {sideOption.name}
                       </button>
           </div>
-          <div className="mainContent citizenAllServiceGrid" style={{display:"flex", flexWrap : "wrap", borderRadius : '8px', marginTop: "1rem"}}>
+          <div className="mainContent citizenAllServiceGrid" style={{display:"flex", flexWrap : "wrap", borderRadius : '8px', marginTop: "1rem", justifyContent : "center"}}>
             
             {options.map( (props, index) => 
                 <Option key={index} {...props} />

@@ -90,21 +90,30 @@ const NewPTRStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const id = window.location.pathname.split("/").pop();
+  // const id = window.location.pathname.split("/").pop();
+
+  const pathParts = window.location.pathname.split("/");
+  const id = pathParts.find((part) => part.startsWith("PB-PTR-"));
+  console.log("id", id);
+
+  const shouldEnableSearch = Boolean(id && id.startsWith("PB-PTR-"));
+
+  console.log("shouldEnableSearch", shouldEnableSearch);
+
   // const isEdit = !!id;
 
   const { isLoading, data: applicationData } = Digit.Hooks.ptr.usePTRSearch({
     tenantId,
     filters: { applicationNumber: id },
-    enabled: !!id,
+    enabled: shouldEnableSearch,
   });
 
   useEffect(() => {
     console.log("applicationData for hereee:>> ", applicationData);
-    if (applicationData?.PetRegistrationApplications?.length) {
+    if (id && applicationData?.PetRegistrationApplications?.length) {
       dispatch(UPDATE_PTRNewApplication_FORM("responseData", applicationData.PetRegistrationApplications));
     }
-  }, [applicationData]);
+  }, [applicationData, id, dispatch]);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTRNewApplication_STEP(updatedStepNumber));

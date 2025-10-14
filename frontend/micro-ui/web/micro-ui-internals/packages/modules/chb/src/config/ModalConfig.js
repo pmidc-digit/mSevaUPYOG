@@ -13,8 +13,15 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
+  console.log("action=====", action);
   let checkCondtions = true;
-  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SENDBACK")
+  if (
+    action?.action == "SENDBACKTOCITIZEN" ||
+    action?.action == "APPROVE" ||
+    action?.action == "NOT_VERIFIED" ||
+    action?.action == "SENDBACK" ||
+    action?.action == "VERIFIED"
+  )
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 

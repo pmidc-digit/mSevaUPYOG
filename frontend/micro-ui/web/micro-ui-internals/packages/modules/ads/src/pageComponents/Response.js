@@ -25,10 +25,13 @@ const ADSResponseCitizen = (props) => {
     history.push(isCitizen ? `/digit-ui/citizen/ads-home` : `/digit-ui/employee/ads/inbox`);
   };
 
+
+  // `/digit-ui/citizen/payment/collect/adv-services/${ptrCode}/${tenantId}?tenantId=${tenantId}`
+  // history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}`)
   const handlePayment = () => {
     history.push(
       isCitizen
-        ? `/digit-ui/citizen/payment/collect/adv-services/${ptrCode}/${tenantId}?tenantId=${tenantId}`
+        ? `/digit-ui/citizen/payment/my-bills/adv-services/${applicationData?.bookingNo}`
         : `/digit-ui/employee/payment/collect/adv-services/${ptrCode}/${tenantId}?tenantId=${tenantId}`
     );
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
@@ -70,7 +73,7 @@ const ADSResponseCitizen = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_ADS")} onSubmit={onGoToNDC} />
-          <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />
+          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
     </div>

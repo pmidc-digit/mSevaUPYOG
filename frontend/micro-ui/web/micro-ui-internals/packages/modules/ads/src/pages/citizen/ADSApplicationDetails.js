@@ -17,12 +17,14 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams, Link } from "react-router-dom";
 import ADSDocument from "../../pageComponents/ADSDocument";
 import ApplicationTable from "../../components/ApplicationTable";
-import { pdfDownloadLink } from "../../utils";
+import { pdfDownloadLink, transformAdsData } from "../../utils";
 import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
+import getAcknowledgement from "../../getAcknowledgment";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
+import ADSCartDetails from "../../pageComponents/ADSCartDetails";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,
@@ -33,9 +35,7 @@ const ADSApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { acknowledgementIds, tenantId } = useParams();
-  const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
-  const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
 
   // removed businessServiceData & businessLoading (we now use workflowDetails)
@@ -67,21 +67,19 @@ const ADSApplicationDetails = () => {
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
-  const { tenants } = storeData || {};
-
-  const { isLoading, isError, error, data: adsData, refetch } = Digit.Hooks.ads.useADSSearch({
+  const { isLoading, error, data: adsData, refetch } = Digit.Hooks.ads.useADSSearch({
     tenantId,
     filters: { bookingNo: acknowledgementIds },
   });
-  const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
+  useEffect(() => {
+    refetch();
+  }, [acknowledgementIds, refetch]);
+  const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
-
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
   const application = ads_details;
-
-  sessionStorage.setItem("ads", JSON.stringify(application));
 
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -90,6 +88,15 @@ const ADSApplicationDetails = () => {
     moduleCode: businessServicMINE,
   });
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "adv-services",
+      consumerCodes: acknowledgementIds,
+      isEmployee: false,
+    },
+    { enabled: acknowledgementIds ? true : false }
+  );
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
       ...a,
@@ -135,42 +142,53 @@ const ADSApplicationDetails = () => {
   }
   // in progress
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let application = adsData?.bookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "advservice-receipt");
-      const updatedApplication = {
-        ...application,
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        bookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
+    let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "petservice-receipt");
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
-  async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = adsData?.bookingApplication?.[0];
-    let fileStoreId = application?.permissionLetterFilestoreId;
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
-      const updatedApplication = {
-        ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        bookingApplication: updatedApplication,
+
+  // async function getPermissionLetter({ tenantId, payments, ...params }) {
+  //   let application = adsData?.bookingApplication?.[0];
+  //   let fileStoreId = application?.permissionLetterFilestoreId;
+  //   if (!fileStoreId) {
+  //     const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
+  //     const updatedApplication = {
+  //       ...application,
+  //       permissionLetterFilestoreId: response?.filestoreIds[0],
+  //     };
+  //     await mutation.mutateAsync({
+  //       bookingApplication: updatedApplication,
+  //     });
+  //     fileStoreId = response?.filestoreIds[0];
+  //     refetch();
+  //   }
+  //   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+  //   window.open(fileStore[fileStoreId], "_blank");
+  // }
+
+  const downloadAcknowledgement = async (application) => {
+    console.log("application my details", application);
+    try {
+      if (!application) {
+        throw new Error("Booking Application data is missing");
+      }
+
+      getAcknowledgement(application, t);
+      setShowToast({
+        key: "success",
+        message: "ADV_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY",
       });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
+      setActionError("Acknowledgment downloaded successfully");
+    } catch (error) {
+      console.error("Acknowledgement download error:", error);
+      setShowToast({
+        key: "error",
+        message: `ADV_ACKNOWLEDGEMENT_DOWNLOAD_ERROR: ${error.message}`,
+      });
+      setActionError("Something went wrong");
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-  }
+  };
 
   function onActionSelect(wfAction) {
     if (!wfAction) return;
@@ -307,9 +325,16 @@ const ADSApplicationDetails = () => {
 
   let dowloadOptions = [];
 
+  const cartData = transformAdsData(ads_details?.cartDetails);
+  dowloadOptions.push({
+    label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
+    onClick: () => downloadAcknowledgement(application),
+  });
+
   const columns = [
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
-    { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
+    // { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
     { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
@@ -323,6 +348,12 @@ const ADSApplicationDetails = () => {
       bookingStatus: `${t(slot.status)}`,
     })) || [];
 
+  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    dowloadOptions.push({
+      label: t("PTR_FEE_RECIEPT"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
+  }
   return (
     <React.Fragment>
       <div>
@@ -338,10 +369,7 @@ const ADSApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <StatusTable>
-            <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
-          </StatusTable>
-
+          <StatusTable></StatusTable>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
@@ -349,44 +377,24 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
+            <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
+            <Row className="border-none" label={t("BOOKING_STATUS")} text={ads_details?.bookingStatus} />
+            {ads_details?.receiptNo && (
+              <Row className="border-none" label={t("CITIZEN_SUCCESS_ADVT_HOARDINGS_PAYMENT_RECEIPT_NO")} text={ads_details?.receiptNo} />
+            )}
           </StatusTable>
 
-          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_ADDRESS_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row className="border-none" label={t("ADS_HOUSE_NO")} text={ads_details?.address?.houseNo || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_HOUSE_NAME")} text={ads_details?.address?.houseName || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_STREET_NAME")} text={ads_details?.address?.streetName || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_ADDRESS_LINE1")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_ADDRESS_LINE2")} text={ads_details?.address?.addressLine2 || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_LANDMARK")} text={ads_details?.address?.landmark || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_CITY")} text={ads_details?.address?.city || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_LOCALITY")} text={ads_details?.address?.locality || t("CS_NA")} />
-            <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
-          </StatusTable> */}
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_CART_DETAILS")}</CardSubHeader>
-          <ApplicationTable
-            t={t}
-            data={adslistRows}
-            columns={columns}
-            getCellProps={(cellInfo) => ({
-              style: {
-                minWidth: "150px",
-                padding: "10px",
-                fontSize: "16px",
-                paddingLeft: "20px",
-              },
-            })}
-            isPaginationRequired={false}
-            totalRecords={adslistRows.length}
-          />
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
+          <ADSCartDetails cartDetails={cartData ?? []} t={t} />
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
             {docs?.length > 0 ? (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
                 {docs.map((doc, index) => (
                   <div key={index}>
-                    {t(doc?.documentType)}
                     <ADSDocument value={docs} Code={doc?.documentType} index={index} />
+                    {t(doc?.documentType)}
                   </div>
                 ))}
               </div>

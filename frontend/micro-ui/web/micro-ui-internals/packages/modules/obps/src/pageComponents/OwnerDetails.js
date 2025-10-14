@@ -717,7 +717,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           emailId: owner?.emailId,
           aadharNumber: owner?.aadharNumber,
           mobileNumber: owner?.mobileNumber,
-          isPrimaryOwner: owner?.isPrimaryOwner,
+          isPrimaryOwner: owner?.isPrimaryOwner || (fields?.length === 1) ? true : false,
           gender: owner?.gender?.code,
           dob: owner?.dob ? Digit.Utils.pt.convertDateToEpoch(owner?.dob) : null,
           fatherOrHusbandName: owner?.fatherOrHusbandName ||"NAME",

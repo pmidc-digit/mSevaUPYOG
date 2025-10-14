@@ -308,6 +308,18 @@ export const OBPSService = {
     console.log(BPA, "KHA");
     const edcrResponse = await OBPSService.scrutinyDetails(BPA?.tenantId, { edcrNumber: BPA?.edcrNumber });
     const [edcr] = edcrResponse?.edcrDetail;
+    let height = edcr?.planDetail?.blocks?.[0]?.building?.buildingHeight;
+
+    // if (typeof height === "number") {
+    //   height = Math.floor(height * 100) / 100; // truncate to 2 decimals
+    //   const remainder = (edcr?.planDetail?.blocks?.[0]?.building?.buildingHeight * 1000) % 10;
+
+    //   if (remainder > 5) {
+    //     height = parseFloat((height + 0.01).toFixed(2));
+    //   } else {
+    //     height = parseFloat(height.toFixed(2));
+    //   }
+    // }
     console.log(edcr, "KHATA");
     const mdmsRes = await MdmsService.getMultipleTypes(tenantId, "BPA", ["RiskTypeComputation", "CheckList"]);
     const riskType = Digit.Utils.obps.calculateRiskType(mdmsRes?.BPA?.RiskTypeComputation, edcr?.planDetail?.plot?.area, edcr?.planDetail?.blocks);
@@ -632,7 +644,7 @@ export const OBPSService = {
         },
         { title: "BPA_PLOT_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.plotNo || "NA", isNotTranslated: true },
         { title: "BPA_KHATHA_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.khatuniNo || "NA", isNotTranslated: true },
-        { title: "BPA_HOLDING_NUMBER_LABEL", value: BPA?.additionalDetails?.holdingNo || "NA", isNotTranslated: true },
+        // { title: "BPA_HOLDING_NUMBER_LABEL", value: BPA?.additionalDetails?.holdingNo || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_WALL_LENGTH_LABEL", value: BPA?.additionalDetails?.boundaryWallLength || "NA", isNotTranslated: true },
       ],
@@ -669,7 +681,7 @@ export const OBPSService = {
           },
           { title: "BPA_TOTAL_BUILT_UP_AREA_HEADER", value: Number(edcr?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2), isUnit: "BPA_SQ_MTRS_LABEL" },
           { title: "BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL", value: edcr?.planDetail?.blocks?.[0]?.building?.totalFloors || "NA" },
-          { title: "BPA_HEIGHT_FROM_GROUND_LEVEL", value: edcr?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeigh, isUnit: "BPA_MTRS_LABEL" },
+          { title: "BPA_HEIGHT_FROM_GROUND_LEVEL", value: Number(edcr?.planDetail?.blocks?.[0]?.building?.buildingHeight).toFixed(2), isUnit: "BPA_MTRS_LABEL" },
         ],
         scruntinyDetails: [],
       },

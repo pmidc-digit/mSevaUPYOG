@@ -656,7 +656,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       status: storeData?.applicationData?.status,
       connectionNo: storeData?.applicationData?.connectionNo,
       connectionHolders: storeData?.applicationData?.connectionHolders,
-      applicationType: "NEW_WATER_CONNECTION",
+      applicationType: "DISCONNECT_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" || data?.type?.value?.code === "TEMPORARY" ? true : false,
@@ -676,7 +676,10 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       roadType: null,
       connectionExecutionDate: storeData?.applicationData?.connectionExecutionDate,
       noOfTaps: storeData?.applicationData?.noOfTaps,
-      additionalDetails: storeData?.applicationData?.additionalDetails,
+      additionalDetails: {
+        ...storeData?.applicationData?.additionalDetails,
+        ...(storeData?.applicationData?.additionalDetails?.isMigrated === true ? { isMigrated: false } : {})
+      },
       tenantId: storeData?.applicationData?.tenantId,
       connectionType: storeData.applicationData.connectionType || null,
       waterSource: storeData.applicationData.waterSource || null,
@@ -703,7 +706,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       status: storeData?.applicationData?.status,
       connectionNo: storeData?.applicationData?.connectionNo,
       connectionHolders: storeData?.applicationData?.connectionHolders,
-      applicationType: "NEW_WATER_CONNECTION",
+      applicationType: "DISCONNECT_SEWERAGE_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" ? true : false,
@@ -724,7 +727,10 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       connectionExecutionDate: storeData?.applicationData?.connectionExecutionDate,
       noOfWaterClosets: storeData?.applicationData?.noOfWaterClosets,
       noOfToilets: storeData?.applicationData?.noOfToilets,
-      additionalDetails: storeData?.applicationData?.additionalDetails,
+      additionalDetails: {
+        ...storeData?.applicationData?.additionalDetails,
+        ...(storeData?.applicationData?.additionalDetails?.isMigrated === true ? { isMigrated: false } : {})
+      },
       tenantId: storeData?.applicationData?.tenantId,
       // connectionType: storeData.applicationData.connectionType || null,
       connectionType: "Non Metered",
@@ -938,7 +944,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
 export const updatePayloadOfWSDisconnection = async (data, type) => {
   let payload = {
     ...data,
-    plumberInfo : data?.plumberInfo?.[0] ? [{...data?.plumberInfo?.[0], id:null}] : data?.plumberInfo,
+    plumberInfo: data?.plumberInfo?.[0] ? [{...data?.plumberInfo?.[0], id:null}] : data?.plumberInfo,  
     applicationType: type === "WATER" ? "DISCONNECT_WATER_CONNECTION" : "DISCONNECT_SEWERAGE_CONNECTION",
     processInstance: {
       ...data?.processInstance,
@@ -1720,22 +1726,6 @@ export const downloadPdf = (blob, fileName) => {
   }
 };
 // ISSUE 16 FIX: Enhanced PDF Download Functionality  
-// 
-// Purpose: Downloads and opens PDF bills for WS/SW connections
-// Problem Solved: Download button was not working due to missing PDF generation logic
-// 
-// Implementation Details:
-// - Integrates with WSService.generateBillPdf API
-// - Handles both 200 and 201 status codes for successful responses  
-// - Creates PDF blob and triggers browser download
-// - Provides proper error handling and logging for debugging
-// - Uses connection number for filename generation
-// 
-// Error Handling:
-// - Validates response status codes
-// - Checks for empty PDF data
-// - Logs errors for debugging purposes
-// - Re-throws errors for upstream handling
 export const downloadAndOpenPdf = async (connectionNo, filters) => {
   try {
     const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -1768,5 +1758,5 @@ export const ifUserRoleExists = (role) => {
   const roleCodes = userInfo?.info?.roles ? userInfo?.info?.roles.map((role) => role.code) : [];
   if (roleCodes.indexOf(role) > -1) {
     return true;
-  } else return false;
+   } else return false;
 };

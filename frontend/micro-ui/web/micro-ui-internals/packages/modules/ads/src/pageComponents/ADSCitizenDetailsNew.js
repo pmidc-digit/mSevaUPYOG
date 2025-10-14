@@ -50,7 +50,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   // Prefill from Redux state
   if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
-  console.log("currentStepData", currentStepData);
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
       const created = currentStepData?.CreatedResponse;
@@ -88,13 +87,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   // Auto close toast after 2 seconds
 
   const onSubmit = async (data) => {
-    // clear in-memory draft
-    try {
-      if (window.__ADS_FORM_DRAFT) delete window.__ADS_FORM_DRAFT[formStorageKey];
-    } catch (e) {
-      /* ignore */
-    }
-
     const applicationDate = Date.now();
     const cartDetails = currentStepData?.ads?.flatMap((item) =>
       item.slots.map((slot) => ({
@@ -110,8 +102,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       bookingStatus: "BOOKING_CREATED",
       businessService: "ADV",
       address: {
-        pincode: data.pincode || "",
-        addressLine1: data.address || "",
+        pincode: data?.pincode || "",
+        addressLine1: data?.address || "",
       },
       applicantDetail: {
         applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
@@ -190,7 +182,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
+      <div style={{ maxWidth: !isCitizen && "500px" }}>
         <CardLabel>
           {t("NDC_FIRST_NAME")}
           <span style={mandatoryStyle}>*</span>{" "}
@@ -263,74 +255,74 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         {errors.mobileNumber && <CardLabelError style={errorStyle}>{errors.mobileNumber.message}</CardLabelError>}
 
         {/* Address */}
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">
-            {`${t("PT_COMMON_COL_ADDRESS")}`}
-            <span style={mandatoryStyle}>*</span>
-          </CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              name="address"
-              rules={{
-                required: t("NDC_MESSAGE_ADDRESS"),
-                pattern: {
-                  value: /^[A-Za-z0-9\s.,'/-]+$/,
-                  message: t("PTR_ADDRESS_INVALID"),
-                },
-                maxLength: { value: 500, message: "Maximum 500 characters" },
-                minLength: { value: 5, message: "Minimum 5 characters" },
-              }}
-              render={({ value, onChange, onBlur }) => (
-                <TextArea
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  onBlur={(e) => {
-                    onBlur(e);
-                    trigger("address");
-                  }}
-                  t={t}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
+        {/* <LabelFieldPair> */}
+        <CardLabel className="card-label-smaller">
+          {`${t("PT_COMMON_COL_ADDRESS")}`}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="address"
+            rules={{
+              required: t("NDC_MESSAGE_ADDRESS"),
+              pattern: {
+                value: /^[A-Za-z0-9\s.,'/-]+$/,
+                message: t("PTR_ADDRESS_INVALID"),
+              },
+              maxLength: { value: 500, message: "Maximum 500 characters" },
+              minLength: { value: 5, message: "Minimum 5 characters" },
+            }}
+            render={({ value, onChange, onBlur }) => (
+              <TextArea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("address");
+                }}
+                t={t}
+              />
+            )}
+          />
+        </div>
+        {/* </LabelFieldPair> */}
         {errors?.address && <CardLabelError style={errorStyle}>{errors?.address?.message}</CardLabelError>}
 
         {/* Pincode */}
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">
-            {`${t("CORE_COMMON_PINCODE")}`}
-            <span style={mandatoryStyle}>*</span>
-          </CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              name="pincode"
-              rules={{
-                required: t("PTR_PINCODE_REQUIRED"),
-                pattern: {
-                  value: /^[1-9][0-9]{5}$/,
-                  message: t("PTR_PINCODE_INVALID"),
-                },
-                minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
-                maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
-              }}
-              render={({ value, onChange, onBlur }) => (
-                <TextInput
-                  value={value}
-                  onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
-                  onBlur={(e) => {
-                    onBlur(e);
-                    trigger("pincode");
-                  }}
-                  t={t}
-                  maxLength={6}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
+        {/* <LabelFieldPair> */}
+        <CardLabel className="card-label-smaller">
+          {`${t("CORE_COMMON_PINCODE")}`}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="pincode"
+            rules={{
+              required: t("PTR_PINCODE_REQUIRED"),
+              pattern: {
+                value: /^[1-9][0-9]{5}$/,
+                message: t("PTR_PINCODE_INVALID"),
+              },
+              minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
+              maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
+            }}
+            render={({ value, onChange, onBlur }) => (
+              <TextInput
+                value={value}
+                onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("pincode");
+                }}
+                t={t}
+                maxLength={6}
+              />
+            )}
+          />
+        </div>
+        {/* </LabelFieldPair> */}
         {errors.pincode && <CardLabelError style={errorStyle}>{errors?.pincode?.message}</CardLabelError>}
       </div>
 

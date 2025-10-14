@@ -2,19 +2,19 @@ import React, { useState } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
 const ADSCartDetails = ({ cartDetails, t }) => {
-  const [expanded, setExpanded] = useState(
-    () => cartDetails?.map((item) => item?.ad?.id)
-  );
+  const [expanded, setExpanded] = useState(() => cartDetails?.map((item) => item?.ad?.id));
+
   const toggleExpand = (adId) => {
-    setExpanded((prev) =>
-      prev?.includes(adId) ? prev?.filter((id) => id !== adId) : [...prev, adId]
-    );
+    setExpanded((prev) => (prev?.includes(adId) ? prev?.filter((id) => id !== adId) : [...prev, adId]));
   };
 
   const makeColumns = () => [
- { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_DATE"), accessor: "bookingDate" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
+
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),
@@ -25,12 +25,10 @@ const ADSCartDetails = ({ cartDetails, t }) => {
   return (
     <div style={{ marginTop: "1rem" }}>
       {cartDetails?.length === 0 ? (
-        <p style={{ padding: "12px", color: "#666" }}>
-          {t("ADS_NO_ADVERTISMENT_DETAILS")}
-        </p>
+        <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ADVERTISMENT_DETAILS")}</p>
       ) : (
-        cartDetails.map((item, idx) => {
-          const isOpen = expanded?.includes(item.ad.id);
+        cartDetails?.map((item, idx) => {
+          const isOpen = expanded?.includes(item?.ad?.id);
           return (
             <div
               key={idx}
@@ -57,7 +55,13 @@ const ADSCartDetails = ({ cartDetails, t }) => {
                 }}
               >
                 <span>
-                  {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length}
+                  {/* {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length} */}
+                  {/* {item?.ad?.amount ? ` — ₹${(item.ad.amount * 0.09 * 0.09 * item.slots?.length).toFixed(2)}` : ""} */}
+                  {t(item?.ad?.name ?? item?.ad?.location)}
+                  {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
+                  {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
+                   {/* Apply 9% tax + 9% service (18%) once on base amount, then add base × slots */}
+                  {/* {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * item?.slots?.length + item?.ad?.amount * 0.18).toFixed(2)}` : ""} */}
                 </span>
                 <span style={{ fontSize: "18px" }}>{isOpen ? "▾" : "▸"}</span>
               </div>

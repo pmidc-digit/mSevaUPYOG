@@ -13,7 +13,7 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       roles: [],
     },
     {
-      text: t("ADS_MY_APPLICATION"),
+      text: t("ADS_MY_APPLICATIONS"),
       link: `/digit-ui/employee/ads/my-applications`,
       roles: [],
     },

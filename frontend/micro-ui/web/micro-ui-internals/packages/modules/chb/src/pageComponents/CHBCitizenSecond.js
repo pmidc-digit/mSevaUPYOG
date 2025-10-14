@@ -46,9 +46,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const slotsSearch = async (data) => {
     setLoader(true);
 
+    console.log("data", data);
+
     const payload = {
       tenantId: tenantId,
-      communityHallCode: getValues()?.siteId?.code,
+      communityHallCode: data.communityHallId,
       hallCode: data?.HallCode,
       bookingStartDate: getValues()?.startDate,
       bookingEndDate: getValues()?.startDate,
@@ -93,6 +95,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         bookingStatus: "INITIATED",
         applicationDate: now,
         communityHallCode: getHallDetails?.[0]?.communityHallId || "",
+        communityHallName: data?.siteId?.name,
         purpose: {
           purpose: data?.purpose?.code,
         },
@@ -182,7 +185,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   select={(e) => {
                     props.onChange(e);
                     fiterHalls(e);
+                    // Reset dependent fields properly
                     setValue("hallCode", null);
+                    setValue("startDate", "");
+                    setSlots([]); // also clear any previous slots
+                    setShowInfo(false); // hide extra info until hallCode re-selected
                   }}
                   selected={props.value}
                   option={CHBLocations?.CHB?.CommunityHalls}
@@ -298,7 +305,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                           <input
                             type="checkbox"
                             checked={isChecked}
+                            disabled={!isAvailable}
                             onChange={(e) => {
+                              if (!isAvailable) return;
                               if (e.target.checked) {
                                 field.onChange([...(field.value || []), slot]);
                               } else {

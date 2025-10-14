@@ -105,6 +105,7 @@ module.exports = function (app) {
     "/pgr-ai-services/v1/request/_create",
     "/pgr-ai-services/v1/request/_search",
     "/pgr-ai-services/v1/request/_update",
+    "/egov-esign",
     "/ndc-services",
     "/ndc-calculator",
     '/bpa-calculator',

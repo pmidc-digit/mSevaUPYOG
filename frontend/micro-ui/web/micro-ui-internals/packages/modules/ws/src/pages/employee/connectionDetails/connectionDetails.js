@@ -25,7 +25,13 @@ const GetConnectionDetails = () => {
   const stateCode = Digit.ULBService.getStateId();
   const actionConfig = ["COLLECT","SINGLE DEMAND","CANCEL DEMAND","MODIFY CONNECTION","DISCONNECTION_BUTTON"];
   
-  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType, {
+  const normalizedServiceType = React.useMemo(() => {
+    if (serviceType === "WS" || serviceType === "WATER") return "WATER";
+    if (serviceType === "SW" || serviceType === "SEWARAGE") return "SEWARAGE";
+    return "";
+  }, [serviceType]);
+
+  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, normalizedServiceType, {
     privacy: Digit.Utils.getPrivacyObject(),
     enabled: !!(tenantId && applicationNumber && serviceType)
   });
@@ -552,20 +558,11 @@ const showActionRestoration = ["RESTORATION_BUTTON"]
             formId="modal-action"
             actionCancelOnSubmit={() => setshowModal(false)}
             actionCancelLabel={t(`${"CS_COMMON_CANCEL"}`)}
-            actionSaveLabel={t(`${"WS_COMMON_COLLECT_LABEL"}`)}
-            actionSaveOnSubmit={() => {
-              history.push(
-                `/digit-ui/employee/payment/collect/${serviceType === "WATER" ? "WS" : "SW"}/${encodeURIComponent(
-                  applicationNumber
-                )}/${getTenantId}?tenantId=${getTenantId}&ISWSCON`
-              );
-              setshowModal(false);
-            }}
             popupStyles={mobileView ? { width: "720px" } : {}}
             style={
               !mobileView
-                ? { minHeight: "45px", height: "auto", width: "107px", paddingLeft: "0px", paddingRight: "0px" }
-                : { minHeight: "45px", height: "auto", width: "44%" }
+                ? { minHeight: "45px", height: "auto", width: "auto", paddingLeft: "0px", paddingRight: "0px" }
+                : { minHeight: "45px", height: "auto", width: "auto" }
             }
             popupModuleMianStyles={mobileView ? { paddingLeft: "5px" } : {}}
           >

@@ -17,6 +17,7 @@ import React, { use, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Timeline from "../components/Timeline";
 import { useForm, Controller } from "react-hook-form";
+import { PropertySearch } from "./PropertySearch";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -37,7 +38,6 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [materialused, setMaterialUsed] = useState("");
   const [materialusedinfloor, setMaterialUsedInFloor] = useState("");
   const [materialusedinroofs, setMaterialUsedInRoofs] = useState("");
-  const [propertyuid, setPropertyUid] = useState("");
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
@@ -151,7 +151,7 @@ console.log("sessionStorageData",approvedLicense);
     setMaterialUsed(details?.materialused || "");
     setMaterialUsedInFloor(details?.materialusedinfloor || "");
     setMaterialUsedInRoofs(details?.materialusedinroofs || "");
-    setPropertyUid(details?.propertyuid || "");
+    // setPropertyUid(details?.propertyuid || "");
   }
 }, [currentStepData?.createdResponse]);
 
@@ -186,7 +186,7 @@ console.log("sessionStorageData",approvedLicense);
       newErrors.architectid = t("BPA_ARCHITECT_ID_REQUIRED");
     }
 
-    if (!propertyuid.trim()) {
+    if (!currentStepData?.cpt?.id?.trim()) {
       newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
     }
 
@@ -259,7 +259,21 @@ console.log("sessionStorageData",approvedLicense);
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
     const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
-    const architectMobileNumber = userInfo?.info?.mobileNumber || ""
+    const architectMobileNumber = userInfo?.info?.mobileNumber || "";
+    const propertyuid = currentStepData?.cpt?.id || "";
+    const address = currentStepData?.cpt?.details?.address || currentStepData?.createdResponse?.landInfo?.address || undefined;
+    const ownershipCategory = currentStepData?.cpt?.details?.ownershipCategory || currentStepData?.createdResponse?.landInfo?.ownershipCategory || undefined;
+    const owners = currentStepData?.cpt?.details?.owners?.map((data) => ({
+      ...data,
+      status: data?.status?.trim() === "ACTIVE"? true : false,
+    })) || currentStepData?.createdResponse?.landInfo?.owners || undefined;
+    const landInfo = {
+      address,
+      ownershipCategory,
+      owners,
+      tenantId,
+      unit: []
+    }
 
     const additionalDetails = formData?.data?.applicationNo ? {
       ...currentStepData?.createdResponse?.additionalDetails,
@@ -384,7 +398,8 @@ console.log("sessionStorageData",approvedLicense);
           accountId,
           documents: [],
           additionalDetails,
-          landInfo: null,
+          landInfo: currentStepData?.cpt?.details ? landInfo : null,
+          // landInfo: null,
           workflow: {
             action: workflowAction,
             assignes: [accountId]
@@ -450,7 +465,11 @@ console.log("sessionStorageData",approvedLicense);
           {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number")}
           {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
           {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
-          {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")}
+          {/* {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")} */}
+          <PropertySearch  formData={currentStepData} />
+          {errors["propertyuid"] && (
+          <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
+          )}
           {renderField(t("BPA_NUMBER_OF_BATHS")+"*", bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
           {renderField(t("BPA_NUMBER_OF_KITCHENS")+"*", kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
           {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION")+"*", approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}

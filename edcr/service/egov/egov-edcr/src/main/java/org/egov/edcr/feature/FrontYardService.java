@@ -63,6 +63,7 @@ import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -172,7 +173,7 @@ private class FrontYardResult {
 		String setBackPercentage;
 	}
 
-	public void processFrontYard(Plan pl) {
+	public void processFrontYard(Plan pl, List<ScrutinyDetail> scrutinyDetailList) {
 		Plot plot = pl.getPlot();
 		HashMap<String, String> errors = new HashMap<>();
 		if (plot == null)
@@ -319,7 +320,8 @@ private class FrontYardResult {
 									details.put(STATUS, Result.Not_Accepted.getResultVal());
 								}
 								scrutinyDetail.getDetail().add(details);
-								pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+								scrutinyDetailList.add(scrutinyDetail);
+								//pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 							//}
 
 						}

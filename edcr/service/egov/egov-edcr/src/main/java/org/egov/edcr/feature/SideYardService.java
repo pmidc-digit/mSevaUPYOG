@@ -64,6 +64,7 @@ import static org.egov.edcr.utility.DcrConstants.SIDE_YARD_DESC;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -163,7 +164,7 @@ public class SideYardService extends GeneralRule {
         String setBackPercentage;
     }
 
-    public void processSideYard(Plan pl) {
+    public void processSideYard(Plan pl, List<ScrutinyDetail> scrutinyDetailList) {
     	LOG.info("Processing SideYard:");
         HashMap<String, String> errors = new HashMap<>();
         Plot plot = pl.getPlot();
@@ -320,7 +321,7 @@ public class SideYardService extends GeneralRule {
 
                             }
 
-                            addSideYardResult(pl, errors, sideYard1Result, sideYard2Result);
+                            addSideYardResult(pl, errors, sideYard1Result, sideYard2Result, scrutinyDetailList);
                         }
                         
                         if (pl.getPlanInformation() != null
@@ -470,10 +471,10 @@ public class SideYardService extends GeneralRule {
 
     
     private void addSideYardResult(final Plan pl, HashMap<String, String> errors, SideYardResult sideYard1Result,
-            SideYardResult sideYard2Result) {
+            SideYardResult sideYard2Result, List<ScrutinyDetail> scrutinyDetailList) {
         if (sideYard1Result != null) {
             Map<String, String> details = new HashMap<>();
-            details.put(RULE_NO, sideYard1Result.subRule);
+            //details.put(RULE_NO, sideYard1Result.subRule);
             details.put(LEVEL,
                     sideYard1Result.level != null ? sideYard1Result.level.toString() : "");
             details.put(OCCUPANCY, sideYard1Result.occupancy);
@@ -489,9 +490,10 @@ public class SideYardService extends GeneralRule {
 			    permissableValueWithPercentage = sideYard1Result.setBackPercentage;
 			    providedValue = sideYard1Result.actualMeanDistance.toString() + "m";
 			} else {								
-			    permissableValueWithPercentage = sideYard1Result.setBackPercentage 
-			            + "% of the plot area (" 
-			            + sideYard1Result.expectedDistance.toPlainString() + ")";
+//			    permissableValueWithPercentage = sideYard1Result.setBackPercentage 
+//			            + "% of the plot area (" 
+//			            + sideYard1Result.expectedDistance.toPlainString() + ")";
+				permissableValueWithPercentage = sideYard1Result.setBackPercentage;
 			    providedValue = sideYard1Result.actualDistance.toString();
 			}
 
@@ -510,7 +512,8 @@ public class SideYardService extends GeneralRule {
             }
 
             scrutinyDetail.getDetail().add(details);
-            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+            scrutinyDetailList.add(scrutinyDetail);
+            //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
         }
 
         if (errors.isEmpty()) {
@@ -535,9 +538,10 @@ public class SideYardService extends GeneralRule {
     			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;
     			    providedValue = sideYard2Result.actualMeanDistance.toString() + "m";
     			} else {								
-    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage 
-    			            + "% of the plot area (" 
-    			            + sideYard2Result.expectedDistance.toPlainString() + ")";
+//    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage 
+//    			            + "% of the plot area (" 
+//    			            + sideYard2Result.expectedDistance.toPlainString() + ")";
+    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;    			            
     			    providedValue = sideYard2Result.actualDistance.toString();
     			}
 
@@ -554,7 +558,8 @@ public class SideYardService extends GeneralRule {
                 }
 
                 scrutinyDetail.getDetail().add(detailsSideYard2);
-                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                scrutinyDetailList.add(scrutinyDetail);
+                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             }
         }
     }

@@ -790,62 +790,253 @@ public class PlanReportService {
                 ScrutinyDetail rear = null;
                 ScrutinyDetail side = null;
 
+//                for (String blkFeature : blocks.get(blkName)) {
+//                	  LOG.info("Generate Report......."+blkFeature);
+//                    if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
+//                            || blkFeature.equals(SIDE_YARD_DESC)) {
+//
+//                        if (blkFeature.equals(FRONT_YARD_DESC)) {
+//                            front = allMap.get(blkName + blkFeature);
+//                            front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
+//                           // continue;
+//                        }
+//                        if (blkFeature.equals(REAR_YARD_DESC)) {
+//                            rear = allMap.get(blkName + blkFeature);
+//                            rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
+//                           // continue;
+//                        }
+//
+//                        side = allMap.get(blkName + blkFeature);
+////                         List<Map<String, String>> detail = allMap.get(blkName +
+////                         blkFeature).getDetail();
+//                        List<Map<String, String>> detail = side.getDetail();
+////
+////                        if (front != null)
+////                            detail.add(0, front.getDetail().get(0));
+////                        if (rear != null)
+////                            detail.add(1, rear.getDetail().get(0));
+////
+//                        for (Map<String, String> d : detail) {
+//                            String sideNumber = d.get(SIDENUMBER);
+//                            if (StringUtils.isNotBlank(sideNumber)) {
+//                                d.remove(SIDENUMBER);
+//                                d.put(SIDENUMBER_NAME, sideNumber);
+//                            }
+//                        }
+//                        side.addColumnHeading(2, SIDENUMBER_NAME);
+//                        side.addColumnHeading(4, LEVEL);
+//                         allMap.get(blkName + blkFeature).setHeading(SIDENUMBER_NAME);
+//
+//                        j++;
+//                        drb.addConcatenatedReport(
+//                                getSub(allMap.get(blkName + blkFeature), j, j + "." + blkFeature, SIDENUMBER_NAME,
+//                                        allMap.get(blkName + blkFeature).getSubHeading(), blkName + blkFeature));
+//                        valuesMap.put(blkName + blkFeature, allMap.get(blkName + blkFeature).getDetail());
+//
+//                        List featureFooter = new ArrayList();
+//                        if (allMap.get(blkName + blkFeature).getRemarks() != null) {
+//                            drb.addConcatenatedReport(
+//                                    createFooterSubreport("Remarks :  " + allMap.get(blkName + blkFeature).getRemarks(),
+//                                            "Remarks_" + blkName + blkFeature));
+//                            featureFooter.add(allMap.get(blkName + blkFeature).getRemarks());
+//                            valuesMap.put("Remarks_" + blkName + blkFeature, featureFooter);
+//                        }
+//                    } else {
+//                        continue;
+//                    }
+//
+//                }
+                
+//                for (String blkFeature : blocks.get(blkName)) {
+//
+//                    LOG.info("Generate Report......." + blkFeature);
+//
+//                    if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
+//                            || blkFeature.equals(SIDE_YARD_DESC)) {
+//
+//                        if (blkFeature.equals(FRONT_YARD_DESC)) {
+//                            front = allMap.get(blkName + blkFeature);
+//                            if (front != null && !front.getDetail().isEmpty()) {
+//                                front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
+//                            }
+//                        }
+//
+//                        if (blkFeature.equals(REAR_YARD_DESC)) {
+//                            rear = allMap.get(blkName + blkFeature);
+//                            if (rear != null && !rear.getDetail().isEmpty()) {
+//                                rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
+//                            }
+//                        }
+//
+//                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+//                            side = allMap.get(blkName + blkFeature);
+//                        }
+//                    }
+//                }
+//
+//                // ✅ Combine FRONT + REAR in one table
+//                if (front != null && rear != null) {
+//                    List<Map<String, String>> combinedDetails = new ArrayList<>();
+//                    combinedDetails.addAll(front.getDetail());
+//                    combinedDetails.addAll(rear.getDetail());
+//
+//                    // Update column headings once
+//                    front.addColumnHeading(2, SIDENUMBER_NAME);
+//                    front.addColumnHeading(4, LEVEL);
+//
+//                    // Create a single combined report
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                          getSub(allMap.get(blkName + blkFeature), j, j + "." + blkFeature, SIDENUMBER_NAME,
+//                                  allMap.get(blkName + blkFeature).getSubHeading(), blkName + blkFeature));
+////                    drb.addConcatenatedReport(
+////                            getSub(allMap.get(blkName + blkFeature),j, j + "."+ blkFeature, SIDENUMBER_NAME,
+////                                    "Front & Rear Yard Details", blkName + "FrontRearYardDetails"));
+//                    valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+//
+//                    // Add remarks (combined)
+//                    List<String> featureFooter = new ArrayList<>();
+//                    if (front.getRemarks() != null) featureFooter.add(front.getRemarks());
+//                    if (rear.getRemarks() != null) featureFooter.add(rear.getRemarks());
+//                    if (!featureFooter.isEmpty()) {
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + String.join("\n", featureFooter),
+//                                        "Remarks_" + blkName + "FrontRearYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "FrontRearYardDetails", featureFooter);
+//                    }
+//                }
+//
+//                // ✅ Process SIDE yard separately (as before)
+//                if (side != null && !side.getDetail().isEmpty()) {
+//                    for (Map<String, String> d : side.getDetail()) {
+//                        String sideNumber = d.get(SIDENUMBER);
+//                        if (StringUtils.isNotBlank(sideNumber)) {
+//                            d.remove(SIDENUMBER);
+//                            d.put(SIDENUMBER_NAME, sideNumber);
+//                        }
+//                    }
+//                    side.addColumnHeading(2, SIDENUMBER_NAME);
+//                    side.addColumnHeading(4, LEVEL);
+//
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                            getSub(side, j, j + ".Side Yard Details", SIDENUMBER_NAME,
+//                                    "Side Yard Details", blkName + "SideYardDetails"));
+//                    valuesMap.put(blkName + "SideYardDetails", side.getDetail());
+//
+//                    if (side.getRemarks() != null) {
+//                        List<String> featureFooter = new ArrayList<>();
+//                        featureFooter.add(side.getRemarks());
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + side.getRemarks(),
+//                                        "Remarks_" + blkName + "SideYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "SideYardDetails", featureFooter);
+//                    }
+//                }
+
                 for (String blkFeature : blocks.get(blkName)) {
-                	  LOG.info("Generate Report......."+blkFeature);
+
+                    LOG.info("Generate Report......." + blkFeature);
+
                     if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
                             || blkFeature.equals(SIDE_YARD_DESC)) {
 
                         if (blkFeature.equals(FRONT_YARD_DESC)) {
                             front = allMap.get(blkName + blkFeature);
-                            front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
-                           // continue;
-                        }
-                        if (blkFeature.equals(REAR_YARD_DESC)) {
-                            rear = allMap.get(blkName + blkFeature);
-                            rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
-                           // continue;
-                        }
-
-                        side = allMap.get(blkName + blkFeature);
-//                         List<Map<String, String>> detail = allMap.get(blkName +
-//                         blkFeature).getDetail();
-                        List<Map<String, String>> detail = side.getDetail();
-//
-//                        if (front != null)
-//                            detail.add(0, front.getDetail().get(0));
-//                        if (rear != null)
-//                            detail.add(1, rear.getDetail().get(0));
-//
-                        for (Map<String, String> d : detail) {
-                            String sideNumber = d.get(SIDENUMBER);
-                            if (StringUtils.isNotBlank(sideNumber)) {
-                                d.remove(SIDENUMBER);
-                                d.put(SIDENUMBER_NAME, sideNumber);
+                            if (front != null && !front.getDetail().isEmpty()) {
+                                front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
                             }
                         }
-                        side.addColumnHeading(2, SIDENUMBER_NAME);
-                        side.addColumnHeading(4, LEVEL);
-                         allMap.get(blkName + blkFeature).setHeading(SIDENUMBER_NAME);
 
-                        j++;
-                        drb.addConcatenatedReport(
-                                getSub(allMap.get(blkName + blkFeature), j, j + "." + blkFeature, SIDENUMBER_NAME,
-                                        allMap.get(blkName + blkFeature).getSubHeading(), blkName + blkFeature));
-                        valuesMap.put(blkName + blkFeature, allMap.get(blkName + blkFeature).getDetail());
-
-                        List featureFooter = new ArrayList();
-                        if (allMap.get(blkName + blkFeature).getRemarks() != null) {
-                            drb.addConcatenatedReport(
-                                    createFooterSubreport("Remarks :  " + allMap.get(blkName + blkFeature).getRemarks(),
-                                            "Remarks_" + blkName + blkFeature));
-                            featureFooter.add(allMap.get(blkName + blkFeature).getRemarks());
-                            valuesMap.put("Remarks_" + blkName + blkFeature, featureFooter);
+                        if (blkFeature.equals(REAR_YARD_DESC)) {
+                            rear = allMap.get(blkName + blkFeature);
+                            if (rear != null && !rear.getDetail().isEmpty()) {
+                                rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear and Side");
+                            }
                         }
+
+                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+                            side = allMap.get(blkName + blkFeature);
+                        }
+                    }
+                }
+
+                // ----------------- Combine FRONT + REAR into single ScrutinyDetail -----------------
+                ScrutinyDetail combined = null;
+                List<Map<String, String>> combinedDetails = new ArrayList<>();
+
+                if (front != null && front.getDetail() != null && !front.getDetail().isEmpty()) {
+                    combinedDetails.addAll(front.getDetail());
+                }
+                if (rear != null && rear.getDetail() != null && !rear.getDetail().isEmpty()) {
+                    combinedDetails.addAll(rear.getDetail());
+                }
+
+                // Only create a combined report if there's at least one detail
+                if (!combinedDetails.isEmpty()) {
+                    // Prefer to reuse 'front' as the base ScrutinyDetail if available, otherwise reuse 'rear'
+                    if (front != null) {
+                        combined = front;
                     } else {
-                        continue;
+                        combined = rear;
                     }
 
+                    // Ensure combined ScrutinyDetail contains the merged details
+                    combined.setDetail(combinedDetails);
+
+                    // Add column headings once
+                    combined.addColumnHeading(2, SIDENUMBER_NAME);
+                    combined.addColumnHeading(4, LEVEL);
+
+                    // Create a single combined report entry
+                    j++;
+                    drb.addConcatenatedReport(
+                            getSub(combined, j, j + ".Front/Rear Yard Details", SIDENUMBER_NAME,
+                                    "", blkName + "FrontRearYardDetails"));
+
+                    // Put combined details into valuesMap (used by report engine)
+                    valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+
+                    // Combine remarks (if any) and add footer
+                    List<String> featureFooter = new ArrayList<>();
+                    if (front != null && StringUtils.isNotBlank(front.getRemarks())) featureFooter.add(front.getRemarks());
+                    if (rear != null && StringUtils.isNotBlank(rear.getRemarks())) featureFooter.add(rear.getRemarks());
+                    if (!featureFooter.isEmpty()) {
+                        drb.addConcatenatedReport(
+                                createFooterSubreport("Remarks :  " + String.join("\n", featureFooter),
+                                        "Remarks_" + blkName + "FrontRearYardDetails"));
+                        valuesMap.put("Remarks_" + blkName + "FrontRearYardDetails", featureFooter);
+                    }
                 }
+
+                // ----------------- Process SIDE yard separately -----------------
+//                if (side != null && side.getDetail() != null && !side.getDetail().isEmpty()) {
+//                    for (Map<String, String> d : side.getDetail()) {
+//                        String sideNumber = d.get(SIDENUMBER);
+//                        if (StringUtils.isNotBlank(sideNumber)) {
+//                            d.remove(SIDENUMBER);
+//                            d.put(SIDENUMBER_NAME, sideNumber);
+//                        }
+//                    }
+//                    side.addColumnHeading(2, SIDENUMBER_NAME);
+//                    side.addColumnHeading(4, LEVEL);
+//
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                            getSub(side, j, j + ".Side Yard Details", SIDENUMBER_NAME,
+//                                    "Side Yard Details", blkName + "SideYardDetails"));
+//                    valuesMap.put(blkName + "SideYardDetails", side.getDetail());
+//
+//                    if (StringUtils.isNotBlank(side.getRemarks())) {
+//                        List<String> featureFooter = new ArrayList<>();
+//                        featureFooter.add(side.getRemarks());
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + side.getRemarks(),
+//                                        "Remarks_" + blkName + "SideYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "SideYardDetails", featureFooter);
+//                    }
+//                }
+
             
 //            for (String blkName : blocks.keySet()) {
 //                List blkHeading = new ArrayList();

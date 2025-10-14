@@ -123,10 +123,10 @@ public class Parking extends FeatureProcess {
     private static final double MECH_PARKING_WIDTH = 2.7;
     private static final double MECH_PARKING_HEIGHT = 5.5;
 
-    private static final double OPEN_ECS = 22.15;
-    private static final double COVER_ECS = 27.17;
-    private static final double BSMNT_ECS = 38.5;
-    private static final double STILT_ECS = 32.5;
+    private static final double OPEN_ECS = 22.17;
+    private static final double COVER_ECS = 27.18;
+    private static final double BSMNT_ECS = 32.2;
+    private static final double STILT_ECS = 27.18;
     private static final double PARK_A = 0.25;
     private static final double PARK_F = 0.30;
     private static final double PARK_VISITOR = 0.15;
@@ -254,7 +254,14 @@ public class Parking extends FeatureProcess {
 
     public void processParking(Plan pl) {
         ParkingHelper helper = new ParkingHelper();
-        BigDecimal plotArea = pl.getPlot() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+        BigDecimal plotArea = (pl.getPlot() != null && pl.getPlot().getArea() != null)
+                ? pl.getPlot().getArea()
+                : BigDecimal.ZERO;
+
+        BigDecimal coveredArea = (pl.getVirtualBuilding() != null && pl.getVirtualBuilding().getTotalCoverageArea() != null)
+                ? pl.getVirtualBuilding().getTotalCoverageArea().setScale(2, BigDecimal.ROUND_HALF_UP)
+                : BigDecimal.ZERO;
+
               
         ScrutinyDetail scrutinyDetail1 = new ScrutinyDetail();
         scrutinyDetail1.addColumnHeading(1, RULE_NO);
@@ -368,7 +375,7 @@ public class Parking extends FeatureProcess {
                 BigDecimal divisor = BigDecimal.valueOf(50);
 
                 // Divide and always round UP since ECS must be whole
-                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.CEILING);
+                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
 
                 noOfrequiredParking = requiredParking.intValue();
             }
@@ -418,7 +425,7 @@ public class Parking extends FeatureProcess {
                 } else {
                     // Calculate required ECS, always round UP
                     BigDecimal requiredParking = plotCoveredArea
-                            .divide(divisor, 0, RoundingMode.CEILING)
+                            .divide(divisor, 0, RoundingMode.HALF_UP)
                             .multiply(BigDecimal.valueOf(multiplier));
 
                     noOfrequiredParking = requiredParking.intValue();
@@ -449,7 +456,7 @@ public class Parking extends FeatureProcess {
             } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( plotArea " + plotArea + " ) " ,
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
             			totalECS + " ECS" ,
             			Result.Not_Accepted.getResultVal()
         				);
@@ -459,12 +466,12 @@ public class Parking extends FeatureProcess {
             	if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
             		status=Result.Accepted.getResultVal();
             	}
-                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( plotArea " + plotArea + " )",
+                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
                     totalECS + " ECS",status);
             }else {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Accepted.getResultVal());
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( plotArea " + plotArea + " ) " ,
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
             			totalECS + " ECS" ,
             			Result.Accepted.getResultVal()
         				);

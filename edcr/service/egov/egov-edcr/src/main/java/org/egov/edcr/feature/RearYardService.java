@@ -64,6 +64,7 @@ import static org.egov.edcr.utility.DcrConstants.YES;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -96,7 +97,7 @@ public class RearYardService extends GeneralRule {
 	private static final String RULE_37_TWO_I = "37-2-I";
 	private static final String RULE_47 = "47";
 
-	private static final String MINIMUMLABEL = "Minimum distance ";
+	private static final String MINIMUMLABEL = "Minimum distance";
 	// Added by Bimal 18-March-2924 for method processRearYardResidential
 	private static final BigDecimal MIN_PLOT_AREA = BigDecimal.valueOf(30);
 	private static final BigDecimal MIN_VAL_100_SQM = BigDecimal.valueOf(1.54);
@@ -156,7 +157,7 @@ public class RearYardService extends GeneralRule {
 		String setBackPercentage;
 	}
 
-	public void processRearYard(final Plan pl) {
+	public void processRearYard(Plan pl, List<ScrutinyDetail> scrutinyDetailList) {
 		HashMap<String, String> errors = new HashMap<>();
 		//BigDecimal setBackPercentage = BigDecimal.valueOf(0.0);
 		final Plot plot = pl.getPlot();
@@ -270,9 +271,10 @@ public class RearYardService extends GeneralRule {
 							    permissableValueWithPercentage = rearYardResult.setBackPercentage;
 							    providedValue = rearYardResult.actualMeanDistance.toString() + "m";
 							} else {								
-							    permissableValueWithPercentage = rearYardResult.setBackPercentage 
-							            + "% of the plot area (" 
-							            + rearYardResult.expectedminimumDistance.toPlainString() + ")";
+//							    permissableValueWithPercentage = rearYardResult.setBackPercentage 
+//							            + "% of the plot area (" 
+//							            + rearYardResult.expectedminimumDistance.toPlainString() + ")";
+							    permissableValueWithPercentage = rearYardResult.setBackPercentage;
 							    providedValue = rearYardResult.actualMinDistance.toString();
 							}
 							
@@ -298,7 +300,8 @@ public class RearYardService extends GeneralRule {
 								details.put(STATUS, Result.Not_Accepted.getResultVal());
 							}
 							scrutinyDetail.getDetail().add(details);
-							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+							scrutinyDetailList.add(scrutinyDetail);
+							//pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 						}
 					}

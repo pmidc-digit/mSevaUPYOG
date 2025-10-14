@@ -64,6 +64,7 @@ public class DcrConstants {
     public static final String BUILDING_FOOT_PRINT = "Building foot print";
     public static final String FRONT_YARD_DESC = "Front Setback";
     public static final String REAR_YARD_DESC = "Rear Setback";
+    public static final String REAR_AND_SIDE_YARD_DESC = "Rear and Side Setback";
     public static final String SIDE_YARD1_DESC = "Side Setback 1";
     public static final String SIDE_YARD2_DESC = "Side Setback 2";
     public static final String BSMT_FRONT_YARD_DESC = "Basement Front Setback";

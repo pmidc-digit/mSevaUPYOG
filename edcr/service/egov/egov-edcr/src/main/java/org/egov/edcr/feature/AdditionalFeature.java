@@ -505,7 +505,10 @@ public class AdditionalFeature extends FeatureProcess {
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetailRoadArea(
                     "Block_" + block.getNumber() + "_" + "Height of Building");
             String requiredBuildingHeight = StringUtils.EMPTY;
-            BigDecimal buildingHeight = block.getBuilding().getBuildingHeight();
+            //BigDecimal buildingHeight = block.getBuilding().getBuildingHeight();
+            // modify the building height check from total building height to building height exclude mumty
+            BigDecimal buildingHeight = block.getBuilding().getBuildingHeightExcludingMP();
+
             if(buildingHeight != null) {
                 buildingHeight = buildingHeight.setScale(2, RoundingMode.HALF_UP);
             }

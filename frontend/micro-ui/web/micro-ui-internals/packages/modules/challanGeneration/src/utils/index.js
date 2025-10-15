@@ -77,6 +77,22 @@ export const downloadPdf = (blob, fileName) => {
   }
 };
 
+/*   method to get required format from fielstore url*/
+export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
+  /* Need to enhance this util to return required format*/
+
+  let downloadLink = documents[fileStoreId] || "";
+  let differentFormats = downloadLink?.split(",") || [];
+  let fileURL = "";
+  differentFormats.length > 0 &&
+    differentFormats.map((link) => {
+      if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+        fileURL = link;
+      }
+    });
+  return fileURL;
+};
+
 export const printPdf = (blob) => {
   const fileURL = URL.createObjectURL(blob);
   var myWindow = window.open(fileURL);

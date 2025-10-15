@@ -41,7 +41,7 @@ public class CommunityHallBookingQueryBuilder {
 			+ "	join eg_chb_slot_detail ecsd on ecbd.booking_id = ecsd.booking_id"
 			+ "	LEFT JOIN eg_chb_payment_timer ecpt ON ecbd.booking_id = ecpt.booking_id\n"
 			+ " where  ecbd.tenant_id= ? and ecbd.community_hall_code = ?\n"
-			+ " and ecsd.status in ('BOOKED', 'PENDING_FOR_PAYMENT', 'INITIATE') and \n"
+			+ " and ecsd.status in ('BOOKED', 'PENDING_FOR_PAYMENT') and \n"
 			+ "	ecsd.booking_date >= ?::DATE and ecsd.booking_date <=  ?::DATE ";
 	// + " AND ecsd.hall_code in (?)";
 

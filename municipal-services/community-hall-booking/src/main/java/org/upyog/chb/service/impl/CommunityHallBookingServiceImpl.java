@@ -409,28 +409,28 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
         //Create demand on verified action
 		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
-				&& "VERIFIED"
+				&& "SUBMIT"
 						.equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction())) {
 			demandService.createDemand(communityHallsBookingRequest, mdmsData, true);
 		}
 		
-		// Handle NOT_VERIFIED action - mark slots as REJECTED so they don't appear as booked in slot search
-        if(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow()!=null  && "NOT_VERIFIED"
-                .equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction()))
-        {
-              List<BookingSlotDetail> sd =  communityHallsBookingRequest.getHallsBookingApplication().getBookingSlotDetails();
-              if (sd != null && !sd.isEmpty()) {
-                  log.info("NOT_VERIFIED action received - Marking {} slots as REJECTED for bookingNo: {}", 
-                           sd.size(), 
-                           communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
-                  for(BookingSlotDetail slot : sd) {
-                        slot.setStatus("REJECTED");
-                  }
-              } else {
-                  log.warn("NOT_VERIFIED action but no slots found for bookingNo: {}", 
-                           communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
-              }
-        }
+		// Handle NOT_VERIFIED action - mark slots as REJECTED so they don't appear as booked in slot search !NOT REQUIRED RIGHT NOW
+//        if(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow()!=null  && "NOT_VERIFIED"
+//                .equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction()))
+//        {
+//              List<BookingSlotDetail> sd =  communityHallsBookingRequest.getHallsBookingApplication().getBookingSlotDetails();
+//              if (sd != null && !sd.isEmpty()) {
+//                  log.info("NOT_VERIFIED action received - Marking {} slots as REJECTED for bookingNo: {}",
+//                           sd.size(),
+//                           communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
+//                  for(BookingSlotDetail slot : sd) {
+//                        slot.setStatus("REJECTED");
+//                  }
+//              } else {
+//                  log.warn("NOT_VERIFIED action but no slots found for bookingNo: {}",
+//                           communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
+//              }
+//        }
 
 
 

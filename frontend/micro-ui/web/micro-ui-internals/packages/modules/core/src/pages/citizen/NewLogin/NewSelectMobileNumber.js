@@ -6,7 +6,7 @@ import { MobileNumber } from "@mseva/digit-ui-react-components";
 const MobileInput = ({ mobileNumber, onMobileChange, onSendOtp, canSubmit, step }) => {
   const { t } = useTranslation();
   return (
-    <div className="input-wrapper">
+    <div className="input-wrapper" style={{width:"100%"}}> 
       <div className="label">
         {t("CS_LOGIN_PROVIDE_MOBILE_NUMBER")}
         <span> *</span>

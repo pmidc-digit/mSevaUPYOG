@@ -6,7 +6,7 @@ import LanguageSelect from "./NewLanguageSelect";
 import LocationSelect from "./NewLocationSelect";
 import MobileInput from "./NewSelectMobileNumber";
 import OtpInput from "./NewSelectOtp";
-
+import {LoginIcon} from "../../../../../../react-components/src/atoms/svgindex"
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
 
 const NewLogin = ({ stateCode }) => {
@@ -169,40 +169,44 @@ const NewLogin = ({ stateCode }) => {
       selectedCity: selectedCity,
     });
   };
-
   return (
-    <div className="login-container">
-      <div className="login-wrapper">
-        <div className="login-title">{t("CORE_COMMON_LOGIN")}</div>
-        <div className="lag-loc-wrapper">
+    <div className="login-page-cover"> 
+
+      <div className="login-container" >
+        
+         <div className="login-wrapper" >
+           <div className="login-circle"> <LoginIcon  /> </div>
+        <div className="login-title" >{t("CORE_COMMON_LOGIN")}</div>
+          {/* <div className="lag-loc-wrapper"> */}
           <LanguageSelect onLanguageChange={setSelectedLanguage} />
           <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
+          {/* </div> */}
+          {/* Step 1: Mobile Input */}
+          <MobileInput
+            mobileNumber={mobileNumber}
+            onMobileChange={handleMobileChange}
+            onSendOtp={onSendOtp}
+            canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
+            step={step}
+          />
+
+          {/* Step 2: OTP Input */}
+          {step === "OTP" && (
+            <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />
+          )}
+
+          {step !== "OTP" && (
+            <div className="account-link">
+              <span>
+                {t("CS_COMMON_DONT_HAVE_ACCOUNT")}
+              </span>
+              <span className="link" onClick={handleRegisterClick}>
+                {t("CS_COMMON_REGISTER")}
+              </span>
+            </div>
+          )}
+          {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
         </div>
-        {/* Step 1: Mobile Input */}
-        <MobileInput
-          mobileNumber={mobileNumber}
-          onMobileChange={handleMobileChange}
-          onSendOtp={onSendOtp}
-          canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
-          step={step}
-        />
-
-        {/* Step 2: OTP Input */}
-        {step === "OTP" && (
-          <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />
-        )}
-
-        {step !== "OTP" && (
-          <div className="account-link">
-            <span>
-              {t("CS_COMMON_DONT_HAVE_ACCOUNT")}
-            </span>
-            <span className="link" onClick={handleRegisterClick}>
-              {t("CS_COMMON_REGISTER")}
-            </span>
-          </div>
-        )}
-        {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
       </div>
     </div>
   );
@@ -220,7 +224,7 @@ const setCitizenDetail = (userObject, token, tenantId) => {
     localStorage.setItem("Citizen.token", token);
     localStorage.setItem("user-info", JSON.stringify(userObject));
     localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
-  } catch (e) {}
+  } catch (e) { }
 };
 
 export default NewLogin;

@@ -181,11 +181,11 @@ const Home = ({
       )}
 
       <div className={`main center-container citizen-home-container mb-25`}>
-        {hideSidebar ? null : (
+        {/* {hideSidebar ? null : (
           <div className="SideBarStatic">
             <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />
           </div>
-        )}
+        )} */}
 
         <Switch>
           <Route exact path={path}>
@@ -212,11 +212,13 @@ const Home = ({
           </Route>
 
           <Route exact path={`${path}/select-language`}>
-            <LanguageSelection />
+            {/* <LanguageSelection /> */}
+            <NewLoginPage stateCode={stateCode}/>
           </Route>
 
           <Route exact path={`${path}/select-location`}>
-            <LocationSelection />
+            {/* <LocationSelection /> */}
+            <NewLoginPage stateCode={stateCode}/>
           </Route>
           <Route path={`${path}/error`}>
             <ErrorComponent
@@ -237,12 +239,14 @@ const Home = ({
           </Route>
 
           <Route path={`${path}/login`}>
-            <Login stateCode={stateCode} />
+            {/* <Login stateCode={stateCode} /> */}
+             <NewLoginPage stateCode={stateCode}/>
           </Route>
           
 
           <Route path={`${path}/register`}>
-            <Login stateCode={stateCode} isUserRegistered={false} />
+            {/* <Login stateCode={stateCode} isUserRegistered={false} /> */}
+             <NewRegistration stateCode={stateCode} />
           </Route>
 
           <PrivateRoute path={`${path}/user/profile`}>

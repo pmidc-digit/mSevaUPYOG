@@ -6,6 +6,7 @@ import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationAct
 import NOCDocument from "./NOCDocument";
 import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
+import NOCFeeEstimationDetails from "./NOCFeeEstimationDetails";
 
 function NOCSummary({ currentStepData:formData, t }) {
   const { pathname: url } = useLocation();
@@ -188,6 +189,13 @@ const getFloorLabel = (index) => {
       <div style={sectionStyle}>
         {formData?.documents?.documents?.documents?.length > 0 && <NOCDocumentTableView documents={formData?.documents?.documents?.documents}/>}
       </div>
+
+      <h2 style={headingStyle}>{t("NOC_FEE_DETAILS_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {formData && <NOCFeeEstimationDetails formData={formData}/>}
+      </div>
+
+
     </div>
   );
 }

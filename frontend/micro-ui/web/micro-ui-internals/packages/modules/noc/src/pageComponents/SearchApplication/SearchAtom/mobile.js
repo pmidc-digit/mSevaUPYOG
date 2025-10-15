@@ -17,8 +17,6 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
     const { t } = useTranslation();
     const { handleSubmit, setValue, getValues } = useFormContext();
 
-    // const {} = useFormContext()
-
     function activateModal(state, action) {
         switch (action.type) {
         case "set":
@@ -108,7 +106,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
             {...{
                 data: propsMobileInboxCards,
                 isTwoDynamicPrefix: false,
-                linkPrefix: `/digit-ui/employee/noc/inbox/application-overview/`,
+                linkPrefix: `/digit-ui/citizen/noc/search/application-overview/`,
                 serviceRequestIdKey: t("NOC_APPLICATION_NUMBER"),
             }}
             />

@@ -30,6 +30,7 @@ import EditApplication from "./pageComponents/EditApplication/EditApplication";
 
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
+import CitizenSearchApplication from "./pageComponents/SearchApplication/index"
 
 
 export const NOCLinks = ({ matchPath, userType }) => {
@@ -44,6 +45,14 @@ export const NOCLinks = ({ matchPath, userType }) => {
     {
       link: `${matchPath}/noc/new-application`,
       i18nKey: t("NOC_NEW_APPLICATION"),
+    },
+    {
+      link: `${matchPath}/noc/my-application`,
+      i18nKey: t("NOC_MY_APPLICATION"),
+    },
+    {
+      link: `${matchPath}/noc/search-application`,
+      i18nKey: t("NOC_SEARCH_APPLICATION"),
     },
     
   ];
@@ -96,7 +105,8 @@ const componentsToRegister = {
   NOCCitizenMyApplications: MyApplications,
   NOCCitizenApplicationOverview: CitizenApplicationOverview,
   NOCEmployeeApplicationOverview,
-  NewNOCEditApplication: EditApplication
+  NewNOCEditApplication: EditApplication,
+  NOCCitizenSearchApplication: CitizenSearchApplication,
 };
 
 export const initNOCComponents = () => {

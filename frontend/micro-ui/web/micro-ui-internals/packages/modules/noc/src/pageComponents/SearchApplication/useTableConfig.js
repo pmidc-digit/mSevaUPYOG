@@ -4,11 +4,6 @@ import { Link } from "react-router-dom";
 
 const useSearchApplicationTableConfig = () => {
     const {t} = useTranslation();
-
-    const getRedirectionLink = (bService) => {
-        let redirectBS = bService === "BPAREG"?"search/application/stakeholder":"search/application/bpa";
-        return redirectBS;
-    }
     
     const GetCell = (value) => <span className="cell-text">{value}</span>;
     
@@ -21,7 +16,7 @@ const useSearchApplicationTableConfig = () => {
             return (
               <div>
                 <span className="link">
-                  <Link to={`/digit-ui/employee/noc/inbox/application-overview/${row.original["applicationNo"]}`}>
+                  <Link to={`/digit-ui/citizen/noc/search/application-overview/${row.original["applicationNo"]}`}>
                     {row.original["applicationNo"]}
                   </Link>
                 </span>

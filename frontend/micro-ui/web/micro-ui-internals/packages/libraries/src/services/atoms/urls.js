@@ -288,6 +288,8 @@ const Urls = {
     nocSearch: "/noc-services/v1/noc/_search",
     nocCreate: "/noc-services/v1/noc/_create",
     update: "/noc-services/v1/noc/_update",
+    nocCalculator: "/noc-calculator/v1/_calculate"
+    
   },
   reports: {
     reportSearch: "/report/",

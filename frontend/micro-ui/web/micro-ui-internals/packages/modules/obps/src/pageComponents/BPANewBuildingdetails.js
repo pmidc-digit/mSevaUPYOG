@@ -61,6 +61,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [masterPlan, setmasterPlan] = useState(currentStepData?.createdResponse?.additionalDetails?.masterPlan || "")
   const [buildingStatus, setbuildingStatus] = useState(currentStepData?.createdResponse?.additionalDetails?.buildingStatus || "")
   const [purchasedFAR, setpurchasedFAR] = useState(currentStepData?.createdResponse?.additionalDetails?.purchasedFAR || "")
+  const [providedFAR, setProvidedFAR] = useState(0);
   const [greenbuilding, setgreenbuilding] = useState(currentStepData?.createdResponse?.additionalDetails?.greenbuilding || "")
   const [restrictedArea, setrestrictedArea] = useState(currentStepData?.createdResponse?.additionalDetails?.restrictedArea || "")
   const [proposedSite, setproposedSite] = useState(currentStepData?.createdResponse?.additionalDetails?.proposedSite || "")
@@ -418,15 +419,18 @@ if (anyYes && !ecbcCertificateFile) {
 
     // ✅ purchasedFAR
     useEffect(() => {
-      if (typeof purchasedFAR === "string") {
-        const far = common.find((item) => item.code === purchasedFAR);
-        if (far) setpurchasedFAR(far);
-      } else if (purchasedFAR === null) {
-        if (currentStepData?.createdResponse?.additionalDetails?.purchasedFAR) {
-          setpurchasedFAR(currentStepData?.createdResponse?.additionalDetails?.purchasedFAR);
-        }
+      const purchasedFARFromEDCR = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.purchasableFar || false;
+      const foundPurchasedFAR = common?.find((item) => item.value === purchasedFARFromEDCR) || null;
+      setPurchasedFAR(foundPurchasedFAR);
+    }, [currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.purchasableFar]);
+
+    //providedFAR
+    useEffect(() => {
+      console.log("ProvidedFAR", providedFAR, currentStepData);
+      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar){
+        setProvidedFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar)
       }
-    }, [purchasedFAR, currentStepData?.createdResponse?.additionalDetails?.purchasedFAR]);
+    }, [currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar])
 
     // ✅ greenbuilding
     useEffect(() => {
@@ -520,10 +524,12 @@ if (anyYes && !ecbcCertificateFile) {
     {
       code: "YES",
       i18nKey: "YES",
+      value: true
     },
     {
       code: "NO",
       i18nKey: "NO",
+      value: false
     },
   ]
 
@@ -838,7 +844,8 @@ if (anyYes && !ecbcCertificateFile) {
       rating: typeof rating === "string" ? rating : rating?.code,
       masterPlan: masterPlan?.code,
       buildingStatus: buildingStatus?.code,
-      purchasedFAR: purchasedFAR?.code,
+      purchasedFAR: purchasedFAR?.value,
+      providedFAR,
       greenbuilding: greenbuilding?.code,
       restrictedArea: restrictedArea?.code,
       proposedSite: proposedSite?.code,
@@ -1178,11 +1185,26 @@ if (anyYes && !ecbcCertificateFile) {
               select={setPurchasedFAR}
               option={common}
               optionKey="i18nKey"
+              disable={true}
               t={t}
             />
           )}
         />
         <ErrorMessage error={errors.purchasedFAR} />
+
+        {purchasedFAR?.code === "YES" && (
+          <React.Fragment>
+            <CardLabel>{`${t("BPA_PROVIDED_FAR")} *`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              name="providedFAR"
+              value={providedFAR}
+              disable={true}
+            />
+            {errors.providedFAR && <ErrorMessage error={errors.providedFAR} />}
+          </React.Fragment>
+        )}
 
         <CardLabel>{`${t("BPA_GREEN_BUIDINGS")} *`}</CardLabel>
         <Controller

@@ -159,23 +159,22 @@ export const validateSchedule = ({ startDate, endDate, startTime, endTime, sched
   const daysInSelMonth = new Date(selYear, selMonth + 1, 0).getDate();
 
   switch (scheduleType) {
-   case "Monthly": {
-  const monthStart = normalizeDate(new Date(selYear, selMonth, 1));
-  const monthEnd = normalizeDate(new Date(selYear, selMonth, daysInSelMonth));
-  const today = normalizeDate(new Date());
+    case "Monthly": {
+      const monthStart = normalizeDate(new Date(selYear, selMonth, 1));
+      const monthEnd = normalizeDate(new Date(selYear, selMonth, daysInSelMonth));
+      const today = normalizeDate(new Date());
 
-  // 🚫 Reject if the whole month is already finished
-  if (monthEnd < today) {
-    return `This Monthly block (${monthStart.toDateString()} – ${monthEnd.toDateString()}) is already in the past. Please select a future month.`;
-  }
+      // 🚫 Reject if the whole month is already finished
+      if (monthEnd < today) {
+        return `This Monthly block (${monthStart.toDateString()} – ${monthEnd.toDateString()}) is already in the past. Please select a future month.`;
+      }
 
-  // ✅ Still enforce exact month boundaries
-  if (start.getTime() !== monthStart.getTime() || end.getTime() !== monthEnd.getTime()) {
-    return `For Monthly, you must select ${monthStart.toDateString()} to ${monthEnd.toDateString()}`;
-  }
-  break;
-}
-
+      // ✅ Still enforce exact month boundaries
+      if (start.getTime() !== monthStart.getTime() || end.getTime() !== monthEnd.getTime()) {
+        return `For Monthly, you must select ${monthStart.toDateString()} to ${monthEnd.toDateString()}`;
+      }
+      break;
+    }
 
     case "Weekly": {
       const day = start.getDate();
@@ -297,7 +296,7 @@ export function getMinDateForType(scheduleType) {
     return new Date(year, month, 1).toISOString().split("T")[0];
   }
 
-  if (type === "Yearly") {
+  if (scheduleType === "Yearly") {
     // ✅ Financial year starts April 1
     // If today is Jan–Mar, still in previous FY → min = Apr 1 of last year
     // Else min = Apr 1 of current year
@@ -312,12 +311,117 @@ export function getMinDateForType(scheduleType) {
   return today.toISOString().split("T")[0];
 }
 
+export const getCurrentEpoch = () => Date.now();
+
+export const groupKeyForCart = (c) =>
+  `${c.location || "NA"}|${c.advertisementId || "NA"}|${c.addType || "NA"}|${c.faceArea || "NA"}|${c.advertisementName || "NA"}|${c.poleNo || "NA"}`;
+
+export const transformBookingResponseToBookingData = (apiResponse = {}) => {
+  const resp = apiResponse || {};
+  const apps = Array.isArray(resp.bookingApplication) ? resp.bookingApplication : [];
+
+  const transformedApps = apps.map((app) => {
+    const out = {};
+
+    const copyFields = [
+      "bookingNo",
+      "paymentDate",
+      "draftId",
+      "applicationDate",
+      "tenantId",
+      "receiptNo",
+      "permissionLetterFilestoreId",
+      "paymentReceiptFilestoreId",
+      "advertisementId",
+      "bookingId",
+      "bookingStatus",
+      "auditDetails",
+      "businessService",
+      "workflow",
+    ];
+    copyFields.forEach((k) => {
+      if (Object.prototype.hasOwnProperty.call(app, k)) out[k] = app[k];
+    });
+
+    out.applicantDetail = app.applicantDetail || null;
+    out.address = app.address || null;
+    out.owners = app.owners || [];
+    out.documents = app.documents || [];
+
+    const cart = Array.isArray(app.cartDetails) ? app.cartDetails : [];
+
+    const groups = cart.reduce((acc, item) => {
+      const key = groupKeyForCart(item);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {});
+
+    const groupedCartDetails = Object.keys(groups).map((key) => {
+      const items = groups[key];
+
+      const sorted = items.slice().sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
+
+      const startDate = sorted[0]?.bookingDate || null;
+      const endDate = sorted[sorted.length - 1]?.bookingDate || null;
+      const numberOfDays = sorted.length;
+
+      const first = sorted[0] || {};
+
+      const amounts = sorted.map((s) => (typeof s.amount === "number" ? s.amount : null));
+      const hasAmounts = amounts.every((a) => a !== null);
+      let amount = undefined;
+      let amountForDaysChosen = undefined;
+      if (hasAmounts) {
+        const total = amounts.reduce((acc, v) => acc + v, 0);
+        amountForDaysChosen = total;
+        amount = sorted.length ? Math.round((total / sorted.length) * 100) / 100 : 0;
+      } else if (typeof first.amount === "number") {
+        amount = first.amount;
+      }
+
+      return {
+        location: first.location,
+        advertisementId: first.advertisementId || first.advertisementId === 0 ? `${first.advertisementId}` : undefined,
+        startDate,
+        endDate,
+        numberOfDays,
+        addType: first.addType,
+        faceArea: first.faceArea,
+        nightLight: first.nightLight,
+        status: first.status,
+        advertisementName: first.advertisementName,
+        poleNo: first.poleNo,
+        amount,
+        amountForDaysChosen,
+      };
+    });
+
+    out.cartDetails = groupedCartDetails;
+    return out;
+  });
+
+  const totalCount = transformedApps.reduce((acc, app) => {
+    const sum = Array.isArray(app.cartDetails) ? app.cartDetails.reduce((s, cd) => s + (cd.numberOfDays || 0), 0) : 0;
+    return acc + sum;
+  }, 0);
+
+  const bookingData = [
+    {
+      count: totalCount,
+      currentTime: getCurrentEpoch(),
+      bookingApplication: transformedApps,
+    },
+  ];
+
+  return { bookingData };
+};
 
 // Transforms raw booking data into grouped ad objects with enriched metadata and slot arrays
 export function transformAdsData(adsData) {
   const grouped = {};
 
-  adsData?.forEach(item => {
+  adsData?.forEach((item) => {
     const adId = item?.advertisementId;
 
     if (!grouped[adId]) {
@@ -327,7 +431,7 @@ export function transformAdsData(adsData) {
           name: item?.advertisementName,
           ...item,
         },
-        slots: []
+        slots: [],
       };
     }
 
@@ -345,16 +449,16 @@ export function transformAdsData(adsData) {
       slotStaus: item?.status,
       bookingFromTime: item?.bookingFromTime,
       bookingToTime: item?.bookingToTime,
-      advertisementName: item?.advertisementName
+      advertisementName: item?.advertisementName,
     });
   });
 
   // Update bookingStartDate and bookingEndDate for each ad
-  Object.values(grouped)?.forEach(group => {
-    const dates = group?.slots.map(s => new Date(s?.bookingDate));
+  Object.values(grouped)?.forEach((group) => {
+    const dates = group?.slots.map((s) => new Date(s?.bookingDate));
     const minDate = new Date(Math?.min(...dates));
     const maxDate = new Date(Math?.max(...dates));
-    const format = d => d.toISOString().split("T")[0];
+    const format = (d) => d.toISOString().split("T")[0];
 
     group.ad.bookingStartDate = format(minDate);
     group.ad.bookingEndDate = format(maxDate);
@@ -374,8 +478,6 @@ export const formatLabel = (key) => {
 
   return spaced
     ?.split(" ") // Split into words
-    ?.map(word => word?.charAt(0)?.toUpperCase() + word?.slice(1)) // Capitalize each word
+    ?.map((word) => word?.charAt(0)?.toUpperCase() + word?.slice(1)) // Capitalize each word
     ?.join(" "); // Join back into a single string
 };
-
-

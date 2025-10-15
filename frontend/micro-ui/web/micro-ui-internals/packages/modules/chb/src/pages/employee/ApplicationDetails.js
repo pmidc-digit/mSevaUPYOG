@@ -34,7 +34,6 @@ import get from "lodash/get";
 import { size } from "lodash";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
@@ -220,7 +219,6 @@ const CHBApplicationDetails = () => {
 
   useEffect(() => {
     const ndcObject = data?.hallsBookingApplication?.[0];
-    console.log("ndcObject", ndcObject);
     if (ndcObject) {
       const applicantData = {
         name: ndcObject?.owners?.[0]?.name,
@@ -257,7 +255,6 @@ const CHBApplicationDetails = () => {
       setLoader(true);
       WorkflowService = await Digit.WorkflowService.init(tenantId, "chb-services");
       setLoader(false);
-      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
       setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       // setComplaintStatus(applicationStatus);
     })();
@@ -270,10 +267,6 @@ const CHBApplicationDetails = () => {
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-
-    console.log("filterNexState", filterNexState);
-
-    console.log("getWorkflowService", getWorkflowService);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -358,21 +351,15 @@ const CHBApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
   }
-
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = data?.hallsBookingApplication?.[0];
+    let application = {
+      hallsBookingApplication: data?.hallsBookingApplication || [],
+    };
+
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { hallsBookingApplication: [application] }, "chbpermissionletter");
-      const updatedApplication = {
-        ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
       fileStoreId = response?.filestoreIds[0];
-      refetch();
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
@@ -388,17 +375,22 @@ const CHBApplicationDetails = () => {
   let dowloadOptions = [];
 
   //commented out, need later for download receipt and certificate
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
+  // if (reciept_data?.Payments[0]?.paymentStatus !== "NEW")
+  dowloadOptions.push({
+    label: t("CHB_DOWNLOAD_ACK_FORM"),
+    onClick: () => getChbAcknowledgement(),
+  });
+
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("CHB_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
     dowloadOptions.push({
       label: t("CHB_PERMISSION_LETTER"),
       onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
+  }
 
   const columns = [
     { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
@@ -419,8 +411,6 @@ const CHBApplicationDetails = () => {
 
   const submitAction = async (modalData) => {
     const payloadData = data?.hallsBookingApplication;
-
-    console.log("payloadData====", payloadData);
 
     // ✅ Extract the actual booking object from the array
     const bookingData = Array.isArray(payloadData) ? payloadData[0] : payloadData;
@@ -468,7 +458,6 @@ const CHBApplicationDetails = () => {
       },
     };
 
-    console.log("finalPayload", finalPayload);
     // return;
 
     try {
@@ -501,8 +490,8 @@ const CHBApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        {/* <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
+        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+          <Header styles={{ fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -511,7 +500,7 @@ const CHBApplicationDetails = () => {
               options={dowloadOptions}
             />
           )}
-        </div> */}
+        </div>
         <Card>
           {/* <StatusTable>
               

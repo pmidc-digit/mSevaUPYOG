@@ -27,11 +27,13 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     },
   });
 
-  const { data: CHBLocations = [], isLoading: CHBLocationLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Location" }]);
-  const { data: CHBDetails = [], isLoading: CHBLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "CommunityHalls" }]);
-  const { data: CHBPurpose = [], isLoading: CHBPurposeLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Purpose" }]);
-  const { data: SpecialCategory = [], isLoading: CHBSpecialCategoryLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "SpecialCategory" }]);
-  const { data: CHBHallCode = [], isLoading: CHBHallCodeLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "HallCode" }]);
+  const { data: CHBLocations = [], isLoading: CHBLocationLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Location" }]);
+  const { data: CHBDetails = [], isLoading: CHBLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "CommunityHalls" }]);
+  const { data: CHBPurpose = [], isLoading: CHBPurposeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Purpose" }]);
+  const { data: SpecialCategory = [], isLoading: CHBSpecialCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [
+    { name: "SpecialCategory" },
+  ]);
+  const { data: CHBHallCode = [], isLoading: CHBHallCodeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "HallCode" }]);
 
   console.log("CHBHallCode", CHBHallCode);
 
@@ -387,7 +389,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               <CardLabel className="card-label-smaller">
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="field">
+              <div className="field" style={{ width: "50%" }}>
                 <Controller
                   control={control}
                   name={"purposeDescription"}

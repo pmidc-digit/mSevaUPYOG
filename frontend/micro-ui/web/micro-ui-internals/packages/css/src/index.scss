@@ -849,6 +849,10 @@ input[type="number"] {
   padding-left: 20px;
 }
 
+.no-left-margin {
+  margin-left: 0 !important;
+}
+
 @media screen and (max-width: 768px) {
   .citizen .inboxButton {
     font-size: 1rem;

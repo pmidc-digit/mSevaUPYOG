@@ -11,7 +11,7 @@ RUN yarn add @mseva/digit-ui-module-noc@1.0.22
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.28
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.5
 RUN yarn add @mseva/digit-ui-module-core@1.0.42
-RUN yarn add @mseva/digit-ui-module-common@1.0.97
+RUN yarn add @mseva/digit-ui-module-common@1.0.99
 RUN yarn add @mseva/digit-ui-module-ws@1.0.12
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.5
 RUN yarn add @mseva/digit-ui-module-ptr@1.1.19
@@ -21,10 +21,10 @@ RUN yarn add @mseva/digit-ui-module-tl@1.0.18
 RUN yarn add @mseva/digit-ui-module-obps@1.0.55
 RUN yarn add @mseva/digit-ui-module-sv@1.0.76
 RUN yarn add @mseva/upyog-ui-module-ads@1.0.93
-RUN yarn add @mseva/upyog-ui-module-chb@1.0.87
+RUN yarn add @mseva/upyog-ui-module-chb@1.0.89
 RUN yarn add @mseva/upyog-ui-module-asset@1.0.69
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.61
-RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.4
+RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.6
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.3
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.43
 ARG WORK_DIR

@@ -6,12 +6,9 @@ import { CompetencyDescriptions } from "../constants/LicenseTypeConstants";
 // import useQualificationTypes from "../../../../libraries/src/hooks/obps/QualificationTypesForLicense";
 
 const LicenseType = ({ t, config, onSelect, userType, formData }) => {
-  // if (JSON.parse(sessionStorage.getItem("BPAREGintermediateValue")) !== null) {
-  //   formData = JSON.parse(sessionStorage.getItem("BPAREGintermediateValue"));
-  //   console.log("formData in LicenseType", formData);
-  //   // sessionStorage.setItem("BPAREGintermediateValue", null);
-  // } else formData = formData;
 
+
+  console.log(formData, "MAIN FORM DATA");
   const index = window.location.href?.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -31,9 +28,26 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     return formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null;
   });
 
-  const [validTo, setValidTo ] = useState(() => {
-    return formData?.LicneseType?.validTo || formData?.formData?.LicneseType?.validTo || null;
-  })
+
+
+const [validTo, setValidTo] = useState(() => {
+  const epoch =
+    formData?.result?.Licenses?.[0]?.validTo ||
+    formData?.formData?.Licenses?.[0]?.validTo ||
+    null;
+
+  if (!epoch) return "";
+
+  const date = new Date(epoch);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`; // ✅ stays DD/MM/YYYY
+});
+
+
+
+
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -96,6 +110,30 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       setQualificationType(selectedQualificationType);
     }
   }, [qualificationTypes, qualificationType]);
+
+    useEffect(() => {
+      const epoch =
+        formData?.result?.Licenses?.[0]?.validTo ||
+        formData?.formData?.Licenses?.[0]?.validTo ||
+        null;
+
+      console.log(epoch, "EPOCH LOOK");
+      console.log(formData, "FORM DATA LOOK");
+
+      if (epoch) {
+        const date = new Date(epoch);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+
+        const formattedDate = `${day}/${month}/${year}`;
+        console.log(formattedDate, "DATE LOOK");
+
+        setValidTo(formattedDate);
+      }
+    }, [formData]);
+
+
 
   useEffect(() => {
     if (qualificationType !== null) {
@@ -224,17 +262,18 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   }
 
     function selectValidTo(input) {
-      const today = new Date().toISOString().split("T")[0];
+      const [day, month, year] = input.split("/");
+      const inputDate = new Date(`${year}-${month}-${day}`);
+      const today = new Date();
 
-      if (input && input < today) {
+      setValidTo(input);
+
+      if (inputDate < today) {
         setErrorMessage(t("BPA_VALID_TO_DATE_ERROR"));
-        setValidTo("");
       } else {
-        setErrorMessage(""); 
-        setValidTo(input);
+        setErrorMessage("");
       }
     }
-
 
 
   function goNext() {
@@ -263,7 +302,14 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
       { console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType,  validTo });
-        onSelect(config.key, { LicenseType, ArchitectNo, selfCertification,validTo, qualificationType: qualificationType });}
+      const validToEpoch = (() => {
+  if (!validTo) return null;
+  const [day, month, year] = validTo.split("/");
+  return new Date(`${year}-${month}-${day}`).getTime();
+})();
+
+
+        onSelect(config.key, { LicenseType, ArchitectNo, selfCertification,validTo: validToEpoch, qualificationType: qualificationType });}
     else {
       const data = formData?.formData;
       console.log("onSelect going 2", data);
@@ -367,25 +413,28 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
               <div>
                 <CardLabel>{`${t("BPA_CERTIFICATE_EXPIRY_DATE")}*`}</CardLabel>
                 <div className="field">
+
                   <TextInput
                     t={t}
                     type="date"
-                    isMandatory={false}
-                    optionKey="i18nKey"
                     name="validTo"
-                    value={validTo}
-                    min={new Date().toISOString().split("T")[0]}
-                   onChange={(e) => {
-                    const selectedDate = e.target.value;
-                    selectValidTo(selectedDate); 
-                  }}
-
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                      }
+                    value={
+                      validTo
+                        ? (() => {
+                            const [day, month, year] = validTo.split("/");
+                            return `${year}-${month}-${day}`;
+                          })()
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const isoValue = e.target.value; 
+                      const [year, month, day] = isoValue.split("-");
+                      const formatted = `${day}/${month}/${year}`;
+                      selectValidTo(formatted);
                     }}
+                    min={new Date().toISOString().split("T")[0]}
                   />
+
                 </div>
               </div>
             )}

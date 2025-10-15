@@ -1,12 +1,13 @@
-import { CardLabel, Dropdown, FormStep, LinkButton, Loader, TextInput, Toast, UploadFile } from "@mseva/digit-ui-react-components";
+import { CardLabel, CardLabelError, Dropdown, FormStep, LinkButton, Loader, TextInput, Toast, UploadFile } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { getPattern, stringReplaceAll, sortDropdownNames } from "../utils";
 
 import useEDCRForm from "../../../../libraries/src/hooks/obps/useEDCRForm";
 
-const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast }) => {
+const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast, errorStyle }) => {
   const { pathname: url } = useLocation();
+  const [nameError, setNameError] = useState("");
   const history = useHistory();
   const containerRef = useRef(null);
   //actual state up side
@@ -199,9 +200,29 @@ useEffect(() => {
     >
 
       
-      <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid()} t={t}>
+      <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid() || nameError} t={t}>
+         <CardLabelError style={errorStyle}>{nameError}</CardLabelError>
         <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
-        <TextInput t={t} isMandatory={true} type="text" name="applicantName" value={name} onChange={(e) => setName(e.target.value)} />
+      <TextInput
+        t={t}
+        isMandatory={true}
+        type="text"
+        name="applicantName" 
+        value={name} 
+        // onChange={(e) => setName(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setName(value);
+          const regex = /^[A-Za-z\s]*$/;
+          if (!regex.test(value)) {
+            setNameError(t("APPLICANT_NAME_INVALID_PATTERN"));
+          } else {
+            setNameError("");
+          }
+        }}
+        />
+  
+        
 
         <CardLabel>{t("EDCR_ULB_NAME")}</CardLabel>
         <Dropdown

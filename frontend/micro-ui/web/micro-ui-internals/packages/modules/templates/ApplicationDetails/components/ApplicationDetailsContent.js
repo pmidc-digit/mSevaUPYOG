@@ -705,7 +705,7 @@ function ApplicationDetailsContent({
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
         <PaymentHistory payments={payments}/>
-        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
+        {moduleCode !== "WS" && <ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

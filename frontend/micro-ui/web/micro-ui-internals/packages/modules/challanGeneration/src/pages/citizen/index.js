@@ -12,15 +12,15 @@ const App = () => {
   const SearchChallanComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchChallanComponent");
   const SearchResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchResultsComponent");
   const MyChallanResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectMyChallanResultsComponent");
+  const ChallanSearch = Digit?.ComponentRegistryService?.getComponent("ChallanStepperForm");
 
   console.log("Challan Generation Citizen App", path);
   return (
     <span className={"mcollect-citizen"}>
       <Switch>
         <AppContainer>
-        
           <BackButton style={{ top: "55px" }}>Back</BackButton>
-          <PrivateRoute path={`${path}/search`} component={SearchChallanComponent} />
+          <PrivateRoute path={`${path}/search`} component={ChallanSearch} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/My-Challans`} component={MyChallanResultsComponent} />
           {/* <Redirect to={`/`}></Redirect> */}

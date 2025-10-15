@@ -20,6 +20,7 @@ import {
   ChallanGenerationModule,
   ChallanGenerationLinks,
   initChallanGenerationComponents,
+  ChallanReducers,
 } from "@mseva/digit-ui-module-challangeneration";
 import {
   RentAndLeaseModule,
@@ -132,7 +133,7 @@ const enabledModules = [
   "ChallanGeneration",
   "RentAndLease",
   "NDC",
-  "BPAStakeholder"
+  "BPAStakeholder",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -204,7 +205,8 @@ const moduleReducers = (initData) => ({
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),
   noc: NOCReducers(initData),
-  obps: OBPSReducers(initData)
+  obps: OBPSReducers(initData),
+  challan: ChallanReducers(initData),
 });
 
 function App() {

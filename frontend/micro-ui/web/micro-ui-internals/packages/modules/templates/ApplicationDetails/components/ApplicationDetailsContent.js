@@ -313,16 +313,16 @@ function ApplicationDetailsContent({
 
   const getClickInfoDetails = () => {
     if (window.location.href.includes("disconnection") || window.location.href.includes("application")) {
-      return "WS_DISCONNECTION_CLICK_ON_INFO_LABEL";
+      // return "WS_DISCONNECTION_CLICK_ON_INFO_LABEL";
     } else {
-      return "WS_CLICK_ON_INFO_LABEL";
+      // return "WS_CLICK_ON_INFO_LABEL";
     }
   };
 
   const [showAllTimeline, setShowAllTimeline] = useState(false);
   const getClickInfoDetails1 = () => {
     if (window.location.href.includes("disconnection") || window.location.href.includes("application")) {
-      return "WS_DISCONNECTION_CLICK_ON_INFO1_LABEL";
+      // return "WS_DISCONNECTION_CLICK_ON_INFO1_LABEL";
     } else {
       return "";
     }
@@ -472,7 +472,7 @@ function ApplicationDetailsContent({
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
-      {isInfoLabel ? (
+      {/* {isInfoLabel ? (
         <InfoDetails
           t={t}
           userType={false}
@@ -481,7 +481,7 @@ function ApplicationDetailsContent({
           infoClickInfoLabel={getClickInfoDetails()}
           infoClickInfoLabel1={getClickInfoDetails1()}
         />
-      ) : null}
+      ) : null} */}
       {applicationDetails?.applicationDetails?.map((detail, index) => (
         <React.Fragment key={index}>
           <div style={getMainDivStyles()}>

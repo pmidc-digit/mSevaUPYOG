@@ -54,6 +54,14 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     email: "",
     dateOfBirth: "",
   });
+
+
+const status = formData?.result?.Licenses?.[0]?.status;
+console.log(formData, "EDIT FORMDATA");
+const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
+console.log(isCitizenEditable, "EDIT");
+
+
   // get user info from api
   const getUserInfo = async () => {
     const uuid = userInfo?.info?.uuid;
@@ -236,7 +244,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 name="name"
                 value={name}
                 onChange={SelectName}
-                disable={name && !isOpenLinkFlow ? true : false}
+                // disable={name && !isOpenLinkFlow ? true : false}
+                 disable={!isCitizenEditable && (name && !isOpenLinkFlow ? true : false)}
+               
                 {...(validation = {
                   isRequired: true,
                   pattern: "^[a-zA-Z ]*$",
@@ -286,7 +296,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 min="1900-01-01"
                 max={new Date().toISOString().split("T")[0]}
                 isRequired={true}
-                disabled={disable?.dateOfBirth}
+                // disabled={disable?.dateOfBirth}
+                disabled={!isCitizenEditable && disable?.dateOfBirth}
               />
               {errorMessage?.dateOfBirth?.length>0 && (
                   <div
@@ -326,7 +337,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   isDependent={true}
                   labelKey="COMMON_GENDER"
                   // disable={gender && !isOpenLinkFlow ? true : false}
-                  disabled={disable?.gender}
+                  // disabled={disable?.gender}
+                  disabled={!isCitizenEditable && disable?.gender}
                 />
 
                 {errorMessage?.gender?.length>0 && (
@@ -356,7 +368,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 name="email"
                 value={email}
                 onChange={selectEmail}
-                disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
+                // disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
+                 disable={!isCitizenEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
+                
                 // disable={editScreen}
                 {...{
                   required: true,

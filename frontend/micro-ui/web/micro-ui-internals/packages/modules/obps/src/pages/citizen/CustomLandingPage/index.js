@@ -1,8 +1,13 @@
-import React, { useEffect } from "react";
-import { Card, CardText } from "@mseva/digit-ui-react-components";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Card, CardText, Toast } from "@mseva/digit-ui-react-components";
+import { Link, useHistory } from "react-router-dom";
 
 const CustomLandingPage = () => {
+  const history = useHistory()
+
+  const [showToast, setShowToast] = useState(null)
+  const [isArchitect, setIsArchitect] = useState(false)
+
   // Hide sidebar and adjust containers for full-page layout
   useEffect(() => {
     const sidebar = document.querySelector('.SideBarStatic');
@@ -18,6 +23,8 @@ const CustomLandingPage = () => {
       citizenContainer.style.padding = '0';
       citizenContainer.style.width = '100%';
     }
+
+    setIsArchitect(validateArchitectRole())
     
     return () => {
       if (sidebar) sidebar.style.display = '';
@@ -31,11 +38,54 @@ const CustomLandingPage = () => {
       }
     };
   }, []);
+
+   const closeToast = () => {
+    setShowToast(null)
+  }
+
+    const validateArchitectRole = () => {
+    try {
+      const userInfoString = localStorage.getItem("user-info")
+      if (!userInfoString) {
+        return false
+      }
+
+      const userInfo = JSON.parse(userInfoString)
+
+      if (!userInfo.roles || !Array.isArray(userInfo.roles)) {
+        return false
+      }
+
+      return userInfo.roles.some((role) => role.code === "BPA_ARCHITECT")
+    } catch (error) {
+      console.error("Error validating architect role:", error)
+      return false
+    }
+  }
+
+  const handleProfessionalLoginClick = (e) => {
+    e.preventDefault()
+
+    if (validateArchitectRole()) {
+      history.push("/digit-ui/citizen/obps/edcrscrutiny/apply/home")
+    } else {
+      setShowToast({
+        error: true,
+        message: "Access Denied.",
+      })
+    }
+  }
   
   const links = [
-    { title: "Professional Login", url: "/digit-ui/citizen/obps/edcrscrutiny/apply/home", external: false },
+    { title: "Professional Login", url: "/digit-ui/citizen/obps/edcrscrutiny/apply/home", external: false, requiresArchitect: true, },
+     {
+      title: "Register as Professional",
+      url: "/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required",
+      external: false,
+      showForNonArchitect: true, 
+    },
     { title: "User Manual", url: "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F8%2F1759931687672rlOgUaoaId.pdf", external: true },
-    { title: "Assistance", url: "/digit-ui/citizen", external: true },
+    { title: "Assistance", external: true },
     { title: "Feedback", url: "https://docs.google.com/forms/d/e/1FAIpQLScfZlGldfyIs_3KZAX9lRpx43OjCrKnw33SbzvN6I3Gi2Uj_A/viewform?usp=header", external: true },
     { title: "View applications by Citizen", url: "/digit-ui/citizen/obps/my-applications", external: false },
     { title: "FAQs", url: "/digit-ui/citizen/obps-faq", external: false },
@@ -74,8 +124,8 @@ const CustomLandingPage = () => {
     e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)';
   };
 
-  const renderInstructions = (index) => {
-    if (index === 0) {
+  const renderInstructions = ( title) => {
+    if (title == "Professional Login") {
       // Professional Login instructions
       return (
         <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '2px solid rgba(255, 255, 255, 0.5)', background: 'rgba(0, 0, 0, 0.2)', padding: '16px', borderRadius: '6px' }}>
@@ -100,7 +150,7 @@ const CustomLandingPage = () => {
           </div>
         </div>
       );
-    } else if (index === 2) {
+    } else if (title == "Assistance") {
       // Assistance instructions
       return (
         <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '2px solid rgba(255, 255, 255, 0.5)', background: 'rgba(0, 0, 0, 0.2)', padding: '16px', borderRadius: '6px' }}>
@@ -142,23 +192,45 @@ const CustomLandingPage = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px', width: '100%', marginTop: '50px', paddingLeft: '80px', paddingRight: '20px' }}>
           {links.map((link, index) => {
+            if (link.showForNonArchitect && isArchitect) {
+              return null
+            }
             const CardComponent = (
               <Card style={cardStyle} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                 <CardText style={{ ...cardTextStyle, marginBottom: (index === 0 || index === 2) ? '16px' : '0' }}>
                   {link.title}
                 </CardText>
-                {renderInstructions(index)}
+                {renderInstructions(link.title)}
               </Card>
             );
 
             return (
-              <React.Fragment key={index}>
-                {link.external ? (
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              // <React.Fragment key={index}>
+              //   {link.external ? (
+              //     <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              //       {CardComponent}
+              //     </a>
+              //   ) : (
+              //     <Link to={link.url} style={{ textDecoration: 'none' }}>
+              //       {CardComponent}
+              //     </Link>
+              //   )}
+              // </React.Fragment>
+               <React.Fragment key={index}>
+                {link.requiresArchitect ? (
+                  <div onClick={handleProfessionalLoginClick} style={{ textDecoration: "none" }}>
                     {CardComponent}
-                  </a>
+                  </div>
+                ) : link.external ? (
+                  link.url ? (
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                      {CardComponent}
+                    </a>
+                  ) : (
+                    <div style={{ textDecoration: "none" }}>{CardComponent}</div>
+                  )
                 ) : (
-                  <Link to={link.url} style={{ textDecoration: 'none' }}>
+                  <Link to={link.url} style={{ textDecoration: "none" }}>
                     {CardComponent}
                   </Link>
                 )}
@@ -167,6 +239,15 @@ const CustomLandingPage = () => {
           })}
         </div>
       </div>
+       {showToast && (
+        <Toast
+          error={showToast?.error}
+          warning={showToast?.warning}
+          label={showToast?.message}
+          isDleteBtn={true}
+          onClose={closeToast}
+        />
+      )}
     </div>
   );
 };

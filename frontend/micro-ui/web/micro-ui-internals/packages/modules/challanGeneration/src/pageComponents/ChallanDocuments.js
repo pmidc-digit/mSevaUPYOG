@@ -2,7 +2,7 @@ import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 
-const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const [documents, setDocuments] = useState(formData?.documents?.documents);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
@@ -18,7 +18,6 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
     console.log("documentStep config.key", documentStep);
     onSelect(config.key, documentStep);
   };
-
   const onSkip = () => onSelect();
   function onAdd() {}
 
@@ -234,4 +233,4 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   );
 }
 
-export default CHBSelectProofIdentity;
+export default ChallanDocuments;

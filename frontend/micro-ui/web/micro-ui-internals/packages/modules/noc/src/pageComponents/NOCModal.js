@@ -27,6 +27,7 @@ const NOCModal = ({
   action,
   tenantId,
   state,
+  getEmployees,
   id,
   closeModal,
   submitAction,
@@ -53,12 +54,18 @@ const NOCModal = ({
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
+ 
+  const checkRole = action?.state?.actions;
+
+  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
+
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
        //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
-      roles: workflowDetails?.data?.initialActionState?.nextActions?.filter(ele=>ele?.action==action?.action)?.[0]?.assigneeRoles?.map(role=>({code:role})),
+      roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }
@@ -98,9 +105,6 @@ const NOCModal = ({
     }
   }, [approverData]);
 
-  console.log("approverData", approverData);
-
-  console.log("approvers", approvers);
 
   function selectFile(e) {
     setFile(e.target.files[0]);
@@ -137,10 +141,10 @@ const NOCModal = ({
    
   },[action]);
 
-  console.log("selectedApprover", selectedApprover);
+ // console.log("selectedApprover", selectedApprover);
 
   function submit(data) {
-    console.log("data here in Modal", data);
+   // console.log("data here in Modal", data);
     
     const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER","FORWARD"];
 
@@ -184,8 +188,6 @@ const NOCModal = ({
           ]
         : null,
     };
-
-    console.log("uploadedFile here in NOCModal", uploadedFile);
 
     submitAction({
       Licenses: [applicationData],

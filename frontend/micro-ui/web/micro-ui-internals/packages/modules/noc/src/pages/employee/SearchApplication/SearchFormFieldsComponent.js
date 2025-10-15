@@ -8,16 +8,16 @@ import { businessServiceList } from "../../../utils";
 const SearchFormFieldsComponent = (props) => {
   const { register, control, setValue, getValues, reset, formState, trigger  } = useFormContext()
   const { t } = useTranslation();
-  const nocTypeList = businessServiceList();
+  const user = Digit.UserService.getUser().info;
 
   function previousPage() {
     setValue("offset", getValues("offset") - getValues("limit"));
     props?.onSubmit({
-      nocType: nocTypeList?.[0]?.code,
       offset: 0,
       limit: 10,
-      sortBy: "commencementDate",
+      sortBy: "createdTime",
       sortOrder: "DESC",
+      mobileNumber: user?.mobileNumber
     }, true);
     props?.isMobileView ? props.closeMobilePopupModal() : null;
   }
@@ -26,25 +26,12 @@ const SearchFormFieldsComponent = (props) => {
   return (
     <>
       <SearchField>
-        <label>{t("NOC_APP_NO_LABEL")}</label>
+        <label>{t("NOC_APPLICATION_NUMBER")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
+      
       <SearchField>
-        <label>{t("NOC_SOURCE_MODULE_NUMBER")}</label>
-        <TextInput name="sourceRefId" inputRef={register({})} />
-      </SearchField>
-      <SearchField>
-        <label>{t("NOC_TYPE_LABEL")}</label>
-        <Controller
-          control={control}
-          name="nocType"
-          render={(props) => (
-            <Dropdown selected={nocTypeList?.length == 1 ? nocTypeList[0] : props.value} select={props.onChange} onBlur={props.onBlur} option={nocTypeList ? nocTypeList : []} optionKey="i18nKey" t={t} disable={nocTypeList?.length == 1 ? true : false}/>
-          )}
-        />
-      </SearchField>
-      <SearchField>
-        <label>{t("NOC_APP_MOBILE_NO_SEARCH_PARAM")}</label>
+        <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
         <MobileNumber
           name="mobileNumber"
           inputRef={register({
@@ -68,38 +55,22 @@ const SearchFormFieldsComponent = (props) => {
         />
         <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
       </SearchField>
-      <SearchField>
-        <label>{t("NOC_NUMBER_LABEL")}</label>
-        <TextInput name="nocNo" inputRef={register({})} />
-      </SearchField>
-      {/* <SearchField></SearchField> */}
+
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p
           style={{ marginTop: "24px" }}
           onClick={() => {
-            setValue("applicationNo", null);
-            setValue("sourceRefId", null);
-            setValue("mobileNumber", null);
-            setValue("nocType", nocTypeList?.[0]?.code);
-            setValue("offset", 0);
-            setValue("limit", 10);
-            setValue("sortBy","commencementDate");
-            setValue("sortOrder","DESC");
-            setValue("isSubmitSuccessful","false");
             reset({
               applicationNo: "",
-              sourceRefId: "",
-              nocType: "",
-              nocNo: "",
               mobileNumber: "",
               offset: 0,
               limit: 10,
-              sortBy: "commencementDate",
+              sortBy: "createdTime",
               sortOrder: "DESC",
-              "isSubmitSuccessful":false,
+              isSubmitSuccessful:"false",
             });
-            previousPage();
+           previousPage();
           }}
         >
           {t(`ES_COMMON_CLEAR_ALL`)}

@@ -53,10 +53,6 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
                 <h2>{t("ACTION_TEST_SEARCH_NOC_APPLICATION")}:</h2>
                 </div>
                 <SearchFormFieldsComponent onSubmit={onSubmit} handleSubmit={handleSubmit} isMobileView={true} {...{ closeMobilePopupModal }} />
-                {/* <SearchField className="submit">
-                        <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form"/>
-                        <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_ALL`)}</p>
-                    </SearchField> */}
             </SearchForm>
             );
         default:
@@ -112,8 +108,8 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
             {...{
                 data: propsMobileInboxCards,
                 isTwoDynamicPrefix: false,
-                linkPrefix: `/digit-ui/employee/noc/search/application-overview/`,
-                serviceRequestIdKey: t("NOC_APP_NO_LABEL"),
+                linkPrefix: `/digit-ui/employee/noc/inbox/application-overview/`,
+                serviceRequestIdKey: t("NOC_APPLICATION_NUMBER"),
             }}
             />
         )}

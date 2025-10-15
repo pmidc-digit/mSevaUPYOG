@@ -1,77 +1,83 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CardHeader } from "@mseva/digit-ui-react-components";
 import { businessServiceList } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
+import { filter } from "lodash";
+import SearchApplication from "./Search";
 
 const Search = ({ path }) => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const user = Digit.UserService.getUser().info;
+  let tenantId;
 
-  const Search = Digit.ComponentRegistryService.getComponent("NOCSearchApplication");
-
-  const nocTypeList = businessServiceList();
-  let availableNocTypes = [];
-  if (nocTypeList?.length == 1) availableNocTypes = [nocTypeList?.[0]?.code];
-  if (nocTypeList?.length > 1) nocTypeList?.forEach(nocDta => {availableNocTypes.push(nocDta.code);})
-
-  // const availableNocTypes = ["AIRPORT_AUTHORITY"]
-
-  const [filters, setfilters] = useState({
-    offset: 0,
-    limit: 10,
-    tenantId,
-    nocType: availableNocTypes[0]
-  })
+  if(window.location.pathname.includes("employee")){
+   tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }else{
+   tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  }
 
   const defaultFilters = {
     offset: 0,
     limit: 10,
     tenantId,
-    nocType: availableNocTypes[0]
+    mobileNumber: user?.mobileNumber
   }
+
+  const [filters, setfilters] = useState(defaultFilters);
 
   function onSubmit(__data, isFromClear = false) {
+    console.log("_data==>", __data);
     let details = cloneDeep(__data);
     let __filters = defaultFilters;
-    for (const [key, value] of Object.entries(__data)) {
-      if(value != undefined && value != null && value != ""){
-        __filters = {...__filters, [key]:value}        
-      }
+
+    const hasApplicationNo = !! details.applicationNo;
+    const hasMobileNumber = !! details.mobileNumber;
+    
+     // If only applicationNo is present, remove mobileNumber
+    if (hasApplicationNo && !hasMobileNumber) {
+      console.log("we are deleteing mobileNumber here");
+     delete details.mobileNumber;
     }
-    setfilters(isFromClear == true ? details : __filters)
-    // setSearchData(_data);
-    // var fromDate = new Date(_data?.fromDate);
-    // fromDate?.setSeconds(fromDate?.getSeconds() - 19800);
-    // var toDate = new Date(_data?.toDate);
-    // setSelectedType(_data?.applicationType?.code);
-    // toDate?.setSeconds(toDate?.getSeconds() + 86399 - 19800);
-    // const data = {
-    //   ..._data,
-    //   ...(_data.toDate ? { toDate: toDate?.getTime() } : {}),
-    //   ...(_data.fromDate ? { fromDate: fromDate?.getTime() } : {}),
-    // };
 
-    // setPayload(
-    //   Object.keys(data)
-    //     .filter((k) => data[k])
-    //     .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {})
-    // );
+    // for (const [key, value] of Object.entries(__data)) {
+    //   if(value != undefined && value != null && value != ""){
+
+    //     __filters = {...__filters, [key]:value}        
+    //   }
+    // }
+    //setfilters(isFromClear == true ? details : __filters)
+     setfilters(details);
   }
-
+  
+  
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const { data, isLoading, isSuccess, error } = Digit.Hooks.noc.useNOCSearchApplication(tenantId,filters,{});
+
+  const [tableData, setTableData] = useState([{ display: "ES_COMMON_NO_DATA" }]);
+  const [count,setCount] = useState(0);
+  const { data, revalidate, isLoading, isSuccess, error } = Digit.Hooks.noc.useNOCSearchApplicationByIdOrMobile(filters,tenantId,{});
+
+  useEffect(()=>{
+    if(data == undefined){
+      setTableData([{ display: "ES_COMMON_NO_DATA" }]);
+    }
+    else if(data?.data?.length>0 ){
+      setTableData(data?.data);
+      setCount(data?.totalCount);
+    }
+  },[data])
+
   return (
     <div>
       <CardHeader styles={!isMobile ? {fontSize: "32px", fontWeight: "700"} : {fontSize: "32px", fontWeight: "700", paddingLeft: "10px"}}>{t("ACTION_TEST_SEARCH_NOC_APPLICATION")}</CardHeader>
-      <Search
+      <SearchApplication
         t={t}
         tenantId={tenantId}
         onSubmit={onSubmit}
         isLoading={isLoading}
-        Count={data?.count}
+        Count={count}
         error={error}
-        data={!isLoading && isSuccess && data?.Noc?.length > 0 ? data.Noc : [{ display: "ES_COMMON_NO_DATA" }]}
+        data={tableData}
       />
     </div>
   );

@@ -1639,7 +1639,15 @@ export const WSSearch = {
     const serviceTypeOfData = serviceType == "WATER" ? "WS" : "SW";
     const collectionNumber = wsDataDetails?.connectionNo;
     const colletionOFData = await WSSearch.colletionData({tenantId, serviceTypeOfData, collectionNumber}, {});
-    const fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
+    
+    // Wrap bill fetch in try-catch to prevent crash when bills don't exist
+    let fetchBills = [];
+    try {
+      fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
+    } catch (error) {
+      // Don't throw error - just set empty array so hook continues to work
+      fetchBills = { Bill: [] };
+    }
 
     const applicationHeaderDetails = {
       title: "WS_COMMON_SERV_DETAIL",
@@ -1675,15 +1683,13 @@ export const WSSearch = {
                   ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[0]}`)
                   : t("NA"),
               },
-              {
-                title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
-                value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
-              },
+              // {
+              //   title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
+              //   value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
+              // },
               {
                 title: "Old Consumer No",
-                value: wsDataDetails?.oldConnectionNumber
-                  ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.oldConnectionNumber?.toUpperCase(), " ", "_")}`)
-                  : t("NA"),
+                value: wsDataDetails?.oldConnectionNo || t("NA"),
               },
               {
                 title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
@@ -1728,27 +1734,27 @@ export const WSSearch = {
        { title: "Street", value: propertyDataDetails?.address?.street},
        { title: "Locality", value: propertyDataDetails?.address?.locality?.name},
        { title: "Pincode", value: propertyDataDetails?.address?.pincode},
-       { title: "Location on Map", value: propertyDataDetails?.address?.geoLocation},
+       { title: "Location on Map", value: propertyDataDetails?.address?.geoLocation?.latitude && propertyDataDetails?.address?.geoLocation?.longitude && (propertyDataDetails?.address?.geoLocation?.latitude !== 0.0 || propertyDataDetails?.address?.geoLocation?.longitude !== 0.0) ? `Lat: ${propertyDataDetails?.address?.geoLocation?.latitude}, Long: ${propertyDataDetails?.address?.geoLocation?.longitude}` : t("NA")},
       
-        { title: "WS_PROPERTY_ADDRESS_LABEL",
-          value: getAddress(propertyDataDetails?.address, t),
-          privacy: {
-            uuid: propertyDataDetails?.owners?.[0]?.uuid, 
-            fieldName: ["doorNo" , "street" , "landmark"], 
-            model: "Property",showValue: true,
-            loadData: {
-              serviceName: "/property-services/property/_search",
-              requestBody: {},
-              requestParam: { tenantId, propertyIds : propertyids },
-              jsonPath: "Properties[0].address.street",
-              isArray: false,
-              d: (res) => {
-                let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
-                return resultString;
-              }
-            }
-          }
-        },
+        // { title: "WS_PROPERTY_ADDRESS_LABEL",
+        //   value: getAddress(propertyDataDetails?.address, t),
+        //   privacy: {
+        //     uuid: propertyDataDetails?.owners?.[0]?.uuid, 
+        //     fieldName: ["doorNo" , "street" , "landmark"], 
+        //     model: "Property",showValue: true,
+        //     loadData: {
+        //       serviceName: "/property-services/property/_search",
+        //       requestBody: {},
+        //       requestParam: { tenantId, propertyIds : propertyids },
+        //       jsonPath: "Properties[0].address.street",
+        //       isArray: false,
+        //       d: (res) => {
+        //         let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
+        //         return resultString;
+        //       }
+        //     }
+        //   }
+        // },
         {
           title: "WS_VIEW_PROPERTY_DETAIL",
           to: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"}`,
@@ -1775,7 +1781,7 @@ export const WSSearch = {
     { title: "Gender", value: propertyDataDetails?.owners?.[0]?.gender },
     { title: "Guardian", value: propertyDataDetails?.owners?.[0]?.relationship },
     { title: "Guardian Name", value: propertyDataDetails?.owners?.[0]?.fatherOrHusbandName},
-    { title: "Owner Category", value: propertyDataDetails?.owners?.[0]?.ownerType },
+    { title: "Owner Category", value: propertyDataDetails?.ownershipCategory },
     { title: "Email", value: propertyDataDetails?.owners?.[0]?.emailId},
     { title: "Correspondence Address", value: propertyDataDetails?.owners?.[0]?.correspondenceAddress    },
   ]:null

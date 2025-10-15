@@ -122,7 +122,7 @@ const Inbox = ({ parentRoute }) => {
     }
   },[])
   
-  console.log("data in noc==>", data);
+ // console.log("data in noc==>", data);
 
   // let table = [];
   const [table, setTable] = useState([]);
@@ -141,10 +141,10 @@ const Inbox = ({ parentRoute }) => {
     logoIcon: <ComplaintIcon />,
     headerText: "ACTION_TEST_NOC",
     links: [
-      // {
-      //   text: t("ES_COMMON_APPLICATION_SEARCH"),
-      //   link: "/digit-ui/employee/noc/search",
-      // },
+      {
+        text: t("ES_COMMON_APPLICATION_SEARCH"),
+        link: "/digit-ui/employee/noc/search",
+      },
       {
         text: t("NOC_NEW_APPLICATION"),
         link: "/digit-ui/employee/noc/new-application",

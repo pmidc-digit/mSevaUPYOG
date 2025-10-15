@@ -98,7 +98,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
+        <div style={{ width: "50%" }}>
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>

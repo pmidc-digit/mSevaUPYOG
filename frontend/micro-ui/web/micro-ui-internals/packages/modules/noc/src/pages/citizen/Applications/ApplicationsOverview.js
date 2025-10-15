@@ -27,13 +27,13 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
+    time: checkpoint?.auditDetails?.timing,
     name: checkpoint?.assigner?.name,
     mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
@@ -71,7 +71,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div style={{ marginTop: "8px" }}>,
+        {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
         {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
@@ -91,7 +92,6 @@ const CitizenApplicationOverview = () => {
 
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here==>", applicationDetails);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -118,9 +118,6 @@ const CitizenApplicationOverview = () => {
 
       const Documents = nocObject?.documents || [];
 
-      console.log("applicantDetails", applicantDetails);
-      console.log("siteDetails", siteDetails);
-
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         siteDetails: siteDetails ? [siteDetails] : [],
@@ -132,8 +129,6 @@ const CitizenApplicationOverview = () => {
     }
   }, [applicationDetails?.Noc]);
 
-  console.log("displayData here", displayData);
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -143,15 +138,15 @@ const CitizenApplicationOverview = () => {
     },
     { enabled: id ? true : false }
   );
+
+  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
   const handleDownloadPdf = async () => {
     const Property = applicationDetails?.Noc?.[0];
-    console.log("Property in NOC", applicationDetails);
     //console.log("tenants", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
 
-    console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generate(acknowledgementData);
   };
 
@@ -164,12 +159,11 @@ const CitizenApplicationOverview = () => {
 
   const downloadSanctionLetter = async () => {
     const application = applicationDetails?.Noc?.[0];
-    console.log("application details", application);
     try {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      await getNOCSanctionLetter(application, t);
+      await getNOCSanctionLetter(application, t, amountPaid);
     } catch (error) {
       console.error("Sanction Letter download error:", error);
     }
@@ -178,7 +172,7 @@ const CitizenApplicationOverview = () => {
   const dowloadOptions = [];
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
-      label: t("DOWNLOAD_SANCTION_LETTER"),
+      label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
       onClick: downloadSanctionLetter,
     });
     dowloadOptions.push({
@@ -188,7 +182,7 @@ const CitizenApplicationOverview = () => {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
-        label: t("PTR_FEE_RECIEPT"),
+        label: t("CHB_FEE_RECEIPT"),
         onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
       });
     }
@@ -235,11 +229,9 @@ const CitizenApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "obpas_noc",
+    moduleCode: "obpas_noc", // businessService
     // role: "EMPLOYEE",
   });
-
-  console.log("workflowDetails here=>", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -311,13 +303,9 @@ const CitizenApplicationOverview = () => {
       documents: filtData?.wfDocuments,
     };
 
-    console.log("updatedApplicant", updatedApplicant);
-
     const finalPayload = {
       Noc: { ...updatedApplicant },
     };
-
-    console.log("final Payload ", finalPayload);
 
     try {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
@@ -495,6 +483,19 @@ const CitizenApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}</StatusTable>
+      </Card>
+
+      <Card>
+       <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+          {applicationDetails?.Noc?.[0]?.nocDetails &&  (
+              <NOCFeeEstimationDetails 
+                  formData={{
+                    apiData:{...applicationDetails},
+                    applicationDetails:{...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails},
+                    siteDetails: {...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails} 
+                  }}
+              />
+            )}
       </Card>
 
       {workflowDetails?.data?.timeline && (

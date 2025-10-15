@@ -12,11 +12,11 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       link: "/digit-ui/employee/ads/bookad",
       roles: [],
     },
-    {
-      text: t("ADS_MY_APPLICATIONS"),
-      link: `/digit-ui/employee/ads/my-applications`,
-      roles: [],
-    },
+    // {
+    //   text: t("ADS_MY_APPLICATIONS"),
+    //   link: `/digit-ui/employee/ads/my-applications`,
+    //   roles: [],
+    // },
     // {
     //   text: "ADS_SITE_INSPECTION_DETAILS",
     //   link: `/digit-ui/employee/ads/site-inspection-details`,

@@ -125,7 +125,7 @@ export const WorkflowService = {
       /* To check state is updatable and provide edit option*/
       const currentState = businessServiceResponse?.find((state) => state.uuid === processInstances[0]?.state.uuid);
       if (currentState && currentState?.isStateUpdatable) {
-        if (moduleCode === "FSM" || moduleCode === "FSM_POST_PAY_SERVICE" || moduleCode === "FSM_ADVANCE_PAY_SERVICE" || moduleCode === "FSM_ADVANCE_PAY_SERVICE_V1" || moduleCode === "FSM_ZERO_PAY_SERVICE" || moduleCode === "PAY_LATER_SERVICE" || moduleCode === "FSM_VEHICLE_TRIP" || moduleCode === "PGR" || moduleCode === "OBPS" || moduleCode === "BPA") null;
+        if (moduleCode === "FSM" || moduleCode === "FSM_POST_PAY_SERVICE" || moduleCode === "FSM_ADVANCE_PAY_SERVICE" || moduleCode === "FSM_ADVANCE_PAY_SERVICE_V1" || moduleCode === "FSM_ZERO_PAY_SERVICE" || moduleCode === "PAY_LATER_SERVICE" || moduleCode === "FSM_VEHICLE_TRIP" || moduleCode === "PGR" || moduleCode === "OBPS" || moduleCode === "BPA" || moduleCode === "ENGINEER") null;
         else nextActions.push({ action: "EDIT", state: currentState });
       }
 
@@ -172,6 +172,7 @@ export const WorkflowService = {
             auditDetails: {
               created: Digit.DateUtils.ConvertEpochToDate(instance.auditDetails.createdTime),
               lastModified: Digit.DateUtils.ConvertEpochToDate(instance.auditDetails.lastModifiedTime),
+              timing: Digit.DateUtils.ConvertEpochToTimeInHours(instance.auditDetails.lastModifiedTime),
             },
             timeLineActions: instance.nextActions
               ? instance.nextActions.filter((action) => action.roles.includes(role)).map((action) => action?.action)

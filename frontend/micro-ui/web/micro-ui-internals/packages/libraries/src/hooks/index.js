@@ -248,13 +248,14 @@ import useSurveyQuestionInbox from "./surveys/useSurveyQuestionInbox";
 
 import useNOCDetails from "./noc/useNOCDetails";
 import useNOCInbox from "./noc/useInbox";
-import { useNOCSearchApplication, useNOCCitizenSearchApplication } from "./noc/useSearchApplications";
+import { useNOCSearchApplication, useNOCCitizenSearchApplication, useNOCSearchApplicationByIdOrMobile } from "./noc/useSearchApplications";
 import useBuildingCategory from "./noc/useBuildingCategory";
 import useBuildingType from "./noc/useBuildingType";
 import useRoadType from "./noc/useRoadType";
 import useNOCTenants from "./noc/useTenants";
 import useNOCDocumentSearch from "./noc/useNOCDocumentsSearch";
 import useNocType from "./noc/useNocType";
+import useNOCFeeCalculator from "./noc/useNOCFeeCalculator";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -717,6 +718,8 @@ const noc = {
   useTenants: useNOCTenants,
   useNOCDocumentSearch,
   useNocType,
+  useNOCFeeCalculator,
+  useNOCSearchApplicationByIdOrMobile
 };
 
 const ndc = {

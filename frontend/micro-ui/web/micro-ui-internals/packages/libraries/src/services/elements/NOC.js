@@ -32,4 +32,14 @@ export const NOCService = {
       params: { tenantId, ...filters },
       auth: true,
     }),
+   NOCCalculator: ({ filters, details }) => 
+    Request({
+      url: Urls.noc.nocCalculator,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    })
 }

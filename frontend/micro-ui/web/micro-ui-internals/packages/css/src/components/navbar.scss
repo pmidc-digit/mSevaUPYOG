@@ -312,3 +312,34 @@
     @apply mr-sm;
   }
 }
+
+.upyog-logo{
+  display: block;
+}
+@media (max-width: 780px) {
+  .upyog-logo{
+    display: none !important;
+  }
+}
+.right-wrapper_navbar{
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: auto 1.5rem;
+}
+
+.left-wrapper_navbar{
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  align-items: center;
+  justify-content: flex-start;
+  padding: auto 1.5rem;
+}
+.center-container_navbar{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}

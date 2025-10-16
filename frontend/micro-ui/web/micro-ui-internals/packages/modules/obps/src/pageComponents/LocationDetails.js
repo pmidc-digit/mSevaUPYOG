@@ -63,7 +63,7 @@ const [isFileLoading, setIsFileLoading] = useState(false);
         if(city) setSelectedCity(city);
       }else{
         console.log("selectedCity", )
-        const city = allCities.find((item) => item.code.split(".")?.[1] === selectedCity);
+        const city = allCities.find((item) => item?.name?.toUpperCase() === selectedCity?.toUpperCase());
         if(city) setSelectedCity(city);
       }
     }else if(selectedCity === null){
@@ -271,6 +271,7 @@ useEffect(() => {
     // address.street = street;
     // address.landmark = landmark;
     address.geoLocation = {
+      ...address.geoLocation,
       latitude: Number(geoLocationFromImg?.latitude)?.toFixed(6) || null,
       longitude: Number(geoLocationFromImg?.longitude)?.toFixed(6) || null
     };

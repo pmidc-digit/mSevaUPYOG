@@ -264,11 +264,8 @@ console.log(isCitizenEditable, "EDIT per");
               {
                 gender: formData?.LicneseDetails?.gender?.code,
                 mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                name: [
-                  formData?.LicneseDetails?.name ? formData.LicneseDetails.name.trim() : "",
-                  formData?.LicneseDetails?.middleName ? formData.LicneseDetails.middleName.trim() : "",
-                  formData?.LicneseDetails?.lastName ? formData.LicneseDetails.lastName.trim() : ""
-                ].filter(Boolean).join(" ").trim(),
+                name:
+                  formData?.LicneseDetails?.name,
                 dob: formData?.LicneseDetails?.dateOfBirth
                   ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth)
                   : null,

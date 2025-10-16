@@ -13,11 +13,15 @@ const LocationSelect = ({ onLocationChange,selectedCity }) => {
     localStorage.setItem("CITIZEN.CITY", city?.code);
     onLocationChange && onLocationChange(city);
   }
-
+  const style ={
+    locationWrapper : {
+        width: "100%"
+    }
+  }
   return (
     // <PageBasedInput texts={{}} onSubmit={() => {}} className="location-selection-container" isDisabled={true}>
     // <LabelFieldPair>
-    <div className="location-wrapper">
+    <div className="location-wrapper" style={style.locationWrapper}>
       <div className="label">{t("CS_COMMON_CHOOSE_LOCATION")}<span> *</span></div>
       {!isLoading && (
         <Dropdown

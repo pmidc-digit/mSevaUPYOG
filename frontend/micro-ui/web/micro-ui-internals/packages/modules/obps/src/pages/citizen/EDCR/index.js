@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import { newConfig as newConfigEDCR } from "../../../config/edcrConfig";
 import { uuidv4 } from "../../../utils";
+import { Toast, Loader } from "@mseva/digit-ui-react-components";
 // import EDCRAcknowledgement from "./EDCRAcknowledgement";
 
 const CreateEDCR = ({ parentRoute }) => {
@@ -17,9 +18,43 @@ const CreateEDCR = ({ parentRoute }) => {
   const [isShowToast, setIsShowToast] = useState(null);
   const [isSubmitBtnDisable, setIsSubmitBtnDisable] = useState(false);
   Digit.SessionStorage.set("EDCR_BACK", "IS_EDCR_BACK");
+  const userInfo = Digit.UserService.getUser();
+    const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
+    const stateCode = Digit.ULBService.getStateId();
+    const [stakeHolderRoles, setStakeholderRoles] = useState(false);
+  const { data: stakeHolderDetails, isLoading: stakeHolderDetailsLoading } = Digit.Hooks.obps.useMDMS(
+    stateCode,
+    "StakeholderRegistraition",
+    "TradeTypetoRoleMapping"
+  );
+  const [showToast, setShowToast] = useState(null);
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
+
+  useEffect(() => {
+      if (!stakeHolderDetailsLoading) {
+        let roles = [];
+        stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
+          type?.role?.map((role) => {
+            roles.push(role);
+          });
+        });
+        const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
+        let isRoute = false;
+        uniqueRoles?.map((unRole) => {
+          if (userRoles?.includes(unRole) && !isRoute) {
+            isRoute = true;
+          }
+        });
+        if (!isRoute) {
+          setStakeholderRoles(false);
+          setShowToast({ key: "true", message: t("BPA_LOGIN_HOME_VALIDATION_MESSAGE_LABEL") });
+        } else {
+          setStakeholderRoles(true);
+        }
+      }
+    }, [stakeHolderDetailsLoading]);
 
   function handleSelect(key, data, skipStep, index) {
     setIsSubmitBtnDisable(true);
@@ -114,6 +149,10 @@ const CreateEDCR = ({ parentRoute }) => {
       });
   }
 
+  const closeToast = () => {
+    window.location.replace("/digit-ui/citizen/obps-home");
+  };
+
   const handleSkip = () => {};
   const handleMultiple = () => {};
 
@@ -129,7 +168,12 @@ const CreateEDCR = ({ parentRoute }) => {
 
   const EDCRAcknowledgement = Digit?.ComponentRegistryService?.getComponent("EDCRAcknowledgement");
 
-  return (
+  if (stakeHolderDetailsLoading) {
+      return <Loader />;
+    }
+  if (showToast) return <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />;
+
+  if(!showToast) {return (
     <Switch>
       {config.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
@@ -157,7 +201,7 @@ const CreateEDCR = ({ parentRoute }) => {
         <Redirect to={`${match.path}/${config.indexRoute}`} />
       </Route>
     </Switch>
-  );
+  )};
 };
 
 export default CreateEDCR;

@@ -36,7 +36,7 @@ const WSDisconnectionResponse = (props) => {
           headerStyles={{ fontSize: "32px" }}
           infoOneStyles={{ paddingTop: "20px" }}
         />
-        <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}>{t("WS_MESSAGE_SUB_DESCRIPTION_LABEL")}</CardText>
+        {/* <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}>{t("WS_MESSAGE_SUB_DESCRIPTION_LABEL!!")}</CardText> */}
         <div style={{ display: "flex" }}>
          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginBottom: "10px", padding: "0px 8px" }} onClick={handleDownloadPdf}>
             <svg width="20" height="23" viewBox="0 0 20 23" fill="none" xmlns="http://www.w3.org/2000/svg">

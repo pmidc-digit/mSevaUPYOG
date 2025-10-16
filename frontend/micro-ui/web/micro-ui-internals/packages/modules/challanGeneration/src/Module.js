@@ -20,6 +20,16 @@ import SearchReceipt from "./pages/employee/SearchReceipt";
 import SearchChallan from "./pages/employee/SearchChallan";
 import SearchBill from "./pages/employee/SearchBill";
 import GroupBill from "./pages/employee/GroupBills";
+import ChallanStepperForm from "./pageComponents/ChallanStepper/ChallanStepperForm";
+import ChallanStepFormOne from "./pageComponents/ChallanStepper/ChallanStepFormOne";
+import ChallanStepFormTwo from "./pageComponents/ChallanStepper/ChallanStepFormTwo";
+import ChallanStepFormThree from "./pageComponents/ChallanStepper/ChallanStepFormThree";
+import ChallanStepFormFour from "./pageComponents/ChallanStepper/ChallanStepFormFour";
+import OffenderDetails from "./pageComponents/OffenderDetails";
+import OffenceDetails from "./pageComponents/OffenceDetails";
+import ChallanSummary from "./pageComponents/ChallanSummary";
+import ChallanDocuments from "./pageComponents/ChallanDocuments";
+import getRootReducer from "../redux/reducer";
 
 export const ChallanGenerationModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -58,6 +68,8 @@ export const ChallanGenerationLinks = ({ matchPath, userType }) => {
   return <CitizenHomeCard header={t("ACTION_TEST_MCOLLECT")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };
 
+export const ChallanReducers = getRootReducer;
+
 const componentsToRegister = {
   ConsumerDetails,
   ServiceDetails,
@@ -77,6 +89,15 @@ const componentsToRegister = {
   SearchBill,
   GroupBill,
   MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  ChallanStepperForm,
+  ChallanStepFormOne,
+  ChallanStepFormTwo,
+  ChallanStepFormThree,
+  ChallanStepFormFour,
+  OffenderDetails,
+  OffenceDetails,
+  ChallanSummary,
+  ChallanDocuments,
 };
 
 export const initChallanGenerationComponents = () => {

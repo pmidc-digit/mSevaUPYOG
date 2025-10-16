@@ -9,7 +9,12 @@ import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
-import { ChallanGenerationModule, ChallanGenerationLinks } from "@mseva/digit-ui-module-challangeneration";
+import {
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
+  initChallanGenerationComponents,
+  ChallanReducers,
+} from "@mseva/digit-ui-module-challangeneration";
 import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
@@ -19,7 +24,6 @@ import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
-import { initChallanGenerationComponents } from "@mseva/digit-ui-module-challangeneration";
 import { initRentAndLeaseComponents } from "@mseva/digit-ui-module-rentandlease";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents, OBPSReducers } from "@mseva/digit-ui-module-obps";
@@ -82,7 +86,7 @@ const enabledModules = [
   "PGRAI",
   "ChallanGeneration",
   "RentAndLease",
-  "BPAStakeholder"
+  "BPAStakeholder",
 ];
 
 const initTokens = (stateCode) => {
@@ -123,7 +127,7 @@ const initDigitUI = () => {
     ...PTComponents,
     MCollectLinks,
     MCollectModule,
-    ChallanGenerationModule, 
+    ChallanGenerationModule,
     ChallanGenerationLinks,
     RentAndLeaseModule,
     RentAndLeaseLinks,
@@ -152,7 +156,7 @@ const initDigitUI = () => {
     PGRAILinks,
     ...PGRAIComponents,
     NOCModule,
-    NOCLinks
+    NOCLinks,
   });
   initFSMComponents();
   initPGRComponents();
@@ -187,7 +191,8 @@ const initDigitUI = () => {
     ads: ADSReducers(initData),
     chb: CHBReducers(initData),
     noc: NOCReducers(initData),
-    obps: OBPSReducers(initData)
+    obps: OBPSReducers(initData),
+    challan: ChallanReducers(initData),
   });
 
   window.Digit.Customizations = {

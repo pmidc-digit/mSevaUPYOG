@@ -63,21 +63,26 @@ const CustomLandingPage = () => {
     }
   }
 
-  const handleProfessionalLoginClick = (e) => {
+  const handleProfessionalLoginClick = (e, link) => {
     e.preventDefault()
 
-    if (validateArchitectRole()) {
-      history.push("/digit-ui/citizen/obps/edcrscrutiny/apply/home")
-    } else {
-      setShowToast({
-        error: true,
-        message: "Access Denied.",
-      })
+   if (validateArchitectRole()) {
+    if (link.title === "Professional Login") {
+      history.push("/digit-ui/citizen/obps/edcrscrutiny/apply/home");
+    } else if (link.title === "Professional Dashboard") {
+      history.push("/digit-ui/citizen/obps/home");
     }
+  } else {
+    setShowToast({
+      error: true,
+      message: "Access Denied.",
+    });
+  }
   }
   
   const links = [
     { title: "Professional Login", url: "/digit-ui/citizen/obps/edcrscrutiny/apply/home", external: false, requiresArchitect: true, },
+    { title: "Professional Dashboard", url: "/digit-ui/citizen/obps/home", external: true, requiresArchitect: true, },
      {
       title: "Register as Professional",
       url: "/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required",
@@ -216,9 +221,9 @@ const CustomLandingPage = () => {
               //     </Link>
               //   )}
               // </React.Fragment>
-               <React.Fragment key={index}>
+              <React.Fragment key={index}>
                 {link.requiresArchitect ? (
-                  <div onClick={handleProfessionalLoginClick} style={{ textDecoration: "none" }}>
+                  <div onClick={(e) => handleProfessionalLoginClick(e, link)} style={{ textDecoration: "none" }}>
                     {CardComponent}
                   </div>
                 ) : link.external ? (

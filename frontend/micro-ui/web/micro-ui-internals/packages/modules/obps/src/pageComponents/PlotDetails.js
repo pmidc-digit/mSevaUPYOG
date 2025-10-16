@@ -49,6 +49,8 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const queryObject = { 0: { tenantId: state }, 1: {id: userInfo?.info?.id} };
   const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(null, queryObject);
   const [approvedLicense, setApprovedLicense] = useState(null);
+  const [ptLoading, setPtLoading] = useState(false);
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
@@ -76,7 +78,8 @@ console.log("sessionStorageData",approvedLicense);
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
 
-  const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) => (
+  const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
+    
     <div style={{ marginBottom: "1rem" }}>
       <CardLabel>{label}</CardLabel>
       <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => setValue(e.target.value)} disable={isDisabled}/>
@@ -155,6 +158,35 @@ console.log("sessionStorageData",approvedLicense);
   }
 }, [currentStepData?.createdResponse]);
 
+// useEffect(() => {
+//   if (menuList && currentStepData?.cpt?.details?.address?.locality && !currentStepData?.createdResponse?.additionalDetails) {
+//     const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
+//     console.log("menuList", boundary);
+//     let ward = {}
+//     const zone = boundary?.children?.find(item => item?.children?.some((children) => {
+//       if(children?.children?.some(child => child?.code === currentStepData?.cpt?.details?.address?.locality?.code)){
+//         ward = children
+//         return true
+//       }else{
+//         return false
+//       }
+//     }));
+//     console.log("menuList zone", zone, ward)
+//   }
+// }, [menuList, currentStepData?.cpt?.details?.address?.locality]);
+
+useEffect(() => {
+  if (currentStepData?.cpt?.zonalMapping?.zone && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
+    setZoneNumber(currentStepData?.cpt?.zonalMapping?.zone?.code || "");
+  }
+}, [currentStepData?.cpt?.zonalMapping?.zone]);
+
+useEffect(() => {
+  if (currentStepData?.cpt?.zonalMapping?.ward && !currentStepData?.createdResponse?.additionalDetails?.wardnumber) {
+    setWardNumber(currentStepData?.cpt?.zonalMapping?.ward?.code || "");
+  }
+}, [currentStepData?.cpt?.zonalMapping?.ward]);
+
 
 
   const validate = () => {
@@ -186,7 +218,7 @@ console.log("sessionStorageData",approvedLicense);
       newErrors.architectid = t("BPA_ARCHITECT_ID_REQUIRED");
     }
 
-    if (!currentStepData?.cpt?.id?.trim()) {
+    if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
       newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
     }
 
@@ -260,8 +292,12 @@ console.log("sessionStorageData",approvedLicense);
       ) || null;
     const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
-    const propertyuid = currentStepData?.cpt?.id || "";
-    const address = currentStepData?.cpt?.details?.address || currentStepData?.createdResponse?.landInfo?.address || undefined;
+    const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || "";
+    const address = {
+      ...currentStepData?.cpt?.details?.address,
+      city: currentStepData?.cpt?.details?.address?.tenantId || currentStepData?.cpt?.details?.address?.city || "",
+      id: null
+    } || currentStepData?.createdResponse?.landInfo?.address || undefined;
     const ownershipCategory = currentStepData?.cpt?.details?.ownershipCategory || currentStepData?.createdResponse?.landInfo?.ownershipCategory || undefined;
     const owners = currentStepData?.cpt?.details?.owners?.map((data) => ({
       ...data,
@@ -459,17 +495,17 @@ console.log("sessionStorageData",approvedLicense);
             
           </StatusTable>
 
-          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Give Land Registration Detail...")}
-          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
-          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number")}
-          {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number")}
-          {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
-          {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
-          {/* {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")} */}
-          <PropertySearch  formData={currentStepData} />
+          <PropertySearch  formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>
           {errors["propertyuid"] && (
           <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
           )}
+          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Give Land Registration Detail...")}
+          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
+          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", currentStepData?.cpt?.zonalMapping?.ward)}
+          {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number" , currentStepData?.cpt?.zonalMapping?.zone)}
+          {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
+          {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
+          {/* {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")} */}
           {renderField(t("BPA_NUMBER_OF_BATHS")+"*", bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
           {renderField(t("BPA_NUMBER_OF_KITCHENS")+"*", kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
           {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION")+"*", approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}
@@ -492,7 +528,7 @@ console.log("sessionStorageData",approvedLicense);
                       }}
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading} />}
           </ActionBar>
         </FormStep>
       </div>

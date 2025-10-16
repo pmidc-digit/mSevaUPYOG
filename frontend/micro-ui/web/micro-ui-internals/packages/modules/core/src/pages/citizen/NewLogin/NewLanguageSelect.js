@@ -20,10 +20,16 @@ const LanguageSelect = ({ onLanguageChange }) => {
     }),
     [languages, selectedLanguage, onLanguageChange]
   );
-
+  
+  const style = {
+    languageWrapper: {
+      width: '100%',
+      maxWidth: '260px',
+    },
+  }
   return (
     // <PageBasedInput texts={{}} onSubmit={() => {}} isDisabled={true} >
-    <div className="language-wrapper">
+    <div className="language-wrapper" style={style.languageWrapper}>
       <div className="label">
         {t("CS_COMMON_CHOOSE_LANGUAGE")}
         <span> *</span>

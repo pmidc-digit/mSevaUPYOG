@@ -18,7 +18,6 @@ const ChallanStepFormOne = ({ config, onGoNext, onBackClick }) => {
   });
 
   function goNext(data) {
-    console.log("data aa rea", data);
     dispatch(UPDATE_ChallanApplication_FORM(config.key, data));
     onGoNext();
   }

@@ -542,8 +542,8 @@ const WrapPaymentComponent = (props) => {
   };
   //New Payment Reciept For PT module with year bifurcations
 
-  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1 };
-  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2 };
+  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1, cursor: "pointer" };
+  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2, cursor: "pointer" };
   const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px" };
 
   const printRecieptNew = async (payment) => {
@@ -1574,9 +1574,9 @@ const WrapPaymentZeroComponent = (props) => {
     padding: "4px 0px",
     justifyContent: "space-between",
   };
-  const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px" };
-  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1 };
-  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2 };
+  const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", cursor: "pointer" };
+  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1, cursor: "pointer" };
+  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2, cursor: "pointer" };
 
   //New Payment Reciept For PT module with year bifurcations
 

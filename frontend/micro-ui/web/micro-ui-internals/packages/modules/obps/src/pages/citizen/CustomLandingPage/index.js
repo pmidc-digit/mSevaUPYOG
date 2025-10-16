@@ -77,7 +77,8 @@ const CustomLandingPage = () => {
   }
   
   const links = [
-    { title: "Professional Login", url: "/digit-ui/citizen/obps/edcrscrutiny/apply/home", external: false, requiresArchitect: true, },
+    { title: "Professional Login", url: "/digit-ui/citizen/obps/home", external: false, },
+    { title: "Professional Dashboard", url: "/digit-ui/citizen/obps/home", external: true, requiresArchitect: true, },
      {
       title: "Register as Professional",
       url: "/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required",

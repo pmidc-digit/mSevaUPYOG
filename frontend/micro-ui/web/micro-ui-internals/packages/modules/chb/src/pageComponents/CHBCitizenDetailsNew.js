@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 
 const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   const user = Digit.UserService.getUser();
   const [loader, setLoader] = useState(false);
@@ -22,6 +22,32 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       address: "",
     },
   });
+
+  const slotsSearch = async (data) => {
+    const refData = data?.hallsBookingApplication?.[0];
+
+    console.log("refData", refData);
+
+    const payload = {
+      tenantId: tenantId,
+      communityHallCode: refData.communityHallCode,
+      hallCode: refData?.bookingSlotDetails?.[0]?.hallCode,
+      bookingStartDate: refData?.bookingSlotDetails?.[0]?.bookingDate,
+      bookingEndDate: refData?.bookingSlotDetails?.[0]?.bookingEndDate,
+      isTimerRequired: true,
+      bookingId: refData?.bookingId,
+    };
+    console.log("payload", payload);
+
+    try {
+      const response = await Digit.CHBServices.slot_search({ filters: payload });
+      goNext(data?.hallsBookingApplication);
+      setLoader(false);
+      return response;
+    } catch (error) {
+      setLoader(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     setLoader(true);
@@ -74,8 +100,13 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       try {
         const response = await Digit.CHBServices.create(payload);
         console.log("response", response);
-        setLoader(false);
-        goNext(response?.hallsBookingApplication);
+        // ⏳ Add 5-second delay before calling slotsSearch
+        setTimeout(() => {
+          slotsSearch(response); // loader will be turned off inside slotsSearch
+        }, 10000);
+        // slotsSearch(response);
+        // setLoader(false);
+        // goNext(response?.hallsBookingApplication);
       } catch (error) {
         setLoader(false);
       }

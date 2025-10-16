@@ -17,8 +17,6 @@ const ChallanStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.challan.ChallanApplicationFormReducer.formData;
   });
 
-  console.log("currentStepData", currentStepData);
-
   function goNext(data) {
     dispatch(UPDATE_ChallanApplication_FORM(config.key, data));
     onGoNext();

@@ -18,7 +18,6 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   });
 
   function goNext(data) {
-    console.log("data aa rea", data);
     dispatch(UPDATE_CHBApplication_FORM(config.key, data));
     onGoNext();
   }

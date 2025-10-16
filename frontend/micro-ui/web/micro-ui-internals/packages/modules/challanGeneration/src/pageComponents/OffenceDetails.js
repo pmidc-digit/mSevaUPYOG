@@ -1,8 +1,7 @@
-import React, { use, useEffect, useState } from "react";
-import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
+import { TextInput, CardLabel, Dropdown, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
-import { parse, format } from "date-fns";
 
 const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   const [loader, setLoader] = useState(false);
@@ -19,7 +18,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
-      // halls: [{ startDate: "", endDate: "", startTime: "", endTime: "" }], // predefine index 0
     },
   });
 
@@ -80,42 +78,207 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
     // goNext(payload);
   };
 
+  useEffect(() => {
+    if (currentStepData?.offenceDetails) {
+      Object.entries(currentStepData?.offenceDetails)?.forEach(([key, value]) => {
+        setValue(key, value);
+      });
+    }
+  }, [currentStepData, setValue]);
+
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
+            <CardLabel>
+              {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"purposeDescription"}
-                defaultValue=""
-                rules={{
-                  required: t("CHB_PURPOSE_DESCRIPTION_REQUIRED"),
-                  minLength: { value: 5, message: t("CHB_PURPOSE_DESCRIPTION_REQUIRED_MIN") },
-                }}
-                render={(props) => (
-                  <TextArea
-                    style={{ marginBottom: 0 }}
-                    type={"textarea"}
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-              {errors.purposeDescription && <p style={{ color: "red" }}>{errors.purposeDescription.message}</p>}
-            </div>
+            <Controller
+              control={control}
+              name={"offenceType"}
+              defaultValue={null}
+              // rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0 }}
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={[]}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors.offenceType && <p style={{ color: "red" }}>{errors.offenceType.message}</p>}
+          </LabelFieldPair>
+
+          <LabelFieldPair style={{ marginTop: "20px" }}>
+            <CardLabel>
+              {t("CHALLAN_OFFENCE_CATEGORY")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"offenceCategory"}
+              defaultValue={null}
+              // rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0 }}
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={[]}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors.offenceCategory && <p style={{ color: "red" }}>{errors.offenceCategory.message}</p>}
+          </LabelFieldPair>
+
+          <LabelFieldPair style={{ marginTop: "20px" }}>
+            <CardLabel>
+              {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"offenceSubCategory"}
+              defaultValue={null}
+              // rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0 }}
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={[]}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
+          </LabelFieldPair>
+
+          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
+            <CardLabel>
+              {`${t("CHALLAN_NUMBER")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="challanNumber"
+              // rules={{
+              //   required: t("CHALLAN_NUMBER_REQUIRED"),
+              //   minLength: { value: 2, message: t("CHALLAN_NUMBER_LIMIT_VALID") },
+              // }}
+              render={(props) => (
+                <TextInput
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  error={errors?.name?.message}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.challanNumber && <p style={{ color: "red" }}>{errors.challanNumber.message}</p>}
+          </LabelFieldPair>
+
+          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
+            <CardLabel>
+              {`${t("CHALLAN_NAME")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="challanName"
+              // rules={{
+              //   required: t("CHALLAN_NAME_REQUIRED"),
+              //   minLength: { value: 2, message: t("CHALLAN_NAME_LIMIT_VALID") },
+              // }}
+              render={(props) => (
+                <TextInput
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  error={errors?.name?.message}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.challanName && <p style={{ color: "red" }}>{errors.challanName.message}</p>}
+          </LabelFieldPair>
+
+          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
+            <CardLabel>
+              {`${t("CHALLAN_AMOUNT")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="challanAmount"
+              // rules={{
+              //   required: t("CHALLAN_AMOUNT_REQUIRED"),
+              // }}
+              render={(props) => (
+                <TextInput
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  error={errors?.name?.message}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.challanAmount && <p style={{ color: "red" }}>{errors.challanAmount.message}</p>}
+          </LabelFieldPair>
+
+          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
+            <CardLabel>
+              {`${t("CHALLAN_DAYS")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="challanDaysToClearPayment"
+              // rules={{
+              //   required: t("CHALLAN_DAYS_REQUIRED"),
+              // }}
+              render={(props) => (
+                <TextInput
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  error={errors?.name?.message}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.challanDaysToClearPayment && <p style={{ color: "red" }}>{errors.challanDaysToClearPayment.message}</p>}
           </LabelFieldPair>
         </div>
         <ActionBar>
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

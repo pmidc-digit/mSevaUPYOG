@@ -24,6 +24,10 @@ const CHBResponseCitizen = (props) => {
     else history.push(`/digit-ui/employee/chb/inbox`);
   };
 
+  const handleMakePayment = async () => {
+    history.push(`/digit-ui/citizen/payment/collect/chb-services/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
+  };
+
   // const handlePayment = () => {
   //   history.push(`/digit-ui/citizen/payment/collect/NDC/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
   //   // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
@@ -52,7 +56,7 @@ const CHBResponseCitizen = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_CHB")} onSubmit={onGoToCHB} />
-          {/* <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
+          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} />
         </ActionBar>
       </Card>
     </div>

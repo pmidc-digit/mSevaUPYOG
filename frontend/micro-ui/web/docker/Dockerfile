@@ -24,7 +24,7 @@ RUN yarn add @mseva/upyog-ui-module-ads@1.0.95
 RUN yarn add @mseva/upyog-ui-module-chb@1.0.90
 RUN yarn add @mseva/upyog-ui-module-asset@1.0.71
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.63
-RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.5
+RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.6
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.4
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.45
 ARG WORK_DIR

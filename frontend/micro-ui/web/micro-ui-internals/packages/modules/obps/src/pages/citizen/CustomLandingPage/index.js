@@ -63,17 +63,21 @@ const CustomLandingPage = () => {
     }
   }
 
-  const handleProfessionalLoginClick = (e) => {
+  const handleProfessionalLoginClick = (e, link) => {
     e.preventDefault()
 
-    if (validateArchitectRole()) {
-      history.push("/digit-ui/citizen/obps/edcrscrutiny/apply/home")
-    } else {
-      setShowToast({
-        error: true,
-        message: "Access Denied.",
-      })
+   if (validateArchitectRole()) {
+    if (link.title === "Professional Login") {
+      history.push("/digit-ui/citizen/obps/edcrscrutiny/apply/home");
+    } else if (link.title === "Professional Dashboard") {
+      history.push("/digit-ui/citizen/obps/home");
     }
+  } else {
+    setShowToast({
+      error: true,
+      message: "Access Denied.",
+    });
+  }
   }
   
   const links = [
@@ -217,9 +221,9 @@ const CustomLandingPage = () => {
               //     </Link>
               //   )}
               // </React.Fragment>
-               <React.Fragment key={index}>
+              <React.Fragment key={index}>
                 {link.requiresArchitect ? (
-                  <div onClick={handleProfessionalLoginClick} style={{ textDecoration: "none" }}>
+                  <div onClick={(e) => handleProfessionalLoginClick(e, link)} style={{ textDecoration: "none" }}>
                     {CardComponent}
                   </div>
                 ) : link.external ? (

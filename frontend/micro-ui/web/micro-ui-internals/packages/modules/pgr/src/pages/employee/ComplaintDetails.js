@@ -74,24 +74,29 @@ const TLCaption = ({ data, comments }) => {
   );
 };
 
-const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup, selectedAction, onAssign, tenantId, t }) => {
+const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup, selectedAction, onAssign, tenantId, t, ulb }) => {
   
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
   // Fix for next action  assignee dropdown issue
-  const stateArray = workflowDetails?.data?.initialActionState?.nextActions?.filter( ele => ele?.action == selectedAction );  
+ // const stateArray = workflowDetails?.data?.initialActionState?.nextActions?.filter( ele => ele?.action == selectedAction );
+  const stateArray = workflowDetails?.data?.processInstances[0]?.nextActions?.filter((ele) => ele?.action == selectedAction);  
   const useEmployeeData = Digit.Hooks.pgr.useEmployeeFilter(
-    tenantId, 
-    stateArray?.[0]?.assigneeRoles?.length > 0 ? stateArray?.[0]?.assigneeRoles?.join(",") : "",
+    ulb, 
+    stateArray?.[0]?.roles?.length > 0 ? stateArray?.[0]?.roles?.join(",") : "",
     complaintDetails,
     true
     );
-  const employeeData = useEmployeeData
-    ? useEmployeeData.map((departmentData) => {
-      return { heading: departmentData.department, options: departmentData.employees };
-    })
-    : null;
 
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+   // console.log("useEmployeData in PGR: ",useEmployeeData);
+
+
+  // const employeeData = useEmployeeData
+  //   ? useEmployeeData.map((departmentData) => {
+  //     return { heading: departmentData.department, options: departmentData.employees };
+  //   })
+  //   : null;
+
+  const [selectedEmployee, setSelectedEmployee] = useState();
   const [comments, setComments] = useState("");
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -172,21 +177,37 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
               : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
-        if(!comments)
-        setError(t("CS_MANDATORY_COMMENTS"));
+        if (!comments) {
+          setError(t("CS_MANDATORY_COMMENTS"));
+          return;
+        }
+        if (selectedAction === "ASSIGN" || selectedAction === "REASSIGN") {
+          if (!selectedEmployee) {
+            setError(t("CS_MANDATORY_EMPLOYEE"));
+            return;
+          }
+        }
         // if(selectedAction === "REJECT" && !comments)
         // setError(t("CS_MANDATORY_COMMENTS"));
-        else
+        
         onAssign(selectedEmployee, comments, uploadedFile);
       }}
       error={error}
       setError={setError}
     >
-      <Card>
+      <Card  className="override-margin">
         {selectedAction === "REJECT" || selectedAction === "RESOLVE" || selectedAction === "REOPEN" ? null : (
           <React.Fragment>
             <CardLabel>{t("CS_COMMON_EMPLOYEE_NAME")}</CardLabel>
-            {employeeData && <SectionalDropdown selected={selectedEmployee} menuData={employeeData} displayKey="name" select={onSelectEmployee} />}
+            <Dropdown
+              option={useEmployeeData}
+              autoComplete="off"
+              optionKey="name"
+              id="fieldInspector"
+              select={onSelectEmployee}
+              selected={selectedEmployee}
+             />
+            {/* {employeeData && <SectionalDropdown selected={selectedEmployee} menuData={employeeData} displayKey="name" select={onSelectEmployee} />} */}
           </React.Fragment>
         )}
         {selectedAction === "REOPEN" ? (
@@ -214,7 +235,13 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
 };
 
 export const ComplaintDetails = (props) => {
-  let { id } = useParams();
+  // let { id } = useParams();
+   const { fullIdAndUlb } = useParams();
+  //console.log("PGR: fullIdAndUlb", fullIdAndUlb);
+  const parts = fullIdAndUlb?.split("/");
+  const ulb = parts[parts.length - 1];
+  const id = parts.slice(0, parts.length - 1).join("/");
+
   const { t } = useTranslation();
   const [fullscreen, setFullscreen] = useState(false);
   const [imageZoom, setImageZoom] = useState(null);
@@ -222,7 +249,8 @@ export const ComplaintDetails = (props) => {
   const [toast, setToast] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
-  const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId, id, moduleCode: "PGR", role: "EMPLOYEE" });
+ // console.log("PGR : tenantId", ulb, "id", id);
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId:ulb, id, moduleCode: "PGR", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([])
   
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
@@ -442,7 +470,7 @@ export const ComplaintDetails = (props) => {
           <Loader />
         ) : (
           <StatusTable>
-            {complaintDetails &&
+            {complaintDetails?.details &&
               Object.keys(complaintDetails?.details).map((k, i, arr) => (
                 <Row
                   key={k}
@@ -520,6 +548,7 @@ export const ComplaintDetails = (props) => {
           selectedAction={selectedAction}
           onAssign={onAssign}
           tenantId={tenantId}
+          ulb={ulb}
           t={t}
         />
       ) : null}

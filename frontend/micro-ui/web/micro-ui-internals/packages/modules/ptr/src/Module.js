@@ -13,6 +13,7 @@ import PTRCitizenAddress from "./pageComponents/PTRCitizenAddress";
 import PTRSelectPincode from "./pageComponents/PTRSelectPincode";
 import PTRSelectAddress from "./pageComponents/PTRSelectAddress";
 import PTRSelectProofIdentity from "./pageComponents/PTRSelectProofIdentity";
+import PTRWFDocument from "./pageComponents/PTRWFDocument";
 import PTRServiceDoc from "./pageComponents/PTRServiceDoc";
 import PTRWFApplicationTimeline from "./pageComponents/PTRWFApplicationTimeline";
 import CitizenApp from "./pages/citizen";
@@ -32,8 +33,22 @@ import Response from "./pages/Response";
 import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
-
-
+import getRootReducer from "./redux/reducer";
+import NewPTRStepperForm from "./pageComponents/NewPTRStepper/NewPTRStepperForm";
+import NewPTRStepFormOne from "./pageComponents/NewPTRStepper/NewPTRStepFormOne";
+import NewPTRStepFormTwo from "./pageComponents/NewPTRStepper/NewPTRStepFormTwo";
+import NewPTRStepFormThree from "./pageComponents/NewPTRStepper/NewPTRStepFormThree";
+import NewPTRStepFormFour from "./pageComponents/NewPTRStepper/NewPTRStepFormFour";
+import PTRResponseCitizen from "./pageComponents/Response";
+import PTRSummary from "./pageComponents/PTRSummary";
+import RenewPTRStepForm from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepForm";
+import { PTRList } from "./pages/citizen/Renewal";
+import RenewPTRStepFormOne from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import RenewPTRStepFormTwo from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import RenewPTRStepFormThree from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import RenewPTRStepFormFour from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import CustomDatePicker from "./pageComponents/CustomDatePicker";
+export const PTRReducers = getRootReducer;
 
 const componentsToRegister = {
   PTRCheckPage,
@@ -50,6 +65,7 @@ const componentsToRegister = {
   CitizenFeedback,
   PTRPetdetails,
   PTROwnerDetails,
+  CustomDatePicker,
   PTRCreatePet: PTRCreate,
   PTRDocumentUpload,
   PTRSelectStreet,
@@ -61,12 +77,20 @@ const componentsToRegister = {
   PTRSelectProofIdentity,
   PTRServiceDoc,
   PTRWFApplicationTimeline,
- 
-  
-  
-  
-
- 
+  NewPTRStepperForm,
+  NewPTRStepFormOne,
+  NewPTRStepFormTwo,
+  NewPTRStepFormThree,
+  NewPTRStepFormFour,
+  PTRSummary,
+  PTRResponseCitizen,
+  PTRList,
+  PTRWFDocument,
+  RenewPTRStepForm,
+  RenewPTRStepFormOne,
+  RenewPTRStepFormTwo,
+  RenewPTRStepFormThree,
+  RenewPTRStepFormFour,
 };
 
 const addComponentsToRegistry = () => {
@@ -74,7 +98,6 @@ const addComponentsToRegistry = () => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };
-
 
 export const PTRModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -112,17 +135,24 @@ export const PTRLinks = ({ matchPath, userType }) => {
   }, []);
 
   const links = [
-    
     {
       link: `${matchPath}/ptr/petservice/new-application`,
       i18nKey: t("PTR_CREATE_PET_APPLICATION"),
     },
-    
+
     {
       link: `${matchPath}/ptr/petservice/my-application`,
       i18nKey: t("PTR_MY_APPLICATIONS_HEADER"),
     },
-    
+    //   {
+    //   link: `${matchPath}/tradelicence/renewal-list`,
+    //   i18nKey: t("TL_RENEWAL_HEADER"),
+    // },
+    {
+      link: `${matchPath}/ptr/petservice/renew-ptr/:applicationNumber/:id`,
+      i18nKey: t("PTR_RENEWAL_HEADER"),
+    },
+
     {
       link: `${matchPath}/howItWorks`,
       i18nKey: t("PTR_HOW_IT_WORKS"),

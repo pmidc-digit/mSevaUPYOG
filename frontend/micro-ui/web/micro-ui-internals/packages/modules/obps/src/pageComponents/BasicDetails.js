@@ -12,12 +12,14 @@ import {
   CardCaption,
   SubmitBar,
   Loader,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
 import { scrutinyDetailsData } from "../utils";
+import { set } from "lodash";
 
-const BasicDetails = ({ formData, onSelect, config }) => {
+const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
   const [showToast, setShowToast] = useState(null);
   const [basicData, setBasicData] = useState(formData?.data?.edcrDetails || null);
   const [scrutinyNumber, setScrutinyNumber] = useState(formData?.data?.scrutinyNumber);
@@ -31,6 +33,14 @@ const BasicDetails = ({ formData, onSelect, config }) => {
     basicData?.planDetail?.plot?.area,
     basicData?.planDetail?.blocks
   );
+  const [isLoading, setIsLoading] = useState(false);
+  console.log("riskType", riskType, mdmsData?.BPA?.RiskTypeComputation,
+    basicData?.planDetail?.plot?.area,
+    basicData?.planDetail?.blocks);
+
+  useEffect(() => {
+    sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
+  },[])
 
   const handleKeyPress = async (event) => {
     if (event.key === "Enter") {
@@ -47,19 +57,29 @@ const BasicDetails = ({ formData, onSelect, config }) => {
     }
   };
 
+  useEffect(() => {
+    if(!scrutinyNumber && currentStepData?.createdResponse?.edcrNumber){
+      setScrutinyNumber({edcrNumber: currentStepData?.createdResponse?.edcrNumber});
+    }
+  },[currentStepData])
+  console.log("basicData", currentStepData, formData, scrutinyNumber, basicData);
+
   const closeToast = () => {
     setShowToast(null);
   };
 
   const handleSearch = async (event) => {
+    setIsLoading(true)
     const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);
+      setIsLoading(false);
     }
     if (details?.edcrNumber) {
       setBasicData(details);
       setShowToast(null);
+      setIsLoading(false);
     }
   };
 
@@ -84,17 +104,21 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   disableVlaue = JSON.parse(disableVlaue);
 
   const getDetails = async () => {
+    setIsLoading(true)
     const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);
+      setIsLoading(false);
     }
     if (details?.edcrNumber) {
       setBasicData(details);
       setShowToast(null);
+      setIsLoading(false);
     }
   };
 
+  useEffect(()=>{
   if (disableVlaue) {
     let edcrApi = sessionStorage.getItem("isEDCRAPIType");
     edcrApi = edcrApi ? JSON.parse(edcrApi) : false;
@@ -103,11 +127,14 @@ const BasicDetails = ({ formData, onSelect, config }) => {
       getDetails();
     }
   }
+  },[])
+
+  if(isLoading || isMdmsLoading) return (<Loader />);
 
   return (
     <div>
       {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
-      <Timeline />
+      {isMobile && <Timeline />}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { margin: "8px" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
         <TextInput
@@ -121,9 +148,9 @@ const BasicDetails = ({ formData, onSelect, config }) => {
           style={{ marginBottom: "10px" }}
         />
       </div>
-      {basicData && (
+      {scrutinyNumber && basicData && (!riskType ?  <Loader /> :  <div>{basicData && (
         <Card>
-          <CardCaption>{t(`BPA_SCRUTINY_DETAILS`)}</CardCaption>
+          {/* <CardCaption>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardCaption> */}
           <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
           <StatusTable>
             <Row
@@ -141,9 +168,11 @@ const BasicDetails = ({ formData, onSelect, config }) => {
               text={basicData?.planDetail?.planInformation?.applicantName}
             />
           </StatusTable>
-          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length} /> : <Loader />}
         </Card>
-      )}
+      )}</div>)}
+      <ActionBar>
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading || isMdmsLoading || !riskType} />}
+      </ActionBar>
     </div>
   );
 };

@@ -99,7 +99,8 @@ export const newConfig =[
                 {
                     "route": "info",
                     "component": "PropertyTax",
-                    "nextStep": "property-type",
+                    // "nextStep": "property-type",
+                    "nextStep": "create-property",
                     "hideInEmployee": true,
                     "key": "Documents"
                 },
@@ -169,6 +170,25 @@ export const newConfig =[
                     "isMandatory": true,
                     "component": "PropertyType",
                     "key":"PropertyType",
+                    "texts": {
+                        "headerCaption": "",
+                        "header": "PT_ASSESMENT1_PROPERTY_TYPE",
+                        "cardText": "",
+                        "submitBarLabel": "PT_COMMONS_NEXT"
+                    },
+                    
+                    "nextStep": "electricity-number",
+                    
+                    "withoutLabel": true
+                    
+                },
+                //new component
+                {
+                    "type": "component",
+                    "route": "create-property",
+                    "isMandatory": true,
+                    "component": "GISComponent",
+                    "key":"createProperty",
                     "texts": {
                         "headerCaption": "",
                         "header": "PT_ASSESMENT1_PROPERTY_TYPE",

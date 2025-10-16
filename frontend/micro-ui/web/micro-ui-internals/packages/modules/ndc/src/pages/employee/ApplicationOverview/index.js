@@ -1,316 +1,695 @@
 import {
-  CardSectionHeader, Header, MultiUploadWrapper, PDFSvg, Row, StatusTable, LabelFieldPair, CardLabel, Loader
+  Header,
+  Row,
+  StatusTable,
+  Card,
+  CardSubHeader,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  Toast,
+  ConnectingCheckPoints,
+  CheckPoint,
+  TLTimeLine,
+  DisplayPhotos,
+  StarRated,
+  FilterFormField,
+  RadioButtons,
+  CardLabel,
+  TextInput,
+  LabelFieldPair,
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
-import { convertEpochToDate, stringReplaceAll } from "../../../utils";
+import { useParams, useHistory } from "react-router-dom";
+import NDCDocument from "../../../pageComponents/NDCDocument";
+import NDCDocumentTimline from "../../../components/NDCDocument";
+import NDCModal from "../../../pageComponents/NDCModal";
+import { Loader } from "../../../components/Loader";
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    name: checkpoint?.assigner?.name,
+    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  };
+
+  return (
+    <div>
+      {comment?.length > 0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )}
+
+      {wfDocuments?.length > 0 && (
+        <div>
+          {wfDocuments?.map((doc, index) => (
+            <div key={index}>
+              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+      </div>
+    </div>
+  );
+};
+
+const availableOptions = [
+  { code: "yes", name: "Yes" },
+  { code: "no", name: "No" },
+];
 
 const ApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const state = tenantId?.split('.')[0]
-  const [appDetails, setAppDetails] = useState({});
+  const history = useHistory();
+  const toastRef = useRef(null);
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
-
-  const filteredDocument = {};
-  const [uploadedFile,] = useState(() => filteredDocument?.fileStoreId || null);
   const [error, setError] = useState(null);
-  const [nocTaxDocuments, setNocTaxDocuments] = useState([]);
-  const [nocDatils, setNocDetails] = useState([]);
-  const [nocDocumentTypeMaping, setNocDocumentTypeMaping] = useState([]);
-  const [commonDocMaping, setCommonDocMaping] = useState([]);
-  const [nocDocuments, setNocDocuments] = useState([]);
-  const [pdfFiles, setPdfFiles] = useState({});
-  const [filesArray, setFilesArray] = useState(() => []);
+  const [getLable, setLable] = useState(false);
+  const { control, handleSubmit, setValue } = useForm();
+  const [showErrorToast, setShowErrorToastt] = useState(null);
+  const [errorOne, setErrorOne] = useState(null);
+  const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
-  const isMobile = window.Digit.Utils.browser.isMobile();
+  const [markedPending, setMarkedPending] = useState(false);
+  const [amounts, setAmounts] = useState({});
+  const [getWorkflowService, setWorkflowService] = useState([]);
+  const [getLoader, setLoader] = useState(false);
+  const [getEmployees, setEmployees] = useState([]);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [getPropertyId, setPropertyId] = useState(null);
 
+  const handleMarkPending = (consumerCode, value, index) => {
+    setMarkedPending((prev) => {
+      const updated = { ...prev, [consumerCode]: value === "yes" };
 
-  const { isLoading: nocDocsLoading, data: nocDocs } = Digit.Hooks.obps.useMDMS(state, "NOC", ["DocumentTypeMapping"]);
-  const { isLoading: commonDocsLoading, data: commonDocs } = Digit.Hooks.obps.useMDMS(state, "common-masters", ["DocumentType"]);
+      if (updated[consumerCode]) {
+        console.log("✅ Marked dues pending for", consumerCode);
+        // TODO: Call API to mark as pending
+      } else {
+        setAmounts((prevAmounts) => ({
+          ...prevAmounts,
+          [consumerCode]: 0, // ✅ Reset dues to zero when "No" is selected
+        }));
+        setValue(`amount[${index}]`, 0);
+        // TODO: Call API to undo marking
+      }
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCDetails(t, tenantId, { applicationNo: id });
+      return updated;
+    });
+  };
 
-  const {
-    isLoading: updatingApplication,
-    isError: updateApplicationError,
-    data: updateResponse,
-    error: updateError,
-    mutate,
-  } = Digit.Hooks.noc.useNOCApplicationActions(tenantId);
-
+  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: id }, tenantId);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "NOC",
+    moduleCode: "ndc-services",
+    role: "EMPLOYEE",
   });
+
+  console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
-  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
-      workflowDetails.data.initialActionState=workflowDetails?.data?.initialActionState||{...workflowDetails?.data?.actionState}||{} ;
-      workflowDetails.data.actionState = { ...workflowDetails.data };
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-  
+
+  let workflowDetailsTemp = {
+    data: {
+      actionState: {
+        nextActions: [
+          {
+            action: "APPROVE",
+            roles: ["NDC_ADMIN"],
+            tenantId: "pb",
+            assigneeRoles: [],
+            isTerminateState: false,
+          },
+          {
+            action: "ASSIGN",
+            roles: ["NDC_ADMIN"],
+            tenantId: "pb",
+            assigneeRoles: ["NDC_ADMIN"],
+            isTerminateState: false,
+          },
+          {
+            action: "REJECT",
+            roles: ["NDC_ADMIN"],
+            tenantId: "pb",
+            assigneeRoles: [],
+            isTerminateState: true,
+          },
+        ],
+      },
+    },
+  };
+
+  useEffect(() => {
+    let WorkflowService = null;
+    (async () => {
+      setLoader(true);
+      WorkflowService = await Digit.WorkflowService.init(tenantId, "ndc-services");
+      setLoader(false);
+      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
+      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      // setComplaintStatus(applicationStatus);
+    })();
+  }, [tenantId]);
+
+  // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
+
+  // console.log("WorkflowService====", WorkflowService);
+
+  let user = Digit.UserService.getUser();
+  const menuRef = useRef();
+  if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+    const userInfo = userInfos ? JSON.parse(userInfos) : {};
+    user = userInfo?.value;
+  }
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetailsTemp?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
   const closeToast = () => {
     setShowToast(null);
   };
 
-  useEffect(() => {
-    setNocDetails([applicationDetails?.applicationData]);
-  }, [applicationDetails?.applicationData]);
+  const closeToastOne = () => {
+    setShowErrorToastt(null);
+  };
 
-  useEffect(() => {
-    setNocDocumentTypeMaping(nocDocs?.NOC?.DocumentTypeMapping);
-  }, [nocDocs]);
-
-  useEffect(() => {
-    setCommonDocMaping(commonDocs?.["common-masters"]?.DocumentType);
-  }, [commonDocs]);
-
-  useEffect(() => {
-    sessionStorage.setItem("NewNOCDocs", JSON.stringify(nocDocuments));
-  }, [nocDocuments]);
-
-  useEffect(() => {
-    if (nocDatils?.length && nocDocumentTypeMaping?.length) {
-      let documents = [];
-      nocDatils.map(noc => {
-        const filteredData = nocDocumentTypeMaping.filter(data => (data?.applicationType === noc?.applicationType && data?.nocType === noc?.nocType))
-        if (filteredData?.[0]?.docTypes?.[0]) {
-          filteredData[0].docTypes[0].nocType = filteredData[0].nocType;
-          filteredData[0].docTypes[0].additionalDetails = {
-            submissionDetails: noc.additionalDetails,
-            applicationStatus: noc.applicationStatus,
-            appNumberLink: noc.applicationNo,
-            nocNo: noc.nocNo
-          }
-          documents.push(filteredData[0].docTypes[0]);
-        }
-      });
-
-      let documentsList = [];
-      if (documents && documents.length > 0) {
-        documents.map(doc => {
-          let code = doc.documentType;
-          let nocType = doc.nocType;
-          doc.dropdownData = [];
-          commonDocMaping.forEach(value => {
-            let values = value.code.slice(0, code.length);
-            if (code === values) {
-              doc.hasDropdown = true;
-              doc.dropdownData.push(value);
-            }
-          });
-          documentsList.push(doc);
-        })
+  const removeDuplicatesByUUID = (arr) => {
+    const seen = new Set();
+    return arr.filter((item) => {
+      if (seen.has(item.uuid)) {
+        return false;
+      } else {
+        seen.add(item.uuid);
+        return true;
       }
-      documentsList.forEach(data => {
-        data.code = data.documentType;
-        data.dropdownData.forEach(dpData => {
-          dpData.i18nKey = dpData.code;
-        })
-      })
-      setNocTaxDocuments(documentsList);
-    }
-  }, [nocDatils, nocDocumentTypeMaping, commonDocMaping]);
-
-  useEffect(() => {
-    let acc = [];
-    nocDatils?.[0]?.documents?.forEach((element, index, array) => {
-      acc.push(element?.fileStoreId)
     });
-    setFilesArray(acc?.map((value) => value));
-  }, [nocDatils?.[0]?.documents]);
+  };
 
   useEffect(() => {
-    if (filesArray?.length) {
-      Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()).then((res) => {
-        setPdfFiles(res?.data);
-      });
+    const ndcObject = applicationDetails?.Applications?.[0];
+    if (ndcObject) {
+      const applicantData = {
+        name: ndcObject?.owners?.[0]?.name,
+        mobile: ndcObject?.owners?.[0]?.mobileNumber,
+        email: ndcObject?.owners?.[0]?.emailId,
+        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
+        // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
+        applicationNo: ndcObject?.applicationNo,
+      };
+      const Documents = removeDuplicatesByUUID(ndcObject?.Documents || []);
+      const NdcDetails = removeDuplicatesByUUID(ndcObject?.NdcDetails || [])?.map((item) => ({
+        businessService:
+          item?.businessService === "WS"
+            ? "NDC_WATER_SERVICE_CONNECTION"
+            : item?.businessService === "SW"
+            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+            : item?.businessService === "PT"
+            ? "NDC_PROPERTY_TAX"
+            : item?.businessService,
+        consumerCode: item?.consumerCode || "",
+        status: item?.status || "",
+        dueAmount: item?.dueAmount || 0,
+        propertyType: item?.additionalDetails?.propertyType || "",
+        isDuePending: item?.isDuePending,
+      }));
+
+      setDisplayData({ applicantData, Documents, NdcDetails });
     }
-  }, [filesArray]);
-
-  const DocumentDetails = ({ t, data, nocDataDetails, nocDocumentsList }) => {
-    if (nocDataDetails?.length && nocDocumentsList?.length && nocDataDetails?.[0] != undefined) {
-      const status = `WF_${nocDataDetails?.[0]?.additionalDetails.workflowCode}_${nocDataDetails?.[0]?.applicationStatus}`;
-      return (
-        <Fragment>
-          <div style={{
-            border: "1px solid #D6D5D4",
-            background: "#FAFAFA",
-            boxSizing: "border-box",
-            borderRadius: "4px",
-            padding: "8px",
-            maxWidth: "950px",
-            minWidth: "280px"
-          }}>
-            <CardSectionHeader style={{ marginBottom: "16px", fontSize: "20px" }}>{`${t(`NOC_MAIN_${stringReplaceAll(nocDocumentsList?.[0]?.code, ".", "_")}_LABEL`)}`}</CardSectionHeader>
-            <StatusTable style={{ position: "relative", marginTop: "19px" }}>
-              <Row className="border-none" label={`${t(`NOC_${nocDataDetails?.[0]?.nocType}_APPLICATION_LABEL`)}`} text={t(nocDataDetails?.[0]?.applicationNo) || "NA"} />
-              <Row className="border-none" label={`${t("NOC_STATUS_LABEL")}`} text={t(status) || "NA"} textStyle={nocDataDetails?.[0]?.applicationStatus == "APPROVED" || nocDataDetails?.[0]?.applicationStatus == "AUTO_APPROVED" ? {color : "#00703C"} : {color: "#D4351C"}}/>
-              <Row className="border-none" label={`${t("NOC_SUBMITED_ON_LABEL")}`} text={nocDataDetails?.[0]?.additionalDetails?.SubmittedOn ? convertEpochToDate(Number(nocDataDetails?.[0]?.additionalDetails?.SubmittedOn)) : "NA"} />
-              <Row className="border-none" label={`${t("NOC_APPROVAL_NO_LABEL")}`} text={nocDataDetails?.[0]?.nocNo || "NA"} />
-              <Row className="border-none" label={`${t("NOC_APPROVED_ON_LABEL")}`} text={(status === "APPROVED" || status === "REJECTED" || status === "AUTO_APPROVED" || status === "AUTO_REJECTED") ? convertEpochToDate(Number(nocDataDetails?.[0]?.auditDetails?.lastModifiedTime)) : "NA"} />
-              <Row className="border-none" label={`${t("Documents")}`} text={""} /> 
-            </StatusTable>
-            {nocDataDetails?.[0]?.documents && nocDataDetails?.[0]?.documents.length>0 ? 
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start" }}>
-              {nocDataDetails?.[0]?.documents?.map((value, index) => (
-                <a target="_" href={pdfFiles[value.fileStoreId]?.split(",")[0]} style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }} key={index}>
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                      <PDFSvg />
-                    </div>
-                  <p style={{ marginTop: "8px", fontWeight: "bold", textAlign: "center", width: "100px", color: "#505A5F" }}>{t(`NOC_MAIN_${stringReplaceAll(nocDocumentsList?.[0]?.code, ".", "_")}_LABEL`)/* t(value?.title ? value?.title : decodeURIComponent( pdfFiles[value.fileStoreId]?.split(",")?.[0]?.split("?")?.[0]?.split("/")?.pop()?.slice(13))) */}</p>
-                </a>
-              ))}
-            </div> : <div><p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p></div>}
-              <div>
-                {workflowDetails?.data?.nextActions?.length > 0 ? nocTaxDocuments?.map((document, index) => {
-                  return (
-                    <SelectDocument
-                      key={index}
-                      document={document}
-                      t={t}
-                      error={error}
-                      setError={setError}
-                      setNocDocuments={setNocDocuments}
-                      nocDocuments={nocDocuments}
-                    />
-                  );
-                }) : null}
-              </div>
-          </div>
-        </Fragment>
-      );
-    } else return <Loader />
-  }
-  const getBuldingComponent = (details = []) => details.map(detail => ({
-    title: detail.title, belowComponent: () => <Fragment>
-      <div style={{maxWidth: "950px"}}>
-      <StatusTable style={{ position: "relative", marginTop: "19px" }}>
-        {detail.values.map(value => <Row className="border-none" label={`${t(value?.title)}`} text={value?.value || "NA"} />
-        )}
-      </StatusTable>
-      </div>
-    </Fragment>
-  }))
-
+  }, [applicationDetails?.Applications]);
 
   useEffect(() => {
     if (applicationDetails) {
       setIsDetailsLoading(true);
-      const { applicationDetails: details } = applicationDetails;
-      setAppDetails({ ...applicationDetails, applicationDetails: [getBuldingComponent(details)?.[0], { title: "NOC_DETAILS_SUMMARY_LABEL", belowComponent: () => <DocumentDetails t={t} data={applicationDetails} nocDataDetails={nocDatils} nocDocumentsList={nocTaxDocuments} /> }] })
+      const { Applicant: details } = applicationDetails?.Applications?.[0];
       setIsDetailsLoading(false);
     }
-  }, [applicationDetails, nocTaxDocuments, nocDatils, uploadedFile, filesArray, pdfFiles]);
+  }, [applicationDetails]);
+
+  function onActionSelect(action) {
+    console.log("action====???", action?.state?.actions);
+    const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
+    const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
+
+    console.log("hasDuePending", hasDuePending);
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+
+    console.log("filterNexState====???", filterNexState[0]?.nextState);
+
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+
+    console.log("filterRoles====???", filterRoles);
+    console.log("action test", action?.action);
+
+    const checkactionApp = action?.action == "APPROVE";
+    ("");
+
+    console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
+
+    if (hasDuePending && checkactionApp) {
+      console.log("alwasy coming appprve");
+      setLable("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
+      setError(true);
+      setShowToast(true);
+
+      return;
+    }
+
+    setEmployees(filterRoles?.[0]?.actions);
+
+    const payload = {
+      Licenses: [action],
+    };
+    const appNo = displayData?.applicantData?.applicationNo;
+    if (action?.action == "APPLY") {
+      submitAction(payload);
+    } else if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/NDC/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else if (action?.action == "EDIT") {
+      history.push(`/digit-ui/employee/ndc/create/${appNo}`);
+    } else {
+      setShowModal(true);
+      setSelectedAction(action);
+    }
+  }
+
+  const submitAction = async (data) => {
+    // setShowModal(false);
+    // setSelectedAction(null);
+
+    const payloadData = applicationDetails?.Applications[0];
+
+    const updatedApplicant = {
+      ...payloadData,
+      NdcDetails: payloadData.NdcDetails.map((detail) => {
+        const isPending = markedPending[detail.consumerCode]; // ✅ define inside map
+
+        return {
+          ...detail,
+          isDuePending: isPending ?? detail.isDuePending ?? false,
+          dueAmount:
+            isPending === false
+              ? 0 // ✅ Force 0 when "No"
+              : amounts?.[detail.consumerCode] !== undefined
+              ? Number(amounts[detail.consumerCode]) // from input box
+              : detail?.dueAmount || 0, // fallback to API value
+        };
+      }),
+      workflow: {},
+    };
+
+    const filtData = data?.Licenses?.[0];
+
+    let checkAssigne;
+    if (filtData.action == "SENDBACKTOCITIZEN") {
+      checkAssigne = [payloadData?.owners?.[0]?.uuid];
+    }
+
+    updatedApplicant.workflow = {
+      action: filtData.action,
+      assignes: filtData?.assignee || checkAssigne,
+      comment: filtData?.comment,
+      documents: filtData?.wfDocuments,
+    };
+
+    if (
+      !filtData?.assignee &&
+      filtData.action !== "SENDBACKTOCITIZEN" &&
+      filtData.action !== "APPROVE" &&
+      filtData.action !== "REJECT" &&
+      filtData.action !== "SENDBACK"
+    ) {
+      setErrorOne("Assignee is Mandatory");
+      setShowErrorToastt(true);
+
+      return;
+    } else if (!filtData?.comment) {
+      setErrorOne("Comment is Mandatory");
+      setShowErrorToastt(true);
+
+      return;
+    }
+
+    const finalPayload = {
+      Applications: [updatedApplicant],
+    };
+
+    // return;
+
+    try {
+      const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
+
+      // ✅ Show success first
+      // setShowToast({ key: "success", message: "Successfully updated the status" });
+      setLable("Successfully updated the status");
+      setError(false);
+      setShowToast(true);
+
+      workflowDetails.revalidate();
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/ndc/inbox");
+        window.location.reload();
+      }, 2000);
+
+      setSelectedAction(null);
+      setShowModal(false);
+    } catch (err) {
+      setErrorOne("Something went wrong");
+      setShowErrorToastt(true);
+      // setShowToast({ key: "error", message: "Something went wrong" });
+      // setError("Something went wrong");
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedAction(null);
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    if (displayData) {
+      const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
+      setPropertyId(checkProperty?.[0]?.consumerCode);
+    }
+  }, [displayData]);
+
+  const { isLoading: checkLoading, isError, error: checkError, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: getPropertyId }, tenantId: tenantId },
+    {
+      filters: { propertyIds: getPropertyId },
+      tenantId: tenantId,
+      enabled: getPropertyId ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
+
+  console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toastRef.current && !toastRef.current.contains(event.target)) {
+        setShowToast(null); // Close toast
+      }
+    };
+
+    if (showToast) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showToast]);
 
   return (
     <div className={"employee-main-application-details"}>
-      <div>
-        <Header styles={{fontSize: "32px"}}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
-      </div>
-      <ApplicationDetailsTemplate
-        applicationDetails={appDetails}
-        isLoading={isLoading || isDetailsLoading}
-        isDataLoading={isLoading}
-        applicationData={applicationDetails?.applicationData}
-        mutate={mutate}
-        workflowDetails={workflowDetails}
-        businessService={workflowDetails?.data?.applicationBusinessService ? workflowDetails?.data?.applicationBusinessService : applicationDetails?.applicationData?.businessService}
-        moduleCode="NOC"
-        ActionBarStyle={isMobile?{}:{paddingRight:"50px"}}
-        MenuStyle={isMobile?{}:{right:"50px"}}
-        showToast={showToast}
-        setShowToast={setShowToast}
-        closeToast={closeToast}
-        timelineStatusPrefix={`WF_${applicationDetails?.applicationData?.additionalDetails?.workflowCode}_`}
-      />
-    </div>
-  )
-}
+      {/* <div>
+        <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+      </div> */}
+      <Card>
+        <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
+        <StatusTable>
+          {displayData?.applicantData &&
+            Object.entries(displayData?.applicantData)?.map(([key, value]) => (
+              <Row
+                key={key}
+                label={t(`${key?.toUpperCase()}`)}
+                text={
+                  Array.isArray(value)
+                    ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
+                    : typeof value === "object"
+                    ? t(value?.code || "N/A")
+                    : t(value || "N/A")
+                }
+              />
+            ))}
+        </StatusTable>
+      </Card>
+      <Card>
+        <CardSubHeader>{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
+        {displayData?.NdcDetails?.map((detail, index) => {
+          const isPT = detail?.businessService === "NDC_PROPERTY_TAX";
+          const isSW = detail?.businessService === "NDC_SEWERAGE_SERVICE_CONNECTION";
+          const isWS = detail?.businessService === "NDC_WATER_SERVICE_CONNECTION";
+          const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
 
-function SelectDocument({
-  t,
-  document: doc,
-  setNocDocuments,
-  error,
-  setError,
-  nocDocuments,
-}) {
+          const isMarked = markedPending[detail.consumerCode] || detail?.isDuePending;
+          const dueAmount = amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0;
+          const isRed = detail.dueAmount > 0;
 
-  const filteredDocument = nocDocuments?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  const tenantId = Digit.ULBService.getStateId(); //Digit.ULBService.getCurrentTenantId(doc);
-  const [selectedDocument, setSelectedDocument] = useState(doc?.dropdownData?.[0]);
-  const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+          return (
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
+                <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
+                {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
 
-  const handleSelectDocument = (value) => setSelectedDocument(value);
+                {(!canRaiseFlag || !isMarked) && (
+                  <div
+                    style={{
+                      background: isRed ? "red" : "none",
+                      color: isRed ? "white" : "black",
+                      paddingTop: isRed ? "8px" : "0",
+                      paddingLeft: isRed ? "10px" : "0",
+                    }}
+                  >
+                    <Row
+                      label={t("NDC_DUE_AMOUNT")}
+                      // text={detail.dueAmount?.toString() || "0"}
+                      text={(markedPending[detail.consumerCode] === false
+                        ? "0"
+                        : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0
+                      ).toString()}
+                    />
+                  </div>
+                )}
 
-  const allowedFileTypes = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
+                {canRaiseFlag && isMarked && (
+                  <div>
+                    <Row
+                      label="Due Amount"
+                      text={
+                        <Controller
+                          key={index}
+                          control={control}
+                          name={`amount[${index}]`}
+                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0}
+                          render={(props) => (
+                            <TextInput
+                              type="number"
+                              value={props.value}
+                              onChange={(e) => {
+                                props.onChange(e.target.value);
+                                const newValue = e.target.value;
+                                setAmounts((prev) => ({
+                                  ...prev,
+                                  [detail.consumerCode]: newValue,
+                                }));
+                              }}
+                              style={{ maxWidth: "200px" }}
+                              onBlur={props.onBlur}
+                              disabled={markedPending[detail.consumerCode] === false}
+                            />
+                          )}
+                        />
+                      }
+                    />
+                  </div>
+                )}
 
-  function selectfile(e) {
-    e && setFile(e.file);
-  }
+                <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
+                {isPT && propertyDetailsFetch?.Properties && (
+                  <>
+                    <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
+                    <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
+                    <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
+                    <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street} />
+                    {/* <Row label={t("Mohalla")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                    <Row label={t("Pincode")} text={propertyDetailsFetch?.Properties?.[0]?.address?.pincode || "N/A"} />
+                    {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                    <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
+                    <Row
+                      label={t("Year of creation of Property")}
+                      text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
+                    />
+                  </>
+                )}
+              </StatusTable>
+              {canRaiseFlag && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                  }}
+                >
+                  <CardLabel className="card-label-smaller ndc_card_labels">
+                    <b> Pending Dues</b>
+                  </CardLabel>
+                  <FilterFormField className="radioButtonSection">
+                    <Controller
+                      name={`assignee${index}`}
+                      control={control}
+                      defaultValue={detail?.isDuePending ? "yes" : "no"}
+                      render={(props) => (
+                        <RadioButtons
+                          onSelect={(e) => {
+                            props.onChange(e.code);
+                            handleMarkPending(detail.consumerCode, e.code, index);
+                          }}
+                          selectedOption={availableOptions.filter((option) => option.code === props.value)[0]}
+                          optionsKey="name"
+                          options={availableOptions}
+                        />
+                      )}
+                    />
+                  </FilterFormField>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Card>
 
-  useEffect(() => {
-    if (selectedDocument?.code) {
-      setNocDocuments((prev) => {
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return prev;
-        }
-
-        const filteredDocumentsByFileStoreId = prev?.filter((item) => item?.fileStoreId !== uploadedFile);
-        return [
-          ...filteredDocumentsByFileStoreId,
-          {
-            documentType: selectedDocument?.code,
-            fileStoreId: uploadedFile,
-            documentUid: uploadedFile,
-            fileName: file?.name || "",
-          },
-        ];
-      });
-    }
-  }, [uploadedFile, selectedDocument]);
-
-  const getData = (state) => {
-    let data = Object.fromEntries(state);
-    let newArr = Object.values(data);
-    let nocNewDocs = newArr && newArr?.map((fileObject) => {return({
-      documentType: selectedDocument?.code,
-      fileStoreId: fileObject?.fileStoreId?.fileStoreId,
-      documentUid: fileObject?.fileStoreId?.fileStoreId,
-      fileName: fileObject?.file?.name || "",
-    })})
-    sessionStorage.setItem("NewNOCDocs", JSON.stringify(nocNewDocs));
-    selectfile(newArr[newArr.length - 1]);
-  }
-
-  return (
-    <div >
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={{fontWeight: "700", width: "50%"}}>{`${t("NOC_UPLOAD_FILE_LABEL")}`}</CardLabel>
-        <div className="field">
-          <MultiUploadWrapper
-            module="NOC"
-            tenantId={tenantId}
-            getFormState={e => getData(e)}
-            t={t}
-            allowedFileTypesRegex={allowedFileTypes}
-            allowedMaxSizeInMB={5}
-            acceptFiles= "image/*, .pdf, .png, .jpeg, .jpg"
-          />
+      <Card>
+        <CardSubHeader>{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
+        <div style={{ display: "flex", gap: "16px" }}>
+          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
+            <NDCDocument value={{ workflowDocs: displayData?.Documents }}></NDCDocument>
+          ) : (
+            <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+          )}
         </div>
-      </LabelFieldPair>
+      </Card>
+
+      {workflowDetails?.data?.timeline && (
+        <Card>
+          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+          {workflowDetails?.data?.timeline.length === 1 ? (
+            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
+          ) : (
+            <ConnectingCheckPoints>
+              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
+                <CheckPoint
+                  keyValue={index}
+                  isCompleted={index === 0}
+                  label={t(checkpoint.status)}
+                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
+                />
+              ))}
+            </ConnectingCheckPoints>
+          )}
+        </Card>
+      )}
+
+      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (
+        <ActionBar>
+          {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+            <Menu
+              localeKeyPrefix={`WF_EDITRENEWAL`}
+              options={actions}
+              optionKey={"action"}
+              t={t}
+              onSelect={onActionSelect}
+              // style={MenuStyle}
+            />
+          ) : null}
+          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        </ActionBar>
+      )}
+
+      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
+        <ActionBar>
+          <SubmitBar
+            label={t("COMMON_EDIT")}
+            onSubmit={() => {
+              const id = applicationDetails?.Applications?.[0]?.applicationNo;
+              history.push(`/digit-ui/employee/ndc/create/${id}`);
+            }}
+          />
+        </ActionBar>
+      )}
+
+      {showModal ? (
+        <NDCModal
+          t={t}
+          action={selectedAction}
+          tenantId={tenantId}
+          state={state}
+          getEmployees={getEmployees}
+          id={id}
+          applicationDetails={applicationDetails}
+          applicationData={applicationDetails?.applicationData}
+          closeModal={closeModal}
+          submitAction={submitAction}
+          actionData={workflowDetails?.data?.timeline}
+          workflowDetails={workflowDetails}
+          showToast={showToast}
+          closeToast={closeToast}
+          errors={error}
+          showErrorToast={showErrorToast}
+          errorOne={errorOne}
+          closeToastOne={closeToastOne}
+        />
+      ) : null}
+      {showToast && (
+        <div ref={toastRef}>
+          <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />
+        </div>
+      )}
+      {/* {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />} */}
+      {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
     </div>
   );
-}
+};
 
 export default ApplicationOverview;

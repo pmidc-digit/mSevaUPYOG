@@ -16,17 +16,25 @@ const BPAApplicationTimeline = (props) => {
   function OpenImage(imageSource, index,thumbnailsToShow){
     window.open(thumbnailsToShow?.fullImage?.[0],"_blank");
   }
-  const getTimelineCaptions = (checkpoint, index, timeline) => {
-
-      const previousCheckpoint = timeline[index - 1];
+  const getTimelineCaptions = (checkpoint) => {
+    // if (checkpoint.state === "INITIATE") {
+    //   const caption = {
+    //     date: Digit.DateUtils.ConvertEpochToDate(props.application?.auditDetails?.createdTime),
+    //     source: props.application?.tradeLicenseDetail?.channel || "",
+    //   };
+    //   return <BPACaption data={caption} />;
+    // }  
+    //else {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
         mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-        wfComment: previousCheckpoint ? previousCheckpoint?.wfComment : [], // Get wfComment from the previous checkpoint
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
+        comment: t(checkpoint?.comment),
+        wfComment : checkpoint.wfComment,
+        thumbnailsToShow : checkpoint?.thumbnailsToShow,
       };
       return <BPACaption data={caption} OpenImage={OpenImage} />;
+    //}
   };
 
   if (isLoading) {
@@ -49,7 +57,7 @@ const BPAApplicationTimeline = (props) => {
             <CheckPoint
               isCompleted={true}
               label={t((data?.timeline[0]?.state && `WF_${businessService}_${data.timeline[0].state}`) || "NA")}
-              customChild={getTimelineCaptions(data?.timeline[0],0,data.timeline)}
+              customChild={getTimelineCaptions(data?.timeline[0])}
             />
           ) : (
             <ConnectingCheckPoints>
@@ -70,7 +78,7 @@ const BPAApplicationTimeline = (props) => {
                         keyValue={index}
                         isCompleted={index === 0}
                         label={checkpoint.state ? t(`WF_${businessService}_${checkpoint.state}${timelineStatusPostfix}`) : "NA"}
-                        customChild={getTimelineCaptions(checkpoint,index,data?.timeline)}
+                        customChild={getTimelineCaptions(checkpoint)}
                       />
                     </React.Fragment>
                   );

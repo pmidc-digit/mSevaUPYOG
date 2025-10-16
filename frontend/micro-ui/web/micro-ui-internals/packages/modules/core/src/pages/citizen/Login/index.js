@@ -11,6 +11,7 @@ const TYPE_REGISTER = { type: "register" };
 const TYPE_LOGIN = { type: "login" };
 const DEFAULT_USER = "digit-user";
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
+const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/edcrscrutiny/apply/home";
 
 /* set citizen details to enable backward compatiable */
 const setCitizenDetail = (userObject, token, tenantId) => {
@@ -70,7 +71,9 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     Digit.SessionStorage.set("citizen.userRequestObject", user);
     Digit.UserService.setUser(user);
     setCitizenDetail(user?.info, user?.access_token, stateCode);
-    const redirectPath = location.state?.from || DEFAULT_REDIRECT_URL;
+    const userRoles = user.info.roles.map((roleData) => roleData.code);
+    const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
+    const redirectPath = isUserBPA ?  DEFAULT_BPA_REDIRECT_URL : location.state?.from || DEFAULT_REDIRECT_URL;
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
       history.replace("/digit-ui/citizen/select-location", {
         redirectBackTo: redirectPath,
@@ -139,15 +142,14 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     }
   };
   function selectCommencementDate(value) {
-    const appDate= new Date();
-    const proposedDate= format(subYears(appDate, 18), 'yyyy-MM-dd').toString();
+    const appDate = new Date();
+    const proposedDate = format(subYears(appDate, 18), "yyyy-MM-dd").toString();
 
-    if( convertDateToEpoch(proposedDate)  <= convertDateToEpoch(value)){
-      return true     
+    if (convertDateToEpoch(proposedDate) <= convertDateToEpoch(value)) {
+      return true;
+    } else {
+      return false;
     }
-    else {
-      return false;     
-    }    
   }
   const selectName = async (name) => {
     const data = {
@@ -156,15 +158,13 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
       userType: getUserType(),
       ...name,
     };
-    console.log("name",name)
-    if (selectCommencementDate(name.dob))
-    {
+    console.log("name", name);
+    if (selectCommencementDate(name.dob)) {
       setError("Minimum age should be 18 years");
       setTimeout(() => {
         setError(false);
       }, 3000);
-    }
-    else {
+    } else {
       setParmas({ ...params, ...name });
       setCanSubmitName(true);
       const [res, err] = await sendOtp({ otp: { ...data, ...TYPE_REGISTER } });
@@ -175,8 +175,6 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
         setCanSubmitName(false);
       }
     }
-    
-  
   };
 
   const selectOtp = async () => {

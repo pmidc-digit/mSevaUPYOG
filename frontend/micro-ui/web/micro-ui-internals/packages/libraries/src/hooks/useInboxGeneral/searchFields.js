@@ -28,18 +28,18 @@ const inboxSearchFields = {
   ],
   PTR: [
     {
-      label: "PTR_APPLICATION_NUMBER",
+      label: "REPORT_FSM_RESULT_APPLICATION_NO",
       name: "applicationNumber",
       roles: [],
     },
     {
-      label: "PTR_PET_TYPE",
+      label: "PTR_SEARCH_PET_TYPE",
       name: "petType",
       // minLength: "10",
       roles: [],
     },
     {
-      label: "PTR_MOBILE_NUMBER",
+      label: "NOC_HOME_SEARCH_RESULTS_OWN_MOB_LABEL",
       name: "mobileNumber",
       type: "mobileNumber",
       maxLength: 10,
@@ -61,6 +61,73 @@ const inboxSearchFields = {
     },
     {
       label: "SV_REGISTERED_MOB_NUMBER",
+      name: "mobileNumber",
+      type: "mobileNumber",
+      maxLength: 10,
+      minLength: 0,
+      roles: [],
+      pattern: "^$|[6-9][0-9]{9}",
+      errorMessages: {
+        pattern: "",
+        minLength: "",
+        maxLength: "",
+      },
+    },
+  ],
+  CHB: [
+    {
+      label: "CHB_APPLICATION_NUMBER",
+      name: "bookingNo",
+      roles: [],
+    },
+    {
+      label: "CHB_HALL_NAME",
+      name: "hallName",
+      roles: [],
+    },
+    {
+      label: "CHB_MOBILE_NUMBER",
+      name: "mobileNumber",
+      type: "mobileNumber",
+      maxLength: 10,
+      minLength: 0,
+      roles: [],
+      pattern: "^$|[6-9][0-9]{9}",
+      errorMessages: {
+        pattern: "",
+        minLength: "",
+        maxLength: "",
+      },
+    },
+  ],
+  ASSET: [
+    {
+      label: "ES_ASSET_RESPONSE_CREATE_LABEL",
+      name: "applicationNo",
+      roles: [],
+    },
+    {
+      label: "AST_ASSET_CATEGORY_LABEL",
+      name: "assetClassification",
+      type: "Dropdown",
+      roles: [],
+    },
+    {
+      label: "AST_PARENT_CATEGORY_LABEL",
+      name: "assetParentCategory",
+      // minLength: "10",
+      roles: [],
+    },
+  ],
+  ADV: [
+    {
+      label: "ADV_BOOKING_NUMBER",
+      name: "bookingNo",
+      // minLength: "10",
+      roles: [],
+    },
+    {
+      label: "ES_SEARCH_BOOKING_MOBILE_NO",
       name: "mobileNumber",
       type: "mobileNumber",
       maxLength: 10,

@@ -1,176 +1,320 @@
-import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, RadioButtons, LabelFieldPair, Dropdown, Menu, MobileNumber } from "@mseva/digit-ui-react-components";
-import { cardBodyStyle } from "../utils";
-import { useLocation, useRouteMatch } from "react-router-dom";
-import Timeline from "../components/PTRTimeline";
+import React, { useEffect } from "react";
+import {
+  TextInput,
+  CardLabel,
+  MobileNumber,
+  TextArea,
+  ActionBar,
+  SubmitBar,
+  CardLabelError,
+  LabelFieldPair,
+  CardSectionHeader,
+} from "@mseva/digit-ui-react-components";
+import { Controller, useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 
-const PTRCitizenDetails
- = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
-  const { pathname: url } = useLocation();
-
-  let index = 0
-  // window.location.href.charAt(window.location.href.length - 1);
-  // console.log("index in detail page ",  index)
-   
-  let validation = {};
-
-  const [applicantName, setName] = useState((formData.ownerss && formData.ownerss[index] && formData.ownerss[index].applicantName) || formData?.ownerss?.applicantName || "");
-  const [emailId, setEmail] = useState((formData.ownerss && formData.ownerss[index] && formData.ownerss[index].emailId) || formData?.ownerss?.emailId || "");
-  const [mobileNumber, setMobileNumber] = useState(
-    (formData.ownerss && formData.ownerss[index] && formData.ownerss[index].mobileNumber) || formData?.ownerss?.mobileNumber || ""
-  );
-  const [alternateNumber, setAltMobileNumber] = useState(
-    (formData.ownerss && formData.ownerss[index] && formData.ownerss[index].alternateNumber) || formData?.ownerss?.alternateNumber || ""
-  );
-
-  
-  const [fatherName, setFatherOrHusbandName] = useState(
-    (formData.ownerss && formData.ownerss[index] && formData.ownerss[index].fatherName) || formData?.ownerss?.fatherName || ""
-  );
-  
- 
-
+const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
+  const userInfo = Digit.UserService.getUser();
+  console.log("userInfo?.info", userInfo?.info);
+  const { mobileNumber, emailId, name } = userInfo?.info;
+  const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
 
-  
+  // Split full name into firstName (all but last word) and lastName (last word)
+  // const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
 
-  function setOwnerName(e) {
-    setName(e.target.value);
-  }
-  function setOwnerEmail(e) {
-    setEmail(e.target.value);
-  }
-  
+  const isCitizen = window.location.href.includes("citizen");
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    trigger,
+  } = useForm({
+    defaultValues: isCitizen
+      ? {
+          mobileNumber: mobileNumber || "",
+          emailId: emailId || "",
+          name: name || "",
+          // lastName: lastName || "",
+        }
+      : {},
+  });
 
-  function setMobileNo(e) {
-    setMobileNumber(e.target.value);
-  }
-  
-  function setAltMobileNo(e) {
-    setAltMobileNumber(e.target.value);
-  }
-  function setGuardiansName(e) {
-    setFatherOrHusbandName(e.target.value);
-  }
-  
-
-  const goNext = () => {
-    let owner = formData.ownerss && formData.ownerss[index];
-    let ownerStep;
-    if (userType === "citizen") {
-      ownerStep = { ...owner, applicantName, mobileNumber,alternateNumber, fatherName, emailId};
-      onSelect(config.key, { ...formData[config.key], ...ownerStep }, false, index);
-    } else {
-      
-      ownerStep = { ...owner, applicantName,  mobileNumber,alternateNumber, fatherName,emailId };
-      onSelect(config.key, ownerStep, false,index);
+  const onSubmit = (data) => {
+    if (validateStep) {
+      const validationErrors = validateStep(data);
+      if (Object.keys(validationErrors).length > 0) {
+        return;
+      }
     }
+    goNext(data);
   };
 
-  const onSkip = () => onSelect();
-
-  
-  
-
   useEffect(() => {
-    if (userType === "citizen") {
-      goNext();
+    const formattedData = apiDataCheck?.[0]?.owner || currentStepData?.ownerDetails;
+    if (formattedData) {
+      Object.entries(formattedData).forEach(([key, value]) => {
+        setValue(key, value);
+      });
+      setValue("address", apiDataCheck?.[0]?.address?.addressId || currentStepData?.ownerDetails?.address || "");
+      setValue("pincode", apiDataCheck?.[0]?.address?.pincode || currentStepData?.ownerDetails?.pincode || "");
     }
-  }, [applicantName, mobileNumber, fatherName, emailId]);
+  }, [apiDataCheck, currentStepData, setValue]);
 
- 
+  const getErrorMessage = (fieldName) => {
+    if (!errors[fieldName]) return null;
+
+    const error = errors[fieldName];
+    if (error.message) return t(error.message);
+
+    const fallbackMessages = {
+      name: t("PTR_FIRST_NAME_REQUIRED"),
+      // lastName: t("PTR_LAST_NAME_REQUIRED"),
+      emailId: t("PTR_EMAIL_REQUIRED"),
+      mobileNumber: t("PTR_MOBILE_REQUIRED"),
+      fatherOrHusbandName: t("PTR_FATHER_HUSBAND_NAME_REQUIRED"),
+      address: t("PTR_ADDRESS_REQUIRED"),
+      pincode: t("PTR_PINCODE_REQUIRED"),
+    };
+
+    return fallbackMessages[fieldName] || t("PTR_FIELD_REQUIRED");
+  };
+
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
   return (
     <React.Fragment>
-    {
-      window.location.href.includes("/citizen") ?
- <Timeline currentStep={1} />
-    : null
-    }
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardSectionHeader className="card-section-header">{t("PTR_CITIZEN_DETAILS")}</CardSectionHeader>
 
-    <FormStep
-      config={config}
-      onSelect={goNext}
-      onSkip={onSkip}
-      t={t}
-      isDisabled={!applicantName || !mobileNumber || !fatherName || !emailId}
-    >
-      <div>
-        <CardLabel>{`${t("PTR_APPLICANT_NAME")}`}</CardLabel>
-        <TextInput
-          t={t}
-          type={"text"}
-          isMandatory={false}
-          optionKey="i18nKey"
-          name="applicantName"
-          value={applicantName}
-          onChange={setOwnerName}
-          ValidationRequired = {true}
-          {...(validation = {
-            isRequired: true,
-            pattern: "^[a-zA-Z ]+$",
-            type: "tel",
-            title: t("PT_NAME_ERROR_MESSAGE"),
-          })}
-       
-         
-        />
-       
-        <CardLabel>{`${t("PTR_MOBILE_NUMBER")}`}</CardLabel>
-        <MobileNumber
-          value={mobileNumber}
-          name="mobileNumber"
-          onChange={(value) => setMobileNo({ target: { value } })}
-          {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-        />
+        {/* First Name */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="name"
+              rules={{
+                required: t("Applicant Name is Required"),
+                pattern: {
+                  value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
+                  message: t("Applicant Name is Invalid"),
+                },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
+                minLength: { value: 2, message: "Minimum 2 characters" },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("name");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.name && <CardLabelError style={errorStyle}>{getErrorMessage("name")}</CardLabelError>}
 
-        <CardLabel>{`${t("PTR_ALT_MOBILE_NUMBER")}`}</CardLabel>
-          <MobileNumber
-            value={alternateNumber}
-            name="alternateNumber"
-            onChange={(value) => setAltMobileNo({ target: { value } })}
-            {...{ required: false, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-          />
-        <CardLabel>{`${t("PTR_FATHER_HUSBAND_NAME")}`}</CardLabel>
-        <TextInput
-          t={t}
-          type={"text"}
-          isMandatory={false}
-          optionKey="i18nKey"
-          name="fatherName"
-          value={fatherName}
-          onChange={setGuardiansName}
-          ValidationRequired = {true}
-          {...(validation = {
-            isRequired: true,
-            pattern: "^[a-zA-Z-.`' ]*$",
-            type: "text",
-            title: t("PTR_NAME_ERROR_MESSAGE"),
-          })}
-        />
+        {/* Last Name */}
+        {/* <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NDC_LAST_NAME")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="lastName"
+              rules={{
+                required: t("PTR_LAST_NAME_REQUIRED"),
+                pattern: {
+                  value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
+                  message: t("PTR_FIRST_NAME_INVALID"),
+                },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
+                minLength: { value: 2, message: "Minimum 2 characters" },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("lastName");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.lastName && <CardLabelError style={errorStyle}>{getErrorMessage("lastName")}</CardLabelError>} */}
 
-        <CardLabel>{`${t("PTR_EMAIL_ID")}`}</CardLabel>
-        <TextInput
-          t={t}
-          type={"text"}
-          isMandatory={true}
-          optionKey="i18nKey"
-          name="emailId"
-          value={emailId}
-          onChange={setOwnerEmail}
-          ValidationRequired = {true}
-          {...(validation = {
-            isRequired: true,
-            pattern: "[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$",
-            type: "text",
-            title: t("PTR_NAME_ERROR_MESSAGE"),
-          })}
-        />
-        
-        
-      </div>
-    </FormStep>
+        {/* Email */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="emailId"
+              rules={{
+                required: t("PTR_EMAIL_REQUIRED"),
+                pattern: {
+                  value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
+                  message: t("PTR_EMAIL_INVALID"),
+                },
+                maxLength: { value: 100, message: t("PTR_EMAIL_MAX_LENGTH") },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("emailId");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.emailId && <CardLabelError style={errorStyle}>{getErrorMessage("emailId")}</CardLabelError>}
+
+        {/* Mobile Number */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="mobileNumber"
+              rules={{
+                required: t("PTR_MOBILE_REQUIRED"),
+                pattern: {
+                  value: /^[6-9][0-9]{9}$/,
+                  message: t("PTR_MOBILE_INVALID"),
+                },
+                minLength: { value: 10, message: t("PTR_MOBILE_MIN_LENGTH") },
+                maxLength: { value: 10, message: t("PTR_MOBILE_MAX_LENGTH") },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <MobileNumber
+                  value={value}
+                  onChange={onChange}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("mobileNumber");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
+
+        {/* Father/Husband Name */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_FATHER_HUSBAND")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="fatherOrHusbandName"
+              rules={{
+                required: t("PTR_FATHER_HUSBAND_NAME_REQUIRED"),
+                pattern: {
+                  value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
+                  message: t("PTR_FATHER_HUSBAND_NAME_INVALID"),
+                },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
+                minLength: { value: 2, message: "Minimum 2 characters" },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("fatherOrHusbandName");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.fatherOrHusbandName && <CardLabelError style={errorStyle}>{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
+
+        {/* Address */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("PT_COMMON_COL_ADDRESS")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="address"
+              rules={{
+                required: t("NDC_MESSAGE_ADDRESS"),
+                pattern: {
+                  value: /^[A-Za-z0-9\s.,'/-]+$/,
+                  message: t("PTR_ADDRESS_INVALID"),
+                },
+                maxLength: { value: 500, message: "Maximum 500 characters" },
+                minLength: { value: 5, message: "Minimum 5 characters" },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextArea
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("address");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.address && <CardLabelError style={errorStyle}>{getErrorMessage("address")}</CardLabelError>}
+
+        {/* Pincode */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("CORE_COMMON_PINCODE")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="pincode"
+              rules={{
+                required: t("PTR_PINCODE_REQUIRED"),
+                pattern: {
+                  value: /^[1-9][0-9]{5}$/,
+                  message: t("PTR_PINCODE_INVALID"),
+                },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  maxlength={6}
+                  onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("pincode");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.pincode && <CardLabelError style={errorStyle}>{getErrorMessage("pincode")}</CardLabelError>}
+
+        <ActionBar>
+          <SubmitBar label={t("Next")} submit="submit" />
+        </ActionBar>
+      </form>
     </React.Fragment>
   );
 };

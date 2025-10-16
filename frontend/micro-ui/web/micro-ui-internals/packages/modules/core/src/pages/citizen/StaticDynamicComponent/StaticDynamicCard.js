@@ -47,6 +47,7 @@ const StaticDynamicCard = ({moduleCode}) => {
       }
     }
     const mdmsConfigResult = mdmsData?.MdmsRes["common-masters"]?.StaticData[0]?.[`${moduleCode}`];
+    console.log(mdmsConfigResult, "VIEW MAP");
 
     const StaticDataIconComponentOne = ({module}) => {
 
@@ -139,10 +140,7 @@ const StaticDynamicCard = ({moduleCode}) => {
           { mdmsConfigResult && mdmsConfigResult?.helpline ?
             <Card style={{margin: "16px", padding: "16px", maxWidth: "unset"}}>
           <div className="static-home-Card">
-              <div className="static-home-Card-header">{t("CALL_CENTER_HELPLINE")}</div>
-              <div className="helplineIcon">
-                <HelpLineIcon />
-              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }} className="static-home-Card-header"> <HelpLineIcon />{t("CALL_CENTER_HELPLINE")}</div>
           </div>
           <div className="call-center-card-text">
           { mdmsConfigResult?.helpline?.contactOne ? <div className="call-center-card-content">
@@ -157,13 +155,11 @@ const StaticDynamicCard = ({moduleCode}) => {
           { mdmsConfigResult && mdmsConfigResult?.serviceCenter ?
           <Card style={{margin: "16px", padding: "16px", maxWidth: "unset"}}>
           <div className="static-home-Card">
-              <div className="static-home-Card-header">{t("CITIZEN_SERVICE_CENTER")}</div>
-              <div className="serviceCentrIcon">
-                <ServiceCenterIcon />
-              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }} className="static-home-Card-header">  <ServiceCenterIcon /> {t("CITIZEN_SERVICE_CENTER")}</div>
+
           </div>
           <div className="service-center-details-card">
-          <div className="service-center-details-text">
+          <div className=".service-center-details-text-width-fix">
             {mdmsConfigResult?.serviceCenter}
           </div>
           </div>

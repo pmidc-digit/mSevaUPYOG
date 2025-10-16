@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useHistory, Redirect } from "react-router-dom";
+import { useParams, useHistory, Redirect, useLocation } from "react-router-dom";
 
-import { BackButton, Card, CardHeader, CardText, TextArea, SubmitBar,Toast } from "@mseva/digit-ui-react-components";
+import { BackButton, Card, CardHeader, CardText, TextArea, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
 
 import { updateComplaints } from "../../../redux/actions/index";
 import { LOCALIZATION_KEY } from "../../../constants/Localization";
@@ -15,36 +15,42 @@ const AddtionalDetails = (props) => {
   const dispatch = useDispatch();
   const appState = useSelector((state) => state)["common"];
   let { t } = useTranslation();
-  const [showToast, setShowToast] = useState(false)
+  const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState(null);
-  const {complaintDetails} = props
-  useEffect(() => {
-    if (appState.complaints) {
-      const { response } = appState.complaints;
-      if (response && response.responseInfo.status === "successful") {
-        history.push(`${props.match.path}/response/:${id}`);
-      }
-    }
-  }, [appState.complaints, props.history]);
+  // const {complaintDetails} = props
+  const location = useLocation();
+  // let { id } = useParams();
+  const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
+  const complaintDetails =
+    location.state?.complaintDetails || props.complaintDetails || Digit.Hooks.swach.useComplaintDetails({ tenantId, id }).complaintDetails;
+  // useEffect(() => {
+  //   if (appState.complaints) {
+  //     const { response } = appState.complaints;
+  //     if (response && response.responseInfo.status === "successful") {
+  //       history.push(`${props.match.path}/response`);
+  //     }
+  //   }
+  // }, [appState.complaints, props.history]);
 
   const updateComplaint = useCallback(
-    async (complaintDetails) => {
-      try{
-        await dispatch(updateComplaints(complaintDetails));
-        history.push(`${props.match.path}/response/${id}`);
+    (complaintDetails) => {
+      try {
+        dispatch(updateComplaints(complaintDetails));
+        // history.push(`${props.match.path}/response`);
+        history.push({
+          pathname: `${props.match.path}/response`,
+          state: { complaintDetails },
+        });
+      } catch (e) {
+        setShowToast({ isError: false, isWarning: true, key: "error", message: e?.response?.data?.Errors[0]?.message });
+        setError(e?.response?.data?.Errors[0]?.message);
       }
-      catch(e)
-      {
-          setShowToast( { isError: false, isWarning: true, key: "error", message: e?.response?.data?.Errors[0]?.message})
-          setError(e?.response?.data?.Errors[0]?.message);
-      }
-     
     },
     [dispatch]
   );
   const closeToast = () => {
     setShowToast(false);
-};
+  };
   const getUpdatedWorkflow = (reopenDetails, type) => {
     switch (type) {
       case "REOPEN":
@@ -60,9 +66,11 @@ const AddtionalDetails = (props) => {
   };
 
   function reopenComplaint() {
-    setShowToast(false)
+    setShowToast(false);
     let reopenDetails = Digit.SessionStorage.get(`reopen.${id}`);
-    if (complaintDetails) {
+    console.log("reopenDetails", reopenDetails);
+    console.log("complaintDetails", complaintDetails);
+    if (complaintDetails && complaintDetails.service) {
       complaintDetails.workflow = getUpdatedWorkflow(
         reopenDetails,
         // complaintDetails,
@@ -71,16 +79,17 @@ const AddtionalDetails = (props) => {
       complaintDetails.service.additionalDetail = {
         REOPEN_REASON: reopenDetails.reason,
       };
+      console.log("Dispatching updateComplaints with:", { service: complaintDetails.service, workflow: complaintDetails.workflow });
       updateComplaint({ service: complaintDetails.service, workflow: complaintDetails.workflow });
     }
-    return (
-      <Redirect
-        to={{
-          pathname: `${props.parentRoute}/response`,
-          state: { complaintDetails },
-        }}
-      />
-    );
+    // return (
+    //   <Redirect
+    //     to={{
+    //       pathname: `${props.parentRoute}/response`,
+    //       state: { complaintDetails },
+    //     }}
+    //   />
+    // );
   }
 
   function textInput(e) {
@@ -102,8 +111,7 @@ const AddtionalDetails = (props) => {
           <SubmitBar label={t(`${LOCALIZATION_KEY.CS_HEADER}_REOPEN_COMPLAINT`)} />
         </div>
       </Card>
-      <React.Fragment>{showToast && <Toast error={showToast.key === "error"} label={error} onClose={closeToast} />}</React.Fragment>;
-  
+      <React.Fragment>{showToast && <Toast error={showToast.key === "error"} label={error} onClose={closeToast} />}</React.Fragment>
     </React.Fragment>
   );
 };

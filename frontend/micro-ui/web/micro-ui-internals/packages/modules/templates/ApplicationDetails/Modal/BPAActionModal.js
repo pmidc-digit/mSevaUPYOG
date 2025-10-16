@@ -24,8 +24,8 @@ const CloseBtn = (props) => {
 };
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason }) => {
-  console.log("applicationData",applicationData)
-  console.log("workflowDetails",workflowDetails)
+  console.log("applicationData_BPAACTIONMODAL",applicationData)
+  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails)
   const mutation1 = Digit.Hooks.obps.useObpsAPI(
       applicationData?.landInfo?.address?.city ? applicationData?.landInfo?.address?.city : tenantId,
       false
@@ -177,7 +177,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {
       ...applicationData,
-      documents: getDocuments(applicationData),
+      documents: applicationData?.documents,
       additionalDetails: {...applicationData?.additionalDetails, fieldinspection_pending:getfeildInspection(applicationData), pendingapproval: getPendingApprovals(),blockingReason:selectedBlockReason?.name  },
        workflow:{
         action: action?.action,
@@ -196,6 +196,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         : null,
       },
       action: action?.action,
+      riskType: applicationData?.additionalDetails?.riskType,
       comment: data?.comments,
       assignee: (workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus==="FIELDINSPECTION_INPROGRESS")? [workflowDetails?.data?.processInstances?.[0]?.assigner?.uuid]: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
       wfDocuments: uploadedFile
@@ -213,11 +214,11 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       alert(t("Enterd Less Adjustment amount is invalid"));
     }
     else{
-    applicationData.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
-    applicationData.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges")|| "0";
-    applicationData.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment" )|| "0";
-    applicationData.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc" || "NA");
-    applicationData.additionalDetails.lessAdjustmentFeeFiles=JSON.parse(sessionStorage.getItem("uploadedFileLess"));
+    // applicationData.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
+    // applicationData.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges")|| "0";
+    // applicationData.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment" )|| "0";
+    // applicationData.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc" || "NA");
+    // applicationData.additionalDetails.lessAdjustmentFeeFiles=JSON.parse(sessionStorage.getItem("uploadedFileLess"));
 
     const nocDetails = applicationDetails?.nocData?.map(noc => {
       const uploadedDocuments = Digit.SessionStorage.get(noc?.nocType) || [];
@@ -233,7 +234,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     })
 
     let filters = {sourceRefId:nocDetails?.[0]?.Noc?.sourceRefId}
-    const response = await Digit.NOCSearch.all(tenantId, filters)
+    // const response = await Digit.NOCSearch.all(tenantId, filters)
+    const response = {}
 
     let AirportFlag = true;
     let NocFlag = true;

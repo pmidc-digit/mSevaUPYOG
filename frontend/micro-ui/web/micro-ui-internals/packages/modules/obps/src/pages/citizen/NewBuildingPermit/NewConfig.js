@@ -1,274 +1,464 @@
-export const newConfig1=[
-    {
-        "route": "docs-required",
-        "component": "DocsRequired",
-        "key": "data",
-        "nextStep": "basic-details"
+export const newConfig1 = [
+  {
+    route: "docs-required",
+    component: "DocsRequired",
+    key: "data",
+    nextStep: "stepper",
+  },
+  // {
+  //     "route": "noc-number",
+  //     "component": "NOCNumber",
+  //     "nextStep": "basic-details",
+  //     "key": "nocnumber",
+  //     "texts": {
+  //         "headerCaption": "BPA_NOC_NUMBER_DETAILS",
+  //         "header": "",
+  //         "submitBarLabel": "CS_COMMON_NEXT"
+  //     }
+  // },
+  {
+    route: "stepper",
+    component: "NewSelfCertificationStepForm",
+    key: "data",
+    // nextStep: "plot-details",
+    step: "1"
+  },
+  {
+    route: "basic-details",
+    component: "BasicDetails",
+    key: "data",
+    nextStep: "plot-details",
+    step: "1"
+  },
+  {
+    route: "plot-details",
+    component: "PlotDetails",
+    key: "data",
+    nextStep: "scrutiny-details",
+    step: "1",
+    texts: {
+      headerCaption: "BPA_SCRUTINY_DETAILS",
+      header: "BPA_PLOT_DETAILS_TITLE",
+      cardText: "",
+      submitBarLabel: "CS_COMMON_NEXT",
+      //"skipText": "CORE_COMMON_SKIP_CONTINUE"
     },
-    // {
-    //     "route": "noc-number",
-    //     "component": "NOCNumber",
-    //     "nextStep": "basic-details",
-    //     "key": "nocnumber",
-    //     "texts": {
-    //         "headerCaption": "BPA_NOC_NUMBER_DETAILS",
-    //         "header": "",
-    //         "submitBarLabel": "CS_COMMON_NEXT"
-    //     }
-    // },
-    {
-        "route": "basic-details",
-        "component": "BasicDetails",
-        "key": "data",
-        "nextStep": "plot-details"
-    },
-    {
-        "route": "plot-details",
-        "component": "PlotDetails",
-        "key": "data",
-        "nextStep": "scrutiny-details",
-        "texts": {
-            "headerCaption": "BPA_SCRUTINY_DETAILS",
-            "header": "BPA_PLOT_DETAILS_TITLE",
-            "cardText": "",
-            "submitBarLabel": "CS_COMMON_NEXT",
-            //"skipText": "CORE_COMMON_SKIP_CONTINUE"
-        },
-        "inputs": [
-            {
-                "label": "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
-                "type": "textarea",
-                "validation": {},
-                "name": "registrationDetails"
-            },
-            {
-                "label": "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
-                "type": "text",
-                "validation": {
-                    "pattern":"^[0-9]*$",
-                    "title": "Enter in Numbers[0-9]",
-                    "required": true
-                },
-                "name": "boundaryWallLength"
-            },
-            {
-                "label": "BPA_WARD_NUMBER_LABEL",
-                "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9 ]*$",
-                    "title": "Special Character are not allowed",
-                    "required": true
-                  },
-                "name": "wardnumber"
-            },
-            {
-                "label": "BPA_ZONE_NUMBER_LABEL",
-                "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9 ]*$",
-                    "required": false},
-                "name": "zonenumber"
-            },
-            {
-                "label": "BPA_KHASRA_NUMBER_LABEL",
-                "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9/]*$",
-                    "required": true},
-                "name": "khasraNumber"
-            },
-            {
-                "label": "BPA_ARCHITECT_ID",
-                "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9/]*$",
-                    "required": true},
-                "name": "architectid"
-            },
-            {
-                "label": "BPA_PROPERTY_UID",
-                "type": "text",
-                "validation": {},
-                "name": "propertyuid"
-            },
-            {
-                "label": "BPA_NUMBER_OF_BATHS",
-                "type": "text",
-                "validation": {
-                    "pattern": "^[0-9]*$",
-                    "required": false
-                },
-                "name": "bathnumber"
-            },
-            {
-                "label": "BPA_NUMBER_OF_KITCHENS",
-                "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
-                "name": "kitchenNumber"
-            },
-            {
-                "label": "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
-                "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
-                "name": "approxinhabitants"
-            },
-            {
-                "label": "BPA_DISTANCE_FROM_SEWER",
-                "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
-                "name": "distancefromsewer"
-            },
-            {
-                "label": "BPA_SOURCE_OF_WATER",
-                "type": "text",
-                "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
-                "name": "sourceofwater"
-            },
-            {
-                "label": "BPA_NUMBER_OF_WATER_CLOSETS",
-                "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
-                "name": "watercloset"
-            },
-            {
-                "label": "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
-                "type": "text",
-                "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
-                "name": "materialused"
-            },
-            {
-                "label": "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
-                "type": "text",
-               "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
-                "name": "materialusedinfloor"
-            },
-            {
-                "label": "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
-                "type": "text",
-                "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
-                "name": "materialusedinroofs"
-            },
+    // inputs: [
+    //   {
+    //     label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
+    //     type: "textarea",
+    //     validation: {},
+    //     name: "registrationDetails",
+    //   },
+    //   {
+    //     label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
+    //     type: "text",
+    //     validation: {
+    //       pattern: "^[0-9]*$",
+    //       title: "Enter in Numbers[0-9]",
+    //       errorMessage: "Boundary wall length must be a number",
+    //       required: true,
+    //     },
+    //     name: "boundaryWallLength",
+    //   },
+    //   {
+    //     label: "BPA_WARD_NUMBER_LABEL",
+    //     type: "text",
+    //     validation: {
+    //       pattern: "^[a-zA-Z0-9 -]+$",
+    //       required: true,
+    //     },
+    //     name: "wardnumber",
+    //   },
+    //   {
+    //     label: "BPA_ZONE_NUMBER_LABEL",
+    //     type: "text",
+    //     validation: {},
+    //     name: "zonenumber",
+    //   },
+    //   {
+    //     label: "BPA_KHASRA_NUMBER_LABEL",
+    //     type: "text",
+    //     validation: { required: true },
+    //     name: "khasraNumber",
+    //     disable: true,
+    //   },
+    //   {
+    //     label: "BPA_ARCHITECT_ID",
+    //     type: "text",
+    //     validation: { required: true },
+    //     name: "architectid",
+    //     disable: true,
+    //   },
+    //   {
+    //     label: "BPA_PROPERTY_UID",
+    //     type: "text",
+    //     validation: {},
+    //     name: "propertyuid",
+    //   },
+    //   {
+    //     label: "BPA_NUMBER_OF_BATHS",
+    //     type: "text",
+    //     validation: {},
+    //     name: "bathnumber",
+    //   },
+    //   {
+    //     label: "BPA_NUMBER_OF_KITCHENS",
+    //     type: "text",
+    //     validation: {},
+    //     name: "kitchenNumber",
+    //   },
+    //   {
+    //     label: "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
+    //     type: "text",
+    //     validation: {},
+    //     name: "approxinhabitants",
+    //   },
+    //   {
+    //     label: "BPA_DISTANCE_FROM_SEWER",
+    //     type: "text",
+    //     validation: {},
+    //     name: "distancefromsewer",
+    //   },
+    //   {
+    //     label: "BPA_SOURCE_OF_WATER",
+    //     type: "text",
+    //     validation: {},
+    //     name: "sourceofwater",
+    //   },
+    //   {
+    //     label: "BPA_NUMBER_OF_WATER_CLOSETS",
+    //     type: "text",
+    //     validation: {},
+    //     name: "watercloset",
+    //   },
+    //   {
+    //     label: "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
+    //     type: "text",
+    //     validation: {},
+    //     name: "materialused",
+    //   },
+    //   {
+    //     label: "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
+    //     type: "text",
+    //     validation: {},
+    //     name: "materialusedinfloor",
+    //   },
+    //   {
+    //     label: "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
+    //     type: "text",
+    //     validation: { pattern: "^[A-Za-z\\s]+$" },
+    //     name: "materialusedinroofs",
+    //   },
+    // ],
 
-        ]
-    },
-    {
-        "route": "scrutiny-details",
-        "component": "ScrutinyDetails",
-        "nextStep": "location",
-        "hideInEmployee": true,
-        "key": "subOccupancy",
-        "texts": {
-            "headerCaption": "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
-            "header": "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
-            "cardText": "",
-            "submitBarLabel": "CS_COMMON_NEXT",
-            "skipText": "CORE_COMMON_SKIP_CONTINUE"
-        }
-    },
-    {
-    "type": "component",
-    "route": "search-property",
-    "isMandatory": true,
-    "component": "CPTSearchProperty",
-    "key": "cptsearchproperty",
-    "withoutLabel": true,
-    "nextStep": "search-results",
-    "hideInEmployee": true
+    inputs: [
+      {
+        label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
+        type: "text",
+        placeholder: "Give Land Registration Detail...", 
+        validation: {
+          required: true,
+          title: "Enter registration details",
+          errorMessage: "Registration details are required",
+        },
+        name: "registrationDetails",
+      },
+      {
+        label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
+        type: "text",
+        placeholder: "Enter boundary wall length (in meters)", 
+        validation: {
+          required: true,
+          pattern: "^[0-9]*$",
+          title: "Enter boundary wall length in numbers [0-9]",
+          errorMessage: "Boundary wall length must be a number",
+        },
+        name: "boundaryWallLength",
+      },
+      {
+        label: "BPA_WARD_NUMBER_LABEL",
+        type: "text",
+        placeholder:"Ward Number",
+        validation: {
+          required: true,
+          pattern: "^[a-zA-Z0-9 -]+$",
+          title: "Enter alphanumeric ward number",
+          errorMessage: "Ward number must be alphanumeric",
+        },
+        name: "wardnumber",
+      },
+      {
+        label: "BPA_ZONE_NUMBER_LABEL",
+        type: "text",
+        placeholder:"Zone Number",
+        validation: {
+          required: true,
+          title: "Enter zone number",
+          errorMessage: "Zone number is required",
+        },
+        name: "zonenumber",
+      },
+      {
+        label: "BPA_KHASRA_NUMBER_LABEL",
+        type: "text",
+        validation: {
+          required: true,
+          title: "Enter khasra number",
+          errorMessage: "Khasra number is required",
+        },
+        name: "khasraNumber",
+        disable: true,
+      },
+      {
+        label: "BPA_ARCHITECT_ID",
+        type: "text",
+        
+        validation: {
+          required: true,
+          title: "Enter architect ID",
+          errorMessage: "Architect ID is required",
+        },
+        name: "architectid",
+        disable: true,
+      },
+      {
+        label: "BPA_PROPERTY_UID",
+        type: "text",
+        placeholder:"Property UID",
+        validation: {
+          required: true,
+          title: "Enter property UID",
+          pattern: "^(?=.*[A-Za-z])[A-Za-z0-9-]+$",
+          errorMessage: "Property UID is required",
+        },
+        name: "propertyuid",
+      },
+      {
+        label: "BPA_NUMBER_OF_BATHS",
+        placeholder:"Number Of Bathrooms",
+        type: "text",
+        validation: {
+          required: true,
+          pattern: "^[0-9]+$",
+          title: "Enter number of baths in digits",
+          errorMessage: "Number of baths must be numeric",
+        },
+        name: "bathnumber",
+      },
+      {
+        label: "BPA_NUMBER_OF_KITCHENS",
+        placeholder:"Number Of Kitchens",
+        type: "text",
+        validation: {
+          required: true,
+          pattern: "^[0-9]+$",
+          title: "Enter number of kitchens in digits",
+          errorMessage: "Number of kitchens must be numeric",
+        },
+        name: "kitchenNumber",
+      },
+      {
+        label: "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
+        type: "text",
+        placeholder:"Approx Number Of Inhabitants For Accomodation",
+        validation: {
+          required: true,
+          pattern: "^[0-9]+$",
+          title: "Enter number of approximate inhabitants",
+          errorMessage: "Approximate inhabitants must be numeric",
+        },
+        name: "approxinhabitants",
+      },
+      {
+        label: "BPA_DISTANCE_FROM_SEWER",
+        type: "text",
+        placeholder:"Distance From Sewer",
+        validation: {
+          required: true,
+          pattern: "^[0-9]+$",
+          title: "Enter distance from sewer in meters",
+          errorMessage: "Distance from sewer must be numeric",
+        },
+        name: "distancefromsewer",
+      },
+      {
+        label: "BPA_SOURCE_OF_WATER",
+        placeholder:"Source Of Water",
+        type: "text",
+        validation: {
+          required: true,
+          title: "Enter source of water",
+          errorMessage: "Source of water is required",
+        },
+        name: "sourceofwater",
+      },
+      {
+        label: "BPA_NUMBER_OF_WATER_CLOSETS",
+        type: "text",
+        placeholder:"Number Of Water Closets",
+        validation: {
+          required: true,
+          pattern: "^[0-9]+$",
+          title: "Enter number of water closets in digits",
+          errorMessage: "Number of water closets must be numeric",
+        },
+        name: "watercloset",
+      },
+      {
+        label: "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
+        placeholder:"e.g. Cement, Bricks, etc",
+        type: "text",
+        validation: {
+          required: true,
+          pattern: "^[A-Za-z\\s]+$",
+          title: "Enter material used in walls (alphabets only)",
+          errorMessage: "Material used in walls must contain only letters",
+        },
+        name: "materialused",
+      },
+      {
+        label: "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
+         placeholder:"e.g. Cement, Bricks, etc",
+        type: "text",
+        validation: {
+          required: true,
+          pattern: "^[A-Za-z\\s]+$",
+          title: "Enter material used in floor (alphabets only)",
+          errorMessage: "Material used in floor must contain only letters",
+        },
+        name: "materialusedinfloor",
+      },
+      {
+        label: "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
+         placeholder:"e.g. Cement, Bricks, etc",
+        type: "text",
+        validation: {
+          required: true,
+          pattern: "^[A-Za-z\\s]+$",
+          title: "Enter material used in roofs (alphabets only)",
+          errorMessage: "Material used in roofs must contain only letters",
+        },
+        name: "materialusedinroofs",
+      },
+    ],
   },
   {
-    "type": "component",
-    "route": "search-results",
-    "isMandatory": true,
-    "component": "CPTSearchResults",
-    "key": "cptsearchresults",
-    "withoutLabel": true,
-    "nextStep": "location",
-    "hideInEmployee": true
+    route: "scrutiny-details",
+    component: "ScrutinyDetails",
+    nextStep: "location",
+    step: "1",
+    hideInEmployee: true,
+    key: "subOccupancy",
+    texts: {
+      headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
+      header: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
+      cardText: "",
+      // submitBarLabel: "CS_COMMON_NEXT",
+      skipText: "CORE_COMMON_SKIP_CONTINUE",
+    },
   },
   {
-    "type": "component",
-    "route": "create-property",
-    "isMandatory": true,
-    "component": "CPTCreateProperty",
-    "key": "cptcreateproperty",
-    "withoutLabel": true,
-    "nextStep": "acknowledge-create-property",
-    "hideInEmployee": true
+    type: "component",
+    route: "search-property",
+    isMandatory: true,
+    component: "CPTSearchProperty",
+    key: "cptsearchproperty",
+    withoutLabel: true,
+    nextStep: "search-results",
+    hideInEmployee: true,
   },
   {
-    "type": "component",
-    "route": "acknowledge-create-property",
-    "isMandatory": true,
-    "component": "CPTAcknowledgement",
-    "key": "cptacknowledgement",
-    "withoutLabel": true,
-    "nextStep": "location",
-    "hideInEmployee": true
+    type: "component",
+    route: "search-results",
+    isMandatory: true,
+    component: "CPTSearchResults",
+    key: "cptsearchresults",
+    withoutLabel: true,
+    nextStep: "location",
+    hideInEmployee: true,
+    step: "1"
   },
-    {
-        "route": "location",
-        "component": "LocationDetails",
-        "nextStep": "additional-building-details",
-        "hideInEmployee": true,
-        "key": "address",
-        "texts": {
-            "headerCaption": "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
-            "header": "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS",
-            "cardText": "",
-            "submitBarLabel": "CS_COMMON_NEXT",
-            "skipAndContinueText": ""
-        }
+  {
+    type: "component",
+    route: "create-property",
+    isMandatory: true,
+    component: "CPTCreateProperty",
+    key: "cptcreateproperty",
+    withoutLabel: true,
+    nextStep: "acknowledge-create-property",
+    hideInEmployee: true,
+  },
+  {
+    type: "component",
+    route: "acknowledge-create-property",
+    isMandatory: true,
+    component: "CPTAcknowledgement",
+    key: "cptacknowledgement",
+    withoutLabel: true,
+    nextStep: "location",
+    hideInEmployee: true,
+  },
+  {
+    route: "location",
+    component: "LocationDetails",
+    nextStep: "additional-building-details",
+    hideInEmployee: true,
+    key: "address",
+    texts: {
+      headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
+      header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS_NEW",
+      cardText: "",
+      // submitBarLabel: "CS_COMMON_NEXT",
+      skipAndContinueText: "",
     },
-    {
-        "route": "additional-building-details",
-        "component": "BPANewBuildingdetails",
-        "nextStep": "owner-details",
-        "key": "owners",
-        "texts": {
-            "header": "BPA_ADDITIONAL_BUILDING_DETAILS",
-            "submitBarLabel": "CS_COMMON_NEXT"
-        }
+    step: "1"
+  },
+  {
+    route: "additional-building-details",
+    component: "BPANewBuildingdetails",
+    nextStep: "owner-details",
+    key: "owners",
+    texts: {
+      header: "BPA_ADDITIONAL_BUILDING_DETAILS",
+      // submitBarLabel: "CS_COMMON_NEXT",
     },
-    {
-        "route": "owner-details",
-        "component": "OwnerDetails",
-        "nextStep": "document-details",
-        "key": "owners",
-        "texts": {
-            "headerCaption": "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
-            "header": "BPA_APPLICANT_DETAILS_HEADER",
-            "submitBarLabel": "CS_COMMON_NEXT"
-        }
+    step: "2"
+  },
+  {
+    route: "owner-details",
+    component: "OwnerDetails",
+    nextStep: "document-details",
+    key: "owners",
+    texts: {
+      headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
+      header: "BPA_APPLICANT_DETAILS_HEADER",
+      // submitBarLabel: "CS_COMMON_NEXT",
     },
-    {
-        "route": "document-details",
-        "component": "DocumentDetails",
-        "nextStep": null,
-        "key": "documents",
-        "texts": {
-            "headerCaption": "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
-            "header": "BPA_DOCUMENT_DETAILS_LABEL",
-            "submitBarLabel": "CS_COMMON_NEXT"
-        }
+    step: "2"
+  },
+  {
+    route: "document-details",
+    component: "DocumentDetails",
+    nextStep: null,
+    key: "documents",
+    texts: {
+      headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
+      header: "BPA_DOCUMENT_DETAILS_LABEL",
+      // submitBarLabel: "CS_COMMON_NEXT",
     },
-    // {
-    //     "route": "noc-details",
-    //     "component": "NOCDetails",
-    //     "nextStep": null,
-    //     "key": "nocDocuments",
-    //     "texts": {
-    //         "headerCaption": "BPA_NOC_DETAILS_SUMMARY",
-    //         "header": "",
-    //         "submitBarLabel": "CS_COMMON_NEXT",
-    //         "skipText": "CORE_COMMON_SKIP_CONTINUE"
-    //     }
-    // }
-]
+    step: "3"
+  },
+  // {
+  //     "route": "noc-details",
+  //     "component": "NOCDetails",
+  //     "nextStep": null,
+  //     "key": "nocDocuments",
+  //     "texts": {
+  //         "headerCaption": "BPA_NOC_DETAILS_SUMMARY",
+  //         "header": "",
+  //         "submitBarLabel": "CS_COMMON_NEXT",
+  //         "skipText": "CORE_COMMON_SKIP_CONTINUE"
+  //     }
+  // }
+];

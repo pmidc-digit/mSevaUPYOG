@@ -17,9 +17,11 @@ import { CreateComplaint as CitizenCreateComplaint } from "./pages/citizen/Creat
 import { ComplaintsList } from "./pages/citizen/ComplaintsList";
 import ResponseCitizen from "./pages/citizen/Response";
 import ComplaintDetailsPage from "./pages/citizen/ComplaintDetails";
-import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation"
+import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation";
 import SelectImages from "./pages/citizen/Create/Steps/SelectImages";
-
+import Attendence from "./pages/citizen/Attendence";
+import ViewAttendence from "./pages/citizen/ViewAttendence";
+import { ReopenComplaint as SWACHReopenComplaint } from "../src/pages/citizen/ReopenComplaint";
 
 export const SWACHReducers = getRootReducer;
 
@@ -35,7 +37,7 @@ export const SwachModule = ({ stateCode, userType, tenants }) => {
   Digit.SessionStorage.set("SWACH_TENANTS", tenants);
 
   if (userType === "citizen") {
-    return <CitizenApp />
+    return <CitizenApp />;
   } else {
     return <EmployeeApp />;
   }
@@ -67,16 +69,19 @@ const componentsToRegister = {
   SwachModule,
   SWACHLinks,
   SWACHCard,
-  SWACHInbox : Inbox,
+  SWACHInbox: Inbox,
   SWACHCreateComplaintEmp: CreateComplaintEmp,
-  SWACHResponseEmp : ResponseEmp,
-  SWACHComplaintDetails : ComplaintDetails,
-  SWACHCitizenCreateComplaint : CitizenCreateComplaint,
-  SWACHComplaintsList : ComplaintsList,
-  SWACHResponseCitzen : ResponseCitizen,
-  SWACHComplaintDetailsPage : ComplaintDetailsPage,
+  SWACHResponseEmp: ResponseEmp,
+  SWACHComplaintDetails: ComplaintDetails,
+  SWACHCitizenCreateComplaint: CitizenCreateComplaint,
+  SWACHComplaintsList: ComplaintsList,
+  SWACHResponseCitzen: ResponseCitizen,
+  SWACHComplaintDetailsPage: ComplaintDetailsPage,
   SWACHSelectGeolocation: SelectGeolocation,
-  SWACHSelectImages: SelectImages
+  SWACHSelectImages: SelectImages,
+  Attendence,
+  ViewAttendence,
+  SWACHReopenComplaint,
 };
 
 export const initSWACHComponents = () => {

@@ -1,18 +1,51 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Loader, SubmitBar, Table } from "@mseva/digit-ui-react-components";
+import { Loader, SubmitBar, Table, Dropdown, SearchField, Card } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useHistory } from "react-router-dom";
+import { useForm, FormProvider, Controller } from "react-hook-form";
 
 const ActiveAndOpenSurveys = (props) => {
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
+  const userInfo = Digit.UserService.getUser().info;
+  console.log("userinfo", userInfo);
+  const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
+  let userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
   const tenantId = userType.toLowerCase() === "employee" ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //passing static value for testing
+
+  if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
+    // let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
+    let adduserUlbs = { i18nKey: `TENANT_TENANTS_${tenantId.replace(".", "_").toUpperCase()}`, code: `${tenantId}` };
+    if (tenantId === "pb.punjab") {
+      userUlbs = [adduserUlbs, ...ulbs];
+    } else {
+      userUlbs = [adduserUlbs];
+    }
+  }
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(null);
   const [data, setData] = useState([]);
-
+  const searchFormDefaultValues = {
+    city: userUlbs?.[0],
+    offset: 0,
+    limit: 10,
+    sortOrder: "DESC",
+  };
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    reset,
+    formState: { errors },
+    watch,
+  } = useForm({
+    defaultValues: searchFormDefaultValues,
+  });
+  const formValues = watch();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
   const columns = useMemo(() => {
@@ -69,15 +102,15 @@ const ActiveAndOpenSurveys = (props) => {
 
   useEffect(() => {
     fetchActiveAndOpenSurveys();
-  }, [tenantId]);
+  }, []);
 
   function fetchActiveAndOpenSurveys() {
     setLoading(true);
-    const payload = { tenantId: tenantId, active: true, openSurveyFlag: true };
+    const payload = { tenantId: formValues?.city?.code, active: true, openSurveyFlag: true };
     Digit.Surveys.searchSurvey(payload)
       .then((response) => {
         let tableData = response.Surveys.filter((item) => item.active);
-         tableData=tableData.sort((a,b)=> a.auditDetails.lastModifiedTime- b.auditDetails.lastModifiedTime)
+        tableData = tableData.sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
         setData(tableData);
         setCount(tableData.length);
         setLoading(false);
@@ -87,7 +120,7 @@ const ActiveAndOpenSurveys = (props) => {
         console.error("Failed to fetch surveys", error);
       });
   }
-  const userInfo = Digit.UserService.getUser().info;
+
   console.log("userinfo", userInfo);
   const handleStartSurvey = (surveyDetails) => {
     console.log("Survey Details: ", surveyDetails);
@@ -108,6 +141,44 @@ const ActiveAndOpenSurveys = (props) => {
 
   return (
     <div>
+      {tenantId === "pb.punjab" && window.location.href.includes("/employee") ? (
+        <Card style={{ marginTop: "16px", marginBottom: "16px", backgroundColor: "white", maxWidth: "99%" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h1 style={{ fontSize: "20px" }}> Search Surveys </h1>
+          </div>
+          <hr style={{ marginTop: "10px" }} />
+          <form className={"search-form-wrapper rm-mb form-field-flex-one"} onSubmit={handleSubmit(fetchActiveAndOpenSurveys)}>
+            <SearchField>
+              <label>
+                {t("City")} <span style={{ color: "red" }}>*</span>
+              </label>
+              <Controller
+                rules={{ required: t("REQUIRED_FIELD") }}
+                {...register("city")}
+                render={(props) => (
+                  <Dropdown
+                    option={userUlbs}
+                    optionKey={"i18nKey"}
+                    selected={formValues?.city}
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    t={t}
+                  />
+                )}
+                name={"city"}
+                control={control}
+                defaultValue={userUlbs?.[0]}
+              />
+              {/* <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError> */}
+            </SearchField>
+            <div className={`form-field`} style={{ marginTop: "40px" }}>
+              {" "}
+              <SubmitBar label="Search" submit="submit" onSubmit={fetchActiveAndOpenSurveys} />
+            </div>
+          </form>
+        </Card>
+      ) : null}
       <Table
         t={t}
         data={data}

@@ -16,55 +16,56 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["RiskTypeComputation"]);
   const userInfo = Digit.UserService.getUser();
   const queryObject = { 0: { tenantId: stateCode }, 1: { id: userInfo?.info?.id } };
-  const { data: LicenseData, isLoading:LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, queryObject);
+  const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, queryObject);
   const checkingUrl = window.location.href.includes("ocbpa");
   sessionStorage.removeItem("clickOnBPAApplyAfterEDCR");
 
-  const { data:homePageUrlLinks , isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["homePageUrlLinks"]);
-
-
+  const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["homePageUrlLinks"]);
+  console.log(docsList, "DOCS");
   const goNext = () => {
-    if(JSON.parse(sessionStorage.getItem("BPAintermediateValue")) !== null)
-    {
-    let formData = JSON.parse(sessionStorage.getItem("BPAintermediateValue"))
-    sessionStorage.setItem("BPAintermediateValue",null);
-    onSelect("",formData);
-    }
-    else
-    onSelect("uiFlow", uiFlow);
-  }
+    if (JSON.parse(sessionStorage.getItem("BPAintermediateValue")) !== null) {
+      let formData = JSON.parse(sessionStorage.getItem("BPAintermediateValue"));
+      sessionStorage.setItem("BPAintermediateValue", null);
+      onSelect("", formData);
+    } else onSelect("uiFlow", uiFlow);
+  };
 
   useEffect(() => {
-    let architectName = "", stakeholderRegistrationNumber="", stakeholderName="", stakeholderAddress="",isDone = true;
+    let architectName = "",
+      stakeholderRegistrationNumber = "",
+      stakeholderName = "",
+      stakeholderAddress = "",
+      isDone = true;
     let isSelfCertificationRequired;
     for (let i = 0; i < LicenseData?.Licenses?.length; i++) {
       if (LicenseData?.Licenses?.[i]?.status === "APPROVED" && isDone) {
         isDone = false;
-        architectName = LicenseData?.Licenses?.[i]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split('.')[0] || "ARCHITECT";
-        stakeholderRegistrationNumber = LicenseData?.Licenses?.[i]?.applicationNumber ;
-        stakeholderName=LicenseData?.Licenses?.[i]?.tradeLicenseDetail?.owners[0]?.name;
-        stakeholderAddress=LicenseData?.Licenses?.[i]?.tradeLicenseDetail?.owners[0]?.permanentAddress;
+        architectName = LicenseData?.Licenses?.[i]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
+        stakeholderRegistrationNumber = LicenseData?.Licenses?.[i]?.applicationNumber;
+        stakeholderName = LicenseData?.Licenses?.[i]?.tradeLicenseDetail?.owners[0]?.name;
+        stakeholderAddress = LicenseData?.Licenses?.[i]?.tradeLicenseDetail?.owners[0]?.permanentAddress;
         sessionStorage.setItem("BPA_ARCHITECT_NAME", JSON.stringify(architectName));
         sessionStorage.setItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER", JSON.stringify(stakeholderRegistrationNumber));
         sessionStorage.setItem("BPA_STAKEHOLDER_NAME", JSON.stringify(stakeholderName));
         sessionStorage.setItem("BPA_STAKEHOLDER_ADDRESS", JSON.stringify(stakeholderAddress));
-        isSelfCertificationRequired=LicenseData?.Licenses?.[i]?.tradeLicenseDetail.additionalDetail.isSelfCertificationRequired;
+        isSelfCertificationRequired = LicenseData?.Licenses?.[i]?.tradeLicenseDetail.additionalDetail.isSelfCertificationRequired;
         sessionStorage.setItem("isSelfCertificationRequired", JSON.stringify(isSelfCertificationRequired));
       }
     }
-  }, [LicenseData])
+  }, [LicenseData]);
+
 
   useEffect(() => {
     if (!homePageUrlLinksLoading) {
-      const windowUrl = window.location.href.split('/');
+      const windowUrl = window.location.href.split("/");
       const serviceType = windowUrl[windowUrl.length - 2];
       const applicationType = windowUrl[windowUrl.length - 3];
-      homePageUrlLinks?.BPA?.homePageUrlLinks?.map(linkData => {
-        if(applicationType?.toUpperCase() === linkData?.applicationType && serviceType?.toUpperCase() === linkData?.serviceType) {
+      homePageUrlLinks?.BPA?.homePageUrlLinks?.map((linkData) => {
+        if (applicationType?.toUpperCase() === linkData?.applicationType && serviceType?.toUpperCase() === linkData?.serviceType) {
           setUiFlow({
             flow: linkData?.flow,
             applicationType: linkData?.applicationType,
-            serviceType: linkData?.serviceType
+            serviceType: linkData?.serviceType,
           });
         }
       });
@@ -73,8 +74,11 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
 
   useEffect(() => {
     if (!isLoading) {
-      let unique = [], distinct = [], uniqueData = [], uniqueList = [];
-      const windowUrl = window.location.href.split('/');
+      let unique = [],
+        distinct = [],
+        uniqueData = [],
+        uniqueList = [];
+      const windowUrl = window.location.href.split("/");
       const serviceType = windowUrl[windowUrl.length - 2];
       const applicationType = windowUrl[windowUrl.length - 3];
       for (let i = 0; i < data.length; i++) {
@@ -83,13 +87,14 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
           unique[data[i].applicationType] = data[i];
         }
       }
-      Object.values(unique).map(indData => {
+      Object.values(unique).map((indData) => {
         if (indData?.applicationType == applicationType?.toUpperCase() && indData?.ServiceType == serviceType?.toUpperCase()) {
           uniqueList.push(indData?.docTypes);
         }
-        uniqueList?.[0]?.forEach(doc => {
-          let code = doc.code; doc.dropdownData = [];
-          commonDocs?.["common-masters"]?.DocumentType?.forEach(value => {
+        uniqueList?.[0]?.forEach((doc) => {
+          let code = doc.code;
+          doc.dropdownData = [];
+          commonDocs?.["common-masters"]?.DocumentType?.forEach((value) => {
             let values = value.code.slice(0, code.length);
             if (code === values) {
               doc.hasDropdown = true;
@@ -99,14 +104,33 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
           });
         });
         setDocsList(uniqueList);
-      })
+      });
     }
   }, [!isLoading]);
 
+  const codedDocs = [
+    { code: "BPA_DOC_OWNERSHIP_DOCUMENT" },
+    { code: "BPA_DOC_DETAILED_LOCATION_PLAN" },
+    { code: "BPA_DOC_OWNER_SIGNED_UNDERTAKING" },
+    { code: "BPA_DOC_FIRM_DOCUMENTS" },
+    { code: "BPA_DOC_IMPROVEMENT_TRUST_NOC" },
+    { code: "BPA_DOC_INDEMNITY_BOND_BASEMENT" },
+    { code: "BPA_DOC_STRUCTURE_STABILITY_CERTIFICATE" },
+    { code: "BPA_DOC_STRUCTURE_DRAWINGS" },
+    { code: "BPA_DOC_SELF_DECLARATION_INDUSTRY" },
+    { code: "BPA_DOC_NOC_NEIGHBOR_BASEMENT" },
+    { code: "BPA_DOC_NOC_FIRE_DEPARTMENT" },
+    { code: "BPA_DOC_NOC_NHAI_PWD" },
+    { code: "BPA_DOC_NOC_AIRPORT_AUTHORITY" },
+    { code: "BPA_DOC_NOC_GAS_AUTHORITY" },
+    { code: "BPA_DOC_ANY_OTHER_NOC" },
+    { code: "BPA_DOC_ANY_OTHER_SUPPORTING" },
+    { code: "BPA_DOC_LAST_PROPERTY_TAX" },
+    { code: "BPA_DOC_PHOTOGRAPH" },
+  ];
+
   if (isLoading) {
-    return (
-      <Loader />
-    )
+    return <Loader />;
   }
 
   return (
@@ -115,28 +139,26 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
         <CardHeader>{checkingUrl ? t(`BPA_OOCUPANCY_CERTIFICATE_APP_LABEL`) : t(`OBPS_NEW_BUILDING_PERMIT`)}</CardHeader>
         {/* TODO: Change text styles */}
         {/* <CitizenInfoLabel style={{margin:"0px"}} textStyle={{color:"#0B0C0C"}} text={t(`OBPS_DOCS_REQUIRED_TIME`)} showInfo={false} /> */}
-        <CardText style={{ color: "#0B0C0C", marginTop: "12px", fontSize: "16px", fontWeight: "400", lineHeight: "24px" }}>{t(`OBPS_NEW_BUILDING_PERMIT_DESCRIPTION`)}</CardText>
-        {isLoading ?
-          <Loader /> :
+        <CardText style={{ color: "#0B0C0C", marginTop: "12px", fontSize: "16px", fontWeight: "400", lineHeight: "24px" }}>
+          {t(`OBPS_NEW_BUILDING_PERMIT_DESCRIPTION`)}
+        </CardText>
+        {isLoading ? (
+          <Loader />
+        ) : (
           <Fragment>
-            {docsList?.[0]?.map((doc, index) => (
-              <div>
-                <div style={{ fontWeight: 700, marginBottom: "8px" }} key={index}>
-                  <div style={{ display: "flex" }}>
-                    <div>{`${index + 1}.`}&nbsp;</div>
-                    <div>{` ${t(doc?.code.replace('.', '_'))}`}</div>
-                  </div>
-                </div>
-                <div style={{marginBottom: "16px"}}>
-                  {doc?.dropdownData?.map((value, index) => doc?.dropdownData?.length !== index + 1 ? <span>{`${t(value?.i18nKey)}, `}</span> : <span>{`${t(value?.i18nKey)}`}</span> )}
+            {codedDocs.map((doc, index) => (
+              <div key={index} style={{ fontWeight: 700, marginBottom: "8px" }}>
+                <div style={{ display: "flex" }}>
+                  <div>{`${index + 1}.`}&nbsp;</div>
+                  <div>{t(doc.code)}</div>
                 </div>
               </div>
             ))}
           </Fragment>
-        }
+        )}
         <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} />
       </Card>
-      <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`OBPS_DOCS_FILE_SIZE`)} className={"info-banner-wrap-citizen-override"}/>
+      <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`OBPS_DOCS_FILE_SIZE`)} className={"info-banner-wrap-citizen-override"} />
     </Fragment>
   );
 };

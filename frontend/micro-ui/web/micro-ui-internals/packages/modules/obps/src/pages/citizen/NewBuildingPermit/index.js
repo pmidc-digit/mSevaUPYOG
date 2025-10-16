@@ -3,17 +3,18 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { useRouteMatch, useLocation, useHistory, Switch, Route, Redirect } from "react-router-dom";
 import { newConfig as newConfigBPA } from "../../../config/buildingPermitConfig";
-import {newConfig1} from "./NewConfig"
+import { newConfig1 } from "./NewConfig";
+import Stepper  from "../../../../../../react-components/src/customComponents/Stepper";
 // import CheckPage from "./CheckPage";
 // import OBPSAcknowledgement from "./OBPSAcknowledgement";
 
 const getPath = (path, params) => {
-  params && Object.keys(params).map(key => {
-    path = path.replace(`:${key}`, params[key]);
-  })
+  params &&
+    Object.keys(params).map((key) => {
+      path = path.replace(`:${key}`, params[key]);
+    });
   return path;
-}
-
+};
 
 const NewBuildingPermit = () => {
   const queryClient = useQueryClient();
@@ -25,9 +26,13 @@ const NewBuildingPermit = () => {
   const location = useLocation();
   Digit.SessionStorage.set("OBPS_PT", "true");
   sessionStorage.removeItem("BPA_SUBMIT_APP");
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT", state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber }}} : {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(
+    "BUILDING_PERMIT",
+    state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
+  );
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
 
@@ -39,22 +44,83 @@ const NewBuildingPermit = () => {
       return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
     }
     redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
-
-  }
+  };
 
   const onSuccess = () => {
     //clearParams();
     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
   };
-  const createApplication = async () => {
+  const createApplication = async (data) => {
+    const response = await Digit.OBPSService.scrutinyDetails(data?.tenantId, {
+      edcrNumber: data?.edcrNumber,
+    });
+    console.log(response, "RESPO");
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
+  function makeSerializable(obj) {
+  const seen = new WeakSet();
+
+  function helper(value) {
+    if (value === null || typeof value === "undefined") return null;
+
+    // primitives
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return value;
+    }
+
+    // Dates
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    // Arrays
+    if (Array.isArray(value)) {
+      return value.map(helper);
+    }
+
+    // Objects
+    if (typeof value === "object") {
+      if (seen.has(value)) {
+        return undefined; // break circular refs
+      }
+      seen.add(value);
+
+      const plain = {};
+      for (const [k, v] of Object.entries(value)) {
+        // skip functions, DOM nodes, symbols
+        if (typeof v === "function" || typeof v === "symbol") continue;
+        if (v instanceof HTMLElement) continue;
+
+        plain[k] = helper(v);
+      }
+      return plain;
+    }
+
+    return undefined;
+  }
+
+  return helper(obj);
+}
+
+
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    if (isFromCreateApi) setParams(data);
-    else if(key=== "")
-    setParams({...data});
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...data }}});
+    console.log("KeyandDataforSession", key, data, skipStep, isFromCreateApi);
+    if (isFromCreateApi) {
+      try{
+      setParams(data);
+      } catch(e){
+        alert(e.message);
+      }
+    }
+    else if (key === "") {
+      try{
+        setParams({ ...data });
+      } catch(e){
+        alert(e.message);
+      }
+    }
+    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
     goNext(skipStep);
   };
   const handleSkip = () => {};
@@ -68,20 +134,67 @@ const NewBuildingPermit = () => {
   config.indexRoute = "docs-required";
 
   useEffect(() => {
-    if(sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
+    if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
       clearParams();
       sessionStorage.setItem("isPermitApplication", false);
     }
   }, []);
 
-  const CheckPage = Digit?.ComponentRegistryService?.getComponent('BPACheckPage') ;
-  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent('BPAAcknowledgement');
+  const CheckPage = Digit?.ComponentRegistryService?.getComponent("BPACheckPage");
+  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
+  const currentStepOBJ = newConfig1.find((routeObj) => routeObj.route === pathname.split("/").pop());
+  const currentStep = currentStepOBJ?.step ? parseInt(currentStepOBJ?.step) : window.location.href.includes("check") ? 4 : 0;
+console.log("currentStep", currentStep, currentStepOBJ)
+    const stepperConfig = [
+  {
+    head: "Applicant Details",
+    stepLabel: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
+    stepNumber: 1,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+  {
+    head: "NDC_DOCUMENTS_REQUIRED",
+    stepLabel: "COLONY_DETAILS",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+  {
+    head: "NDC_DOCUMENTS_REQUIRED",
+    stepLabel: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+  {
+    head: "Summary",
+    stepLabel: "BPA_STEPPER_SUMMARY_HEADER",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+];
 
   return (
+    <div style={{display: "flex", flexDirection: "row"}}>
+    {/* {!(window.location.href.includes("docs-required") || window.location.href.includes("acknowledgement")) && !isMobile &&<div>
+    <Stepper stepsList={stepperConfig} step={currentStep} />
+    </div>} */}
+    <div style={{flexGrow: 1}}>
     <Switch>
       {newConfig1.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+        // let enrichedInputs
+
+        // if(inputs?.length > 0){
+        //   enrichedInputs = inputs?.map(()=>{})
+        // }
         return (
           <Route path={`${getPath(match.path, match.params)}/${routeObj.route}`} key={index}>
             <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} />
@@ -98,6 +211,8 @@ const NewBuildingPermit = () => {
         <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />
       </Route>
     </Switch>
+    </div>
+    </div>
   );
 };
 

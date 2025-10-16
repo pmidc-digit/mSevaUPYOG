@@ -222,7 +222,7 @@ Questions=sorted
       onPageSizeChange,
       formState,
       totalCount: totalCount,
-      table: Questions,
+      table: sortedQuestions,
       noResultsMessage: "No Questions found",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
@@ -233,7 +233,7 @@ Questions=sorted
       setQuestionDetailsContent,
     },
   });
-  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: Questions, setShowToast });
+  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: sortedQuestions, setShowToast });
 
   //For the card displayed after clicking the delete question button:
   //On clicking delete button under "Delete Question" column in a table row, a toast with Yes & No buttons is opened:

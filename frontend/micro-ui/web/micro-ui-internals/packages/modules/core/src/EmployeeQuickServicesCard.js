@@ -23,65 +23,78 @@ import {
 import { update } from "lodash";
 const EmployeeQuickServicesCard = ({ moduleData }) => {
   const { t } = useTranslation();
-
-  console.log("Module Data: ", moduleData);
+  const userRoles = Digit.UserService.getUser().info.roles;
+  //console.log("userDetails",userRoles);
+  //console.log("Module Data: ", moduleData);
   //const [moduleData, setModuleData] = useState([])
-  const moduleAccessProps = (code) => {
-    console.log("Inside moduleAccessProps", Digit.Utils.ptAccess());
+  // const moduleAccessProps = (code) => {
+  //   console.log("Inside moduleAccessProps", Digit.Utils.ptAccess());
 
-    switch (code) {
-      case "PT":
-        return true;
+  //   switch (code) {
+  //     case "PT":
+  //       return true;
 
-      case "WS":
-        return true;
+  //     case "WS":
+  //       return true;
 
-      case "FSM":
-        return true;
+  //     case "FSM":
+  //       return true;
 
-      case "MCollect":
-        return true;
+  //     case "MCollect":
+  //       return true;
 
-      case "PGR":
-        return true;
+  //     case "PGR":
+  //       return true;
 
-      case "TL":
-        return true;
+  //     case "TL":
+  //       return true;
 
-      case "OBPS":
-        return true;
+  //     case "OBPS":
+  //       return true;
 
-      case "Bills":
-        return true;
+  //     case "Bills":
+  //       return true;
 
-      case "PTR":
-        return true;
+  //     case "PTR":
+  //       return true;
 
-      case "Engagement":
-        return true;
+  //     case "Engagement":
+  //       return true;
 
-      case "Swach":
-        return true;
+  //     case "Swach":
+  //       return true;
 
-      case "NDC":
-        return true;
+  //     case "NDC":
+  //       return true;
 
-      case "HRMS":
-        return true;
+  //     case "HRMS":
+  //       return true;
 
-      case "SV":
-        return true;
+  //     case "SV":
+  //       return true;
 
-      case "ADS":
-        return true;
+  //     case "ADS":
+  //       return true;
 
-      default:
-        return null;
-    }
-  };
+  //     case "CHB":
+  //       return true;
 
-  const updatedModuleData = quickServiceModules.modules.filter((item) => item.moduleCode === moduleData.code);
+  //     case "ASSET":
+  //       return true;
 
+  //     default:
+  //       return null;
+  //   }
+  // };
+
+  const updatedModuleData = quickServiceModules.modules
+    .filter((item) => item.moduleCode === moduleData.code)
+    .map((item) => ({
+      ...item,
+      Access: moduleData.access, // Merge the Access key
+    }));
+
+  console.log("updatedModuleData", updatedModuleData);
   const iconSelector = (code) => {
     switch (code) {
       case "PT":
@@ -92,11 +105,19 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <FSMIcon className="fill-path-primary-main" />;
       case "MCollect":
         return <MCollectIcon />;
+      case "ChallanGeneration":
+        return <MCollectIcon />;
+      case "RentAndLease":
+        return <MCollectIcon />;
       case "PGR":
+        return <PGRIcon />;
+      case "NDC":
         return <PGRIcon />;
       case "TL":
         return <TLIcon />;
       case "OBPS":
+        return <OBPSIcon />;
+      case "BPAStakeholder":
         return <OBPSIcon />;
       case "Bills":
         return <BillsIcon />;
@@ -104,20 +125,23 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <PTIcon />;
       case "Swach":
         return <PGRIcon />;
-      case "NDC":
-        return <TLIcon />;
       case "HRMS":
         return <WSICon />;
       case "SV":
         return <BillsIcon />;
       case "ADS":
         return <BillsIcon />;
+      case "CHB":
+        return <BillsIcon />;
+      case "ASSET":
+        return <BillsIcon />;
+      case "NOC":
+        return <BillsIcon />;
       default:
         return <PTIcon />;
     }
   };
-
-  return moduleAccessProps(moduleData.code) ? (
+  return userRoles.some((item) => item.code === updatedModuleData[0]?.Access) ? (
     <div
       className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content"
       style={{
@@ -160,10 +184,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
             padding: "2rem 2rem",
           }}
         >
-          {
-            // moduleDataForDashboard.moduleName
-            updatedModuleData[0]?.moduleCode
-          }
+          {updatedModuleData[0]?.moduleName}
         </div>
       </Link>
     </div>

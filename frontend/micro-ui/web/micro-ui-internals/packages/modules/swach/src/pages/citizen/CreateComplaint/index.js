@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { Dropdown, Loader } from "@mseva/digit-ui-react-components";
@@ -37,9 +37,6 @@ export const CreateComplaint = ({ parentUrl }) => {
     },
     t
   );
-  console.log("fetchedLocalities", fetchedLocalities);
-  console.log("getcities", getCities()[0]);
-  console.log("selectedCity+++", selectedCity);
   // const fetchedLocalities = useMemo(() => {
   //   return Digit.Hooks.useBoundaryLocalities(
   //     getCities()[0]?.code,
@@ -82,7 +79,7 @@ export const CreateComplaint = ({ parentUrl }) => {
             longitude: longitude ? longitude : 76.76504,
           },
           val: "",
-          place: "test",
+          place: "",
         };
         // console.log("newGeoLocation", newGeoLocation);
         setGeoLocation(newGeoLocation);
@@ -97,7 +94,6 @@ export const CreateComplaint = ({ parentUrl }) => {
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
 
   const localities = useMemo(() => {
-    console.log("fetchedLocalities_in use memo", fetchedLocalities);
     return fetchedLocalities;
   }, [selectedCity, fetchedLocalities]);
 
@@ -201,7 +197,6 @@ export const CreateComplaint = ({ parentUrl }) => {
 
     return;
   };
-  console.log("selectedCity", selectedCity);
   function selectLocality(locality) {
     setSelectedLocality(locality);
   }
@@ -296,25 +291,6 @@ export const CreateComplaint = ({ parentUrl }) => {
     const { value } = event.target;
     setDescription(value);
   };
-
-  // console.log(
-  //   "selectedCity",
-  //   selectedCity,
-  //   "selectedLocality",
-  //   selectedLocality,
-  //   "localities",
-  //   localities,
-  //   "pincode",
-  //   pincode,
-  //   "mobileNumber",
-  //   mobileNumber,
-  //   "fullName",
-  //   fullName,
-  //   "description",
-  //   description,
-  //   "geoLocation",
-  //   geoLocation
-  // );
   const isPincodeValid = () => !pincodeNotValid;
 
   const config = [
@@ -322,8 +298,13 @@ export const CreateComplaint = ({ parentUrl }) => {
       head: t("ES_CREATECOMPLAINT_PROVIDE_COMPLAINANT_DETAILS"),
       body: [
         {
-          label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
-          isMandatory: true,
+          // label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
+          label: (
+            <>
+              {t("ES_CREATECOMPLAINT_MOBILE_NUMBER")} <span className="mandatory-asterisk">*</span>
+            </>
+          ),
+          // isMandatory: true,
           type: "text",
           value: mobileNumber,
           onChange: handleMobileNumber,
@@ -334,13 +315,18 @@ export const CreateComplaint = ({ parentUrl }) => {
               required: true,
               pattern: /^[6-9]\d{9}$/,
             },
-            componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
+            componentInFront: <div className="employee-card-input employee-card-input--front numberdisplay">+91</div>,
             error: t("CORE_COMMON_MOBILE_ERROR"),
           },
         },
         {
-          label: t("ES_CREATECOMPLAINT_COMPLAINT_NAME"),
-          isMandatory: true,
+          // label: t("ES_CREATECOMPLAINT_COMPLAINT_NAME"),
+          // isMandatory: true,
+          label: (
+            <>
+              {t("ES_CREATECOMPLAINT_COMPLAINT_NAME")} <span className="mandatory-asterisk">*</span>
+            </>
+          ),
           type: "text",
           value: fullName,
           populators: {
@@ -380,14 +366,18 @@ export const CreateComplaint = ({ parentUrl }) => {
         //   populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
         // },
         {
-          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
-          isMandatory: true,
+          // label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
+          // isMandatory: true,
+          label: (
+            <>
+              {t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE")} <span className="mandatory-asterisk">*</span>
+            </>
+          ),
           type: "dropdown",
           menu: { ...subTypeMenu },
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
         // {
-
         //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
         //     isMandatory: false,
         //     type: "dropdown",
@@ -430,15 +420,25 @@ export const CreateComplaint = ({ parentUrl }) => {
         //   },
         // },
         {
-          label: t("CS_COMPLAINT_DETAILS_CITY"),
-          isMandatory: true,
+          // label: t("CS_COMPLAINT_DETAILS_CITY"),
+          // isMandatory: true,
+          label: (
+            <>
+              {t("CS_COMPLAINT_DETAILS_CITY")} <span className="mandatory-asterisk">*</span>
+            </>
+          ),
           type: "dropdown",
           populators: <Dropdown isMandatory selected={selectedCity} option={getCities()} id="city" select={selectCity} optionKey="i18nKey" t={t} />,
         },
         {
-          label: t("CS_CREATECOMPLAINT_MOHALLA"),
+          // label: t("CS_CREATECOMPLAINT_MOHALLA"),
+          // isMandatory: true,
+          label: (
+            <>
+              {t("CS_CREATECOMPLAINT_MOHALLA")} <span className="mandatory-asterisk">*</span>
+            </>
+          ),
           type: "dropdown",
-          isMandatory: true,
           dependency: selectedCity && localities ? true : false,
           populators: (
             <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} />
@@ -451,6 +451,18 @@ export const CreateComplaint = ({ parentUrl }) => {
             name: "landmark",
           },
         },
+
+        {
+          label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
+          type: "textarea",
+          onChange: handleDescription,
+          value: description,
+          populators: {
+            name: "description",
+            onChange: handleDescription,
+          },
+        },
+
         {
           label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
           type: "component",
@@ -458,7 +470,6 @@ export const CreateComplaint = ({ parentUrl }) => {
           withoutLabel: true,
           component: (props) => (
             <div>
-              <div></div>
               <SelectGeolocation
                 t={t}
                 onSelect={() => {
@@ -475,9 +486,11 @@ export const CreateComplaint = ({ parentUrl }) => {
                 }}
               />
               {geoLocation?.place?.length > 0 ? (
-                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}</h3>
+                <div className="font-Weigth-bold">
+                  {t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}
+                </div>
               ) : (
-                <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+                <div className="font-Weigth-bold">{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</div>
               )}
             </div>
           ),
@@ -488,7 +501,7 @@ export const CreateComplaint = ({ parentUrl }) => {
       head: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES"),
       body: [
         {
-          label: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES_TEXT"),
+          // label: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES_TEXT"),
           type: "component",
           key: "imageSelector",
           withoutLabel: true,
@@ -505,32 +518,15 @@ export const CreateComplaint = ({ parentUrl }) => {
         },
       ],
     },
-    {
-      head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
-      body: [
-        {
-          label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
-          type: "textarea",
-          onChange: handleDescription,
-          value: description,
-          populators: {
-            name: "description",
-            onChange: handleDescription,
-          },
-        },
-      ],
-    },
   ];
   useEffect(() => {
     if (propetyData !== "undefined" && propetyData !== null) {
       let data = JSON.parse(propetyData);
-      // console.log("stp 1", propetyData);
       setPropertyData(data);
       setPropertyId(data?.propertyId);
     }
   }, []);
   useEffect(() => {
-    // console.log("step 2", propetyData, property, typeof propetyData);
     if (property !== "undefined" && property !== null) {
       let data = property;
 
@@ -545,12 +541,14 @@ export const CreateComplaint = ({ parentUrl }) => {
     }
   }, [propertyId]);
   return (
-    <FormComposer
-      heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
-      config={config}
-      onSubmit={wrapperSubmit}
-      isDisabled={!canSubmit && !submitted && !imageUploaded?.current?.uploadedImages}
-      label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
-    />
+    <div className="swach">
+      <FormComposer
+        heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
+        config={config}
+        onSubmit={wrapperSubmit}
+        isDisabled={!canSubmit && !submitted && !imageUploaded?.current?.uploadedImages}
+        label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
+      />
+    </div>
   );
 };

@@ -21,6 +21,8 @@ import SelectRating from "./pages/citizen/Rating/SelectRating";
 import ResponseCitizen from "./pages/citizen/Response";
 import EditApplication from "./pages/employee/EditApplication";
 import { CreateComplaint as CitizenCreateComplaint } from "./pages/citizen/CreateComplaint/index";
+import SelectImages from "./pages/citizen/Create/Steps/SelectImages";
+import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation";
 
 
 export const PGRReducers = getRootReducer;
@@ -80,6 +82,8 @@ const componentsToRegister = {
   PGRSelectRating : SelectRating,
   PGRResponseCitzen : ResponseCitizen,
   PGREditApplication: EditApplication,
+  PGRSelectImages:SelectImages,
+  PGRSelectGeolocation: SelectGeolocation
 };
 
 export const initPGRComponents = () => {

@@ -8,22 +8,22 @@ const updateNOCAPI = async (data, tenantId) => {
   } catch (error) {
     throw new Error(error?.response?.data?.Errors[0].code);
   }
-}
+};
 
 const updateAPI = async (data, tenantId) => {
+  console.log(data, "LLL");
   try {
     const response = await OBPSService.update(data, tenantId);
     return response;
   } catch (error) {
     throw new Error(error?.response?.data?.Errors[0].code);
   }
-}
+};
 
 const useObpsAPI = (tenantId, type = false) => {
   if (type) {
     return useMutation((data) => updateNOCAPI(data, tenantId));
-  } 
-  else {
+  } else {
     return useMutation((data) => updateAPI(data, tenantId));
   }
 };

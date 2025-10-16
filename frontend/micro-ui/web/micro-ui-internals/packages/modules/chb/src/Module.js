@@ -1,4 +1,4 @@
-import { Header, CitizenHomeCard,CHBIcon } from "@mseva/digit-ui-react-components";
+import { Header, CitizenHomeCard } from "@mseva/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
@@ -6,14 +6,14 @@ import CHBSlotDetails from "./pageComponents/CHBSlotDetails";
 import CHBCreate from "./pages/citizen/Create";
 import CHBCitizenDetails from "./pageComponents/CHBCitizenDetails";
 import CHBBankDetails from "./pageComponents/CHBBankDetails";
-import CHBAddressDetails from "./pageComponents/CHBAddressDetails"
+import CHBAddressDetails from "./pageComponents/CHBAddressDetails";
 import CHBDocumentDetails from "./pageComponents/CHBDocumentDetails";
 import CHBSearchHall from "./pageComponents/CHBSearchHall";
 import CHBWFApplicationTimeline from "./pageComponents/CHBWFApplicationTimeline";
 import CitizenApp from "./pages/citizen";
 import CHBCheckPage from "./pages/citizen/Create/CheckPage";
 import CHBAcknowledgement from "./pages/citizen/Create/CHBAcknowledgement";
-import { CHBMyApplications } from "./pages/citizen/CHBMyApplications"; 
+import { CHBMyApplications } from "./pages/citizen/CHBMyApplications";
 import CHBApplicationDetails from "./pages/citizen/CHBApplicationDetails";
 import CHBWFCaption from "./pageComponents/CHBWFCaption";
 import CHBWFReason from "./pageComponents/CHBWFReason";
@@ -27,8 +27,20 @@ import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
 import CHBRequiredDoc from "./pageComponents/CHBRequiredDoc";
+import CHBStepperForm from "./pageComponents/CHBStepper/CHBStepperForm";
+import CHBStepFormOne from "./pageComponents/CHBStepper/CHBStepFormOne";
+import CHBStepFormTwo from "./pageComponents/CHBStepper/CHBStepFormTwo";
+import CHBStepFormThree from "./pageComponents/CHBStepper/CHBStepFormThree";
+import CHBStepFormFour from "./pageComponents/CHBStepper/CHBStepFormFour";
+import CHBCitizenDetailsNew from "./pageComponents/CHBCitizenDetailsNew";
+import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
+import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
+import CHBSummary from "./pageComponents/CHBSummary";
+import getRootReducer from "./redux/reducer";
+import { CHBIcon } from "./components/CHBIcon";
+import CHBResponseCitizen from "./pages/citizen/CHBResponseCitizen";
 
-
+export const CHBReducers = getRootReducer;
 
 const componentsToRegister = {
   CHBCheckPage,
@@ -50,8 +62,17 @@ const componentsToRegister = {
   CHBDocumentDetails,
   CHBSearchHall,
   CHBWFApplicationTimeline,
-  CHBRequiredDoc
- 
+  CHBRequiredDoc,
+  CHBStepperForm,
+  CHBStepFormOne,
+  CHBStepFormTwo,
+  CHBStepFormThree,
+  CHBStepFormFour,
+  CHBCitizenDetailsNew,
+  CHBCitizenSecond,
+  CHBSelectProofIdentity,
+  CHBSummary,
+  CHBResponseCitizen,
 };
 
 const addComponentsToRegistry = () => {
@@ -59,7 +80,6 @@ const addComponentsToRegistry = () => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };
-
 
 export const CHBModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -97,17 +117,15 @@ export const CHBLinks = ({ matchPath, userType }) => {
   }, []);
 
   const links = [
-    
     {
       link: `${matchPath}chb/bookHall`,
       i18nKey: t("CHB_SEARCH_HALL_HEADER"),
     },
-    
+
     {
       link: `${matchPath}/chb/myBookings`,
       i18nKey: t("CHB_MY_APPLICATIONS_HEADER"),
     },
-    
   ];
 
   return <CitizenHomeCard header={t("COMMUNITY_HALL_BOOKING")} links={links} Icon={() => <CHBIcon className="fill-path-primary-main" />} />;
@@ -115,7 +133,7 @@ export const CHBLinks = ({ matchPath, userType }) => {
 
 export const CHBComponents = {
   CHBCard,
-  CHBModule, 
+  CHBModule,
   CHBLinks,
   CHB_INBOX_FILTER: (props) => <InboxFilter {...props} />,
   CHBInboxTableConfig: TableConfig,

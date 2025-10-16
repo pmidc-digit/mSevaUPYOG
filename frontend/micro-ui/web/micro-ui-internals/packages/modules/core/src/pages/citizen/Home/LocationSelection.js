@@ -1,4 +1,4 @@
-import { BackButton, CardHeader, CardLabelError, PageBasedInput, SearchOnRadioButtons } from "@mseva/digit-ui-react-components";
+import { BackButton, CardHeader, CardLabelError, PageBasedInput, SearchOnRadioButtons , Dropdown } from "@mseva/digit-ui-react-components";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -48,6 +48,10 @@ const LocationSelection = () => {
       setShowError(true);
     }
   }
+  const cityOptions = cities?.map((city) => ({
+    ...city,
+    displayName: t(city.i18nKey),
+  }));
 
   return isLoading ? (
     <loader />
@@ -56,7 +60,15 @@ const LocationSelection = () => {
       <BackButton />
       <PageBasedInput texts={texts} onSubmit={onSubmit} className="location-selection-container">
         <CardHeader>{t("CS_COMMON_CHOOSE_LOCATION")}</CardHeader>
-        <SearchOnRadioButtons {...RadioButtonProps} placeholder={t("COMMON_TABLE_SEARCH")} />
+        {/* <SearchOnRadioButtons {...RadioButtonProps} placeholder={t("COMMON_TABLE_SEARCH")} /> */}
+        <Dropdown
+          option={cityOptions}
+          optionKey="displayName"
+          id="city"
+          selected={selectedCity}
+          select={selectCity}
+          placeholder={t("COMMON_TABLE_SEARCH")}
+        />
         {showError ? <CardLabelError>{t("CS_COMMON_LOCATION_SELECTION_ERROR")}</CardLabelError> : null}
       </PageBasedInput>
     </div>

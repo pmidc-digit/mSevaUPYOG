@@ -1,0 +1,349 @@
+import React, { useEffect, useState } from "react";
+import {
+  TextInput,
+  CardLabel,
+  MobileNumber,
+  ActionBar,
+  SubmitBar,
+  LabelFieldPair,
+  TextArea,
+  CardLabelError,
+  Toast,
+} from "@mseva/digit-ui-react-components";
+import { Controller, useForm } from "react-hook-form";
+import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
+import { useDispatch } from "react-redux";
+
+const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => {} }) => {
+  const dispatch = useDispatch();
+  const isEmployee = typeof window !== "undefined" && window.location?.pathname?.includes("/employee");
+  const formStorageKey = `ads_form_${isEmployee ? "employee" : "citizen"}`;
+  const userInfo = Digit.UserService.getUser();
+  const isCitizen = window.location.href.includes("citizen");
+  const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
+  const { mobileNumber, emailId, name } = userInfo?.info;
+  const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
+  const [showToast, setShowToast] = useState(null);
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+    trigger,
+  } = useForm({
+    mode: "onChange",
+    defaultValues: {
+      firstName: isCitizen ? firstName || "" : "",
+      lastName: isCitizen ? lastName || "" : "",
+      emailId: isCitizen ? emailId || "" : "",
+      mobileNumber: isCitizen ? mobileNumber || "" : "",
+      // SGST: "",
+      // selfDeclaration: false,
+      // clientName: "",
+      address: "",
+      pincode: "",
+    },
+  });
+
+  // Prefill from Redux state
+  if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
+
+  useEffect(() => {
+    if (currentStepData?.CreatedResponse) {
+      const created = currentStepData?.CreatedResponse;
+
+      // If address info is stored in CreatedResponse
+      if (created?.address) {
+        setValue("address", created.address.addressLine1 || "");
+        setValue("pincode", created.address.pincode || "");
+      }
+
+      // If applicant details also need to be prefilled
+      if (created?.applicantDetail) {
+        setValue("firstName", created.applicantDetail.applicantName?.split(" ")[0] || "");
+        setValue("lastName", created.applicantDetail.applicantName?.split(" ")[1] || "");
+        setValue("emailId", created.applicantDetail.applicantEmailId || "");
+        setValue("mobileNumber", created.applicantDetail.applicantMobileNo || "");
+      }
+    }
+  }, [currentStepData, setValue]);
+
+  useEffect(() => {
+    // 1) Prefer in-memory draft (survives SPA remounts, cleared on hard reload)
+    try {
+      const mem = window.__ADS_FORM_DRAFT?.[formStorageKey];
+      if (mem && typeof mem === "object") {
+        reset(mem);
+        console.info("[ADS] rehydrated form from in-memory draft");
+        return;
+      }
+    } catch (e) {
+      console.warn("[ADS] failed to rehydrate from in-memory", e);
+    }
+  }, []); // run once on mount
+
+  // Auto close toast after 2 seconds
+
+  const onSubmit = async (data) => {
+    const applicationDate = Date.now();
+    const cartDetails = currentStepData?.ads?.flatMap((item) =>
+      item.slots.map((slot) => ({
+        ...slot,
+        advertisementId: item.ad.id,
+        status: "BOOKED",
+      }))
+    );
+
+    const formData = {
+      tenantId,
+      applicationDate,
+      bookingStatus: "BOOKING_CREATED",
+      businessService: "ADV",
+      address: {
+        pincode: data?.pincode || "",
+        addressLine1: data?.address || "",
+      },
+      applicantDetail: {
+        applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+        applicantEmailId: data.emailId || "",
+        applicantMobileNo: data.mobileNumber || "",
+        applicantDetailId: "",
+      },
+      owners: [
+        {
+          name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+          mobileNumber: data.mobileNumber || "",
+          tenantId,
+          type: "CITIZEN",
+        },
+      ],
+      cartDetails,
+      documents: [],
+      workflow: {
+        action: "INITIATE",
+        comments: "Initial application submitted",
+        status: "INITIATED",
+        nextState: "",
+      },
+    };
+
+    // ✅ Check if booking already exists in Redux
+    const existingBookingNo = currentStepData?.CreatedResponse?.bookingNo;
+    if (existingBookingNo) {
+      // just move forward with existing data, no API call
+      goNext(formData);
+      return;
+    }
+
+    // Otherwise, hit create API
+    try {
+      const payload = { bookingApplication: formData };
+      const response = await Digit.ADSServices.create(payload, tenantId);
+
+      const status = response?.ResponseInfo?.status;
+      const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
+
+      if (isSuccess) {
+        const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
+
+        dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
+        goNext(formData);
+      } else {
+        dispatch(
+          UPDATE_ADSNewApplication_FORM("CreatedResponse", {
+            draft: true,
+            bookingApplication: formData,
+          })
+        );
+        setShowToast({
+          key: true,
+          label: t("CORE_SOMETHING_WENT_WRONG"),
+        });
+      }
+    } catch (err) {
+      setShowToast({
+        key: true,
+        label: t("CORE_SOMETHING_WENT_WRONG"),
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  const errorStyle = { marginTop: "-18px", color: "red" };
+  const mandatoryStyle = { color: "red" };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div style={{ maxWidth: !isCitizen && "500px" }}>
+        <CardLabel>
+          {t("NDC_FIRST_NAME")}
+          <span style={mandatoryStyle}>*</span>{" "}
+        </CardLabel>
+        <Controller
+          control={control}
+          name="firstName"
+          rules={{
+            required: t("PTR_FIRST_NAME_REQUIRED"),
+            pattern: {
+              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
+              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
+            },
+            minLength: { value: 2, message: "Minimum 2 characters" },
+            maxLength: { value: 100, message: "Maximum 100 characters" },
+          }}
+          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+        />
+        {errors.firstName && <CardLabelError style={errorStyle}>{errors.firstName.message}</CardLabelError>}
+
+        <CardLabel>
+          {t("NDC_LAST_NAME")}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="lastName"
+          rules={{
+            required: t("PTR_LAST_NAME_REQUIRED"),
+            pattern: {
+              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
+              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
+            },
+            minLength: { value: 2, message: "Minimum 2 characters" },
+            maxLength: { value: 100, message: "Maximum 100 characters" },
+          }}
+          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+        />
+        {errors.lastName && <CardLabelError style={errorStyle}>{errors.lastName.message}</CardLabelError>}
+
+        <CardLabel>
+          {t("NOC_APPLICANT_EMAIL_LABEL")}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="emailId"
+          rules={{
+            required: t("PTR_EMAIL_REQUIRED"),
+            pattern: { value: /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/, message: "Enter a valid email" },
+          }}
+          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+        />
+        {errors.emailId && <CardLabelError style={errorStyle}>{errors.emailId.message}</CardLabelError>}
+
+        <CardLabel>
+          {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="mobileNumber"
+          rules={{
+            required: t("PTR_MOBILE_REQUIRED"),
+            minLength: { value: 10, message: "Enter at least 10 digits" },
+            pattern: { value: /^[6-9]\d{9}$/, message: "Must start with 9, 8, 7, or 6 and be 10 digits long" },
+          }}
+          render={({ value, onChange, onBlur }) => <MobileNumber value={value} onChange={onChange} onBlur={onBlur} t={t} />}
+        />
+        {errors.mobileNumber && <CardLabelError style={errorStyle}>{errors.mobileNumber.message}</CardLabelError>}
+
+        {/* Address */}
+        {/* <LabelFieldPair> */}
+        <CardLabel className="card-label-smaller">
+          {`${t("PT_COMMON_COL_ADDRESS")}`}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="address"
+            rules={{
+              required: t("NDC_MESSAGE_ADDRESS"),
+              pattern: {
+                value: /^[A-Za-z0-9\s.,'/-]+$/,
+                message: t("PTR_ADDRESS_INVALID"),
+              },
+              maxLength: { value: 500, message: "Maximum 500 characters" },
+              minLength: { value: 5, message: "Minimum 5 characters" },
+            }}
+            render={({ value, onChange, onBlur }) => (
+              <TextArea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("address");
+                }}
+                t={t}
+              />
+            )}
+          />
+        </div>
+        {/* </LabelFieldPair> */}
+        {errors?.address && <CardLabelError style={errorStyle}>{errors?.address?.message}</CardLabelError>}
+
+        {/* Pincode */}
+        {/* <LabelFieldPair> */}
+        <CardLabel className="card-label-smaller">
+          {`${t("CORE_COMMON_PINCODE")}`}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="pincode"
+            rules={{
+              required: t("PTR_PINCODE_REQUIRED"),
+              pattern: {
+                value: /^[1-9][0-9]{5}$/,
+                message: t("PTR_PINCODE_INVALID"),
+              },
+              minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
+              maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
+            }}
+            render={({ value, onChange, onBlur }) => (
+              <TextInput
+                value={value}
+                onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("pincode");
+                }}
+                t={t}
+                maxLength={6}
+              />
+            )}
+          />
+        </div>
+        {/* </LabelFieldPair> */}
+        {errors.pincode && <CardLabelError style={errorStyle}>{errors?.pincode?.message}</CardLabelError>}
+      </div>
+
+      <ActionBar>
+        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+
+        <SubmitBar label="Next" submit="submit" />
+      </ActionBar>
+
+      {showToast && (
+        <Toast
+          error={showToast.key}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          isDleteBtn={true}
+        />
+      )}
+    </form>
+  );
+};
+
+export default ADSCitizenDetailsNew;

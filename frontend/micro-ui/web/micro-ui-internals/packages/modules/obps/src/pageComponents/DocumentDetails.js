@@ -1,6 +1,6 @@
-////////////////////////////////////////////////////////////
 /** 
- * @author - Shivank - NIUA 
+ * @author - Shivank Shukla  - NIUA
+  
  * Addition of feature of fetching Latitude and Longitude from uploaded photo 
 
     - i have added a function (extractGeoLocation)  to extract latitude and longitude from an uploaded image file.
@@ -19,470 +19,396 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    CardLabel,
-    Dropdown,
-    UploadFile,
-    Toast,
-    Loader,
-    FormStep,
-    MultiUploadWrapper,
-    CitizenInfoLabel,
-    SubmitBar,
-    SearchIcon
+  CardLabel,
+  Dropdown,
+  UploadFile,
+  Toast,
+  Loader,
+  FormStep,
+  MultiUploadWrapper,
+  CitizenInfoLabel,
+  LabelFieldPair,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
 import { stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
-import EXIF from 'exif-js';
+import EXIF from "exif-js";
 
-const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onSubmit }) => {
-    const stateId = Digit.ULBService.getStateId();
-    const tenantId = Digit.ULBService.getCurrentTenantId();
-    const [documents, setDocuments] = useState(formData?.documents?.documents|| formData?.documents ||[]);
-    const [error, setError] = useState(null);
-    const [enableSubmit, setEnableSubmit] = useState(true)
-    const [checkRequiredFields, setCheckRequiredFields] = useState(false);
-    const checkingFlow = formData?.uiFlow?.flow;
+const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, currentStepData, onGoBack }) => {
+  const stateId = Digit.ULBService.getStateId();
+  const [documents, setDocuments] = useState(currentStepData?.createdResponse?.documents ?? []);
+  const [error, setError] = useState(null);
+  const [enableSubmit, setEnableSubmit] = useState(true);
+  const [checkRequiredFields, setCheckRequiredFields] = useState(false);
+  const checkingFlow = formData?.uiFlow?.flow;
+  const [showToast, setShowToast] = useState(null);
 
-    const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  const isMobile = Digit.Utils.browser.isMobile()
+  const [apiLoading, setApiLoading] = useState(false);
+  const tenantId = localStorage.getItem("CITIZEN.CITY")
+
+  const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
+  // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
+  const { data: bpaTaxDocuments, isLoading } = Digit.Hooks.obps.useBPATaxDocuments(
+    stateId,
+    {
+      status: "INPROGRESS",
+      RiskType: "LOW",
+      ServiceType: "NEW_CONSTRUCTION",
+      applicationType: "BUILDING_PLAN_SCRUTINY",
+    },
+    beforeUploadDocuments || []
+  );
+
+  console.log(formData, "FDFDFDF");
+  console.log(bpaTaxDocuments, "bpabpa");
+
+  // useEffect(() => {
+  //   console.log("documentInScrutiny", formData, documents);
+  // }, [documents]);
+
+
+  // const handleSubmit = () => {
+  //   let document = formData.documents.documents;
+  //   // let documentStep;
+
+  //   console.log("documentInScrutiny", formData, documents);
+  //   let RealignedDocument = [];
+  //   bpaTaxDocuments &&
+  //     bpaTaxDocuments.map((ob) => {
+  //       documents &&
+  //         documents
+  //           // .filter((x) => ob.code === stringReplaceAll(x?.additionalDetails.category, "_", "."))
+  //           .filter((x) => ob.code === stringReplaceAll(x?.documentType || x?.additionalDetails?.category || "", "_", "."))
+
+  //           .map((doc) => {
+  //             RealignedDocument.push(doc);
+  //           });
+  //     });
+  //   // documentStep = [...document, {}];
+  //   const documentStep = {
+  //     documents: RealignedDocument.length > 0 ? RealignedDocument : documents,
+  //   };
+  //   console.log("DocumentInCall", documentStep);
+  //   // onSelect(config.key, documentStep);
+  // };
+
+  const handleSubmit = async () => {
+    // console.log("documentInScrutiny", formData, documents);
+    const mandatoryList = bpaTaxDocuments?.filter((document) => ((document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE") && document?.required))
+    const updatedDocuments = documents?.map((item) => {
+      const id = currentStepData?.createdResponse?.documents?.find((doc) => doc?.documentType === item?.documentType)?.id || null;
+      return {
+        ...item,
+        id
+      }
+    })
+
+    const missingDocuments = mandatoryList?.filter(
+      (mandatoryDoc) =>
+        !updatedDocuments?.some(
+          (doc) =>
+            doc?.documentType === mandatoryDoc?.code // must exist with id
+        )
+    );
+    // console.log("documentInScrutiny", mandatoryList, missingDocuments, updatedDocuments);
+
+
+    if(missingDocuments?.length > 0){
+      setShowToast({
+        key: "error",
+        label: `${t("Missing Fields")}: ${t(missingDocuments?.[0]?.code)}`
+      })
+      return;
+    }
     
+      const userInfo = Digit.UserService.getUser()
+      const accountId = userInfo?.info?.uuid
+      const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
 
-    const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
-    const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
-
-    const handleSaveAsDraft = () => {
-        let updatedFormData = { ...formData };
-        updatedFormData.documents = { ...formData.documents, documents };
-    
-        // Construct the BPA object using only the required fields
-        let BPA = {
-            id: updatedFormData.id,
-            applicationNo: updatedFormData.applicationNo,
-            approvalNo: updatedFormData.approvalNo,
-            accountId: updatedFormData.accountId,
-            edcrNumber: updatedFormData.edcrNumber,
-            riskType: updatedFormData.riskType,
-            businessService: updatedFormData.businessService,
-            landId: updatedFormData.landId,
-            tenantId: updatedFormData.tenantId,
-            approvalDate: updatedFormData.approvalDate,
-            applicationDate: updatedFormData.applicationDate,
-            status: updatedFormData.status,
-            documents: updatedFormData.documents.documents, // Include only necessary document details
-            landInfo: {
-                ...updatedFormData.landInfo,
-                address: {
-                    ...updatedFormData.landInfo?.address,
-                    city: updatedFormData.landInfo?.address?.city?.code, // Ensure city is a string
-                },
-                owners: updatedFormData?.landInfo?.owners.map(owner => ({
-                    ...owner,
-                    gender: owner.gender?.code // Ensure gender is a string
-                })),
-                unit: updatedFormData?.landInfo?.unit?.map(unit => ({
-                    id: unit?.id,
-                    floorNo: unit?.floorNo,
-                    unitType: unit?.unitType,
-                    blockIndex: unit?.blockIndex,
-                    usageCategory: unit?.usageCategory,
-                    occupancyType: unit?.occupancyType // Only necessary fields
-                })),
-            },
-        
-            assignee: updatedFormData.assignee || [], // Assuming this can be an empty array
-            workflow: {
-                action: "SAVE_AS_DRAFT", // Always set action as SAVE_AS_DRAFT
-                assignes: null,
-                comments: null,
-                varificationDocuments: null
-            },
-            auditDetails: updatedFormData.auditDetails,
-            additionalDetails: updatedFormData.additionalDetails,
-            applicationType: "BUILDING_PLAN_SCRUTINY",
-            serviceType: "NEW_CONSTRUCTION",
-            occupancyType: "A"
-        };
-        
-        // Call the update service to save as draft
-        Digit.OBPSService.update({ BPA }, tenantId)
-            .then(response => {
-                console.log("Draft saved successfully", response);
-            })
-            .catch(error => {
-                console.error("Error saving draft", error);
-            });
-        
-    };
-    
-    const handleSubmit = () => {
-        let document = formData.documents;
-        let documentStep;
-        let RealignedDocument = [];
-        bpaTaxDocuments && bpaTaxDocuments?.map((ob) => {
-            documents && documents.filter(x => ob.code === stringReplaceAll(x?.additionalDetails.category,"_",".")).map((doc) => {
-                RealignedDocument.push(doc);
-            })
-        })
-        documentStep = { ...document, documents: RealignedDocument };
-        onSelect(config.key, documentStep);
-     };
-    const onSkip = () => onSelect();
-    function onAdd() { }
-    useEffect(() => {
-        const allRequiredDocumentsCode = bpaTaxDocuments.filter( e => e.required).map(e => e.code)
-
-        const reqDocumentEntered = allRequiredDocumentsCode.filter(reqCode => documents.reduce((acc,doc) => {
-            if (reqCode == `${doc?.documentType?.split('.')?.[0]}.${doc?.documentType?.split('.')?.[1]}`) {
-                return true
-            }
-            else{
-                return acc
-            }
-        }, false))
-        if ((reqDocumentEntered.length == allRequiredDocumentsCode.length ) && documents.length > 0) {
-            setEnableSubmit(false);
-        }else {
-            setEnableSubmit(true);
+          try{
+        setApiLoading(true);
+        const result = await Digit.OBPSService.update({ BPA: {
+          ...currentStepData?.createdResponse,
+          documents: [...updatedDocuments],
+          workflow: {
+            action: workflowAction,
+            assignes: [accountId]
+          }
+        } }, tenantId)
+        if(result?.ResponseInfo?.status === "successful"){
+          setApiLoading(false);
+          onSelect("");
+        }else{
+          alert(t("BPA_CREATE_APPLICATION_FAILED"));
+          setApiLoading(false);
         }
-    }, [documents, checkRequiredFields])
+        console.log("APIResponse", result);
+      }catch(e){
+        console.log("error", e);
+        alert(t("BPA_CREATE_APPLICATION_FAILED"));
+        setApiLoading(false);
+      }
+  };
 
-    return (
-        <div>
-            <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow= {checkingFlow === "OCBPA" ? "OCBPA" : ""}/>
-            {!isLoading ?
-                <FormStep
-                    t={t}
-                    config={config}
-                    onSelect={handleSubmit}
-                    onSkip={onSkip}
-                    // isDisabled={window.location.href.includes("editApplication")||window.location.href.includes("sendbacktocitizen")?false:enableSubmit}
-                    isDisabled={(window.location.href.includes("editApplication") || window.location.href.includes("sendbacktocitizen") ? false : enableSubmit) || isNextButtonDisabled}
-                    onAdd={onAdd}
+  const onSkip = () => onSelect();
+  function onAdd() { }
+  useEffect(() => {
+    const allRequiredDocumentsCode = bpaTaxDocuments.filter((e) => e.required).map((e) => e.code);
+
+    const reqDocumentEntered = allRequiredDocumentsCode.filter((reqCode) =>
+      documents.reduce((acc, doc) => {
+        if (reqCode == `${doc?.documentType?.split(".")?.[0]}.${doc?.documentType?.split(".")?.[1]}`) {
+          return true;
+        } else {
+          return acc;
+        }
+      }, false)
+    );
+    if (reqDocumentEntered.length == allRequiredDocumentsCode.length && documents.length > 0) {
+      setEnableSubmit(false);
+    } else {
+      setEnableSubmit(true);
+    }
+  }, [documents, checkRequiredFields]);
+
+  if(apiLoading) return (<Loader />)
+
+  return (
+    <div>
+      {(window.location.href.includes("/bpa/building_plan_scrutiny/new_construction") ||
+        window.location.href.includes("/ocbpa/building_oc_plan_scrutiny/new_construction")) &&
+        formData?.applicationNo ? (
+        <CitizenInfoLabel
+          info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+          text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.applicationNo} ${t("BPA_DOCS_INFORMATION")}`}
+          className={"info-banner-wrap-citizen-override"}
+        />
+      ) : (
+        ""
+      )}
+      {/* {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
+      {!isLoading ? (
+        <FormStep
+          t={t}
+          config={{...config, texts:{header: "BPA_DOCUMENT_DETAILS_LABEL"},}}
+          onSelect={handleSubmit}
+          onSkip={onSkip}
+          // isDisabled={window.location.href.includes("editApplication")||window.location.href.includes("sendbacktocitizen")?false:enableSubmit}
+          // isDisabled={(window.location.href.includes("editApplication") || window.location.href.includes("sendbacktocitizen") ? false : enableSubmit) || isNextButtonDisabled}
+          onAdd={onAdd}
+        >
+          {/* {bpaTaxDocuments?.map((document, index) => { */}
+          {bpaTaxDocuments
+            ?.filter((document) => document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE")
+            .map((document, index) => {
+              return (
+                <div
+                  style={{
+                    background: "#FAFAFA",
+                    border: "1px solid #D6D5D4",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    maxWidth: "600px",
+                    minWidth: "280px",
+                    marginBottom: "15px",
+                    paddingTop: "15px",
+                  }}
                 >
-                    {/* {bpaTaxDocuments?.map((document, index) => { */}
-                    {bpaTaxDocuments?.filter(document => document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING").map((document, index) => {
-                        return (
-                            <div style={{ background: "#FAFAFA", border: "1px solid #D6D5D4", padding: "8px", borderRadius: "4px", maxWidth:"600px", minWidth: "280px", marginBottom:"15px", paddingTop:"15px" }}>
-                            <SelectDocument
-                                key={index}
-                                document={document}
-                                t={t}
-                                error={error}
-                                setError={setError}
-                                setDocuments={setDocuments}
-                                documents={documents}
-                                setCheckRequiredFields={setCheckRequiredFields}
-                                formData={formData}
-                                beforeUploadDocuments={beforeUploadDocuments || []}
-                                isNextButtonDisabled={isNextButtonDisabled}
-                                setIsNextButtonDisabled={setIsNextButtonDisabled}
-                            />
-                            </div>
-                        );
-                    })}
-                    {error && <Toast label={error} onClose={() => setError(null)} error />}
-                    {/*Adding Save As Draft Button */}
-                    <SubmitBar 
-                    label={t("BPA_SAVE_AS_DRAFT")}
-                    onSubmit={handleSaveAsDraft}
-                    disabled={enableSubmit}
-                    />
-                <br></br>
-                </FormStep>: <Loader />}
-                {(window.location.href.includes("/bpa/building_plan_scrutiny/new_construction") || window.location.href.includes("/ocbpa/building_oc_plan_scrutiny/new_construction")) && formData?.applicationNo ? <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.applicationNo} ${t("BPA_DOCS_INFORMATION")}`} className={"info-banner-wrap-citizen-override"} /> : ""}
-        </div>
-    );
-}
+                  <SelectDocument
+                    key={index}
+                    document={document}
+                    t={t}
+                    error={error}
+                    setError={setError}
+                    setDocuments={setDocuments}
+                    documents={documents}
+                    setCheckRequiredFields={setCheckRequiredFields}
+                    formData={formData}
+                    beforeUploadDocuments={beforeUploadDocuments || []}
+                    isNextButtonDisabled={isNextButtonDisabled}
+                    setIsNextButtonDisabled={setIsNextButtonDisabled}
+                  />
+                </div>
+              );
+            })}
+          {error && <Toast label={error} onClose={() => setError(null)} error />}
+        </FormStep>
+      ) : (
+        <Loader />
+      )}
 
-const SelectDocument = React.memo(function MyComponent({
-    t,
-    document: doc,
-    setDocuments,
-    error,
-    setError,
-    documents,
-    setCheckRequiredFields,
-    formData,
-    beforeUploadDocuments,
-    setIsNextButtonDisabled // Add this line
+      <ActionBar>
+        <SubmitBar
+          label="Back"
+          style={{
+            border: "1px solid",
+            background: "transparent",
+            color: "#2947a3",
+            marginRight: "5px",
+          }}
+          onSubmit={onGoBack}
+        />
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading}/>}
+      </ActionBar>
+      {showToast && (
+              <Toast
+                error={showToast.key}
+                label={t(showToast.label)}
+                onClose={() => {
+                  setShowToast(null);
+                }}
+                isDleteBtn={"true"}
+              />
+      )}
+    </div>
+  );
+};
+
+
+
+function SelectDocument({
+  t,
+  document: doc,
+  setDocuments,
+  error,
+  setError,
+  documents,
+  action,
+  formData,
+  setFormError,
+  clearFormErrors,
+  config,
+  formState,
 }) {
-    const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0] || beforeUploadDocuments?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-    const tenantId = Digit.ULBService.getStateId(); //Digit.ULBService.getCurrentTenantId();
-    const [selectedDocument, setSelectedDocument] = useState(
-        filteredDocument
-            ? { ...filteredDocument, active: true, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType }
-            : doc?.dropdownData?.length > 0
-                ? doc?.dropdownData[0]
-                : {}
-    );
-    const [file, setFile] = useState(null);
-    const [uploadedFile, setUploadedFile] = useState(() => documents?.filter((item) => item?.documentType?.includes(doc?.code)).map( e => ({fileStoreId: e?.fileStoreId, fileName: e?.fileName || ""}) ) || null);
-    const [newArray, setnewArray ] = useState([]);
-    const [uploadedfileArray, setuploadedfileArray] = useState([]);
-    const [fileArray, setfileArray] = useState([] || formData?.documents?.documents.filter((ob) => ob.documentType === selectedDocument.code) );
-    
-    const [latitude, setLatitude] = useState(null);
-    const [longitude, setLongitude] = useState(null);
-    function extractGeoLocation(file) {
-        return new Promise((resolve) => {
-            EXIF.getData(file, function() {
-                const lat = EXIF.getTag(this, 'GPSLatitude');
-                const lon = EXIF.getTag(this, 'GPSLongitude');
-                if (lat && lon) {
-                    // Convert GPS coordinates to decimal format
-                    const latDecimal = convertToDecimal(lat);
-                    const lonDecimal = convertToDecimal(lon);
-                    resolve({ latitude: latDecimal, longitude: lonDecimal });
-                } else {
-                    resolve({ latitude: null, longitude: null });
-                    if (doc?.code === "SITEPHOTOGRAPH.ONE")
-                        {
-                        {alert("Please Upload a Photo with Location Details")}
-                    }
-                    else{null}
-                }
-            });
-        });
+  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+
+  const handleSelectDocument = (value) => setSelectedDocument(value);
+
+  function selectfile(e) {
+    setFile(e.target.files[0]);
+  }
+  const { dropdownData } = doc;
+  // const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails;
+  var dropDownData = dropdownData;
+  let hideInput = false;
+
+  const [isHidden, setHidden] = useState(hideInput);
+
+  const addError = () => {
+    let type = formState.errors?.[config.key]?.type;
+    if (!Array.isArray(type)) type = [];
+    if (!type.includes(doc.code)) {
+      type.push(doc.code);
+      setFormError(config.key, { type });
     }
-    function convertToDecimal(coordinate) {
-        const degrees = coordinate[0];
-        const minutes = coordinate[1];
-        const seconds = coordinate[2];
-        return degrees + minutes / 60 + seconds / 3600;
+  };
+
+  const removeError = () => {
+    let type = formState.errors?.[config.key]?.type;
+    if (!Array.isArray(type)) type = [];
+    if (type.includes(doc?.code)) {
+      type = type.filter((e) => e != doc?.code);
+      if (!type.length) {
+        clearFormErrors(config.key);
+      } else {
+        setFormError(config.key, { type });
+      }
     }
-    const handleSelectDocument = (value) => {
-        if(filteredDocument?.documentType){
-            filteredDocument.documentType=value?.code;
-            let currDocs=documents?.filter((item) => item?.documentType?.includes(doc?.code));
-            currDocs.map(doc=>doc.documentType=value?.code);
-            let newDoc=[ ...documents?.filter((item) => !item?.documentType?.includes(doc?.code)),...currDocs]
-            setDocuments(newDoc);
+  };
+
+  useEffect(() => {
+    if (uploadedFile) {
+      setDocuments((prev) => {
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+
+        if (uploadedFile?.length === 0 || uploadedFile === null) {
+          return filteredDocumentsByDocumentType;
         }
-        setSelectedDocument(value);
-    };
-    function selectfile(e, key) {
-        e && setFile(e.file);
-        e && setfileArray([...fileArray,e.file]);
+
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        return [
+          ...filteredDocumentsByFileStoreId,
+          {
+            documentType: doc?.code,
+            fileStoreId: uploadedFile,
+            documentUid: uploadedFile,
+          },
+        ];
+      });
+    } else if (uploadedFile === null) {
+      setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
     }
+    // if (!isHidden) {
+    //   if (!uploadedFile || !doc?.code) {
+    //     addError();
+    //   } else if (uploadedFile && doc?.code) {
+    //     removeError();
+    //   }
+    // } else if (isHidden) {
+    //   removeError();
+    // }
+  }, [uploadedFile, isHidden]);
 
-    function getData(e) {
-        let key = selectedDocument.code;
-        let data, newArr;
-        if (e?.length > 0) {
-            // Extract geo location from the first file
-            extractGeoLocation(e[0][1].file)
-                .then(location => {
-                    console.log('Latitude:', location.latitude);
-                    console.log('Longitude:', location.longitude);
-                    setLatitude(location.latitude);
-                    setLongitude(location.longitude);
-                    {if (doc?.code === "SITEPHOTOGRAPH.ONE"){
-                        if(location.latitude !==null && location.longitude !==null){
-                        sessionStorage.setItem("Latitude",location.latitude)
-                        sessionStorage.setItem("Longitude",location.longitude)
-                        }
-                        else{
-                            sessionStorage.removeItem("Latitude");
-                            sessionStorage.removeItem("Longitude");
-                        }
-                    }}
-                    
-
-                    // Continue with your existing codezz
-                    data = Object.fromEntries(e);
-                    newArr = Object.values(data);
-                    newArr = formData?.documents?.documents?.filter((ob) => ob.documentType === selectedDocument.code);
-                    setnewArray(newArr);
-                    // const filteredDocumentsByFileStoreId = documents?.filter((item) => item?.fileStoreId !== uploadedFile.fileStoreId) || []
-                    let newfiles = [];
-                    e?.map((doc, index) => {
-                        
-                        newfiles.push({
-                            documentType: selectedDocument?.code,
-                            additionalDetails:{category:selectedDocument?.code.split(".").slice(0,2).join('_'),
-                            latitude: location.latitude,
-                            longitude: location.longitude,
-                            fileName: doc?.[0] || "",
-                        },
-                            fileStoreId: doc?.[1]?.fileStoreId?.fileStoreId,
-                            documentUid: doc?.[1].fileStoreId?.fileStoreId,
-                            fileName: doc?.[0] || "",
-                            id: documents ? documents.find(x => x.documentType === selectedDocument?.code)?.id : undefined,
-                        })
-                    })
-                    const __documents = [
-                        ...documents.filter(e => e.documentType !== key),
-                        ...newfiles,
-                    ]
-                    setDocuments(__documents);
-    
-                    newArr?.map((ob) => {
-                        if (!ob?.file) {
-                            ob.file = {}
-                        }
-                        ob.file.documentType = key;
-                        selectfile(ob, key);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error extracting geo location:', error);
-                    // Handle error if needed
-                });
-    
-            // Rest of your code...
-        } else if (e?.length == 0) {
-            const __documents = [
-                ...documents.filter(e => e.documentType !== key),
-            ]
-            setDocuments(__documents);
+  useEffect(() => {
+    (async () => {
+      setError(null);
+      if (file) {
+        if (file.size >= 5242880) {
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+          if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
+        } else {
+          try {
+            setUploadedFile(null);
+            const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+            } else {
+              setError(t("CS_FILE_UPLOAD_ERROR"));
+            }
+          } catch (err) {
+            setError(t("CS_FILE_UPLOAD_ERROR"));
+          }
         }
-    }
+      }
+    })();
+  }, [file]);
 
 
 
-    function setcodeafterupload(){
-        if (selectedDocument?.code) {
-            setDocuments((prev) => {
-                //const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-                if (uploadedFile === null || uploadedFile?.fileStoreId === undefined || uploadedFile?.fileStoreId === null) {
-                    return prev;
-                }
-
-                const filteredDocumentsByFileStoreId = prev?.filter((item) => item?.fileStoreId !== uploadedFile.fileStoreId);
-                let newfiles = [];
-                uploadedfileArray && uploadedfileArray.map((doc, index) => {
-                    newfiles.push({
-                        documentType: selectedDocument?.code,
-                            fileStoreId: doc.fileStoreId,
-                            additionalDetails:{category:selectedDocument?.code.split(".").slice(0,2).join('_'),
-                            latitude: latitude,
-                            longitude: longitude,
-                            fileName: fileArray[index]?.name || "",
-                        },
-                            documentUid: doc.fileStoreId,
-                            fileName: fileArray[index]?.name || "",
-                            id:documents? documents.find(x => x.documentType === selectedDocument?.code)?.id:undefined,
-                    })
-                })
-                
-                return [
-                    ...filteredDocumentsByFileStoreId,
-                    ...newfiles,
-                ];
-            });
-            setuploadedfileArray([]);
-        }
-    }
-
-    useEffect(() => {
-        uploadedfileArray.length>0 && setcodeafterupload();
-
-        if (selectedDocument?.code) {
-            setDocuments((prev) => {
-                //const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-                if (uploadedFile === null|| uploadedFile?.fileStoreId === undefined || uploadedFile?.fileStoreId === null) {
-                    if (prev?.length > 0) {
-                        prev?.forEach(data => {
-                            const normalDocumentType = `${data?.documentType?.split('.')[0]}.${data?.documentType?.split('.')[1]}`;
-                            const selectedDocumentType = `${selectedDocument?.code?.split('.')[0]}.${selectedDocument?.code?.split('.')[1]}`;
-                            if (normalDocumentType == selectedDocumentType) {
-                                if (data?.documentType) data.documentType = selectedDocument?.code;
-                                if (data?.file?.documentType) data.file.documentType = selectedDocument?.code;
-                            }
-                        });
-                    }
-                    return prev;
-                }
-                const filteredDocumentsByFileStoreId = prev?.filter((item) => item?.fileStoreId !== uploadedFile.fileStoreId);
-                return [
-                    ...filteredDocumentsByFileStoreId,
-                    {
-                        documentType: selectedDocument?.code,
-                        fileStoreId: uploadedFile.fileStoreId,
-                        documentUid: uploadedFile.fileStoreId,
-                        fileName: file?.name ||uploadedFile.fileName || "document",
-                        id:documents? documents.find(x => x.documentType === selectedDocument?.code)?.id:undefined,
-                    },
-                ];
-            });
-        }
-    }, [uploadedFile, selectedDocument]);
-
-    useEffect(() => {
-        if(!selectedDocument.code && uploadedFile!== null)
-        setuploadedfileArray([...uploadedfileArray,uploadedFile])
-    },[uploadedFile]);
-
-    const allowedFileTypes = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
-
-    const uploadedFilesPreFill = useMemo(() => {
-        if (!formData) return [];
-        const docs = formData.documents?.documents || formData.documents || [];
-        const selectedUplDocs = docs
-            .filter(ob => ob.documentType === selectedDocument.code)
-            .map(e => [
-                e.additionalDetails.fileName,
-                {
-                    file: { name: e.additionalDetails.fileName, type: e.documentType },
-                    fileStoreId: { fileStoreId: e.fileStoreId, tenantId },
-                },
-            ]);
-        return selectedUplDocs;
-    }, [formData, selectedDocument.code, tenantId]);
-    
-    const sitePhotographDoc = documents.filter(doc => doc.documentType === "SITEPHOTOGRAPH.ONE.ONE");
-
-    return (
-        <div /* style={{ marginBottom: "24px" }} */>
-            <CardLabel>{doc?.required ? `${t(doc?.code)} *` : `${t(doc?.code)}`}</CardLabel>
-            <Dropdown
-                t={t}
-                isMandatory={false}
-                option={Digit.Utils.locale.sortDropdownNames(doc?.dropdownData,'i18nKey',t)}
-                selected={selectedDocument}
-                optionKey="i18nKey"
-                select={handleSelectDocument}
-            />
-          <MultiUploadWrapper
-                module="BPA"
-                tenantId={tenantId}
-                getFormState={getData}
-                setuploadedstate={uploadedFilesPreFill}
-                t={t}
-                extraStyleName={"OBPS"}
-                allowedFileTypesRegex={allowedFileTypes}
-                allowedMaxSizeInMB={10}
-                acceptFiles= "image/*, .pdf, .png, .jpeg, .jpg"
-            /> 
-        {doc?.uploadedDocuments?.length && <DocumentsPreview isSendBackFlow={true} documents={doc?.uploadedDocuments} />}
-        {doc?.code === "SITEPHOTOGRAPH.ONE" && (() => {
-            const latitude = sessionStorage.getItem("Latitude") || sitePhotographDoc?.[0]?.additionalDetails?.latitude;
-            const longitude = sessionStorage.getItem("Longitude") || sitePhotographDoc?.[0]?.additionalDetails?.longitude;
-
-            return latitude && longitude ? (
-                <div>
-                    <p>Latitude: {latitude}</p>
-                    <p>Longitude: {longitude}</p>
-                    <div
-                        style={{ position: "relative", zIndex: "100", right: "-500px", marginTop: "-24px", marginRight: "20px", cursor: "pointer" }}
-                        onClick={() => window.open(`http://maps.google.com/maps?q=${latitude},${longitude}`, '_blank')}
-                    >
-                        <SearchIcon />
-                    </div>
-                    {setIsNextButtonDisabled(false)} {/* Enable the "Next" button */}
-                </div>
-            ) : (
-                <div>
-                    <p style={{ color: 'red' }}>Please upload a Photo with Location details.</p>
-                    {setIsNextButtonDisabled(true)} {/* Disable the "Next" button */}
-                </div>
-            );
-        })()}   
+  return (
+    <div style={{ marginBottom: "24px" }}>
+      <LabelFieldPair>
+        {/* {console.log("doc", doc)} */}
+        <CardLabel style={{ width: "100%" }} className="card-label-smaller">
+          {t(doc?.code)} {doc?.required && " *"}
+        </CardLabel>
+        <div className="field">
+          <UploadFile
+            id={"tl-doc"}
+            onUpload={selectfile}
+            onDelete={() => {
+              setUploadedFile(null);
+            }}
+            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+            textStyles={{ width: "100%" }}
+            accept="image/*,.pdf"
+          // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
+          />
         </div>
-    );
-    });
+      </LabelFieldPair>
+
+
+    </div>
+  );
+}
 
 export default DocumentDetails;

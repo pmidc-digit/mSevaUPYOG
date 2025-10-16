@@ -8,9 +8,9 @@ export const SwachRoutes = {
   ComplaintsPage: "/complaints",
   RatingAndFeedBack: "/rate/:id*",
   ComplaintDetailsPage: "/complaint/details/:id",
-  ReasonPage: `/:id`,
-  UploadPhoto: `/upload-photo/:id`,
-  AddtionalDetails: `/addional-details/:id`,
+  ReasonPage: `/reopen/:id`,
+  UploadPhoto: `/reopen/upload-photo/:id`,
+  AddtionalDetails: `/reopen/addional-details/:id`,
   CreateComplaint: "/create-complaint",
   ReopenComplaint: "/reopen",
   Response: "/response",
@@ -24,7 +24,7 @@ export const SwachRoutes = {
   UploadPhotos: `/upload-photos`,
   Details: `/details`,
   CreateComplaintResponse: `/response`,
-  EditApplication: "/modify-application"
+  EditApplication: "/modify-application",
 };
 
 export const Employee = {
@@ -33,7 +33,7 @@ export const Employee = {
   CreateComplaint: SWACH_EMPLOYEE_CREATE_COMPLAINT,
   Response: "/response",
   Home: "/digit-ui/employee",
-  EditApplication: "/modify-application"
+  EditApplication: "/modify-application",
 };
 
 export const getRoute = (match, route) => `${match.path}${route}`;

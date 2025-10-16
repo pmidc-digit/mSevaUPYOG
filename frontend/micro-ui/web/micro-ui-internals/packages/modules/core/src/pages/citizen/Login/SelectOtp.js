@@ -5,59 +5,53 @@ import useInterval from "../../../hooks/useInterval";
 const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, userType = "citizen", canSubmit }) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const TYPE_REGISTER = { type: "register" };
-  const [errorRegister, setErrorRegister]= useState(false)
+  const [errorRegister, setErrorRegister] = useState(false);
   const getUserType = () => Digit.UserService.getType();
-  let newData={}
+  let newData = {};
   useInterval(
     () => {
       setTimeLeft(timeLeft - 1);
     },
     timeLeft > 0 ? 1000 : null
   );
-  useEffect(async ()=>{
+  useEffect(async () => {
     //sessionStorage.setItem("DigiLocker.token1","cf87055822e4aa49b0ba74778518dc400a0277e5")
-  if(window.location.href.includes("code"))
-  {
-    let code =window.location.href.split("=")[1].split("&")[0]
-    let TokenReq = {
-      code_verifier: sessionStorage.getItem("code_verfier_register"),
-      code: code, module: "REGISTER"
+    if (window.location.href.includes("code")) {
+      let code = window.location.href.split("=")[1].split("&")[0];
+      let TokenReq = {
+        code_verifier: sessionStorage.getItem("code_verfier_register"),
+        code: code,
+        module: "REGISTER",
+      };
+      console.log("token", code, TokenReq, sessionStorage.getItem("code_verfier_register"));
+      // const data = await Digit.DigiLockerService.token({TokenReq })
+
+      fetch("https://api.digitallocker.gov.in/public/oauth2/1/token", {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "PUT, DELETE,POST",
+        },
+        body: new URLSearchParams({
+          code: code,
+          grant_type: "authorization_code",
+          client_id: "YN77ADDADE",
+          client_secret: "71abd480b5811ab72277",
+          redirect_uri: "http://localhost:3001/digit-ui/citizen/login/otp",
+          code_verifier: sessionStorage.getItem("code_verfier_register"),
+        }),
+      }).then((response) => {
+        response.json().then((data) => registerUser(data));
+      });
+
+      //console.log("datadatadata",data,newData)
+      //sessionStorage.setItem("DigiLocker.registerToken",data?.TokenRes?.access_token)
     }
-    console.log("token",code,TokenReq,sessionStorage.getItem("code_verfier_register"))
-   // const data = await Digit.DigiLockerService.token({TokenReq })
-
-  fetch('https://api.digitallocker.gov.in/public/oauth2/1/token', {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "PUT, DELETE,POST"
-    },
-    body: new URLSearchParams({
-      'code': code,
-      'grant_type': "authorization_code",
-      'client_id': "YN77ADDADE",
-      "client_secret": "71abd480b5811ab72277",
-      "redirect_uri": "http://localhost:3001/digit-ui/citizen/login/otp",
-      "code_verifier": sessionStorage.getItem("code_verfier_register")
-    })
-  }) .then(response =>
-    {response.json().then(data => (
-
-      registerUser(data)
-    
-
-    ))})
-
-
-    //console.log("datadatadata",data,newData)
-    //sessionStorage.setItem("DigiLocker.registerToken",data?.TokenRes?.access_token)
-    
-  }
-  },[])
+  }, []);
   const registerUser = async (response) => {
-    console.log("registerUser",response)
+    console.log("registerUser", response);
     const data = {
       dob: "1998-02-03",
       mobileNumber: response.mobile,
@@ -66,24 +60,22 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
       userType: getUserType(),
     };
 
-      const res = await sendOtp({ otp: { ...data, ...TYPE_REGISTER } });
-      if(res?.[1])
-      {
-        console.log("gggg",res?.[1],typeof(res?.[1]))
-        setErrorRegister(true)
-              setTimeout(() => {
-                window.location.href = window.location.href.split("/otp")[0]
-          }, 3000);
-      
-      }
-  }; 
+    const res = await sendOtp({ otp: { ...data, ...TYPE_REGISTER } });
+    if (res?.[1]) {
+      console.log("gggg", res?.[1], typeof res?.[1]);
+      setErrorRegister(true);
+      setTimeout(() => {
+        window.location.href = window.location.href.split("/otp")[0];
+      }, 3000);
+    }
+  };
   const handleResendOtp = () => {
     onResend();
-    setTimeLeft(2);
+    setTimeLeft(30);
   };
   const sendOtp = async (data) => {
     try {
-      console.log("sendOtpsendOtp",data)
+      console.log("sendOtpsendOtp", data);
       const res = await Digit.UserService.sendOtp(data, "pg");
       return [res, null];
     } catch (err) {
@@ -112,12 +104,12 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
       {timeLeft > 0 ? (
         <CardText>{`${t("CS_RESEND_ANOTHER_OTP")} ${timeLeft} ${t("CS_RESEND_SECONDS")}`}</CardText>
       ) : (
-        <p className="card-text-button" onClick={handleResendOtp}>
+        <p style={{ cursor: "pointer" }} className="card-text-button" onClick={handleResendOtp}>
           {t("CS_RESEND_OTP")}
         </p>
       )}
       {!error && <CardLabelError>{t("CS_INVALID_OTP")}</CardLabelError>}
-      {!errorRegister && <CardLabelError>{t("CS_ALREADY_REGISTERED")}</CardLabelError>}
+      {!errorRegister && <CardLabelError style={{ cursor: "pointer" }}>{t("CS_ALREADY_REGISTERED")}</CardLabelError>}
     </FormStep>
   );
 };

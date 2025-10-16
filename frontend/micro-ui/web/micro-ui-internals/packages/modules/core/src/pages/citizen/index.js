@@ -10,6 +10,8 @@ import CitizenHome from "./Home";
 import LanguageSelection from "./Home/LanguageSelection";
 import LocationSelection from "./Home/LocationSelection";
 import Login from "./Login";
+import NewLoginPage from "./NewLogin/NewLoginPage";
+import NewRegistration from "./NewRegistration/index"
 import UserProfile from "./Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
 import FAQsSection from "./FAQs/FAQs";
@@ -35,6 +37,8 @@ const sidebarHiddenFor = [
   "/digit-ui/citizen/login",
   "/digit-ui/citizen/register/otp",
   "/digit-ui/citizen/sso/login",
+  "/digit-ui/citizen/login-page",
+  "/digit-ui/citizen/new-registration"
 ];
 
 const topSidebarHiddenFor=[
@@ -177,26 +181,44 @@ const Home = ({
       )}
 
       <div className={`main center-container citizen-home-container mb-25`}>
-        {hideSidebar ? null : (
+        {/* {hideSidebar ? null : (
           <div className="SideBarStatic">
             <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />
           </div>
-        )}
+        )} */}
 
         <Switch>
           <Route exact path={path}>
             <CitizenHome />
           </Route>
 
+          {/* Custom OBPS Landing Page Route */}
+          <PrivateRoute path={`${path}/obps-home`}>
+            {(() => {
+              const CustomLandingPage = Digit?.ComponentRegistryService?.getComponent("CustomLandingPage");
+              return CustomLandingPage ? <CustomLandingPage /> : null;
+            })()}
+          </PrivateRoute>
+
           <PrivateRoute path={`${path}/feedback`} component={CitizenFeedback}></PrivateRoute>
           <PrivateRoute path={`${path}/feedback-acknowledgement`} component={AcknowledgementCF}></PrivateRoute>
 
+          <Route exact path={`${path}/login-page`}>
+            <NewLoginPage stateCode={stateCode}/>
+          </Route>
+
+          <Route path={`${path}/new-registration`}>
+            <NewRegistration stateCode={stateCode} />
+          </Route>
+
           <Route exact path={`${path}/select-language`}>
-            <LanguageSelection />
+            {/* <LanguageSelection /> */}
+            <NewLoginPage stateCode={stateCode}/>
           </Route>
 
           <Route exact path={`${path}/select-location`}>
-            <LocationSelection />
+            {/* <LocationSelection /> */}
+            <NewLoginPage stateCode={stateCode}/>
           </Route>
           <Route path={`${path}/error`}>
             <ErrorComponent
@@ -217,12 +239,14 @@ const Home = ({
           </Route>
 
           <Route path={`${path}/login`}>
-            <Login stateCode={stateCode} />
+            {/* <Login stateCode={stateCode} /> */}
+             <NewLoginPage stateCode={stateCode}/>
           </Route>
           
 
           <Route path={`${path}/register`}>
-            <Login stateCode={stateCode} isUserRegistered={false} />
+            {/* <Login stateCode={stateCode} isUserRegistered={false} /> */}
+             <NewRegistration stateCode={stateCode} />
           </Route>
 
           <PrivateRoute path={`${path}/user/profile`}>

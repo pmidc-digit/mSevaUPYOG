@@ -13,7 +13,6 @@ import ApplicationDetailsActionBar from "./components/ApplicationDetailsActionBa
 import ApplicationDetailsWarningPopup from "./components/ApplicationDetailsWarningPopup";
 
 const ApplicationDetails = (props) => {
-  console.log("props",props)
   let isEditApplication=window.location.href.includes("editApplication") && window.location.href.includes("bpa") ;
     const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = Digit.ULBService.getStateId();
@@ -53,11 +52,12 @@ const ApplicationDetails = (props) => {
     showTimeLine = true,
     oldValue,
     isInfoLabel = false,
-    clearDataDetails
+    clearDataDetails,
+    propertyId
   } = props;
   
   useEffect(() => {
-    if (showToast) {
+    if (showToast && workflowDetails && workflowDetails.revalidate) {
       workflowDetails.revalidate();
     }
   }, [showToast]);
@@ -67,10 +67,10 @@ const ApplicationDetails = (props) => {
       if(action?.action=="EDIT PAY 2" && window.location.href.includes("bpa")){
         window.location.assign(window.location.href.split("bpa")[0]+"editApplication/bpa"+window.location.href.split("bpa")[1]);
       }
-      if(action?.isToast){
-        setShowToast({ key: "error", error: { message: action?.toastMessage } });
-        setTimeout(closeToast, 5000);
-      }
+      // if(action?.isToast){
+      //   setShowToast({ key: "error", error: { message: action?.toastMessage } });
+      //   setTimeout(closeToast, 5000);
+      // }
       else if (action?.isWarningPopUp) {
         setWarningPopUp(true);
       } else if (action?.redirectionUrll) {
@@ -88,7 +88,6 @@ const ApplicationDetails = (props) => {
       } else if (!action?.redirectionUrl && action?.action!="EDIT PAY 2") {
         setShowModal(true);
       } else if(action?.redirectionUrl?.state?.applicationData?.workflowCode === "DIRECTRENEWAL"){
-        console.log("Got Inside Direct");
         setShowModal(true);
       }else {
         history.push({
@@ -111,6 +110,8 @@ const ApplicationDetails = (props) => {
   const closeWarningPopup = () => {
     setWarningPopUp(false);
   };
+
+  console.log("ActionsInPayment2", workflowDetails)
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     if(data?.Property?.workflow?.comment?.length == 0 || (data?.Licenses?.[0]?.action === "INITIATE"? data?.Licenses?.[0]?.additionalDetail?.validityYears?.length == 0 : data?.Licenses?.[0]?.comment?.length == 0) || data?.WaterConnection?.comment?.length == 0 || data?.SewerageConnection?.comment?.length == 0 || data?.BPA?.comment?.length == 0)
@@ -191,6 +192,12 @@ const ApplicationDetails = (props) => {
               return
             }
             if(data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber){
+              if(data?.Licenses[0]?.businessService?.includes("BPAREG")){
+                setShowToast({ key: "success", action: selectedAction });
+                data.selectedAction = selectedAction;
+                history.push(`/digit-ui/employee/obps/stakeholder-response`, { data: data });
+                return;
+              }
               setShowToast({ key: "success", action: selectedAction });
               history.replace(`/digit-ui/employee/tl/application-details/${data?.Licenses[0]?.applicationNumber}`);
               return;
@@ -198,6 +205,18 @@ const ApplicationDetails = (props) => {
             setShowToast({ key: "success", action: selectedAction });
             clearDataDetails && setTimeout(clearDataDetails, 3000);
             setTimeout(closeToast, 5000);
+            try {
+              const svc = (businessService || "").toUpperCase();
+              const act = (selectedAction?.action || "").toUpperCase();
+              if (svc.includes("DISCONNECT") && (act.includes("APPROVE") || act.includes("EXECUTE") || act.includes("APPROVE_CONNECTION"))) {
+                // Delay redirect slightly longer than toast auto close so user sees message
+                setTimeout(() => {
+                  if (window?.location) {
+                    window.location.href = "https://mseva.lgpunjab.gov.in/employee/inbox";
+                  }
+                }, 3000);
+              }
+            } catch(e) { /* swallow */ }
             queryClient.clear();
             queryClient.refetchQueries("APPLICATION_SEARCH");
             //push false status when reject
@@ -214,6 +233,7 @@ const ApplicationDetails = (props) => {
     return <Loader />;
   }
   const onSubmit =async(data)=> {
+    console.log("JJJJJJ", data);
     const bpaApplicationDetails = await Digit.OBPSService.BPASearch(tenantId, {applicationNo: applicationData?.applicationNo});
     const riskType = Digit.Utils.obps.calculateRiskType(
       mdmsData?.BPA?.RiskTypeComputation,
@@ -230,11 +250,11 @@ const ApplicationDetails = (props) => {
                 "comments": null,
                 "varificationDocuments": null
             }
-    bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
-    bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges") ||"0";
-    bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment")|| "0";
-    bpaDetails.BPA.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc"|| "NA");
-    bpaDetails.BPA.additionalDetails.lessAdjustmentFeeFiles=JSON.parse(sessionStorage.getItem("uploadedFileLess"));
+    // bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
+    // bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges") ||"0";
+    // bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment")|| "0";
+    // bpaDetails.BPA.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc"|| "NA");
+    // bpaDetails.BPA.additionalDetails.lessAdjustmentFeeFiles=JSON.parse(sessionStorage.getItem("uploadedFileLess"));
    
     if(parseInt(sessionStorage.getItem("lessAdjusment"))>(parseInt(sessionStorage.getItem("development"))+parseInt(sessionStorage.getItem("otherCharges"))+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES)+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_LABOUR_CESS)+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES)+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS))){
       alert(t("Enterd Less Adjustment amount is invalid"));
@@ -265,6 +285,8 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+            propertyId={propertyId}
+            moduleCode={moduleCode}
           />
           {showModal ? (
             <ActionModal
@@ -294,8 +316,9 @@ const ApplicationDetails = (props) => {
             />
           ) : null}
           <ApplicationDetailsToast t={t} showToast={showToast} closeToast={closeToast} businessService={businessService} />
-          {!isEditApplication?  (
-            <ApplicationDetailsActionBar
+          {!isEditApplication?  (<div>
+          {!(window.location.href.includes("citizen")&&window.location.href.includes("/pt/"))&&  
+          <ApplicationDetailsActionBar
             workflowDetails={workflowDetails}
             displayMenu={displayMenu}
             onActionSelect={onActionSelect}
@@ -305,7 +328,8 @@ const ApplicationDetails = (props) => {
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
           />
-          ):(<div >
+          }
+          </div>):(<div >
             <SubmitBar style={{ marginRight:20}} label={t("BPA_EDIT_UPDATE")} onSubmit={onSubmit}  id/>
             </div>)}          
         </React.Fragment>

@@ -12,6 +12,8 @@ import {convertEpochToDate} from "../../utils/index";
 
 const AssessmentDetails = () => {
   const { t } = useTranslation();
+ 
+
   const [penalty,setPenalty] = useState("")
   const [rebate,setRebate] = useState("")
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -48,9 +50,28 @@ const AssessmentDetails = () => {
     data: ptCalculationEstimateData,
     mutate: ptCalculationEstimateMutate,
   } = Digit.Hooks.pt.usePtCalculationEstimate(tenantId);
+
   const { data: ChargeSlabsMenu, isLoading: isChargeSlabsLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "ChargeSlabs");
  const fetchBillParams = { consumerCode : propertyId };
+console.log("ChargeableSlabsMenu",ChargeSlabsMenu,ptCalculationEstimateData)
 
+ useEffect(()=>{
+try{
+  if(ptCalculationEstimateData?.Calculation?.length>0){
+let id=ptCalculationEstimateData?.Calculation[0]?.billingSlabIds.map(item => item.split('|')[0]).join(',');
+let filters={
+  id:id
+}
+Digit.PTService.billingSlabSearch(tenantId,filters)
+.then((response) =>{
+console.log("res",response)
+})
+  }
+}
+catch{
+
+}
+ },[ptCalculationEstimateData])
  let ptCalculationEstimateDataCopy;
  if(!ptCalculationEstimateDataCopy )
  ptCalculationEstimateDataCopy = ptCalculationEstimateData?.Calculation[0];
@@ -509,6 +530,7 @@ const Penality_menu=[
                   </CardSubHeader>
                   <CardSectionHeader style={{marginBottom:"16px",color:"#0B0C0C",fontSize:"16px",marginTop:"revert"}}>{t("PT_CALC_LOGIC_HEADER")}</CardSectionHeader>
                   <CardText style={{fontSize:"16px"}}>{t("PT_CALC_LOGIC")}</CardText>
+                  <CardText style={{fontSize:"16px"}}>{t("PT_CALCULATION_LOGIC_TEXT")}</CardText>
                     {/* <div className="employee-data-table" style={{position:"relative",padding:"8px"}}>
                     <div style={{position:"absolute",maxWidth:"640px",border:"1px solid rgb(214,213,212)",inset:"0px",width:"auto"}}/> */}
                     <div style={{ border: "1px solid #D6D5D4", padding: "16px", marginTop: "8px", borderRadius: "4px", background: "#FAFAFA" }}>

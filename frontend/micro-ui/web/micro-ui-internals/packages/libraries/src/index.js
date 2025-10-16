@@ -26,6 +26,8 @@ import { WSService } from "./services/elements/WS";
 import { TLService } from "./services/elements/TL";
 import { Surveys } from "./services/elements/Surveys";
 import { MCollectService } from "./services/elements/MCollect";
+import { ChallanGenerationService } from "./services/elements/ChallanGeneration";
+import { RentAndLeaseService } from "./services/elements/RentAndLease";
 import { ReportsService } from "./services/elements/Reports";
 import HrmsService from "./services/elements/HRMS";
 import { InboxGeneral } from "./services/elements/InboxService";
@@ -57,6 +59,12 @@ import { CustomService } from "./services/elements/CustomService";
 import { PTRService } from "./services/elements/PTR";
 import { SVService } from "./services/elements/SV";
 import { ADSServices } from "./services/elements/ADS";
+import { CHBServices } from "./services/elements/CHB";
+import { ASSETService } from "./services/elements/ASSET";
+import { PGRAIService } from "./services/elements/PGRAI";
+import { PGRAIUpdate } from "./services/elements/PGRAIUpdate";
+
+import { NDCService } from "./services/elements/NDC";
 
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
@@ -89,6 +97,8 @@ const initLibraries = () => {
   setupLibraries("HRMSService", HrmsService);
   setupLibraries("ReceiptsService", ReceiptsService);
   setupLibraries("MCollectService", MCollectService);
+  setupLibraries("ChallanGenerationService", ChallanGenerationService);
+  setupLibraries("RentAndLeaseService", RentAndLeaseService);
   setupLibraries("ReportsService", ReportsService);
   setupLibraries("PaymentService", PaymentService);
   setupLibraries("EDCRService", EDCRService);
@@ -116,11 +126,16 @@ const initLibraries = () => {
   setupLibraries("Download", Download);
   setupLibraries("SVService", SVService);
   setupLibraries("ADSServices", ADSServices);
+  setupLibraries("CHBServices", CHBServices);
+  setupLibraries("ASSETService", ASSETService);
   setupLibraries("NOCService", NOCService);
   setupLibraries("NOCSearch", NOCSearch);
   setupLibraries("AccessControlService", AccessControlService);
   setupLibraries("BillServices", BillServices);
   setupLibraries("AuditService", AuditService);
+  setupLibraries("PGRAIService", PGRAIService);
+  setupLibraries("PGRAIUpdate", PGRAIUpdate);
+  setupLibraries("NDCService", NDCService);
   return new Promise((resolve) => {
     initI18n(resolve);
   });

@@ -72,7 +72,6 @@ const checkFeeEstimateVisible = async (wsDatas) => {
 export const WSSearch = {
   application: async (tenantId, filters = {}, serviceType) => {
    const response = await WSService.search({ tenantId, filters: { ...filters }, businessService: serviceType === "WATER" ? "WS" : "SW" });
-   console.log("application")
    // Create a URLSearchParams object
 //const params = new URLSearchParams(filters);
 //console.log("params",params)
@@ -486,7 +485,6 @@ export const WSSearch = {
     };
 
 
-    console.log("wsDataDetails: ",wsDataDetails);
     const AdditionalDetailsByWS = {
       title: "",
       isWaterConnectionDetails: true,
@@ -694,7 +692,6 @@ export const WSSearch = {
   modifyApplicationDetails: async (t, tenantId, applicationNumber, serviceType = "WATER", userInfo, config = {}) => {
 
     const filters = { applicationNumber };
-    console.log("application no",applicationNumber)
     let propertyids = "",
       consumercodes = "",
       businessIds = "";
@@ -716,7 +713,6 @@ export const WSSearch = {
     //console.log("response in modify",response)
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
  
-    console.log("wsData",wsData)
     //const oldFilters = { connectionNumber: wsData?.[0]?.connectionNo, isConnectionSearch: true };
 
    // const oldResponse = await WSService.wsModifyApplDetails(tenantId, oldFilters, serviceType);
@@ -724,7 +720,6 @@ export const WSSearch = {
 
     const wsOldDetails = cloneDeep(serviceType == "WATER" ? oldResponse?.WaterConnection?.[1] : oldResponse?.SewerageConnections?.[1]);
 
-    console.log("wsOldDetails",wsOldDetails)
     wsData?.forEach((item) => {
       propertyids = propertyids + item?.propertyId + ",";
       consumercodes = consumercodes + item?.applicationNo + ",";
@@ -754,7 +749,6 @@ export const WSSearch = {
     let oldPropertyDetails = cloneDeep(oldProperties?.Properties?.[0]);
     const wsOldData = cloneDeep(wsOldDetails);
 
-    console.log("wsDataDetails",wsDataDetails)
     const applicationHeaderDetails = {
       title: " ",
       asSectionHeader: true,
@@ -1605,9 +1599,7 @@ export const WSSearch = {
       businessIds = [];
 
     const response = await WSSearch.application(tenantId, filters, serviceType);
-   console.log("response in search",response)
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
-   console.log("wsData in search",wsData)
     wsData?.forEach((item) => {
       propertyids = propertyids + item?.propertyId + ",";
       consumercodes = consumercodes + item?.connectionNo + ",";
@@ -1647,9 +1639,15 @@ export const WSSearch = {
     const serviceTypeOfData = serviceType == "WATER" ? "WS" : "SW";
     const collectionNumber = wsDataDetails?.connectionNo;
     const colletionOFData = await WSSearch.colletionData({tenantId, serviceTypeOfData, collectionNumber}, {});
-    const fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
-console.log("wsDataDetails",propertyDataDetails?.owners)
-console.log("propertyDataDetails",propertyDataDetails?.owners.length)
+    
+    // Wrap bill fetch in try-catch to prevent crash when bills don't exist
+    let fetchBills = [];
+    try {
+      fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
+    } catch (error) {
+      // Don't throw error - just set empty array so hook continues to work
+      fetchBills = { Bill: [] };
+    }
 
     const applicationHeaderDetails = {
       title: "WS_COMMON_SERV_DETAIL",
@@ -1685,15 +1683,13 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
                   ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[0]}`)
                   : t("NA"),
               },
-              {
-                title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
-                value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
-              },
+              // {
+              //   title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
+              //   value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
+              // },
               {
                 title: "Old Consumer No",
-                value: wsDataDetails?.oldConnectionNumber
-                  ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.oldConnectionNumber?.toUpperCase(), " ", "_")}`)
-                  : t("NA"),
+                value: wsDataDetails?.oldConnectionNo || t("NA"),
               },
               {
                 title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
@@ -1730,7 +1726,7 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
       values: [
         { title: "WS_PROPERTY_TYPE_LABEL", value: propertyDataDetails?.propertyType },
         { title: "WS_PROPERTY_USAGE_TYPE", value: propertyDataDetails?.usageCategory },
-        { title: "PLOT SIZE", value: propertyDataDetails?.landArea },
+        { title: "Plot Size (in sq. yards)", value: propertyDataDetails?.landArea },
         { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
        { title: "City", value: propertyDataDetails?.address?.city },
        { title: "Plot/House/Survey No", value: propertyDataDetails?.address?.doorNo },
@@ -1738,27 +1734,27 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
        { title: "Street", value: propertyDataDetails?.address?.street},
        { title: "Locality", value: propertyDataDetails?.address?.locality?.name},
        { title: "Pincode", value: propertyDataDetails?.address?.pincode},
-       { title: "Location on Map", value: propertyDataDetails?.address?.geoLocation},
+       { title: "Location on Map", value: propertyDataDetails?.address?.geoLocation?.latitude && propertyDataDetails?.address?.geoLocation?.longitude && (propertyDataDetails?.address?.geoLocation?.latitude !== 0.0 || propertyDataDetails?.address?.geoLocation?.longitude !== 0.0) ? `Lat: ${propertyDataDetails?.address?.geoLocation?.latitude}, Long: ${propertyDataDetails?.address?.geoLocation?.longitude}` : t("NA")},
       
-        { title: "WS_PROPERTY_ADDRESS_LABEL",
-          value: getAddress(propertyDataDetails?.address, t),
-          privacy: {
-            uuid: propertyDataDetails?.owners?.[0]?.uuid, 
-            fieldName: ["doorNo" , "street" , "landmark"], 
-            model: "Property",showValue: true,
-            loadData: {
-              serviceName: "/property-services/property/_search",
-              requestBody: {},
-              requestParam: { tenantId, propertyIds : propertyids },
-              jsonPath: "Properties[0].address.street",
-              isArray: false,
-              d: (res) => {
-                let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
-                return resultString;
-              }
-            }
-          }
-        },
+        // { title: "WS_PROPERTY_ADDRESS_LABEL",
+        //   value: getAddress(propertyDataDetails?.address, t),
+        //   privacy: {
+        //     uuid: propertyDataDetails?.owners?.[0]?.uuid, 
+        //     fieldName: ["doorNo" , "street" , "landmark"], 
+        //     model: "Property",showValue: true,
+        //     loadData: {
+        //       serviceName: "/property-services/property/_search",
+        //       requestBody: {},
+        //       requestParam: { tenantId, propertyIds : propertyids },
+        //       jsonPath: "Properties[0].address.street",
+        //       isArray: false,
+        //       d: (res) => {
+        //         let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
+        //         return resultString;
+        //       }
+        //     }
+        //   }
+        // },
         {
           title: "WS_VIEW_PROPERTY_DETAIL",
           to: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"}`,
@@ -1785,7 +1781,7 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
     { title: "Gender", value: propertyDataDetails?.owners?.[0]?.gender },
     { title: "Guardian", value: propertyDataDetails?.owners?.[0]?.relationship },
     { title: "Guardian Name", value: propertyDataDetails?.owners?.[0]?.fatherOrHusbandName},
-    { title: "Owner Category", value: propertyDataDetails?.owners?.[0]?.ownerType },
+    { title: "Owner Category", value: propertyDataDetails?.ownershipCategory },
     { title: "Email", value: propertyDataDetails?.owners?.[0]?.emailId},
     { title: "Correspondence Address", value: propertyDataDetails?.owners?.[0]?.correspondenceAddress    },
   ]:null
@@ -1920,7 +1916,16 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
           : [{ title: "WS_CONN_HOLDER_SAME_AS_OWNER_DETAILS", value: t("SCORE_YES") }],
     };
  
-    const isApplicationApproved =  workFlowDataDetails?.ProcessInstances?.[0]?.state.isTerminateState  
+    const hasActiveBlockingWorkflows = workFlowDataDetails?.ProcessInstances?.some(instance => 
+      !instance?.state?.isTerminateState && 
+      (instance?.businessService?.includes("Disconnection") || 
+       instance?.businessService?.includes("Modification") ||
+       instance?.businessService?.includes("Reconnection"))
+    ) || false;
+    
+    // isApplicationApproved should be true when there are NO active blocking workflows
+    const isApplicationApproved = !hasActiveBlockingWorkflows;
+    
     const isLabelShow = {
       title: "",
       asSectionHeader: true,
@@ -2012,7 +2017,7 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
           { title: "PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL", value: wsDataDetails?.connectionNo || t("NA") },
           { title: "WS_SERVICE_NAME_LABEL", value: t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`) },
           { title: "PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_DISCONNECTION_TYPE", value: t(`${applicationType}`) },
-          { title: "WNS_COMMON_TABLE_COL_AMT_DUE_LABEL", value: fetchBillData.Bill[0]?.totalAmount ? "₹ " + fetchBillData.Bill[0]?.totalAmount : "₹ 0" },
+          { title: "WNS_COMMON_TABLE_COL_AMT_DUE_LABEL", value: fetchBillData?.Bill?.[0]?.totalAmount ? "₹ " + fetchBillData.Bill[0].totalAmount : "₹ 0" },
           { title: "WS_DISCONNECTION_PROPOSED_DATE", value: wsDataDetails?.dateEffectiveFrom ? convertEpochToDate(wsDataDetails?.dateEffectiveFrom) : t("NA") },
           { title: "WS_DISCONNECTION_EXECUTED_DATE", value: wsDataDetails?.disconnectionExecutionDate ? convertEpochToDate(wsDataDetails?.disconnectionExecutionDate) : t("NA") },
           { title: "WS_DISCONNECTION_REASON", value: wsDataDetails?.disconnectionReason || t("NA") },
@@ -2201,7 +2206,6 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
     wsDataDetails.serviceType = serviceDataType;
     //for unmasking of plumber mobilenumber in FI/DV edit disconnection
     sessionStorage.removeItem("IsDetailsExists");
-   console.log("details",details)
     return {
       applicationData: wsDataDetails,
       applicationDetails: details,

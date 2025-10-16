@@ -63,6 +63,7 @@ export const processLinkData = (newData, code, t) => {
   return newObj;
 };
 const iconSelector = (code) => {
+  console.log("Icon Selector Code", code);
   switch (code) {
     case "PT":
       return <PTIcon className="fill-path-primary-main" />;
@@ -72,11 +73,17 @@ const iconSelector = (code) => {
       return <FSMIcon className="fill-path-primary-main" />;
     case "MCollect":
       return <MCollectIcon className="fill-path-primary-main" />;
+    case "ChallanGeneration":
+      return <MCollectIcon className="fill-path-primary-main" />;
+    case "RentAndLease":
+      return <MCollectIcon className="fill-path-primary-main" />;
     case "PGR":
       return <PGRIcon className="fill-path-primary-main" />;
     case "TL":
       return <TLIcon className="fill-path-primary-main" />;
     case "OBPS":
+      return <OBPSIcon className="fill-path-primary-main" />;
+    case "BPAStakeholder":
       return <OBPSIcon className="fill-path-primary-main" />;
     case "Bills":
       return <BillsIcon className="fill-path-primary-main" />;
@@ -85,6 +92,8 @@ const iconSelector = (code) => {
     case "SV":
       return <PTRIcon className="fill-path-primary-main" />;
     case "ADS":
+      return <PTRIcon className="fill-path-primary-main" />;
+    case "NDC":
       return <PTRIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Header } from "@mseva/digit-ui-react-components";
-
+import { Params_Count } from "../../constants/Employee";
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -18,30 +18,56 @@ const Inbox = ({ initialStates = {} }) => {
   let isMobile = Digit.Utils.browser.isMobile();
 
   const ttID = localStorage.getItem("punjab-tenantId");
-
-  const tenantIdCheck = ttID || tenantId;
+  const sessionEmpTenant = Digit.SessionStorage.get("Employee.tenantId");
+  const tenantIdCheck = sessionEmpTenant || ttID || tenantId;
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
 
   useEffect(() => {
     (async () => {
+      // debugger;
       const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
+      // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
+      const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
       let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      // console.log("useCount response in inbox else block", response);
       if (response?.count) {
         setTotalRecords(response.count);
       }
+      // Do not remove the below commented code
+
+      // console.log("application Status",applicationStatus)
+      // console.log("assigneeCode", assigneeCode);
+      // console.log("uuid", uuid);
+      // //  if (!assigneeCode) return;
+      // if (assigneeCode==uuid) {
+      //   // let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode,applicationStatus?.length > 0 ?  applicationStatus : {});
+      //   let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode, applicationStatus);
+      // console.log("useCount response in inbox in  if block", response);
+      // if (response) {
+      //   setTotalRecords(response);
+      // }
+      // }
+      // else{
+      //   let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      //   console.log("useCount response in inbox else block", response);
+      // if (response?.count) {
+      //   setTotalRecords(response.count);
+      // }
+      // }
     })();
-  }, [searchParams, pageOffset, pageSize]);
+  }, [searchParams, pageOffset, pageSize,tenantIdCheck, sessionEmpTenant]);
 
   const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + 10);
+    setPageOffset((prevState) => prevState + pageSize);
   };
 
   const fetchPrevPage = () => {
-    setPageOffset((prevState) => prevState - 10);
+    setPageOffset((prevState) => Math.max(0, prevState - pageSize));
   };
 
   const handlePageSizeChange = (e) => {
+    setPageOffset(0);
     setPageSize(Number(e.target.value));
   };
 
@@ -62,7 +88,7 @@ const Inbox = ({ initialStates = {} }) => {
   // console.log("complaints ----- ", complaints);
 
   let { data: complaints, isLoading, refetch } = Digit.Hooks.swach.useInbox({
-    tenantId,
+    tenantId: tenantIdCheck,
     filters: { ...searchParams, ...paginationParams, sortParams },
     config: {},
   });
@@ -84,6 +110,7 @@ const Inbox = ({ initialStates = {} }) => {
           currentPage={Math.floor(pageOffset / pageSize)}
           totalRecords={totalRecords}
           pageSizeLimit={pageSize}
+          localities={localities}
         />
       );
     } else {

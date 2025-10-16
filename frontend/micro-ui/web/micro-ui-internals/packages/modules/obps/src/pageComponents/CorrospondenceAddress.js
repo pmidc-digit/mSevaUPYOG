@@ -1,9 +1,11 @@
-import { BackButton, CardLabel, CheckBox, FormStep, TextArea, Toast } from "@mseva/digit-ui-react-components";
+import { ActionBar, BackButton, CardLabel, CheckBox, FormStep, SubmitBar, TextArea, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import Timeline from "../components/Timeline";
+import { convertDateToEpoch } from "../utils";
 
 const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
+  console.log(formData, "FORM1");
   const onSkip = () => onSelect();
   const [Correspondenceaddress, setCorrespondenceaddress] = useState(
     formData?.Correspondenceaddress || formData?.formData?.Correspondenceaddress || ""
@@ -12,10 +14,12 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [isDisableForNext, setIsDisableForNext] = useState(false);
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isopenlink)
     window.onunload = function () {
@@ -38,9 +42,13 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
     setCorrespondenceaddress(e.target.value);
   }
 
+  console.log("FORM2");
+
   const goNext = () => {
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
+      // console.log("dob here in payload", formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth): null);
+      console.log("Correspondenceaddress", formData?.LicneseDetails?.dateOfBirth);
       let payload = {
         Licenses: [
           {
@@ -49,15 +57,24 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 {
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  name: formData?.LicneseDetails?.name,
-                  // "dob": formData?.LicneseDetails?.dateOfBirth,LicneseDetails.dateOfBirth
-                  dob: "",
+                  // name: [formData?.LicneseDetails?.name.trim(), formData?.LicneseDetails?.middleName.trim(), formData?.LicneseDetails?.lastName.trim()].filter(Boolean).join(" ").trim(),
+                  name: [
+                    formData?.LicneseDetails?.name ? formData.LicneseDetails.name.trim() : "",
+                    formData?.LicneseDetails?.middleName ? formData.LicneseDetails.middleName.trim() : "",
+                    formData?.LicneseDetails?.lastName ? formData.LicneseDetails.lastName.trim() : ""
+                  ].filter(Boolean).join(" ").trim(),
+
+                  dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
-                  permanentAddress: formData?.LicneseDetails?.PermanentAddress,
+                  permanentAddress:
+                    formData?.LicneseDetails?.PermanentAddress +
+                    " , " +
+                    formData?.LicneseDetails?.SelectedDistrict?.name +
+                    " , " +
+                    formData?.LicneseDetails?.SelectedState?.name,
                   correspondenceAddress: Correspondenceaddress,
-                  // "pan":formData?.LicneseDetails?.PanNumber,
+                  pan: formData?.LicneseDetails?.PanNumber,
                   // "permanentPinCode": "143001"
-                  ...(formData?.LicneseDetails?.PanNumber && { pan: formData?.LicneseDetails?.PanNumber }),
                 },
               ],
               subOwnerShipCategory: "INDIVIDUAL",
@@ -67,17 +84,14 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 },
               ],
               additionalDetail: {
+                qualificationType: formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification ? formData?.LicneseType?.selfCertification : null,
+                Ulb: formData?.LicneseDetails?.Ulb,
               },
-              // "address": {
-              //   "city": "",
-              //   "landmark": "",
-              //   "pincode": formData?.LicneseDetails?.Pincode
-              // },
               address: {
-                ...(formData?.LicneseDetails?.City && { city: formData?.LicneseDetails?.City }),
-                ...(formData?.LicneseDetails?.Landmark && { landmark: formData?.LicneseDetails?.Landmark }),
+                city: "",
+                landmark: "",
                 pincode: formData?.LicneseDetails?.Pincode,
               },
               institution: null,
@@ -85,11 +99,13 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
             },
             licenseType: "PERMANENT",
             businessService: "BPAREG",
-            tenantId: stateId,
+            tenantId: tenantId,
             action: "NOWORKFLOW",
           },
         ],
       };
+
+      console.log(payload, "FORM3");
 
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result, err) => {
@@ -101,7 +117,9 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
         .catch((e) => {
           setIsDisableForNext(false);
           setShowToast({ key: "error" });
+          console.log("error message here", e?.response?.data?.Errors[0]?.message);
           setError(e?.response?.data?.Errors[0]?.message || null);
+          //setError("A user account with this mobile number already exists. Please use a different number or log in with the existing account");
         });
     } else {
       formData.Correspondenceaddress = Correspondenceaddress;
@@ -116,7 +134,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Timeline currentStep={2} flow="STAKEHOLDER" />
+        {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={isDisableForNext}>
           <CheckBox
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
@@ -150,6 +168,13 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
           }}
         />
       )}
+    <ActionBar>
+      <SubmitBar
+        label={t("CS_COMMON_NEXT")}
+          onSubmit={goNext}
+          disabled={isDisableForNext}
+      />
+    </ActionBar>
     </React.Fragment>
   );
 };

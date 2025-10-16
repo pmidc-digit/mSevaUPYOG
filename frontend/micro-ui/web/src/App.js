@@ -16,6 +16,17 @@ import {
   MCollectLinks,
   initMCollectComponents,
 } from "@mseva/digit-ui-module-mcollect";
+import {
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
+  initChallanGenerationComponents,
+  ChallanReducers,
+} from "@mseva/digit-ui-module-challangeneration";
+import {
+  RentAndLeaseModule,
+  RentAndLeaseLinks,
+  initRentAndLeaseComponents,
+} from "@mseva/digit-ui-module-rentandlease";
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import {
   PaymentModule,
@@ -36,13 +47,18 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import {
+  PTRModule,
+  PTRLinks,
+  PTRComponents,
+  PTRReducers,
+} from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
-import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
-import { initNOCComponents } from "@mseva/digit-ui-module-noc";
+import { initOBPSComponents, OBPSReducers } from "@mseva/digit-ui-module-obps";
+import { initNOCComponents, NOCReducers } from "@mseva/digit-ui-module-noc";
 import {
   initEngagementComponents,
   SurveyReducers,
@@ -55,7 +71,29 @@ import {
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
+import {
+  ADSModule,
+  ADSLinks,
+  ADSComponents,
+  ADSReducers,
+} from "@mseva/upyog-ui-module-ads";
+import {
+  CHBModule,
+  CHBLinks,
+  CHBComponents,
+  CHBReducers,
+} from "@mseva/upyog-ui-module-chb";
+import {
+  ASSETComponents,
+  ASSETLinks,
+  ASSETModule,
+} from "@mseva/upyog-ui-module-asset";
+import {
+  PGRAIComponents,
+  PGRAILinks,
+  PGRAIModule,
+} from "@mseva/upyog-ui-module-pgrai";
 
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -88,6 +126,14 @@ const enabledModules = [
   "Swach",
   "SV",
   "ADS",
+  "CHB",
+  "PTR",
+  "ASSET",
+  "PGRAI",
+  "ChallanGeneration",
+  "RentAndLease",
+  "NDC",
+  "BPAStakeholder",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -98,6 +144,10 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ...PTComponents,
   MCollectLinks,
   MCollectModule,
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
+  RentAndLeaseModule,
+  RentAndLeaseLinks,
   HRMSModule,
   TLModule,
   TLLinks,
@@ -112,12 +162,23 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ADSLinks,
   ADSModule,
   ...ADSComponents,
+  CHBModule,
+  CHBLinks,
+  ...CHBComponents,
+  ASSETModule,
+  ASSETLinks,
+  ...ASSETComponents,
+  PGRAIModule,
+  PGRAILinks,
+  ...PGRAIComponents,
 });
 initPGRComponents();
 initSWACHComponents();
 initFSMComponents();
 initDSSComponents();
 initMCollectComponents();
+initChallanGenerationComponents();
+initRentAndLeaseComponents();
 initHRMSComponents();
 initTLComponents();
 initReceiptsComponents();
@@ -127,6 +188,7 @@ initEngagementComponents();
 initWSComponents();
 initCommonPTComponents();
 initBillsComponents();
+initNDCComponents();
 // initReportsComponents();
 initCustomisationComponents();
 
@@ -138,6 +200,13 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  ndc: NDCReducers(initData),
+  ptr: PTRReducers(initData),
+  ads: ADSReducers(initData),
+  chb: CHBReducers(initData),
+  noc: NOCReducers(initData),
+  obps: OBPSReducers(initData),
+  challan: ChallanReducers(initData),
 });
 
 function App() {

@@ -6,6 +6,11 @@ import { useQueryClient } from "react-query";
 import { useCashPaymentDetails } from "./ManualReciept";
 import { useCardPaymentDetails } from "./card";
 import { useChequeDetails } from "./cheque";
+import { useDdDetails } from "./dd";
+import { useNEFTDetails } from "./neft";
+import { useRTGSDetails } from "./rtgs";
+import { usePostalDetails } from "./postalOrder";
+import { useQRDetails } from "./qrCode";
 import isEqual from "lodash/isEqual";
 import { BillDetailsFormConfig } from "./Bill-details/billDetails";
 
@@ -45,6 +50,11 @@ export const CollectPayment = (props) => {
   const { cardConfig } = useCardPaymentDetails(props, t);
   const { chequeConfig } = useChequeDetails(props, t);
   const { cashConfig } = useCashPaymentDetails(props, t);
+  const { ddConfig } = useDdDetails(props, t);
+  const { neftConfig } = useNEFTDetails(props, t);
+  const { rtgsConfig } = useRTGSDetails(props, t);
+  const { postalOrderConfig } = usePostalDetails(props, t);
+  const { qrConfig } = useQRDetails(props, t);
 
   const [formState, setFormState] = useState({});
   const [toast, setToast] = useState(null);
@@ -59,15 +69,21 @@ export const CollectPayment = (props) => {
     { code: "CASH", label: t("COMMON_MASTERS_PAYMENTMODE_CASH") },
     { code: "CHEQUE", label: t("COMMON_MASTERS_PAYMENTMODE_CHEQUE") },
     { code: "CARD", label: t("COMMON_MASTERS_PAYMENTMODE_CREDIT/DEBIT CARD") },
-    // { code: "DD", label: "Demand Draft" },
-    // { code: "OFFLINE_NEFT", label: "Offline NEFT" },
-    // { code: "OFFLINE_RTGS", label: "Offline RTGS" },
-    // { code: "POSTAL_ORDER", label: "Postal Order" },
+    { code: "DD", label: "Demand Draft" },
+    { code: "OFFLINE_NEFT", label: "NEFT" },
+    { code: "OFFLINE_RTGS", label: "RTGS" },
+    { code: "POSTAL_ORDER", label: "Postal Order" },
+    { code: "QR_CODE", label: "QR Code" },
   ];
 
   const formConfigMap = {
     CHEQUE: chequeConfig,
     CARD: cardConfig,
+    DD: ddConfig,
+    OFFLINE_NEFT: neftConfig,
+    OFFLINE_RTGS: rtgsConfig,
+    POSTAL_ORDER: postalOrderConfig,
+    QR_CODE: qrConfig,
   };
 
   useEffect(() => {
@@ -126,7 +142,12 @@ export const CollectPayment = (props) => {
         paidBy: data.paidBy,
       },
     };
-    if (advanceBill !== null && (applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT" || applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN") && !applicationData.paymentPreference) {
+    if (
+      advanceBill !== null &&
+      (applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT" ||
+        applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN") &&
+      !applicationData.paymentPreference
+    ) {
       (recieptRequest.Payment.paymentDetails[0].totalAmountPaid = advanceBill),
         (recieptRequest.Payment.totalAmountPaid = advanceBill),
         (recieptRequest.Payment.totalDue = bill.totalAmount);
@@ -184,12 +205,13 @@ export const CollectPayment = (props) => {
       const resposne = await Digit.PaymentService.createReciept(tenantId, recieptRequest);
       queryClient.invalidateQueries();
       history.push(
-        IsDisconnectionFlow ? `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
-          resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
-        }?IsDisconnectionFlow=${IsDisconnectionFlow}` : 
-        `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
-          resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
-        }?IsDisconnectionFlow=${IsDisconnectionFlow}`
+        IsDisconnectionFlow
+          ? `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
+              resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
+            }?IsDisconnectionFlow=${IsDisconnectionFlow}`
+          : `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
+              resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
+            }?IsDisconnectionFlow=${IsDisconnectionFlow}`
       );
     } catch (error) {
       setToast({ key: "error", action: error?.response?.data?.Errors?.map((e) => t(e.code)) })?.join(" , ");
@@ -271,6 +293,7 @@ export const CollectPayment = (props) => {
               pattern: /^[6-9]\d{9}$/,
             },
             error: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+            defaultValue: bill?.mobileNumber || formState?.mobileNumber || "",
             className: "payment-form-text-input-correction",
           },
         },
@@ -347,7 +370,7 @@ export const CollectPayment = (props) => {
         onSubmit={onSubmit}
         formState={formState}
         defaultValues={getDefaultValues()}
-        isDisabled={IsDisconnectionFlow ? false : businessService === "SW" || "WS" ?false:bill?.totalAmount ? !bill.totalAmount > 0 : true}
+        isDisabled={IsDisconnectionFlow ? false : businessService === "SW" || "WS" ? false : bill?.totalAmount ? !bill.totalAmount > 0 : true}
         // isDisabled={BillDetailsFormConfig({ consumerCode }, t)[businessService] ? !}
         onFormValueChange={(setValue, formValue) => {
           if (!isEqual(formValue.paymentMode, selectedPaymentMode)) {
@@ -362,6 +385,7 @@ export const CollectPayment = (props) => {
           label={t(toast.key === "success" ? `ES_${businessService.split(".")[0].toLowerCase()}_${toast.action}_UPDATE_SUCCESS` : toast.action)}
           onClose={() => setToast(null)}
           style={{ maxWidth: "670px" }}
+          isDleteBtn={true}
         />
       )}
     </React.Fragment>

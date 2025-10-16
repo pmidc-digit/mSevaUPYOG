@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
-
 import PTRDesktopInbox from "../../components/PTRDesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -22,6 +21,10 @@ const Inbox = ({
   EmptyResultInboxComp,
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  console.log("EmptyResultInboxComp", EmptyResultInboxComp);
+  console.log("useNewInboxAPI", useNewInboxAPI);
+  console.log("here", moduleCode, tenantId);
+  console.log("initialStates", initialStates);
 
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
@@ -41,13 +44,16 @@ const Inbox = ({
     ? Digit.Hooks.useNewInboxGeneral({
         tenantId,
         ModuleCode: moduleCode,
-        filters: { ...searchParams, ...paginationParams, sortParams },
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
+        config: { staleTime: 0, refetchOnMount: "always" },
       })
     : Digit.Hooks.useInboxGeneral({
         tenantId,
         businessService: moduleCode,
         isInbox,
-        filters: { ...searchParams, ...paginationParams, sortParams },
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
         rawWfHandler,
         rawSearchHandler,
         combineResponse,
@@ -55,17 +61,14 @@ const Inbox = ({
         searchConfig: { ...enableSarch, ...searchConfig },
         middlewaresWf,
         middlewareSearch,
+        config: { staleTime: 0, refetchOnMount: "always" },
       });
 
-
-     
-
-
+  const totalCount = data?.[0]?.totalCount;
 
   useEffect(() => {
     setPageOffset(0);
   }, [searchParams]);
-
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
   };
@@ -107,23 +110,25 @@ const Inbox = ({
           searchParams={searchParams}
           sortParams={sortParams}
           linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig:TableConfig(t)["PTR"]}
+          tableConfig={rest?.tableConfig ? rest?.tableConfig : TableConfig(t)["PTR"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}
           useNewInboxAPI={useNewInboxAPI}
         />
-        // <div></div>
       );
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
-         
-          
+          {isInbox && (
+            <Header>
+              {t("ES_COMMON_INBOX")}
+              {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+            </Header>
+          )}
+
           <PTRDesktopInbox
             moduleCode={moduleCode}
             data={data}
-            
             tableConfig={TableConfig(t)["PTR"]}
             isLoading={hookLoading}
             defaultSearchParams={initialStates.searchParams}
@@ -153,4 +158,3 @@ const Inbox = ({
 };
 
 export default Inbox;
-

@@ -11,7 +11,8 @@ const TLWFApplicationTimeline = (props) => {
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
     id: props.id,
-    moduleCode: businessService,
+    // moduleCode: businessService,
+    moduleCode: "NewTL", //Need To make this dynamic
   });
 
   const [showAllTimeline, setShowAllTimeline]=useState(false);

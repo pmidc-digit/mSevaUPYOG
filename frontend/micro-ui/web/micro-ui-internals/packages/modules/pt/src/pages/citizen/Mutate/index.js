@@ -99,7 +99,7 @@ const MutationCitizen = (props) => {
             gender: owner.gender?.code,
             ownerType: owner.ownerType?.code || "NONE",
             relationship: owner.relationship?.code,
-            inistitutetype: owner?.inistitutetype?.value,
+            institutionType: owner?.institutionType?.value,
             landlineNumber: owner?.altContactNumber,
             status: "ACTIVE",
           })),
@@ -128,10 +128,10 @@ const MutationCitizen = (props) => {
     if (!ownershipCategory?.code.includes("INDIVIDUAL")) {
       data.Property.institution = {
         nameOfAuthorizedPerson: ownersArray[0].name,
-        name: ownersArray[0].inistitutionName,
+        name: ownersArray[0].institutionName,
         designation: ownersArray[0].designation,
         tenantId: data?.Property?.address.tenantId,
-        type: ownersArray[0].inistitutetype?.value,
+        type: ownersArray[0].institutionType,
       };
 
       data.Property.owners = data.Property.owners?.map((owner) =>

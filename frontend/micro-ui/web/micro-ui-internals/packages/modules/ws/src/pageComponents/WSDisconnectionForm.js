@@ -131,30 +131,75 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
 
   const onSubmit = async (data) => {
     const appDate= new Date();
-    const proposedDate= format(addDays(appDate, slaData?.slaDays), 'yyyy-MM-dd').toString();
+    const slaDays = slaData?.slaDays || 0;
+    // Validate that slaDays is a number
+    if (isNaN(slaDays)) {
+      setError({key: "error", message: "INVALID_SLA_DAYS"});
+      setTimeout(() => {
+        setError(false);
+      }, 3000);
+      return;
+    }
+    
+    const proposedDate = format(addDays(appDate, slaDays), 'yyyy-MM-dd').toString();
 
-    if( convertDateToEpoch(data?.date)  <= convertDateToEpoch(proposedDate)){
-      setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE"});
+    // Add safety checks for date validation
+    if (!data?.date || data?.date === "") {
+      setError({key: "error", message: "PROPOSED_DISCONNECTION_DATE_REQUIRED"});
       setTimeout(() => {
         setError(false);
       }, 3000);
+      return;
     }
-    if( data?.type?.value?.name == "Temporary" && convertDateToEpoch(data?.endDate)  <= convertDateToEpoch(data?.date)){
-      setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE"});
+
+    // Convert dates safely
+    const disconnectionDateEpoch = convertDateToEpoch(data?.date);
+    const proposedDateEpoch = convertDateToEpoch(proposedDate);
+    
+    // Updated logic: Disconnection date should be greater than the calculated SLA date
+    // This means user cannot schedule disconnection before the minimum SLA period
+    if (disconnectionDateEpoch < proposedDateEpoch) {
+      setError({key: "error", message: `PROPOSED_DISCONNECTION_INVALID_DATE - Minimum date should be ${proposedDate}`});
       setTimeout(() => {
         setError(false);
       }, 3000);
+      return;
     }
-    else if(wsDocsLoading || documents.length < 2 || disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === ""){
+
+    // Check for temporary disconnection end date
+    if (data?.type?.value?.name === "Temporary") {
+      if (!data?.endDate || data?.endDate === "") {
+        setError({key: "error", message: "END_DATE_REQUIRED_FOR_TEMPORARY"});
+        setTimeout(() => {
+          setError(false);
+        }, 3000);
+        return;
+      }
+      
+      const endDateEpoch = convertDateToEpoch(data?.endDate);
+      if (endDateEpoch <= disconnectionDateEpoch) {
+        setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE"});
+        setTimeout(() => {
+          setError(false);
+        }, 3000);
+        return;
+      }
+    }
+
+    // Check other required fields
+    if (wsDocsLoading || documents.length < 2 || !disconnectionData?.reason?.value || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === "") {
       setError({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
       setTimeout(() => {
         setError(false);
       }, 3000);
+      return;
     }
 
-    else {
+    // Proceed with API calls
+    try {
       const payload = await createPayloadOfWSDisconnection(data, applicationData, applicationData?.applicationData?.serviceType);
-      if(payload?.WaterConnection?.water){
+      
+      if (payload?.WaterConnection?.water) {
         if (waterMutation) {
           setIsEnableLoader(true);
           await waterMutation(payload, {
@@ -211,6 +256,10 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
           });
         }
       }
+    } catch (error) {
+      setIsEnableLoader(false);
+      setError({ key: "error", message: "DISCONNECTION_SUBMISSION_FAILED" });
+      setTimeout(closeToastOfError, 5000);
     }
     
   } ;

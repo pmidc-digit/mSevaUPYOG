@@ -21,7 +21,7 @@ const createEmployeeConfig = [
     key: "TraidDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -34,7 +34,7 @@ const createEmployeeConfig = [
     key: "OwnerDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -47,7 +47,7 @@ const createEmployeeConfig = [
     key: "Documents",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -60,7 +60,7 @@ const createEmployeeConfig = [
     key: "SummaryTL",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "Submit",
+      submitBarLabel: "TL_COMMON_BUTTON_SUBMIT",
     },
   },
 ];

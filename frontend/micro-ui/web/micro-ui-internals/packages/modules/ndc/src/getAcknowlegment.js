@@ -2,45 +2,45 @@ import React from "react";
 import { Card, CardHeader } from "@mseva/digit-ui-react-components";
 
 const getMohallaLocale = (value = "", tenantId = "") => {
-  let convertedValue = convertDotValues(tenantId);
-  if (convertedValue == "NA" || !checkForNotNull(value)) {
-    return "PGR_NA";
-  }
-  convertedValue = convertedValue.toUpperCase();
-  return convertToLocale(value, `${convertedValue}_REVENUE`);
-};
-const convertDotValues = (value = "") => {
-  return (
-    (checkForNotNull(value) && ((value.replaceAll && value.replaceAll(".", "_")) || (value.replace && stringReplaceAll(value, ".", "_")))) || "NA"
-  );
-};
-const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
-  if (searcher == "") return str;
-  while (str.includes(searcher)) {
-    str = str.replace(searcher, replaceWith);
-  }
-  return str;
-};
-const checkForNotNull = (value = "") => {
-  return value && value != null && value != undefined && value != "" ? true : false;
-};
-const getCityLocale = (value = "") => {
-  let convertedValue = convertDotValues(value);
-  if (convertedValue == "NA" || !checkForNotNull(value)) {
-    return "PGR_NA";
-  }
-  convertedValue = convertedValue.toUpperCase();
-  return convertToLocale(convertedValue, `TENANT_TENANTS`);
-};
-const convertToLocale = (value = "", key = "") => {
-  let convertedValue = convertDotValues(value);
-  if (convertedValue == "NA") {
-    return "PGR_NA";
-  }
-  return `${key}_${convertedValue}`;
-};
-const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
-const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
+    let convertedValue = convertDotValues(tenantId);
+    if (convertedValue == "NA" || !checkForNotNull(value)) {
+      return "PGR_NA";
+    }
+    convertedValue = convertedValue.toUpperCase();
+    return convertToLocale(value, `${convertedValue}_REVENUE`);
+  };
+   const convertDotValues = (value = "") => {
+    return (
+      (checkForNotNull(value) && ((value.replaceAll && value.replaceAll(".", "_")) || (value.replace && stringReplaceAll(value, ".", "_")))) || "NA"
+    );
+  };
+   const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
+    if (searcher == "") return str;
+    while (str.includes(searcher)) {
+      str = str.replace(searcher, replaceWith);
+    }
+    return str;
+  };
+   const checkForNotNull = (value = "") => {
+    return value && value != null && value != undefined && value != "" ? true : false;
+  };
+   const getCityLocale = (value = "") => {
+    let convertedValue = convertDotValues(value);
+    if (convertedValue == "NA" || !checkForNotNull(value)) {
+      return "PGR_NA";
+    }
+    convertedValue = convertedValue.toUpperCase();
+    return convertToLocale(convertedValue, `TENANT_TENANTS`);
+  };
+   const convertToLocale = (value = "", key = "") => {
+    let convertedValue = convertDotValues(value);
+    if (convertedValue == "NA") {
+      return "PGR_NA";
+    }
+    return `${key}_${convertedValue}`;
+  };
+  const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
+  const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 const getAcknowledgementData = async (application, tenantInfo, t) => {
   const appData = application?.Applications?.[0] || {};
@@ -48,54 +48,119 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   const ndc = appData?.NdcDetails?.[0] || {};
   const add = ndc?.additionalDetails || {};
 
-  const applicationNumber = appData?.applicationNo || "NA";
+  const applicationNumber = appData?.uuid || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
-  const propertyId = appData?.NdcDetails?.[3]?.consumerCode;
+  const propertyId = appData?.NdcDetails?.[0]?.consumerCode;
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
-  const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA";
+    const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA"
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
 
+
+
+  console.log(tenantInfo,appData, "TENANT INFO IN ACKNOWLEDGEMENT");
+
+
   // Build single certificate body by concatenating translated fragments and dynamic values
-  const certificateBody = `${t("NDC_MSG_INTRO")}
 
-${t("NDC_MSG_APPLICATION_LABEL")}: ${applicationNumber}
 
-${t("NDC_MSG_PROPERTY_LABEL")}: ${propertyId}  ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} ${propertyType}
+//   const certificateBody = `${t("NDC_MSG_INTRO")}
 
-${t("NDC_MSG_APPLICANT_LABEL")}: ${applicantName} ${t("NDC_MSG_FOR_LAND")} ${address} ${t("NDC_MSG_FALLING_CLAUSE_PART1")} ${t(
-    "NDC_MSG_FALLING_CLAUSE_PART2"
-  )} Municipal Council/ Corporation ${t("NDC_MSG_AFTER_RECOVERY")} ${duesAmount} ${t("NDC_MSG_DUES_LIST")}
+// ${t("NDC_MSG_APPLICATION_LABEL")}: ${applicationNumber}
 
-${t("NDC_MSG_DECLARATION_TITLE")}
-${t("NDC_MSG_DECL_A")}
-${t("NDC_MSG_DECL_B")}
-${t("NDC_MSG_DECL_C")}
-${t("NDC_MSG_DECL_D")}
-${t("NDC_MSG_DECL_E")}
+// ${t("NDC_MSG_PROPERTY_LABEL")}: ${propertyId}  ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} ${propertyType}
 
-${t("NDC_MSG_DISCLAIMER_TITLE")}
-${t("NDC_MSG_DISCLAIMER_BODY")}
+// ${t("NDC_MSG_APPLICANT_LABEL")}: ${applicantName} ${t("NDC_MSG_FOR_LAND")} ${address} ${t("NDC_MSG_FALLING_CLAUSE_PART1")} ${t("NDC_MSG_FALLING_CLAUSE_PART2")} Municipal Council/ Corporation ${t("NDC_MSG_AFTER_RECOVERY")} ${duesAmount} ${t("NDC_MSG_DUES_LIST")}
 
-${t("NDC_MSG_NOTE")} ${t("NDC_MSG_VERIFICATION_LINK_LABEL")}`;
+// ${t("NDC_MSG_DECLARATION_TITLE")}
+// ${t("NDC_MSG_DECL_A")}
+// ${t("NDC_MSG_DECL_B")}
+// ${t("NDC_MSG_DECL_C")}
+// ${t("NDC_MSG_DECL_D")}
+// ${t("NDC_MSG_DECL_E")}
+
+// ${t("NDC_MSG_DISCLAIMER_TITLE")}
+// ${t("NDC_MSG_DISCLAIMER_BODY")}
+
+// ${t("NDC_MSG_NOTE")} ${t("NDC_MSG_VERIFICATION_LINK_LABEL")}`;
+
+
+ const certificateBody = `
+${t("NDC_MSG_DATE_LABEL")}: ${applicationDate}  
+${t("NDC_MSG_DATE_LABEL", { lng: "pa" })}: ${applicationDate}  
+${t("NDC_MSG_APPROVAL_DATE_LABEL")}: ${approvalDate}  
+${t("NDC_MSG_APPROVAL_DATE_LABEL", { lng: "pa" })}: ${approvalDate}  
+
+${t("NDC_MSG_PROPERTY_ID_LABEL")}: ${propertyId}   ${t("NDC_MSG_PROPERTY_TYPE_LABEL")}: ${propertyType}  
+${t("NDC_MSG_PROPERTY_ID_LABEL", { lng: "pa" })}: ${propertyId}   ${t("NDC_MSG_PROPERTY_TYPE_LABEL", { lng: "pa" })}: ${propertyType}  
+
+${t("NDC_MSG_APPLICANT_LABEL")}: ${applicantName} ${t("NDC_MSG_FOR_LAND")} ${address}  
+${t("NDC_MSG_APPLICANT_LABEL", { lng: "pa" })}: ${applicantName} ${t("NDC_MSG_FOR_LAND", { lng: "pa" })} ${address}  
+
+${t("NDC_MSG_CERTIFY", { ulbName })}  
+${t("NDC_MSG_CERTIFY", { ulbName, lng: "pa" })}  
+
+${t("NDC_MSG_DECLARATION_TITLE")}  
+${t("NDC_MSG_DECLARATION_TITLE", { lng: "pa" })}  
+
+${t("NDC_MSG_DECL_A")}  
+${t("NDC_MSG_DECL_A", { lng: "pa" })}  
+
+${t("NDC_MSG_DECL_B")}  
+${t("NDC_MSG_DECL_B", { lng: "pa" })}  
+
+${t("NDC_MSG_DECL_C")}  
+${t("NDC_MSG_DECL_C", { lng: "pa" })}  
+
+${t("NDC_MSG_DECL_D")}  
+${t("NDC_MSG_DECL_D", { lng: "pa" })}  
+
+${t("NDC_MSG_DECL_E")}  
+${t("NDC_MSG_DECL_E", { lng: "pa" })}  
+
+${t("NDC_MSG_DISCLAIMER_TITLE")}  
+${t("NDC_MSG_DISCLAIMER_TITLE", { lng: "pa" })}  
+
+${t("NDC_MSG_DISCLAIMER_BODY")}  
+${t("NDC_MSG_DISCLAIMER_BODY", { lng: "pa" })}  
+
+${t("NDC_MSG_ISSUED_BY")}  
+${t("NDC_MSG_ISSUED_BY", { lng: "pa" })}  
+
+${officerName}  
+${officerDesignation}  
+
+${t("NDC_MSG_COMPETENT_AUTHORITY")}  
+${t("NDC_MSG_COMPETENT_AUTHORITY", { lng: "pa" })}  
+
+${t("NDC_MSG_NOTE")}  
+${t("NDC_MSG_NOTE", { lng: "pa" })}
+`;
+
 
   return {
     t,
     tenantId: tenantInfo?.code,
-    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
+    name: t("NDC_CERTIFICATE"),
+    // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(
+    //   t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`)
+    // )}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: t("NDC_CERTIFICATE"),
+    // heading: t("NDC_CERTIFICATE"),
+    heading: `${t(tenantInfo?.i18nKey)} ${ulbCamel(
+      t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`)
+    )}`,
     applicationNumber,
     details: [
       {
         // title: t("NDC_CERTIFICATE_BODY_TITLE"),
-        value: certificateBody,
-      },
-    ],
+        value: certificateBody
+      }
+    ]
   };
 };
-
-export default getAcknowledgementData;
+       
+  export default getAcknowledgementData;

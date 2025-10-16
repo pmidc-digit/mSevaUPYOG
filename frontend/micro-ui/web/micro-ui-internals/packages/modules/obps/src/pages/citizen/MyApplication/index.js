@@ -28,6 +28,7 @@ const MyApplication = () => {
   console.log(requestor, "PPPP");
 
   const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
+  
   const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(tenantId, {
     requestor,
     mobileNumber: requestor,
@@ -218,6 +219,11 @@ const MyApplication = () => {
       </div>
 
 
+
+
+
+
+
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           return (
@@ -232,7 +238,10 @@ const MyApplication = () => {
               )}
               <KeyNote keyValue={t("BPA_APPLICANT_NAME_LABEL")} note={application?.tradeLicenseDetail?.owners?.[0]?.name} />
               <KeyNote keyValue={t("TL_COMMON_TABLE_COL_STATUS")} note={t(`WF_ARCHITECT_${application?.status}`)} noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }} />
-              {application.status !== "INITIATED" ? <Link to={{ pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`, state: { tenantId: application?.tenantId } }}>
+            
+              
+              
+              {/* {application.status !== "INITIATED" ? <Link to={{ pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`, state: { tenantId: application?.tenantId } }}>
                 <SubmitBar label={t("TL_VIEW_DETAILS")} />
               </Link> :
                 <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAREGFormData(application)} />}
@@ -245,7 +254,41 @@ const MyApplication = () => {
                 <SubmitBar label ={t("COMMON_MAKE_PAYMENT")}/>
               </div>
               </Link>
+              ) : null} */}
+
+              {application.status === "CITIZEN_ACTION_REQUIRED" ? (
+                <SubmitBar
+                  label={t("EDIT")}
+                  onSubmit={() => getBPAREGFormData(application)}
+                />
+              ) : application.status !== "INITIATED" ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`,
+                    state: { tenantId: application?.tenantId },
+                  }}
+                >
+                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                </Link>
+              ) : (
+                <SubmitBar
+                  label={t("BPA_COMP_WORKFLOW")}
+                  onSubmit={() => getBPAREGFormData(application)}
+                />
+              )}
+
+              {application.status === "PENDINGPAYMENT" ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}/${application?.tenantId}?tenantId=${application?.tenantId}`,
+                  }}
+                >
+                  <div style={{ marginTop: "10px" }}>
+                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+                  </div>
+                </Link>
               ) : null}
+
             </Card>
           );
         } else {

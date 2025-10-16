@@ -229,7 +229,7 @@ const CitizenApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "obpas_noc",
+    moduleCode: "obpas_noc", // businessService
     // role: "EMPLOYEE",
   });
 

@@ -3,18 +3,13 @@ import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from
 import { Loader } from "../components/Loader";
 
 const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
-  const tenantId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
-
-  // const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
-  // const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS("pb", "CHB", ["Documents"]);
-  const { data, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -23,6 +18,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
     console.log("documentStep config.key", documentStep);
     onSelect(config.key, documentStep);
   };
+
   const onSkip = () => onSelect();
   function onAdd() {}
 
@@ -193,10 +189,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div style={{ marginBottom: "24px", width: "50%" }}>
       {doc?.hasDropdown ? (
         <LabelFieldPair style={{ display: "inline" }}>
-          <CardLabel className="card-label-smaller">
+          <CardLabel style={{ width: "auto" }}>
             {t(doc?.code)} {doc?.required && " *"}
           </CardLabel>
           <Dropdown

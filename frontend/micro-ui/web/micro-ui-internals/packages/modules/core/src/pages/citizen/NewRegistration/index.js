@@ -156,8 +156,9 @@ const NewRegistration = ({ stateCode }) => {
     });
   };
   return (
+     <div className="login-page-cover"> 
     <div className="login-container">
-      <div className="login-wrapper">
+      <div className="register-login-wrapper">
         <div className="login-title">{t("CS_COMMON_REGISTER")}</div>
         <div className="lag-loc-wrapper">
           <LanguageSelect onLanguageChange={setSelectedLanguage} />
@@ -201,6 +202,7 @@ const NewRegistration = ({ stateCode }) => {
 
         {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
       </div>
+    </div>
     </div>
   );
 };

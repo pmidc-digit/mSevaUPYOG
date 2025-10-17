@@ -11,7 +11,7 @@
   "devDependencies": {
     "microbundle-crl": "^0.13.11",
     "@mseva/digit-ui-libraries": "1.0.90",
-    "@mseva/digit-ui-module-common": "1.1.1",
+    "@mseva/digit-ui-module-common": "1.1.2",
     "@mseva/digit-ui-module-engagement": "1.1.29",
     "@mseva/digit-ui-module-fsm": "1.0.6",
     "@mseva/digit-ui-module-mcollect": "1.0.8",
@@ -28,7 +28,7 @@
     "@mseva/digit-ui-module-obps": "1.0.58",
     "@mseva/digit-ui-module-sv": "1.0.78",
     "@mseva/upyog-ui-module-ads": "1.0.97",
-    "@mseva/upyog-ui-module-chb": "1.0.91",
+    "@mseva/upyog-ui-module-chb": "1.0.92",
     "@mseva/upyog-ui-module-asset": "1.0.71",
     "@mseva/upyog-ui-module-pgrai": "1.0.63",
     "@mseva/digit-ui-module-challangeneration": "1.0.7",

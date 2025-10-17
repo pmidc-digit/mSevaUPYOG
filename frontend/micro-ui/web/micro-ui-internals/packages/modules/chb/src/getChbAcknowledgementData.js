@@ -56,7 +56,7 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
         values: [
           { title: t("CHB_COMMUNITY_HALL_NAME"), value: application?.communityHallCode },
           { title: t("CHB_BOOKING_DATE"), value: getBookingDateRange(application?.bookingSlotDetails) },
-          { title: t("CHB_BOOKING_TIME"), value: getBookingTimeRange(application?.bookingSlotDetails) },
+          { title: t("ADS_BOOKING_TIME"), value: getBookingTimeRange(application?.bookingSlotDetails) },
         ],
       },
       {
@@ -78,15 +78,8 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
         ],
       },
       {
-        title: t("CHB_ADDRESS_DETAILS"),
-        values: [
-          { title: t("CHB_PINCODE"), value: application?.address?.pincode },
-          { title: t("CHB_CITY"), value: application?.address?.city },
-          { title: t("CHB_LOCALITY"), value: application?.address?.locality },
-          { title: t("CHB_STREET_NAME"), value: application?.address?.streetName },
-          { title: t("CHB_HOUSE_NO"), value: application?.address?.houseNo },
-          { title: t("CHB_LANDMARK"), value: application?.address?.landmark },
-        ],
+        title: t("ADS_ADDRESS_DETAILS"),
+        values: [{ title: t("ADS_ADDRESS_LINE1"), value: application?.address?.addressLine1 }],
       },
     ],
   };

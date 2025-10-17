@@ -79,27 +79,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   };
 
-  const areCartSlotsEqual = (a = [], b = []) => {
-    if (a.length !== b.length) return false;
-
-    // sort by ad.id for stable comparison
-    const sortByAd = (arr) => [...arr].sort((x, y) => String(x.ad.id).localeCompare(String(y.ad.id)));
-
-    const sortedA = sortByAd(a);
-    const sortedB = sortByAd(b);
-
-    return sortedA.every((item, idx) => {
-      const other = sortedB[idx];
-      if (String(item.ad.id) !== String(other.ad.id)) return false;
-
-      // compare slots by bookingDate (or any unique key)
-      const slotsA = item.slots.map((s) => s.bookingDate).sort();
-      const slotsB = other.slots.map((s) => s.bookingDate).sort();
-
-      if (slotsA.length !== slotsB.length) return false;
-      return slotsA.every((date, i) => date === slotsB[i]);
-    });
-  };
+ 
 
   const onSubmit = async (data) => {
     if (cartSlots?.length === 0) {
@@ -395,6 +375,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             cartSlots={cartSlots}
             t={t}
             dateRange={dateRange}
+            onRemoveSlot={handleRemoveFromCart} 
           />
         )}
 

@@ -1,7 +1,8 @@
-import React, { useMemo, useState,useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
+import { areSlotsEqual } from "../utils";
 
-const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, cartSlots }) => {
+const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, cartSlots, onRemoveSlot }) => {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
@@ -20,7 +21,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
           location: ad?.locationCode,
           nightLight: ad?.light === "With Light" ? "true" : "false",
           isTimerRequired: false,
-          amount: ad?.amount
+          amount: ad?.amount,
         },
       ],
     }),
@@ -63,6 +64,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   // Commit changes to parent
   const handleAddToCart = () => {
     if (selectedSlots?.length > 0) {
+      // Add or update slots
       onSelectSlot(selectedSlots, {
         ...ad,
         faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
@@ -70,24 +72,38 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         addType: ad?.adType,
         amount: ad?.amount,
         bookingDate: dateRange?.startDate,
-        nightLight: ad?.light === "With Light" ? true : false,
+        nightLight: ad?.light === "With Light",
         bookingStartDate: dateRange?.startDate,
         bookingEndDate: dateRange?.endDate,
       });
-      setSelectedSlots([]);
-      setSelectAll(false);
-      onClose();
+    } else if (existingForAd?.length > 0) {
+      // No slots selected but ad already in cart → remove it
+      onRemoveSlot(ad);
     }
+
+    setSelectedSlots([]);
+    setSelectAll(false);
+    onClose();
   };
 
   // When modal opens, seed selectAll from allInCart
-useEffect(() => {
-  if (allInCart) {
-    setSelectAll(true);
-  }
-}, [allInCart]);
+  useEffect(() => {
+    if (allInCart) {
+      setSelectAll(true);
+    }
+  }, [allInCart]);
 
+  const hasChanges = !areSlotsEqual(selectedSlots, existingForAd);
 
+  useEffect(() => {
+    if (existingForAd?.length > 0) {
+      setSelectAll(true);
+      setSelectedSlots(existingForAd);
+    } else {
+      setSelectAll(false);
+      setSelectedSlots([]);
+    }
+  }, [ad?.id]); // run once per ad
 
   // Table columns
   const columns = [
@@ -110,7 +126,8 @@ useEffect(() => {
       accessor: "select",
       Cell: ({ row }) => {
         const slot = row?.original;
-        const isChecked = allInCart || (selectAll && slot?.slotStaus === "AVAILABLE");
+        // const isChecked = allInCart || (selectAll && slot?.slotStaus === "AVAILABLE");
+        const isChecked = selectAll && slot?.slotStaus === "AVAILABLE";
         return (
           <input
             type="checkbox"
@@ -277,18 +294,19 @@ useEffect(() => {
           </button>
           <button
             onClick={handleAddToCart}
+            disabled={!hasChanges}
             style={{
               padding: "10px 18px",
               borderRadius: "6px",
               border: "none",
-              background: selectedSlots?.length > 0 ? "#2947a3" : "#ccc",
+              background: hasChanges ? "#2947a3" : "#ccc",
               color: "#fff",
               fontWeight: 600,
-              cursor: selectedSlots?.length > 0 ? "pointer" : "not-allowed",
+              cursor: hasChanges ? "pointer" : "not-allowed",
               transition: "background 0.2s",
             }}
           >
-            🛒 {existingForAd?.length > 0 ? t("ADS_UPDATE_CART") : t("ADS_ADD_TO_CART")}
+            🛒 {existingForAd?.length > 0 ? t("COMMON_REMOVE_LABEL") : t("ADS_ADD_TO_CART")}
           </button>
         </div>
       </div>

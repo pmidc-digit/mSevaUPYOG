@@ -43,7 +43,7 @@ public class Demand {
 
 	@Valid
 	@JsonProperty("payer")
-	private User payer;
+	private Owner payer;
 
 	@JsonProperty("taxPeriodFrom")
 	private Long taxPeriodFrom;

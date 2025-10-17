@@ -46,7 +46,7 @@ public class DemandService {
 		String consumerCode = petReq.getPetRegistrationApplications().get(0).getApplicationNumber();
 
 		PetRegistrationApplication petApplication = petReq.getPetRegistrationApplications().get(0);
-		User owner = User.builder().name(petApplication.getOwner().getName()).emailId(petApplication.getOwner().getEmailId())
+		Owner owner = Owner.builder().permanentAddress(petApplication.getAddress().getAddressId()).name(petApplication.getOwner().getName()).emailId(petApplication.getOwner().getEmailId())
 				.mobileNumber(petApplication.getOwner().getMobileNumber()).tenantId(petApplication.getTenantId()).build();
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(petReq);
 		BigDecimal amountPayable = new BigDecimal(0);

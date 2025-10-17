@@ -92,6 +92,8 @@ public class UserService {
 		owner.setSignature(null);
 		owner.setPhoto(null);
 		owner.setAccountLocked(false);
+		owner.setPermanentAddress(request.getPetRegistrationApplications().get(0).getAddress().getAddressId());
+
 		// Keep locale minimal or null as per user-service expectations
 		// owner.setLocale("en_IN"); // uncomment if required by environment
 		

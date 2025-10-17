@@ -8,7 +8,7 @@ import MobileInput from "./NewSelectMobileNumber";
 import OtpInput from "./NewSelectOtp";
 import {LoginIcon} from "../../../../../../react-components/src/atoms/svgindex"
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
-const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/edcrscrutiny/apply/home";
+const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/home";
 
 const NewLogin = ({ stateCode }) => {
   const { t } = useTranslation();

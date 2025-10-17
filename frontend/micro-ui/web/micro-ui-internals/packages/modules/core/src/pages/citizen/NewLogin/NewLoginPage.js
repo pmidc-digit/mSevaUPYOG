@@ -8,6 +8,7 @@ import MobileInput from "./NewSelectMobileNumber";
 import OtpInput from "./NewSelectOtp";
 import {LoginIcon} from "../../../../../../react-components/src/atoms/svgindex"
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
+const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/edcrscrutiny/apply/home";
 
 const NewLogin = ({ stateCode }) => {
   const { t } = useTranslation();
@@ -61,7 +62,9 @@ const NewLogin = ({ stateCode }) => {
   const getUserType = () => Digit.UserService.getType();
 
   const getFromLocation = (state) => {
-    return state?.from || DEFAULT_REDIRECT_URL;
+    const userRoles = user.info.roles.map((roleData) => roleData.code);
+    const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
+    return isUserBPA ? state?.from || DEFAULT_BPA_REDIRECT_URL : state?.from || DEFAULT_REDIRECT_URL;
   };
 
   async function onSendOtp() {

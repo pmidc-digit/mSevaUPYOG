@@ -47,7 +47,7 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
         values: [
           { title: t("CHB_APPLICANT_NAME"), value: application?.applicantDetail?.applicantName },
           { title: t("CHB_MOBILE_NUMBER"), value: application?.applicantDetail?.applicantMobileNo },
-          { title: t("CHB_ALT_MOBILE_NUMBER"), value: application?.applicantDetail?.applicantAlternateMobileNo },
+          { title: t("CHB_ALT_MOBILE_NUMBER"), value: application?.applicantDetail?.applicantAlternateMobileNo || "N/A" },
           { title: t("CHB_EMAIL_ID"), value: application?.applicantDetail?.applicantEmailId },
         ],
       },
@@ -70,11 +70,11 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
       {
         title: t("CHB_BANK_DETAILS"),
         values: [
-          { title: t("CHB_ACCOUNT_NUMBER"), value: application?.applicantDetail?.accountNumber },
-          { title: t("CHB_IFSC_CODE"), value: application?.applicantDetail?.ifscCode },
-          { title: t("CHB_BANK_NAME"), value: application?.applicantDetail?.bankName },
-          { title: t("CHB_BANK_BRANCH_NAME"), value: application?.applicantDetail?.bankBranchName },
-          { title: t("CHB_ACCOUNT_HOLDER_NAME"), value: application?.applicantDetail?.accountHolderName },
+          { title: t("CHB_ACCOUNT_NUMBER"), value: application?.applicantDetail?.accountNumber || " N/A" },
+          { title: t("CHB_IFSC_CODE"), value: application?.applicantDetail?.ifscCode || " N/A" },
+          { title: t("CHB_BANK_NAME"), value: application?.applicantDetail?.bankName || " N/A" },
+          { title: t("CHB_BANK_BRANCH_NAME"), value: application?.applicantDetail?.bankBranchName || " N/A" },
+          { title: t("CHB_ACCOUNT_HOLDER_NAME"), value: application?.applicantDetail?.accountHolderName || " N/A" },
         ],
       },
       {

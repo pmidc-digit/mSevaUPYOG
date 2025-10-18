@@ -96,14 +96,14 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   const hasChanges = !areSlotsEqual(selectedSlots, existingForAd);
 
   useEffect(() => {
-    if (existingForAd?.length > 0) {
+    if (ad?.id && existingForAd?.length > 0) {
       setSelectAll(true);
       setSelectedSlots(existingForAd);
     } else {
       setSelectAll(false);
       setSelectedSlots([]);
     }
-  }, [ad?.id]); // run once per ad
+  }, [ad]);
 
   // Table columns
   const columns = [

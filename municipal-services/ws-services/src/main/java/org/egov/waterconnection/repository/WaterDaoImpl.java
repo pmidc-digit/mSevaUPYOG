@@ -248,19 +248,40 @@ public class WaterDaoImpl implements WaterDao {
 		}
 		return connectionResponse;
 	}
-	
-	public List<String> fetchWaterConIds(SearchCriteria criteria) {
-		List<Object> preparedStmtList = new ArrayList<>();
-		preparedStmtList.add(criteria.getOffset());
-		preparedStmtList.add(criteria.getLimit());
 
-		List<String> ids = jdbcTemplate.query("SELECT id from eg_ws_connection ORDER BY createdtime offset " +
-						" ? " +
-						"limit ? ",
-				preparedStmtList.toArray(),
-				new SingleColumnRowMapper<>(String.class));
-		return ids;
-	}
+    public List<String> fetchWaterConIds(SearchCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+
+        StringBuilder query = new StringBuilder("SELECT id FROM eg_ws_connection ");
+
+        boolean hasWhereClause = false;
+
+        // Add fromDate filter if present
+        if (criteria.getFromDate() != null) {
+            query.append("WHERE createdtime >= ? ");
+            preparedStmtList.add(criteria.getFromDate());
+            hasWhereClause = true;
+        }
+
+        // Add toDate filter if present
+        if (criteria.getToDate() != null) {
+            if (hasWhereClause) {
+                query.append("AND createdtime <= ? ");
+            } else {
+                query.append("WHERE createdtime <= ? ");
+            }
+            preparedStmtList.add(criteria.getToDate());
+        }
+
+        query.append("ORDER BY createdtime OFFSET ? LIMIT ?");
+        preparedStmtList.add(criteria.getOffset());
+        preparedStmtList.add(criteria.getLimit());
+
+        List<String> ids = jdbcTemplate.query(query.toString(),
+                preparedStmtList.toArray(),
+                new SingleColumnRowMapper<>(String.class));
+        return ids;
+    }
 
 	/* Method to push the encrypted data to the 'update' topic  */
 	@Override

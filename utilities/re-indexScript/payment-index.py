@@ -401,7 +401,7 @@ class PropertyIndexerAPI:
 
     def trigger_dashboard_ingest(self):
         """Trigger dashboard-ingest API after successful Elasticsearch upload"""
-        url = "http://collection-services:8080/dashboard-ingest/ingest/migrate/paymentsindex-v1/v1"
+        url = "http://dashboard-ingest.egov:8080/dashboard-ingest/ingest/migrate/paymentsindex-v1/v1"
 
         payload = {
             "RequestInfo": {
@@ -502,9 +502,9 @@ class PropertyIndexerAPI:
             logger.info("Step 4: Uploading to Elasticsearch...")
             self.upload_to_elasticsearch(self.bulk_file, chunk_size=elastricsearch_chunk_size)
 
-            # # Step 5: Trigger dashboard-ingest API
-            # logger.info("Step 5: Triggering dashboard-ingest API...")
-            # self.trigger_dashboard_ingest()
+            # Step 5: Trigger dashboard-ingest API
+            logger.info("Step 5: Triggering dashboard-ingest API...")
+            self.trigger_dashboard_ingest()
             
             # Summary
             end_time = time.time()

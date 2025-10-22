@@ -187,7 +187,7 @@ useEffect(() => {
     label: "PROPERTY_ID",
     type: "text",
     name: "id",
-    isMandatory: true
+    isMandatory: false
   };
 
   function setValue(value, input) {

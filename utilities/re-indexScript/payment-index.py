@@ -265,6 +265,9 @@ class PropertyIndexerAPI:
     def transform_payment_to_index_format(self, payment_data: Dict) -> Dict:
         enrichment = payment_data.get('_enrichment', {})
         audit_details = payment_data.get("auditDetails", {})
+        created_time_epoch = audit_details.get("createdTime", int(time.time() * 1000))
+        # Convert epoch (milliseconds) to ISO date string
+        created_time_iso = datetime.utcfromtimestamp(created_time_epoch / 1000).isoformat() + "Z"
         payer = {
             "id": payment_data.get("payerId", ""),
             "name": payment_data.get("payerName", "")
@@ -287,7 +290,7 @@ class PropertyIndexerAPI:
                     "auditDetails": audit_details,
                     "additionalDetails": payment_data.get("additionalDetails", {}),
                     "tenantData": enrichment.get("tenant_data", {}),
-                    "@timestamp": audit_details.get("createdTime", int(time.time()*1000)),
+                    "@timestamp": created_time_iso,
                     "ward": enrichment.get("ward_data", {})
                 }
             }

@@ -96,10 +96,10 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
 
-  if (isBPAREGLoading || !moduleCode) {
-    console.log("Waiting for moduleCode to load...")
-    return <Loader />
-  }
+  // if (isBPAREGLoading ) {
+  //   console.log("Waiting for moduleCode to load...")
+  //   return <Loader />
+  // }
 
   console.log("workflowDetails here=>", workflowDetails)
 
@@ -120,11 +120,13 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
     })
 
+    console.log(actions, "ACTION");
+
   function onActionSelect(action) {
 
 
     setDisplayMenu(false)
-
+      sessionStorage.setItem("selectedWorkflowAction", action.action);
     if (onSubmit) {
       console.log("Calling onSubmit with full action object:", action)
       onSubmit(action)
@@ -193,6 +195,21 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
     </div>
   )
 
+
+  const getFormattedULBName = (ulbCode = "") => {
+  if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+
+  const parts = ulbCode.split(".");
+  if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+
+  const namePart = parts[1];
+  return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+};
+
+// Usage:
+const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
+
+
   return (
     <div style={pageStyle}>
       {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
@@ -237,20 +254,20 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
       {/* Permanent Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), value?.LicneseDetails?.PermanentAddress)}
+        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), value?.LicneseDetails?.PermanentAddress || formData?.LicneseDetails?.PermanentAddress)}
 
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT")
           ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
           : renderLabel(
               t("BPA_SELECTED_ULB"),
-              formData?.LicneseDetails?.Ulb ? formData?.LicneseDetails?.Ulb : t("BPA_ULB_NOT_AVAILABLE"),
+              ulbName ? ulbName : t("BPA_ULB_NOT_AVAILABLE"),
             )}
       </div>
 
       {/* Communication Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS")}</h2>
-        {renderLabel(t("Address"), value?.LicneseDetails?.correspondenceAddress)}
+        {renderLabel(t("Address"), value?.LicneseDetails?.correspondenceAddress || formData?.LicneseDetails?.correspondenceAddress)}
       </div>
 
       {/* Documents */}

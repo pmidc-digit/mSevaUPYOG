@@ -32,6 +32,9 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     { enabled: !action?.isTerminateState }
   );
 
+
+  console.log(approverData, "DEKHO");
+
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
   const [approvers, setApprovers] = useState([]);
@@ -42,7 +45,17 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
 
   useEffect(() => {
-    setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
+    // setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
+  
+// <CHANGE> Create a displayName that combines name and designation
+setApprovers(approverData?.Employees?.map((employee) => ({ 
+  uuid: employee?.uuid, 
+  name: employee?.user?.name,
+  designation: employee?.assignments?.[0]?.designation || "N/A",
+  displayName: `${employee?.user?.name} (${t(employee?.assignments?.[0]?.designation) || "N/A"})` // <CHANGE> Add this line
+})));
+  
+  
   }, [approverData]);
 
   function selectFile(e) {

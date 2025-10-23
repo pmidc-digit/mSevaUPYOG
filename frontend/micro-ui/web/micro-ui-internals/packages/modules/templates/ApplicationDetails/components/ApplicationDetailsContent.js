@@ -69,36 +69,20 @@ function ApplicationDetailsContent({
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
 
-  // ISSUE 9 FIX: Fetch payment history for WS applications
-   useEffect(() => {
-    const fetchPaymentHistory = async () => {
-      if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
-        try {
-          const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
-          
-          const requestParams = {
-          tenantId: applicationData?.tenantId || tenantId,
-          filters: {
-            consumerCodes: applicationData?.connectionNo,
-            consumerCode: applicationData?.connectionNo
-          },
-          BusinessService: businessService  
-          };
-
-          const paymentData = await Digit.WSService.paymentsearch(requestParams);
-          if (Array.isArray(paymentData) && paymentData.length > 0) {
-            setPayments(paymentData);
-          } else if (paymentData?.Payments && paymentData.Payments.length > 0) {
-            setPayments(paymentData.Payments);
-          }
-        } catch (error) {
-          console.error("Payment fetch error:", error);
+  useEffect(() => {
+    if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
+      try {
+        const collectionData = applicationDetails?.colletionOfData;
+        if (Array.isArray(collectionData) && collectionData.length > 0) {
+          setPayments(collectionData);
+        } else {
+          setPayments([]); 
         }
+      } catch (error) {
+        setPayments([]); 
       }
-    };
-
-    fetchPaymentHistory();
-  }, [applicationData?.connectionNo, applicationData?.tenantId, applicationData?.serviceType, tenantId]);
+    }
+  }, [applicationData?.connectionNo, applicationDetails?.colletionOfData]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");

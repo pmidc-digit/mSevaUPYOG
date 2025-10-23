@@ -261,6 +261,7 @@ const basementAreaValues= watch("basementArea");
                     selected={props.value}
                     option={ulbListOptions}
                     optionKey="displayName"
+                    t={t}
                   />
                 )}
               />
@@ -367,7 +368,7 @@ const basementAreaValues= watch("basementArea");
                   required: t("REQUIRED_FIELD"),
                 }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" />
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t}/>
                 )}
               />
             )}
@@ -525,6 +526,7 @@ const basementAreaValues= watch("basementArea");
                     selected={props.value}
                     option={buildingType}
                     optionKey="name"
+                    t={t}
                   />
                 )}
               />
@@ -551,6 +553,7 @@ const basementAreaValues= watch("basementArea");
                   selected={props.value}
                   option={options}
                   optionKey="i18nKey"
+                  t={t}
                 />
               )}
             />
@@ -734,6 +737,7 @@ const basementAreaValues= watch("basementArea");
                   option={cities.sort((a, b) => a.name.localeCompare(b.name))} 
                   optionKey="name" 
                   disable="true"
+                  t={t}
                   />
                   
                 )}
@@ -755,7 +759,8 @@ const basementAreaValues= watch("basementArea");
                   select={props.onChange} 
                   selected={props.value} 
                   option={localities} 
-                  optionKey="i18nkey" />
+                  optionKey="i18nkey"
+                  t={t} />
                 )}
               />
           </LabelFieldPair>

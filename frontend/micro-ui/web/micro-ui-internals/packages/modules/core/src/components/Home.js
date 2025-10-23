@@ -19,6 +19,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
+import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -137,7 +138,9 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
               if (fetchedCitizen) mdmsDataObj = fetchedCitizen ? processLinkData(getCitizenMenu, code, t) : undefined;
               if (mdmsDataObj?.links?.length > 0) {
                 return (
-                  <CitizenHomeCard
+                  <div>
+                  {code === "OBPS"?
+                  <CitizenHomeCardWithExternalLink
                     header={t(mdmsDataObj?.header)}
                     links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
                     Icon={() => iconSelector(code)}
@@ -154,6 +157,25 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                     }
                     isInfo={code === "OBPS" ? true : false}
                   />
+                    :
+                  <CitizenHomeCard
+                    header={t(mdmsDataObj?.header)}
+                    links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
+                    Icon={() => iconSelector(code)}
+                    Info={
+                      code === "OBPS"
+                        ? () => (
+                            <CitizenInfoLabel
+                              style={{ margin: "0px", padding: "10px" }}
+                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                            />
+                          )
+                        : null
+                    }
+                    isInfo={code === "OBPS" ? true : false}
+                  />}
+                  </div>
                 );
               } else return <React.Fragment />;
             })}
@@ -177,7 +199,7 @@ const EmployeeHome = ({ modules }) => {
   const apiData = {
     welcomeCard: {
       background:
-        "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
+        "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg')",
       icon: "icon1.png",
       heading: "Welcome " + userName.info.name,
       content: "",

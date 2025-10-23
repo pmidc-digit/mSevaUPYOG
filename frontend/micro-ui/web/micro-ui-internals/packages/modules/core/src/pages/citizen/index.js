@@ -30,6 +30,7 @@ import EDCRAcknowledgement1 from "./Home/EDCR/EDCRAcknowledgement1";
 import FAQ from "../../FAQ";
 import FAQS from "../citizen/FAQs/FAQs";
 import NavigationPage from "./NavigationPage";
+import CitizenHomeCardWithExternalLink from "./CitizenHomeCardWithExternalLink";
 const sidebarHiddenFor = [
   "digit-ui/citizen/register/name",
   "/digit-ui/citizen/select-language",
@@ -124,12 +125,31 @@ const Home = ({
       <React.Fragment>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
           <div className="moduleLinkHomePage">
-            <img src={ "https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"||bannerImage || stateInfo?.bannerUrl} alt="noimagefound" />
+            <img src={ "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg"||bannerImage || stateInfo?.bannerUrl} alt="noimagefound" />
             <BackButton className="moduleLinkHomePageBackButton" />
            {isMobile? <h4 style={{top: "calc(16vw + 40px)",left:"1.5rem",position:"absolute",color:"white"}}>{t("MODULE_" + code.toUpperCase())}</h4>:<h1>{t("MODULE_" + code.toUpperCase())}</h1>}
             <div className="moduleLinkHomePageModuleLinks">
-              {mdmsDataObj && (
+              {mdmsDataObj && code != "OBPS" && (
                 <CitizenHomeCard
+                  header={t(mdmsDataObj?.header)}
+                  links={mdmsDataObj?.links}
+                  Icon={() => <span />}
+                  Info={
+                    code === "OBPS"
+                      ? () => (
+                          <CitizenInfoLabel
+                            style={{ margin: "0px", padding: "10px" }}
+                            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                            text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                          />
+                        )
+                      : null
+                  }
+                  isInfo={code === "OBPS" ? true : false}
+                />
+              )}
+              {mdmsDataObj && code === "OBPS" && (
+                <CitizenHomeCardWithExternalLink
                   header={t(mdmsDataObj?.header)}
                   links={mdmsDataObj?.links}
                   Icon={() => <span />}
@@ -193,12 +213,12 @@ const Home = ({
           </Route>
 
           {/* Custom OBPS Landing Page Route */}
-          <PrivateRoute path={`${path}/obps-home`}>
+          {/* <PrivateRoute path={`${path}/obps-home`}>
             {(() => {
               const CustomLandingPage = Digit?.ComponentRegistryService?.getComponent("CustomLandingPage");
               return CustomLandingPage ? <CustomLandingPage /> : null;
             })()}
-          </PrivateRoute>
+          </PrivateRoute> */}
 
           <PrivateRoute path={`${path}/feedback`} component={CitizenFeedback}></PrivateRoute>
           <PrivateRoute path={`${path}/feedback-acknowledgement`} component={AcknowledgementCF}></PrivateRoute>

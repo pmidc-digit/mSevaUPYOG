@@ -4,6 +4,7 @@ import { useLocation, useHistory } from "react-router-dom";
 import { getPattern, stringReplaceAll, sortDropdownNames } from "../utils";
 
 import useEDCRForm from "../../../../libraries/src/hooks/obps/useEDCRForm";
+import { set } from "lodash";
 
 const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast, errorStyle }) => {
   const { pathname: url } = useLocation();
@@ -72,7 +73,8 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     uploadMessage,
     uploadedFile,
   } = useEDCRForm({ formData });
-  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId() || "pb.amritsar"; 
+  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); 
+  const { data: cities } = Digit.Hooks.useTenants();
 
   const stateId = Digit.ULBService.getStateId();
   console.log(stateId, tenantId, t, "TEN STATE");
@@ -98,6 +100,14 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
 
 
   // const tenantId = localStorage.getItem("CITIZEN.CITY");
+
+  useEffect(() => {
+    if(cities){
+    const selectedCity = cities.find((city) => city.code === tenantId);
+    setSelectedCity({...selectedCity, displayName: t(selectedCity.i18nKey)});
+    setUlb(tenantId);
+    }
+  }, [tenantId, cities]);
 
   useEffect(() => {
     if (citymodules?.tenant?.citymodule?.length > 0) {
@@ -236,6 +246,7 @@ useEffect(() => {
             setUlb(city?.code);
           }}
           placeholder={t("COMMON_TABLE_SEARCH")}
+          disable={true}
         />
 
         <CardLabel>{t("EDCR_SCRUTINY_AREA_TYPE")}</CardLabel>

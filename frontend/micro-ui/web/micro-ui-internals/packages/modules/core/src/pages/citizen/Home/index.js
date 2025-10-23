@@ -28,7 +28,7 @@ import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/Citize
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 
 const titleBanner = {
-  backgroundImage: `linear-gradient(90deg, rgb(24, 63, 148) 26.61%, rgba(234, 88, 12, 0) 80%), url("https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg")`,
+  backgroundImage: `linear-gradient(90deg, rgb(24, 63, 148) 26.61%, rgba(234, 88, 12, 0) 80%), url("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg")`,
     backgroundPosition: 'right center, center center',
     backgroundSize: 'cover, cover',
     backgroundRepeat: 'no-repeat, no-repeat',
@@ -259,9 +259,9 @@ const Home = () => {
             <div className="titleBanner" style={titleBanner}>
               mSeva Punjab
              {/* {isMobile ? (
-              <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />
+              <img src={"https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg"} />
             ) : (
-              <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />
+              <img src={"https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg"} />
             )}  */}
             </div>
              {/* <div className="Search">

@@ -218,9 +218,9 @@ useEffect(() => {
       newErrors.architectid = t("BPA_ARCHITECT_ID_REQUIRED");
     }
 
-    if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
-      newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
-    }
+    // if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
+    //   newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
+    // }
 
     if (!bathnumber) {
       newErrors.bathnumber = t("BPA_BATH_NUMBER_REQUIRED");
@@ -292,7 +292,7 @@ useEffect(() => {
       ) || null;
     const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
-    const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || "";
+    const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || null;
     const address = {
       ...currentStepData?.cpt?.details?.address,
       city: currentStepData?.cpt?.details?.address?.tenantId || currentStepData?.cpt?.details?.address?.city || "",

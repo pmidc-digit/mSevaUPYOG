@@ -107,6 +107,7 @@ const NOCSpecificationDetails = (_props) => {
                   selected={props.value}
                   option={buildingCategory}
                   optionKey="name"
+                  t={t}
                 />
               )}
             />
@@ -127,7 +128,7 @@ const NOCSpecificationDetails = (_props) => {
                     required: t("REQUIRED_FIELD"),
                   }}
                   render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={nocType} optionKey="name" />
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={nocType} optionKey="name" t={t}/>
               )}
               />
             )}
@@ -149,6 +150,7 @@ const NOCSpecificationDetails = (_props) => {
                 selected={props.value}
                 option={options}
                 optionKey="i18nKey"
+                t={t}
               />
             )}
           />
@@ -170,6 +172,7 @@ const NOCSpecificationDetails = (_props) => {
                 selected={props.value}
                 option={options}
                 optionKey="i18nKey"
+                t={t}
               />
             )}
           />

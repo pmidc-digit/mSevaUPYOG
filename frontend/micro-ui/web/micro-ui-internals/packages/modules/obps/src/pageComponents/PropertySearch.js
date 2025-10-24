@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CardLabel, LabelFieldPair, TextInput, Toast, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, TextInput, Toast, Loader, Row, StatusTable  } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
@@ -15,7 +15,7 @@ const getAddress = (address, t) => {
   }`;
 };
 
-export const PropertySearch = ({ key = "cpt", onSelect, formData }) => {
+export const PropertySearch = ({ key = "cpt", onSelect, formData, setApiLoading, menuList }) => {
   const { t } = useTranslation();
   const myElementRef = useRef(null);
   const dispatch = useDispatch();
@@ -83,6 +83,24 @@ export const PropertySearch = ({ key = "cpt", onSelect, formData }) => {
 //       dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], id: ptFromApi }));
 //     }
 //   }, [ptFromApi]);
+
+useEffect(() => {
+  if (menuList && formData?.cpt?.details?.address?.locality
+    //  && !formData?.createdResponse?.additionalDetails
+    ) {
+    const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
+    let ward = {}
+    const zone = boundary?.children?.find(item => item?.children?.some((children) => {
+      if(children?.children?.some(child => child?.code === formData?.cpt?.details?.address?.locality?.code)){
+        ward = children
+        return true
+      }else{
+        return false
+      }
+    }));
+    dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], zonalMapping: {zone, ward} }));
+  }
+}, [menuList, formData?.cpt?.details?.address?.locality]);
 
   useEffect(() => {
     if (propertyDetailsFetch && propertyDetailsFetch?.Properties && propertyDetailsFetch?.Properties?.length > 0) {
@@ -169,6 +187,7 @@ export const PropertySearch = ({ key = "cpt", onSelect, formData }) => {
     label: "PROPERTY_ID",
     type: "text",
     name: "id",
+    isMandatory: false
   };
 
   function setValue(value, input) {
@@ -190,6 +209,10 @@ export const PropertySearch = ({ key = "cpt", onSelect, formData }) => {
     }
   }, [showToast]);
 
+  useEffect(() => {
+    setApiLoading(isLoading);
+  },[isLoading])
+
   return (
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
@@ -210,6 +233,7 @@ export const PropertySearch = ({ key = "cpt", onSelect, formData }) => {
               onChange={handlePropertyChange}
               disable={false}
               // maxlength={16}
+              placeholder={t("PT_PROPERTY_ID_PLACEHOLDER")}
               defaultValue={undefined}
               {...propertyIdInput.validation}
             />
@@ -223,6 +247,7 @@ export const PropertySearch = ({ key = "cpt", onSelect, formData }) => {
 
           </div>
         </LabelFieldPair>
+        <StatusTable >{formData?.cpt?.details && <Row className="border-none" label={t(`PT_ACKNOWLEDGEMENT_NUMBER`)} text={formData?.cpt?.details?.acknowldgementNumber || NA} />}</StatusTable>
 
         {showToast && (
           <Toast

@@ -60,11 +60,6 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
       {wfDocuments?.length > 0 && (
         <div>
-          {/* {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NOCDocument value={doc?.id || ""} index={index} />
-            </div>
-          ))} */}
           <div>
             <NOCDocument value={{ workflowDocs: wfDocuments}} index={index}/>
           </div>
@@ -97,6 +92,10 @@ const NOCEmployeeApplicationOverview = () => {
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
+  const [getEmployees, setEmployees] = useState([]);
+  const [getLoader, setLoader] = useState(false);
+  const [getWorkflowService, setWorkflowService] = useState([]);
+
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
@@ -104,7 +103,7 @@ const NOCEmployeeApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "obpas_noc",
+    moduleCode: "obpas_noc",//businessService
   });
 
   console.log("workflowDetails here=>", workflowDetails);
@@ -116,6 +115,16 @@ const NOCEmployeeApplicationOverview = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
+
+  useEffect(() => {
+      let WorkflowService = null;
+      (async () => {
+        setLoader(true);
+        WorkflowService = await Digit.WorkflowService.init(tenantId, "obpas_noc");
+        setLoader(false);
+        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      })();
+  }, [tenantId]);
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -200,6 +209,10 @@ const NOCEmployeeApplicationOverview = () => {
   function onActionSelect(action) {
     console.log("selected action", action);
     const appNo= applicationDetails?.Noc?.[0]?.applicationNo;
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+    setEmployees(filterRoles?.[0]?.actions);
 
     const payload = {
       Licenses: [action],
@@ -305,9 +318,9 @@ const getFloorLabel = (index) => {
   return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
 };
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
 
   console.log("displayData here", displayData);
 
@@ -506,6 +519,7 @@ const getFloorLabel = (index) => {
           action={selectedAction}
           tenantId={tenantId}
           state={state}
+          getEmployees={getEmployees}
           id={id}
           applicationDetails={applicationDetails}
           applicationData={applicationDetails?.Noc}
@@ -525,6 +539,7 @@ const getFloorLabel = (index) => {
 
       {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
 
+      {(isLoading || getLoader) && <Loader page={true} />}
 
     </div>
   );

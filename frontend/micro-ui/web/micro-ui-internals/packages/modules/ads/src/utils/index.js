@@ -417,6 +417,38 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
   return { bookingData };
 };
 
+//cart slots changed or not
+ export const areCartSlotsEqual = (a = [], b = []) => {
+    if (a?.length !== b?.length) return false;
+
+    // sort by ad.id for stable comparison
+    const sortByAd = (arr) => [...arr]?.sort((x, y) => String(x?.ad?.id).localeCompare(String(y?.ad?.id)));
+
+    const sortedA = sortByAd(a);
+    const sortedB = sortByAd(b);
+
+    return sortedA.every((item, idx) => {
+      const other = sortedB[idx];
+      if (String(item?.ad?.id) !== String(other?.ad?.id)) return false;
+
+      // compare slots by bookingDate (or any unique key)
+      const slotsA = item?.slots?.map((s) => s?.bookingDate)?.sort();
+      const slotsB = other?.slots?.map((s) => s?.bookingDate)?.sort();
+
+      if (slotsA?.length !== slotsB?.length) return false;
+      return slotsA?.every((date, i) => date === slotsB[i]);
+    });
+  };
+
+// slots are equal
+  export const areSlotsEqual = (a = [], b = []) => {
+    if (a?.length !== b?.length) return false;
+    const key = (s) => s?.bookingDate; // or slotId if available
+    const aKeys = a?.map(key).sort();
+    const bKeys = b?.map(key).sort();
+    return JSON?.stringify(aKeys) === JSON?.stringify(bKeys);
+  };
+
 // Transforms raw booking data into grouped ad objects with enriched metadata and slot arrays
 export function transformAdsData(adsData) {
   const grouped = {};

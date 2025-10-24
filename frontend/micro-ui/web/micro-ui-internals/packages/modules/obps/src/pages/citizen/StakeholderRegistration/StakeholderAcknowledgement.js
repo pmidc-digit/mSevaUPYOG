@@ -86,7 +86,7 @@ const StakeholderAcknowledgementChild = ({mutation , applicationNumber, isOpenLi
           <BannerPicker t={t} data={mutation.data} isSuccess={isStakeholderRegistered || mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
           {mutation.isSuccess && <CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)}${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>}
           {!mutation.isSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>}
-          {mutation.isSuccess && !isOpenLinkFlow && (
+          {mutation.isSuccess && !isOpenLinkFlow && mutation.data.Licenses[0].action !== "RESUBMIT" && (
             <Link
               to={{
                 pathname: `/digit-ui/citizen/payment/collect/${mutation.data.Licenses[0].businessService}/${mutation.data.Licenses[0].applicationNumber}/${mutation.data.Licenses[0].tenantId}?tenantId=${mutation.data.Licenses[0].tenantId}`,
@@ -171,7 +171,7 @@ const StakeholderAcknowledgementChildNotMutation = ({mutation , applicationNumbe
     <Card>
           <BannerPicker t={t} data={mutationData} isSuccess={isStakeholderRegistered}  />
           {<CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)}${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>}
-          {!isOpenLinkFlow && (
+          {!isOpenLinkFlow && mutationData.Licenses[0].action !== "RESUBMIT" && (
             <Link
               to={{
                 pathname: `/digit-ui/citizen/payment/collect/${mutationData.Licenses[0].businessService}/${mutationData.Licenses[0].applicationNumber}/${mutationData.Licenses[0].tenantId}?tenantId=${mutationData.Licenses[0].tenantId}`,
@@ -225,16 +225,44 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const isStakeholderRegistered = sessionStorage.getItem("isStakeholderRegistered") || false;
 
   console.log(applicationNumber, "Application Number");
-  useEffect(() => {
-    try {
-      let tenantId = data?.result?.Licenses[0]?.tenantId ? data?.result?.Licenses[0]?.tenantId : tenantId;
-      data.tenantId = tenantId;
-      let formdata = convertToStakeholderObject(data);
-      mutation.mutate(formdata, {
-        onSuccess,
-      });
-    } catch (err) {}
-  }, []);
+useEffect(() => {
+  try {
+    // Check if update should be skipped (workflow action already completed)
+    const skipUpdate = history.location?.state?.skipUpdate || sessionStorage.getItem("workflowActionCompleted")
+
+    console.log(" StakeholderAcknowledgement - skipUpdate:", skipUpdate)
+    console.log(" StakeholderAcknowledgement - history.location.state:", history.location?.state)
+
+    if (skipUpdate) {
+      console.log(" Skipping mutation because workflow action was already completed")
+      
+      // Set sessionStorage flags so the component renders success view instead of loader
+      sessionStorage.setItem("isStakeholderRegistered", "true")
+      
+      // Store the updated result in sessionStorage
+      const updatedResult = history.location?.state?.updatedResult || data?.result
+      if (updatedResult) {
+        sessionStorage.setItem("stakeholder.mutationData", JSON.stringify(updatedResult))
+        console.log(" Stored updated result in sessionStorage")
+      }
+      
+      // Clear the workflow action flags
+      sessionStorage.removeItem("workflowActionCompleted")
+      sessionStorage.removeItem("workflowActionType")
+      
+      return
+    }
+
+    const formdata = convertToStakeholderObject(data)
+
+    console.log(" Making mutation call with formdata:", formdata)
+    mutation.mutate(formdata, {
+      onSuccess,
+    })
+  } catch (err) {
+    console.error(" Error in StakeholderAcknowledgement useEffect:", err)
+  }
+}, [])
   // useEffect(() => {
   //   try {
   //     let tenantId = data?.result?.Licenses[0]?.tenantId ? data?.result?.Licenses[0]?.tenantId : tenantId;

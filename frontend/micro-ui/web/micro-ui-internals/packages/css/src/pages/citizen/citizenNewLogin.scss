@@ -1,139 +1,193 @@
 .login-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
 
-  .login-wrapper {
+.login-page-cover {
+    background: linear-gradient(0deg, rgba(41, 71, 163, 0.9), rgba(41, 71, 163, 0.9)),
+        url("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg");
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    width: 100%;
+}
+
+.login-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    --bg-opacity: 1;
-    background-color: #fff;
-    background-color: rgba(255, 255, 255, var(--bg-opacity));
+    align-items: flex-start;
+    background-color: rgba(255, 255, 255, 1);
     margin: 8px;
-    padding: 16px 16px 24px;
-    -webkit-box-shadow: 0 0 5px 0 rgba(34, 34, 34, 0.43922);
+    padding: 2rem;
     box-shadow: 0 0 5px 0 rgba(34, 34, 34, 0.43922);
     border-radius: 4px;
+    width: 30%;
+    max-width: 100vw;
+    height: 750px;
+    position: relative;
+}
+.register-login-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: rgba(255, 255, 255, 1);
+    margin: 8px;
+    padding: 2rem;
+    box-shadow: 0 0 5px 0 rgba(34, 34, 34, 0.43922);
+    border-radius: 4px;
+    width: 30%;
+    max-width: 100vw;
+    height: 900px;
+    position: relative;
+}
+.login-title {
     width: 100%;
-    max-width: 50vw;
-
-    .login-title {
-      width: 100%;
-      max-width: 525px;
-      font-size: 24px;
-      color: #0b0c0c;
-      font-weight: 600;
-      text-align: start;
-    }
-
-    .lag-loc-wrapper {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      max-width: 540px;
-      gap: 30px;
-
-      .location-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-        max-width: 260px;
-
-        .select {
-          display: flex;
-          align-items: center;
-          border: 1px solid #b4b4b4 !important;
-          background-color: rgba(255, 255, 255, var(--bg-opacity));
-          border-radius: 8px;
-        }
-
-        .select-active {
-          border-radius: 8px !important;
-        }
-      }
-
-      .language-wrapper {
-        width: 100%;
-        max-width: 260px;
-      }
-    }
-
-    .label {
-      font-weight: 500;
-      font-size: 16px;
-      line-height: 25px;
-      color: #686677;
-
-      span {
-        color: #ff1515;
-      }
-    }
-
-    .input-wrapper {
-      width: 100%;
-      max-width: 540px;
-
-      .submit-bar,
-      .submit-bar-disabled {
-        width: 100%;
-        max-width: 540px;
-      }
-
-      .card-label {
-        font-weight: 500 !important;
-        font-size: 16px !important;
-        line-height: 25px !important;
-        color: #686677 !important;
-      }
-
-      &.hide-submit-buttons + .submit-bar,
-      &.hide-submit-buttons + .submit-bar-disabled {
-        display: none !important;
-      }
-    }
-
-    .account-link {
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 25px;
-      text-align: center;
-    }
-
-    .link {
-      color: #1778ff;
-      text-decoration: underline;
-    }
-
-    .resendIn {
-      font-size: 16px;
-      font-weight: 500;
-      color: #686677;
-      text-align: right;
-
-      span {
-        color: #1778ff;
-      }
-    }
-
-    .resend {
-      text-align: right;
-      cursor: pointer;
-      font-weight: 700;
-    }
-  }
+    max-width: 525px;
+    font-size: 2.5rem;
+    color: #0b0c0c;
+    font-weight: 600;
+    text-align: center;
+    padding: 2rem 0rem;
 }
 
-@media (max-width: 700px) {
-  .login-container {
-    .login-wrapper {
-      .lag-loc-wrapper {
+.lag-loc-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 540px;
+    gap: 30px;
+}
+
+.location-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* The inner select div */
+.location-wrapper .select {
+    display: flex;
+    align-items: center;
+    border: 1px solid #b4b4b4 !important;
+    background-color: rgba(255, 255, 255, var(--bg-opacity));
+    border-radius: 8px;
+}
+
+.location-wrapper .select-active {
+    border-radius: 8px !important;
+}
+
+.language-wrapper {
+    width: 100%;
+    max-width: 260px;
+}
+
+.label {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 25px;
+    color: #686677;
+
+    span {
+        color: #ff1515;
+    }
+}
+
+.input-wrapper {
+    width: 100%;
+    max-width: 540px;
+}
+
+.input-wrapper .submit-bar,
+.input-wrapper .submit-bar-disabled {
+    width: 100%;
+    max-width: 540px;
+}
+
+.input-wrapper .card-label {
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    line-height: 25px !important;
+    color: #686677 !important;
+}
+
+.input-wrapper.hide-submit-buttons+.submit-bar,
+.input-wrapper.hide-submit-buttons+.submit-bar-disabled {
+    display: none !important;
+}
+
+.account-link {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 25px;
+    text-align: center;
+}
+
+.link {
+    color: #1778ff;
+    text-decoration: underline;
+}
+
+.resendIn {
+    font-size: 16px;
+    font-weight: 500;
+    color: #686677;
+    text-align: right;
+
+    span {
+        color: #1778ff;
+    }
+}
+
+.resend {
+    text-align: right;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.login-circle {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background-color: #2947a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    position: absolute;
+    top: -30px;
+}
+
+@media (max-width: 768px) {
+    .lag-loc-wrapper {
         flex-direction: column;
         gap: 0px;
-      }
     }
-  }
+    .login-wrapper{
+        width: 95%;
+    }
+    .register-login-wrapper{
+         width: 95%;
+    }
+}
+@media (min-width: 769px) and (max-width : 1024px) {
+    .lag-loc-wrapper {
+        flex-direction: column;
+        gap: 0px;
+    }
+    .login-wrapper{
+        width: 80%;
+    }
+    .register-login-wrapper{
+         width: 80%;
+    }
 }

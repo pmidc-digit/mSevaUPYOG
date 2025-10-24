@@ -1,5 +1,6 @@
-import { Loader, Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import { Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
+import { Loader } from "../components/Loader";
 
 import { ModalConfig } from "../config/ModalConfig";
 
@@ -40,6 +41,7 @@ const PTRModal = ({
   closeToast,
   errors,
   setShowToast,
+  getEmployees,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -52,10 +54,14 @@ const PTRModal = ({
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
   const [formErrors, setFormErrors] = useState({});
 
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
+
+  console.log("allRolesNew", allRolesNew);
+
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
+      roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }
@@ -188,7 +194,8 @@ const PTRModal = ({
     }
   }, [action, approvers, financialYears, selectedFinancialYear, uploadedFile]);
 
-  return action && config.form ? (
+  if (!action || !config.form) return null;
+  return (
     <Modal
       headerBarMain={<Heading label={t(config.label.heading)} />}
       headerBarEnd={<CloseBtn onClick={closeModal} />}
@@ -214,9 +221,8 @@ const PTRModal = ({
       />
       {/* )} */}
       {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {PTALoading && <Loader page={true} />}
     </Modal>
-  ) : (
-    <Loader />
   );
 };
 

@@ -49,7 +49,7 @@ const App = ({ path }) => {
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
-       {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+       {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />

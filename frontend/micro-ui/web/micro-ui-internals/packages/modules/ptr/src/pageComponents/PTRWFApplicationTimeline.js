@@ -4,54 +4,69 @@ import {
   CheckPoint,
   CloseSvg,
   ConnectingCheckPoints,
-  Loader,
   SubmitBar,
   ActionBar,
   Menu,
   Toast,
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useState, useRef } from "react";
+import React, { Fragment, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import PTRWFCaption from "./PTRWFCaption";
 import PTRModal from "./PTRModal";
 import PTRWFDocument from "./PTRWFDocument";
+import { Loader } from "../components/Loader";
 
 const PTRWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
   const businessService = props?.application?.workflow?.businessService;
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = props.application?.tenantId;
   const state = tenantId?.split(".")[0];
+  const [getEmployees, setEmployees] = useState([]);
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
   const [latestComment, setLatestComment] = useState(null);
+  const [getLoader, setLoader] = useState(false);
+  const [getWorkflowService, setWorkflowService] = useState([]);
 
-  const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
     id: props.application?.applicationNumber,
     moduleCode: "ptr",
-    config: { staleTime: 0, refetchOnMount: "always" },
+    role: "EMPLOYEE",
+    // config: { staleTime: 0, refetchOnMount: "always" },
   });
+
+  if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
+  }
+
+  const isLoading = false;
+
+  console.log("data ==== ??Asdasdsadbkahjsdb", workflowDetails);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
   const getTimelineCaptions = (checkpoint) => {
-    console.log("checkpoint", checkpoint);
     if (checkpoint.state === "OPEN") {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         source: props.application?.channel || "",
-        mobileNumber: checkpoint?.assigner?.mobileNumber,
+        // mobileNumber: checkpoint?.assigner?.mobileNumber,
       };
       return <PTRWFCaption data={caption} />;
     } else if (checkpoint.state) {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assigner?.name,
-        mobileNumber: checkpoint?.assigner?.mobileNumber,
+        // mobileNumber: checkpoint?.assigner?.mobileNumber,
         // comment: latestComment,
         comment: checkpoint.state === "INITIATED" ? null : checkpoint?.wfComment?.[0],
         wfDocuments: checkpoint?.wfDocuments,
@@ -130,12 +145,14 @@ const PTRWFApplicationTimeline = (props) => {
   const menuRef = useRef();
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
-    data?.actionState?.nextActions?.filter((e) => {
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     }) ||
-    data?.nextActions?.filter((e) => {
+    workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
+
+  console.log("check actions", actions);
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -161,6 +178,15 @@ const PTRWFApplicationTimeline = (props) => {
     const payload = {
       action: [action],
     };
+
+    console.log("action", action);
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+    console.log("filterNexState", filterNexState);
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+    console.log("filterRoles", filterRoles);
+    setEmployees(filterRoles?.[0]?.actions);
+
     if (action?.action == "APPLY") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -225,85 +251,92 @@ const PTRWFApplicationTimeline = (props) => {
     }
   };
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  useEffect(() => {
+    let WorkflowService = null;
+    (async () => {
+      setLoader(true);
+      WorkflowService = await Digit.WorkflowService.init(tenantId, "ptr");
+      setLoader(false);
+      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      // setComplaintStatus(applicationStatus);
+    })();
+  }, [tenantId]);
 
   return (
     <React.Fragment>
-      {!isLoading && (
-        <Fragment>
-          {data?.timeline?.length > 0 && (
-            <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-              {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
-            </CardSectionHeader>
-          )}
+      <Fragment>
+        {workflowDetails?.data?.timeline?.length > 0 && (
+          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+            {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
+          </CardSectionHeader>
+        )}
 
-          {data?.timeline && data?.timeline?.length === 1 ? (
-            <CheckPoint
-              isCompleted={true}
-              label={t((data?.timeline[0]?.state && `WF_${businessService}_${data.timeline[0].state}`) || "NA")}
-              customChild={getTimelineCaptions(data?.timeline[0])}
-            />
-          ) : (
-            <ConnectingCheckPoints>
-              {data?.timeline &&
-                data?.timeline.map((checkpoint, index, arr) => {
-                  let timelineStatusPostfix = "";
+        {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
+          <CheckPoint
+            isCompleted={true}
+            label={t((workflowDetails?.data?.timeline[0]?.state && `WF_${businessService}_${workflowDetails?.data.timeline[0].state}`) || "NA")}
+            customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0])}
+          />
+        ) : (
+          <ConnectingCheckPoints>
+            {workflowDetails?.data?.timeline &&
+              workflowDetails?.data?.timeline.map((checkpoint, index, arr) => {
+                let timelineStatusPostfix = "";
 
-                  return (
-                    <React.Fragment key={index}>
-                      <CheckPoint
-                        keyValue={index}
-                        isCompleted={index === 0}
-                        //label={checkpoint.state ? t(`WF_${businessService}_${checkpoint.state}`) : "NA"}
-                        label={t(`ES_PTR_COMMON_STATUS_${data?.processInstances[index].state?.["state"]}${timelineStatusPostfix}`)}
-                        customChild={getTimelineCaptions(checkpoint)}
-                      />
-                    </React.Fragment>
-                  );
-                })}
-            </ConnectingCheckPoints>
-          )}
+                return (
+                  <React.Fragment key={index}>
+                    <CheckPoint
+                      keyValue={index}
+                      isCompleted={index === 0}
+                      //label={checkpoint.state ? t(`WF_${businessService}_${checkpoint.state}`) : "NA"}
+                      label={t(`ES_PTR_COMMON_STATUS_${workflowDetails?.data?.processInstances[index].state?.["state"]}${timelineStatusPostfix}`)}
+                      customChild={getTimelineCaptions(checkpoint)}
+                    />
+                  </React.Fragment>
+                );
+              })}
+          </ConnectingCheckPoints>
+        )}
 
-          {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
-            <ActionBar>
-              {displayMenu ? (
-                <Menu
-                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                  options={actions}
-                  optionKey={"action"}
-                  t={t}
-                  onSelect={onActionSelect}
-                  // style={MenuStyle}
-                />
-              ) : null}
-              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-            </ActionBar>
-          )}
+        {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
+          <ActionBar>
+            {displayMenu ? (
+              <Menu
+                localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                options={actions}
+                optionKey={"action"}
+                t={t}
+                onSelect={onActionSelect}
+                // style={MenuStyle}
+              />
+            ) : null}
+            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
 
-          {showModal ? (
-            <PTRModal
-              t={t}
-              action={selectedAction}
-              tenantId={tenantId}
-              state={state}
-              id={props.application?.applicationNumber}
-              applicationDetails={props.application}
-              closeModal={closeModal}
-              submitAction={submitAction}
-              actionData={data?.timeline}
-              workflowDetails={data}
-              showToast={showToast}
-              closeToast={closeToast}
-              errors={error}
-              setShowToast={setShowToast}
-            />
-          ) : null}
-        </Fragment>
-      )}
-      {data && showNextActions(data?.actionState?.nextActions)}
+        {showModal ? (
+          <PTRModal
+            t={t}
+            action={selectedAction}
+            tenantId={tenantId}
+            state={state}
+            id={props.application?.applicationNumber}
+            applicationDetails={props.application}
+            closeModal={closeModal}
+            submitAction={submitAction}
+            actionData={workflowDetails?.data?.timeline}
+            workflowDetails={workflowDetails?.data}
+            showToast={showToast}
+            closeToast={closeToast}
+            getEmployees={getEmployees}
+            errors={error}
+            setShowToast={setShowToast}
+          />
+        ) : null}
+      </Fragment>
+      {workflowDetails?.data && showNextActions(workflowDetails?.data?.actionState?.nextActions)}
       {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {(isLoading || getLoader) && <Loader page={true} />}
     </React.Fragment>
   );
 };

@@ -8,6 +8,12 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
+  const { data: categoryData, isLoading: categoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Category" }]);
+  const { data: subCategoryData, isLoading: subCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "SubCategory" }]);
+  const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
+
+  console.log("categoryData====", categoryData, subCategoryData, OffenceTypeData);
+
   const {
     control,
     handleSubmit,
@@ -90,6 +96,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
+          {/* offence type */}
           <LabelFieldPair>
             <CardLabel>
               {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
@@ -105,7 +112,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
-                  option={[]}
+                  option={OffenceTypeData?.Challan?.OffenceType}
                   optionKey="name"
                   t={t}
                 />
@@ -114,6 +121,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.offenceType && <p style={{ color: "red" }}>{errors.offenceType.message}</p>}
           </LabelFieldPair>
 
+          {/* Offence Category */}
           <LabelFieldPair style={{ marginTop: "20px" }}>
             <CardLabel>
               {t("CHALLAN_OFFENCE_CATEGORY")} <span style={{ color: "red" }}>*</span>
@@ -129,7 +137,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
-                  option={[]}
+                  option={categoryData?.Challan?.Category}
                   optionKey="name"
                   t={t}
                 />
@@ -138,6 +146,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.offenceCategory && <p style={{ color: "red" }}>{errors.offenceCategory.message}</p>}
           </LabelFieldPair>
 
+          {/* Offence Subcategory */}
           <LabelFieldPair style={{ marginTop: "20px" }}>
             <CardLabel>
               {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span style={{ color: "red" }}>*</span>
@@ -153,7 +162,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
-                  option={[]}
+                  option={subCategoryData?.Challan?.SubCategory}
                   optionKey="name"
                   t={t}
                 />
@@ -162,6 +171,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
           </LabelFieldPair>
 
+          {/* Challan Number */}
           <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
             <CardLabel>
               {`${t("CHALLAN_NUMBER")}`} <span style={{ color: "red" }}>*</span>
@@ -191,6 +201,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors?.challanNumber && <p style={{ color: "red" }}>{errors.challanNumber.message}</p>}
           </LabelFieldPair>
 
+          {/* Challan Name */}
           <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
             <CardLabel>
               {`${t("CHALLAN_NAME")}`} <span style={{ color: "red" }}>*</span>
@@ -220,6 +231,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors?.challanName && <p style={{ color: "red" }}>{errors.challanName.message}</p>}
           </LabelFieldPair>
 
+          {/* Challan Amount */}
           <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
             <CardLabel>
               {`${t("CHALLAN_AMOUNT")}`} <span style={{ color: "red" }}>*</span>
@@ -248,6 +260,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors?.challanAmount && <p style={{ color: "red" }}>{errors.challanAmount.message}</p>}
           </LabelFieldPair>
 
+          {/* Challan Days */}
           <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
             <CardLabel>
               {`${t("CHALLAN_DAYS")}`} <span style={{ color: "red" }}>*</span>
@@ -282,7 +295,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
-      {loader && <Loader page={true} />}
+      {(loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

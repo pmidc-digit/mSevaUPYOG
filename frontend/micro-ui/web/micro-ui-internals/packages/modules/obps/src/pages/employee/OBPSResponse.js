@@ -138,10 +138,10 @@ const OBPSResponse = (props) => {
               isPayButtonEnable ? (
                 <div style={{gap: "5px"}}>
                   <Link to={{ pathname: getPaymentURL(true) }}>
-                    <SubmitBar label={t("WF_BPA_PAY")} style={{ margin: "10px 0px 0px 0px" }} />
+                    <SubmitBar label={t("WF_BPA_PAY")} style={{ marginRight: "10px" }} />
                   </Link>
                   <Link to={`/digit-ui/citizen`}>
-                    <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+                    <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
                   </Link>
                 </div>
               ) : (

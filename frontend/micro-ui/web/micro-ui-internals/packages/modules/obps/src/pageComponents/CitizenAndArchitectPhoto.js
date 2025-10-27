@@ -76,7 +76,7 @@ return(
                     style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
                     onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
                 />
-                <div>{t("BPA_CITIZEN_PHOTO")}</div>
+                <div>{data?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true)?.name || t("BPA_CITIZEN_PHOTO")}</div>
             </div>
             <div style={{ textAlign: "center" }}>
                 <img
@@ -85,7 +85,7 @@ return(
                     style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageArchitectZoom ? "pointer" : "default" }}
                     onClick={() => imageArchitectZoom && setImageZoom(imageArchitectZoom)}
                 />
-                <div>{t("BPA_ARCHITECT_PHOTO")}</div>
+                <div>{data?.additionalDetails?.stakeholderName || t("BPA_ARCHITECT_PHOTO")}</div>
             </div>
         </div>
         {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}

@@ -68,16 +68,6 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
         ],
       },
       {
-        title: t("CHB_BANK_DETAILS"),
-        values: [
-          { title: t("CHB_ACCOUNT_NUMBER"), value: application?.applicantDetail?.accountNumber || " N/A" },
-          { title: t("CHB_IFSC_CODE"), value: application?.applicantDetail?.ifscCode || " N/A" },
-          { title: t("CHB_BANK_NAME"), value: application?.applicantDetail?.bankName || " N/A" },
-          { title: t("CHB_BANK_BRANCH_NAME"), value: application?.applicantDetail?.bankBranchName || " N/A" },
-          { title: t("CHB_ACCOUNT_HOLDER_NAME"), value: application?.applicantDetail?.accountHolderName || " N/A" },
-        ],
-      },
-      {
         title: t("ADS_ADDRESS_DETAILS"),
         values: [{ title: t("ADS_ADDRESS_LINE1"), value: application?.address?.addressLine1 }],
       },

@@ -796,7 +796,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
         console.log("[v0] No stored mutation data found, setting acknowledgement ready anyway")
       }
 
-      return // Exit early, don't call mutation
+      return 
     }
 
     const isStakeholderRegistered = sessionStorage.getItem("isStakeholderRegistered")
@@ -835,7 +835,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
         console.error("[v0] Error in mutation setup:", err)
       }
     }
-  }, []) // Empty dependency array to run only once
+  }, []) 
 
   const isLoading = mutation.isLoading && !isAcknowledgementReady
 

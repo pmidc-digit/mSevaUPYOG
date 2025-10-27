@@ -165,66 +165,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
           </LabelFieldPair>
 
-          {/* Challan Number */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
-            <CardLabel>
-              {`${t("CHALLAN_NUMBER")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="challanNumber"
-              // rules={{
-              //   required: t("CHALLAN_NUMBER_REQUIRED"),
-              //   minLength: { value: 2, message: t("CHALLAN_NUMBER_LIMIT_VALID") },
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.challanNumber && <p style={{ color: "red" }}>{errors.challanNumber.message}</p>}
-          </LabelFieldPair>
-
-          {/* Challan Name */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
-            <CardLabel>
-              {`${t("CHALLAN_NAME")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="challanName"
-              // rules={{
-              //   required: t("CHALLAN_NAME_REQUIRED"),
-              //   minLength: { value: 2, message: t("CHALLAN_NAME_LIMIT_VALID") },
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.challanName && <p style={{ color: "red" }}>{errors.challanName.message}</p>}
-          </LabelFieldPair>
-
           {/* Challan Amount */}
           <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
             <CardLabel>
@@ -253,37 +193,9 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             />
             {errors?.challanAmount && <p style={{ color: "red" }}>{errors.challanAmount.message}</p>}
           </LabelFieldPair>
-
-          {/* Challan Days */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
-            <CardLabel>
-              {`${t("CHALLAN_DAYS")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="challanDaysToClearPayment"
-              // rules={{
-              //   required: t("CHALLAN_DAYS_REQUIRED"),
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.challanDaysToClearPayment && <p style={{ color: "red" }}>{errors.challanDaysToClearPayment.message}</p>}
-          </LabelFieldPair>
         </div>
         <ActionBar>
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

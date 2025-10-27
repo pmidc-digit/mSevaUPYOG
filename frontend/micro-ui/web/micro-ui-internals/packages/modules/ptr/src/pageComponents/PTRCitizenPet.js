@@ -230,15 +230,15 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     }
   }, [currentStepData, setValue]);
 
-  const selectedVaccineDate = watch("lastVaccineDate");
-  useEffect(() => {
-    // re-trigger petAge validation whenever vaccine date changes
-    console.log("watch lastVaccineDate ->", selectedVaccineDate, "type:", typeof selectedVaccineDate, "asJSON:", JSON.stringify(selectedVaccineDate));
+  // const selectedVaccineDate = watch("lastVaccineDate");
+  // useEffect(() => {
+  //   // re-trigger petAge validation whenever vaccine date changes
+  //   // console.log("watch lastVaccineDate ->", selectedVaccineDate, "type:", typeof selectedVaccineDate, "asJSON:", JSON.stringify(selectedVaccineDate));
 
-    if (selectedVaccineDate) {
-      trigger("petAge");
-    }
-  }, [selectedVaccineDate, trigger]);
+  //   if (selectedVaccineDate) {
+  //     trigger("petAge");
+  //   }
+  // }, [selectedVaccineDate, trigger]);
 
   const onlyAlphabets = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/; // Allows any number of letters and spaces
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
@@ -375,7 +375,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
                 onChange={(e) => props.onChange(e.target.value)}
                 onBlur={() => {
                   trigger("lastVaccineDate");
-                  trigger("petAge");
+                  // trigger("petAge");
                 }}
                 t={t}
               />

@@ -98,37 +98,8 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
-              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="name"
-              rules={{
-                required: "Name is required",
-                minLength: { value: 2, message: "Name must be at least 2 characters" },
-              }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
-          </div>
-
-          <div style={{ marginBottom: "20px" }}>
+        <div style={{ width: "50%" }}>
+          {/* <div style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -157,7 +128,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
               )}
             />
             {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
-          </div>
+          </div> */}
 
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
@@ -184,6 +155,35 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
               )}
             />
             {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
+            <CardLabel>
+              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="name"
+              rules={{
+                required: "Name is required",
+                minLength: { value: 2, message: "Name must be at least 2 characters" },
+              }}
+              render={(props) => (
+                <TextInput
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  error={errors?.name?.message}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
           </div>
 
           <div style={{ marginBottom: "20px" }}>

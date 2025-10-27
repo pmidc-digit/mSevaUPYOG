@@ -87,6 +87,7 @@ const PTRApplicationDetails = () => {
     { enabled: acknowledgementIds ? true : false }
   );
 
+  console.log("reciept_data", reciept_data);
   if (!pet_details.workflow) {
     const workflow = {
       id: null,
@@ -604,7 +605,7 @@ const PTRApplicationDetails = () => {
     onClick: () => downloadAcknowledgement(),
   });
 
-  if (reciept_data?.Payments[0]?.paymentStatus === "NEW") {
+  if (reciept_data?.Payments[0]?.paymentStatus === "NEW" || reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") {
     dowloadOptions.push({
       label: t("PTR_CERTIFICATE"),
       onClick: () => {
@@ -695,13 +696,9 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_PET_NAME")} text={pet_details?.petDetails?.petName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={pet_details?.petDetails?.petType || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={pet_details?.petDetails?.breedType || t("CS_NA")} />
-             <Row className="border-none" label={t("PTR_PET_AGE")} text={formatPetAge(pet_details?.petDetails?.petAge, t) || t("CS_NA")} />
-           
-            <Row
-              className="border-none"
-              label={t("PTR_PET_GENDER")}
-              text={pet_details?.petDetails?.petGender || t("CS_NA")}
-            />
+            <Row className="border-none" label={t("PTR_PET_AGE")} text={formatPetAge(pet_details?.petDetails?.petAge, t) || t("CS_NA")} />
+
+            <Row className="border-none" label={t("PTR_PET_GENDER")} text={pet_details?.petDetails?.petGender || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_COLOR")} text={pet_details?.petDetails?.petColor || t("CS_NA")} />
 
             <Row

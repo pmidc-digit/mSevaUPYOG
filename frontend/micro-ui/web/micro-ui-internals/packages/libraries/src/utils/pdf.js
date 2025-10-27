@@ -180,7 +180,7 @@ const localGovLogo  =
         margin: [10, 10],
       },
       {
-        text:"TERMS_AND_CONDITIONS_OF_LICENSE",
+        text:t("TERMS_AND_CONDITIONS_OF_LICENSE"),
         fontSize:16, 
         bold:true, 
         alignment:"center",
@@ -189,7 +189,7 @@ const localGovLogo  =
         margin:[0, 25, 0, 0],
       },
       {
-        text:"TERMS_AND_CONDITIONS_OF_LICENSE_CONTENT",
+        text:t("TERMS_AND_CONDITIONS_OF_LICENSE_CONTENT"),
         fontSize:8,
         margin:[10, 20, 10,0] 
       },

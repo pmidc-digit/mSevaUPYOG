@@ -12,6 +12,8 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
 
   const checkTimeRenew = checkRenewTime?.[0]?.renewalPeriod;
 
+  console.log("checkTimeRenew", checkTimeRenew);
+
   const parseDate = (rawDate) => {
     if (!rawDate) return null;
     if (!isNaN(rawDate)) {
@@ -22,6 +24,8 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
     }
   };
 
+  console.log("application", application?.validityDate);
+
   const validToObj = parseDate(application?.validityDate);
   const currentDateObj = new Date();
 
@@ -31,8 +35,14 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
   const days = duration ? Math.round(duration / (1000 * 60 * 60 * 24)) : null;
   // ✅ Renewal check logic
 
+  console.log("duration", duration);
+
   const checkDuration = duration !== null && duration <= checkTimeRenew;
   const checkRenewal = application?.status == "APPROVED" || application?.status == "EXPIRED";
+
+  console.log("checkRenewal", checkRenewal);
+
+  console.log("checkDuration", checkDuration);
 
   return (
     <Card>

@@ -182,9 +182,14 @@ public class BookingServiceImpl implements BookingService {
 					.collect(Collectors.toList());
 			criteria.setOwnerIds(ownerIds);
 		}
+        System.out.println("BOOKINGNO!!!" + bookingDetail.getBookingNo());
+        System.out.println("CRITERIA!!!!!!" + criteria.toString());
+        if(criteria.getOwnerIds()!=null)
+        {
+            UserResponse userDetailResponse = userService.getUser(criteria, info);
+            bookingDetail.setOwners(userDetailResponse.getUser());
+        }
 
-		UserResponse userDetailResponse = userService.getUser(criteria, info);
-		bookingDetail.setOwners(userDetailResponse.getUser());
 		
 		// Enrich cart details with advertisement information from MDMS
 		enrichCartDetailsWithAdvertisementInfo(bookingDetail, info);

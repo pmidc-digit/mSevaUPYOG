@@ -15,7 +15,8 @@ import {
   DeleteIcon,
   UploadFile,
   ActionBar,
-  SubmitBar
+  SubmitBar,
+  CustomButton
 } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
@@ -426,7 +427,19 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   }
   function setMobileNo(i, e) {
     const units = [...fields]
-    units[i].mobileNumber = e.target.value
+    console.log("OwnerDataOnNumberChange",units[i]);
+    units[i] = {
+      mobileNumber: e.target.value,
+      name: units[i].name,
+      gender: units[i].gender,
+      emailId: units[i].emailId,
+      dob: units[i].dob,
+      authorizedPerson: units[i].authorizedPerson,
+      permanentAddress: units[i].permanentAddress,
+      additionalDetails: units[i].additionalDetails,
+      authorizationLetter: units[i].authorizationLetter,
+      isPrimaryOwner: units[i].isPrimaryOwner
+    } 
     setMobileNumber(e.target.value)
     setFeilds(units)
     if (units[i].gender && units[i].mobileNumber && units[i].name) {
@@ -593,7 +606,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         if (
           fields.find(
             (fi) =>
-              !(fi?.uuid && !found) &&
+              !(!found) &&
               ((fi?.name === ob?.user?.[0]?.name && fi?.mobileNumber === ob?.user?.[0]?.mobileNumber) ||
                 (fi?.mobileNumber === ob?.user?.[0]?.mobileNumber && found)),
           )
@@ -607,7 +620,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       setShowToast({
         key: "true",
         error: true,
-        message: `${t("BPA_OWNER_VALIDATION_1")} ${foundMobileNo?.join(", ")} ${t("BPA_OWNER_VALIDATION_2")}`,
+        message: `${t("BPA_OWNER_VALIDATION")} ${foundMobileNo?.join(", ")}`,
       })
     if (flag == true) return false
     else return true
@@ -842,6 +855,29 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           <div>{value || t("CS_NA")}</div>
         </div>
       );
+
+      function routeTo(filestoreId) {
+        getUrlForDocumentView(filestoreId)
+      }
+
+      const getUrlForDocumentView = async (filestoreId) => {
+        if (filestoreId?.length === 0) return;
+        try {
+          const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+          if (result?.data) {
+            const fileUrl = result.data[filestoreId];
+            if (fileUrl) {
+              window.open(fileUrl, "_blank");
+            } else {
+              setError(t("CS_FILE_FETCH_ERROR"));
+            }
+          }else {
+            setError(t("CS_FILE_FETCH_ERROR"));
+          }
+        } catch (e) {
+          setError(t("CS_FILE_FETCH_ERROR"));
+        } 
+      }
   
   if(apiLoading) return (<Loader />)
 
@@ -1020,7 +1056,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
                     <CardLabel
                       style={{ marginTop: "30px" }}
-                    >{`Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB) *`}</CardLabel>
+                    >{`${t("Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB)")} *`}</CardLabel>
+                    <div style={{display:"flex", flexDirection:Webview?"row":"column", gap:"15px"}}>
                     <UploadFile
                       id={`document-upload-${index}`}
                       onUpload={selectDocumentFile(index)}
@@ -1034,9 +1071,14 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       uploadMessage=""
                       accept=".pdf"
                     />
+                    {fields?.[index]?.additionalDetails?.documentFile ? <div>
+                      <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.documentFile)}} label={t("CS_VIEW_DOCUMENT")} />
+                    </div> : null }
+                    </div>
                     <ErrorMessage message={errors[`documentFile_${index}`]} />
 
-                    <CardLabel style={{ marginTop: "30px" }}>{`Upload Owner Photo *`}</CardLabel>
+                    <CardLabel style={{ marginTop: "30px" }}>{`${t("Upload Owner Photo")} *`}</CardLabel>
+                    <div style={{display:"flex", flexDirection:Webview?"row":"column", gap:"15px"}}>
                     <UploadFile
                       id={`photo-upload-${index}`}
                       onUpload={selectPhotoFile(index)}
@@ -1050,9 +1092,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       uploadMessage=""
                       accept="image/*"
                     />
+                    {fields?.[index]?.additionalDetails?.ownerPhoto ? <div>
+                      <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.ownerPhoto)}} label={t("CS_VIEW_DOCUMENT")} />
+                    </div> : null }
+                    </div>
                     <ErrorMessage message={errors[`ownerPhoto_${index}`]} />
 
-                    <CardLabel style={{ marginTop: "30px" }}>{`Date of Birth *`}</CardLabel>
+                    <CardLabel style={{ marginTop: "30px" }}>{`${t("Date of Birth")} *`}</CardLabel>
                     <TextInput
                       style={{ background: "#FAFAFA" }}
                       t={t}
@@ -1064,7 +1110,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     />
                     <ErrorMessage message={errors[`dob_${index}`]} />
 
-                    <CardLabel>{`Authorized Person (If Any)`}</CardLabel>
+                    <CardLabel>{`${t("Authorized Person (If Any)")}`}</CardLabel>
                     <TextInput
                       style={{ background: "#FAFAFA" }}
                       t={t}
@@ -1082,7 +1128,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
                     {field.authorizedPerson && (
                       <React.Fragment>
-                        <CardLabel>{`Authorization Letter (PDF, Max 5MB)`}</CardLabel>
+                        <CardLabel>{`${t("Authorization Letter (PDF, Max 5MB)")}`}</CardLabel>
                         <UploadFile
                           id={`auth-letter-${index}`}
                           onUpload={selectAuthLetterFile(index)}
@@ -1107,7 +1153,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       </React.Fragment>
                     )}
 
-                    <CardLabel>{`Owner's Address *`}</CardLabel>
+                    <CardLabel>{`${t("Owner's Address")} *`}</CardLabel>
                     <textarea
                       style={{
                         background: "#FAFAFA",

@@ -26,7 +26,7 @@ const BPAApplicationTimeline = (props) => {
     // }  
     //else {
       const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
+        date: checkpoint?.auditDetails?.lastModified + " " + checkpoint?.auditDetails?.timing,
         name: checkpoint?.assignes?.[0]?.name,
         mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
         comment: t(checkpoint?.comment),

@@ -27,6 +27,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [user, setUser] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [disable, setDisable] = useState(false);
+  const [showOtpField, setShowOtpField] = useState(false);
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
@@ -66,6 +67,14 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       alert("Please Select City!");
       return;
     }
+    
+    if (!showOtpField) {
+      setShowOtpField(true);
+      setShowToast("OTP has been sent!");
+      setTimeout(closeToast, 3000);
+      return;
+    }
+    
     setDisable(true);
 
     const requestData = {
@@ -101,17 +110,13 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         {
           label: t(userId.label),
           type: userId.type,
-          populators: {
-            name: userId.name,
-          },
+          populators: { name: userId.name },
           isMandatory: true,
         },
         {
           label: t(password.label),
           type: password.type,
-          populators: {
-            name: password.name,
-          },
+          populators: { name: password.name },
           isMandatory: true,
         },
         {
@@ -123,12 +128,9 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
             component: (props, customProps) => (
               <Dropdown
                 option={cities}
-               // className="login-city-dd"
-               className="cityCss"
+                className="cityCss"
                 optionKey="i18nKey"
-                select={(d) => {
-                  props.onChange(d);
-                }}
+                select={(d) => props.onChange(d)}
                 t={t}
                 {...customProps}
               />
@@ -136,6 +138,15 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           },
           isMandatory: true,
         },
+        ...(showOtpField ? [{
+          label: "Enter OTP",
+          type: "text",
+          populators: {
+            name: "otp",
+            placeholder: "Enter 6-digit OTP",
+          },
+          isMandatory: true,
+        }] : []),
       ],
     },
   ];
@@ -155,7 +166,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         inline
         submitInForm
         config={config}
-        label={propsConfig.texts.submitButtonLabel}
+        label={showOtpField ? propsConfig.texts.submitButtonLabel : propsConfig.texts.getOtpButtonLabel}
         secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
         onSecondayActionClick={onForgotPassword}
         heading={propsConfig.texts.header}

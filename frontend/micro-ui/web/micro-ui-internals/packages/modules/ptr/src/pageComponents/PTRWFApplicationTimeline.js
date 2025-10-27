@@ -21,7 +21,7 @@ const PTRWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
   const businessService = props?.application?.workflow?.businessService;
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = props.application?.tenantId;
   const state = tenantId?.split(".")[0];
   const [getEmployees, setEmployees] = useState([]);
   const [showToast, setShowToast] = useState(null);

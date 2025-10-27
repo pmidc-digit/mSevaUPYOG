@@ -302,6 +302,7 @@ function SelectDocument({
   let hideInput = false;
 
   const [isHidden, setHidden] = useState(hideInput);
+  const stateId = Digit.ULBService.getStateId();
 
   const addError = () => {
     let type = formState.errors?.[config.key]?.type;
@@ -368,7 +369,7 @@ function SelectDocument({
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
@@ -382,6 +383,29 @@ function SelectDocument({
     })();
   }, [file]);
 
+  function routeTo(filestoreId) {
+        getUrlForDocumentView(filestoreId)
+      }
+
+      const getUrlForDocumentView = async (filestoreId) => {
+        if (filestoreId?.length === 0) return;
+        try {
+          const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+          if (result?.data) {
+            const fileUrl = result.data[filestoreId];
+            if (fileUrl) {
+              window.open(fileUrl, "_blank");
+            } else {
+              setError(t("CS_FILE_FETCH_ERROR"));
+            }
+          }else {
+            setError(t("CS_FILE_FETCH_ERROR"));
+          }
+        } catch (e) {
+          setError(t("CS_FILE_FETCH_ERROR"));
+        } 
+      }
+
 
 
   return (
@@ -391,7 +415,7 @@ function SelectDocument({
         <CardLabel style={{ width: "100%" }} className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
-        <div className="field">
+        <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
           <UploadFile
             id={"tl-doc"}
             onUpload={selectfile}
@@ -403,6 +427,9 @@ function SelectDocument({
             accept="image/*,.pdf"
           // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
+          {uploadedFile ? <div>
+            <SubmitBar onSubmit={() => {routeTo(uploadedFile)}} label={t("CS_VIEW_DOCUMENT")} />
+          </div> : null }
         </div>
       </LabelFieldPair>
 

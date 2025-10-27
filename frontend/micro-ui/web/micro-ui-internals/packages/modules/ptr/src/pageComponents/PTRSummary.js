@@ -8,7 +8,7 @@ function PTRSummary({ t }) {
   const formData = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData || {});
   const owner = formData?.ownerDetails || {};
   const pet = formData?.petDetails || {};
-  console.log('pet', pet)
+  console.log("pet", pet);
   const docs = formData?.documents?.documents?.documents || [];
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -85,6 +85,37 @@ function PTRSummary({ t }) {
     </div>
   );
 
+  const formatPetAge = (ageValue, t) => {
+    if (ageValue === null || ageValue === undefined || ageValue === "") return t("CS_NA");
+
+    const ageStr = String(ageValue).trim();
+    // accept numeric-like strings only
+    if (!/^\d+(\.\d+)?$/.test(ageStr)) return t("CS_NA");
+
+    const [yearsPart, decPart] = ageStr.split(".");
+    let years = Number(yearsPart) || 0;
+    let months = 0;
+
+    if (decPart) {
+      if (decPart.length === 1) {
+        // .5 -> 5 months
+        months = parseInt(decPart, 10);
+      } else {
+        // take first two digits: .11 -> 11 months, .5x -> 50 -> will be handled below
+        months = parseInt(decPart.slice(0, 2), 10);
+      }
+      if (isNaN(months)) months = 0;
+    }
+
+    // Clamp months to 0..11 (or convert overflow to years if you prefer)
+    if (months > 11) months = 11;
+
+    if (years === 0 && months === 0) return t("CS_NA");
+    if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
+    if (months === 0) return `${years} year${years > 1 ? "s" : ""}`;
+    return `${years} year${years > 1 ? "s" : ""} and ${months} month${months > 1 ? "s" : ""}`;
+  };
+
   return (
     <div className="application-summary">
       {/* <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2> */}
@@ -120,7 +151,8 @@ function PTRSummary({ t }) {
           {renderRow(t("PTR_PET_TYPE"), pet?.petType?.name || pet?.petType?.code)}
           {renderRow(t("PTR_BREED_TYPE"), pet?.breedType?.name || pet?.breedType?.code)}
           {renderRow(t("PTR_PET_GENDER"), pet?.petGender?.name || pet?.petGender?.code)}
-          {renderRow(t("PTR_PET_AGE"), pet?.petAge)}
+          {/* {renderRow(t("PTR_PET_AGE"), pet?.petAge)} */}
+          {renderRow(t("PTR_PET_AGE"), formatPetAge(pet?.petAge, t))}
           {renderRow(t("PTR_COLOR"), pet?.petColor)}
           {renderRow(t("PTR_VACCINATION_NUMBER"), pet?.vaccinationNumber)}
           {renderRow(t("PTR_VACCINATION_DATE"), pet?.lastVaccineDate)}

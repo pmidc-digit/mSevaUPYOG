@@ -189,8 +189,13 @@ useEffect(() => {
     onSelect(config.key, data);
   };
 
-  if (isLoading || isSubmitBtnDisable) {
+  if (isLoading ) {
     return <Loader />;
+  }
+  if(isSubmitBtnDisable){
+    return <div>
+        <div className="loader-message">{t("EDCR_SCRUTINY_LOADING_MESSAGE")}</div>
+      </div>
   }
 
   return (
@@ -231,6 +236,7 @@ useEffect(() => {
           }
         }}
         />
+        <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError>
   
         
 

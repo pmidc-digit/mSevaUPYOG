@@ -1,7 +1,8 @@
-import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, EmployeeModuleCard, Loader, Toast } from "@mseva/digit-ui-react-components";
+import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
+import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
   const userInfo = Digit.UserService.getUser();
@@ -141,11 +142,11 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
       name: "employeeCard",
       isCitizen: true,
       kpis: [
-        {
-          count: !(bpaLoading || isEDCRInboxLoading) && totalCount && edcrCount ? totalCount + edcrCount : "-",
-          label: t("BPA_PDF_TOTAL"),
-          link: `/digit-ui/citizen/obps/bpa/inbox`,
-        },
+        // {
+        //   count: !(bpaLoading || isEDCRInboxLoading) && totalCount && edcrCount ? totalCount + edcrCount : "-",
+        //   label: t("BPA_PDF_TOTAL"),
+        //   link: `/digit-ui/citizen/obps/bpa/inbox`,
+        // },
       ],
       links: [
         {
@@ -160,7 +161,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         },
       ],
       className: "CitizenHomeCard",
-      styles: { padding: "0px", minWidth: "90%", minHeight: "90%" },
+      styles: { padding: "0px", minWidth: "90%", minHeight: "90%", display: "flex" },
     },
     {
       title: t("ACTION_TEST_EDCR_SCRUTINY"),

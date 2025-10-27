@@ -347,7 +347,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         address: {
           city: tenantId,
           locality: {
-            code: "ALOC1"
+            code: ""
           }
         },
         tenantId,

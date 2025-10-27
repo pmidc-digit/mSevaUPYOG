@@ -9,7 +9,10 @@ const CHBResponseCitizen = (props) => {
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
   const isCitizen = window.location.href.includes("citizen");
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
 
   const pathname = history?.location?.pathname || "";
   const ndcCode = pathname.split("/").pop(); // ✅ Extracts the last segment
@@ -22,6 +25,11 @@ const CHBResponseCitizen = (props) => {
   const onGoToCHB = () => {
     if (isCitizen) history.push(`/digit-ui/citizen/chb-home`);
     else history.push(`/digit-ui/employee/chb/inbox`);
+  };
+
+  const handleMakePayment = async () => {
+    if (isCitizen) history.push(`/digit-ui/citizen/payment/collect/chb-services/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
+    else history.push(`/digit-ui/employee/payment/collect/chb-services/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
   };
 
   // const handlePayment = () => {

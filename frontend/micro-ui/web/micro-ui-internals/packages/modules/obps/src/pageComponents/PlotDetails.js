@@ -46,8 +46,10 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [apiLoading, setApiLoading] = useState(false);
   const tenantId = localStorage.getItem("CITIZEN.CITY")
   const userInfo = Digit.UserService.getUser();
-  const queryObject = { 0: { tenantId: state }, 1: {id: userInfo?.info?.id} };
-  const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(null, queryObject);
+  const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT")
+  const requestor = userInfo?.info?.mobileNumber;
+  const queryObject = { 0: { tenantId: state }, 1: {mobileNumber: requestor} };
+  const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isUserArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
   const [approvedLicense, setApprovedLicense] = useState(null);
   const [ptLoading, setPtLoading] = useState(false);
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
@@ -55,7 +57,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
 
-console.log("sessionStorageData",approvedLicense);
+console.log("sessionStorageData",userInfo,LicenseData?.Licenses?.[0]?.licenseNumber, LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -115,19 +117,27 @@ console.log("sessionStorageData",approvedLicense);
       }}
   }, [LicenseData]);
 
+  // useEffect(() => {
+  //   const userInfoString = window.localStorage.getItem("user-info");
+  //   if (userInfoString) {
+  //     try {
+  //       const userInfo = JSON.parse(userInfoString);
+  //       if (userInfo?.id) {
+  //         setArchitectId(userInfo.id);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error parsing user-info from local storage", err);
+  //     }
+  //   }
+  // }, []);
   useEffect(() => {
-    const userInfoString = window.localStorage.getItem("user-info");
-    if (userInfoString) {
-      try {
-        const userInfo = JSON.parse(userInfoString);
-        if (userInfo?.id) {
-          setArchitectId(userInfo.id);
+    if (LicenseData) {
+        if (LicenseData?.Licenses?.[0]?.tradeLicenseDetail) {
+          const architectNo = (LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo === null || LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo === "") ? LicenseData?.Licenses?.[0]?.licenseNumber : LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo;
+          setArchitectId(architectNo);
         }
-      } catch (err) {
-        console.error("Error parsing user-info from local storage", err);
-      }
     }
-  }, []);
+  }, [LicenseData]);
 
   useEffect(()=>{
     if(data && data?.planDetail?.planInfoProperties?.KHASRA_NO){
@@ -310,7 +320,8 @@ useEffect(() => {
       tenantId,
       unit: []
     }
-
+    const farDetails = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails;
+    const roadType = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.roadType;
     const additionalDetails = formData?.data?.applicationNo ? {
       ...currentStepData?.createdResponse?.additionalDetails,
       registrationDetails,
@@ -373,7 +384,9 @@ useEffect(() => {
       stakeholderRegistrationNumber,
       stakeholderAddress,
       isSelfCertificationRequired,
-      architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null
+      architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
+      roadType,
+      farDetails
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -460,8 +473,17 @@ useEffect(() => {
       }
     }catch(e){
         console.log("error", e);
+        if(e.response?.data?.Errors?.[0]?.code === "DUPLICATE EDCR"){
+          alert(e.response?.data?.Errors?.[0]?.message);
+          setApiLoading(false);
+        }
+        else if(e.response?.data?.Errors?.[0]?.code){
+          alert(e.response?.data?.Errors?.[0]?.message);
+          setApiLoading(false);
+        }else{
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
+        }
       }
     }
     // onSelect(config.key, payload);

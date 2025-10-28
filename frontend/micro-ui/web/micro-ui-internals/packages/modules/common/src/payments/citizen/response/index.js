@@ -967,7 +967,7 @@ const WrapPaymentComponent = (props) => {
       )}
 
       {/*for pett */}
-      {business_service == "pet-services" ? (
+      {/* {business_service == "pet-services" ? (
         <div
           className="primary-label-btn d-grid"
           style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
@@ -979,7 +979,7 @@ const WrapPaymentComponent = (props) => {
           </svg>
           {t("PTR_FEE_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {/* {business_service == "pet-services" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
@@ -2001,7 +2001,7 @@ const WrapPaymentZeroComponent = (props) => {
       )}
 
       {/*for pett */}
-      {business_service == "pet-services" ? (
+      {/* {business_service == "pet-services" ? (
         <div
           className="primary-label-btn d-grid"
           style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
@@ -2013,7 +2013,7 @@ const WrapPaymentZeroComponent = (props) => {
           </svg>
           {t("PTR_FEE_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {/* {business_service == "pet-services" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">

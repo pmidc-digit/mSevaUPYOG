@@ -41,7 +41,7 @@ public class AdvertisementBookingQueryBuilder {
 					+ "FROM eg_adv_booking_detail eabd\n"
 					+ "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id\n"
 					+ "WHERE eabd.tenant_id = ?\n"
-					+ "AND eabd.booking_status NOT IN ('CANCELLED', 'REJECTED', 'DRAFT', 'BOOKING_EXPIRED', 'PAYMENT_FAILED')\n"
+					+ "AND eabd.booking_status NOT IN ('BOOKING_CREATED','CANCELLED', 'REJECTED', 'DRAFT', 'BOOKING_EXPIRED', 'PAYMENT_FAILED')\n"
 					+ "AND eacd.booking_date >= ?::DATE\n"
 					+ "AND eacd.booking_date <= ?::DATE\n";
 

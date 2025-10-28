@@ -49,13 +49,29 @@ const ApplicationDetails = () => {
   const stateCode = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
    const [displayMenu, setDisplayMenu] = useState(false);
-  const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
-  let License = LicenseData?.Licenses?.[0];
+  // const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
+  // let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     { tenantId, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
     {}
   );
+    // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
+const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
+const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
+
+//  Merge the license data from both tenants
+const LicenseData = {
+  Licenses: [
+    ...(LicenseDataDynamic?.Licenses || []),
+    ...(LicenseDataPunjab?.Licenses || [])
+  ]
+};
+
+//  Update loading state to check both
+const isLoading = isLoadingDynamic || isLoadingPunjab;
+
+let License = LicenseData?.Licenses?.[0];
   const [viewTimeline, setViewTimeline] = useState(false);
   const menuRef = useRef();
   const applicationDetails= LicenseData
@@ -193,6 +209,7 @@ const ApplicationDetails = () => {
   return (
     <Fragment>
       <div style={pageStyle}>
+
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
           <h2 style={{ fontSize: "2rem", color: "#2e4a66" }}>{t("BPA_TASK_DETAILS_HEADER")}</h2>

@@ -12,7 +12,8 @@ import {
   MultiSelectDropdown,
   Dropdown,
   ActionBar,
-  SubmitBar
+  SubmitBar,
+  Toast
 } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect, useMemo, } from "react";
 import Timeline from "../components/Timeline";
@@ -39,7 +40,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   const [isAddressSame, setIsAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || false);
   const [error, setError] = useState(null);
-
+  const [showToast, setShowToast] = useState(null)
   // merging the CorrospondenceAddress to this page 
 
     const [correspondenceAddress, setCorrespondenceAddress] = useState(
@@ -238,12 +239,14 @@ console.log(isCitizenEditable, "EDIT per");
     console.log(selectedAction, "SELECTED ACTION");
   if (pinCode === "" || pinCode.length < 6) {
     setErrorMessage(t("BPA_PINCODE_ERROR_MESSAGE"));
+    setShowToast({ error: true, message: t("BPA_PINCODE_ERROR_MESSAGE") });
     return;
   }
 
   // If first time, API call
   if (!(formData?.result && formData?.result?.Licenses?.[0]?.id)) {
-    setErrorMessage(""); // reset errors
+    setErrorMessage("");
+    setShowToast(null) // reset errors
 
 
   const role = formData?.LicneseType?.LicenseType?.role;
@@ -335,6 +338,7 @@ console.log(isCitizenEditable, "EDIT per");
       .catch((e) => {
         console.error("API Error", e?.response?.data?.Errors);
         setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
+        setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
       });
   } else {
     // ✅ Update Flow - ensure nested objects exist
@@ -364,7 +368,9 @@ console.log(isCitizenEditable, "EDIT per");
   const role = formData?.LicneseType?.LicenseType?.role;
   const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
 
-
+   const closeToast = () => {
+    setShowToast(null)
+  }
   return (
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
@@ -461,7 +467,7 @@ console.log(isCitizenEditable, "EDIT per");
                 title: t("BPA_PINCODE_ERROR_MESSAGE"),
               })}
             />
-            {errorMessage && (
+            {/* {errorMessage && (
               <div
                 style={{
                   color: "#d32f2f",
@@ -472,7 +478,18 @@ console.log(isCitizenEditable, "EDIT per");
               >
                 {errorMessage}
               </div>
+            )} */}
+
+             {showToast && (
+              <Toast
+                error={showToast?.error}
+                warning={showToast?.warning}
+                label={showToast?.message}
+                isDleteBtn={true}
+                onClose={closeToast}
+              />
             )}
+
           </div>
 
 

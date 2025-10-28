@@ -9,8 +9,7 @@ const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "Challan", [{ name: "Documents" }]);
-
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
   const checkFormData = useSelector((state) => state.challan.ChallanApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {
@@ -24,12 +23,12 @@ const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function goNext(finalData) {
     console.log("Current Data", finalData);
-    console.log("data?????....=====", docData?.Challan?.Documents);
+    console.log("data?????....=====", docData?.CHB?.Documents);
 
     const missingFields = validation(finalData);
 
     if (missingFields.length > 0) {
-      setError(`${t("CHALLAN_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
+      setError(`${t("CHB_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
@@ -39,7 +38,7 @@ const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function validation(formData) {
     if (!isLoading) {
-      const chbDocumentsType = docData?.Challan?.Documents || [];
+      const chbDocumentsType = docData?.CHB?.Documents || [];
       const uploadedDocs = formData?.documents?.documents || [];
 
       console.log("chbDocumentsType", chbDocumentsType);

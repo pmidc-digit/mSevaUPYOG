@@ -111,44 +111,17 @@ const StakeholderRegistration = () => {
       actionString = "RESUBMIT"
     }
 
-    const payload = {
-      Licenses: [
-        {
-          // Place action FIRST before any other properties
-          action: actionString,
-          assignee: typeof selectedAction === "object" ? selectedAction.assignee : null,
-          wfDocuments: typeof selectedAction === "object" ? selectedAction.wfDocuments : null,
-
-          // Then all other properties
-          id: licenseData.id,
-          tenantId: licenseData.tenantId,
-          businessService: licenseData.businessService,
-          licenseType: licenseData.licenseType,
-          applicationType: licenseData.applicationType,
-          workflowCode: licenseData.workflowCode,
-          licenseNumber: licenseData.licenseNumber,
-          applicationNumber: licenseData.applicationNumber,
-          oldLicenseNumber: licenseData.oldLicenseNumber,
-          propertyId: licenseData.propertyId,
-          oldPropertyId: licenseData.oldPropertyId,
-          accountId: licenseData.accountId,
-          tradeName: licenseData.tradeName,
-          applicationDate: licenseData.applicationDate,
-          commencementDate: licenseData.commencementDate,
-          issuedDate: licenseData.issuedDate,
-          financialYear: licenseData.financialYear,
-          validFrom: licenseData.validFrom,
-          validTo: licenseData.validTo,
-          status: licenseData.status,
-          tradeLicenseDetail: licenseData.tradeLicenseDetail,
-          calculation: licenseData.calculation,
-          fileStoreId: licenseData.fileStoreId,
-          sortNumber: licenseData.sortNumber,
-          modifiedTime: licenseData.modifiedTime,
-          type: licenseData.type,
-        },
-      ],
-    }
+const payload = {
+  Licenses: [
+    {
+      ...licenseData, // Spread ALL fields from original license data
+      action: actionString, // Override with workflow action
+      assignee: typeof selectedAction === "object" ? selectedAction.assignee : null,
+      comment: typeof selectedAction === "object" ? selectedAction.comment : null,
+      wfDocuments: typeof selectedAction === "object" ? selectedAction.wfDocuments : null,
+    },
+  ],
+}
 
 
     try {
@@ -179,6 +152,36 @@ const StakeholderRegistration = () => {
       history.push(`${path}/acknowledgement`)
     }
   }
+
+
+// const createApplication = async (selectedAction) => {
+//   console.log("[v0] createApplication called with action:", selectedAction)
+  
+//   // Extract only serializable properties from workflow action
+//   let workflowAction = null
+//   if (selectedAction) {
+//     if (typeof selectedAction === "object" && selectedAction.action) {
+//       workflowAction = {
+//         action: selectedAction.action,
+//         assignee: selectedAction.assignee || null,
+//         comment: selectedAction.comment || null,
+//         wfDocuments: selectedAction.wfDocuments || null,
+//       }
+//     } else if (typeof selectedAction === "string") {
+//       workflowAction = { action: selectedAction }
+//     }
+//   }
+  
+//   console.log("[v0] Passing workflow action to acknowledgement:", workflowAction)
+  
+//   // Pass the workflow action to acknowledgement page via history state
+//   history.push({
+//     pathname: `${path}/acknowledgement`,
+//     state: {
+//       workflowAction: workflowAction,
+//     }
+//   })
+// }
 
 
 

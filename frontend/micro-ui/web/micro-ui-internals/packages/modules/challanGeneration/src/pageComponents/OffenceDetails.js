@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { TextInput, CardLabel, Dropdown, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { use, useEffect, useState } from "react";
+import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
+import { parse, format } from "date-fns";
 
 const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   const [loader, setLoader] = useState(false);
@@ -24,6 +25,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
+      // halls: [{ startDate: "", endDate: "", startTime: "", endTime: "" }], // predefine index 0
     },
   });
 
@@ -84,22 +86,14 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
     // goNext(payload);
   };
 
-  useEffect(() => {
-    if (currentStepData?.offenceDetails) {
-      Object.entries(currentStepData?.offenceDetails)?.forEach(([key, value]) => {
-        setValue(key, value);
-      });
-    }
-  }, [currentStepData, setValue]);
-
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           {/* offence type */}
           <LabelFieldPair>
-            <CardLabel>
-              {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
+            <CardLabel className="card-label-smaller">
+              {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}

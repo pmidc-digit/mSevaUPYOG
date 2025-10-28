@@ -85,6 +85,8 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
+// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
+
 const ChallanStepperForm = () => {
   const history = useHistory();
   const { t } = useTranslation();
@@ -114,6 +116,8 @@ const ChallanStepperForm = () => {
     },
   });
 
+  // console.log("formStatePTR: ", formState);
+
   const setStep = (updatedStepNumber) => {
     dispatch(SET_ChallanApplication_STEP(updatedStepNumber));
   };
@@ -137,6 +141,7 @@ const ChallanStepperForm = () => {
     console.log("dara", data);
   };
 
+  // console.log("formState: ",formState);
   return (
     <div
       className="pageCard"

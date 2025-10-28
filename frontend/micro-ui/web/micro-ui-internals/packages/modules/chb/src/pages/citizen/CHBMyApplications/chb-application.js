@@ -80,7 +80,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
       <KeyNote keyValue={t("CHB_BOOKING_DATE")} note={getBookingDateRange(application?.bookingSlotDetails)} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
       <div>
-        {application.bookingStatus === "PENDING_FOR_PAYMENT" ? (
+        {application.bookingStatus === "PENDING_PAYMENT" ? (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} />
         ) : (
           <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>

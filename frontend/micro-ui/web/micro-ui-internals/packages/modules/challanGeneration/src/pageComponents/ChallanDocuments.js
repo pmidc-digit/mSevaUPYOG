@@ -151,7 +151,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
     <div style={{ marginBottom: "40px" }}>
       <LabelFieldPair style={{ display: "inline" }}>
         <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
-          {t(doc?.code)} {doc?.required && " *"}
+          {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field">
           <UploadFile

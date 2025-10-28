@@ -52,6 +52,7 @@ public class CommunityHallBookingRowmapper implements ResultSetExtractor<List<Co
 						.permissionLetterFilestoreId(rs.getString("permission_letter_filestore_id"))
 						.paymentReceiptFilestoreId(rs.getString("payment_receipt_filestore_id"))
 						.auditDetails(CommunityHallBookingUtil.getAuditDetails(rs))
+                        .additionalDetails(rs.getObject("additional_details"))
 						.build();
 
 				bookingDetailMap.put(bookingId, currentBooking);

@@ -93,6 +93,11 @@ public class CommunityHallBookingDetail {
 
 	private long timerValue;
 
+	/**
+	 * Free-form JSON object stored with booking. Example: {"discountAmount": 150.00, "discountReason":"promo"}
+	 */
+	private Object additionalDetails;
+
 	public CommunityHallBookingDetail addUploadedDocumentDetailsItem(DocumentDetail uploadedDocumentDetailsItem) {
 		if (this.uploadedDocumentDetails == null) {
 			this.uploadedDocumentDetails = new ArrayList<>();

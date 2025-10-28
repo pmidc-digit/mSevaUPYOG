@@ -4,7 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.RoundingMode;
+import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.commons.lang.StringUtils;
 import org.upyog.chb.web.models.User;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +65,56 @@ public class DemandService {
 		User owner = bookingRequest.getHallsBookingApplication().getOwners().get(0);
 
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest);
-		
+
+		// --- Apply discount from additionalDetails (if provided) ---
+		try {
+			Object addDetails = bookingRequest.getHallsBookingApplication().getAdditionalDetails();
+			java.math.BigDecimal discountAmount = java.math.BigDecimal.ZERO;
+			if (addDetails != null) {
+//				 Authorization: only EMPLOYEE users can set discount in additionalDetails
+				if (bookingRequest.getRequestInfo() == null || bookingRequest.getRequestInfo().getUserInfo() == null
+						|| StringUtils.equalsIgnoreCase(bookingRequest.getRequestInfo().getUserInfo().getType(),
+                        CommunityHallBookingConstants.CITIZEN)) {
+					throw new CustomException("UNAUTHORIZED_DISCOUNT", "Only users with EMPLOYEE role can set discountAmount in additionalDetails");
+				}
+				if (addDetails instanceof Map) {
+					Object val = ((Map<?, ?>) addDetails).get("discountAmount");
+					if (val != null) discountAmount = new java.math.BigDecimal(val.toString());
+				} else {
+					// try parse as JSON string
+					ObjectMapper mapper = new ObjectMapper();
+					Map<?, ?> map = mapper.readValue(addDetails.toString(), Map.class);
+					Object val = map.get("discountAmount");
+					if (val != null) discountAmount = new java.math.BigDecimal(val.toString());
+				}
+			}
+
+			if (discountAmount != null && discountAmount.compareTo(java.math.BigDecimal.ZERO) > 0) {
+				// Sum current demand details to know total payable
+				java.math.BigDecimal totalAmount = demandDetails.stream()
+						.map(DemandDetail::getTaxAmount)
+						.reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+				if (discountAmount.compareTo(totalAmount) > 0) {
+					// Clamp discount to total amount to avoid negative payable
+					log.warn("Discount {} exceeds total {} for booking {}, clamping to total", discountAmount, totalAmount, bookingRequest.getHallsBookingApplication().getBookingId());
+					discountAmount = totalAmount;
+				}
+
+				// Create negative demand detail for discount. Ensure tax head CHB_DISCOUNT exists in MDMS.
+				DemandDetail discountDetail = DemandDetail.builder()
+						.taxAmount(discountAmount.negate().setScale(2, RoundingMode.FLOOR))
+						.taxHeadMasterCode("CHB_DISCOUNT")
+						.tenantId(tenantId)
+						.build();
+
+				demandDetails.add(discountDetail);
+				log.info("Applied discount {} for booking {}", discountAmount, bookingRequest.getHallsBookingApplication().getBookingId());
+			}
+		} catch (Exception ex) {
+			log.warn("Unable to apply discount from additionalDetails for booking {} : {}", bookingRequest.getHallsBookingApplication().getBookingId(), ex.getMessage());
+		}
+
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);
 		
 		Demand demand = Demand.builder().consumerCode(consumerCode)

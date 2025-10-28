@@ -966,3 +966,19 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
         image-name: "egov-gisintegration-db"
+
+    - name: "builds/upyog/municipal-services/challan-generation"
+    build:
+      - work-dir: "municipal-services/challan-generation"
+        image-name: "challan-generation"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/challan-generation/src/main/resources/db"
+        image-name: "challan-generation-db"
+        
+  - name: "builds/upyog/municipal-services/challan_generation-calculator"
+    build:
+      - work-dir: "municipal-services/challan_generation-calculator"
+        image-name: "challan_generation-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
+        image-name: "challan_generation-calculator-db"

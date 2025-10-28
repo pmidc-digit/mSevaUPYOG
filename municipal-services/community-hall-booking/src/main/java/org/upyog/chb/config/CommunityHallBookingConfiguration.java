@@ -64,6 +64,9 @@ public class CommunityHallBookingConfiguration {
 	@Value("${egov.chb.max.limit}")
 	private Integer maxSearchLimit;
 
+	@Value("${egov.chb.max.booking.days}")
+	private Integer maxBookingDays;
+
 	// Workflow configs
 	@Value("${workflow.host}")
 	private String wfHost;

@@ -21,6 +21,7 @@ import org.upyog.chb.enums.BookingStatusEnum;
 import org.upyog.chb.repository.CommunityHallBookingRepository;
 import org.upyog.chb.service.*;
 import org.upyog.chb.util.CommunityHallBookingUtil;
+import org.upyog.chb.config.CommunityHallBookingConfiguration;
 import org.upyog.chb.util.MdmsUtil;
 import org.upyog.chb.validator.CommunityHallBookingValidator;
 import org.upyog.chb.web.models.*;
@@ -54,6 +55,9 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 	@Autowired
 	private CHBEncryptionService encryptionService;
+
+	@Autowired
+	private CommunityHallBookingConfiguration bookingConfiguration;
 
 	@Autowired
 	private BookingTimerService bookingTimerService;
@@ -609,8 +613,16 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			startDate = startDate.plusDays(1);
 		}
 
-		// Move the no of days to application properties File
-		if (totalDates.size() > 3) {
+		// Validate number of days against configured maxBookingDays
+		int maxDays = 7; // fallback
+		try {
+			if (bookingConfiguration != null && bookingConfiguration.getMaxBookingDays() != null) {
+				maxDays = bookingConfiguration.getMaxBookingDays();
+			}
+		} catch (Exception e) {
+			log.warn("Unable to read maxBookingDays from configuration, using default {}", maxDays);
+		}
+		if (totalDates.size() > maxDays) {
 			throw new CustomException(CommunityHallBookingConstants.INVALID_BOOKING_DATE_RANGE,
 					"Booking is not allowed for this no of days.");
 		}

@@ -1,9 +1,13 @@
-import React, { useEffect } from "react";
-import { TextInput, CardLabel, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState } from "react";
+import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { Loader } from "../components/Loader";
 
-const OffenderDetails = ({ t, goNext, currentStepData }) => {
+const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const stateId = Digit.ULBService.getStateId();
   const user = Digit.UserService.getUser();
+  const [loader, setLoader] = useState(false);
 
   const {
     control,
@@ -20,16 +24,75 @@ const OffenderDetails = ({ t, goNext, currentStepData }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log("data", data);
     goNext(data);
+    // setLoader(true);
+    // console.log("data", data);
+    // console.log("user", user);
+    // console.log("currentStepData", currentStepData);
+    // if (currentStepData?.venueDetails?.[0]?.bookingNo) {
+    //   goNext(currentStepData?.venueDetails);
+    // } else {
+    //   const baseApplication = currentStepData?.ownerDetails?.hallsBookingApplication || {};
+
+    //   // Construct owners array using "data"
+    //   const applicantDetail = {
+    //     tenantId: tenantId,
+    //     applicantName: data?.name,
+    //     applicantMobileNo: data?.mobileNumber,
+    //     applicantEmailId: data?.emailId,
+    //     // address: data?.address,
+    //     type: user?.info?.type,
+    //   };
+
+    //   const owners = [
+    //     {
+    //       name: data?.name,
+    //       mobileNumber: data?.mobileNumber,
+    //       emailId: data?.emailId,
+    //       type: "CITIZEN",
+    //     },
+    //   ];
+
+    //   const address = {
+    //     addressLine1: data?.address,
+    //     // cityCode: "SPF",
+    //     // doorNo: "12B",
+    //   };
+
+    //   const payload = {
+    //     hallsBookingApplication: {
+    //       ...baseApplication,
+    //       applicantDetail,
+    //       address,
+    //       owners,
+    //     },
+    //   };
+
+    //   console.log("final payload", payload);
+    //   // return;
+    //   // goNext(payload);
+    //   // return;\
+    //   try {
+    //     const response = await Digit.CHBServices.create(payload);
+    //     console.log("response", response);
+    //     setLoader(false);
+    //     goNext(response?.hallsBookingApplication);
+    //   } catch (error) {
+    //     setLoader(false);
+    //   }
+    // }
   };
 
   useEffect(() => {
-    if (currentStepData?.offenderDetails) {
-      Object.entries(currentStepData?.offenderDetails)?.forEach(([key, value]) => {
-        setValue(key, value);
-      });
-    }
+    console.log("currentStepData", currentStepData);
+    // if (formattedData) {
+    //   setValue("address", formattedData?.address?.addressLine1);
+    // }
+    // if (formattedData) {
+    //   Object.entries(formattedData).forEach(([key, value]) => {
+    //     setValue(key, value);
+    //   });
+    // }
   }, [currentStepData, setValue]);
 
   return (
@@ -154,9 +217,12 @@ const OffenderDetails = ({ t, goNext, currentStepData }) => {
         </div>
 
         <ActionBar>
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
+        {/* <button type="submit">submit</button> */}
       </form>
+      {loader && <Loader page={true} />}
     </React.Fragment>
   );
 };

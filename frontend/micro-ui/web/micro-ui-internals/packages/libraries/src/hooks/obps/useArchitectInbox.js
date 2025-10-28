@@ -5,6 +5,9 @@ import { Search } from "../../services/molecules/OBPS/Search";
 import { useQuery } from "react-query";
 
 const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCount = false, config={} }) => {
+
+   const normalizedTenantId = tenantId === "punjab" || tenantId === "pb" ? "pb.punjab" : tenantId;
+
   if (!isTotalCount) {
     const { filterForm = {}, searchForm = {}, tableForm = {}} = filters
     const { moduleName, businessService, applicationStatus, locality, assignee } = filterForm
@@ -13,7 +16,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
     // const USER_UUID = Digit.UserService.getUser()?.info?.uuid;
     
     const _filters = {
-        tenantId,
+        normalizedTenantId,
 		processSearchCriteria: {
             moduleName: moduleName ? moduleName : "bpa-services",
 			businessService: businessService?.length > 0 ? [businessService] : ["BPA_LOW", "BPA", "BPA_OC"],
@@ -31,7 +34,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
     }
 
     return useQuery(
-      ["INBOX_DATA",tenantId, ...Object.keys(_filters)?.map( e => _filters?.[e] )],
+      ["INBOX_DATA",normalizedTenantId, ...Object.keys(_filters)?.map( e => _filters?.[e] )],
       async () => {
         const data = await InboxGeneral.Search({inbox: {..._filters}});
         if (withEDCRData === true) {
@@ -80,7 +83,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
   } else {
     const { mobileNumber, limit, offset, moduleName, businessService } = filters;
     const _filters = {
-      tenantId,
+      tenantId: normalizedTenantId,
       processSearchCriteria: {
         moduleName: moduleName ? moduleName : "bpa-services",
         businessService: businessService?.length > 0 ? businessService : ["BPA_LOW", "BPA", "BPA_OC"],
@@ -92,7 +95,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
       offset
     }
     return useQuery(
-      ["INBOX_DATA", tenantId, ...Object.keys(_filters)?.map(e => _filters?.[e])],
+      ["INBOX_DATA", normalizedTenantId, ...Object.keys(_filters)?.map(e => _filters?.[e])],
       async () => {
         const data = await InboxGeneral.Search({ inbox: { ..._filters } });
         return data;

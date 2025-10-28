@@ -29,6 +29,13 @@ const MyApplication = () => {
 
   const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
   
+  const { data: dataPunjab, isLoading: isLoadingPunjab, revalidate: revalidatePunjab } = Digit.Hooks.obps.useBPAREGSearch(
+  "pb.punjab", 
+  {}, 
+  {mobileNumber: requestor}, 
+  {cacheTime : 0}
+);
+
   const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(tenantId, {
     requestor,
     mobileNumber: requestor,
@@ -121,6 +128,7 @@ const MyApplication = () => {
     return () => {
       setFinalData([]);
       revalidate?.();
+      revalidatePunjab?.();
       bpaRevalidate?.();
     };
   }, []);
@@ -136,7 +144,18 @@ const MyApplication = () => {
           license.type = "BPAREG";
           searchConvertedArray.push(license);
         });
+
       }
+
+      if (dataPunjab?.Licenses?.length) {
+      dataPunjab?.Licenses?.forEach((license) => {
+        license.sortNumber = 0;
+        license.modifiedTime = license.auditDetails.lastModifiedTime;
+        license.type = "BPAREG";
+        searchConvertedArray.push(license);
+      });
+    }
+
       // if (bpaData?.length) {
       //   bpaData?.forEach((bpaDta) => {
       //     bpaDta.sortNumber = 0;
@@ -169,9 +188,9 @@ const MyApplication = () => {
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading, isBpaSearchLoading, bpaData, data]);
+  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
 
-  if (isLoading || isBpaSearchLoading) {
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading) {
     return <Loader />;
   }
 
@@ -209,7 +228,7 @@ const MyApplication = () => {
 
   return (
     <Fragment>
-      {/* <h1>HHhhhhhhhhhh</h1> */}
+  
       <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
       <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>

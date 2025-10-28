@@ -105,8 +105,9 @@ const ChallanStepperForm = () => {
   const { data: categoryData, isLoading: categoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Category" }]);
   const { data: subCategoryData, isLoading: subCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "SubCategory" }]);
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
+  const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
 
-  console.log("OffenceTypeData", OffenceTypeData);
+  console.log("OffenceRates", OffenceRates);
 
   const {
     control,
@@ -145,9 +146,9 @@ const ChallanStepperForm = () => {
   const onSubmit = async (data) => {
     setLoader(false);
     console.log("dat==??a", data);
-    console.log("documentsData", documentsData);
+    console.log("documentsData", documentsData?.documents);
 
-    const challan = {
+    const Challan = {
       tenantId: tenantId,
       citizen: {
         name: data?.name,
@@ -160,16 +161,22 @@ const ChallanStepperForm = () => {
       offenceCategoryName: data?.offenceCategory?.name,
       offenceSubCategoryName: data?.offenceSubCategory?.name,
       challanAmount: data?.challanAmount,
-      amount: data?.amount,
+      // amount: data?.amount,
+      amount: [
+        {
+          // "taxHeadCode": "CH.CHALLAN_FINE",
+          amount: data?.amount,
+        },
+      ],
       address: {},
-      documents: [],
+      documents: documentsData?.documents,
       workflow: {
         action: "SUBMIT",
       },
     };
     history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
     try {
-      const response = await Digit.ChallanGenerationService.create(challan);
+      const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       console.log("response", response);
       setLoader(false);
       history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
@@ -204,6 +211,14 @@ const ChallanStepperForm = () => {
     () => debounce(handleMobileChange, 500), // 500ms delay after user stops typing
     []
   );
+
+  const handleRates = (val) => {
+    console.log("val", val);
+    console.log("OffenceRates", OffenceRates?.Challan?.Rates);
+    const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
+    console.log("filterRates", filterRates);
+    setValue("amount", filterRates?.[0]?.amount);
+  };
 
   return (
     <div
@@ -358,8 +373,7 @@ const ChallanStepperForm = () => {
                     className="form-field"
                     select={(e) => {
                       props.onChange(e);
-                      console.log(e);
-                      setValue("amount", e?.penaltyAmount);
+                      handleRates(e);
                     }}
                     selected={props.value}
                     option={subCategoryData?.Challan?.SubCategory}
@@ -452,7 +466,7 @@ const ChallanStepperForm = () => {
           isDleteBtn={"true"}
         />
       )}
-      {(loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
+      {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
     </div>
   );
 };

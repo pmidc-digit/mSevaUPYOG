@@ -79,17 +79,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     console.log("uploadedFile==??", uploadedFile);
     const userInfo = Digit.UserService.getUser()?.info || {};
     const now = Date.now();
+    const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
 
-    // const additionalDetails = { reason: data?.reason?.reasonName, discountAmount: data?.discount, disImage: uploadedFile };
+    if (!isCitizenDeclared) {
+      alert("Please upload Self Certificate");
+      return;
+    }
 
-    // ✅ Include additionalDetails only if not a citizen
-    const additionalDetails = !isCitizen
-      ? {
-          reason: data?.reason?.reasonName,
-          discountAmount: data?.discountAmount,
-          disImage: uploadedFile,
-        }
-      : undefined; // or null
+    const additionalDetails = {
+      disImage: isCitizenDeclared, // ✅ always include this
+      ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
+      ...(data?.discountAmount && { discountAmount: data.discountAmount }),
+    };
 
     // Map booking slots from hall details
     const bookingSlotDetails = data?.slots?.map((slot) => {
@@ -165,6 +166,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("siteId", selectedCommHall || null);
       setValue("hallCode", selectHallCode || null);
       setValue("startDate", formattedData?.bookingSlotDetails?.[0]?.bookingDate);
+      setValue("endDate", formattedData?.bookingSlotDetails.at(-1)?.bookingEndDate);
       setShowInfo(true);
       fiterHalls(selectedCommHall);
 
@@ -577,7 +579,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                 </div>
-                <div style={{ marginBottom: "20px" }}>
+                {/* <div style={{ marginBottom: "20px" }}>
                   <CardLabel>{t("CHB_REAS_IMAGE")}</CardLabel>
                   <div className="field">
                     <UploadFile
@@ -594,17 +596,43 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       error={!uploadedFile}
                     />
                   </div>
-                </div>
+                </div> */}
               </React.Fragment>
             )}
+
+            {/* checkbox self declaration */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+              <Controller
+                control={control}
+                name="termsAccepted"
+                rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+                render={(props) => (
+                  <input
+                    id="termsAccepted"
+                    type="checkbox"
+                    checked={props.value || false}
+                    onChange={(e) => {
+                      props.onChange(e.target.checked);
+                      console.log("cal", e.target.checked);
+                      if (e.target.checked) setShowTermsPopup(true);
+                      // setShowTermsPopup(true);
+                    }}
+                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                  />
+                )}
+              />
+              <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
+                {t("CHB_SELF_LABEL")}
+              </label>
+            </div>
+            {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
           </div>
         </div>
+
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
-
-      <div onClick={() => setShowTermsPopup(true)}>Show Modal</div>
 
       {showTermsPopup && (
         <CitizenConsent

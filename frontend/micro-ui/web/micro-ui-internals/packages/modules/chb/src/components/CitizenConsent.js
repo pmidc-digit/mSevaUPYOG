@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import { SubmitBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
+import { Loader } from "../components/Loader";
 
 const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp }) => {
   const { t } = useTranslation();
@@ -12,13 +13,14 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const ownerEmail = user?.info?.emailId;
   const { id } = useParams();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const [loader, setLoader] = useState(false);
 
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
 
   const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
   const [isFileUploaded, setIsFileUploaded] = useState(false);
 
-  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
   const DateOnly = new Date();
 
   const updatedAdditionalDetails = {
@@ -98,21 +100,34 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   };
 
   const uploadSelfDeclaration = async () => {
+    setLoader(true);
+    const Chb = [
+      {
+        applicationNo: "CHB-0001",
+        tenantId: "pb.amritsar",
+        approvalDate: "2025-10-28",
+        TimeStamp: "2025-10-28T12:30:00Z",
+      },
+    ];
+
     try {
       setIsUploading(true); // Set isUploading to true before starting the upload
 
-      let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: "test" }, "ownerconsent");
+      let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Chb: Chb }, "communityhallowner");
       console.log(result, "RESULT");
+      setLoader(false);
       if (result?.filestoreIds[0]?.length > 0) {
         alert("File Uploaded Successfully");
-        sessionStorage.setItem("CitizenConsentdocFilestoreid", result?.filestoreIds[0]);
+        sessionStorage.setItem("CitizenConsentdocFilestoreidCHB", result?.filestoreIds[0]);
         setIsFileUploaded(true); // Set isFileUploaded to true on successful upload
       } else {
         alert("File Upload Failed");
       }
     } catch (error) {
       alert("Error Uploading PDF:", error); // Error handling
+      setLoader(false);
     } finally {
+      setLoader(false);
       setIsUploading(false); // Set isUploading to false after the upload is complete
     }
   };
@@ -198,6 +213,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
           )}
         </div>
       </Modal>
+      {loader && <Loader page={true} />}
     </div>
   );
 };

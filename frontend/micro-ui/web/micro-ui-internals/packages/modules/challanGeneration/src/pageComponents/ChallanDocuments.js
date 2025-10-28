@@ -190,8 +190,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
 
   return (
-    <div style={{ marginBottom: "24px", width: "50%" }}>
-      {doc?.hasDropdown ? (
+    <div style={{ marginBottom: "24px" }}>
+      {/* {doc?.hasDropdown ? (
         <LabelFieldPair style={{ display: "inline" }}>
           <CardLabel style={{ width: "auto" }}>
             {t(doc?.code)} {doc?.required && " *"}
@@ -206,17 +206,17 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             t={t}
           />
         </LabelFieldPair>
-      ) : null}
-      {!doc?.hasDropdown ? (
+      ) : null} */}
+      {/* {!doc?.hasDropdown ? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
         </LabelFieldPair>
-      ) : null}
+      ) : null} */}
       <LabelFieldPair style={{ display: "inline" }}>
         <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
           {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
-        <div className="field">
+        <div className="field" style={{ width: "100%" }}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

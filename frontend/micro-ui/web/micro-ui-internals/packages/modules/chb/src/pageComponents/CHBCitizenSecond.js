@@ -3,6 +3,7 @@ import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFi
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 import { parse, format } from "date-fns";
+import CitizenConsent from "../components/CitizenConsent";
 
 const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
@@ -15,6 +16,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
 
   const {
     control,
@@ -23,6 +25,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     reset,
     formState: { errors },
     getValues,
+    watch,
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
@@ -77,7 +80,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     const userInfo = Digit.UserService.getUser()?.info || {};
     const now = Date.now();
 
-    const additionalDetails = { reason: data?.reason?.reasonName, discount: data?.discount, disImage: uploadedFile };
+    // const additionalDetails = { reason: data?.reason?.reasonName, discountAmount: data?.discount, disImage: uploadedFile };
+
+    // ✅ Include additionalDetails only if not a citizen
+    const additionalDetails = !isCitizen
+      ? {
+          reason: data?.reason?.reasonName,
+          discountAmount: data?.discountAmount,
+          disImage: uploadedFile,
+        }
+      : undefined; // or null
 
     // Map booking slots from hall details
     const bookingSlotDetails = data?.slots?.map((slot) => {
@@ -100,7 +112,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     const payload = {
       hallsBookingApplication: {
         tenantId,
-        additionalDetails,
+        ...(additionalDetails && { additionalDetails }),
         bookingStatus: "INITIATED",
         applicationDate: now,
         communityHallCode: getHallDetails?.[0]?.communityHallId || "",
@@ -138,11 +150,15 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const purposeOptions = CHBPurpose.CHB.Purpose || [];
       const specialCategoryOptions = SpecialCategory.CHB.SpecialCategory || [];
       const hallCodeOptions = CHBHallCode?.CHB?.HallCode;
+      const discReasonOptions = CHBReason?.CHB?.DiscountReason;
+
+      console.log("discReasonOptions", discReasonOptions);
 
       const selectedCommHall = communityHallsOptions?.find((item) => item?.communityHallId == formattedData?.communityHallCode);
       const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose);
       const selectedSpecialCat = specialCategoryOptions?.find((item) => item?.code == formattedData?.specialCategory?.category);
       const selectHallCode = hallCodeOptions?.find((item) => item?.HallCode == formattedData?.bookingSlotDetails?.[0]?.hallCode);
+      const selectReason = discReasonOptions?.find((item) => item?.reasonName == formattedData?.additionalDetails?.reason);
 
       console.log("formattedData", formattedData);
 
@@ -166,6 +182,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("purpose", selectedPurpose || null);
       setValue("specialCategory", selectedSpecialCat || null);
       setValue("purposeDescription", formattedData.purposeDescription || "");
+      setValue("discountAmount", formattedData?.additionalDetails?.discountAmount || "");
+      setValue("reason", selectReason || null);
+      // disImage
     }
   }, [currentStepData, setValue]);
 
@@ -203,6 +222,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       }
     })();
   }, [file]);
+
+  const startDate = watch("startDate");
 
   return (
     <React.Fragment>
@@ -268,7 +289,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               {errors.startDate && <p style={{ color: "red" }}>{errors.startDate.message}</p>}
             </div>
           </LabelFieldPair>
-
           {/* SELECT End DATE */}
           <LabelFieldPair style={{ marginTop: "20px" }}>
             <CardLabel>
@@ -284,13 +304,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     type={"date"}
                     className="form-field"
                     value={props.value}
-                    min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                    min={
+                      startDate
+                        ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                    }
+                    // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disabled={!startDate}
                   />
                 )}
               />
@@ -472,6 +498,38 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
               {errors.specialCategory && <p style={{ color: "red" }}>{errors.specialCategory.message}</p>}
             </div>
+
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
+              <CardLabel className="card-label-smaller">
+                {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
+              </CardLabel>
+              <div className="field" style={{ width: "50%" }}>
+                <Controller
+                  control={control}
+                  name={"purposeDescription"}
+                  defaultValue=""
+                  rules={{
+                    required: t("CHB_PURPOSE_DESCRIPTION_REQUIRED"),
+                    minLength: { value: 5, message: t("CHB_PURPOSE_DESCRIPTION_REQUIRED_MIN") },
+                  }}
+                  render={(props) => (
+                    <TextArea
+                      style={{ marginBottom: 0, marginTop: 0 }}
+                      type={"textarea"}
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        props.onBlur(e);
+                      }}
+                    />
+                  )}
+                />
+                {errors.purposeDescription && <p style={{ color: "red" }}>{errors.purposeDescription.message}</p>}
+              </div>
+            </LabelFieldPair>
+
             {!isCitizen && (
               <React.Fragment>
                 {/* Discount Amount */}
@@ -479,7 +537,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
                   <Controller
                     control={control}
-                    name="discount"
+                    name="discountAmount"
                     render={(props) => (
                       <TextInput
                         type="number"
@@ -545,6 +603,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
+
+      <div onClick={() => setShowTermsPopup(true)}>Show Modal</div>
+
+      {showTermsPopup && (
+        <CitizenConsent
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
+        />
+      )}
+
       {(CHBReasonLoading || CHBLocationLoading || CHBLoading || CHBPurposeLoading || CHBSpecialCategoryLoading || CHBHallCodeLoading || loader) && (
         <Loader page={true} />
       )}

@@ -9,7 +9,9 @@ const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: s
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
+
+  console.log("data", data);
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -23,7 +25,7 @@ const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: s
 
   useEffect(() => {
     let count = 0;
-    data?.CHB?.Documents?.map((doc) => {
+    data?.Challan?.Documents?.map((doc) => {
       doc.hasDropdown = true;
 
       let isRequired = false;
@@ -41,7 +43,7 @@ const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: s
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.CHB?.Documents?.map((document, index) => {
+          {data?.Challan?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}

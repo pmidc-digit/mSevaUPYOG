@@ -19,7 +19,7 @@ import { Loader } from "../../components/Loader";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../config/Create/citizenStepperConfig";
 import { SET_ChallanApplication_STEP, RESET_ChallanAPPLICATION_FORM } from "../../../redux/action/ChallanApplicationActions";
-import SelectNDCDocuments from "../ChallanDocuments/";
+import SelectNDCDocuments from "../ChallanDocuments";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -106,6 +106,8 @@ const ChallanStepperForm = () => {
   const { data: subCategoryData, isLoading: subCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "SubCategory" }]);
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
 
+  console.log("OffenceTypeData", OffenceTypeData);
+
   const {
     control,
     handleSubmit,
@@ -140,9 +142,41 @@ const ChallanStepperForm = () => {
   //   // onSubmit(data, tenantId, setShowToast, history);
   // };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
+    setLoader(false);
     console.log("dat==??a", data);
     console.log("documentsData", documentsData);
+
+    const challan = {
+      tenantId: tenantId,
+      citizen: {
+        name: data?.name,
+        mobileNumber: data?.mobileNumber,
+        tenantId: tenantId,
+        active: true,
+      },
+      businessService: "Challan_Generation",
+      offenceTypeName: data?.offenceType?.name,
+      offenceCategoryName: data?.offenceCategory?.name,
+      offenceSubCategoryName: data?.offenceSubCategory?.name,
+      challanAmount: data?.challanAmount,
+      amount: data?.amount,
+      address: {},
+      documents: [],
+      workflow: {
+        action: "SUBMIT",
+      },
+    };
+    history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+    try {
+      const response = await Digit.ChallanGenerationService.create(challan);
+      console.log("response", response);
+      setLoader(false);
+      history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+    } catch (error) {
+      console.log("error", error);
+      setLoader(false);
+    }
   };
 
   const debounce = (func, delay) => {
@@ -322,7 +356,11 @@ const ChallanStepperForm = () => {
                   <Dropdown
                     style={{ marginBottom: 0, width: "100%" }}
                     className="form-field"
-                    select={props.onChange}
+                    select={(e) => {
+                      props.onChange(e);
+                      console.log(e);
+                      setValue("amount", e?.penaltyAmount);
+                    }}
                     selected={props.value}
                     option={subCategoryData?.Challan?.SubCategory}
                     optionKey="name"
@@ -338,7 +376,7 @@ const ChallanStepperForm = () => {
               <CardLabel>{`${t("DEFAULT_CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
-                name="challanAmountDefault"
+                name="amount"
                 render={(props) => (
                   <TextInput
                     type="number"

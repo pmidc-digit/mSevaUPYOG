@@ -280,8 +280,8 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petGender || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">Date Of Birth</span>
-                        <span class="detail-value">${petData?.petDetails?.petAge || "Not Specified"}</span>
+                        <span class="detail-label">${t("PTR_PET_AGE")}</span>
+                        <span class="detail-value">${formatPetAge(petData?.petDetails?.petAge, t) || t("CS_NA")}</span>
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">Colour</span>

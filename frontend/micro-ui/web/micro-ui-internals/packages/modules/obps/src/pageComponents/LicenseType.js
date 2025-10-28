@@ -30,19 +30,42 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
 
 
+// const [validTo, setValidTo] = useState(() => {
+//   const epoch =
+//     formData?.result?.Licenses?.[0]?.validTo ||
+//     formData?.formData?.Licenses?.[0]?.validTo ||
+//     null;
+
+//   if (!epoch) return "";
+
+//   const date = new Date(epoch);
+//   const day = String(date.getDate()).padStart(2, "0");
+//   const month = String(date.getMonth() + 1).padStart(2, "0");
+//   const year = date.getFullYear();
+//   return `${day}/${month}/${year}`; // ✅ stays DD/MM/YYYY
+// });
+
 const [validTo, setValidTo] = useState(() => {
+  // <CHANGE> Check LicneseType path first, then Licenses path
   const epoch =
+    formData?.LicneseType?.validTo ||
+    formData?.formData?.LicneseType?.validTo ||
     formData?.result?.Licenses?.[0]?.validTo ||
     formData?.formData?.Licenses?.[0]?.validTo ||
     null;
 
   if (!epoch) return "";
 
+  // <CHANGE> Handle both epoch (number) and DD/MM/YYYY string formats
+  if (typeof epoch === "string" && epoch.includes("/")) {
+    return epoch; // Already in DD/MM/YYYY format
+  }
+
   const date = new Date(epoch);
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
-  return `${day}/${month}/${year}`; // ✅ stays DD/MM/YYYY
+  return `${day}/${month}/${year}`;
 });
 
 
@@ -111,28 +134,59 @@ const [validTo, setValidTo] = useState(() => {
     }
   }, [qualificationTypes, qualificationType]);
 
+    // useEffect(() => {
+    //   const epoch =
+    //     formData?.result?.Licenses?.[0]?.validTo ||
+    //     formData?.formData?.Licenses?.[0]?.validTo ||
+    //     null;
+
+    //   console.log(epoch, "EPOCH LOOK");
+    //   console.log(formData, "FORM DATA LOOK");
+
+    //   if (epoch) {
+    //     const date = new Date(epoch);
+    //     const day = String(date.getDate()).padStart(2, "0");
+    //     const month = String(date.getMonth() + 1).padStart(2, "0");
+    //     const year = date.getFullYear();
+
+    //     const formattedDate = `${day}/${month}/${year}`;
+    //     console.log(formattedDate, "DATE LOOK");
+
+    //     setValidTo(formattedDate);
+    //   }
+    // }, [formData]);
+
+
     useEffect(() => {
-      const epoch =
-        formData?.result?.Licenses?.[0]?.validTo ||
-        formData?.formData?.Licenses?.[0]?.validTo ||
-        null;
+  // <CHANGE> Check LicneseType path first, then Licenses path
+  const epoch =
+    formData?.LicneseType?.validTo ||
+    formData?.formData?.LicneseType?.validTo ||
+    formData?.result?.Licenses?.[0]?.validTo ||
+    formData?.formData?.Licenses?.[0]?.validTo ||
+    null;
 
-      console.log(epoch, "EPOCH LOOK");
-      console.log(formData, "FORM DATA LOOK");
+  console.log(epoch, "EPOCH LOOK");
+  console.log(formData, "FORM DATA LOOK");
 
-      if (epoch) {
-        const date = new Date(epoch);
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
+  if (epoch) {
+    // <CHANGE> Handle both epoch (number) and DD/MM/YYYY string formats
+    if (typeof epoch === "string" && epoch.includes("/")) {
+      setValidTo(epoch);
+      return;
+    }
 
-        const formattedDate = `${day}/${month}/${year}`;
-        console.log(formattedDate, "DATE LOOK");
+    const date = new Date(epoch);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
 
-        setValidTo(formattedDate);
-      }
-    }, [formData]);
+    const formattedDate = `${day}/${month}/${year}`;
+    console.log(formattedDate, "DATE LOOK");
 
+    setValidTo(formattedDate);
+  }
+}, [formData]);
 
 
   useEffect(() => {
@@ -304,6 +358,33 @@ const [validTo, setValidTo] = useState(() => {
       { console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType,  validTo });
       const validToEpoch = (() => {
   if (!validTo) return null;
+  // ... existing code ...
+else {
+  // <CHANGE> Safely handle formData structure and ensure LicneseType exists
+  const data = formData?.formData || {};
+  
+  // Ensure LicneseType object exists
+  if (!data.LicneseType) {
+    data.LicneseType = {};
+  }
+  
+  console.log("onSelect going 2", data);
+  data.LicneseType.LicenseType = LicenseType;
+  data.LicneseType.ArchitectNo = ArchitectNo;
+  data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
+  data.LicneseType.qualificationType = qualificationType;
+  
+  // <CHANGE> Convert DD/MM/YYYY to epoch for consistency
+  const validToEpoch = (() => {
+    if (!validTo) return null;
+    const [day, month, year] = validTo.split("/");
+    return new Date(`${year}-${month}-${day}`).getTime();
+  })();
+  data.LicneseType.validTo = validToEpoch;
+  
+  formData.formData = data;
+  onSelect("", formData);
+}
   const [day, month, year] = validTo.split("/");
   return new Date(`${year}-${month}-${day}`).getTime();
 })();

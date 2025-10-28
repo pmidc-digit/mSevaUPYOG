@@ -71,6 +71,27 @@ export const OBPSService = {
       userService: true,
       method: "POST",
     }),
+
+  
+  // BPAREGSearch: (tenantId, details, params) => {
+
+  //   const transformedTenantId = tenantId === "pb" ? "pb.punjab" : tenantId
+  //   const { tenantId: removedTenantId, ...cleanParams } = params || {}
+  //   const finalParams = { tenantId: transformedTenantId, ...cleanParams }
+
+
+  //   return Request({
+  //     url: Urls.obps.bpaRegSearch,
+  //     params: finalParams,
+  //     auth: true,
+  //     userService: true,
+  //     method: "POST",
+  //     data: details,
+  //   })
+  // },
+
+
+
   BPAREGSearch: (tenantId, details, params) =>
     Request({
       url: Urls.obps.bpaRegSearch,
@@ -80,6 +101,9 @@ export const OBPSService = {
       method: "POST",
       data: details,
     }),
+
+    
+  
   BPAREGCreate: (details, tenantId) =>
     Request({
       url: Urls.obps.bpaRegCreate,
@@ -153,6 +177,7 @@ export const OBPSService = {
     }),
   LicenseDetails: async (tenantId, params) => {
     const response = await OBPSService.BPAREGSearch(tenantId, {}, params);
+  
     if (!response?.Licenses?.length) {
       return;
     }

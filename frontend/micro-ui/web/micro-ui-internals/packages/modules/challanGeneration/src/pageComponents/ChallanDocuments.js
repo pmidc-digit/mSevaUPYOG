@@ -1,145 +1,181 @@
-import React, { useEffect, useState } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast } from "@mseva/digit-ui-react-components";
-import { useSelector } from "react-redux";
+import React, { use, useEffect, useState } from "react";
+import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 
-const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
-  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
-  // const checkFormData = useSelector((state) => state.challan.NDCForm.formData || {});
-  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const [documents, setDocuments] = useState(formData?.documents?.documents);
   const [error, setError] = useState(null);
+  const [enableSubmit, setEnableSubmit] = useState(true);
+  const [checkRequiredFields, setCheckRequiredFields] = useState(false);
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  const { data, isLoading } = Digit.Hooks.useCustomMDMS("pb", "Challan", [{ name: "Documents" }]);
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
-  console.log("data===????", data);
-
-  console.log("formData", formData);
-
-  // useEffect(() => {
-  //   console.log("coming here again");
-  //   if (checkFormData?.responseData?.[0]?.Documents?.length && documents.length === 0) {
-  //     // Map API response into the structure your UploadFile expects
-  //     const apiDocs = checkFormData?.responseData?.[0]?.Documents?.map((doc) => ({
-  //       documentType: doc?.documentType,
-  //       fileStoreId: doc?.documentAttachment, // 👈 key mapping
-  //       documentUid: doc?.documentAttachment, // 👈 key mapping
-  //     }));
-
-  //     setDocuments(apiDocs);
-  //   }
-  // }, [checkFormData]);
-
-  const { action = "create" } = Digit.Hooks.useQueryParams();
-
-  // const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
-
-  const ndcDocuments = data?.Challan?.Documents;
-
-  const goNext = () => {
-    onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
+  const handleSubmit = () => {
+    let document = formData.documents;
+    let documentStep;
+    documentStep = { ...document, documents: documents };
+    console.log("documentStep config.key", documentStep);
+    onSelect(config.key, documentStep);
   };
+  const onSkip = () => onSelect();
+  function onAdd() {}
 
   useEffect(() => {
-    goNext();
-  }, [documents]);
+    let count = 0;
+    data?.CHB?.Documents?.map((doc) => {
+      doc.hasDropdown = true;
 
-  if (isLoading) {
-    return <Loader />;
-  }
+      let isRequired = false;
+      documents?.map((data) => {
+        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
+      });
+      if (!isRequired && doc.required) count = count + 1;
+    });
+    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
+    else setEnableSubmit(true);
+  }, [documents, checkRequiredFields]);
 
   return (
     <div>
-      {ndcDocuments?.map((document, index) => {
-        // if (document.code === "OWNER.SPECIALCATEGORYPROOF") {
-        //   if (formData?.owners?.every((user) => user.ownerType.code === "NONE" || !user.ownerType?.code)) {
-        //     return null;
-        //   }
-        // }
-        return (
-          <SelectDocument
-            key={index}
-            document={document}
-            action={action}
-            t={t}
-            error={error}
-            setError={setError}
-            setDocuments={setDocuments}
-            documents={documents}
-            setFormError={setFormError}
-            clearFormErrors={clearFormErrors}
-            config={config}
-            formState={formState}
-          />
-        );
-      })}
-      {error && <Toast isDleteBtn={true} label={error} onClose={() => setError(null)} error />}
+      {/* <Timeline currentStep={4} /> */}
+      {!isLoading ? (
+        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+          {data?.CHB?.Documents?.map((document, index) => {
+            return (
+              <PTRSelectDocument
+                key={index}
+                document={document}
+                t={t}
+                error={error}
+                setError={setError}
+                setDocuments={setDocuments}
+                documents={documents}
+                setCheckRequiredFields={setCheckRequiredFields}
+                handleSubmit={handleSubmit}
+              />
+            );
+          })}
+          {error && <Toast label={error} onClose={() => setError(null)} error />}
+        </FormStep>
+      ) : (
+        <Loader />
+      )}
     </div>
   );
 };
 
-function SelectDocument({ t, document: doc, setDocuments, setError, documents, setFormError, config, formState }) {
+function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  // console.log("filetetetetet",filteredDocument, documents, doc);
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [getLoader, setLoader] = useState(false);
+  // const [selectedDocument, setSelectedDocument] = useState(
+  //   filteredDocument
+  //     ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
+  //     : doc?.dropdownData?.length === 1
+  //     ? doc?.dropdownData[0]
+  //     : {}
+  // );
+  const [selectedDocument, setSelectedDocument] = useState(() => {
+    if (filteredDocument) {
+      const match = doc?.dropdownData?.find((e) => e.code === filteredDocument.documentType);
+      return match ? { ...match, i18nKey: match.code?.replaceAll(".", "_") } : {};
+    }
+    if (doc?.dropdownData?.length === 1) {
+      const onlyOption = doc.dropdownData[0];
+      return { ...onlyOption, i18nKey: onlyOption.code?.replaceAll(".", "_") };
+    }
+    return {};
+  });
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
+
+  const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
+  const { dropdownData } = doc;
+
+  var dropDownData = dropdownData;
+
+  const [isHidden, setHidden] = useState(false);
+  const [getLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (filteredDocument?.fileStoreId && !file) {
-      setUploadedFile(filteredDocument.fileStoreId);
-    }
-  }, [filteredDocument]);
-
-  useEffect(() => {
-    if (uploadedFile) {
+    if (selectedDocument?.code) {
+      console.log("selectedDocument", documents);
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
         if (uploadedFile?.length === 0 || uploadedFile === null) {
           return filteredDocumentsByDocumentType;
         }
 
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
         return [
           ...filteredDocumentsByFileStoreId,
           {
-            documentType: doc?.code,
-            fileStoreId: uploadedFile,
+            documentType: selectedDocument?.code,
+            filestoreId: uploadedFile,
             documentUid: uploadedFile,
           },
         ];
       });
-    } else if (uploadedFile === null) {
-      setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
     }
-  }, [uploadedFile]);
+  }, [uploadedFile, selectedDocument]);
+
+  useEffect(() => {
+    if (documents?.length > 0) {
+      console.log("documents", documents);
+      handleSubmit();
+    }
+  }, [documents]);
+
+  useEffect(() => {
+    if (action === "update") {
+      const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
+      const docType = dropDownData
+        .filter((e) => e.code === originalDoc?.documentType)
+        .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
+      if (!docType) setHidden(true);
+      else {
+        setSelectedDocument(docType);
+        setUploadedFile(originalDoc?.fileStoreId);
+      }
+    } else if (action === "create") {
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!doc?.hasDropdown) {
+      setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") });
+      // setHidden(true);
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
       setError(null);
       if (file) {
-        setLoader(true);
+        setLoading(true);
         if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-          setLoader(false);
-          if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
+          // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
-            setLoader(false);
+            const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+            setLoading(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
-            setLoader(false);
+            setLoading(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -147,29 +183,56 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
     })();
   }, [file]);
 
+  useEffect(() => {
+    if (isHidden) setUploadedFile(null);
+  }, [isHidden]);
+
   return (
-    <div style={{ marginBottom: "40px" }}>
+    <div style={{ marginBottom: "24px", width: "50%" }}>
+      {doc?.hasDropdown ? (
+        <LabelFieldPair style={{ display: "inline" }}>
+          <CardLabel style={{ width: "auto" }}>
+            {t(doc?.code)} {doc?.required && " *"}
+          </CardLabel>
+          <Dropdown
+            className="form-field"
+            selected={selectedDocument}
+            style={{ width: "100%" }}
+            option={doc?.dropdownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+            select={handlePTRSelectDocument}
+            optionKey="i18nKey"
+            t={t}
+          />
+        </LabelFieldPair>
+      ) : null}
+      {!doc?.hasDropdown ? (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+        </LabelFieldPair>
+      ) : null}
       <LabelFieldPair style={{ display: "inline" }}>
         <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
           {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field">
           <UploadFile
-            id={"tl-doc"}
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
             }}
+            id={id}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            accept="image/*,.pdf"
-            // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
+            inputStyles={{ width: "280px" }}
+            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
+            buttonType="button"
+            error={!uploadedFile}
           />
         </div>
       </LabelFieldPair>
-      {getLoader && <Loader page={true} />}
+      {getLoading && <Loader page={true} />}
     </div>
   );
 }
 
-export default SelectNDCDocuments;
+export default ChallanDocuments;

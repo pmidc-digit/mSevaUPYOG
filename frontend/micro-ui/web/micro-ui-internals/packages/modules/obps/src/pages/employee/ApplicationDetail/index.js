@@ -12,7 +12,7 @@ const ApplicationDetail = () => {
   const state = tenantId?.split('.')[0]
   const [showToast, setShowToast] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb.punjab"? "pb" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb.punjab"? "pb" : tenantId }, {});
+  const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb"? "pb.punjab" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb"? "pb.punjab" : tenantId }, {});
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [viewTimeline, setViewTimeline]=useState(false);
   const {
@@ -21,10 +21,10 @@ const ApplicationDetail = () => {
     data: updateResponse,
     error: updateError,
     mutate,
-  } = Digit.Hooks.obps.useBPAREGApplicationActions(tenantId === "pb.punjab"? "pb" : tenantId);
+  } = Digit.Hooks.obps.useBPAREGApplicationActions(tenantId === "pb"? "pb.punjab" : tenantId);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId === "pb.punjab"? "pb" : tenantId,
+    tenantId: tenantId === "pb"? "pb.punjab" : tenantId,
     id: id,
     moduleCode: "BPAREG",
   });
@@ -45,7 +45,7 @@ const ApplicationDetail = () => {
   if (applicationDetails?.payments?.length > 0) {
     dowloadOptions.push({
       label: t("TL_RECEIPT"),
-      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb",applicationDetails?.payments),
+      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments),
     })
   }
 

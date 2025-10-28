@@ -104,7 +104,7 @@ const Inbox = ({ parentRoute }) => {
   const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities("pb", "revenue", {}, t);
 
   const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, isError } = Digit.Hooks.obps.useBPAInbox({
-    tenantId: tenantId === "pb.punjab"? "pb" : tenantId,
+    tenantId: tenantId === "pb" ? "pb.punjab" : tenantId,
     filters: { ...formState }
   });
 
@@ -168,6 +168,8 @@ const Inbox = ({ parentRoute }) => {
       {t("ES_COMMON_INBOX")}
       {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
     </Header>
+
+
     {Digit.Utils.browser.isMobile() &&
       <div style={{ marginLeft: "12px" }}>
         <Link to={window.location.href.includes("/citizen") ? "/digit-ui/citizen/obps/search/application" : "/digit-ui/employee/obps/search/application"}>

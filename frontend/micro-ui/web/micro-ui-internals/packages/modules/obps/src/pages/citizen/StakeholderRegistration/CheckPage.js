@@ -212,6 +212,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
 
   return (
     <div style={pageStyle}>
+
       {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
       {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />}
 
@@ -221,6 +222,41 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
       <div style={sectionStyle}>
         {renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}
       </div>
+
+       {(() => {
+        const passportPhoto = documents?.documents?.find(
+          (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO",
+        )
+
+        if (!passportPhoto) return null
+
+        {console.log(passportPhoto, "PHOTO");}
+          console.log(`${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${passportPhoto.fileStoreId}`, "IMAGE URL");
+        return (
+          <div style={sectionStyle}>
+            <h2 style={headingStyle}>{t("BPA_OWNER_PHOTOGRAPH")}</h2>
+            <div style={{ display: "flex", justifyContent: "center", padding: "1rem" }}>
+              <img
+                src={`${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${passportPhoto.fileStoreId}`}
+                //https://mseva-dev.lgpunjab.gov.in/filestore/v1/files/id?tenantId=pb.amritsar&fileStoreId=58423f00-5857-4fc7-b12f-73c09ae0b255
+                
+                
+                alt="Owner Photograph"
+                style={{
+                  maxWidth: "200px",
+                  maxHeight: "250px",
+                  border: "2px solid #e0e0e0",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                }}
+                onError={(e) => {
+                  e.target.style.display = "none"
+                }}
+              />
+            </div>
+          </div>
+        )
+      })()}
 
       {/* License Type */}
       <div style={sectionStyle}>
@@ -240,6 +276,8 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
       </div>
 
+
+    
       {/* Applicant Details */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>

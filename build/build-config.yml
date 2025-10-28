@@ -967,7 +967,7 @@ config:
       - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
         image-name: "egov-gisintegration-db"
 
-    - name: "builds/upyog/municipal-services/challan-generation"
+  - name: "builds/upyog/municipal-services/challan-generation"
     build:
       - work-dir: "municipal-services/challan-generation"
         image-name: "challan-generation"

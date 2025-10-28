@@ -52,10 +52,29 @@ public class EnrichmentService {
         challan.setAuditDetails(auditDetails);
         challan.setId(UUID.randomUUID().toString());
         challan.setApplicationStatus(StatusEnum.ACTIVE);
+        
+        // Set default business service if not provided
+        if (challan.getBusinessService() == null || challan.getBusinessService().isEmpty()) {
+            challan.setBusinessService("Challan_Generation");
+        }
+        
+        // Handle address - only enrich if not null
         if(challan.getAddress()!=null) {
         	challan.getAddress().setId(UUID.randomUUID().toString());
         	challan.getAddress().setTenantId(challan.getTenantId());
         }
+        
+        // Handle documents - only enrich if not null and not empty
+        // Note: We don't set auditDetails on individual documents as persister uses challan-level auditDetails
+        if(challan.getUploadedDocumentDetails() != null && !challan.getUploadedDocumentDetails().isEmpty()) {
+            challan.getUploadedDocumentDetails().forEach(document -> {
+                if (document.getDocumentDetailId() == null) {
+                    document.setChallanId(challan.getId());
+                    document.setDocumentDetailId(UUID.randomUUID().toString());
+                }
+            });
+        }
+        
         challan.setFilestoreid(null);
         setIdgenIds(challanRequest);
     }
@@ -176,14 +195,14 @@ public class EnrichmentService {
 	    	 challanRepository.setInactiveFileStoreId(challan.getTenantId().split("\\.")[0], Collections.singletonList(fileStoreId));
 	     }
 
-        if(challan.getUploadedDocumentDetails()!=null) {
-            challan.getUploadedDocumentDetails().stream().forEach(document -> {
+        // Handle documents - only enrich if not null and not empty
+        // Note: We don't set auditDetails on individual documents as persister uses challan-level auditDetails
+        if(challan.getUploadedDocumentDetails() != null && !challan.getUploadedDocumentDetails().isEmpty()) {
+            challan.getUploadedDocumentDetails().forEach(document -> {
                 if (document.getDocumentDetailId() == null) {
                     document.setChallanId(challan.getId());
                     document.setDocumentDetailId(UUID.randomUUID().toString());
-                    document.setAuditDetails(auditDetails);
                 }
-
             });
         }
 	     challan.setFilestoreid(null);

@@ -48,12 +48,16 @@ public class ChallanValidator {
 
 		List<Amount> entAmount = challan.getAmount();
 		int totalAmt = 0;
-		for (Amount amount : entAmount) {
-			totalAmt+=amount.getAmount().intValue();
-			if(amount.getTaxHeadCode() != null &&  !amount.getTaxHeadCode().isEmpty())
-				currentTaxHeadCodes.add(amount.getTaxHeadCode());
-			if(amount.getAmount().compareTo(new BigDecimal(0)) == -1)
-				errorMap.put("Negative Amount","Amount cannot be negative");
+		if (entAmount != null && !entAmount.isEmpty()) {
+			for (Amount amount : entAmount) {
+				if (amount.getAmount() != null) {
+					totalAmt += amount.getAmount().intValue();
+					if (amount.getTaxHeadCode() != null && !amount.getTaxHeadCode().isEmpty())
+						currentTaxHeadCodes.add(amount.getTaxHeadCode());
+					if (amount.getAmount().compareTo(new BigDecimal(0)) == -1)
+						errorMap.put("Negative Amount", "Amount cannot be negative");
+				}
+			}
 		}
 
 		if(totalAmt <= 0) {
@@ -63,10 +67,10 @@ public class ChallanValidator {
             errorMap.put("NULL_Mobile Number", " Mobile Number cannot be null");
 		if (challan.getBusinessService() == null)
             errorMap.put("NULL_BusinessService", " Business Service cannot be null");
-		if (challan.getTaxPeriodFrom() == null)
-            errorMap.put("NULL_Fromdate", " From date cannot be null");
-		if (challan.getTaxPeriodTo() == null)
-            errorMap.put("NULL_Todate", " To date cannot be null");
+		// Tax period will be auto-populated from MDMS, no validation needed
+
+		// Validate offence-related fields
+		validateOffenceFields(challan, mdmsData, errorMap);
 
 		/*This valication will be handled at Zuul level. If a employee doesn't have access to that tenant the
 		create API wont be called
@@ -158,6 +162,64 @@ public class ChallanValidator {
 
 		if(!CollectionUtils.isEmpty(errorMap.keySet())) {
 			throw new CustomException(errorMap);
+		}
+	}
+
+	/**
+	 * Validates offence-related fields against MDMS data
+	 */
+	private void validateOffenceFields(Challan challan, Object mdmsData, Map<String, String> errorMap) {
+		// Validate offence type name
+		if (StringUtils.isBlank(challan.getOffenceTypeName())) {
+			errorMap.put("NULL_OFFENCE_TYPE", "Offence type name cannot be null");
+		} else {
+			List<Map<String, Object>> offenceTypes = JsonPath.read(mdmsData, MDMS_OFFENCE_TYPE_PATH);
+			boolean validOffenceType = offenceTypes.stream()
+					.anyMatch(type -> type.get("name").equals(challan.getOffenceTypeName()));
+			if (!validOffenceType) {
+				errorMap.put("INVALID_OFFENCE_TYPE", "Invalid offence type name provided");
+			}
+		}
+
+		// Validate offence category name
+		if (StringUtils.isBlank(challan.getOffenceCategoryName())) {
+			errorMap.put("NULL_OFFENCE_CATEGORY", "Offence category name cannot be null");
+		} else {
+			List<Map<String, Object>> categories = JsonPath.read(mdmsData, MDMS_OFFENCE_CATEGORY_PATH);
+			boolean validCategory = categories.stream()
+					.anyMatch(category -> category.get("name").equals(challan.getOffenceCategoryName()));
+			if (!validCategory) {
+				errorMap.put("INVALID_OFFENCE_CATEGORY", "Invalid offence category name provided");
+			}
+		}
+
+		// Validate offence subcategory name
+		if (StringUtils.isBlank(challan.getOffenceSubCategoryName())) {
+			errorMap.put("NULL_OFFENCE_SUBCATEGORY", "Offence subcategory name cannot be null");
+		} else {
+			List<Map<String, Object>> subCategories = JsonPath.read(mdmsData, MDMS_OFFENCE_SUBCATEGORY_PATH);
+			boolean validSubCategory = subCategories.stream()
+					.anyMatch(subCategory -> subCategory.get("name").equals(challan.getOffenceSubCategoryName()));
+			if (!validSubCategory) {
+				errorMap.put("INVALID_OFFENCE_SUBCATEGORY", "Invalid offence subcategory name provided");
+			}
+		}
+
+		// Validate challan amount (optional - auto-populated from MDMS if not provided)
+		if (challan.getChallanAmount() != null && challan.getChallanAmount().compareTo(BigDecimal.ZERO) <= 0) {
+			errorMap.put("INVALID_CHALLAN_AMOUNT", "Challan amount must be greater than zero");
+		}
+		
+		// Validate amount object (if provided manually)
+		if (challan.getAmount() != null && !challan.getAmount().isEmpty()) {
+			for (Amount amount : challan.getAmount()) {
+				if (amount.getAmount() == null || amount.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+					errorMap.put("INVALID_AMOUNT", "Amount must be greater than zero");
+				}
+				if (StringUtils.isBlank(amount.getTaxHeadCode())) {
+					errorMap.put("NULL_TAX_HEAD_CODE", "Tax head code cannot be null");
+				}
+			}
 		}
 	}
 }

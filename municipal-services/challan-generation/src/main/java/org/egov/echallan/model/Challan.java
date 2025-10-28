@@ -27,6 +27,7 @@ import org.egov.echallan.web.models.workflow.Workflow;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -156,4 +157,20 @@ public class Challan {
 
   @JsonProperty("challanStatus")
     private String challanStatus;
+
+  // Offence-related fields - User-friendly names only
+  @JsonProperty("offenceTypeName")
+  @SafeHtml
+  private String offenceTypeName = null;
+
+  @JsonProperty("offenceCategoryName")
+  @SafeHtml
+  private String offenceCategoryName = null;
+
+  @JsonProperty("offenceSubCategoryName")
+  @SafeHtml
+  private String offenceSubCategoryName = null;
+
+  @JsonProperty("challanAmount")
+  private BigDecimal challanAmount = null;
 }

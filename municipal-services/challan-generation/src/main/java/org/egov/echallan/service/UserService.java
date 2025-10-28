@@ -233,6 +233,18 @@ public class UserService {
 		owner.setCreatedDate(System.currentTimeMillis());
 		owner.setLastModifiedDate(System.currentTimeMillis());
 		owner.setActive(userResponse.getUser().get(0).getActive());
+		
+		// Set primaryrole from the user response (only for UserInfo)
+		if (owner instanceof UserInfo) {
+			UserInfo userInfo = (UserInfo) owner;
+			if (userResponse.getUser().get(0).getRoles() != null && !userResponse.getUser().get(0).getRoles().isEmpty()) {
+				userInfo.setPrimaryrole(userResponse.getUser().get(0).getRoles());
+			} else {
+				// Set default CITIZEN role if no roles found
+				Role citizenRole = getCitizenRole(owner.getTenantId());
+				userInfo.setPrimaryrole(Collections.singletonList(citizenRole));
+			}
+		}
 	}
 
 	private void addNonUpdatableFields(User user,User userFromSearchResult){

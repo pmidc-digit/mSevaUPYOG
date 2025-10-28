@@ -51,6 +51,19 @@ public class ChallanConstants {
 
     public static final String LOCALITY_CODE_PATH = "$.TenantBoundary.[*].boundary[?(@.label==\"Locality\")].code";
 
+    // Offence-related MDMS paths
+    public static final String MDMS_OFFENCE_TYPE_PATH = "$.MdmsRes.Challan.OffenceType";
+    public static final String MDMS_OFFENCE_CATEGORY_PATH = "$.MdmsRes.Challan.Category";
+    public static final String MDMS_OFFENCE_SUBCATEGORY_PATH = "$.MdmsRes.Challan.SubCategory";
+    public static final String MDMS_RATES_PATH = "$.MdmsRes.Challan.Rates[?(@.subCategoryId == '{}')]";
+
+    // Offence validation constants
+    public static final String OFFENCE_TYPE_MASTER = "OffenceType";
+    public static final String OFFENCE_CATEGORY_MASTER = "Category";
+    public static final String OFFENCE_SUBCATEGORY_MASTER = "SubCategory";
+    public static final String RATES_MASTER = "Rates";
+    public static final String CHALLAN_MODULE = "Challan";
+
     // notification constants
     public static final String CHANNEL_NAME_SMS = "SMS";
 

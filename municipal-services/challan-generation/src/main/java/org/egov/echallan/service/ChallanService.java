@@ -1,5 +1,6 @@
 package org.egov.echallan.service;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +8,8 @@ import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.echallan.config.ChallanConfiguration;
+import org.egov.echallan.enums.ChallanStatusEnum;
+import org.egov.echallan.model.Amount;
 import org.egov.echallan.model.Challan;
 import org.egov.echallan.model.ChallanRequest;
 import org.egov.echallan.model.SearchCriteria;
@@ -16,7 +19,6 @@ import org.egov.echallan.util.CommonUtils;
 import org.egov.echallan.util.ResponseInfoFactory;
 import org.egov.echallan.validator.ChallanValidator;
 import org.egov.echallan.web.models.user.UserDetailResponse;
-import org.egov.echallan.web.models.workflow.Workflow;
 import org.egov.echallan.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,25 +72,69 @@ public class ChallanService {
 	 */
 	public Challan create(ChallanRequest request) {
 		Object mdmsData = utils.mDMSCall(request);
-		validator.validateFields(request, mdmsData);
-		enrichmentService.enrichCreateRequest(request);
-		userService.createUser(request);
-//		calculationService.addCalculation(request);
-
-		try {
-			if (workflowIntegrator != null && request.getChallan().getWorkflow() != null
-					&& StringUtils.isNotBlank(request.getChallan().getWorkflow().getAction())) {
-				String nextStatus = workflowIntegrator.transition(request.getRequestInfo(), request.getChallan(),
-						request.getChallan().getWorkflow().getAction());
-
-				if (StringUtils.isNotBlank(nextStatus)) {
-					request.getChallan().setChallanStatus(nextStatus);
-
+		
+		// Set default business service for all challans
+		Challan challan = request.getChallan();
+		if (StringUtils.isBlank(challan.getBusinessService())) {
+			challan.setBusinessService("Challan_Generation");
+		}
+		
+		// Auto-populate tax period from MDMS if not provided
+		if (challan.getTaxPeriodFrom() == null || challan.getTaxPeriodTo() == null) {
+			Map<String, Object> taxPeriodDetails = utils.fetchTaxPeriodFromMDMS(mdmsData, challan.getBusinessService());
+			
+			if (!taxPeriodDetails.isEmpty()) {
+				if (challan.getTaxPeriodFrom() == null) {
+					challan.setTaxPeriodFrom((Long) taxPeriodDetails.get("fromDate"));
+				}
+				if (challan.getTaxPeriodTo() == null) {
+					challan.setTaxPeriodTo((Long) taxPeriodDetails.get("toDate"));
 				}
 			}
-		} catch (Exception ex) {
-			log.error("Workflow initiation failed for booking {}", request.getChallan().getChallanNo(), ex);
 		}
+		
+		// Auto-populate amount from MDMS based on subcategory name
+		if (StringUtils.isNotBlank(challan.getOffenceSubCategoryName())) {
+			BigDecimal amountFromMDMS = utils.fetchAmountFromSubCategoryName(mdmsData, challan.getOffenceSubCategoryName());
+			
+			if (amountFromMDMS != null) {
+				// Create amount object from MDMS data
+				Amount amountObject = Amount.builder()
+					.taxHeadCode("CH.CHALLAN_FINE") // Default tax head code
+					.amount(amountFromMDMS)
+					.build();
+				
+				challan.setAmount(Arrays.asList(amountObject));
+				
+				// Set challanAmount to MDMS amount if user hasn't provided it
+				if (challan.getChallanAmount() == null) {
+					challan.setChallanAmount(amountFromMDMS);
+				}
+			}
+		}
+		
+		// Validate after populating amount
+		validator.validateFields(request, mdmsData);
+		
+		enrichmentService.enrichCreateRequest(request);
+		userService.createUser(request);
+		
+		// Set accountId to citizen's UUID after user creation
+		if (challan.getCitizen() != null && challan.getCitizen().getUuid() != null) {
+			challan.setAccountId(challan.getCitizen().getUuid());
+		}
+		
+		// Ensure additionalDetail is not null to prevent persister issues
+		if (challan.getAdditionalDetail() == null) {
+			challan.setAdditionalDetail(new HashMap<>());
+		}
+		
+		// Set challan status to CHALLAN_GENERATED immediately on create
+		challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+		
+		// Skip workflow for create operation - challan is generated immediately
+		// Only use workflow for updates/cancellations
+		
 		repository.save(request);
 		return request.getChallan();
 	}

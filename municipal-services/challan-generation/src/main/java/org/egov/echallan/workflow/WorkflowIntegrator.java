@@ -52,9 +52,8 @@ public class WorkflowIntegrator {
    */
   public String transition(RequestInfo requestInfo, Challan booking, String action) {
     try {
-//      String businessService = booking.getBusinessService() != null ? booking.getBusinessService()
-//          : defaultBusinessService;
-      String businessService =  defaultBusinessService;
+      String businessService = booking.getBusinessService() != null ? booking.getBusinessService()
+          : defaultBusinessService;
       ProcessInstance pi = ProcessInstance.builder()
           .businessService(businessService)
           .businessId(booking.getChallanNo())
@@ -79,7 +78,8 @@ public class WorkflowIntegrator {
           ProcessInstanceResponse.class);
 
       ProcessInstanceResponse responseBody = response.getBody();
-      if (responseBody != null && responseBody.getProcessInstances() != null
+      if (response.getStatusCode() == HttpStatus.OK && responseBody != null 
+          && responseBody.getProcessInstances() != null
           && !responseBody.getProcessInstances().isEmpty()
           && responseBody.getProcessInstances().get(0).getState() != null) {
         // Extract workflow returned statuses

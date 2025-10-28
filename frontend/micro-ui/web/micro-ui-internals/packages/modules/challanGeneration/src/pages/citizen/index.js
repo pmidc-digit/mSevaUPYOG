@@ -13,6 +13,7 @@ const App = () => {
   const SearchResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchResultsComponent");
   const MyChallanResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectMyChallanResultsComponent");
   const ChallanSearch = Digit?.ComponentRegistryService?.getComponent("ChallanStepperForm");
+  const ChallanResponseCitizen = Digit?.ComponentRegistryService?.getComponent("ChallanResponseCitizen");
 
   console.log("Challan Generation Citizen App", path);
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <PrivateRoute path={`${path}/search`} component={ChallanSearch} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/My-Challans`} component={MyChallanResultsComponent} />
+          <PrivateRoute path={`${path}/response/:id`} component={ChallanResponseCitizen} />
           {/* <Redirect to={`/`}></Redirect> */}
         </AppContainer>
       </Switch>

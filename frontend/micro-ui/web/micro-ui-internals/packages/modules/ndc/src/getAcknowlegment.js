@@ -69,7 +69,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   const ndc = appData?.NdcDetails?.[0] || {};
   const add = ndc?.additionalDetails || {};
 
-  const applicationNumber = appData?.uuid || "NA";
+  const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
   const propertyId = appData?.NdcDetails?.[0]?.consumerCode;
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";

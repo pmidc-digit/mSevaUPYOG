@@ -122,7 +122,6 @@ const localGovLogo  =
   const module = applicationNumber && typeof applicationNumber === 'string' && applicationNumber.includes("-") 
     ? applicationNumber.split("-")[1] 
     : null;
-  
   if(module==="PGR"){
     
     qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}&grievancetype=${details[0]?.values[1]?.value}&grievancesubtype=${details[0]?.values[2]?.value}&priority=${details[0]?.values[3]?.value}&address=${details[1]?.values[0]?.value},${details[1]?.values[1]?.value},${details[1]?.values[2]?.value},${details[1]?.values[3]?.value},${details[1]?.values[4]?.value},${details[1]?.values[5]?.value}`);
@@ -244,7 +243,9 @@ const jsPdfGeneratorNDC = async ({
       ? -100
       : -60;
 
-
+  const baseUrl = window.location.origin;
+  let qrCodeDataUrl = "";
+  qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
   const dd = {
     background: [
       {
@@ -283,7 +284,7 @@ const jsPdfGeneratorNDC = async ({
         heading,
         applicationNumber
       ),
-      ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
+      ...createNDCContent(details, qrCodeDataUrl, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
         text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
         font: "Hind",
@@ -1471,57 +1472,99 @@ function createContent(details,applicationNumber, qrCodeDataUrl,logo, tenantId,p
   return detailsHeaders;
 }
 
-function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+function createNDCContent(details, qrCodeDataUrl, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
   const detailsBlocks = [];
+  let qrPlaced = false; 
 
   details.forEach((detail, index) => {
-    // Section heading
     if (detail?.title) {
       detailsBlocks.push({
-        style: "tableExample",
-        margin: [10, 20, 10, 10],
-        layout: "noBorders",
-        table: {
-          widths: ["100%"],
-          body: [
-            [
+        columns: [
+          {
+            width: "*",
+            stack: [
               {
-                text: detail?.title,
-                border: [true, true, true, false],
-                color: "#454545",
-                fontSize: 14,
-                bold: true,
+                style: "tableExample",
+                margin: [10, 20, 10, 10],
+                layout: "noBorders",
+                table: {
+                  widths: ["100%"],
+                  body: [
+                    [
+                      {
+                        text: detail.title,
+                        border: [true, true, true, false],
+                        color: "#454545",
+                        fontSize: 14,
+                        bold: true,
+                      },
+                    ],
+                  ],
+                },
               },
             ],
-          ],
-        },
+          },
+        ],
       });
     }
 
-    // The actual body content (single block of text, full width)
     if (detail?.value) {
-      detailsBlocks.push({
-        style: "tableExample",
-        layout: "noBorders",
-        margin: [10, 10, 10, 0],
-        table: {
-          widths: ["100%"],
-          body: [
-            [
-              {
-                text: detail.value,
-                fontSize: 11,
-                alignment: "justify",
+      if (!qrPlaced && qrCodeDataUrl) {
+        detailsBlocks.push({
+          columns: [
+            {
+              width: "*",
+              table: {
+                widths: ["100%"],
+                body: [
+                  [
+                    {
+                      text: detail.value,
+                      fontSize: 11,
+                      alignment: "justify",
+                      border: [],
+                      margin: [10, 0, 10, 0],
+                    },
+                  ],
+                ],
               },
-            ],
+              layout: "noBorders",
+            },
+            {
+              width: "auto",
+              image: qrCodeDataUrl,
+              width: 70,
+              alignment: "right",
+              margin: [0, 0, 10, 0],
+            },
           ],
-        },
-      });
+        });
+        qrPlaced = true;
+      } else {
+        detailsBlocks.push({
+          style: "tableExample",
+          layout: "noBorders",
+          margin: [10, 0, 10, 0],
+          table: {
+            widths: ["100%"],
+            body: [
+              [
+                {
+                  text: detail.value,
+                  fontSize: 11,
+                  alignment: "justify",
+                },
+              ],
+            ],
+          },
+        });
+      }
     }
   });
 
   return detailsBlocks;
 }
+
 
 function createContentForDetailsWithLengthOfTwo(values, data, column1, column2, num = 0) {
     values.forEach((value, index) => {

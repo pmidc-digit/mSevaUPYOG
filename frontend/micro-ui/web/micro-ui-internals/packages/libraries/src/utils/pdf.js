@@ -282,16 +282,28 @@ const jsPdfGeneratorNDC = async ({
         logo,
         tenantId,
         heading,
-        applicationNumber
+        applicationNumber,
+        qrCodeDataUrl
       ),
-      ...createNDCContent(details, qrCodeDataUrl, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
+      ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
+      stack: [
+        { text: t("NDC_ISSUED_BY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 2, 0, 0], bold:true },
+        { text: t("NDC_COMPETENT_AUTHORITY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 2, 0, 0] },
+        { text: t("NDC_OFFICER_NAME_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 8, 0, 0], bold: true },
+        { text: t("NDC_OFFICER_DESIGNATION_TEXT_ENG"), font: "Hind", fontSize: 11 }
+      ],
+      alignment: "right",
+      margin: [0, 20, 20, 0] 
+    },
+    {
         text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
         font: "Hind",
         fontSize: 11,
         color: "#6f777c",
         margin: [10, 10],
-      },
+      }
+
     ],
 
     defaultStyle: {
@@ -334,7 +346,8 @@ const jsPdfGeneratorNDC = async ({
       : -60;
 
   const baseUrl= window.location.origin;
-  // let qrCodeDataUrl=""
+  let qrCodeDataUrl = "";
+    qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}`);
   const module=applicationNumber.split("-")[1]
   const splitURL = imageURL.split("filestore")?.[1];
   
@@ -362,7 +375,7 @@ const jsPdfGeneratorNDC = async ({
       };
     },
     content: [
-      ...createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber,qrCodeDataUrl),
       ...createContent(details, applicationNumber, base64Image,phoneNumber,logo, tenantId,breakPageLimit),
       {
         text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
@@ -1141,66 +1154,61 @@ headerData.push({
   
 }
 
-function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber){
+function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber,qrCodeDataUrl){
     let headerData = [];
     headerData.push({
-      style: 'tableExample',
-      layout: "noBorders",
-      //fillColor: "#f7e0d4",
-      margin: [0, 10, 0, 0],
-      table: {
-        widths: ['100%'],
-        body: [
-          [
-          {
-              text: heading, //"New Sewerage Connection",
+  style: 'tableExample',
+  layout: "noBorders",
+  margin: [0, 0, 0, 0],
+  table: {
+    widths: ['25%', '50%', '25%'], // left, center, right
+    body: [
+      [
+        // Left: Logo
+        {
+          image: logo || getBase64Image(tenantId) || localGovLogo,
+          width: 78,
+          margin: [10, 10],
+          alignment: "left"
+        },
+
+        // Center: Heading + Name stacked
+        {
+          stack: [
+            {
+              text: heading,
               bold: true,
               fontSize: 19,
               alignment: "center",
-              decoration : "underline"
-             
-          }
-           ]
-        ]
-       }
-    });
-    headerData.push({
-      style : 'tableExample',
-      layout: "noBorders",
-      margin:[0,0,0,0],
-      table:{
-        widths:['100%'],
-        body:[
-          [{
-            
-              text: `${name}`, 
-              alignment:"center",
+              decoration: "underline",
+              margin: [0, 15, 0, 4]
+            },
+            {
+              text: `${name}`,
               fontSize: 11,
-              //bold: true
-                
-          }]
-        ]
-      }
-  })
-  headerData.push({
-    style : 'tableExample',
-    layout: "noBorders",
-    margin: [0, -65, 40, 20],
-    table:{
-      widths: ['60%'],
-      body:[
-        [
-          {
-            image: logo|| getBase64Image(tenantId) || localGovLogo,
-            width: 78,
-            margin: [10, 10],
-            // fit:[50,50]
-          }, 
-          
+              alignment: "center"
+            }
+          ],
+          alignment: "center"
+        },
+
+        // Right: QR code (if available)
+        qrCodeDataUrl
+          ? {
+              image: qrCodeDataUrl,
+              width: 78,
+              margin: [10, 10],
+              alignment: "right"
+            }
+          : {}
       ]
-      ]
-    }
-})
+    ]
+  }
+});
+
+
+
+ 
 //   headerData.push({
 //     style : 'tableExample',
 //     layout: "noBorders",
@@ -1472,10 +1480,8 @@ function createContent(details,applicationNumber, qrCodeDataUrl,logo, tenantId,p
   return detailsHeaders;
 }
 
-function createNDCContent(details, qrCodeDataUrl, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
   const detailsBlocks = [];
-  let qrPlaced = false; 
-
   details.forEach((detail, index) => {
     if (detail?.title) {
       detailsBlocks.push({
@@ -1485,7 +1491,7 @@ function createNDCContent(details, qrCodeDataUrl, applicationNumber, logo, tenan
             stack: [
               {
                 style: "tableExample",
-                margin: [10, 20, 10, 10],
+                margin: [10, 20, 10, 2],
                 layout: "noBorders",
                 table: {
                   widths: ["100%"],
@@ -1509,56 +1515,23 @@ function createNDCContent(details, qrCodeDataUrl, applicationNumber, logo, tenan
     }
 
     if (detail?.value) {
-      if (!qrPlaced && qrCodeDataUrl) {
-        detailsBlocks.push({
-          columns: [
-            {
-              width: "*",
-              table: {
-                widths: ["100%"],
-                body: [
-                  [
-                    {
-                      text: detail.value,
-                      fontSize: 11,
-                      alignment: "justify",
-                      border: [],
-                      margin: [10, 0, 10, 0],
-                    },
-                  ],
-                ],
+      detailsBlocks.push({
+        style: "tableExample",
+        layout: "noBorders",
+        margin: [10, -5, 10, 0],
+        table: {
+          widths: ["100%"],
+          body: [
+            [
+              {
+                text: detail.value,
+                fontSize: 11,
+                alignment: "justify",
               },
-              layout: "noBorders",
-            },
-            {
-              width: "auto",
-              image: qrCodeDataUrl,
-              width: 70,
-              alignment: "right",
-              margin: [0, 0, 10, 0],
-            },
-          ],
-        });
-        qrPlaced = true;
-      } else {
-        detailsBlocks.push({
-          style: "tableExample",
-          layout: "noBorders",
-          margin: [10, 0, 10, 0],
-          table: {
-            widths: ["100%"],
-            body: [
-              [
-                {
-                  text: detail.value,
-                  fontSize: 11,
-                  alignment: "justify",
-                },
-              ],
             ],
-          },
-        });
-      }
+          ],
+        },
+      });
     }
   });
 

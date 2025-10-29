@@ -19,7 +19,6 @@ import org.egov.echallan.repository.rowmapper.ChallanRowMapper;
 import org.egov.echallan.web.models.collection.Bill;
 import org.egov.echallan.web.models.collection.PaymentDetail;
 import org.egov.echallan.web.models.collection.PaymentRequest;
-import org.egov.echallan.util.ChallanConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -195,11 +194,55 @@ public class ChallanRepository {
 		int totalServices = jdbcTemplate.queryForObject(query,preparedStmtListTotalServices.toArray(),Integer.class);
 		
 		Map<String, Integer> dynamicData = new HashMap<String,Integer>();
-		dynamicData.put(ChallanConstants.TOTAL_COLLECTION, totalCollection);
-		dynamicData.put(ChallanConstants.TOTAL_SERVICES, totalServices);
+		dynamicData.put("totalCollection", totalCollection);
+		dynamicData.put("totalServices", totalServices);
 		
 		return dynamicData;
 		
+	}
+	
+	/**
+	 * Persists document details directly to DB
+	 * This is done directly via JDBC instead of persister due to array handling issues
+	 * 
+	 * @param challan The challan with documents to persist
+	 */
+	public void saveDocuments(Challan challan) {
+		if (challan.getUploadedDocumentDetails() == null || challan.getUploadedDocumentDetails().isEmpty()) {
+			return;
+		}
+		
+		String sql = "INSERT INTO public.eg_challan_document_detail(document_detail_id, challan_id, document_type, " +
+				"filestore_id, createdby, lastmodifiedby, createdtime, lastmodifiedtime) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+				"ON CONFLICT (document_detail_id) DO UPDATE SET " +
+				"challan_id = EXCLUDED.challan_id, " +
+				"document_type = EXCLUDED.document_type, " +
+				"filestore_id = EXCLUDED.filestore_id, " +
+				"lastmodifiedby = EXCLUDED.lastmodifiedby, " +
+				"lastmodifiedtime = EXCLUDED.lastmodifiedtime";
+		
+		List<Object[]> batchArgs = new ArrayList<>();
+		
+		challan.getUploadedDocumentDetails().forEach(doc -> {
+			batchArgs.add(new Object[]{
+				doc.getDocumentDetailId(),
+				doc.getChallanId(),
+				doc.getDocumentType(),
+				doc.getFileStoreId(),
+				challan.getAuditDetails().getCreatedBy(),
+				challan.getAuditDetails().getLastModifiedBy(),
+				challan.getAuditDetails().getCreatedTime(),
+				challan.getAuditDetails().getLastModifiedTime()
+			});
+		});
+		
+		try {
+			jdbcTemplate.batchUpdate(sql, batchArgs);
+			log.info("Successfully persisted {} documents for challan {}", batchArgs.size(), challan.getId());
+		} catch (Exception e) {
+			log.error("Error persisting documents for challan {}: {}", challan.getId(), e.getMessage(), e);
+		}
 	}
     
 }

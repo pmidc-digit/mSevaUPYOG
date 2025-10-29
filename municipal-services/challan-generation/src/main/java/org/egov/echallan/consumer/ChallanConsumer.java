@@ -33,6 +33,8 @@ public class ChallanConsumer {
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
         ObjectMapper mapper = new ObjectMapper();
+        // Configure to ignore unknown properties like localityCode getter
+        mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ChallanRequest challanRequest = new ChallanRequest();
   
             challanRequest = mapper.convertValue(record, ChallanRequest.class);

@@ -43,7 +43,8 @@ public class IdGenRepository {
         } catch (HttpClientErrorException e) {
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            throw new CustomException(e.getCause().getClass().getName(),e.getMessage());
+            String errorCode = (e.getCause() != null) ? e.getCause().getClass().getName() : e.getClass().getName();
+            throw new CustomException(errorCode, e.getMessage());
         }
         return response;
     }

@@ -1,5 +1,6 @@
 package org.egov.echallan.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.echallan.config.ChallanConfiguration;
 import org.egov.echallan.model.AuditDetails;
@@ -24,6 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class EnrichmentService {
 
     private IdGenRepository idGenRepository;
@@ -62,16 +64,21 @@ public class EnrichmentService {
         if(challan.getAddress()!=null) {
         	challan.getAddress().setId(UUID.randomUUID().toString());
         	challan.getAddress().setTenantId(challan.getTenantId());
+        	// Ensure locality is not null - if null, the persister will fail when trying to access locality.code
+        	// We'll handle this by ensuring locality stays as null object (persister will use null for DB)
         }
         
-        // Handle documents - only enrich if not null and not empty
-        // Note: We don't set auditDetails on individual documents as persister uses challan-level auditDetails
+        // Handle documents - enrich with IDs and auditDetails
         if(challan.getUploadedDocumentDetails() != null && !challan.getUploadedDocumentDetails().isEmpty()) {
             challan.getUploadedDocumentDetails().forEach(document -> {
+                // Generate ID for new documents
                 if (document.getDocumentDetailId() == null) {
-                    document.setChallanId(challan.getId());
                     document.setDocumentDetailId(UUID.randomUUID().toString());
                 }
+                // Set challanId for all documents
+                document.setChallanId(challan.getId());
+                // Set auditDetails for each document (required for persister)
+                document.setAuditDetails(auditDetails);
             });
         }
         
@@ -164,11 +171,14 @@ public class EnrichmentService {
     	return userinfo;
     }
     public List<Challan> enrichChallanSearch(List<Challan> challans, SearchCriteria criteria, RequestInfo requestInfo){
-
-       
-        SearchCriteria searchCriteria = enrichChallanSearchCriteriaWithOwnerids(criteria,challans);
-        UserDetailResponse userDetailResponse = userService.getUser(searchCriteria,requestInfo);
-        enrichOwner(userDetailResponse,challans);
+        try {
+            SearchCriteria searchCriteria = enrichChallanSearchCriteriaWithOwnerids(criteria,challans);
+            UserDetailResponse userDetailResponse = userService.getUser(searchCriteria,requestInfo);
+            enrichOwner(userDetailResponse,challans);
+        } catch (Exception ex) {
+            log.warn("User enrichment failed for challan search, continuing without user details: {}", ex.getMessage());
+            // Continue without user enrichment
+        }
         return challans;
     }
     
@@ -195,14 +205,17 @@ public class EnrichmentService {
 	    	 challanRepository.setInactiveFileStoreId(challan.getTenantId().split("\\.")[0], Collections.singletonList(fileStoreId));
 	     }
 
-        // Handle documents - only enrich if not null and not empty
-        // Note: We don't set auditDetails on individual documents as persister uses challan-level auditDetails
+        // Handle documents - enrich with IDs and auditDetails for update
         if(challan.getUploadedDocumentDetails() != null && !challan.getUploadedDocumentDetails().isEmpty()) {
             challan.getUploadedDocumentDetails().forEach(document -> {
+                // Generate ID for new documents
                 if (document.getDocumentDetailId() == null) {
-                    document.setChallanId(challan.getId());
                     document.setDocumentDetailId(UUID.randomUUID().toString());
                 }
+                // Set challanId for all documents
+                document.setChallanId(challan.getId());
+                // Set auditDetails for each document (required for persister)
+                document.setAuditDetails(auditDetails);
             });
         }
 	     challan.setFilestoreid(null);

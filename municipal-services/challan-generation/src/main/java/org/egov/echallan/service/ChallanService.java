@@ -129,11 +129,73 @@ public class ChallanService {
 			challan.setAdditionalDetail(new HashMap<>());
 		}
 		
-		// Set challan status to CHALLAN_GENERATED immediately on create
-		challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+		// Set initial challan status
+		challan.setChallanStatus(ChallanStatusEnum.CHALLAN_CREATED.toString());
 		
-		// Skip workflow for create operation - challan is generated immediately
-		// Only use workflow for updates/cancellations
+		// Call workflow on create to generate process instance (if workflow action provided)
+		// Note: Workflow service may have cache - if it fails, challan still gets created
+		boolean workflowEnabled = config.getIsExternalWorkFlowEnabled() != null 
+			? config.getIsExternalWorkFlowEnabled() : true;
+		
+		if (workflowEnabled) {
+			try {
+				if (workflowIntegrator != null 
+						&& challan.getWorkflow() != null 
+						&& StringUtils.isNotBlank(challan.getWorkflow().getAction())) {
+					
+					log.info("Calling workflow for challan {} with action: {} (user role: {})", 
+						challan.getChallanNo(), 
+						challan.getWorkflow().getAction(),
+						request.getRequestInfo().getUserInfo().getRoles().get(0).getCode());
+					
+					String nextStatus = workflowIntegrator.transition(
+						request.getRequestInfo(),
+						challan,
+						challan.getWorkflow().getAction()
+					);
+					
+					// Update status based on workflow response
+					if (StringUtils.isNotBlank(nextStatus)) {
+						challan.setChallanStatus(nextStatus);
+						log.info("Workflow set status to: {}", nextStatus);
+					} else {
+						// If workflow didn't return status, set to CHALLAN_GENERATED
+						log.warn("Workflow didn't return status. Setting to CHALLAN_GENERATED");
+						challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+					}
+				} else {
+					// No workflow action provided, set to CHALLAN_GENERATED directly
+					log.info("No workflow action provided, setting status to CHALLAN_GENERATED");
+					challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+				}
+			} catch (Exception ex) {
+				log.error("Workflow transition on create failed for challan {} with error: {}. Setting status to CHALLAN_GENERATED and continuing.", 
+					challan.getChallanNo(), ex.getMessage());
+				// Set default status if workflow fails - challan creation continues
+				challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+			}
+		} else {
+			log.info("Workflow is disabled, setting status to CHALLAN_GENERATED");
+			challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+		}
+		
+		// Call calculation service if SUBMIT action was provided during create
+		if (challan.getWorkflow() != null 
+				&& StringUtils.isNotBlank(challan.getWorkflow().getAction())
+				&& challan.getWorkflow().getAction().equalsIgnoreCase(ChallanConstants.SUBMIT)) {
+			
+			log.info("SUBMIT action detected during create, calling calculation service for challan: {}", 
+				challan.getChallanNo());
+			
+			try {
+				calculationService.addCalculation(request);
+				log.info("Calculation completed successfully for challan: {}", challan.getChallanNo());
+			} catch (Exception ex) {
+				log.error("Calculation service failed for challan {} with error: {}. Continuing with challan creation.", 
+					challan.getChallanNo(), ex.getMessage());
+				// Don't fail challan creation if calculation fails
+			}
+		}
 		
 		repository.save(request);
 		return request.getChallan();
@@ -267,7 +329,7 @@ public class ChallanService {
 		 return request.getChallan();
 		}
 
-	 public Map<String,Object>  getChallanCountResponse(RequestInfo requestInfo, String tenantId){
+	public Map<String,Object>  getChallanCountResponse(RequestInfo requestInfo, String tenantId){
 		 validator.validateChallanCountRequest(tenantId);
 
 		 Map<String,Object> response = new HashMap<>();

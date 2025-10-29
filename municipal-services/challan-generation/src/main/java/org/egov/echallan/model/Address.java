@@ -139,4 +139,13 @@ public class Address   {
         @SafeHtml
         @JsonProperty("region")
         private String region = null;
+        
+        /**
+         * Helper method to get locality code for persister
+         * Returns null if locality is null, otherwise returns the code
+         */
+        @JsonProperty("localityCode")
+        public String getLocalityCode() {
+            return locality != null ? locality.getCode() : null;
+        }
 }

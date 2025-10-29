@@ -86,13 +86,19 @@ public class WorkflowIntegrator {
         String applicationStatus = responseBody.getProcessInstances().get(0).getState().getApplicationStatus();
         String state = responseBody.getProcessInstances().get(0).getState().getState();
 
-        // First: map the action to our ChallanStatusEnum (minimal surface change)
-        String mapped = mapToBookingStatus(action, applicationStatus, state);
-        if (mapped != null) return mapped;
+        log.info("Workflow response - Action: {}, ApplicationStatus: {}, State: {}", 
+                 action, applicationStatus, state);
 
-        // Next: if WF returned status already matches our enum, allow it
-        if (isValidEnum(applicationStatus)) return applicationStatus;
-        if (isValidEnum(state)) return state;
+        // Dynamically map workflow response to challan status
+        String mappedStatus = mapToBookingStatus(action, applicationStatus, state);
+        if (mappedStatus != null) {
+          log.info("Mapped workflow status to: {}", mappedStatus);
+          return mappedStatus;
+        }
+
+        log.warn("No status mapping found for workflow response - Action: {}, ApplicationStatus: {}, State: {}", 
+                 action, applicationStatus, state);
+        return null;
       }
     } catch (Exception ex) {
       log.error("Workflow transition failed for bookingNo={} action={}", booking.getChallanNo(), action, ex);
@@ -100,37 +106,29 @@ public class WorkflowIntegrator {
     return null;
   }
 
-  // Map workflow action or returned status to our existing enums without broader code changes
+  // Use workflow status directly - no enum validation or mapping needed
   private String mapToBookingStatus(String action, String wfApplicationStatus, String wfState) {
-    String act = action == null ? null : action.trim().toUpperCase();
-    if (act != null) {
-      switch (act) {
-        case "INITIATE":
-          return ChallanStatusEnum.CHALLAN_CREATED.toString();
-        case "SUBMIT":
-          return ChallanStatusEnum.PENDING_FOR_PAYMENT.toString();
-        case "PAY":
-          return ChallanStatusEnum.CHALLAN_GENERATED.toString();
-        case "APPROVE":
-          return ChallanStatusEnum.CHALLAN_GENERATED.toString();
-        default:
-          break;
-      }
+    // Priority 1: Use workflow application status directly (if not null/empty)
+    if (wfApplicationStatus != null && !wfApplicationStatus.trim().isEmpty()) {
+      log.debug("Using workflow application status directly: {}", wfApplicationStatus);
+      return wfApplicationStatus.trim();
     }
-
-    // Fallbacks using WF-provided status names when they align with our enums
-    if (isValidEnum(wfApplicationStatus)) return wfApplicationStatus;
-    if (isValidEnum(wfState)) return wfState;
+    
+    // Priority 2: Use workflow state directly (if not null/empty)
+    if (wfState != null && !wfState.trim().isEmpty()) {
+      log.debug("Using workflow state directly: {}", wfState);
+      return wfState.trim();
+    }
+    
+    // Priority 3: Default fallback for INITIATE action only
+    if (action != null && action.trim().toUpperCase().equals("INITIATE")) {
+      log.debug("Using default INITIATE status: CHALLAN_CREATED");
+      return ChallanStatusEnum.CHALLAN_CREATED.toString();
+    }
+    
+    log.warn("No status found in workflow response - Action: {}, ApplicationStatus: {}, State: {}", 
+             action, wfApplicationStatus, wfState);
     return null;
   }
 
-  private boolean isValidEnum(String status) {
-    if (status == null || status.isEmpty()) return false;
-    try {
-      ChallanStatusEnum.valueOf(status);
-      return true;
-    } catch (Exception ignore) {
-      return false;
-    }
-  }
 }

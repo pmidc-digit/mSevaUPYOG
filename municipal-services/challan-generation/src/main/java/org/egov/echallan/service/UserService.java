@@ -114,7 +114,13 @@ public class UserService {
 			UserDetailResponse userDetailResponse = mapper.convertValue(responseMap, UserDetailResponse.class);
 			return userDetailResponse;
 		} catch (IllegalArgumentException e) {
-			throw new CustomException("IllegalArgumentException", "ObjectMapper not able to convertValue in userCall");
+			log.error("ObjectMapper not able to convertValue in userCall: {}", e.getMessage());
+			// Return empty response instead of throwing exception
+			return new UserDetailResponse(null, new ArrayList<>());
+		} catch (Exception e) {
+			log.error("Error calling user service: {}", e.getMessage());
+			// Return empty response instead of throwing exception
+			return new UserDetailResponse(null, new ArrayList<>());
 		}
 	}
 
@@ -127,6 +133,12 @@ public class UserService {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void parseResponse(LinkedHashMap responeMap, String dobFormat) {
+		// Check if response contains error
+		if (responeMap.containsKey("Errors") || responeMap.containsKey("error")) {
+			log.warn("User service returned error response, skipping user enrichment");
+			return;
+		}
+		
 		List<LinkedHashMap> users = (List<LinkedHashMap>) responeMap.get("user");
 		String format1 = "dd-MM-yyyy HH:mm:ss";
 		if (users != null) {

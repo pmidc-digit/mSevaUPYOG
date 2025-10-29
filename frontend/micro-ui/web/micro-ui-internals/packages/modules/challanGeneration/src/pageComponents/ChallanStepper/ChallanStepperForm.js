@@ -95,6 +95,7 @@ const ChallanStepperForm = () => {
   const step = formState.step;
   const [loader, setLoader] = useState(false);
   const [documentsData, setDocumentsData] = useState({});
+  const isCitizen = window.location.href.includes("citizen");
 
   const handleDocumentsSelect = (key, data) => {
     setDocumentsData(data);
@@ -179,7 +180,9 @@ const ChallanStepperForm = () => {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       console.log("response", response);
       setLoader(false);
-      history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+      return;
+      if (isCitizen) history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+      else history.push("/digit-ui/employee/challangeneration/response/" + "123123");
     } catch (error) {
       console.log("error", error);
       setLoader(false);

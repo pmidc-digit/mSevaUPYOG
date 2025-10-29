@@ -12,8 +12,14 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class CalculationUtils {
 
 
@@ -112,6 +118,205 @@ public class CalculationUtils {
             return null;
 
         return response.getChallans().get(0);
+    }
+
+    /**
+     * Dynamically maps offence subcategory name to subcategory ID by fetching from MDMS
+     * @param requestInfo The RequestInfo of the calculation request
+     * @param tenantId The tenantId
+     * @param offenceSubCategoryName The offence subcategory name
+     * @return Mapped subcategory ID from MDMS
+     */
+    public String mapSubCategoryNameToId(RequestInfo requestInfo, String tenantId, String offenceSubCategoryName) {
+        if (offenceSubCategoryName == null || offenceSubCategoryName.isEmpty()) {
+            return null;
+        }
+        
+        StringBuilder uri = new StringBuilder();
+        uri.append(config.getMdmsHost());
+        uri.append(config.getMdmsEndPoint());
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+        
+        Map<String, Object> mdmsCriteria = new HashMap<>();
+        mdmsCriteria.put("tenantId", tenantId);
+        
+        Map<String, Object> moduleDetail = new HashMap<>();
+        moduleDetail.put("moduleName", "Challan");
+        
+        Map<String, Object> masterDetail = new HashMap<>();
+        masterDetail.put("masterName", "SubCategory");
+        masterDetail.put("filter", "[?(@.name=='" + offenceSubCategoryName + "')]");
+        
+        moduleDetail.put("masterDetails", Arrays.asList(masterDetail));
+        mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail));
+        
+        request.put("MdmsCriteria", mdmsCriteria);
+
+        Object result = serviceRequestRepository.fetchResult(uri, request);
+        
+        try {
+            Map<String, Object> response = mapper.convertValue(result, Map.class);
+            Map<String, Object> mdmsRes = (Map<String, Object>) response.get("MdmsRes");
+            Map<String, Object> challan = (Map<String, Object>) mdmsRes.get("Challan");
+            List<Map<String, Object>> subCategories = (List<Map<String, Object>>) challan.get("SubCategory");
+            
+            if (!CollectionUtils.isEmpty(subCategories)) {
+                Map<String, Object> subCategory = subCategories.get(0);
+                String subCategoryId = (String) subCategory.get("id");
+                log.info("Mapped offence subcategory '{}' to ID: {}", offenceSubCategoryName, subCategoryId);
+                return subCategoryId;
+            }
+        } catch (Exception e) {
+            log.error("Error fetching subcategory mapping from MDMS for: {}", offenceSubCategoryName, e);
+        }
+        
+        log.warn("No mapping found in MDMS for offence subcategory: {}", offenceSubCategoryName);
+        return null;
+    }
+
+    /**
+     * Fetches rates from MDMS based on subcategory
+     * @param requestInfo The RequestInfo of the calculation request
+     * @param tenantId The tenantId
+     * @param subCategoryId The subcategory ID
+     * @return Rate amount for the subcategory
+     */
+    public BigDecimal getRateFromMDMS(RequestInfo requestInfo, String tenantId, String subCategoryId) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(config.getMdmsHost());
+        uri.append(config.getMdmsEndPoint());
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+        
+        Map<String, Object> mdmsCriteria = new HashMap<>();
+        mdmsCriteria.put("tenantId", tenantId);
+        Map<String, Object> moduleDetail = new HashMap<>();
+        moduleDetail.put("moduleName", "Challan");
+        
+        Map<String, Object> masterDetail = new HashMap<>();
+        masterDetail.put("masterName", "Rates");
+        masterDetail.put("filter", "[?(@.subCategoryId=='" + subCategoryId + "')]");
+        
+        moduleDetail.put("masterDetails", Arrays.asList(masterDetail));
+        mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail));
+        
+        request.put("MdmsCriteria", mdmsCriteria);
+
+        Object result = serviceRequestRepository.fetchResult(uri, request);
+        
+        try {
+            Map<String, Object> response = mapper.convertValue(result, Map.class);
+            Map<String, Object> mdmsRes = (Map<String, Object>) response.get("MdmsRes");
+            Map<String, Object> challan = (Map<String, Object>) mdmsRes.get("Challan");
+            List<Map<String, Object>> rates = (List<Map<String, Object>>) challan.get("Rates");
+            
+            if (!CollectionUtils.isEmpty(rates)) {
+                Map<String, Object> rate = rates.get(0);
+                Object amount = rate.get("amount");
+                if (amount instanceof Number) {
+                    return BigDecimal.valueOf(((Number) amount).doubleValue());
+                }
+            }
+        } catch (Exception e) {
+            throw new CustomException("MDMS_ERROR", "Failed to fetch rate from MDMS for subcategory: " + subCategoryId);
+        }
+        
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Fetches tax head code from MDMS based on category
+     * @param requestInfo The RequestInfo of the calculation request
+     * @param tenantId The tenantId
+     * @param categoryCode The category code
+     * @return Tax head code for the category
+     */
+    public String getTaxHeadCodeFromMDMS(RequestInfo requestInfo, String tenantId, String categoryCode) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(config.getMdmsHost());
+        uri.append(config.getMdmsEndPoint());
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+        
+        Map<String, Object> mdmsCriteria = new HashMap<>();
+        mdmsCriteria.put("tenantId", tenantId);
+        Map<String, Object> moduleDetail2 = new HashMap<>();
+        moduleDetail2.put("moduleName", "BillingService");
+        
+        Map<String, Object> masterDetail2 = new HashMap<>();
+        masterDetail2.put("masterName", "TaxHeadMaster");
+        masterDetail2.put("filter", "[?(@.code=='" + categoryCode + "')]");
+        
+        moduleDetail2.put("masterDetails", Arrays.asList(masterDetail2));
+        mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail2));
+        
+        request.put("MdmsCriteria", mdmsCriteria);
+
+        Object result = serviceRequestRepository.fetchResult(uri, request);
+        
+        try {
+            Map<String, Object> response = mapper.convertValue(result, Map.class);
+            Map<String, Object> mdmsRes = (Map<String, Object>) response.get("MdmsRes");
+            Map<String, Object> billingService = (Map<String, Object>) mdmsRes.get("BillingService");
+            List<Map<String, Object>> taxHeadMasters = (List<Map<String, Object>>) billingService.get("TaxHeadMaster");
+            
+            if (!CollectionUtils.isEmpty(taxHeadMasters)) {
+                Map<String, Object> taxHeadMaster = taxHeadMasters.get(0);
+                return (String) taxHeadMaster.get("code");
+            }
+        } catch (Exception e) {
+            throw new CustomException("MDMS_ERROR", "Failed to fetch tax head code from MDMS for category: " + categoryCode);
+        }
+        
+        return categoryCode; // Fallback to category code if not found
+    }
+
+    /**
+     * Fetches all subcategories from MDMS for debugging and monitoring
+     * @param requestInfo The RequestInfo of the calculation request
+     * @param tenantId The tenantId
+     * @return List of all subcategories from MDMS
+     */
+    public List<Map<String, Object>> getAllSubCategoriesFromMDMS(RequestInfo requestInfo, String tenantId) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(config.getMdmsHost());
+        uri.append(config.getMdmsEndPoint());
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+        
+        Map<String, Object> mdmsCriteria = new HashMap<>();
+        mdmsCriteria.put("tenantId", tenantId);
+        
+        Map<String, Object> moduleDetail = new HashMap<>();
+        moduleDetail.put("moduleName", "Challan");
+        
+        Map<String, Object> masterDetail = new HashMap<>();
+        masterDetail.put("masterName", "SubCategory");
+        
+        moduleDetail.put("masterDetails", Arrays.asList(masterDetail));
+        mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail));
+        
+        request.put("MdmsCriteria", mdmsCriteria);
+
+        Object result = serviceRequestRepository.fetchResult(uri, request);
+        
+        try {
+            Map<String, Object> response = mapper.convertValue(result, Map.class);
+            Map<String, Object> mdmsRes = (Map<String, Object>) response.get("MdmsRes");
+            Map<String, Object> challan = (Map<String, Object>) mdmsRes.get("Challan");
+            List<Map<String, Object>> subCategories = (List<Map<String, Object>>) challan.get("SubCategory");
+            
+            log.info("Fetched {} subcategories from MDMS", subCategories != null ? subCategories.size() : 0);
+            return subCategories != null ? subCategories : new ArrayList<>();
+        } catch (Exception e) {
+            log.error("Error fetching all subcategories from MDMS", e);
+            return new ArrayList<>();
+        }
     }
 
 }

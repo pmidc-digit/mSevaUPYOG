@@ -39,6 +39,20 @@ public class DemandService {
     private DemandRepository demandRepository;
 
     public static final String MDMS_ROUNDOFF_TAXHEAD= "_ROUNDOFF";
+    
+    /**
+     * Calculates total amount from demand details
+     * @param demandDetails List of demand details
+     * @return Total amount
+     */
+    private BigDecimal calculateTotalAmount(List<DemandDetail> demandDetails) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for(DemandDetail demandDetail : demandDetails) {
+            totalAmount = totalAmount.add(demandDetail.getTaxAmount());
+        }
+        return totalAmount;
+    }
+
     /**
      * Creates or updates Demand
      * @param requestInfo The RequestInfo of the calculation request
@@ -119,6 +133,8 @@ public class DemandService {
 
             List<DemandDetail> demandDetails = new LinkedList<>();
 
+            BigDecimal totalAmount = BigDecimal.ZERO;
+            
             calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
                 demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
                         .taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode())
@@ -126,10 +142,15 @@ public class DemandService {
                         .tenantId(tenantId)
                         .build());
             });
+            
             Long taxPeriodFrom = challan.getTaxPeriodFrom();
             Long taxPeriodTo = challan.getTaxPeriodTo();
             String businessService = challan.getBusinessService();
             addRoundOffTaxHead(calculation.getTenantId(), demandDetails,businessService);
+            
+            // Calculate total amount after adding round-off
+            totalAmount = calculateTotalAmount(demandDetails);
+            
             Demand singleDemand = Demand.builder()
                     .consumerCode(consumerCode)
                     .demandDetails(demandDetails)
@@ -139,6 +160,7 @@ public class DemandService {
                     .taxPeriodTo(taxPeriodTo)
                     .consumerType("challan")
                     .businessService(businessService)
+                    .minimumAmountPayable(totalAmount)
                     .build();
             demands.add(singleDemand);
         }
@@ -166,9 +188,15 @@ public class DemandService {
             Demand demand = searchResult.get(0);
             if(calculation.getChallan().getApplicationStatus()!=null && calculation.getChallan().getApplicationStatus().equals(StatusEnum.CANCELLED.toString()))
             	demand.setStatus(StatusEnum.CANCELLED);
+            
             List<DemandDetail> demandDetails = demand.getDemandDetails();
             List<DemandDetail> updatedDemandDetails = getUpdatedDemandDetails(calculation,demandDetails);
             demand.setDemandDetails(updatedDemandDetails);
+            
+            // Calculate total amount for minimumAmountPayable
+            BigDecimal totalAmount = calculateTotalAmount(updatedDemandDetails);
+            demand.setMinimumAmountPayable(totalAmount);
+            
             demands.add(demand);
         }
          return demandRepository.updateDemand(requestInfo,demands);

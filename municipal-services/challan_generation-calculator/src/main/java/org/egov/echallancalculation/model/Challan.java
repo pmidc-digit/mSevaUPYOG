@@ -104,6 +104,28 @@ public class Challan {
   @JsonProperty("auditDetails")
 
   private AuditDetails auditDetails = null;
+
+  @JsonProperty("offenceType")
+  private String offenceType = null;
+
+  @JsonProperty("category")
+  private String category = null;
+
+  @JsonProperty("subCategory")
+  private String subCategory = null;
+
+  @JsonProperty("challanAmount")
+  private String challanAmount = null;
+
+  @JsonProperty("offenceTypeName")
+  private String offenceTypeName = null;
+
+  @JsonProperty("offenceCategoryName")
+  private String offenceCategoryName = null;
+
+  @JsonProperty("offenceSubCategoryName")
+  private String offenceSubCategoryName = null;
+
   public Challan citizen(UserInfo citizen) {
     this.citizen = citizen;
     return this;

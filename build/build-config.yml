@@ -898,10 +898,10 @@ config:
       - work-dir: "municipal-services/challan-generation/src/main/resources/db"
         image-name: "challan-generation-db"
         
-  - name: "builds/upyog/municipal-services/challan_generation-calculator"
+  - name: "builds/upyog/municipal-services/challan-generation-calculator"
     build:
-      - work-dir: "municipal-services/challan_generation-calculator"
-        image-name: "challan_generation-calculator"
+      - work-dir: "municipal-services/challan-generation-calculator"
+        image-name: "challan-generation-calculator"
         dockerfile: "build/maven/Dockerfile"
     #  - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
      #   image-name: "challan_generation-calculator-db"

@@ -474,7 +474,7 @@ public class SideYardService extends GeneralRule {
             SideYardResult sideYard2Result, List<ScrutinyDetail> scrutinyDetailList) {
         if (sideYard1Result != null) {
             Map<String, String> details = new HashMap<>();
-            //details.put(RULE_NO, sideYard1Result.subRule);
+            details.put(RULE_NO, sideYard1Result.subRule);
             details.put(LEVEL,
                     sideYard1Result.level != null ? sideYard1Result.level.toString() : "");
             details.put(OCCUPANCY, sideYard1Result.occupancy);
@@ -484,7 +484,7 @@ public class SideYardService extends GeneralRule {
 			
 			if(sideYard1Result.occupancy.equalsIgnoreCase("Residential")) {
 				permissableValueWithPercentage = sideYard1Result.expectedDistance.toString();
-			    providedValue = sideYard1Result.actualMeanDistance.toString();
+			    providedValue = sideYard1Result.actualDistance.toString();
 			}else if (sideYard1Result.setBackPercentage != null 
 			        && sideYard1Result.setBackPercentage.contains("m")) {							    
 			    permissableValueWithPercentage = sideYard1Result.setBackPercentage;
@@ -532,7 +532,7 @@ public class SideYardService extends GeneralRule {
     			
     			if(sideYard2Result.occupancy.equalsIgnoreCase("Residential")) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
-    			    providedValue = sideYard2Result.actualMeanDistance.toString();
+    			    providedValue = sideYard2Result.actualDistance.toString();
     			}else if (sideYard2Result.setBackPercentage != null 
     			        && sideYard2Result.setBackPercentage.contains("m")) {							    
     			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;

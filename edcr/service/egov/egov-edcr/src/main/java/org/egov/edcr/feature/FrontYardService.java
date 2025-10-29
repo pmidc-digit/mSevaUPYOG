@@ -299,7 +299,7 @@ private class FrontYardResult {
 								
 								if(frontYardResult.occupancy.equalsIgnoreCase("Residential")) {
 									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.toString();
-								    providedValue = frontYardResult.actualMeanDistance.toString();
+								    providedValue = frontYardResult.actualMinDistance.toString();
 								}else if (frontYardResult.setBackPercentage != null 
 								        && frontYardResult.setBackPercentage.contains("m")) {							    
 								    permissableValueWithPercentage = frontYardResult.setBackPercentage;
@@ -308,7 +308,8 @@ private class FrontYardResult {
 								    permissableValueWithPercentage = frontYardResult.setBackPercentage 
 								            + "% of the plot area (" 
 								            + frontYardResult.expectedminimumDistance.toPlainString() + ")";
-								    providedValue = frontYardResult.actualMinDistance.toString();
+								    //providedValue = frontYardResult.actualMinDistance.toString();
+								    providedValue = frontYardResult.actualMinDistance.setScale(2, RoundingMode.HALF_UP).toString();
 								}
 								
 								details.put(PERMISSIBLE, permissableValueWithPercentage);
@@ -432,9 +433,12 @@ private class FrontYardResult {
 				}
 				if (!frontYardDefined) {
 					HashMap<String, String> errors = new HashMap<>();
-					errors.put(FRONT_YARD_DESC,
-							prepareMessage(OBJECTNOTDEFINED, FRONT_YARD_DESC + " for Block " + block.getName()));
-					pl.addErrors(errors);
+					if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {				
+						errors.put(FRONT_YARD_DESC,
+								prepareMessage(OBJECTNOTDEFINED, FRONT_YARD_DESC + " for Block " + block.getName()));
+						pl.addErrors(errors);
+                    }
+					
 				}
 			}
 

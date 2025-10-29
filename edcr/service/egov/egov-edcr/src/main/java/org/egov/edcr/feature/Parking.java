@@ -59,6 +59,8 @@ import static org.egov.edcr.constants.DxfFileConstants.F_CB;
 import static org.egov.edcr.constants.DxfFileConstants.F_IT;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.PARKING_SLOT;
+import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;
+import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.REAR_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.SQMTRS;
 
@@ -451,8 +453,11 @@ public class Parking extends FeatureProcess {
         		) {
 
             if (totalProvidedCarParkArea.doubleValue() == 0) {
-                pl.addError(RULE__DESCRIPTION,
-                        getLocaleMessage("msg.error.not.defined", RULE__DESCRIPTION));
+            	if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_ECS)) {				
+            		pl.addError(RULE__DESCRIPTION,
+                            getLocaleMessage("msg.error.not.defined", RULE__DESCRIPTION));
+                }
+                
             } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());

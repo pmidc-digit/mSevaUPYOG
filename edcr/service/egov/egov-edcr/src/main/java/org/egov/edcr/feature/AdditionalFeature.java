@@ -336,8 +336,11 @@ public class AdditionalFeature extends FeatureProcess {
 
             if (typeOfArea.equalsIgnoreCase(NEW)) {
                 if (roadWidth.compareTo(ROAD_WIDTH_SIX_POINTONE) < 0) {
-                    errors.put(NEW_AREA_ERROR, NEW_AREA_ERROR_MSG);
-                    pl.addErrors(errors);
+					if (!Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ROAD_WIDTH)) {
+						errors.put(NEW_AREA_ERROR, NEW_AREA_ERROR_MSG);
+						pl.addErrors(errors);
+					}
+
                 } else if (roadWidth.compareTo(ROAD_WIDTH_SIX_POINTONE) >= 0
                         && roadWidth.compareTo(ROAD_WIDTH_NINE_POINTONE) < 0) {
                     isAccepted = floorAbvGround.compareTo(FOUR) <= 0;

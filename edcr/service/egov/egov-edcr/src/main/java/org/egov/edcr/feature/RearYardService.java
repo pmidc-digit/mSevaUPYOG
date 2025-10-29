@@ -265,7 +265,7 @@ public class RearYardService extends GeneralRule {
 							String providedValue;
 							if(rearYardResult.occupancy.equalsIgnoreCase("Residential")) {
 								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
-							    providedValue = rearYardResult.actualMeanDistance.toString();
+							    providedValue = rearYardResult.actualMinDistance.toString();
 							}else if (rearYardResult.setBackPercentage != null 
 							        && rearYardResult.setBackPercentage.contains("m")) {							    
 							    permissableValueWithPercentage = rearYardResult.setBackPercentage;

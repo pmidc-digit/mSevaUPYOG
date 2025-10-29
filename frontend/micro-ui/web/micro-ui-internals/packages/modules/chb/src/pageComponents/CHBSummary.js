@@ -167,9 +167,9 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       <div style={sectionStyle}>
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
 
-        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.venueDetails?.[0]?.specialCategory?.category)}
-        {renderLabel(t("CHB_PURPOSE"), formData?.venueDetails?.[0]?.purpose?.purpose)}
-        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.venueDetails?.[0]?.purposeDescription)}
+        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.ownerDetails?.hallsBookingApplication?.specialCategory?.category)}
+        {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose)}
+        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.ownerDetails?.hallsBookingApplication?.purposeDescription)}
       </div>
 
       {/* Documents Section */}

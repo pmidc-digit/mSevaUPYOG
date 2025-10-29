@@ -4,7 +4,10 @@ import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 
 const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+  const isCitizen = window.location.href.includes("citizen");
   const stateId = Digit.ULBService.getStateId();
   const user = Digit.UserService.getUser();
   const [loader, setLoader] = useState(false);
@@ -16,20 +19,18 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      name: user?.info?.name || "",
-      emailId: user?.info?.emailId || "",
-      mobileNumber: user?.info?.mobileNumber || "",
+      name: (isCitizen && user?.info?.name) || "",
+      emailId: (isCitizen && user?.info?.emailId) || "",
+      mobileNumber: (isCitizen && user?.info?.mobileNumber) || "",
       address: "",
     },
   });
 
   const onSubmit = async (data) => {
     setLoader(true);
-    console.log("data", data);
-    console.log("user", user);
-    console.log("currentStepData", currentStepData);
     if (currentStepData?.venueDetails?.[0]?.bookingNo) {
       goNext(currentStepData?.venueDetails);
+      // onSubmitUpdate(currentStepData?.venueDetails?.[0], "INITIATE", data);
     } else {
       const baseApplication = currentStepData?.ownerDetails?.hallsBookingApplication || {};
 
@@ -66,14 +67,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           owners,
         },
       };
-
-      console.log("final payload", payload);
-      // return;
-      // goNext(payload);
-      // return;\
       try {
         const response = await Digit.CHBServices.create(payload);
-        console.log("response", response);
         setLoader(false);
         goNext(response?.hallsBookingApplication);
       } catch (error) {
@@ -83,7 +78,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   };
 
   useEffect(() => {
-    console.log("currentStepData", currentStepData);
     const formattedData = currentStepData?.venueDetails?.[0];
     if (formattedData) {
       setValue("address", formattedData?.address?.addressLine1);

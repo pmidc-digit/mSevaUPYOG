@@ -62,7 +62,7 @@ const NewLogin = ({ stateCode }) => {
   const getUserType = () => Digit.UserService.getType();
 
   const getFromLocation = (state) => {
-    const userRoles = user.info.roles.map((roleData) => roleData.code);
+    const userRoles = user?.info?.roles?.map((roleData) => roleData?.code);
     const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
     return isUserBPA ? state?.from || DEFAULT_BPA_REDIRECT_URL : state?.from || DEFAULT_REDIRECT_URL;
   };

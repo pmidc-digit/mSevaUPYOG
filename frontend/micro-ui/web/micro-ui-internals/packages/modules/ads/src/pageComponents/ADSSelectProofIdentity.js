@@ -92,7 +92,13 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     onSelect(config.key, documentStep);
   };
 
-  
+   useEffect(() => {
+      if (toastError) {
+        const timer = setTimeout(() => setToastError(null), 2000);
+        return () => clearTimeout(timer);
+      }
+    }, [toastError]);
+
 
   const onSkip = () => onSelect();
 
@@ -144,6 +150,8 @@ function ADSSelectDocument({
   const [uploadedFile, setUploadedFile] = useState(doc?.fileStoreId || null);
   const [fieldError, setFieldError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const isCitizen = window.location.href.includes("citizen");
+
 
   function selectfile(e) {
     const selected = e.target.files && e.target.files[0];
@@ -203,11 +211,11 @@ function ADSSelectDocument({
       {loading && <Loader />}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
+        <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <div className="field" style={{width:"100%"}}>
+        <div className="field" style={{width:"100%",maxWidth: !isCitizen && "500px"}}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -222,14 +230,8 @@ function ADSSelectDocument({
             buttonType="button"
             error={Boolean(fieldError)}
           />
-
           {/* Inline file validation error */}
           {fieldError && <div style={errorStyle}>{fieldError}</div>}
-
-          {/* {!uploadedFile &&
-            doc?.required &&
-            submitted && // 👈 only show after submit
-            formErrors?.missingDocs?.includes(t(doc?.code.replaceAll(".", "_"))) && <div style={errorStyle}>{t("CS_REQUIRED_FIELD")}</div>} */}
         </div>
       </LabelFieldPair>
     </div>

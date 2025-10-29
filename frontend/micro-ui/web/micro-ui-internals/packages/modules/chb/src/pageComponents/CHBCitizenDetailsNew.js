@@ -82,6 +82,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     if (formattedData) {
       setValue("address", formattedData?.address?.addressLine1);
       setValue("emailId", formattedData?.applicantDetail?.applicantEmailId);
+      setValue("mobileNumber", formattedData?.applicantDetail?.applicantMobileNo);
+      setValue("name", formattedData?.applicantDetail?.applicantName);
     }
     // if (formattedData) {
     //   Object.entries(formattedData).forEach(([key, value]) => {

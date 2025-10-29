@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("challan/v1")
+@RequestMapping("/challan")
 public class ChallanGenerationController {
 
 	@Autowired

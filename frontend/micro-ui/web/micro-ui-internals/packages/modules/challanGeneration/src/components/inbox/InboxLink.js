@@ -9,24 +9,24 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   const allLinks = [
     {
       text: t("UC_GENERATE_NEW_CHALLAN"),
-      link: "/digit-ui/employee/mcollect/new-application",
+      link: "/digit-ui/employee/challangeneration/generate-challan",
       roles: [],
     },
-    {
-      text: "Search Receipt",
-      link: "/digit-ui/employee/mcollect/search-receipt",
-      roles: [],
-    },
-    {
-      text: "Search Challan",
-      link: "/digit-ui/employee/mcollect/search-challan",
-      roles: [],
-    },
-    {
-      text: "Search and Pay",
-      link: "/digit-ui/employee/mcollect/search-bill",
-      roles: [],
-    },
+    // {
+    //   text: "Search Receipt",
+    //   link: "/digit-ui/employee/mcollect/search-receipt",
+    //   roles: [],
+    // },
+    // {
+    //   text: "Search Challan",
+    //   link: "/digit-ui/employee/mcollect/search-challan",
+    //   roles: [],
+    // },
+    // {
+    //   text: "Search and Pay",
+    //   link: "/digit-ui/employee/mcollect/search-bill",
+    //   roles: [],
+    // },
     // {
     //   text: "Group Bill",
     //   link: "/digit-ui/employee/mcollect/group-bill",

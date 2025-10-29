@@ -72,7 +72,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     const formData = {
       tenantId,
       applicationDate,
-      bookingStatus: "Initiated",
+      bookingStatus: "BOOKING_CREATED",
       businessService: "ADV",
       address: {
         pincode: data?.pincode || "",

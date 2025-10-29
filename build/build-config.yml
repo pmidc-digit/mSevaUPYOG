@@ -903,5 +903,5 @@ config:
       - work-dir: "municipal-services/challan_generation-calculator"
         image-name: "challan_generation-calculator"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
-        image-name: "challan_generation-calculator-db"
+    #  - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
+     #   image-name: "challan_generation-calculator-db"

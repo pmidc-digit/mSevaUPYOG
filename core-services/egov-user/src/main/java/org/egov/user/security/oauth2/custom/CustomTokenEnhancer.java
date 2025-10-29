@@ -30,10 +30,10 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
         if (detailsObj instanceof Map) {
             Map<?, ?> detailsMap = (Map<?, ?>) detailsObj;
             if (detailsMap.containsKey("isPasswordType")) {
-                isPasswordType = (boolean) detailsMap.get("isPasswordType");
+                isPasswordType = Boolean.TRUE.equals(detailsMap.get("isPasswordType"));
             }
         }
-        
+
         org.egov.user.web.contract.auth.User webUser = su.getUser();
         User domainUser = User.builder()
                 .id(webUser.getId())

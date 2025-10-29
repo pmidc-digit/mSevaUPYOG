@@ -4,7 +4,7 @@ FROM egovio/flyway:10.7.1
 RUN mkdir -p /flyway/sql
 
 # Copy migration files if they exist, otherwise create empty directory
-COPY ./migration/main/ /flyway/sql/
+COPY ./migration /flyway/sql
 
 COPY migrate.sh /usr/bin/migrate.sh
 

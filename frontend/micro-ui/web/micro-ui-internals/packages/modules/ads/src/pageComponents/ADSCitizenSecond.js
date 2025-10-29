@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, LabelFieldPair, CardLabelError } from "@mseva/digit-ui-react-components";
+import { useDispatch } from "react-redux";
+import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, CardLabelError } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import ADSAddressField from "./ADSAddressField";
 import AvailabilityModal from "./ADSAvailibilityModal";
 import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
-import { useDispatch } from "react-redux";
-import { getScheduleMessage, validateSchedule } from "../utils";
+import { areCartSlotsEqual, getScheduleMessage, validateSchedule } from "../utils";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");

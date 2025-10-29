@@ -55,10 +55,9 @@ export const TableConfig = (t) => ({
       {
         Header: t("BOOKING_STATUS"),
         Cell: ({ row }) => {
-          const wf = row.original?.workflowData;
-          return GetCell(t(`${row?.original?.workflowData?.state?.["applicationStatus"]}`));
+          return GetCell(t(`${row?.original?.searchData?.["bookingStatus"]}` || `${row?.original?.workflowData?.state?.["applicationStatus"]}` ));
         },
-        mobileCell: (original) => GetMobCell(t(`ES_ADS_COMMON_STATUS_${original?.workflowData?.state?.["applicationStatus"]}`)),
+        mobileCell: (original) => GetMobCell(t(`ES_ADS_COMMON_STATUS_${original?.searchData?.["bookingStatus"] || original?.workflowData?.state?.["applicationStatus"]}`)),
       },
 
       {

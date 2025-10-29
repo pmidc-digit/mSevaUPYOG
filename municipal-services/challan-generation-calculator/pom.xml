@@ -8,9 +8,9 @@
     <version>2.2.6.RELEASE</version>
   </parent>
   <groupId>org.egov</groupId>
-  <artifactId>challan_generation-calculator</artifactId>
+  <artifactId>challan-generation-calculator</artifactId>
   <version>1.0.2-SNAPSHOT</version>
-  <name>challan_generation-calculator</name>
+  <name>challan-generation-calculator</name>
   <properties>
     <log4j2.version>2.17.1</log4j2.version>
     <java.version>1.8</java.version>

@@ -10,7 +10,7 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
 
   const checkRenewTime = data?.PetService?.ApplicationType?.filter((item) => item.code == "RENEWAPPLICATION");
 
-  const checkTimeRenew = checkRenewTime?.[0]?.renewalPeriod;
+  const checkTimeRenew = checkRenewTime?.[0]?.renewalPeriod * 1000;
 
   console.log("checkTimeRenew", checkTimeRenew);
 
@@ -26,13 +26,18 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
 
   console.log("application", application?.validityDate);
 
-  const validToObj = parseDate(application?.validityDate);
-  const currentDateObj = new Date();
+  const validToObj = application?.validityDate;
+  const validToMillis = validToObj ? validToObj * 1000 : null;
+
+  const currentDateObj = Date.now();
+
+  console.log("validToMillis", validToMillis);
+  console.log("currentDateObj", currentDateObj);
 
   // ✅ Use timestamps for duration calculation
-  const duration = validToObj && currentDateObj ? validToObj.getTime() - currentDateObj.getTime() : null;
+  const duration = validToObj && currentDateObj ? validToMillis - currentDateObj : null;
 
-  const days = duration ? Math.round(duration / (1000 * 60 * 60 * 24)) : null;
+  // const days = duration ? Math.round(duration / (1000 * 60 * 60 * 24)) : null;
   // ✅ Renewal check logic
 
   console.log("duration", duration);
@@ -40,7 +45,7 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
   const checkDuration = duration !== null && duration <= checkTimeRenew;
   const checkRenewal = application?.status == "APPROVED" || application?.status == "EXPIRED";
 
-  console.log("checkRenewal", checkRenewal);
+  // console.log("checkRenewal", checkRenewal);
 
   console.log("checkDuration", checkDuration);
 

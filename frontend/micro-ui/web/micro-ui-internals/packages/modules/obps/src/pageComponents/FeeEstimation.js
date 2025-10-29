@@ -251,6 +251,10 @@ const FeeEstimation = ({
     }, [recalculate, refetchSanctionFee]);
 
     const handleAdjustedAmountChange = (index, value, ammount) => {
+        if(Number(value)>ammount){
+            setShowToast({ key: "error", message: "Adjusted_Amount_More_Than_Ammount" });
+            return;
+        }
         setSanctionFeeData((prev) =>
             prev.map((item) =>
                 item.index === index

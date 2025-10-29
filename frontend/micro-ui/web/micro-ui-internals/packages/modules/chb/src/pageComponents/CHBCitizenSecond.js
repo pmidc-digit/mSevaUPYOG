@@ -1,17 +1,22 @@
 import React, { use, useEffect, useState } from "react";
-import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair, UploadFile } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 import { parse, format } from "date-fns";
+import CitizenConsent from "../components/CitizenConsent";
 
 const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+  const isCitizen = window.location.href.includes("citizen");
   const [getHallDetails, setHallDetails] = useState([]);
   const [getHallCodes, setHallCodes] = useState([]);
   const [getSlots, setSlots] = useState([]);
   const [loader, setLoader] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-
-  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState(null);
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
 
   const {
     control,
@@ -20,6 +25,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     reset,
     formState: { errors },
     getValues,
+    watch,
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
@@ -34,8 +40,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     { name: "SpecialCategory" },
   ]);
   const { data: CHBHallCode = [], isLoading: CHBHallCodeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "HallCode" }]);
-
-  console.log("CHBHallCode", CHBHallCode);
+  const { data: CHBReason = [], isLoading: CHBReasonLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "DiscountReason" }]);
 
   const fiterHalls = (selected) => {
     const filteredHalls = CHBDetails?.CHB?.CommunityHalls?.filter((hall) => hall.locationCode === selected?.code) || [];
@@ -49,13 +54,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setLoader(true);
 
     console.log("data", data);
+    console.log("getValues", getValues());
 
     const payload = {
       tenantId: tenantId,
       communityHallCode: data.communityHallId,
       hallCode: data?.HallCode,
       bookingStartDate: getValues()?.startDate,
-      bookingEndDate: getValues()?.startDate,
+      bookingEndDate: getValues()?.endDate,
       isTimerRequired: false,
     };
     try {
@@ -70,8 +76,21 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = (data) => {
     console.log("data==??", data);
+    console.log("uploadedFile==??", uploadedFile);
     const userInfo = Digit.UserService.getUser()?.info || {};
     const now = Date.now();
+    const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
+
+    if (!isCitizenDeclared) {
+      alert("Please upload Self Certificate");
+      return;
+    }
+
+    const additionalDetails = {
+      disImage: isCitizenDeclared, // ✅ always include this
+      ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
+      ...(data?.discountAmount && { discountAmount: data.discountAmount }),
+    };
 
     // Map booking slots from hall details
     const bookingSlotDetails = data?.slots?.map((slot) => {
@@ -83,8 +102,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       return {
         bookingDate: formattedDate,
         bookingEndDate: formattedDate,
-        bookingFromTime: slot?.fromTime || "13:47",
-        bookingToTime: slot?.toTime || "14:54",
+        bookingFromTime: slot?.fromTime || "00:00",
+        bookingToTime: slot?.toTime || "23:59",
         hallCode: slot?.hallCode,
         status: "INITIATE",
         capacity: hallInfo?.capacity || null,
@@ -94,6 +113,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     const payload = {
       hallsBookingApplication: {
         tenantId,
+        ...(additionalDetails && { additionalDetails }),
         bookingStatus: "INITIATED",
         applicationDate: now,
         communityHallCode: getHallDetails?.[0]?.communityHallId || "",
@@ -119,8 +139,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         },
       },
     };
-    console.log("payload", payload);
-    // return;
     goNext(payload);
   };
 
@@ -133,17 +151,22 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const purposeOptions = CHBPurpose.CHB.Purpose || [];
       const specialCategoryOptions = SpecialCategory.CHB.SpecialCategory || [];
       const hallCodeOptions = CHBHallCode?.CHB?.HallCode;
+      const discReasonOptions = CHBReason?.CHB?.DiscountReason;
+
+      console.log("discReasonOptions", discReasonOptions);
 
       const selectedCommHall = communityHallsOptions?.find((item) => item?.communityHallId == formattedData?.communityHallCode);
       const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose);
       const selectedSpecialCat = specialCategoryOptions?.find((item) => item?.code == formattedData?.specialCategory?.category);
       const selectHallCode = hallCodeOptions?.find((item) => item?.HallCode == formattedData?.bookingSlotDetails?.[0]?.hallCode);
+      const selectReason = discReasonOptions?.find((item) => item?.reasonName == formattedData?.additionalDetails?.reason);
 
       console.log("formattedData", formattedData);
 
       setValue("siteId", selectedCommHall || null);
       setValue("hallCode", selectHallCode || null);
       setValue("startDate", formattedData?.bookingSlotDetails?.[0]?.bookingDate);
+      setValue("endDate", formattedData?.bookingSlotDetails.at(-1)?.bookingEndDate);
       setShowInfo(true);
       fiterHalls(selectedCommHall);
 
@@ -161,6 +184,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("purpose", selectedPurpose || null);
       setValue("specialCategory", selectedSpecialCat || null);
       setValue("purposeDescription", formattedData.purposeDescription || "");
+      setValue("discountAmount", formattedData?.additionalDetails?.discountAmount || "");
+      setValue("reason", selectReason || null);
+      // disImage
     }
   }, [currentStepData, setValue]);
 
@@ -168,13 +194,47 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     console.log("getSlots", getSlots);
   }, [getSlots]);
 
+  function selectfile(e) {
+    setFile(e.target.files[0]);
+  }
+
+  useEffect(() => {
+    (async () => {
+      setError(null);
+      if (file) {
+        if (file.size >= 5242880) {
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+          // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
+        } else {
+          setLoader(true);
+          try {
+            setUploadedFile(null);
+            const response = await Digit.UploadServices.Filestorage("CHB", file, Digit.ULBService.getStateId());
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+            } else {
+              setError(t("CS_FILE_UPLOAD_ERROR"));
+            }
+            setLoader(false);
+          } catch (err) {
+            setLoader(false);
+            setError(t("CS_FILE_UPLOAD_ERROR"));
+          }
+        }
+      }
+    })();
+  }, [file]);
+
+  const startDate = watch("startDate");
+
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
+          {/* SELECT_HALL_NAME */}
           <div>
             <CardLabel>
-              Select Hall Name <span style={{ color: "red" }}>*</span>
+              {t("SELECT_HALL_NAME")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -202,9 +262,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.siteId && <p style={{ color: "red" }}>{errors.siteId.message}</p>}
           </div>
 
+          {/* SELECT_DATE */}
           <LabelFieldPair style={{ marginTop: "20px" }}>
             <CardLabel>
-              {t("Select Date")} <span style={{ color: "red" }}>*</span>
+              {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <div style={{ width: "50%" }} className="field">
               <Controller
@@ -230,10 +291,44 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               {errors.startDate && <p style={{ color: "red" }}>{errors.startDate.message}</p>}
             </div>
           </LabelFieldPair>
+          {/* SELECT End DATE */}
+          <LabelFieldPair style={{ marginTop: "20px" }}>
+            <CardLabel>
+              {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div style={{ width: "50%" }} className="field">
+              <Controller
+                control={control}
+                name={"endDate"}
+                render={(props) => (
+                  <TextInput
+                    style={{ marginBottom: 0 }}
+                    type={"date"}
+                    className="form-field"
+                    value={props.value}
+                    min={
+                      startDate
+                        ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                    }
+                    // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled={!startDate}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
 
+          {/* HALL_CODE */}
           <div style={{ marginTop: "20px" }}>
             <CardLabel>
-              Hall Code <span style={{ color: "red" }}>*</span>
+              {t("HALL_CODE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -258,10 +353,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.hallCode && <p style={{ color: "red" }}>{errors.hallCode.message}</p>}
           </div>
 
+          {/* AVAILABLE_SLOTS */}
           {getSlots?.length > 0 && (
             <div style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
-                {t("Available Slots")} <span style={{ color: "red" }}>*</span>
+                {t("AVAILABLE_SLOTS")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
 
               <Controller
@@ -286,12 +382,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     }}
                   >
                     {getSlots?.map((slot, idx) => {
-                      const isChecked = field.value?.some((s) => s.hallCode === slot.hallCode);
+                      const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
+                      const isChecked = field.value?.some(
+                        (s) =>
+                          s.hallCode === slot.hallCode &&
+                          s.bookingDate === slot.bookingDate &&
+                          s.fromTime === slot.fromTime &&
+                          s.toTime === slot.toTime
+                      );
                       const isAvailable = slot.slotStaus?.toLowerCase() === "available";
 
                       return (
                         <label
-                          key={idx}
+                          key={slotKey}
                           style={{
                             border: "1px solid #ccc",
                             borderRadius: "8px",
@@ -313,7 +416,17 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               if (e.target.checked) {
                                 field.onChange([...(field.value || []), slot]);
                               } else {
-                                field.onChange((field.value || []).filter((s) => s.hallCode !== slot.hallCode));
+                                field.onChange(
+                                  (field.value || []).filter(
+                                    (s) =>
+                                      !(
+                                        s.hallCode === slot.hallCode &&
+                                        s.bookingDate === slot.bookingDate &&
+                                        s.fromTime === slot.fromTime &&
+                                        s.toTime === slot.toTime
+                                      )
+                                  )
+                                );
                               }
                             }}
                           />
@@ -340,7 +453,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           )}
 
           <div style={{ display: showInfo ? "block" : "none" }}>
-            {" "}
+            {/* CHB_PURPOSE */}
             <div style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
                 {t("CHB_PURPOSE")} <span style={{ color: "red" }}>*</span>
@@ -363,6 +476,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
               {errors.purpose && <p style={{ color: "red" }}>{errors.purpose.message}</p>}
             </div>
+
+            {/* CHB_SPECIAL_CATEGORY */}
             <div style={{ marginBottom: "20px" }}>
               <CardLabel>
                 {t("CHB_SPECIAL_CATEGORY")} <span style={{ color: "red" }}>*</span>
@@ -385,7 +500,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
               {errors.specialCategory && <p style={{ color: "red" }}>{errors.specialCategory.message}</p>}
             </div>
-            <LabelFieldPair>
+
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -400,7 +516,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   }}
                   render={(props) => (
                     <TextArea
-                      style={{ marginBottom: 0 }}
+                      style={{ marginBottom: 0, marginTop: 0 }}
                       type={"textarea"}
                       value={props.value}
                       onChange={(e) => {
@@ -415,13 +531,122 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 {errors.purposeDescription && <p style={{ color: "red" }}>{errors.purposeDescription.message}</p>}
               </div>
             </LabelFieldPair>
+
+            {!isCitizen && (
+              <React.Fragment>
+                {/* Discount Amount */}
+                <div style={{ marginBottom: "20px", width: "50%" }}>
+                  <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
+                  <Controller
+                    control={control}
+                    name="discountAmount"
+                    render={(props) => (
+                      <TextInput
+                        type="number"
+                        style={{ marginBottom: 0, width: "100%" }}
+                        value={props.value}
+                        error={errors?.name?.message}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+
+                {/* Discount Reason */}
+                <div style={{ marginBottom: "20px" }}>
+                  <CardLabel>
+                    {t("CHB_DISCOUNT_REASON")} <span style={{ color: "red" }}>*</span>
+                  </CardLabel>
+                  <Controller
+                    control={control}
+                    name={"reason"}
+                    defaultValue={null}
+                    render={(props) => (
+                      <Dropdown
+                        style={{ marginBottom: 0 }}
+                        className="form-field"
+                        select={props.onChange}
+                        selected={props.value}
+                        option={CHBReason?.CHB?.DiscountReason}
+                        optionKey="reasonName"
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div style={{ marginBottom: "20px" }}>
+                  <CardLabel>{t("CHB_REAS_IMAGE")}</CardLabel>
+                  <div className="field">
+                    <UploadFile
+                      onUpload={selectfile}
+                      onDelete={() => {
+                        setUploadedFile(null);
+                      }}
+                      // id={id}
+                      message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                      textStyles={{ width: "100%" }}
+                      inputStyles={{ width: "280px" }}
+                      accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
+                      buttonType="button"
+                      error={!uploadedFile}
+                    />
+                  </div>
+                </div> */}
+              </React.Fragment>
+            )}
+
+            {/* checkbox self declaration */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+              <Controller
+                control={control}
+                name="termsAccepted"
+                rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+                render={(props) => (
+                  <input
+                    id="termsAccepted"
+                    type="checkbox"
+                    checked={props.value || false}
+                    onChange={(e) => {
+                      props.onChange(e.target.checked);
+                      console.log("cal", e.target.checked);
+                      if (e.target.checked) setShowTermsPopup(true);
+                      // setShowTermsPopup(true);
+                    }}
+                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                  />
+                )}
+              />
+              <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
+                {t("CHB_SELF_LABEL")}
+              </label>
+            </div>
+            {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
           </div>
         </div>
+
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
-      {(CHBLocationLoading || CHBLoading || CHBPurposeLoading || CHBSpecialCategoryLoading || CHBHallCodeLoading || loader) && <Loader page={true} />}
+
+      {showTermsPopup && (
+        <CitizenConsent
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
+        />
+      )}
+
+      {(CHBReasonLoading || CHBLocationLoading || CHBLoading || CHBPurposeLoading || CHBSpecialCategoryLoading || CHBHallCodeLoading || loader) && (
+        <Loader page={true} />
+      )}
     </React.Fragment>
   );
 };

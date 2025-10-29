@@ -16,12 +16,10 @@ import {
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
-// import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../config/Create/citizenStepperConfig";
 import { SET_ChallanApplication_STEP, RESET_ChallanAPPLICATION_FORM } from "../../../redux/action/ChallanApplicationActions";
-// import { onSubmit } from "../utils/onSubmitCreateEmployee";
-// import {  } from "@mseva/digit-ui-react-components";
+import SelectNDCDocuments from "../ChallanDocuments";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -96,12 +94,20 @@ const ChallanStepperForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const [loader, setLoader] = useState(false);
+  const [documentsData, setDocumentsData] = useState({});
+
+  const handleDocumentsSelect = (key, data) => {
+    setDocumentsData(data);
+  };
 
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
   const { data: categoryData, isLoading: categoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Category" }]);
   const { data: subCategoryData, isLoading: subCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "SubCategory" }]);
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
+  const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
+
+  console.log("OffenceRates", OffenceRates);
 
   const {
     control,
@@ -137,11 +143,83 @@ const ChallanStepperForm = () => {
   //   // onSubmit(data, tenantId, setShowToast, history);
   // };
 
-  const onSubmit = (data) => {
-    console.log("dara", data);
+  const onSubmit = async (data) => {
+    setLoader(false);
+    console.log("dat==??a", data);
+    console.log("documentsData", documentsData?.documents);
+
+    const Challan = {
+      tenantId: tenantId,
+      citizen: {
+        name: data?.name,
+        mobileNumber: data?.mobileNumber,
+        tenantId: tenantId,
+        active: true,
+      },
+      businessService: "Challan_Generation",
+      offenceTypeName: data?.offenceType?.name,
+      offenceCategoryName: data?.offenceCategory?.name,
+      offenceSubCategoryName: data?.offenceSubCategory?.name,
+      challanAmount: data?.challanAmount,
+      // amount: data?.amount,
+      amount: [
+        {
+          // "taxHeadCode": "CH.CHALLAN_FINE",
+          amount: data?.amount,
+        },
+      ],
+      address: {},
+      documents: documentsData?.documents,
+      workflow: {
+        action: "SUBMIT",
+      },
+    };
+    history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+    try {
+      const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
+      console.log("response", response);
+      setLoader(false);
+      history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+    } catch (error) {
+      console.log("error", error);
+      setLoader(false);
+    }
   };
 
-  // console.log("formState: ",formState);
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const handleMobileChange = async (value) => {
+    setLoader(true);
+    console.log("User stopped typing. Final mobile number:", value);
+    try {
+      const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+      console.log("userData", userData?.user[0]);
+      setValue("name", userData?.user[0]?.name);
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const debouncedHandleMobileChange = React.useMemo(
+    () => debounce(handleMobileChange, 500), // 500ms delay after user stops typing
+    []
+  );
+
+  const handleRates = (val) => {
+    console.log("val", val);
+    console.log("OffenceRates", OffenceRates?.Challan?.Rates);
+    const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
+    console.log("filterRates", filterRates);
+    setValue("amount", filterRates?.[0]?.amount);
+  };
+
   return (
     <div
       className="pageCard"
@@ -165,7 +243,7 @@ const ChallanStepperForm = () => {
         }}
       >
         <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-          {t("SEARCH_CHALLAN_PAY")}
+          {t("CREATE_CHALLAN")}
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div style={{ width: "100%" }}>
@@ -187,7 +265,11 @@ const ChallanStepperForm = () => {
                   <MobileNumber
                     style={{ marginBottom: 0 }}
                     value={props.value}
-                    onChange={props.onChange} // ✅ don't wrap it
+                    maxlength={10}
+                    onChange={(e) => {
+                      props.onChange(e); // ✅ updates react-hook-form
+                      debouncedHandleMobileChange(e);
+                    }}
                     onBlur={props.onBlur}
                     t={t}
                   />
@@ -225,35 +307,6 @@ const ChallanStepperForm = () => {
               {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
             </div>
 
-            <div style={{ marginBottom: "20px" }}>
-              <CardLabel>
-                {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
-              </CardLabel>
-              <Controller
-                control={control}
-                name="address"
-                rules={{
-                  required: "Address is required",
-                  minLength: { value: 5, message: "Address must be at least 5 characters" },
-                }}
-                render={(props) => (
-                  <TextArea
-                    style={{ marginBottom: 0 }}
-                    name="address"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    t={t}
-                  />
-                )}
-              />
-              {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
-            </div>
-
             {/* offence type */}
             <LabelFieldPair>
               <CardLabel>
@@ -263,7 +316,7 @@ const ChallanStepperForm = () => {
                 control={control}
                 name={"offenceType"}
                 defaultValue={null}
-                // rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
+                rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
                     style={{ marginBottom: 0, width: "100%" }}
@@ -288,7 +341,7 @@ const ChallanStepperForm = () => {
                 control={control}
                 name={"offenceCategory"}
                 defaultValue={null}
-                // rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
+                rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
                     style={{ marginBottom: 0, width: "100%" }}
@@ -313,12 +366,15 @@ const ChallanStepperForm = () => {
                 control={control}
                 name={"offenceSubCategory"}
                 defaultValue={null}
-                // rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
+                rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
                     style={{ marginBottom: 0, width: "100%" }}
                     className="form-field"
-                    select={props.onChange}
+                    select={(e) => {
+                      props.onChange(e);
+                      handleRates(e);
+                    }}
                     selected={props.value}
                     option={subCategoryData?.Challan?.SubCategory}
                     optionKey="name"
@@ -329,19 +385,15 @@ const ChallanStepperForm = () => {
               {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
             </LabelFieldPair>
 
-            {/* Challan Amount */}
+            {/* Challan Amount Default */}
             <LabelFieldPair style={{ marginTop: "20px" }}>
-              <CardLabel>
-                {`${t("CHALLAN_AMOUNT")}`} <span style={{ color: "red" }}>*</span>
-              </CardLabel>
+              <CardLabel>{`${t("DEFAULT_CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
-                name="challanAmount"
-                // rules={{
-                //   required: t("CHALLAN_AMOUNT_REQUIRED"),
-                // }}
+                name="amount"
                 render={(props) => (
                   <TextInput
+                    type="number"
                     style={{ marginBottom: 0, width: "100%" }}
                     value={props.value}
                     error={errors?.name?.message}
@@ -355,8 +407,47 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors?.challanAmount && <p style={{ color: "red" }}>{errors.challanAmount.message}</p>}
             </LabelFieldPair>
+
+            {/* Challan Amount */}
+            <LabelFieldPair style={{ marginTop: "20px" }}>
+              <CardLabel>{`${t("CHALLAN_AMOUNT")}`}</CardLabel>
+              <Controller
+                control={control}
+                name="challanAmount"
+                render={(props) => (
+                  <TextInput
+                    type="number"
+                    style={{ marginBottom: 0, width: "100%" }}
+                    value={props.value}
+                    error={errors?.name?.message}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+            </LabelFieldPair>
+          </div>
+
+          <CardLabel style={{ fontWeight: "bold", paddingTop: "30px", fontSize: "25px" }}>
+            {t("CHALLAN_DOCUMENTS")} <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <div style={{ marginTop: "20px" }}>
+            <SelectNDCDocuments
+              t={t}
+              config={{ key: "documents" }}
+              onSelect={handleDocumentsSelect}
+              userType="CITIZEN"
+              formData={{ documents: documentsData }}
+              setError={() => {}}
+              clearErrors={() => {}}
+              formState={{}}
+            />
           </div>
 
           <ActionBar>
@@ -375,7 +466,7 @@ const ChallanStepperForm = () => {
           isDleteBtn={"true"}
         />
       )}
-      {(loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
+      {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
     </div>
   );
 };

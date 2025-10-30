@@ -956,3 +956,11 @@ config:
         dockerfile: 'build/maven/Dockerfile'
       - work-dir: "municipal-services/pgr-ai-services/src/main/resources/db"
         image-name: "pgr-ai-services-db"
+
+  - name: 'builds/upyog/municipal-services/layout-services'
+    build:
+      - work-dir: 'municipal-services/layout-services'
+        image-name: 'layout-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/layout-services/src/main/resources/db"
+        image-name: "layout-services-db"

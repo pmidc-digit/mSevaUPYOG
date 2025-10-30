@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
+import CitizenConsent from "../components/CitizenConsent";
 
 const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const tenantId = window.location.href.includes("citizen")
@@ -11,12 +12,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const stateId = Digit.ULBService.getStateId();
   const user = Digit.UserService.getUser();
   const [loader, setLoader] = useState(false);
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [getModalData, setModalData] = useState();
 
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors },
+    getValues,
   } = useForm({
     defaultValues: {
       name: (isCitizen && user?.info?.name) || "",
@@ -27,12 +31,18 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   });
 
   const onSubmit = async (data) => {
-    setLoader(true);
+    const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
+
     if (currentStepData?.venueDetails?.[0]?.bookingNo) {
       goNext(currentStepData?.venueDetails);
       // onSubmitUpdate(currentStepData?.venueDetails?.[0], "INITIATE", data);
     } else {
       const baseApplication = currentStepData?.ownerDetails?.hallsBookingApplication || {};
+
+      if (!isCitizenDeclared) {
+        alert("Please upload Self Certificate");
+        return;
+      }
 
       // Construct owners array using "data"
       const applicantDetail = {
@@ -42,6 +52,16 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         applicantEmailId: data?.emailId,
         // address: data?.address,
         type: user?.info?.type,
+      };
+
+      // const additionalDetails = {
+      //   // disImage: isCitizenDeclared, // ✅ always include this
+      //   ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
+      //   ...(data?.discountAmount && { discountAmount: data.discountAmount }),
+      // };
+      const additionalDetails = {
+        ...baseApplication?.additionalDetails,
+        disImage: isCitizenDeclared,
       };
 
       const owners = [
@@ -65,8 +85,13 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           applicantDetail,
           address,
           owners,
+          additionalDetails,
         },
       };
+
+      console.log("checkpayload", payload);
+      // return;
+      setLoader(true);
       try {
         const response = await Digit.CHBServices.create(payload);
         setLoader(false);
@@ -91,6 +116,31 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     //   });
     // }
   }, [currentStepData, setValue]);
+
+  const handleModalData = (e) => {
+    console.log("currentStepData", currentStepData);
+    console.log("getvalues", getValues());
+    const mapData = currentStepData?.ownerDetails?.hallsBookingApplication;
+
+    const payload = {
+      address: getValues()?.address,
+      emailId: getValues()?.emailId,
+      mobileNumber: getValues()?.mobileNumber,
+      name: getValues()?.name,
+      communityHallName: mapData?.communityHallName,
+      purpose: mapData?.purpose?.purpose,
+      days: mapData?.bookingSlotDetails?.length,
+      bookingDate: mapData?.bookingSlotDetails?.[0]?.bookingDate,
+      bookingEndDate: mapData?.bookingSlotDetails?.at(-1)?.bookingEndDate,
+      ulbName: mapData?.tenantId,
+      security: 5000,
+      rent: mapData?.amount,
+    };
+
+    console.log("payload", payload);
+    setModalData(payload);
+    if (e.target.checked) setShowTermsPopup(true);
+  };
 
   return (
     <React.Fragment>
@@ -211,6 +261,31 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             />
             {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
           </div>
+
+          {/* checkbox self declaration */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+            <Controller
+              control={control}
+              name="termsAccepted"
+              rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+              render={(props) => (
+                <input
+                  id="termsAccepted"
+                  type="checkbox"
+                  checked={props.value || false}
+                  onChange={(e) => {
+                    props.onChange(e.target.checked);
+                    handleModalData(e);
+                  }}
+                  style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                />
+              )}
+            />
+            <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
+              {t("CHB_SELF_LABEL")}
+            </label>
+          </div>
+          {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
         </div>
 
         <ActionBar>
@@ -219,6 +294,16 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         </ActionBar>
         {/* <button type="submit">submit</button> */}
       </form>
+      {showTermsPopup && (
+        <CitizenConsent
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getModalData={getModalData}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
+        />
+      )}
       {loader && <Loader page={true} />}
     </React.Fragment>
   );

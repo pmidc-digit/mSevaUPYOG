@@ -785,7 +785,7 @@ useEffect(() => {
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t)
     }
-    if(action === "SEND_TO_CITIZEN"){
+    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT"){
       saveAsDraft(data?.applicationData, action)
     }
     setSelectedAction(action)
@@ -812,7 +812,7 @@ useEffect(() => {
                   riskType: data?.additionalDetails?.riskType,
                   workflow: {
                         action: workflowAction,
-                        assignes: [accountId]
+                        assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
                   }
                 }
             }, tenantId)

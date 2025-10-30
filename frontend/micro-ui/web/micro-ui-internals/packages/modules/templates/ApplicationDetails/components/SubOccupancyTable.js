@@ -24,6 +24,10 @@ const SubOccupancyTable = ({ edcrDetails, applicationData }) => {
       id: "BuildupArea",
     },
     {
+      name: "BPA_TABLE_COL_DEDUCTION",
+      id: "Deduction",
+    },
+    {
       name: "BPA_TABLE_COL_FLOORAREA",
       id: "FloorArea",
     },
@@ -52,17 +56,37 @@ const SubOccupancyTable = ({ edcrDetails, applicationData }) => {
 
   function getFloorData(block) {
     let floors = [];
+    let totalBuiltUpArea = 0
+    let totalFloorArea = 0
+    let totalDeduction = 0
     block?.building?.floors.map((ob) => {
+      const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
+      const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+      const deduction = Number(ob.occupancies?.[0]?.deduction) || 0
+
+      totalBuiltUpArea += builtUp
+      totalFloorArea += floor
+      totalDeduction += deduction
       floors.push({
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
         BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
+        Deduction: Number(ob.occupancies?.[0]?.deduction).toFixed(2),
         FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
         // CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
         key: t(`BPA_FLOOR_NAME_${ob.number}`),
       });
     });
+
+    floors.push({
+      Floor: t("BPA_TOTAL"),
+      Level: "",
+      Occupancy: "",
+      BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+      Deduction: `${Number(totalDeduction).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+      FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+    })
     return floors;
   }
 
@@ -107,8 +131,8 @@ const SubOccupancyTable = ({ edcrDetails, applicationData }) => {
               <Table
                 className="customTable table-fixed-first-column table-border-style"
                 t={t}
-                disableSort={false}
-                autoSort={true}
+                disableSort={true}
+                autoSort={false}
                 manualPagination={false}
                 isPaginationRequired={false}
                 initSortId="S N "

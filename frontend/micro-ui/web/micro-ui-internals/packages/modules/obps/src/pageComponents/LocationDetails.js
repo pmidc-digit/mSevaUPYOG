@@ -548,7 +548,7 @@ if (response?.data?.files?.length > 0) {
 return (
   <div style={pageStyle}>
     {/* {!isOpen && <Timeline />} */}
-    {isOpen && (
+    {/* {isOpen && (
       <GIS
         t={t}
         onSelect={onSelect}
@@ -556,7 +556,7 @@ return (
         handleRemove={handleRemove}
         onSave={onSave}
       />
-    )}
+    )} */}
 
     {!isOpen && (
       <FormStep
@@ -568,7 +568,7 @@ return (
         forcedError={t(Pinerror)}
       >
         {/* GIS Section */}
-        <div style={sectionStyle}>
+        {/* <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_GIS_LABEL")}</h2>
           <div>
             <TextInput
@@ -614,7 +614,7 @@ return (
               onClick={(e) => handleGIS()}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Pincode Section */}
         <div style={sectionStyle}>

@@ -23,6 +23,13 @@ const SelfCertificationResponse = (props) => {
     history.push(`/digit-ui/citizen`);
   };
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }, [])
+
   useEffect(async () => {
         if(selfCertificationCode){
           try{

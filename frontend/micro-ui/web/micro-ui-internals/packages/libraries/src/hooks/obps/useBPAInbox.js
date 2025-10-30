@@ -66,7 +66,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
         table: data?.items.map((application) => ({
           applicationId: application.businessObject.applicationNo || application.businessObject.applicationNumber,
           date: application.businessObject.auditDetails.createdTime,
-          submissionDate: application?.ProcessInstanceForBPA?.auditDetails?.createdTime,
+          submissionDate: application?.ProcessInstance?.auditDetails?.lastModifiedTime,
           businessService: application?.ProcessInstance?.businessService,
           applicationType: application?.businessObject?.additionalDetails?.applicationType
             ? `WF_BPA_${application?.businessObject?.additionalDetails?.applicationType}`
@@ -77,7 +77,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
             ?.join("_")}_REVENUE_${application.businessObject?.landInfo?.address?.locality?.code?.toUpperCase()}`,
           status: application?.ProcessInstance?.state?.state,
           state: application?.ProcessInstance?.state?.state,
-          owner: application?.businessObject?.additionalDetails?.ownerName || "NA",
+          owner: application?.businessObject?.landInfo?.owners?.find(item => item?.isPrimaryOwner)?.name || "NA",
           mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
           sla: application?.businessObject?.status.match(/^(APPROVED)$/)
             ? "CS_NA"

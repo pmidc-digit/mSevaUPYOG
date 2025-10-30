@@ -982,3 +982,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
      # - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
       #  image-name: "challan_generation-calculator-db"
+
+  - name: 'builds/upyog/municipal-services/layout-services'
+    build:
+      - work-dir: 'municipal-services/layout-services'
+        image-name: 'layout-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/layout-services/src/main/resources/db"
+        image-name: "layout-services-db"

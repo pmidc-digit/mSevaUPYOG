@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, LabelFieldPair, CardLabelError } from "@mseva/digit-ui-react-components";
+import { useDispatch } from "react-redux";
+import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, CardLabelError } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import ADSAddressField from "./ADSAddressField";
 import AvailabilityModal from "./ADSAvailibilityModal";
 import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
-import { useDispatch } from "react-redux";
-import { getScheduleMessage, validateSchedule } from "../utils";
+import { areCartSlotsEqual, getScheduleMessage, validateSchedule } from "../utils";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
@@ -153,42 +153,75 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setShowModal(true);
   };
 
-  const handleRemoveFromCart = (ad) => {
-    setCartSlots((prev) => prev.filter((item) => item.ad.id !== ad.id));
-    setShowToast({ label: `Removed all slots for ${ad.name}`, error: true });
-  };
+  const handleRemoveFromCart = (ad, dateRange) => {
+  setCartSlots((prev) =>
+    prev.filter(
+      (item) =>
+        !(
+          item?.ad?.id === ad?.id &&
+          item?.ad?.bookingStartDate === dateRange?.startDate &&
+          item?.ad?.bookingEndDate === dateRange?.endDate
+        )
+    )
+  );
+  setShowToast({
+    label: `Removed slots for ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
+    error: true,
+  });
+};
 
-  const handleAddToCart = (slots, ad) => {
-    setCartSlots((prev) => {
-      const enrichedSlots = slots.map((s) => ({
-        ...s,
-        bookingStartDate: s?.bookingDate,
-        bookingEndDate: dateRange?.endDate,
-        bookingFromTime: dateRange?.startTime,
-        bookingToTime: dateRange?.endTime,
-      }));
+  const handleAddToCart = (slots, ad, dateRange) => {
+  setCartSlots((prev) => {
+    const enrichedSlots = slots?.map((s) => ({
+      ...s,
+      bookingStartDate: s?.bookingDate,
+      bookingEndDate: dateRange?.endDate,
+      bookingFromTime: dateRange?.startTime,
+      bookingToTime: dateRange?.endTime,
+    }));
 
-      const existing = prev.find((item) => item.ad.id === ad.id);
+    const existing = prev.find(
+      (item) =>
+        item?.ad?.id === ad?.id &&
+        item?.ad?.bookingStartDate === dateRange?.startDate &&
+        item?.ad?.bookingEndDate === dateRange?.endDate
+    );
 
-      let updated;
-      if (existing) {
-        // Replace slots for this ad
-        updated = prev.map((item) => (item.ad.id === ad.id ? { ...item, slots: enrichedSlots } : item));
-        setShowToast({
-          label: `Updated ${enrichedSlots.length} slot(s) for ${ad.name}`,
-          error: false,
-        });
-      } else {
-        // Add new ad entry
-        updated = [...prev, { ad, slots: enrichedSlots }];
-        setShowToast({
-          label: `Added ${enrichedSlots.length} slot(s) to ${ad.name}`,
-          error: false,
-        });
-      }
-      return updated;
-    });
-  };
+    let updated;
+    if (existing) {
+      // Update slots for this ad/dateRange
+      updated = prev.map((item) =>
+        item?.ad?.id === ad?.id &&
+        item?.ad?.bookingStartDate === dateRange?.startDate &&
+        item?.ad?.bookingEndDate === dateRange?.endDate
+          ? { ...item, slots: enrichedSlots }
+          : item
+      );
+      setShowToast({
+        label: `Updated ${enrichedSlots.length} slot(s) for ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
+        error: false,
+      });
+    } else {
+      // Add new entry for this ad/dateRange
+      updated = [
+        ...prev,
+        {
+          ad: {
+            ...ad,
+            bookingStartDate: dateRange?.startDate,
+            bookingEndDate: dateRange?.endDate,
+          },
+          slots: enrichedSlots,
+        },
+      ];
+      setShowToast({
+        label: `Added ${enrichedSlots?.length} slot(s) to ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
+        error: false,
+      });
+    }
+    return updated;
+  });
+};
 
   useEffect(() => {
     if (currentStepData?.ads?.length > 0) {

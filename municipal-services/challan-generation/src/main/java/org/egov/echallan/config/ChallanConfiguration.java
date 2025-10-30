@@ -98,10 +98,10 @@ public class ChallanConfiguration {
 
 
     // echallan Calculator
-    @Value("${egov.echallan.calculator.host}")
+    @Value("${egov.challan.calculator.host}")
     private String calculatorHost;
 
-    @Value("${egov.echallan.calculator.calculate.endpoint}")
+    @Value("${egov.challan.calculator.calculate.endpoint}")
     private String calculateEndpoint;
 
     @Value("${egov.billingservice.host}")

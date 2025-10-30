@@ -21,6 +21,7 @@ const SelfCertificationResponse = (props) => {
 
   const onSubmit = () => {
     history.push(`/digit-ui/citizen`);
+    window.location.reload();
   };
 
   useEffect(() => {

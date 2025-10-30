@@ -44,60 +44,54 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const selfdeclarationform = `
   <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; margin-top:-100px; padding:0;">
 
-    <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
-      OWNER'S DECLARATION
-    </h2>
 
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To,</strong></p>
-      <p style="margin-bottom:-32px;"><strong>Local Urban Bodies</strong></p>
+      <p style="margin-bottom:-32px;"><strong>The President & Executive Officer</strong></p>
+      <p style="margin-bottom:-32px;"><strong>Municipal Council,Nangal.</strong></p>
     </div>
 
-    <p style="margin-top:-20px;"><strong>Dear Sir/Madam,</strong></p>
+    <p style="margin-top:-20px;"><strong>Sub:- Application for allotment of Community Centre.</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-  I/We further declare that I am/We are aware of all the actions taken have been authorized by me/us.
+      I need the <strong>${getModalData?.communityHallName || "Community Centre"}</strong> community centre for the purpose of <strong>${getModalData?.purpose || "RELIGIOUS"}</strong> for <strong>${getModalData?.days || "1"}</strong> days, from <strong>${getModalData?.bookingDate || ""}</strong> to <strong>${getModalData?.bookingEndDate || ""}</strong>.
     </p>
 
-    <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
-      <li style="margin-top:-5px;margin-bottom:-25px;">1. That I am/We are sole owner(s) of the site.</li>
-      <li style="margin-top:-5px;margin-bottom:-25px;">2. That there is no dispute regarding the site and if any dispute arises, then I/We shall be solely responsible for the same.</li>
-      <li style="margin-top:-5px;margin-bottom:-25px;">3. That construction of the building will be undertaken as per the approved building plans and structural design given by the Structural Engineer.</li>
-      <li style="margin-top:-5px;margin-bottom:-25px;">4. That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.</li>
-    </ol>
+    <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
+      It is requested that the community centre may please allotted to me for the purpose detailed above for the period requested for, Will pay Rs. <strong>${getModalData?.security || "0"}</strong> as security and Rs. <strong>${getModalData?.rent || "0"}</strong> as rent.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
+      I will not cause any damage to the M.C. property. In case of damage M.C. May deduct from my security the entire cost of the restoration of damage. Suitable amount as penalty. Water charges and electricity charges. If any may also be recovered from my security.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
+      <strong>Note:- I will arrange the Generator temporary matter from P.S.E.B. separate for decoration lights.</strong>
+    </p>
 
     <!-- Signature / details table -->
-    <table style="width:100%; border-collapse:collapse; margin-top:6px; font-size:14px;">
-      <tr>
-        <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
-          <div style="font-weight:700; margin-bottom:4px;">Date:</div>
-          <div style="min-height:60px;">${DateOnly || "<Date of Sign>"}</div>
-        </td>
-
-        <td style="width:52%; vertical-align:top; border:1px dotted #000;">
-          <table style="width:100%; border-collapse:collapse;">
-            <tr>
-              <td style="padding:6px; border-bottom:1px dotted #000; width:40%; font-weight:700;">Name of Owner:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${ownername}</td>
-            </tr>
-            <tr>
-            <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">e-Mail:</td>
-            <td style="padding:6px; border-bottom:1px dotted #000;">${ownerEmail}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${ownermobileNumber}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px; font-weight:700;">Signature:</td>
-              <td style="padding:6px;">Verified through OTP</b></td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+    <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+      <table style="border-collapse:collapse; font-size:14px; width:auto;">
+        <tr>
+          <td style="padding:6px; border:1px dotted #000; font-weight:700; width:120px;">Sig.</td>
+          <td style="padding:6px; border:1px dotted #000; min-width:200px;">${getModalData?.name || ownername}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px; border:1px dotted #000; font-weight:700;">Name.</td>
+          <td style="padding:6px; border:1px dotted #000;">${getModalData?.name || ownername}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px; border:1px dotted #000; font-weight:700;">e-Mail.</td>
+          <td style="padding:6px; border:1px dotted #000;">${getModalData?.emailId || ownerEmail}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px; border:1px dotted #000; font-weight:700;">Ph No.</td>
+          <td style="padding:6px; border:1px dotted #000;">${getModalData?.mobileNumber || ownermobileNumber}</td>
+        </tr>
+      </table>
+    </div>
   </div>
-`;
+`
 
   const closeModal = () => {
     setShowTermsPopupOwner(false);

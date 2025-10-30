@@ -3,7 +3,6 @@ import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFi
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 import { parse, format } from "date-fns";
-import CitizenConsent from "../components/CitizenConsent";
 
 const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
@@ -13,10 +12,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [getSlots, setSlots] = useState([]);
   const [loader, setLoader] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
-  const [showTermsPopup, setShowTermsPopup] = useState(false);
 
   const {
     control,
@@ -41,6 +37,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   ]);
   const { data: CHBHallCode = [], isLoading: CHBHallCodeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "HallCode" }]);
   const { data: CHBReason = [], isLoading: CHBReasonLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "DiscountReason" }]);
+  const { data: CHBCalculationType = [], isLoading: CHBCalcLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "CalculationType" }]);
 
   const fiterHalls = (selected) => {
     const filteredHalls = CHBDetails?.CHB?.CommunityHalls?.filter((hall) => hall.locationCode === selected?.code) || [];
@@ -52,9 +49,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const slotsSearch = async (data) => {
     setLoader(true);
-
-    console.log("data", data);
-    console.log("getValues", getValues());
 
     const payload = {
       tenantId: tenantId,
@@ -75,19 +69,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   const onSubmit = (data) => {
-    console.log("data==??", data);
-    console.log("uploadedFile==??", uploadedFile);
     const userInfo = Digit.UserService.getUser()?.info || {};
     const now = Date.now();
-    const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
-
-    if (!isCitizenDeclared) {
-      alert("Please upload Self Certificate");
-      return;
-    }
 
     const additionalDetails = {
-      disImage: isCitizenDeclared, // ✅ always include this
+      // disImage: isCitizenDeclared, // ✅ always include this
       ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
       ...(data?.discountAmount && { discountAmount: data.discountAmount }),
     };
@@ -110,6 +96,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       };
     });
 
+    // extract amount
+    const match = CHBCalculationType.CHB.CalculationType?.find((item) => Object.keys(item).includes(getHallDetails?.[0]?.communityHallId));
+
+    const amount = match?.[getHallDetails?.[0]?.communityHallId]?.[0]?.amount || null;
+    const slotCount = Array.isArray(bookingSlotDetails) ? bookingSlotDetails.length : 0;
+
+    // Convert amount to number safely
+    const numericAmount = Number(amount) || 0;
+
+    // Calculate final amount safely
+    const finalAmount = numericAmount * slotCount;
+
     const payload = {
       hallsBookingApplication: {
         tenantId,
@@ -121,6 +119,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         purpose: {
           purpose: data?.purpose?.code,
         },
+        amount: finalAmount,
         specialCategory: { category: data?.specialCategory?.code },
         purposeDescription: data?.purposeDescription,
         bookingSlotDetails,
@@ -139,6 +138,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         },
       },
     };
+    console.log("finalpayload", payload);
     goNext(payload);
   };
 
@@ -153,15 +153,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const hallCodeOptions = CHBHallCode?.CHB?.HallCode;
       const discReasonOptions = CHBReason?.CHB?.DiscountReason;
 
-      console.log("discReasonOptions", discReasonOptions);
-
       const selectedCommHall = communityHallsOptions?.find((item) => item?.communityHallId == formattedData?.communityHallCode);
       const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose);
       const selectedSpecialCat = specialCategoryOptions?.find((item) => item?.code == formattedData?.specialCategory?.category);
       const selectHallCode = hallCodeOptions?.find((item) => item?.HallCode == formattedData?.bookingSlotDetails?.[0]?.hallCode);
       const selectReason = discReasonOptions?.find((item) => item?.reasonName == formattedData?.additionalDetails?.reason);
-
-      console.log("formattedData", formattedData);
 
       setValue("siteId", selectedCommHall || null);
       setValue("hallCode", selectHallCode || null);
@@ -174,7 +170,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       // slotsSearch(selectHallCode);
 
       slotsSearch(selectHallCode).then((response) => {
-        console.log("response", response);
         const slotsData = response?.hallSlotAvailabiltityDetails || [];
         setSlots(slotsData);
         // Now set form value
@@ -189,41 +184,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       // disImage
     }
   }, [currentStepData, setValue]);
-
-  useEffect(() => {
-    console.log("getSlots", getSlots);
-  }, [getSlots]);
-
-  function selectfile(e) {
-    setFile(e.target.files[0]);
-  }
-
-  useEffect(() => {
-    (async () => {
-      setError(null);
-      if (file) {
-        if (file.size >= 5242880) {
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-          // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
-        } else {
-          setLoader(true);
-          try {
-            setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("CHB", file, Digit.ULBService.getStateId());
-            if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId);
-            } else {
-              setError(t("CS_FILE_UPLOAD_ERROR"));
-            }
-            setLoader(false);
-          } catch (err) {
-            setLoader(false);
-            setError(t("CS_FILE_UPLOAD_ERROR"));
-          }
-        }
-      }
-    })();
-  }, [file]);
 
   const startDate = watch("startDate");
 
@@ -250,6 +210,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     // Reset dependent fields properly
                     setValue("hallCode", null);
                     setValue("startDate", "");
+                    setValue("endDate", "");
                     setSlots([]); // also clear any previous slots
                     setShowInfo(false); // hide extra info until hallCode re-selected
                   }}
@@ -291,6 +252,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               {errors.startDate && <p style={{ color: "red" }}>{errors.startDate.message}</p>}
             </div>
           </LabelFieldPair>
+
           {/* SELECT End DATE */}
           <LabelFieldPair style={{ marginTop: "20px" }}>
             <CardLabel>
@@ -311,6 +273,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                         : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                     }
+                    max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
                     // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -339,7 +302,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   style={{ marginBottom: 0 }}
                   className="form-field"
                   select={(e) => {
-                    console.log("e", e);
                     props.onChange(e);
                     slotsSearch(e);
                     setShowInfo(true);
@@ -407,7 +369,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                             gap: "6px",
                           }}
                         >
-                          <input
+                          {/* <input
                             type="checkbox"
                             checked={isChecked}
                             disabled={!isAvailable}
@@ -427,6 +389,59 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                                       )
                                   )
                                 );
+                              }
+                            }}
+                          /> */}
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            disabled={!isAvailable}
+                            onChange={(e) => {
+                              if (!isAvailable) return;
+
+                              let updatedSlots = [...(field.value || [])];
+
+                              if (e.target.checked) {
+                                // Add clicked slot
+                                updatedSlots.push(slot);
+
+                                // Sort slots by date and time for consistent order
+                                const sortedSlots = [...getSlots].sort(
+                                  (a, b) =>
+                                    new Date(a.bookingDate) - new Date(b.bookingDate) || (a.fromTime || "00:00").localeCompare(b.fromTime || "00:00")
+                                );
+
+                                // Get indexes of selected slots
+                                const allSelectedKeys = updatedSlots.map((s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}`);
+
+                                const firstIndex = sortedSlots.findIndex(
+                                  (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[0]
+                                );
+                                const lastIndex = sortedSlots.findIndex(
+                                  (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[allSelectedKeys.length - 1]
+                                );
+
+                                // Automatically select all slots between first and last
+                                const minIndex = Math.min(firstIndex, lastIndex);
+                                const maxIndex = Math.max(firstIndex, lastIndex);
+
+                                const continuousSlots = sortedSlots
+                                  .slice(minIndex, maxIndex + 1)
+                                  .filter((s) => s.slotStaus?.toLowerCase() === "available");
+
+                                field.onChange(continuousSlots);
+                              } else {
+                                // Uncheck → remove that slot only
+                                updatedSlots = updatedSlots.filter(
+                                  (s) =>
+                                    !(
+                                      s.hallCode === slot.hallCode &&
+                                      s.bookingDate === slot.bookingDate &&
+                                      s.fromTime === slot.fromTime &&
+                                      s.toTime === slot.toTime
+                                    )
+                                );
+                                field.onChange(updatedSlots);
                               }
                             }}
                           />
@@ -501,6 +516,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               {errors.specialCategory && <p style={{ color: "red" }}>{errors.specialCategory.message}</p>}
             </div>
 
+            {/* CHB_PURPOSE_DESCRIPTION */}
             <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
@@ -579,53 +595,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                 </div>
-                {/* <div style={{ marginBottom: "20px" }}>
-                  <CardLabel>{t("CHB_REAS_IMAGE")}</CardLabel>
-                  <div className="field">
-                    <UploadFile
-                      onUpload={selectfile}
-                      onDelete={() => {
-                        setUploadedFile(null);
-                      }}
-                      // id={id}
-                      message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-                      textStyles={{ width: "100%" }}
-                      inputStyles={{ width: "280px" }}
-                      accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
-                      buttonType="button"
-                      error={!uploadedFile}
-                    />
-                  </div>
-                </div> */}
               </React.Fragment>
             )}
-
-            {/* checkbox self declaration */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-              <Controller
-                control={control}
-                name="termsAccepted"
-                rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
-                render={(props) => (
-                  <input
-                    id="termsAccepted"
-                    type="checkbox"
-                    checked={props.value || false}
-                    onChange={(e) => {
-                      props.onChange(e.target.checked);
-                      console.log("cal", e.target.checked);
-                      if (e.target.checked) setShowTermsPopup(true);
-                      // setShowTermsPopup(true);
-                    }}
-                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
-                  />
-                )}
-              />
-              <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
-                {t("CHB_SELF_LABEL")}
-              </label>
-            </div>
-            {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
           </div>
         </div>
 
@@ -634,19 +605,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </ActionBar>
       </form>
 
-      {showTermsPopup && (
-        <CitizenConsent
-          showTermsPopupOwner={showTermsPopup}
-          setShowTermsPopupOwner={setShowTermsPopup}
-          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
-          // bpaData={data?.applicationData} // Pass the complete BPA application data
-          tenantId={tenantId} // Pass tenant ID for API calls
-        />
-      )}
-
-      {(CHBReasonLoading || CHBLocationLoading || CHBLoading || CHBPurposeLoading || CHBSpecialCategoryLoading || CHBHallCodeLoading || loader) && (
-        <Loader page={true} />
-      )}
+      {(CHBCalcLoading ||
+        CHBReasonLoading ||
+        CHBLocationLoading ||
+        CHBLoading ||
+        CHBPurposeLoading ||
+        CHBSpecialCategoryLoading ||
+        CHBHallCodeLoading ||
+        loader) && <Loader page={true} />}
     </React.Fragment>
   );
 };

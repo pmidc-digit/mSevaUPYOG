@@ -32,7 +32,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         {
                 Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
                 accessor: "submissionDate",
-                Cell: ({row}) => row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "NA"
+                Cell: ({row}) =>{ console.log("row.original",row.original); return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "NA"}
         },
         {
             Header: t("ES_INBOX_LOCALITY"),

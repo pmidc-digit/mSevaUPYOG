@@ -5,15 +5,19 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { Loader } from "../components/Loader";
 
-const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp }) => {
+const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp, getModalData }) => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const ownername = user?.info?.name;
   const ownermobileNumber = user?.info.mobileNumber;
   const ownerEmail = user?.info?.emailId;
   const { id } = useParams();
-  const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
   const [loader, setLoader] = useState(false);
+
+  console.log("getModalData", getModalData);
 
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
 
@@ -103,10 +107,9 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     setLoader(true);
     const Chb = [
       {
+        ...getModalData,
         applicationNo: "CHB-0001",
-        tenantId: "pb.amritsar",
-        approvalDate: "2025-10-28",
-        TimeStamp: "2025-10-28T12:30:00Z",
+        tenantId: tenantId,
       },
     ];
 

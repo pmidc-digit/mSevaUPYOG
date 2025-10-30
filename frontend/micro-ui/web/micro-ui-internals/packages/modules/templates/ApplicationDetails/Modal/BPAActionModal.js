@@ -25,7 +25,7 @@ const CloseBtn = (props) => {
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason }) => {
   console.log("applicationData_BPAACTIONMODAL",applicationData)
-  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails)
+  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails, workflowDetails?.data?.initialActionState?.nextActions?.find(ele=>ele?.action===action?.action)?.roles, action)
   const mutation1 = Digit.Hooks.obps.useObpsAPI(
       applicationData?.landInfo?.address?.city ? applicationData?.landInfo?.address?.city : tenantId,
       false
@@ -33,11 +33,13 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
    const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: workflowDetails?.data?.initialActionState?.nextActions?.filter(ele=>ele?.action==action?.action)?.[0]?.assigneeRoles?.map(role=>({code:role})),
+      roles: workflowDetails?.data?.initialActionState?.nextActions?.find(ele=>ele?.action===action?.action)?.roles?.map(role=>({code:role})),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }
   );
+
+  console.log("approverData",approverData)
 
   const queryClient = useQueryClient();
   const [config, setConfig] = useState({});
@@ -53,7 +55,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
 
   useEffect(() => {
-    setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
+    setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name, designation: employee?.assignments?.[0]?.designation })));
   }, [approverData]);
 
   function selectFile(e) {
@@ -181,8 +183,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       additionalDetails: {...applicationData?.additionalDetails, fieldinspection_pending:getfeildInspection(applicationData), pendingapproval: getPendingApprovals(),blockingReason:selectedBlockReason?.name  },
        workflow:{
         action: action?.action,
-        comment: data?.comments?.length > 0 ? data?.comments : null,
-        comments: data?.comments?.length > 0 ? data?.comments : null,
+        comment: data?.comments?.length > 0 ? selectedBlockReason?.name ? selectedBlockReason?.name + " - " + data?.comments : data?.comments : null,
+        comments: data?.comments?.length > 0 ? selectedBlockReason?.name ? selectedBlockReason?.name + " - " + data?.comments : data?.comments : null,
         assignee: (workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus==="FIELDINSPECTION_INPROGRESS")? [workflowDetails?.data?.processInstances?.[0]?.assigner?.uuid]: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
         assignes:  (workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus==="FIELDINSPECTION_INPROGRESS")? [workflowDetails?.data?.processInstances?.[0]?.assigner?.uuid]: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
         varificationDocuments: uploadedFile

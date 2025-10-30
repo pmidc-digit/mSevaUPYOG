@@ -1,5 +1,6 @@
 import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
 import React from "react";
+import DropdownWithDesignation from "../components/DropDownWithDesignation";
 
 export const configBPAApproverApplication = ({
   t,
@@ -37,23 +38,24 @@ export const configBPAApproverApplication = ({
       {
         body: [
           {
-            label: action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK" && action?.state?.state=="PENDINGAPPROVAL")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING") ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
+            label: action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING") ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
             type: "dropdown",
-            populators: (action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK" && action?.state?.state=="PENDINGAPPROVAL")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING")) ? null : (
-              <Dropdown
+            populators: (action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING")) ? null : (
+              <DropdownWithDesignation
                 option={approvers}
                 autoComplete="off"
                 optionKey="name"
                 id="fieldInspector"
                 select={setSelectedApprover}
                 selected={selectedApprover}
+                t={t}
               />
             ),
           },
           {
-            label: (action?.action=="BLOCK" &&  action?.state?.state=="PENDINGAPPROVAL") ? t(`BLOCK_REASON`):null  ,
+            label: (action?.action=="BLOCK") ? t(`BLOCK_REASON`):null  ,
             type: "dropdown",
-            populators: (action?.action=="BLOCK" && action?.state?.state=="PENDINGAPPROVAL") ?  (
+            populators: (action?.action=="BLOCK") ?  (
               <Dropdown
                 option={blockReasonFiltered}
                 autoComplete="off"

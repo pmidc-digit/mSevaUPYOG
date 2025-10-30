@@ -771,7 +771,7 @@ const BpaApplicationDetail = () => {
     };
     const previousCheckpoint = timeline?.[index - 1];
     const caption = {
-      date: checkpoint?.auditDetails?.lastModified,
+      date: checkpoint?.auditDetails?.lastModified + " " + checkpoint?.auditDetails?.timing,
       name: checkpoint?.assignes?.[0]?.name,
       // mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber
       //     ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
@@ -1232,6 +1232,7 @@ const BpaApplicationDetail = () => {
                         {workflowDetails?.data?.timeline &&
                           workflowDetails?.data?.timeline
                             .slice(0, showAllTimeline ? workflowDetails?.data.timeline.length : 2)
+                            .filter(item => item?.performedAction !== "SAVE_AS_DRAFT")
                             .map((checkpoint, index, arr) => {
                               let timelineStatusPostfix = "";
                               if (window.location.href.includes("/obps/")) {

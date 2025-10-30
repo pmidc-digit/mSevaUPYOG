@@ -11,7 +11,8 @@ import {
   Loader,
   FormStep,
   ActionBar,
-  CardLabelError
+  CardLabelError,
+  Dropdown
 } from "@mseva/digit-ui-react-components";
 import React, { use, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +27,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [registrationDetails, setRegistrationDetails] = useState("");
   const [boundaryWallLength, setBoundaryWallLength] = useState("");
   const [wardnumber, setWardNumber] = useState("");
+  const [isClubbedPlot, setIsClubbedPlot] = useState({});
   const [zonenumber, setZoneNumber] = useState("");
   const [khasraNumber, setKhasraNumber] = useState("");
   const [architectid, setArchitectId] = useState("");
@@ -53,6 +55,18 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [approvedLicense, setApprovedLicense] = useState(null);
   const [ptLoading, setPtLoading] = useState(false);
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
+  const common = [
+    {
+      code: "YES",
+      i18nKey: "YES",
+      value: true
+    },
+    {
+      code: "NO",
+      i18nKey: "NO",
+      value: false
+    },
+  ]
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
@@ -117,6 +131,17 @@ console.log("sessionStorageData",userInfo,LicenseData?.Licenses?.[0]?.licenseNum
       }}
   }, [LicenseData]);
 
+  useEffect(() => {
+        if (typeof isClubbedPlot === "boolean") {
+          const plan = common.find((item) => item.value === isClubbedPlot);
+          if (plan) setIsClubbedPlot(plan);
+        } else if (isClubbedPlot === null) {
+          if (currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot) {
+            setmasterPlan(currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot);
+          }
+        }
+  }, [isClubbedPlot, currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot]);
+
   // useEffect(() => {
   //   const userInfoString = window.localStorage.getItem("user-info");
   //   if (userInfoString) {
@@ -133,7 +158,7 @@ console.log("sessionStorageData",userInfo,LicenseData?.Licenses?.[0]?.licenseNum
   useEffect(() => {
     if (LicenseData) {
         if (LicenseData?.Licenses?.[0]?.tradeLicenseDetail) {
-          const architectNo = (LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo === null || LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo === "") ? LicenseData?.Licenses?.[0]?.licenseNumber : LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo;
+          const architectNo = (LicenseData?.Licenses?.find(item => item?.status === "APPROVED")?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo === null || LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo === "") ? LicenseData?.Licenses?.[0]?.licenseNumber : LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo;
           setArchitectId(architectNo);
         }
     }
@@ -152,6 +177,7 @@ console.log("sessionStorageData",userInfo,LicenseData?.Licenses?.[0]?.licenseNum
     setRegistrationDetails(details?.registrationDetails || "");
     setBoundaryWallLength(details?.boundaryWallLength || "");
     setWardNumber(details?.wardnumber || "");
+    setIsClubbedPlot(details?.isClubbedPlot !== null ? details?.isClubbedPlot : {});
     setZoneNumber(details?.zonenumber || "");
     setKhasraNumber(details?.khasraNumber || "");
     setArchitectId(details?.architectid || "");
@@ -204,6 +230,10 @@ useEffect(() => {
 
     if (!registrationDetails.trim()) {
       newErrors.registrationDetails = t("BPA_REGISTRATION_DETAILS_REQUIRED");
+    }
+
+    if (!isClubbedPlot?.code) {
+      newErrors.isClubbedPlot = t("BPA_IS_CLUBBED_PLOT_REQUIRED");
     }
 
     if (!boundaryWallLength) {
@@ -353,7 +383,8 @@ useEffect(() => {
       stakeholderRegistrationNumber,
       stakeholderAddress,
       isSelfCertificationRequired,
-      architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null
+      architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
+      isClubbedPlot: isClubbedPlot?.value
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -386,7 +417,8 @@ useEffect(() => {
       isSelfCertificationRequired,
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       roadType,
-      farDetails
+      farDetails,
+      isClubbedPlot: isClubbedPlot?.value
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -495,6 +527,10 @@ useEffect(() => {
     return <Loader />;
   }
 
+  function setClubbedPlot(option) {
+    setIsClubbedPlot(option)
+  }
+
 
 
 
@@ -521,6 +557,19 @@ useEffect(() => {
           {errors["propertyuid"] && (
           <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
           )}
+          <CardLabel>{`${t("BPA_IS_CLUBBED_PLOT_LABEL")} *`}</CardLabel>
+          <Dropdown
+            placeholder={t("IS_CLUBBED_PLOT")}
+            selected={isClubbedPlot}
+            select={setClubbedPlot}
+            option={common}
+            optionKey="i18nKey"
+            t={t}
+          />
+          {errors["isClubbedPlot"] && (
+            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isClubbedPlot"]}</CardLabelError>
+          )}
+            
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}
           {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
           {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", currentStepData?.cpt?.zonalMapping?.ward)}

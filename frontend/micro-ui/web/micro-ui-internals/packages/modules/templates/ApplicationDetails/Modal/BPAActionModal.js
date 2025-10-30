@@ -25,7 +25,13 @@ const CloseBtn = (props) => {
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason }) => {
   console.log("applicationData_BPAACTIONMODAL",applicationData)
-  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails, workflowDetails?.data?.initialActionState?.nextActions?.find(ele=>ele?.action===action?.action)?.roles, action)
+  const uniqueRoles = [...new Set(
+  workflowDetails?.data?.initialActionState?.nextActions
+    ?.find(ele => ele?.action === action?.action)
+    ?.actions?.flatMap(e => e.roles || [])
+)];
+  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails, uniqueRoles, action)
+  //workflowDetails?.data?.initialActionState?.nextActions?.find(ele=>ele?.action===action?.action)?.actions
   const mutation1 = Digit.Hooks.obps.useObpsAPI(
       applicationData?.landInfo?.address?.city ? applicationData?.landInfo?.address?.city : tenantId,
       false
@@ -33,7 +39,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
    const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: workflowDetails?.data?.initialActionState?.nextActions?.find(ele=>ele?.action===action?.action)?.roles?.map(role=>({code:role})),
+      roles: uniqueRoles?.map(role=>({code:role})),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }

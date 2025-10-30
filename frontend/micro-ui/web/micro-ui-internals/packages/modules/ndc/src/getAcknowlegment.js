@@ -69,7 +69,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   const ndc = appData?.NdcDetails?.[0] || {};
   const add = ndc?.additionalDetails || {};
 
-  const applicationNumber = appData?.uuid || "NA";
+  const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
   const propertyId = appData?.NdcDetails?.[0]?.consumerCode;
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
@@ -86,38 +86,23 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
  const readableCity = getReadableCity(appData?.tenantId);
   console.log(tenantInfo, "TENANT INFO IN ACKNOWLEDGEMENT");
 
-
+const currentDate = new Date().toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        });
   // Build single certificate body by concatenating translated fragments and dynamic values
 const certificateBody = `
+Date : ${currentDate}
+${t("NDC_NO_ENG")} : ${appData?.applicationNo} , ${t("NDC_MSG_PROPERTY_LABEL")} : ${propertyId} ,  ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} : ${propertyType}
 
-${t("NDC_NO_ENG")} ${appData?.applicationNo}
+${t("NDC_MSG_APPLICANT_LABEL")} ${applicantName} (s/o, d/o) ${appData?.owners?.[0]?.fatherOrHusbandName} for the land/building located at ${address}.
 
-${t("NDC_MSG_PROPERTY_LABEL")} ${propertyId}   ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} ${propertyType}
+This is to certify that, as per the records and data with ${ulbName} , all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. ${t("NDC_CERTIFY_NOTE_ONE_PB")} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")} ${t("NDC_VALIDITY_TEXT_ENG")} ${t("NDC_VALIDITY_NOTE_PB")}
 
-${t("NDC_MSG_APPLICANT_LABEL")} ${applicantName} (s/o, f/o, d/o) for the land/building located at ${address}.
+${t("NDC_SCOPE_TEXT_ENG")} ${t("NDC_BUILDING_NOTE_PB")} ${t("NDC_AUTHORITY_TEXT_ENG")} ${t("NDC_AUTHORITY_NOTE_PB")}
 
- 
-
-
- This is to certify that, as per the records and data with ${ulbName} , all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. ${t("NDC_CERTIFY_NOTE_ONE_PB")} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")}
-
-
-${t("NDC_VALIDITY_TEXT_ENG")} ${t("NDC_VALIDITY_NOTE_PB")}
-
-${t("NDC_SCOPE_TEXT_ENG")} ${t("NDC_BUILDING_NOTE_PB")}
-
-${t("NDC_AUTHORITY_TEXT_ENG")} ${t("NDC_AUTHORITY_NOTE_PB")}
-
-${t("NDC_DISCREPANCY_TEXT_ENG")} ${t("NDC_DISCREPANCY_NOTE_PB")}
-
-${t("NDC_OWNERSHIP_TEXT_ENG")} ${t("NDC_OWNERSHIP_NOTE_PB")}
-
-${t("NDC_ISSUED_BY_TEXT_ENG")}  
-${t("NDC_COMPETENT_AUTHORITY_TEXT_ENG")}
-
-${t("NDC_OFFICER_NAME_TEXT_ENG")}  
-${t("NDC_OFFICER_DESIGNATION_TEXT_ENG")}  
-
+${t("NDC_DISCREPANCY_TEXT_ENG")} ${t("NDC_DISCREPANCY_NOTE_PB")} ${t("NDC_OWNERSHIP_TEXT_ENG")} ${t("NDC_OWNERSHIP_NOTE_PB")} 
 
 ${t("NDC_NOTE_TEXT_ENG")}
 `;
@@ -127,10 +112,10 @@ ${t("NDC_NOTE_TEXT_ENG")}
     t,
     tenantId: appData?.tenantId,
     // Use readable city dynamically
-    name: ` No Dues Certificate  \n ${t(tenantInfo?.i18nKey)} ${ulbCamel(readableCity)}`,
+    name: ` No Dues Certificate  \n ${t(tenantInfo?.i18nKey)}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: `Local Goverment, Punjab`,
+    heading: `Local Government, Punjab`,
     applicationNumber,
     details: [
       {

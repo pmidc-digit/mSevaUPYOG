@@ -108,7 +108,6 @@ const CitizenApplicationOverview = () => {
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
 
@@ -174,8 +173,7 @@ const CitizenApplicationOverview = () => {
 
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
-    const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.tenantId);
-
+    const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
 
     console.log("acknowledgementData", acknowledgementData);

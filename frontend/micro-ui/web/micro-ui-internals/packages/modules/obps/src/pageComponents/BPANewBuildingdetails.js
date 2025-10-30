@@ -924,6 +924,8 @@ if (anyYes && !ecbcCertificateFile) {
       borderRadius: "8px",
    
       boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+
+      paddingBottom: "50px"
     };
   
     const headingStyle = {

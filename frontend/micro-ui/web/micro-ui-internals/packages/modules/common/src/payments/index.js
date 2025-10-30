@@ -80,7 +80,30 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
       const items = groups[key];
 
       const sorted = items.slice().sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
+      const GAP = 7;
 
+      const dateRanges = [];
+      if (sorted.length) {
+        let rangeStart = sorted[0].bookingDate || null;
+        let rangeEnd = sorted[0].bookingDate || null;
+
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = new Date(rangeEnd);
+          const curr = new Date(sorted[i].bookingDate);
+
+          const diffDays = Math.round((curr - prev) / (24 * 60 * 60 * 1000));
+
+          if (diffDays <= GAP) {
+            rangeEnd = sorted[i].bookingDate;
+          } else {
+            dateRanges.push([rangeStart, rangeEnd]);
+            rangeStart = sorted[i].bookingDate;
+            rangeEnd = sorted[i].bookingDate;
+          }
+        }
+
+        dateRanges.push([rangeStart, rangeEnd]);
+      }
       const startDate = sorted[0]?.bookingDate || null;
       const endDate = sorted[sorted.length - 1]?.bookingDate || null;
       const numberOfDays = sorted.length;
@@ -105,6 +128,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         startDate,
         endDate,
         numberOfDays,
+        dateRanges,
         addType: first.addType,
         faceArea: first.faceArea,
         nightLight: first.nightLight,

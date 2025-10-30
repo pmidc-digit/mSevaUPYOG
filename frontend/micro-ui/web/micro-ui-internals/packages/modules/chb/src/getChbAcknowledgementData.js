@@ -8,31 +8,32 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
       return t("CS_NA");
     }
+
     const startDate = bookingSlotDetails[0]?.bookingDate;
     const endDate = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingDate;
+
     if (startDate === endDate) {
-      return startDate; // Return only the start date
-    } else {
-      // Format date range as needed, for example: "startDate - endDate"
-      return startDate && endDate ? `${endDate} - ${startDate} ` : t("CS_NA");
+      return startDate;
     }
+
+    return `${startDate} - ${endDate}`;
   };
+
   const getBookingTimeRange = (bookingSlotDetails) => {
     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
-      return "10:00 - 11:59"; // Default time range if details are not present
+      return t("CS_NA");
     }
-    const startTime = bookingSlotDetails[0]?.bookingFromTime;
-    // const endTime = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingToTime;
-    const length = bookingSlotDetails.length;
-    let defaultEndTime = "23:59"; // Default end time for length 1
-    if (length === 2) {
-      defaultEndTime = "47:59"; // End time for length 2
-    } else if (length === 3) {
-      defaultEndTime = "71:59"; // End time for length 3
-    }
-    // Return formatted time range
-    return startTime ? `${startTime} - ${defaultEndTime}` : t("CS_NA");
+
+    const startDate = bookingSlotDetails[0]?.bookingDate;
+    const endDate = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingDate;
+
+    return `00:00 (${startDate}) - 23:59 (${endDate})`;
   };
+const splitAddress = (addressLine1) => {
+  if (!addressLine1) return [""];
+  return addressLine1.split("\n");
+};
+
   return {
     t: t,
     tenantId: tenantInfo?.code,
@@ -68,9 +69,13 @@ const getChbAcknowledgementData = async (application, tenantInfo, t) => {
         ],
       },
       {
-        title: t("ADS_ADDRESS_DETAILS"),
-        values: [{ title: t("ADS_ADDRESS_LINE1"), value: application?.address?.addressLine1 }],
-      },
+  title: t("ADS_ADDRESS_DETAILS"),
+  values: [
+    { title: t("ADS_ADDRESS_LINE1"), value: splitAddress(application?.address?.addressLine1)[0] },
+    { title: t("TL_NEW_TRADE_DETAILS_CITY_LABEL"), value: splitAddress(application?.address?.addressLine1)[1] }
+  ]
+}
+
     ],
   };
 };

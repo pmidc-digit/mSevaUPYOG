@@ -86,10 +86,14 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
  const readableCity = getReadableCity(appData?.tenantId);
   console.log(tenantInfo, "TENANT INFO IN ACKNOWLEDGEMENT");
 
-
+const currentDate = new Date().toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        });
   // Build single certificate body by concatenating translated fragments and dynamic values
 const certificateBody = `
-
+Date : ${currentDate}
 ${t("NDC_NO_ENG")} : ${appData?.applicationNo} , ${t("NDC_MSG_PROPERTY_LABEL")} : ${propertyId} ,  ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} : ${propertyType}
 
 ${t("NDC_MSG_APPLICANT_LABEL")} ${applicantName} (s/o, d/o) ${appData?.owners?.[0]?.fatherOrHusbandName} for the land/building located at ${address}.

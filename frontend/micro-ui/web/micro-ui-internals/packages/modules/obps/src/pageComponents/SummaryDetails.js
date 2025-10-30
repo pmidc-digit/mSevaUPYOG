@@ -30,7 +30,7 @@ import Timeline from "../components/Timeline"
 import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
-import { OTPInput, CardLabelError } from "@mseva/digit-ui-react-components";
+import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import FeeEstimation from "./FeeEstimation"
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
@@ -59,6 +59,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "0";
       });
     const [userSelected, setUser] = useState(null);
+    const [showToast, setShowToast] = useState(null)
     
     
       const [otherCharges, setOtherCharges] = useState(() => {
@@ -273,13 +274,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         const floors = []
         let totalBuiltUpArea = 0
         let totalFloorArea = 0
+        let totalDeduction = 0
 
         block?.building?.floors?.forEach((ob) => {
             const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
             const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+            const deduction = Number(ob.occupancies?.[0]?.deduction) || 0
 
             totalBuiltUpArea += builtUp
             totalFloorArea += floor
+            totalDeduction += deduction
 
             floors.push({
                 Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
@@ -287,6 +291,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 Occupancy: t(`${ob.occupancies?.[0]?.type}`),
 
                 BuildupArea: Number(builtUp).toFixed(2),
+                Deduction: Number(deduction).toFixed(2),
                 FloorArea: Number(floor).toFixed(2),
             })
         })
@@ -297,6 +302,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             Level: "",
             Occupancy: "",
             BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+            Deduction: `${Number(totalDeduction).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
             FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
         })
 
@@ -308,6 +314,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         { name: "BPA_TABLE_COL_LEVEL", id: "Level" },
         { name: "BPA_TABLE_COL_OCCUPANCY", id: "Occupancy" },
         { name: "BPA_TABLE_COL_BUILDUPAREA", id: "BuildupArea" },
+        { name: "BPA_TABLE_COL_DEDUCTION", id: "Deduction" },
         { name: "BPA_TABLE_COL_FLOORAREA", id: "FloorArea" },
         // { name: "BPA_TABLE_COL_CARPETAREA", id: "CarpetArea" },
     ];
@@ -376,8 +383,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const setdeclarationhandler = (e) => {
         // e.preventDefault(); // Prevent form submission
-        console.log("setdeclarationhandler", e);
+        
         if (!isOTPVerified) {
+            console.log("setdeclarationhandler", e, isOTPVerified);
             setShowMobileInput(true);
         } else {
             setAgree(!agree);
@@ -541,10 +549,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         });
 
     async function onSubmitCheck(action) {
-        if (!isArchitectDeclared) {
-            alert(t("Please_declare_and_upload_architect_consent"));
-            return;
-        }
+        // if (!isArchitectDeclared) {
+        //     alert(t("Please_declare_and_upload_architect_consent"));
+        //     return;
+        // }
         if (!action) {
             alert(t("Something_went_wrong"));
             return;
@@ -593,7 +601,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     documents,
                     workflow: {
                         action: workflowAction,
-                        assignes: [accountId]
+                        assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
                     }
                 }
             }, tenantId)
@@ -617,6 +625,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // setShowModal(true);
         // setSelectedAction(action);
         console.log("Selected Action", action?.action)
+        if(action?.action !== "SAVE_AS_DRAFT" && (!agree || !isOTPVerified || !isArchitectDeclared)){
+            if(!isOTPVerified){
+                setShowToast({ key: "true", error: true, message: t("User OTP Not Verified") })
+                return
+            }
+            if(!isArchitectDeclared){
+                setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Uploaded") })
+                return
+            }
+            if(!agree){
+                setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
+                return
+            }
+        }
         setIsSubmitting(true);
         try {
             await onSubmitCheck(action?.action);
@@ -733,6 +755,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     useEffect(() => {
         console.log("ECBCDocs", fileUrls);
     }, [fileUrls])
+
+    const closeToast = () => {
+        setShowToast(null)
+    }
 
     function setOtherChargesVal(value) {
     if (/^[0-9]*$/.test(value)) {
@@ -1270,7 +1296,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    {currentStepData?.createdResponse?.status === "INITIATED" && (
+                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardHeader>{t("BPA_Profesion_Consent_Form")}</CardHeader>}
+                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && (
                         <div>
                             {/* <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel> */}
                             {/* <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
@@ -1347,9 +1374,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
                         <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
                     ) : null}
-                    <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={!agree || !isOTPVerified || isSubmitting || !isArchitectDeclared} />
+                    <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={isSubmitting} />
                 </ActionBar>
             </div>
+            {showToast && (
+                <Toast
+                error={showToast?.error}
+                warning={showToast?.warning}
+                label={t(showToast?.message)}
+                isDleteBtn={true}
+                onClose={closeToast}
+                />
+            )}
         </React.Fragment>
     )
 }

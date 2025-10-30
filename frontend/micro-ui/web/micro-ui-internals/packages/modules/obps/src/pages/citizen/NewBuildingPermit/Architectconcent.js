@@ -44,7 +44,15 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
   const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
-  const DateOnly = TimeStamp ? new Date(TimeStamp).toISOString().split("T")[0] : "";
+  const DateOnly = TimeStamp
+  ? (() => {
+      const d = new Date(TimeStamp);
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    })()
+  : "";
 
   const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
 

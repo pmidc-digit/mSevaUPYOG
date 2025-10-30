@@ -5,7 +5,6 @@ import {
   MobileNumber,
   ActionBar,
   SubmitBar,
-  LabelFieldPair,
   TextArea,
   CardLabelError,
   Toast,
@@ -16,39 +15,29 @@ import { useDispatch } from "react-redux";
 
 const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => {} }) => {
   const dispatch = useDispatch();
-  const isEmployee = typeof window !== "undefined" && window.location?.pathname?.includes("/employee");
-  const formStorageKey = `ads_form_${isEmployee ? "employee" : "citizen"}`;
   const userInfo = Digit.UserService.getUser();
   const isCitizen = window.location.href.includes("citizen");
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const { mobileNumber, emailId, name } = userInfo?.info;
-  const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
   const [showToast, setShowToast] = useState(null);
 
   const {
     control,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors },
     trigger,
   } = useForm({
     mode: "onChange",
     defaultValues: {
-      firstName: isCitizen ? firstName || "" : "",
-      lastName: isCitizen ? lastName || "" : "",
+      name: isCitizen ? name || "": "",
       emailId: isCitizen ? emailId || "" : "",
       mobileNumber: isCitizen ? mobileNumber || "" : "",
-      // SGST: "",
-      // selfDeclaration: false,
-      // clientName: "",
       address: "",
       pincode: "",
     },
   });
 
-  // Prefill from Redux state
-  if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
@@ -62,29 +51,13 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
       // If applicant details also need to be prefilled
       if (created?.applicantDetail) {
-        setValue("firstName", created.applicantDetail.applicantName?.split(" ")[0] || "");
-        setValue("lastName", created.applicantDetail.applicantName?.split(" ")[1] || "");
+        setValue("name", created.applicantDetail.applicantName || "");
         setValue("emailId", created.applicantDetail.applicantEmailId || "");
         setValue("mobileNumber", created.applicantDetail.applicantMobileNo || "");
       }
     }
   }, [currentStepData, setValue]);
 
-  useEffect(() => {
-    // 1) Prefer in-memory draft (survives SPA remounts, cleared on hard reload)
-    try {
-      const mem = window.__ADS_FORM_DRAFT?.[formStorageKey];
-      if (mem && typeof mem === "object") {
-        reset(mem);
-        console.info("[ADS] rehydrated form from in-memory draft");
-        return;
-      }
-    } catch (e) {
-      console.warn("[ADS] failed to rehydrate from in-memory", e);
-    }
-  }, []); // run once on mount
-
-  // Auto close toast after 2 seconds
 
   const onSubmit = async (data) => {
     const applicationDate = Date.now();
@@ -106,14 +79,15 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         addressLine1: data?.address || "",
       },
       applicantDetail: {
-        applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+        // applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+        applicantName: data.name || "",
         applicantEmailId: data.emailId || "",
         applicantMobileNo: data.mobileNumber || "",
         applicantDetailId: "",
       },
       owners: [
         {
-          name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+          name: data.name || "",
           mobileNumber: data.mobileNumber || "",
           tenantId,
           type: "CITIZEN",
@@ -183,45 +157,35 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div style={{ maxWidth: !isCitizen && "500px" }}>
-        <CardLabel>
-          {t("NDC_FIRST_NAME")}
-          <span style={mandatoryStyle}>*</span>{" "}
-        </CardLabel>
-        <Controller
-          control={control}
-          name="firstName"
-          rules={{
-            required: t("PTR_FIRST_NAME_REQUIRED"),
-            pattern: {
-              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
-            },
-            minLength: { value: 2, message: "Minimum 2 characters" },
-            maxLength: { value: 100, message: "Maximum 100 characters" },
-          }}
-          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
-        />
-        {errors.firstName && <CardLabelError style={errorStyle}>{errors.firstName.message}</CardLabelError>}
 
-        <CardLabel>
-          {t("NDC_LAST_NAME")}
-          <span style={mandatoryStyle}>*</span>
+        <CardLabel className="card-label-smaller">
+          {`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span style={mandatoryStyle}>*</span>{" "}
         </CardLabel>
         <Controller
           control={control}
-          name="lastName"
+          name="name"
           rules={{
-            required: t("PTR_LAST_NAME_REQUIRED"),
+            required: t("Applicant Name is Required"),
             pattern: {
-              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
+              value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
+              message: t("Applicant Name is Invalid"),
             },
-            minLength: { value: 2, message: "Minimum 2 characters" },
             maxLength: { value: 100, message: "Maximum 100 characters" },
+            minLength: { value: 2, message: "Minimum 2 characters" },
           }}
-          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+          render={({ value, onChange, onBlur }) => (
+            <TextInput
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={(e) => {
+                onBlur(e);
+                trigger("name");
+              }}
+              t={t}
+            />
+          )}
         />
-        {errors.lastName && <CardLabelError style={errorStyle}>{errors.lastName.message}</CardLabelError>}
+        {errors?.name && <CardLabelError style={errorStyle}>{errors?.name?.message}</CardLabelError>}
 
         <CardLabel>
           {t("NOC_APPLICANT_EMAIL_LABEL")}

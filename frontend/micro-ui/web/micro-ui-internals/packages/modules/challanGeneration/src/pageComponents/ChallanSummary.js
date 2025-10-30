@@ -1,14 +1,39 @@
-import React, { useState, useRef } from "react";
-import { Card, CardSubHeader, CardLabel, StatusTable, ActionBar, SubmitBar, Menu, CardSectionHeader } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Card,
+  CardSubHeader,
+  CardLabel,
+  LabelFieldPair,
+  StatusTable,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  CardSectionHeader,
+  Row,
+} from "@mseva/digit-ui-react-components";
+import { useLocation, useHistory } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { SET_ChallanApplication_STEP } from "../../redux/action/ChallanApplicationActions";
+import ApplicationTable from "../components/inbox/ApplicationTable";
 import { useTranslation } from "react-i18next";
 import ChallanDocument from "../components/ChallanDocument";
 
 function ChallanSummary({ formData, goNext, onGoBack }) {
+  const { pathname: url } = useLocation();
   const { t } = useTranslation();
+  const history = useHistory();
   const menuRef = useRef();
+  const dispatch = useDispatch();
+  const mutateScreen = url.includes("/property-mutate/");
   let user = Digit.UserService.getUser();
 
-  console.log("formData====", formData);
+  const columns = [
+    { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+    { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
+    { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
+    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
+    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
+  ];
 
   let docs = formData?.documents?.documents?.documents;
 
@@ -18,6 +43,9 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+  const isCitizen = window.location.href.includes("citizen");
+
+  const [getData, setData] = useState();
   const [displayMenu, setDisplayMenu] = useState(false);
 
   const closeMenu = () => {
@@ -43,6 +71,8 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
 
   function onActionSelect(action) {
     goNext(action);
+    // setShowModal(true);
+    // setSelectedAction(action);
   }
 
   // ---------------- UI Styles ----------------
@@ -78,6 +108,23 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
     color: "#333",
   };
 
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+  };
+
+  const documentCardStyle = {
+    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+    minWidth: "200px", // keeps it from shrinking too small
+    maxWidth: "250px", // prevents oversized stretching on big screens
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
+
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
@@ -87,32 +134,80 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
     </div>
   );
 
+  const slotlistRows =
+    formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
+      communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
+      hallName: formData?.venueDetails?.[0]?.communityHallName,
+      hallCode: slot.hallCode + " - " + slot.capacity,
+      bookingDate: slot.bookingDate,
+      bookingStatus: `${t(slot.status)}`,
+    })) || [];
+
   return (
     <div style={pageStyle}>
       <h2 style={headingStyle}>{t("Application Summary")}</h2>
 
+      {/* Property Details Section */}
       <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
-        {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.offenderDetails?.name)}
-        {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.offenderDetails?.mobileNumber)}
-        {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.offenderDetails?.emailId)}
-        {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.offenderDetails?.address)}
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
+
+        {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
+        {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
+        {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
+        {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.venueDetails?.[0]?.address?.addressLine1)}
       </div>
 
+      {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+      <StatusTable>
+        <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={formData?.venueDetails?.[0]?.specialCategory?.category || t("CS_NA")} />
+        <Row className="border-none" label={t("CHB_PURPOSE")} text={formData?.venueDetails?.[0]?.purpose?.purpose || t("CS_NA")} />
+        <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={formData?.venueDetails?.[0]?.purposeDescription || t("CS_NA")} />
+      </StatusTable> */}
+
       <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENCE_DETAILS")}</CardSubHeader>
-        {renderLabel(t("CHALLAN_TYPE_OFFENCE"), formData?.offenceDetails?.offenceType)}
-        {renderLabel(t("CHALLAN_OFFENCE_CATEGORY"), formData?.offenceDetails?.offenceCategory)}
-        {renderLabel(t("CHALLAN_OFFENCE_SUB_CATEGORY"), formData?.offenceDetails?.offenceSubCategory)}
-        {renderLabel(t("CHALLAN_NUMBER"), formData?.offenceDetails?.challanNumber)}
-        {renderLabel(t("CHALLAN_NAME"), formData?.offenceDetails?.challanName)}
-        {renderLabel(t("CHALLAN_AMOUNT"), formData?.offenceDetails?.challanAmount)}
-        {renderLabel(t("CHALLAN_DAYS"), formData?.offenceDetails?.challanDaysToClearPayment)}
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+
+        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.venueDetails?.[0]?.specialCategory?.category)}
+        {renderLabel(t("CHB_PURPOSE"), formData?.venueDetails?.[0]?.purpose?.purpose)}
+        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.venueDetails?.[0]?.purposeDescription)}
       </div>
+
+      {/* Documents Section */}
+      {/* Documents Section */}
+      {/* <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
+      <div style={sectionStyle}>
+        {docs?.length > 0 ? (
+          <div style={documentsContainerStyle}>
+            {docs?.map((doc, index) => (
+              <div key={index} style={documentCardStyle}>
+                <CHBDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+        )}
+      </div> */}
+
+      <ApplicationTable
+        t={t}
+        data={slotlistRows}
+        columns={columns}
+        getCellProps={(cellInfo) => ({
+          style: {
+            minWidth: "150px",
+            padding: "10px",
+            fontSize: "16px",
+            paddingLeft: "20px",
+          },
+        })}
+        isPaginationRequired={false}
+        totalRecords={slotlistRows.length}
+      />
 
       <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
-        <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }} className="force-no-margin">
+        <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
           {docs?.map((doc, index) => (
             <React.Fragment>
               <div>

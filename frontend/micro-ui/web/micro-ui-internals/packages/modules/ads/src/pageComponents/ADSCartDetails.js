@@ -2,10 +2,18 @@ import React, { useState } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
 const ADSCartDetails = ({ cartDetails, t }) => {
-  const [expanded, setExpanded] = useState(() => cartDetails?.map((item) => item?.ad?.id));
+  // Build a unique key for each cart entry
+  const getKey = (ad) => `${ad?.id}_${ad?.bookingStartDate}_${ad?.bookingEndDate}`;
 
-  const toggleExpand = (adId) => {
-    setExpanded((prev) => (prev?.includes(adId) ? prev?.filter((id) => id !== adId) : [...prev, adId]));
+  // Default expanded: all open
+  const [expanded, setExpanded] = useState(() =>
+    cartDetails?.map((item) => getKey(item?.ad))
+  );
+
+  const toggleExpand = (key) => {
+    setExpanded((prev) =>
+      prev?.includes(key) ? prev?.filter((id) => id !== key) : [...prev, key]
+    );
   };
 
   const makeColumns = () => [
@@ -28,7 +36,8 @@ const ADSCartDetails = ({ cartDetails, t }) => {
         <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ADVERTISMENT_DETAILS")}</p>
       ) : (
         cartDetails?.map((item, idx) => {
-          const isOpen = expanded?.includes(item?.ad?.id);
+          const key = getKey(item?.ad);
+          const isOpen = expanded?.includes(key);
           return (
             <div
               key={idx}
@@ -41,7 +50,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
             >
               {/* Ad Header (clickable) */}
               <div
-                onClick={() => toggleExpand(item?.ad?.id)}
+                onClick={() => toggleExpand(key)}
                 style={{
                   background: "#f9f9f9",
                   padding: "10px 14px",

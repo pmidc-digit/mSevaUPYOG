@@ -73,6 +73,7 @@ const WrapPaymentComponent = (props) => {
   //   { enabled: allowFetchBill, retry: false, staleTime: Infinity, refetchOnWindowFocus: false }
   // );
 
+
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
   const newTenantId = business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE") ? Digit.ULBService.getStateId() : tenantId;
@@ -542,8 +543,8 @@ const WrapPaymentComponent = (props) => {
   };
   //New Payment Reciept For PT module with year bifurcations
 
-  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1, cursor: "pointer" };
-  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2, cursor: "pointer" };
+  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1 };
+  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2 };
   const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px" };
 
   const printRecieptNew = async (payment) => {
@@ -967,7 +968,7 @@ const WrapPaymentComponent = (props) => {
       )}
 
       {/*for pett */}
-      {business_service == "pet-services" ? (
+      {/* {business_service == "pet-services" ? (
         <div
           className="primary-label-btn d-grid"
           style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
@@ -979,7 +980,7 @@ const WrapPaymentComponent = (props) => {
           </svg>
           {t("PTR_FEE_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {/* {business_service == "pet-services" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
@@ -1040,7 +1041,15 @@ const WrapPaymentComponent = (props) => {
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
       ) : null} */}
-      {!(business_service === "adv-services" || business_service === "chb-services") && (
+    {business_service === "BPAREG" ? (
+  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px" }}>
+    <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+    <Link to={`/digit-ui/citizen`}>
+      <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+    </Link>
+  </div>
+) : !(business_service === "adv-services" || business_service === "chb-services") && (
+
         <div
           style={{
             display: "flex",
@@ -1049,17 +1058,7 @@ const WrapPaymentComponent = (props) => {
           }}
         >
           <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
-          {/* <div
-      className="link"
-      style={
-        isMobile
-          ? { marginTop: "8px", width: "100%", textAlign: "center" }
-          : { marginTop: "8px" }
-      }
-      onClick={printReciept}
-    >
-      {t("CS_DOWNLOAD_RECEIPT")}
-    </div> */}
+        
 
           {/* {!(business_service === "TL") && !business_service?.includes("PT") && (
             <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
@@ -1077,7 +1076,7 @@ const WrapPaymentComponent = (props) => {
             </Link>
           )}
 
-          {/* {business_service == "pet-services" && ( */}
+         
           <Link to={`/digit-ui/citizen`}>
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
           </Link>
@@ -1574,9 +1573,9 @@ const WrapPaymentZeroComponent = (props) => {
     padding: "4px 0px",
     justifyContent: "space-between",
   };
-  const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", cursor: "pointer" };
-  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1, cursor: "pointer" };
-  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2, cursor: "pointer" };
+  const IconWrapperStyle = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px" };
+  const IconWrapperStyle1 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 1 };
+  const IconWrapperStyle2 = { display: "flex", fontSize: "16px", fontWeight: "500", gap: "4px", flex: 2 };
 
   //New Payment Reciept For PT module with year bifurcations
 
@@ -2001,7 +2000,7 @@ const WrapPaymentZeroComponent = (props) => {
       )}
 
       {/*for pett */}
-      {business_service == "pet-services" ? (
+      {/* {business_service == "pet-services" ? (
         <div
           className="primary-label-btn d-grid"
           style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
@@ -2013,7 +2012,7 @@ const WrapPaymentZeroComponent = (props) => {
           </svg>
           {t("PTR_FEE_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {/* {business_service == "pet-services" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">

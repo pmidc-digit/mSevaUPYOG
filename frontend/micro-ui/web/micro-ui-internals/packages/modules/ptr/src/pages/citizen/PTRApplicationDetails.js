@@ -21,7 +21,7 @@ import { pdfDownloadLink } from "../../utils";
 import PTRDocument from "../../pageComponents/PTRDocument";
 import get from "lodash/get";
 import { size } from "lodash";
-
+import QRCode from "qrcode";
 const PTRApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -31,6 +31,7 @@ const PTRApplicationDetails = () => {
   const isCitizen = window.location.href.includes("citizen");
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [approver, setApprover] = useState(null);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -48,6 +49,19 @@ const PTRApplicationDetails = () => {
 
   const pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
   const application = pet_details;
+
+  const { data: approverData, isLoading: approverDataLoading } = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: petId,
+    moduleCode: "ptr",
+  });
+
+  useEffect(() => {
+    if (!approverDataLoading && approverData) {
+      const name = approverData?.processInstances?.[1]?.assigner?.name;
+      setApprover(name);
+    }
+  }, [approverDataLoading, approverData]);
 
   // sessionStorage.setItem("ptr-pet", JSON.stringify(application));
 
@@ -108,7 +122,13 @@ const PTRApplicationDetails = () => {
     return <Loader />;
   }
 
+  if (isLoading || approverDataLoading) {
+    return <Loader />;
+  }
+
   const printCertificate = async () => {
+    const qrDataURL = await QRCode.toDataURL(window.location.href);
+
     try {
       if (!data?.PetRegistrationApplications?.[0]) {
         throw new Error("Pet registration data is missing");
@@ -169,6 +189,7 @@ const PTRApplicationDetails = () => {
                   display: flex;
                   gap: 30px;
                   margin: 20px 0;
+                  align-items:flex-start;
                 }
                 .details-section {
                   flex: 1;
@@ -179,8 +200,10 @@ const PTRApplicationDetails = () => {
                   order: 2;
                 }
                 .pet-image {
-                  width: 150px;
-                  height: 150px;
+                  width: 100px;
+                  max-width: 100%;
+                  aspect-ratio : 1 / 1;
+                  height: auto;
                   border: 2px solid #000;
                   object-fit: cover;
                   margin-bottom: 10px;
@@ -251,6 +274,17 @@ const PTRApplicationDetails = () => {
                 @media print {
                   body { background: white !important; }
                 }
+                @media (max-width: 700px) {   
+                .main-content {
+                  flex-wrap: wrap;
+                }
+                .pet-image {
+                  width: 100px;           
+                  max-width: 100%;
+                  height: auto;
+                  aspect-ratio: 1/1;
+                }
+              }
               </style>
             </head>
             <body>
@@ -280,8 +314,8 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petGender || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">Date Of Birth</span>
-                        <span class="detail-value">${petData?.petDetails?.petAge || "Not Specified"}</span>
+                        <span class="detail-label">${t("PTR_PET_AGE")}</span>
+                        <span class="detail-value">${formatPetAge(petData?.petDetails?.petAge, t) || t("CS_NA")}</span>
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">Colour</span>
@@ -354,7 +388,8 @@ const PTRApplicationDetails = () => {
                     <div>Place:.......................</div>
                   </div>
                   <div class="signature-area">
-                    <div>Approved by</div>
+                    <div class="detail-label">Approved by</div>
+                    <span class="detail-value">${approver || "Not Specified"}</span>
                     <div class="signature-line"></div>
                     <div>Licensing Authority(CSI)</div>
                     <div>Municipal Corporation</div>
@@ -365,15 +400,18 @@ const PTRApplicationDetails = () => {
                 <div class="terms-section">
                   <div class="terms-title">Note:- The license is being issued on the following conditions:-</div>
                   <ol class="terms-list">
-                    <li>The owner shall ensure proper space, accommodation, food and medical treatment to the dog.</li>
-                    <li>The owner shall keep the dog protected by getting it vaccinated against Rabies from a Govt. Veterinary Practitioner or Veterinary Practitioner duly registered with Indian Veterinary Council( IVC) or State Veterinary Council (SVC).</li>
-                    <li>The owner shall keep the dog chained/ leashed while taking it outside. All ferocious dogs shall be duly muzzled and a stick shall be carried by the escort accompanying the dog while taking it out.</li>
-                    <li>The owner shall ensure that the dog will wear a collar affixed with the metal token issued by the Registration Authority at all the times.</li>
-                    <li>The owner shall not indulge in breeding of dogs for commercial purposes and trading of dogs within the area of Municipal Corporation. In case it is found that dog is being kept for breeding or trading /commercial purposes by him/her, the Registration Authority shall impound dog/s besides imposing a fine as fixed by the Municipal Corporation , SAS Nagar upon him/her.</li>
-                    <li>The owner shall not allow the dog to defecate in public places such as residential areas, green belts, parks, streets, roads, road berms and other common places etc. In case the dog defecates at the above specified places, he/she shall arrange to get the excreta of the dog removed from the said place at his/her own level. The owner shall take his/her dog to defecate in the isolated areas which are not visited by the residents and other members of the public. The owner shall not allow the dog to defecate near the residences of other neighbours to their annoyance.</li>
-                    <li>The owner shall allow the Registration Authority or a Veterinary Doctor, Chief Sanitary Inspector, Sanitary Inspector or any other officer of the Municipal Corporation authorized by the Registration Authority to inspect the premises of dog and the owner shall allow that person to enter and inspect his/her premises at all reasonable times to ensure that no cruelty is being done to the animal (prevention of cruelty to Animals Act 1960).</li>
-                    <li>The owner shall abide by the provision of Bye Laws notified by Government of Punjab Notification No. 5/13/2020-1LG4/1877 dated 12/10/2020 and adopted by Municipal Corporation , SAS Nagar vide its resolution No. 30 dated 28/06/2021.</li>
-                  </ol>
+                  <li>${t("PTR_TERM_1")}</li>
+                  <li>${t("PTR_TERM_2")}</li>
+                  <li>${t("PTR_TERM_3")}</li>
+                  <li>${t("PTR_TERM_4")}</li>
+                  <li>${t("PTR_TERM_5")}</li>
+                  <li>${t("PTR_TERM_6")}</li>
+                  <li>${t("PTR_TERM_7")}</li>
+                  <li>${t("PTR_TERM_8")}</li>
+                </ol>
+                  <div style="text-align: right;">
+                    <img src="${qrDataURL}" style="width: 120px; height: 120px;" />
+                </div>
                 </div>
               </div>
             </body>
@@ -498,10 +536,9 @@ const PTRApplicationDetails = () => {
                 </div>
                 
                 <div class="acknowledgement-text">
-                  This is to acknowledge that we have received your application for pet registration. 
-                  Your application has been processed and the details are as follows:
-                </div>
-                
+                ${t("PTR_ACKN_TERM_1")}
+              </div>
+
                 <table class="details-table">
                   <tr>
                     <th>Application Number</th>
@@ -542,10 +579,9 @@ const PTRApplicationDetails = () => {
                 </table>
                 
                 <div class="acknowledgement-text">
-                  Please keep this acknowledgement for your records. You will be notified once your 
-                  application is processed and approved. For any queries, please contact the Municipal 
-                  Corporation office with your application number.
+                  ${t("PTR_ACKN_TERM_2")}
                 </div>
+
                 
                 <div class="footer">
                   <p>Generated on: ${currentDate}</p>

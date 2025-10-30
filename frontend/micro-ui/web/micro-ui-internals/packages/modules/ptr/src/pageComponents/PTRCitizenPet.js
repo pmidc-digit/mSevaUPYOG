@@ -38,6 +38,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   console.log("genderTypeObj :>> ", genderTypeObj);
 
+  const pathParts = window.location.pathname.split("/");
+  const id = pathParts[pathParts.length - 1];
+  const checkForRenew = id == "renew-application";
+
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max
   const minVaccineDate = new Date();
@@ -69,9 +73,6 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   }
 
   const onSubmit = async (data) => {
-    const pathParts = window.location.pathname.split("/");
-    const id = pathParts[pathParts.length - 1];
-    const checkForRenew = id == "renew-application";
     if (validateStep) {
       const validationErrors = validateStep(data);
       console.log("validationErrors", validationErrors);
@@ -230,15 +231,15 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     }
   }, [currentStepData, setValue]);
 
-  const selectedVaccineDate = watch("lastVaccineDate");
-  useEffect(() => {
-    // re-trigger petAge validation whenever vaccine date changes
-    console.log("watch lastVaccineDate ->", selectedVaccineDate, "type:", typeof selectedVaccineDate, "asJSON:", JSON.stringify(selectedVaccineDate));
+  // const selectedVaccineDate = watch("lastVaccineDate");
+  // useEffect(() => {
+  //   // re-trigger petAge validation whenever vaccine date changes
+  //   // console.log("watch lastVaccineDate ->", selectedVaccineDate, "type:", typeof selectedVaccineDate, "asJSON:", JSON.stringify(selectedVaccineDate));
 
-    if (selectedVaccineDate) {
-      trigger("petAge");
-    }
-  }, [selectedVaccineDate, trigger]);
+  //   if (selectedVaccineDate) {
+  //     trigger("petAge");
+  //   }
+  // }, [selectedVaccineDate, trigger]);
 
   const onlyAlphabets = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/; // Allows any number of letters and spaces
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
@@ -285,7 +286,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               minLength: { value: 2, message: "Minimum 2 characters" },
             }}
             render={(props) => (
-              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("petName")} t={t} />
+              <TextInput
+                value={props.value}
+                onChange={(e) => props.onChange(e.target.value)}
+                onBlur={() => trigger("petName")}
+                t={t}
+                disabled={checkForRenew}
+              />
             )}
           />
         </div>
@@ -301,7 +308,14 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           name="petType"
           rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
           render={(props) => (
-            <Dropdown className="form-field" select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" />
+            <Dropdown
+              className="form-field"
+              select={props.onChange}
+              selected={props.value}
+              option={mdmsPetData?.petTypes}
+              optionKey="name"
+              disable={checkForRenew}
+            />
           )}
         />
       </LabelFieldPair>
@@ -317,7 +331,16 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
           render={(props) => {
             const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
-            return <Dropdown className="form-field" select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="name" />;
+            return (
+              <Dropdown
+                className="form-field"
+                select={props.onChange}
+                selected={props.value}
+                option={filteredBreeds}
+                optionKey="name"
+                disable={checkForRenew}
+              />
+            );
           }}
         />
       </LabelFieldPair>
@@ -332,7 +355,14 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           name="petGender"
           rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
           render={(props) => (
-            <Dropdown className="form-field" select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" />
+            <Dropdown
+              className="form-field"
+              select={props.onChange}
+              selected={props.value}
+              option={mdmsPetData?.genderTypes}
+              optionKey="name"
+              disable={checkForRenew}
+            />
           )}
         />
       </LabelFieldPair>
@@ -352,7 +382,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               minLength: { value: 2, message: "Minimum 2 characters" },
             }}
             render={(props) => (
-              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} t={t} />
+              <TextInput
+                value={props.value}
+                onChange={(e) => props.onChange(e.target.value)}
+                onBlur={(e) => props.onBlur(e)}
+                t={t}
+                disabled={checkForRenew}
+              />
             )}
           />
         </div>
@@ -375,7 +411,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
                 onChange={(e) => props.onChange(e.target.value)}
                 onBlur={() => {
                   trigger("lastVaccineDate");
-                  trigger("petAge");
+                  // trigger("petAge");
                 }}
                 t={t}
               />

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { TextInput, CardLabel, Dropdown, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { use, useEffect, useState } from "react";
+import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
+import { parse, format } from "date-fns";
 
 const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   const [loader, setLoader] = useState(false);
@@ -24,6 +25,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
+      // halls: [{ startDate: "", endDate: "", startTime: "", endTime: "" }], // predefine index 0
     },
   });
 
@@ -84,22 +86,14 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
     // goNext(payload);
   };
 
-  useEffect(() => {
-    if (currentStepData?.offenceDetails) {
-      Object.entries(currentStepData?.offenceDetails)?.forEach(([key, value]) => {
-        setValue(key, value);
-      });
-    }
-  }, [currentStepData, setValue]);
-
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           {/* offence type */}
           <LabelFieldPair>
-            <CardLabel>
-              {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
+            <CardLabel className="card-label-smaller">
+              {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -171,66 +165,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
           </LabelFieldPair>
 
-          {/* Challan Number */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
-            <CardLabel>
-              {`${t("CHALLAN_NUMBER")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="challanNumber"
-              // rules={{
-              //   required: t("CHALLAN_NUMBER_REQUIRED"),
-              //   minLength: { value: 2, message: t("CHALLAN_NUMBER_LIMIT_VALID") },
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.challanNumber && <p style={{ color: "red" }}>{errors.challanNumber.message}</p>}
-          </LabelFieldPair>
-
-          {/* Challan Name */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
-            <CardLabel>
-              {`${t("CHALLAN_NAME")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="challanName"
-              // rules={{
-              //   required: t("CHALLAN_NAME_REQUIRED"),
-              //   minLength: { value: 2, message: t("CHALLAN_NAME_LIMIT_VALID") },
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.challanName && <p style={{ color: "red" }}>{errors.challanName.message}</p>}
-          </LabelFieldPair>
-
           {/* Challan Amount */}
           <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
             <CardLabel>
@@ -259,39 +193,9 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
             />
             {errors?.challanAmount && <p style={{ color: "red" }}>{errors.challanAmount.message}</p>}
           </LabelFieldPair>
-
-          {/* Challan Days */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
-            <CardLabel>
-              {`${t("CHALLAN_DAYS")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="challanDaysToClearPayment"
-              // rules={{
-              //   required: t("CHALLAN_DAYS_REQUIRED"),
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.challanDaysToClearPayment && <p style={{ color: "red" }}>{errors.challanDaysToClearPayment.message}</p>}
-          </LabelFieldPair>
         </div>
         <ActionBar>
           <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
-
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

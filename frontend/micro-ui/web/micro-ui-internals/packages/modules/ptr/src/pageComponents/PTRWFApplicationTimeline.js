@@ -252,14 +252,21 @@ const PTRWFApplicationTimeline = (props) => {
   };
 
   useEffect(() => {
-    let WorkflowService = null;
-    (async () => {
-      setLoader(true);
-      WorkflowService = await Digit.WorkflowService.init(tenantId, "ptr");
-      setLoader(false);
-      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
-      // setComplaintStatus(applicationStatus);
-    })();
+    const fetchWorkflowService = async () => {
+      try {
+        setLoader(true);
+        const WorkflowService = await Digit.WorkflowService.init(tenantId, "ptr");
+        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states || []);
+      } catch (error) {
+        console.error("Error fetching workflow service:", error);
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    if (tenantId) {
+      fetchWorkflowService();
+    }
   }, [tenantId]);
 
   return (
@@ -336,7 +343,7 @@ const PTRWFApplicationTimeline = (props) => {
       </Fragment>
       {workflowDetails?.data && showNextActions(workflowDetails?.data?.actionState?.nextActions)}
       {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {getLoader && <Loader page={true} />}
     </React.Fragment>
   );
 };

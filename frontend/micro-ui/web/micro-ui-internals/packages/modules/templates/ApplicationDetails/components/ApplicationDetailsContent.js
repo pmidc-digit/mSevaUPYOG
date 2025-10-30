@@ -69,17 +69,33 @@ function ApplicationDetailsContent({
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
 
-  useEffect(() => {
-    if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
-      try {
-        const collectionData = applicationDetails?.colletionOfData;
-        if (Array.isArray(collectionData) && collectionData.length > 0) {
-          setPayments(collectionData);
-        } else {
-          setPayments([]); 
+
+  console.log(workflowDetails, "TIMELINE");
+  // ISSUE 9 FIX: Fetch payment history for WS applications
+   useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
+        try {
+          const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
+          
+          const requestParams = {
+          tenantId: applicationData?.tenantId || tenantId,
+          filters: {
+            consumerCodes: applicationData?.connectionNo,
+            consumerCode: applicationData?.connectionNo
+          },
+          BusinessService: businessService  
+          };
+
+          const paymentData = await Digit.WSService.paymentsearch(requestParams);
+          if (Array.isArray(paymentData) && paymentData.length > 0) {
+            setPayments(paymentData);
+          } else if (paymentData?.Payments && paymentData.Payments.length > 0) {
+            setPayments(paymentData.Payments);
+          }
+        } catch (error) {
+          console.error("Payment fetch error:", error);
         }
-      } catch (error) {
-        setPayments([]); 
       }
     }
   }, [applicationData?.connectionNo, applicationDetails?.colletionOfData]);
@@ -177,39 +193,66 @@ function ApplicationDetailsContent({
       };
       return <TLCaption data={caption} />;
     } else if (window.location.href.includes("/obps/") || window.location.href.includes("/noc/") || window.location.href.includes("/ws/")) {
-      const privacy = {
-        uuid: checkpoint?.assignes?.[0]?.uuid,
-        fieldName: "mobileNumber",
-        model: "User",
-        showValue: false,
-        loadData: {
-          serviceName: "/egov-workflow-v2/egov-wf/process/_search",
-          requestBody: {},
-          requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
-          jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
-          isArray: false,
-          d: (res) => {
-            let resultstring = "";
-            resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
-            return resultstring;
-          },
-        },
-      };
+      // const privacy = {
+      //   uuid: checkpoint?.assignes?.[0]?.uuid,
+      //   fieldName: "mobileNumber",
+      //   model: "User",
+      //   showValue: false,
+      //   loadData: {
+      //     serviceName: "/egov-workflow-v2/egov-wf/process/_search",
+      //     requestBody: {},
+      //     requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
+      //     jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
+      //     isArray: false,
+      //     d: (res) => {
+      //       let resultstring = "";
+      //       resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
+      //       return resultstring;
+      //     },
+      //   },
+      // };
       // Issue 18 Fix: Safe access to timeline array with proper bounds checking
+      
+      
+const privacy = {
+  // <CHANGE> Use checkpoint.assigner.uuid instead of checkpoint.assignes[0].uuid
+  uuid: checkpoint?.assigner?.uuid || checkpoint?.assignes?.[0]?.uuid,
+  fieldName: "mobileNumber",
+  model: "User",
+  showValue: false,
+  loadData: {
+    serviceName: "/egov-workflow-v2/egov-wf/process/_search",
+    requestBody: {},
+    requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
+    jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
+    isArray: false,
+    d: (res) => {
+      let resultstring = "";
+      // <CHANGE> Try both assigner and assignes paths
+      resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
+      return resultstring;
+    },
+  },
+};
+      
+      
       const previousCheckpoint = timeline && Array.isArray(timeline) && index > 0 && index - 1 < timeline.length ? timeline[index - 1] : null;
 
-      const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name || "N/A",
-        mobileNumber:
-          applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid &&
-          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-            ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-            : checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
-        comment: checkpoint?.comment ? t(checkpoint.comment) : "N/A",
-        wfComment: previousCheckpoint ? previousCheckpoint.wfComment || [] : [],
-        thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
-      };
+const caption = {
+  date: checkpoint?.auditDetails?.lastModified,
+  // <CHANGE> Use checkpoint.assigner instead of checkpoint.assignes[0]
+  name: checkpoint?.assigner?.name || checkpoint?.assignes?.[0]?.name || "N/A",
+  mobileNumber:
+    applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assigner?.uuid &&
+    applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+      ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+      : checkpoint?.assigner?.mobileNumber || checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
+  comment: checkpoint?.comment ? t(checkpoint.comment) : "",
+  wfComment: previousCheckpoint ? previousCheckpoint.wfComment || [] : [],
+  thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
+};
+
+
 
       return <TLCaption data={caption} OpenImage={OpenImage} privacy={privacy} />;
     } else {
@@ -455,6 +498,7 @@ function ApplicationDetailsContent({
    },[])
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
+
       {/* For UM-4418 changes */}
       {/* {isInfoLabel ? (
         <InfoDetails

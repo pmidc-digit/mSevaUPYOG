@@ -112,7 +112,7 @@ useEffect(()=>{
     if (!Ulblisttype) newErrors.Ulblisttype = t("ULB Type is required")
     if (!approvedColony) newErrors.approvedColony = t("Approved Colony is required")
     if (!masterPlan) newErrors.masterPlan = t("Master Plan is required")
-    if (!buildingStatus) newErrors.buildingStatus = t("Building Status is required")
+    // if (!buildingStatus) newErrors.buildingStatus = t("Building Status is required")
     if (!purchasedFAR) newErrors.purchasedFAR = t("Purchased FAR is required")
     if (!greenbuilding) newErrors.greenbuilding = t("Green Building is required")
     if (!restrictedArea) newErrors.restrictedArea = t("Restricted Area is required")
@@ -843,7 +843,8 @@ if (anyYes && !ecbcCertificateFile) {
       District, // plain text
       rating: typeof rating === "string" ? rating : rating?.code,
       masterPlan: masterPlan?.code,
-      buildingStatus: buildingStatus?.code,
+      // buildingStatus: buildingStatus?.code,
+      buildingStatus:"",
       purchasedFAR: purchasedFAR?.value,
       providedFAR,
       greenbuilding: greenbuilding?.code,
@@ -1155,7 +1156,7 @@ if (anyYes && !ecbcCertificateFile) {
           </React.Fragment>
         )}
 
-        <CardLabel>{`${t("BPA_BUILDING_STATUS")} *`}</CardLabel>
+        {/* <CardLabel>{`${t("BPA_BUILDING_STATUS")} *`}</CardLabel>
         <Controller
           control={control}
           name={"buildingStatus"}
@@ -1171,7 +1172,7 @@ if (anyYes && !ecbcCertificateFile) {
             />
           )}
         />
-        <ErrorMessage error={errors.buildingStatus} />
+        <ErrorMessage error={errors.buildingStatus} /> */}
 
         <CardLabel>{`${t("BPA_PURCHASED_FAR")} *`}</CardLabel>
         <Controller

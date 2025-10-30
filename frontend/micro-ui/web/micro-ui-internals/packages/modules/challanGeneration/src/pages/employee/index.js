@@ -56,16 +56,18 @@ const EmployeeApp = ({ path, url, userType }) => {
   const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("SearchChallan");
   const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
   const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
+  const ChallanSearch = Digit?.ComponentRegistryService?.getComponent("ChallanStepperForm");
+  const ChallanResponseCitizen = Digit?.ComponentRegistryService?.getComponent("ChallanResponseCitizen");
 
   return (
     <Switch>
       <React.Fragment>
-        <div className="ground-container" >
+        <div className="ground-container">
           <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
             <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
               {t("ES_COMMON_HOME")}
             </Link>{" "}
-            / <span>{location.pathname === "/digit-ui/employee/mcollect/inbox" ? t("UC_SEARCH_HEADER") : t("UC_COMMON_HEADER_SEARCH")}</span>
+            / <span>{t("CHALLAN_MODULE")}</span>
           </p>
           <PrivateRoute exact path={`${path}/`} component={() => <ChallanGenerationModule matchPath={path} userType={userType} />} />
           <PrivateRoute
@@ -79,8 +81,7 @@ const EmployeeApp = ({ path, url, userType }) => {
                 isInbox={true}
               />
             )}
-          />
-          {" "}
+          />{" "}
           <PrivateRoute path={`${path}/new-application`} component={() => <NewChallan parentUrl={url} />} />
           <PrivateRoute
             path={`${path}/search`}
@@ -95,6 +96,8 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/search-challan`} component={() => <SearchChallanPage parentRoute={path} />} />{" "}
           <PrivateRoute path={`${path}/search-bill`} component={() => <SearchBillPage />} />{" "}
           <PrivateRoute path={`${path}/group-bill`} component={() => <GroupBillPage />} />{" "}
+          <PrivateRoute path={`${path}/generate-challan`} component={ChallanSearch} />
+          <PrivateRoute path={`${path}/response/:id`} component={ChallanResponseCitizen} />
         </div>
       </React.Fragment>
     </Switch>

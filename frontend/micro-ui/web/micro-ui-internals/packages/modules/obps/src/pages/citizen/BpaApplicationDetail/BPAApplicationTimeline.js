@@ -37,6 +37,8 @@ const BPAApplicationTimeline = (props) => {
     //}
   };
 
+  console.log("WFData",data)
+
   if (isLoading) {
     return <Loader />;
   }
@@ -62,7 +64,9 @@ const BPAApplicationTimeline = (props) => {
           ) : (
             <ConnectingCheckPoints>
               {data?.timeline &&
-                data?.timeline.slice(0,showAllTimeline? data.timeline.length:2).map((checkpoint, index, arr) => {
+                data?.timeline.slice(0,showAllTimeline? data.timeline.length:2)
+                .filter(item => item?.performedAction !== "SAVE_AS_DRAFT")
+                .map((checkpoint, index, arr) => {
                   let timelineStatusPostfix = "";
                   if (window.location.href.includes("/obps")) {
                     if(data?.timeline[index-1]?.state?.includes("BACK_FROM") || data?.timeline[index-1]?.state?.includes("SEND_TO_CITIZEN"))

@@ -282,7 +282,7 @@ const CHBApplicationDetails = () => {
       hallName: chb_details?.communityHallName,
       hallCode: t(slot.hallCode) + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
-      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
+      bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
   return (
     <React.Fragment>

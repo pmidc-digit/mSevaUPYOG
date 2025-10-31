@@ -366,35 +366,35 @@ public class LAYOUTService {
 				noc.setOwners(userDetailResponse.getUser());
 
 				// BPA CALL
-				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
-						.append(config.getBpaSearchEndpoint());
-
-				uri.append("?tenantId=").append(noc.getTenantId());
-
-
-				Object additionalDetailsObj = noc.getNocDetails().getAdditionalDetails();
-
-				if (additionalDetailsObj instanceof Map) {
-					Map<String, String> details = (Map<String, String>) additionalDetailsObj;
-
-					String sourceRefId = details.get(LAYOUTConstants.SOURCE_RefId);
-					if (sourceRefId != null) {
-						uri.append("&applicationNo=").append(sourceRefId);
-					}
-				}
-
-//					uri.append("&applicationNo=").append(layout.getSourceRefId());
-
-
-				System.out.println("BPA CALL STARTED");
-				LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri,
-						requestInfoWrapper);
-				BPAResponse bpaResponse = mapper.convertValue(responseMap, BPAResponse.class);
-				List<BPA> bpaList = new ArrayList<BPA>();
-				bpaList = bpaResponse.getBPA();
-				bpaList.forEach(bpa -> {
-					additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
-				});
+//				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
+//						.append(config.getBpaSearchEndpoint());
+//
+//				uri.append("?tenantId=").append(noc.getTenantId());
+//
+//
+//				Object additionalDetailsObj = noc.getNocDetails().getAdditionalDetails();
+//
+//				if (additionalDetailsObj instanceof Map) {
+//					Map<String, String> details = (Map<String, String>) additionalDetailsObj;
+//
+//					String sourceRefId = details.get(LAYOUTConstants.SOURCE_RefId);
+//					if (sourceRefId != null) {
+//						uri.append("&applicationNo=").append(sourceRefId);
+//					}
+//				}
+//
+////					uri.append("&applicationNo=").append(layout.getSourceRefId());
+//
+//
+//				System.out.println("BPA CALL STARTED");
+//				LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri,
+//						requestInfoWrapper);
+//				BPAResponse bpaResponse = mapper.convertValue(responseMap, BPAResponse.class);
+//				List<BPA> bpaList = new ArrayList<BPA>();
+//				bpaList = bpaResponse.getBPA();
+//				bpaList.forEach(bpa -> {
+//					additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
+//				});
 				log.info("ADDITIONAL DETAILS :: " + additionalDetails.get("applicantName"));
 				// PROCESS CALL
 				StringBuilder url = new StringBuilder(config.getWfHost());

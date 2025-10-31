@@ -108,8 +108,9 @@ module.exports = function (app) {
     "/egov-esign",
     "/ndc-services",
     "/ndc-calculator",
-    '/bpa-calculator',
-    "/noc-calculator"
+    "/bpa-calculator",
+    "/noc-calculator",
+    "/challan-generation",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

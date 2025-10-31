@@ -6,7 +6,7 @@ export const config = [
     },
     labels: [
       {
-        label: "UC_AMOUNT_DUE_LABEL",
+        label: "CHALLAN_AMOUNT",
         key: "total_due",
         noteStyle: {
           fontSize: "24px",
@@ -19,21 +19,25 @@ export const config = [
         key: "ChannelNo",
       },
       {
-        label: "UC_SERVICE_CATEGORY_LABEL",
-        key: "ServiceCategory",
+        label: "STATUS",
+        key: "status",
       },
-      {
-        label: "UC_BILLING_PERIOD_LABEL",
-        key: "BillingPeriod",
-      },
+      // {
+      //   label: "UC_SERVICE_CATEGORY_LABEL",
+      //   key: "ServiceCategory",
+      // },
+      // {
+      //   label: "UC_BILLING_PERIOD_LABEL",
+      //   key: "BillingPeriod",
+      // },
       {
         label: "UC_OWNER_NAME_LABEL",
         key: "OwnerName",
       },
-      {
-        label: "UC_DUE_DATE",
-        key: "bil_due__date",
-      },
+      // {
+      //   label: "UC_DUE_DATE",
+      //   key: "bil_due__date",
+      // },
     ],
   },
 ];

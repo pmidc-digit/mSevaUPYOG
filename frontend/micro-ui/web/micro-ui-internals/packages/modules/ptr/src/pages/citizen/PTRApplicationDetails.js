@@ -101,7 +101,6 @@ const PTRApplicationDetails = () => {
     { enabled: acknowledgementIds ? true : false }
   );
 
-  console.log("reciept_data", reciept_data);
   if (!pet_details.workflow) {
     const workflow = {
       id: null,
@@ -136,6 +135,7 @@ const PTRApplicationDetails = () => {
 
       const createCertificateHTML = () => {
         const petData = data.PetRegistrationApplications[0];
+        const ulb = petData?.tenantId.split(".")[1];
         const currentDate = new Date().toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "2-digit",
@@ -169,10 +169,25 @@ const PTRApplicationDetails = () => {
                   background: white;
                 }
                 .header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
                   text-align: center;
-                  margin-bottom: 30px;
-                  border-bottom: 2px solid #000;
-                  padding-bottom: 20px;
+                  margin-bottom: 20px;
+                  border-bottom: 2px solid #333;
+                  position: relative;
+                }
+                .header-center {
+                  text-align: center;
+                  flex: 1;
+                  padding-right: 80px
+                }
+                .header-disclaimer {
+                  text-align: center;
+                  flex: 1;
+                }
+                .header-right {
+                  flex: 0 0 auto;
                 }
                 .title {
                   font-size: 18px;
@@ -221,14 +236,17 @@ const PTRApplicationDetails = () => {
                   margin: 20px 0;
                 }
                 .detail-row {
-                  display: flex;
-                  margin-bottom: 8px;
-                }
+  display: flex;
+  margin-bottom: 8px;
+  align-items: flex-start; 
+}
                 .detail-label {
-                  font-weight: bold;
-                  min-width: 150px;
-                  margin-right: 10px;
-                }
+  font-weight: bold;
+  min-width: 150px;       
+  margin-right: 10px;
+  white-space: normal;    
+  word-break: break-word; 
+  flex-shrink: 1;         }
                 .detail-value {
                   flex: 1;
                   border-bottom: 1px dotted #000;
@@ -289,14 +307,29 @@ const PTRApplicationDetails = () => {
             </head>
             <body>
               <div class="certificate-container">
-                <div class="header">
-                  <div class="title">MUNICIPAL CORPORATION</div>
+              <div class="header">
+              <div>
+                <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
+                    style="width: 120px; height: 120px;" />
+              </div>
+              <div class="header-center">
+                <div class="title">MUNICIPAL CORPORATION ${ulb}</div>
+                  <div class="subtitle">VETERINARY SERVICES- HEALTH BRANCH</div>
                   <div class="subtitle">Pet Registration Certificate</div>
-                </div>
-                
+                  <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
+              </div>
+              <div class="header-right">
+              </div>
+            </div>
+                <span class="detail-value">This is to certify that the ${petData?.petDetails?.petType || "Dog"} kept by Mr./Mrs./Ms. ${
+          petData?.owner?.name || "Not Specified"
+        } at (Address) ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
+          petData?.owner?.mobileNumber || "Not Specified"
+        } is registered with Municipal Corporation ${ulb} as per following details:</span>
                 <div class="main-content">
                   <div class="details-section">
-                    <div class="details-grid">
+                    <span class="detail-label">Pet Information</span>
+                    <div class="details-grid">                      
                       <div class="detail-row">
                         <span class="detail-label">Category</span>
                         <span class="detail-value">${petData?.petDetails?.petType || "Dog"}</span>
@@ -331,7 +364,7 @@ const PTRApplicationDetails = () => {
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">Issue Date</span>
-                         <span className="detail-value">
+                         <span class="detail-value">
                        ${
                          petData?.auditDetails?.lastModifiedTime
                            ? new Date(petData.auditDetails?.lastModifiedTime).toLocaleDateString("en-GB")
@@ -340,13 +373,20 @@ const PTRApplicationDetails = () => {
                       </span>
                       </div>
 
-
                       <div class="detail-row">
                         <span class="detail-label">License Valid Upto</span>
-                      <span className="detail-value">
+                      <span class="detail-value">
                        ${petData?.validityDate ? new Date(petData.validityDate * 1000).toLocaleDateString("en-GB") : "N/A"}
                         
                       </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Amount</span>
+                        <span class="detail-value">Rs. ${reciept_data?.Payments?.[0]?.totalAmountPaid || "Not Specified"}/-</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">G8/Receipt No</span>
+                        <span class="detail-value">${reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.receiptNumber || "Not Specified"}</span>
                       </div>
                     </div>
                   </div>
@@ -367,6 +407,7 @@ const PTRApplicationDetails = () => {
                   </div>
                 </div>
 
+                <span class="detail-label">Owner Information</span>
                 <div class="owner-section">
                   <div class="detail-row">
                     <span class="detail-label">Owner Name</span>
@@ -379,6 +420,15 @@ const PTRApplicationDetails = () => {
                   <div class="detail-row">
                     <span class="detail-label">Address</span>
                     <span class="detail-value">${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""}</span>
+                  </div>
+                </div>
+
+                <div class="header">
+                <div class="header-left"> </div>
+                  <div class="header-disclaimer">
+                    <div class="title">DISCLAIMER</div>
+                    <div class="subtitle">${t("PET_DISCLAIMER")}</div>
+                    <div class="header-right"></div>
                   </div>
                 </div>
 
@@ -398,18 +448,36 @@ const PTRApplicationDetails = () => {
                 </div>
 
                 <div class="terms-section">
-                  <div class="terms-title">Note:- The license is being issued on the following conditions:-</div>
+                  <div class="terms-title">TERMS AND CONDITIONS</div>
+                  <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
                   <ol class="terms-list">
-                  <li>${t("PTR_TERM_1")}</li>
-                  <li>${t("PTR_TERM_2")}</li>
-                  <li>${t("PTR_TERM_3")}</li>
-                  <li>${t("PTR_TERM_4")}</li>
-                  <li>${t("PTR_TERM_5")}</li>
-                  <li>${t("PTR_TERM_6")}</li>
-                  <li>${t("PTR_TERM_7")}</li>
-                  <li>${t("PTR_TERM_8")}</li>
-                </ol>
-                  <div style="text-align: right;">
+                    <li>${t("PET_NEW_TERM_1")}</li>
+                    <li>${t("PET_NEW_TERM_2")}</li>
+                    <li>${t("PET_NEW_TERM_3")}</li>
+                    <li>${t("PET_NEW_TERM_4")}</li>
+                    <li>${t("PET_NEW_TERM_5")}</li>
+                    <li>${t("PET_NEW_TERM_6")}</li>
+                    <li>${t("PET_NEW_TERM_7")}</li>
+                    <li>${t("PET_NEW_TERM_8")}</li>
+                    <li>${t("PET_NEW_TERM_9")}</li>
+                    <li>${t("PET_NEW_TERM_10")}</li>
+                    <li>${t("PET_NEW_TERM_11")}</li>
+                    <li>${t("PET_NEW_TERM_12")}</li>
+                    <li>${t("PET_NEW_TERM_13")}</li>
+                    <li>${t("PET_NEW_TERM_14")}</li>
+                    <li>${t("PET_NEW_TERM_15")}</li>
+                    <li>${t("PET_NEW_TERM_16")}</li>
+                    <li>${t("PET_NEW_TERM_17")}</li>
+                    <li>
+                      ${t("PET_TERM_PART_1")}
+                      ${t("PETTOKEN_DATE")}
+                      ${t("PETTOKEN_ADDRESS")}
+                      ${t("PET_TERM_PART_2")}
+                    </li>
+                    <li>${t("PET_NEW_TERM_19")}</li>
+                  </ol>
+
+                  <div style="text-align: center;">
                     <img src="${qrDataURL}" style="width: 120px; height: 120px;" />
                 </div>
                 </div>
@@ -453,6 +521,7 @@ const PTRApplicationDetails = () => {
 
       const createAcknowledgementHTML = () => {
         const petData = data.PetRegistrationApplications[0];
+        const ulb = petData?.tenantId.split(".")[1];
         const currentDate = new Date().toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "long",
@@ -532,7 +601,7 @@ const PTRApplicationDetails = () => {
               <div class="acknowledgement-container">
                 <div class="header">
                   <div class="title">Pet Registration Acknowledgement</div>
-                  <div class="subtitle">Municipal Corporation</div>
+                  <div class="subtitle">Municipal Corporation ${ulb}</div>
                 </div>
                 
                 <div class="acknowledgement-text">

@@ -165,6 +165,7 @@ const CHBApplicationDetails = () => {
 
   const getChbAcknowledgement = async () => {
     const applications = application || {};
+    console.log('applications for chbb', applications)
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
     Digit.Utils.pdf.generate(acknowldgementDataAPI);

@@ -145,7 +145,7 @@ const ChallanStepperForm = () => {
   // };
 
   const onSubmit = async (data) => {
-    setLoader(false);
+    setLoader(true);
     console.log("dat==??a", data);
     console.log("documentsData", documentsData?.documents);
 
@@ -175,14 +175,15 @@ const ChallanStepperForm = () => {
         action: "SUBMIT",
       },
     };
-    history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       console.log("response", response);
       setLoader(false);
-      return;
-      if (isCitizen) history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
-      else history.push("/digit-ui/employee/challangeneration/response/" + "123123");
+      const id = response?.challans?.[0]?.challanNo;
+      history.push("/digit-ui/employee/challangeneration/response/" + `${id}`);
+      // return;
+      // if (isCitizen) history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
+      // else history.push("/digit-ui/employee/challangeneration/response/" + "123123");
     } catch (error) {
       console.log("error", error);
       setLoader(false);

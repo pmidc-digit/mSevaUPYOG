@@ -31,6 +31,7 @@ import ChallanSummary from "./pageComponents/ChallanSummary";
 import ChallanDocuments from "./pageComponents/ChallanDocuments";
 import getRootReducer from "../redux/reducer";
 import ChallanResponseCitizen from "./components/ChallanResponseCitizen";
+import ChallanApplicationDetails from "./pages/citizen/ChallanApplicationDetails";
 
 export const ChallanGenerationModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -100,6 +101,7 @@ const componentsToRegister = {
   ChallanSummary,
   ChallanDocuments,
   ChallanResponseCitizen,
+  ChallanApplicationDetails,
 };
 
 export const initChallanGenerationComponents = () => {

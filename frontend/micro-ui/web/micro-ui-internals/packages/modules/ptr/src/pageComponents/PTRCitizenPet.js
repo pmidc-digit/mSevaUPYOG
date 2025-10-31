@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   CardLabel,
@@ -14,12 +14,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
 import CustomDatePicker from "./CustomDatePicker";
+import { Loader } from "../components/Loader";
 
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
-  console.log("currentStepData here:>> ", currentStepData);
   const stateId = Digit.ULBService.getStateId();
   let user = Digit.UserService.getUser();
   const dispatch = useDispatch();
+  const [loader, setLoader] = useState(false);
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
 
   const tenantId = window.location.href.includes("citizen")
@@ -32,11 +33,6 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const breedTypeObj = mdmsPetData?.breedTypes?.find((bt) => bt.name === apiDataCheck?.[0]?.petDetails?.breedType) || null;
 
   const genderTypeObj = mdmsPetData?.genderTypes?.find((gt) => gt.name === apiDataCheck?.[0]?.petDetails?.petGender) || null;
-
-  console.log("petTypeObj :>> ", petTypeObj);
-  console.log("breedTypeObj :>> ", breedTypeObj);
-
-  console.log("genderTypeObj :>> ", genderTypeObj);
 
   const pathParts = window.location.pathname.split("/");
   const id = pathParts[pathParts.length - 1];
@@ -75,18 +71,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const onSubmit = async (data) => {
     if (validateStep) {
       const validationErrors = validateStep(data);
-      console.log("validationErrors", validationErrors);
       if (Object.keys(validationErrors).length > 0) return;
     }
 
     if (currentStepData?.CreatedResponse?.applicationNumber || currentStepData?.applicationData?.applicationNumber) {
-      console.log("Skipping API call — already created");
       goNext(data);
       return;
     }
-
-    console.log("data", data);
-
     const { address, name, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
     const formData = {
       tenantId,
@@ -183,29 +174,52 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           `${pick(filteredOwnerDetails.firstName, existing.ownerName || "")} ${pick(filteredOwnerDetails.lastName, "")}`.trim() || existing.ownerName,
         mobileNumber: pick(filteredOwnerDetails.mobileNumber, existing.mobileNumber),
       };
-
-      const response = await Digit.PTRService.update({ PetRegistrationApplications: [updateFormData] }, tenantId);
-      if (response?.ResponseInfo?.status === "successful") {
-        dispatch(UPDATE_PTRNewApplication_FORM("CreatedResponse", response.PetRegistrationApplications[0]));
-        goNext(data);
+      setLoader(true);
+      try {
+        const response = await Digit.PTRService.update({ PetRegistrationApplications: [updateFormData] }, tenantId);
+        setLoader(false);
+        if (response?.ResponseInfo?.status === "successful") {
+          dispatch(UPDATE_PTRNewApplication_FORM("CreatedResponse", response.PetRegistrationApplications[0]));
+          goNext(data);
+        }
+      } catch (error) {
+        setLoader(false);
+        console.log("error", error);
       }
     } else {
       // No existing application -> create (unchanged)
-      const response = await Digit.PTRService.create({ petRegistrationApplications: [formData] }, formData.tenantId);
-      if (response?.ResponseInfo?.status === "successful") {
-        dispatch(UPDATE_PTRNewApplication_FORM("CreatedResponse", response.PetRegistrationApplications[0]));
-        goNext(data);
+
+      try {
+        const response = await Digit.PTRService.create({ petRegistrationApplications: [formData] }, formData.tenantId);
+        setLoader(false);
+        if (response?.ResponseInfo?.status === "successful") {
+          dispatch(UPDATE_PTRNewApplication_FORM("CreatedResponse", response.PetRegistrationApplications[0]));
+          goNext(data);
+        }
+      } catch (error) {
+        setLoader(false);
+        console.log("error", error);
       }
     }
   };
+
   useEffect(() => {
     if (apiDataCheck?.[0]?.petDetails) {
+      console.log("apiDataCheck?.[0]?.petDetails", apiDataCheck?.[0]);
+      const createdTime = apiDataCheck?.[0]?.auditDetails?.createdTime;
+
+      // Convert to Date object
+      const createdDate = new Date(Number(createdTime));
+      const currentDate = new Date();
+
+      // Calculate months passed since createdTime
+      const monthsDiff = (currentDate.getFullYear() - createdDate.getFullYear()) * 12 + (currentDate.getMonth() - createdDate.getMonth());
+
       Object.entries(apiDataCheck[0].petDetails).forEach(([key, value]) => {
         if (key === "lastVaccineDate") {
           const epoch = value !== null && value !== undefined && value !== "" ? (!Number.isNaN(Number(value)) ? Number(value) : value) : value;
 
           const v = convertEpochToDateInput(epoch);
-          console.log("setting lastVaccineDate from apiCheckData ->", value, "coerced ->", epoch, "converted ->", v);
           setValue(key, v);
         } else if (key === "petType") {
           setValue(key, petTypeObj);
@@ -213,12 +227,34 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           setValue(key, breedTypeObj);
         } else if (key === "petGender") {
           setValue(key, genderTypeObj);
+        } else if (key === "petAge") {
+          // 🧠 Handle pet age increment logic
+          if (value) {
+            const [yearsStr, monthsStr] = value.toString().split(".");
+            let years = parseInt(yearsStr, 10);
+            let months = parseInt(monthsStr || 0, 10);
+
+            // Add the months passed since creation
+            months += monthsDiff;
+
+            // Convert months overflow to years
+            if (months >= 12) {
+              years += Math.floor(months / 12);
+              months = months % 12;
+            }
+
+            const updatedAge = `${years}.${months}`;
+            setValue(key, updatedAge);
+          } else {
+            setValue(key, value);
+          }
         } else {
           setValue(key, value);
         }
       });
     }
   }, [isLoading, mdmsPetData, apiDataCheck, setValue]);
+
   useEffect(() => {
     if (currentStepData?.petDetails) {
       Object.entries(currentStepData.petDetails).forEach(([key, value]) => {
@@ -245,6 +281,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
   const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
   const decimalNumber = /^\d+(\.\d{1,2})?$/;
+
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
@@ -490,6 +527,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
                 }}
                 maxlength={5} // allow for values like "23.99"
                 t={t}
+                disabled={checkForRenew}
               />
             )}
           />
@@ -574,6 +612,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
+      {isLoading && <Loader page={true} />}
     </form>
   );
 };

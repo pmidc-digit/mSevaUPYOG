@@ -613,13 +613,13 @@ useEffect(() => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType
-    const edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } })
-    const responseStatus = Number.parseInt(edcrResponse.status, 10)
-    if (responseStatus === 201 || responseStatus === 200) {
-      mode == "print"
-        ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
-        : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`)
-    }
+    // const edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } })
+    // const responseStatus = Number.parseInt(edcrResponse.status, 10)
+    // if (responseStatus === 201 || responseStatus === 200) {
+    //   mode == "print"
+    //     ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
+    //     : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`)
+    // }
   }
 
   async function getRevocationPDFSearch({ tenantId, ...params }) {
@@ -785,7 +785,7 @@ useEffect(() => {
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t)
     }
-    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT"){
+    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "APPROVE_AND_PAY"){
       saveAsDraft(data?.applicationData, action)
     }
     setSelectedAction(action)
@@ -1211,7 +1211,7 @@ useEffect(() => {
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-low"),
+          getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
       })
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
@@ -1224,7 +1224,7 @@ useEffect(() => {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
       })
     }
   } else {
@@ -1793,7 +1793,7 @@ useEffect(() => {
                           <div style={{ width: "100%" }}>
                             {displayMenu && workflowDetails?.data?.nextActions ? (
                               <Menu
-                                //style={{ bottom: "37px", minWidth: "240px", maxWidth: "310px", width: "100%", right: "0px" }}
+                                style={{minWidth: "310px" }}
                                 localeKeyPrefix={"WF_BPA_ACTION"}
                                 options={workflowDetails?.data?.nextActions.map((action) => action.action)}
                                 t={t}

@@ -363,7 +363,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petColor || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">Registration Number</span>
+                        <span class="detail-label">Application Number</span>
                         <span class="detail-value">${petData?.applicationNumber || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
@@ -684,6 +684,7 @@ const PTRApplicationDetails = () => {
                   <p>Generated on: ${currentDate}</p>
                   <p>Municipal Corporation</p>
                   <p>This is a computer-generated document and does not require a signature.</p>
+                  <p>https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home</p>
                 </div>
               </div>
             </body>

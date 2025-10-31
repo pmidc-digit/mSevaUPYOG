@@ -212,15 +212,47 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
 
   return (
     <div style={pageStyle}>
+
       {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
       {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />}
+      
 
-      <h2 style={headingStyle}>{t("BPA_STEPPER_SUMMARY_HEADER")}</h2>
+   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <h2 style={headingStyle}>{t("BPA_STEPPER_SUMMARY_HEADER")}</h2>
+
+  {(() => {
+    const passportPhoto = documents?.documents?.find(
+      (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO"
+    )
+
+    if (!passportPhoto) return null
+
+    return (
+      <img
+        src={`${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${passportPhoto.fileStoreId}`}
+        alt="Owner Photograph"
+        style={{
+          maxWidth: "100px",
+          maxHeight: "100px",
+          border: "2px solid #e0e0e0",
+          borderRadius: "8px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          marginBottom:"10px"
+        }}
+        onError={(e) => {
+          e.target.style.display = "none"
+        }}
+      />
+    )
+  })()}
+</div>
 
       {/* Application Details */}
       <div style={sectionStyle}>
         {renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}
       </div>
+
+
 
       {/* License Type */}
       <div style={sectionStyle}>
@@ -240,6 +272,8 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
       </div>
 
+
+    
       {/* Applicant Details */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>
@@ -271,7 +305,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
       </div>
 
       {/* Documents */}
-      <div style={sectionStyle}>
+      {/* <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
         {documents?.documents?.length > 0 ? (
           <div style={documentsContainerStyle}>
@@ -290,6 +324,119 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
           </div>
         ) : (
           <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+        )}
+      </div> */}
+
+
+      {/* Documents - TABLE VIEW */}
+
+      <div style={sectionStyle}>
+        <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
+        {documents?.documents?.length > 0 ? (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "1rem"
+            }}>
+              <thead>
+                <tr style={{
+                  backgroundColor: "#f5f5f5",
+                  borderBottom: "2px solid #ddd"
+                }}>
+                  <th style={{
+                    padding: "0.75rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                    color: "#2e4a66",
+                    width: "100px"
+                  }}>
+                    {t("BPA_SL_NO")}
+                  </th>
+                  <th style={{
+                    padding: "0.75rem",
+                    textAlign: "left",
+                    fontWeight: "600",
+                    color: "#2e4a66"
+                  }}>
+                    {t("BPA_DOCUMENT_TYPE")}
+                  </th>
+                  <th style={{
+                    padding: "0.75rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                    color: "#2e4a66",
+                    width: "150px"
+                  }}>
+                    {t("BPA_ACTION")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {documents?.documents.map((doc, index) => (
+                  <tr key={index} style={{
+                    borderBottom: "1px solid #e0e0e0"
+                  }}>
+                    <td style={{
+                      padding: "0.75rem",
+                      textAlign: "center",
+                      color: "#333",
+                      fontWeight: "500"
+                    }}>
+                      {index + 1}
+                    </td>
+                    <td style={{ padding: "0.75rem" }}>
+                      {/* <CHANGE> Display OBPSDocument to show proper document name like "Identity Proof" */}
+                      <div style={{ pointerEvents: "none" }}>
+                        <OBPSDocument
+                          value={safeValue}
+                          Code={doc?.documentType}
+                          index={index}
+                          isNOC={false}
+                          svgStyles={{}}
+                          isStakeHolder={true}
+                        />
+                      </div>
+                    </td>
+                    <td style={{
+                      padding: "0.75rem",
+                      textAlign: "center"
+                    }}>
+                      <button
+                        onClick={() => {
+                          // <CHANGE> Trigger the OBPSDocument preview functionality
+                          const row = document.querySelectorAll('tbody tr')[index];
+                          const docElement = row?.querySelector('[data-testid], a, [role="button"]');
+                          if (docElement) {
+                            const clickEvent = new MouseEvent('click', {
+                              bubbles: true,
+                              cancelable: true,
+                              view: window
+                            });
+                            docElement.dispatchEvent(clickEvent);
+                          }
+                        }}
+                        style={{
+                          padding: "0.5rem 1rem",
+                          backgroundColor: "#2e4a66",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "0.875rem",
+                          fontWeight: "500"
+                        }}
+                      >
+                        {t("BPA_VIEW")}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div>{t("BPA_NO_DOCUMENTS_MSG")}</div>
         )}
       </div>
 

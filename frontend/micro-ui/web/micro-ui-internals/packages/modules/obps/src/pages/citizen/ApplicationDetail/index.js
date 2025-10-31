@@ -68,6 +68,8 @@ const LicenseData = {
   ]
 };
 
+console.log(LicenseData, "LicenseData");
+
 //  Update loading state to check both
 const isLoading = isLoadingDynamic || isLoadingPunjab;
 
@@ -117,11 +119,6 @@ let License = LicenseData?.Licenses?.[0];
   }, [License, reciept_data]);
 
 
-
-
-
-
-
   const handleViewTimeline = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
@@ -137,8 +134,7 @@ let License = LicenseData?.Licenses?.[0];
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#333",
     paddingBottom: "5rem",
-  };
-
+  }
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -146,16 +142,16 @@ let License = LicenseData?.Licenses?.[0];
     borderRadius: "8px",
     marginBottom: "1.5rem",
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  };
+  }
 
-   const headingStyle = {
+  const headingStyle = {
     fontSize: isMobile ? "1.2rem" : "1.5rem",
     borderBottom: "2px solid #ccc",
     paddingBottom: "0.3rem",
     color: "#2e4a66",
     marginTop: isMobile ? "1.2rem" : "2rem",
     marginBottom: "1rem",
-  };
+  }
 
   const labelFieldPairStyle = {
     display: "flex",
@@ -166,22 +162,22 @@ let License = LicenseData?.Licenses?.[0];
     padding: "0.5rem 0",
     color: "#333",
     gap: isMobile ? "0.25rem" : "0",
-  };
+  }
 
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
 
-   const renderLabel = (label, value) => (
+  const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
       <div style={{ wordBreak: "break-word" }}>{value || t("CS_NA")}</div>
     </div>
-  );
+  )
 
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
     gap: "1rem",
-  };
+  }
 
   const documentCardStyle = {
     flex: isMobile ? "1 1 100%" : "1 1 calc(50% - 1rem)",
@@ -199,45 +195,90 @@ let License = LicenseData?.Licenses?.[0];
     justifyContent: "center",
     cursor: "pointer",
     transition: "transform 0.2s, box-shadow 0.2s",
-  };
-
-
-
-  
-
+  }
 
   return (
     <Fragment>
       <div style={pageStyle}>
-
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-          <h2 style={{ fontSize: "2rem", color: "#2e4a66" }}>{t("BPA_TASK_DETAILS_HEADER")}</h2>
-          <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
-            {recieptDataLoading ? (
-              <Loader />
-            ) : (
-              reciept_data?.Payments?.length > 0 && (
-                <MultiLink onHeadClick={() => setShowOptions(!showOptions)} displayOptions={showOptions} options={dowloadOptions} />
-              )
-            )}
-            <DownloadCertificateButton applicationNumber={id} />
-            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: "2rem",
+            gap: "1rem",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: "2rem", color: "#2e4a66", marginBottom: "1rem" }}>{t("BPA_TASK_DETAILS_HEADER")}</h2>
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                alignItems: "center",
+                flexWrap: "wrap",
+                flexDirection: isMobile ? "column" : "row",
+              }}
+            >
+              {recieptDataLoading ? (
+                <Loader />
+              ) : (
+                reciept_data?.Payments?.length > 0 && (
+                  <MultiLink
+                    onHeadClick={() => setShowOptions(!showOptions)}
+                    displayOptions={showOptions}
+                    options={dowloadOptions}
+                  />
+                )
+              )}
+              <DownloadCertificateButton applicationNumber={id} />
+              <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+            </div>
           </div>
+
+          {(() => {
+            const passportPhoto = License?.tradeLicenseDetail?.applicationDocuments?.find(
+              (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO",
+            )
+
+            if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
+
+            return (
+              <img
+                src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
+                alt="Owner Photograph"
+                style={{
+                  maxWidth: "120px",
+                  maxHeight: "120px",
+                  border: "2px solid #e0e0e0",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  flexShrink: 0,
+                }}
+                onError={(e) => {
+                  e.target.style.display = "none"
+                }}
+              />
+            )
+          })()}
         </div>
 
         {/* Application Details */}
         <div style={sectionStyle}>{renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), License?.applicationNumber)}</div>
-        
+
         {/* License Details */}
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSE_DETAILS_LABEL")}</h2>
           {renderLabel(
             t("BPA_LICENSE_TYPE"),
-            t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`)
+            t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`),
           )}
           {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
-            renderLabel(t("BPA_COUNCIL_OF_ARCH_NO_LABEL"), License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
+            renderLabel(
+              t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
+              License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
+            )}
         </div>
 
         {/* Applicant Details */}
@@ -261,43 +302,127 @@ let License = LicenseData?.Licenses?.[0];
           {renderLabel(t("Address"), License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
         </div>
 
-                {/* Documents */}
+        {/* Documents */}
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
           <div style={sectionStyle}>
             <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
-            <div style={documentsContainerStyle}>
-              {License?.tradeLicenseDetail?.applicationDocuments?.map((document, index) => (
-                <a
-                  key={index}
-                  target="_blank"
-                  href={documents[document.fileStoreId]?.split(",")[0]}
-                  style={{ textDecoration: "none", flex: isMobile ? "1 1 100%" : "1 1 calc(50% - 1rem)" }}
-                >
-                  <div style={documentCardStyle}>
-                    <p
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  marginTop: "1rem",
+                }}
+              >
+                <thead>
+                  <tr
+                    style={{
+                      backgroundColor: "#f5f5f5",
+                      borderBottom: "2px solid #ddd",
+                    }}
+                  >
+                    <th
                       style={{
-                        marginTop: "8px",
-                        fontWeight: "bold",
-                        fontSize: isMobile ? "14px" : "16px",
-                        color: "#505A5F",
+                        padding: "0.75rem",
+                        textAlign: "center",
+                        fontWeight: "600",
+                        color: "#2e4a66",
+                        width: "100px",
                       }}
                     >
-                      {t(`BPAREG_HEADER_${stringReplaceAll(document?.documentType?.toUpperCase(), ".", "_")}`)}
-                    </p>
-                    {document?.info && (
-                      <div
+                      {t("BPA_SL_NO")}
+                    </th>
+                    <th
+                      style={{
+                        padding: "0.75rem",
+                        textAlign: "left",
+                        fontWeight: "600",
+                        color: "#2e4a66",
+                      }}
+                    >
+                      {t("BPA_DOCUMENT_TYPE")}
+                    </th>
+                    <th
+                      style={{
+                        padding: "0.75rem",
+                        textAlign: "center",
+                        fontWeight: "600",
+                        color: "#2e4a66",
+                        width: "150px",
+                      }}
+                    >
+                      {t("BPA_ACTION")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {License?.tradeLicenseDetail?.applicationDocuments?.map((document, index) => (
+                    <tr
+                      key={index}
+                      style={{
+                        borderBottom: "1px solid #e0e0e0",
+                      }}
+                    >
+                      <td
                         style={{
-                          fontSize: "12px",
-                          color: "#505A5F",
-                          marginTop: "5px",
+                          padding: "0.75rem",
+                          textAlign: "center",
+                          color: "#333",
+                          fontWeight: "500",
                         }}
                       >
-                        {t(document?.info)}
-                      </div>
-                    )}
-                  </div>
-                </a>
-              ))}
+                        {index + 1}
+                      </td>
+                      <td style={{ padding: "0.75rem" }}>
+                        <div style={{ color: "#333" }}>
+                          {t(`BPAREG_HEADER_${stringReplaceAll(document?.documentType?.toUpperCase(), ".", "_")}`)}
+                        </div>
+                        {document?.info && (
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              color: "#505A5F",
+                              marginTop: "5px",
+                            }}
+                          >
+                            {t(document?.info)}
+                          </div>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: "0.75rem",
+                          textAlign: "center",
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            const fileUrl = documents[document.fileStoreId]?.split(",")[0]
+                            if (fileUrl) {
+                              window.open(fileUrl, "_blank")
+                            }
+                          }}
+                          style={{
+                            padding: "0.5rem 1rem",
+                            backgroundColor: "#2e4a66",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "0.875rem",
+                            fontWeight: "500",
+                            transition: "background-color 0.2s",
+                          }}
+                          onMouseOver={(e) => (e.target.style.backgroundColor = "#1e3a56")}
+                          onMouseOut={(e) => (e.target.style.backgroundColor = "#2e4a66")}
+                        >
+                          {t("BPA_VIEW")}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -307,9 +432,9 @@ let License = LicenseData?.Licenses?.[0];
           {/* <h2 style={headingStyle}>{t("BPA_TASK_TIMELINE")}</h2> */}
           <ApplicationTimeline id={id} tenantId={License?.tenantId} />
         </div>
-      </div> 
+      </div>
     </Fragment>
-  );
-};
+  )
+}
 
-export default ApplicationDetails;
+export default ApplicationDetails

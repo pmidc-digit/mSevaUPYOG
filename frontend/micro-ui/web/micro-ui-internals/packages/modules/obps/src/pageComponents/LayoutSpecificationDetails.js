@@ -34,6 +34,7 @@ const LayoutSpecificationDetails = (_props) => {
     <React.Fragment>
       <CardSectionHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSectionHeader>
 
+
       <div>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")}`}</CardLabel>

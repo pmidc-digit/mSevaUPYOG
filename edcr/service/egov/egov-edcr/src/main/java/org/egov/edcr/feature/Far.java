@@ -1559,8 +1559,8 @@ public class Far extends FeatureProcess {
 		details.put(PROVIDED, actualResult);
 		details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 
-//		scrutinyDetail.getDetail().add(details);
-//		//pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 //		Map<String, String> details1 = new HashMap<>();
 //		details1.put(RULE_NO, RULE);
 //		details1.put(OCCUPANCY, "Purchaseable FAR");

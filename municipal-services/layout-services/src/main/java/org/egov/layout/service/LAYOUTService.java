@@ -98,7 +98,10 @@ public class LAYOUTService {
 		String buildingCategoryType = (String) buildingCategory.get("code");
 		if(buildingCategoryType.equals("RESIDENTIAL_PLOTTED")){
 			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");
-		}else{
+		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE_BUILDING")){
+			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
+		}
+		else{
 			acres = (String) siteDetails.get("areaUnderCommercialUseInSqM");
 		}
 

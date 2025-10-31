@@ -38,6 +38,30 @@ public class PaymentTimerService {
 		bookingRepository.deleteBookingIdForTimer(bookingId);
 		
 	}
+
+	@Transactional
+	public void insertBookingIdForTimerWithOwner(List<AdvertisementSlotSearchCriteria> criteria,String bookingNo, String ownerId, RequestInfo requestInfo, AdvertisementSlotAvailabilityDetail availabilityDetail) {
+		bookingRepository.insertBookingIdForTimerWithOwner(criteria,bookingNo, ownerId, requestInfo, availabilityDetail);
+	}
+
+	@Transactional
+	public void deleteTimerEntriesForSlots(String ownerId, List<AdvertisementSlotAvailabilityDetail> slots) {
+		if (slots == null || slots.isEmpty()) return;
+		// convert AdvertisementSlotAvailabilityDetail -> CartDetail-like fields used by repo method
+		List<org.upyog.adv.web.models.CartDetail> cartDetails = new java.util.ArrayList<>();
+		for (AdvertisementSlotAvailabilityDetail s : slots) {
+			java.time.LocalDate bookingDate = null;
+			try {
+				bookingDate = org.upyog.adv.util.BookingUtil.parseStringToLocalDate(s.getBookingDate());
+			} catch (Exception ex) {
+				// if parsing fails leave null
+			}
+			org.upyog.adv.web.models.CartDetail c = org.upyog.adv.web.models.CartDetail.builder()
+				.advertisementId(s.getAdvertisementId()).bookingDate(bookingDate).addType(s.getAddType()).faceArea(s.getFaceArea()).nightLight(s.getNightLight()).build();
+			cartDetails.add(c);
+		}
+		bookingRepository.deleteTimerEntriesForSlots(ownerId, cartDetails);
+	}
 	
 
 //	public void getRemainingTimerValue(List<BookingDetail> bookingDetails) {

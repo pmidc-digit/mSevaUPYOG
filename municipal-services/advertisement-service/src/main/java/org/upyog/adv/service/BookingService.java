@@ -44,4 +44,10 @@ public interface BookingService {
 
 	String getDraftId(List<AdvertisementSlotAvailabilityDetail> availabiltityDetailsResponse, RequestInfo requestInfo);
 
+	/**
+	 * Modify the cart for an existing booking: mark removed slots REMOVED, delete timers for removed slots,
+	 * insert timers for newly added slots and persist cart changes.
+	 */
+	org.upyog.adv.web.models.BookingDetail modifyCartSlots(org.upyog.adv.web.models.BookingRequest bookingRequest);
+
 }

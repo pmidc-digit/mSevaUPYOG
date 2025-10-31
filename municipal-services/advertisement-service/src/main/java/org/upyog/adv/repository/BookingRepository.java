@@ -30,6 +30,13 @@ public interface BookingRepository {
 	
 	void insertBookingIdForTimer(List<AdvertisementSlotSearchCriteria> criteria, RequestInfo requestInfo,
 			AdvertisementSlotAvailabilityDetail availabiltityDetailsResponse);
+
+	/**
+	 * Insert timer entries for the given criteria but set booking_id to the provided ownerId.
+	 * ownerId can be an actual booking_id (for existing bookings) or a draft id used as owner.
+	 */
+	void insertBookingIdForTimerWithOwner(List<AdvertisementSlotSearchCriteria> criteria, String BookingNo,String ownerId,
+			RequestInfo requestInfo, AdvertisementSlotAvailabilityDetail availabiltityDetailsResponse);
 	
 	Map<String, Long> getRemainingTimerValues(String bookingId);
 	
@@ -68,6 +75,17 @@ public interface BookingRepository {
             AdvertisementSlotAvailabilityDetail availabilityDetailsResponse);
 
 	void deleteDataFromTimerAndDraft(String uuid, String draftId, String bookingId);
+
+	/**
+	 * Mark the given cart slots as REMOVED (status) for the booking and create audit.
+	 */
+	void markCartSlotsRemoved(String bookingId, List<org.upyog.adv.web.models.CartDetail> removed, String modifiedBy,
+			long modifiedTime);
+
+	/**
+	 * Delete timer entries for the provided ownerId (bookingId or draft id) and for the given list of slots.
+	 */
+	void deleteTimerEntriesForSlots(String ownerId, List<org.upyog.adv.web.models.CartDetail> slots);
 
 	// Scheduler support: find bookings that completed their duration and move to verification
 	List<String> findBookingsEligibleForVerification();

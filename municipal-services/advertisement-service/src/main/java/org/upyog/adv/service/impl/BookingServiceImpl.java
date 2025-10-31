@@ -3,10 +3,12 @@ package org.upyog.adv.service.impl;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +55,9 @@ public class BookingServiceImpl implements BookingService {
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	private org.upyog.adv.config.BookingConfiguration bookingConfiguration;
 
 	@Autowired
 	private PaymentTimerService paymentTimerService;
@@ -742,6 +747,124 @@ public class BookingServiceImpl implements BookingService {
 
 		// Return the enriched booking application object
 		return bookingRequest.getBookingApplication();
+	}
+
+
+@Override
+@Transactional
+public BookingDetail modifyCartSlots(BookingRequest bookingRequest) {
+    BookingDetail incoming = bookingRequest.getBookingApplication();
+    String bookingNo = incoming.getBookingNo();
+    String bookingId = incoming.getBookingId();
+
+    if (StringUtils.isBlank(bookingNo)) {
+        throw new CustomException("INVALID_REQUEST", "bookingId is required to modify cart");
+    }
+
+    // Fetch existing booking
+    AdvertisementSearchCriteria criteria = AdvertisementSearchCriteria.builder().bookingNo(bookingNo).build();
+    List<BookingDetail> existingList = bookingRepository.getBookingDetails(criteria);
+    if (existingList == null || existingList.isEmpty()) {
+        throw new CustomException("INVALID_BOOKING_No", "Booking not found: " + bookingNo);
+    }
+
+    BookingDetail existing = existingList.get(0);
+    List<CartDetail> incomingCart = incoming.getCartDetails() != null ? incoming.getCartDetails() : new ArrayList<>();
+
+    String modifiedBy = bookingRequest.getRequestInfo() != null && bookingRequest.getRequestInfo().getUserInfo() != null
+            ? bookingRequest.getRequestInfo().getUserInfo().getUuid()
+            : "SYSTEM";
+    long modifiedTime = BookingUtil.getCurrentTimestamp();
+
+    // 🔥 Step 1: Remove all existing cart slots and timers
+    bookingRepository.markCartSlotsRemoved(bookingId, existing.getCartDetails(), modifiedBy, modifiedTime);
+    bookingRepository.deleteTimerEntriesForSlots(bookingId, existing.getCartDetails());
+
+    // 🔥 Step 2: Add all incoming slots (treat as new)
+    for (CartDetail c : incomingCart) {
+        if (StringUtils.isBlank(c.getCartId())) {
+            c.setCartId(BookingUtil.getRandonUUID());
+        }
+        c.setBookingId(bookingId);
+    }
+
+    // Determine earliest date (for timer bookingStartDate)
+    // 🔥 Group cart details by their key attributes (same advertisement, addType, location, etc.)
+    Map<String, List<CartDetail>> groupedByAttributes = incomingCart.stream()
+            .collect(Collectors.groupingBy(c ->
+                    c.getAdvertisementId() + "|" +
+                            c.getAddType() + "|" +
+                            c.getLocation() + "|" +
+                            c.getFaceArea() + "|" +
+                            c.getNightLight()
+            ));
+
+    List<AdvertisementSlotSearchCriteria> criteriaList = new ArrayList<>();
+
+    for (Map.Entry<String, List<CartDetail>> entry : groupedByAttributes.entrySet()) {
+        List<CartDetail> group = entry.getValue();
+
+        // find min and max booking dates in this group
+        LocalDate startDate = group.stream()
+                .map(CartDetail::getBookingDate)
+                .filter(Objects::nonNull)
+                .min(LocalDate::compareTo)
+                .orElse(null);
+
+        LocalDate endDate = group.stream()
+                .map(CartDetail::getBookingDate)
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo)
+                .orElse(null);
+
+        CartDetail sample = group.get(0);
+
+        AdvertisementSlotSearchCriteria criteriaItem = AdvertisementSlotSearchCriteria.builder()
+                .advertisementId(sample.getAdvertisementId())
+                .addType(sample.getAddType())
+                .location(sample.getLocation())
+                .faceArea(sample.getFaceArea())
+                .nightLight(sample.getNightLight())
+                .tenantId(incoming.getTenantId())
+                .bookingStartDate(BookingUtil.parseLocalDateToString(startDate, "yyyy-MM-dd"))
+                .bookingEndDate(BookingUtil.parseLocalDateToString(endDate, "yyyy-MM-dd"))
+                .isTimerRequired(true) // always true as per your requirement
+                .build();
+
+        criteriaList.add(criteriaItem);
+    }
+
+
+    List<AdvertisementSlotAvailabilityDetail> allAvailabilityDetails = new ArrayList<>();
+
+    for (AdvertisementSlotSearchCriteria criteria1: criteriaList) {
+        List<AdvertisementSlotAvailabilityDetail> availabilityDetails = checkAdvertisementSlotAvailability(criteria1,
+                bookingRequest.getRequestInfo());
+        allAvailabilityDetails.addAll(availabilityDetails);
+
+    }
+
+    paymentTimerService.insertBookingIdForTimerWithOwner(criteriaList,bookingNo, bookingId, bookingRequest.getRequestInfo(), allAvailabilityDetails.get(0));
+    bookingRepository.updateTimerBookingId(bookingId,bookingNo,bookingId);
+//    paymentTimerService.insertBookingIdForTimer(criteriaList, bookingRequest.getRequestInfo(), allAvailabilityDetails);
+    // 🔥 Step 3: Persist new cart
+    bookingRepository.updateBooking(bookingRequest);
+
+    existing.setCartDetails(incomingCart);
+    return existing;
+}
+    /**
+	 * Helper to compare two cart slots for equivalence based on advertisementId, bookingDate and optional attributes
+	 */
+	private boolean isCartSlotMatching(CartDetail a, CartDetail b) {
+		if (a == null || b == null) return false;
+		if (!Objects.equals(a.getAdvertisementId(), b.getAdvertisementId())) return false;
+		if (!Objects.equals(a.getBookingDate(), b.getBookingDate())) return false;
+		if (StringUtils.isNotBlank(a.getAddType()) && !Objects.equals(a.getAddType(), b.getAddType())) return false;
+		if (StringUtils.isNotBlank(a.getFaceArea()) && !Objects.equals(a.getFaceArea(), b.getFaceArea())) return false;
+		if (StringUtils.isNotBlank(a.getLocation()) && !Objects.equals(a.getLocation(), b.getLocation())) return false;
+		if (a.getNightLight() != null && !Objects.equals(a.getNightLight(), b.getNightLight())) return false;
+		return true;
 	}
 
 	@Override

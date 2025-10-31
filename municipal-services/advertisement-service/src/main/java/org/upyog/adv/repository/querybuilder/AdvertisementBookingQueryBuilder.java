@@ -41,7 +41,7 @@ public class AdvertisementBookingQueryBuilder {
 					+ "FROM eg_adv_booking_detail eabd\n"
 					+ "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id\n"
 					+ "WHERE eabd.tenant_id = ?\n"
-					+ "AND eabd.booking_status NOT IN ('BOOKING_CREATED','CANCELLED', 'REJECTED', 'DRAFT', 'BOOKING_EXPIRED', 'PAYMENT_FAILED')\n"
+					+ "AND eabd.booking_status NOT IN ('REMOVED','BOOKING_CREATED','CANCELLED', 'REJECTED', 'DRAFT', 'BOOKING_EXPIRED', 'PAYMENT_FAILED')\n"
 					+ "AND eacd.booking_date >= ?::DATE\n"
 					+ "AND eacd.booking_date <= ?::DATE\n";
 
@@ -110,6 +110,14 @@ public class AdvertisementBookingQueryBuilder {
 	public static final String UPDATE_TIMER = "UPDATE eg_adv_payment_timer SET booking_id = ?, booking_no = ? WHERE booking_id = ?";
 	
 	public static final String UPDATE_TIMER_STATUS = "UPDATE eg_adv_payment_timer SET status = ? WHERE booking_no = ?";
+
+    // Update a specific cart row to REMOVED by matching all slot-identifying columns
+    public static final String CART_MARK_REMOVED_BY_SLOT = "UPDATE public.eg_adv_cart_detail SET status=?, lastmodifiedby=?, lastmodifiedtime=? "
+	    + "WHERE booking_id = ? AND advertisementId = ? AND booking_date = ?::DATE AND add_type = ? AND face_area = ? AND night_light = ?";
+
+    // Delete timer entries for a specific slot owned by a booking/draft id
+    public static final String PAYMENT_TIMER_DELETE_BY_SLOT = "DELETE FROM eg_adv_payment_timer WHERE booking_id = ? "
+	    + "AND advertisementId = ? AND booking_date = ?::DATE AND add_type = ? AND face_area = ? AND night_light = ?";
 
 	// Find bookings that are BOOKED and whose all cart rows have booking_date < today
 	public static final String FETCH_BOOKINGS_ELIGIBLE_FOR_VERIFICATION =

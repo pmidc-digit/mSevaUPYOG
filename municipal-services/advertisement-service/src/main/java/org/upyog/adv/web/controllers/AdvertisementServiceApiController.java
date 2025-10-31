@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.upyog.adv.constants.BookingConstants;
 import org.upyog.adv.enums.BookingStatusEnum;
 import org.upyog.adv.service.AdvertisementValidationService;
@@ -147,6 +148,24 @@ public class AdvertisementServiceApiController {
 	        advResponse.addNewBookingApplication(bookingDetail);
 	        return new ResponseEntity<AdvertisementResponse>(advResponse, HttpStatus.OK);
 	    }
+
+		 @RequestMapping(value = "/v1/_cart/modify", method = RequestMethod.POST)
+		 public ResponseEntity<AdvertisementResponse> v1ModifyCart(
+				@RequestBody BookingRequest bookingRequest) {
+			// Ensure bookingId is set on request
+			if (bookingRequest.getBookingApplication() == null) {
+				throw new IllegalArgumentException("bookingApplication is required");
+			}
+			bookingRequest.getBookingApplication().setBookingId(bookingRequest.getBookingApplication().getBookingId() != null
+				? bookingRequest.getBookingApplication().getBookingId() : null);
+			// Allow service to validate and process
+			BookingDetail bookingDetail = bookingService.modifyCartSlots(bookingRequest);
+			ResponseInfo info = BookingUtil.createReponseInfo(bookingRequest.getRequestInfo(), BookingConstants.ADVERTISEMENT_BOOKING_UPDATED,
+					StatusEnum.SUCCESSFUL);
+			AdvertisementResponse advResponse = AdvertisementResponse.builder().responseInfo(info).build();
+			advResponse.addNewBookingApplication(bookingDetail);
+			return new ResponseEntity<AdvertisementResponse>(advResponse, HttpStatus.OK);
+		 }
 	 
 	 //This calculates the estimate amount to be paid for the advetisement booking :
 	 // Gets the demand 

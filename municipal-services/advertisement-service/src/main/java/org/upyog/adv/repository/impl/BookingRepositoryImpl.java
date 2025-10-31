@@ -117,7 +117,8 @@ public class BookingRepositoryImpl implements BookingRepository {
 		List<String> bookingIds = new ArrayList<String>();
 		bookingIds.addAll(bookingMap.keySet());
 		log.info("Fetched booking details bookingIds : " + bookingIds);
-	List<CartDetail> cartDetails = jdbcTemplate.query(queryBuilder.getSlotDetailsQuery(bookingIds),
+        String slotQuery = queryBuilder.getSlotDetailsQuery(bookingIds) + " AND status != 'REMOVED'";
+	List<CartDetail> cartDetails = jdbcTemplate.query(slotQuery,
 				bookingIds.toArray(), cartDetailRowmapper);
 	if (cartDetails != null) cartDetails.stream().forEach(slotDetail -> {
 			log.info("fetched cartDetails " + bookingMap.get(slotDetail.getBookingId()));
@@ -173,6 +174,45 @@ public class BookingRepositoryImpl implements BookingRepository {
 
 		// Step 3: getAndInsertTimerData timer data
 		getAndInsertTimerData(draftId, criteriaList, requestInfo, availabilityDetailsResponse);
+	}
+
+	/**
+	 * Insert timer rows using the provided ownerId as booking_id (ownerId can be a real booking id or a draft id)
+	 */
+	@Override
+	public void insertBookingIdForTimerWithOwner(List<AdvertisementSlotSearchCriteria> criteriaList, String BookingNo,String ownerId,
+			RequestInfo requestInfo, AdvertisementSlotAvailabilityDetail availabilityDetailsResponse) {
+
+		if (criteriaList == null || criteriaList.isEmpty() || StringUtils.isBlank(ownerId)) {
+			log.warn("No criteria or ownerId provided for insertBookingIdForTimerWithOwner");
+			return;
+		}
+
+		long createdTime = BookingUtil.getCurrentTimestamp();
+		String status = BookingConstants.ACTIVE;
+
+		List<Object[]> batchArgs = new ArrayList<>();
+		for (AdvertisementSlotSearchCriteria criteria : criteriaList) {
+			LocalDate startDate = LocalDate.parse(criteria.getBookingStartDate());
+			LocalDate endDate = LocalDate.parse(criteria.getBookingEndDate());
+
+			while (!startDate.isAfter(endDate)) {
+				batchArgs.add(new Object[] { ownerId,requestInfo.getUserInfo().getUuid(), createdTime, status,
+					"", requestInfo.getUserInfo().getUuid(), createdTime, criteria.getAddType(), criteria.getLocation(),
+					criteria.getFaceArea(), criteria.getNightLight(), criteria.getAdvertisementId(),
+					criteria.getBookingStartDate(), criteria.getBookingEndDate(), startDate.toString() });
+				startDate = startDate.plusDays(1);
+			}
+		}
+
+		jdbcTemplate.batchUpdate(AdvertisementBookingQueryBuilder.PAYMENT_TIMER_QUERY, batchArgs);
+
+
+		// Populate timer value to response (use provided availabilityDetailsResponse)
+		setTimerValue(availabilityDetailsResponse);
+
+		// Fetch and set remaining timer values for the ownerId
+		getAndInsertTimerData(ownerId, criteriaList, requestInfo, availabilityDetailsResponse);
 	}
 
 	private String fetchDraftId(List<AdvertisementSlotSearchCriteria> criteriaList, String uuid, String tenantId) {
@@ -326,6 +366,39 @@ public class BookingRepositoryImpl implements BookingRepository {
 
 		jdbcTemplate.update(query, bookingId);
 
+	}
+
+	@Override
+	public void markCartSlotsRemoved(String bookingId, List<CartDetail> removed, String modifiedBy, long modifiedTime) {
+		if (removed == null || removed.isEmpty()) return;
+		for (CartDetail slot : removed) {
+			try {
+				jdbcTemplate.update(AdvertisementBookingQueryBuilder.CART_MARK_REMOVED_BY_SLOT,
+					"REMOVED", modifiedBy, modifiedTime,
+					bookingId, slot.getAdvertisementId(), slot.getBookingDate(), slot.getAddType(), slot.getFaceArea(), slot.getNightLight());
+			} catch (Exception ex) {
+				log.warn("Failed to mark cart slot removed for bookingId {} slot {} : {}", bookingId, slot, ex.getMessage());
+			}
+		}
+		// create audit for booking_id (will insert snapshot rows into audit table)
+		try {
+			jdbcTemplate.update(AdvertisementBookingQueryBuilder.INSERT_CART_DETAIL_AUDIT_QUERY, bookingId);
+		} catch (Exception ex) {
+			log.warn("Failed to insert cart detail audit for booking {} : {}", bookingId, ex.getMessage());
+		}
+	}
+
+	@Override
+	public void deleteTimerEntriesForSlots(String ownerId, List<CartDetail> slots) {
+		if (StringUtils.isBlank(ownerId) || slots == null || slots.isEmpty()) return;
+		for (CartDetail slot : slots) {
+			try {
+				jdbcTemplate.update(AdvertisementBookingQueryBuilder.PAYMENT_TIMER_DELETE_BY_SLOT,
+					ownerId, slot.getAdvertisementId(), slot.getBookingDate(), slot.getAddType(), slot.getFaceArea(), slot.getNightLight());
+			} catch (Exception ex) {
+				log.warn("Failed to delete timer entry for owner {} slot {} : {}", ownerId, slot, ex.getMessage());
+			}
+		}
 	}
 
 	@Override

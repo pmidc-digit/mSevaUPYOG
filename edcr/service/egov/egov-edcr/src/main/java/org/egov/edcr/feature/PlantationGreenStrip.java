@@ -115,7 +115,7 @@ public class PlantationGreenStrip extends FeatureProcess {
 						if (plantationArea.compareTo(requiredPlantationArea) >= 0) {
 							isAreaAccepted = true;
 						} else {
-							errorMsgs.put("Plantation area Error ", "Plantation area cannot be less than 0.");
+							//errorMsgs.put("Plantation area Error ", "Plantation area cannot be less than 0.");
 							pl.addErrors(errorMsgs);
 						}
 						// ✅ Plantation Area Validation

@@ -584,14 +584,12 @@ const PTRApplicationDetails = () => {
                   color: #666;
                 }
                 .acknowledgement-text {
-                  margin: 20px 0;
                   text-align: justify;
                   font-size: 15px;
                 }
                 .details-table {
                   width: 100%;
                   border-collapse: collapse;
-                  margin: 20px 0;
                 }
                 .details-table th,
                 .details-table td {
@@ -605,7 +603,6 @@ const PTRApplicationDetails = () => {
                   width: 40%;
                 }
                 .footer {
-                  margin-top: 30px;
                   text-align: center;
                   font-size: 12px;
                   color: #666;

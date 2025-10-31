@@ -196,7 +196,6 @@ const PTRApplicationDetails = () => {
                   font-size: 13px;
                   font-weight: bold;
                   margin: 10px 0;
-                  text-transform: uppercase;
                 }
                 .subtitle {
                   font-size: 10px;
@@ -322,8 +321,8 @@ const PTRApplicationDetails = () => {
                     style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
               </div>
               <div class="header-center">
-                <div class="title">MUNICIPAL CORPORATION ${ulb}</div>
-                  <div class="subtitle">VETERINARY SERVICES- HEALTH BRANCH</div>
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
                   <div class="subtitle">Pet Registration Certificate</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>
@@ -624,8 +623,8 @@ const PTRApplicationDetails = () => {
                     style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
               </div>
               <div class="header-center">
-                <div class="title">MUNICIPAL CORPORATION ${ulb}</div>
-                  <div class="subtitle">VETERINARY SERVICES- HEALTH BRANCH</div>
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
                   <div class="subtitle">Pet Registration Acknowledgment</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>

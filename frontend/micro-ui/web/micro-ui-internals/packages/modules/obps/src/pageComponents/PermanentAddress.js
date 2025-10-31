@@ -273,7 +273,7 @@ console.log(isCitizenEditable, "EDIT per");
                   ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth)
                   : null,
                 emailId: formData?.LicneseDetails?.email,
-                permanentAddress: PermanentAddress + " , " + selectedDistrict?.name + " , " + selectedState?.name,
+                permanentAddress: PermanentAddress,
                 correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
                 pan: formData?.LicneseDetails?.PanNumber,
               },

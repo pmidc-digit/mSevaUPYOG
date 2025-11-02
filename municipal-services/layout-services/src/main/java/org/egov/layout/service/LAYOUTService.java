@@ -121,6 +121,12 @@ public class LAYOUTService {
 		Object mdmsData = nocUtil.mDMSCall(nocRequest.getRequestInfo(), tenantId);
 
 		String businessService = businessServiceVal(nocRequest);
+		Object additionalDetailsData = nocRequest.getLayout().getNocDetails().getAdditionalDetails();
+
+		// Cast to LinkedHashMap
+		LinkedHashMap<String, Object> additionalDetailsMap = (LinkedHashMap<String, Object>) additionalDetailsData;
+		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
+		siteDetails.put("businessService",businessService);
 
 
 		Map<String, String> additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getLayout(), mdmsData);

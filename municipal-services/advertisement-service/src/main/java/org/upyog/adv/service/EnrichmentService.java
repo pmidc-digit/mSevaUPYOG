@@ -117,12 +117,18 @@ public class EnrichmentService {
 
 	//This enriches the booking request, if status is not null then it updates the booking status in booking detail and cart detail, also updates the payment date and audit details
 	public void enrichUpdateBookingRequest(BookingRequest bookingRequest, BookingStatusEnum statusEnum) {
+		// Build last-modified audit details and preserve any existing createdBy/createdTime
 		AuditDetails auditDetails = BookingUtil.getAuditDetails(
-			    String.valueOf(bookingRequest.getRequestInfo().getUserInfo().getUuid()), 
-			    Boolean.FALSE
-			);
+		    String.valueOf(bookingRequest.getRequestInfo().getUserInfo().getUuid()),
+		    Boolean.FALSE
+		);
 
+		// If the booking already had createdBy/createdTime, preserve them to avoid nulling createdBy
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
+		if (bookingDetail.getAuditDetails() != null && bookingDetail.getAuditDetails().getCreatedBy() != null) {
+			auditDetails.setCreatedBy(bookingDetail.getAuditDetails().getCreatedBy());
+			auditDetails.setCreatedTime(bookingDetail.getAuditDetails().getCreatedTime());
+		}
 
 
 

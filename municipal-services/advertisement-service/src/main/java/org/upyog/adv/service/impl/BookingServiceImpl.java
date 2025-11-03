@@ -784,12 +784,26 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.deleteTimerEntriesForSlots(bookingId, existing.getCartDetails());
 
         // Step 2: Prepare incoming slots
-        for (CartDetail c : incomingCart) {
+		for (CartDetail c : incomingCart) {
             //set a cart-id if its blank usually for a newly added one it will be upserted to booking_created
             if (StringUtils.isBlank(c.getCartId())) {
                 c.setCartId(BookingUtil.getRandonUUID());
             }
             c.setBookingId(bookingId);
+			// Ensure audit details are set for new/modified cart entries so DB non-null constraints are satisfied
+			if (c.getAuditDetails() == null || c.getAuditDetails().getCreatedBy() == null) {
+				AuditDetails ad = new AuditDetails();
+				ad.setCreatedBy(modifiedBy);
+				ad.setLastModifiedBy(modifiedBy);
+				long now = BookingUtil.getCurrentTimestamp();
+				ad.setCreatedTime(now);
+				ad.setLastModifiedTime(now);
+				c.setAuditDetails(ad);
+			} else {
+				// If audit present, at least update lastModified fields
+				c.getAuditDetails().setLastModifiedBy(modifiedBy);
+				c.getAuditDetails().setLastModifiedTime(BookingUtil.getCurrentTimestamp());
+			}
         }
 
         // Step 3: Group by key attributes to handle continuous ranges per advertisement slot

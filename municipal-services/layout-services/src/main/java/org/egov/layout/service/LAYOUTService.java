@@ -1,5 +1,7 @@
 package org.egov.layout.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,6 +106,17 @@ public class LAYOUTService {
 		else{
 			acres = (String) siteDetails.get("areaUnderCommercialUseInSqM");
 		}
+
+
+		BigDecimal acresBD = BigDecimal.ZERO;
+		if ( acres!= null && !acres.isEmpty()) {
+			String sanitized = acres.replace(",", "").trim(); // remove thousands separators
+			BigDecimal sqmBD = new BigDecimal(sanitized);
+			BigDecimal SQM_PER_ACRE = new BigDecimal("4046.8564224");
+			acresBD = sqmBD.divide(SQM_PER_ACRE, 6, RoundingMode.HALF_UP); // 6 decimal places
+		}
+
+		 acres = acresBD.toPlainString();
 
 
 

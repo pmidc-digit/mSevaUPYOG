@@ -196,7 +196,6 @@ const PTRApplicationDetails = () => {
                   font-size: 13px;
                   font-weight: bold;
                   margin: 10px 0;
-                  text-transform: uppercase;
                 }
                 .subtitle {
                   font-size: 10px;
@@ -322,8 +321,8 @@ const PTRApplicationDetails = () => {
                     style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
               </div>
               <div class="header-center">
-                <div class="title">MUNICIPAL CORPORATION ${ulb}</div>
-                  <div class="subtitle">VETERINARY SERVICES- HEALTH BRANCH</div>
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
                   <div class="subtitle">Pet Registration Certificate</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>
@@ -364,7 +363,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petColor || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">Registration Number</span>
+                        <span class="detail-label">Application Number</span>
                         <span class="detail-value">${petData?.applicationNumber || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
@@ -585,14 +584,12 @@ const PTRApplicationDetails = () => {
                   color: #666;
                 }
                 .acknowledgement-text {
-                  margin: 20px 0;
                   text-align: justify;
                   font-size: 15px;
                 }
                 .details-table {
                   width: 100%;
                   border-collapse: collapse;
-                  margin: 20px 0;
                 }
                 .details-table th,
                 .details-table td {
@@ -606,7 +603,6 @@ const PTRApplicationDetails = () => {
                   width: 40%;
                 }
                 .footer {
-                  margin-top: 30px;
                   text-align: center;
                   font-size: 12px;
                   color: #666;
@@ -624,8 +620,8 @@ const PTRApplicationDetails = () => {
                     style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
               </div>
               <div class="header-center">
-                <div class="title">MUNICIPAL CORPORATION ${ulb}</div>
-                  <div class="subtitle">VETERINARY SERVICES- HEALTH BRANCH</div>
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
                   <div class="subtitle">Pet Registration Acknowledgment</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>
@@ -685,6 +681,7 @@ const PTRApplicationDetails = () => {
                   <p>Generated on: ${currentDate}</p>
                   <p>Municipal Corporation</p>
                   <p>This is a computer-generated document and does not require a signature.</p>
+                  <p>https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home</p>
                 </div>
               </div>
             </body>

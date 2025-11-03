@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 const getAcknowledgement = async (application, t) => {
+  console.log('application', application)
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",
@@ -92,7 +93,7 @@ const getAcknowledgement = async (application, t) => {
     <div class="acknowledgement-container">
       <div class="header">
         <div class="header-left">
-          <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/pb.amritsar/logo.png" 
+          <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${application?.tenantId}/logo.png" 
               style="width: 120px; height: 120px;" />
         </div>
         <div class="header-center">

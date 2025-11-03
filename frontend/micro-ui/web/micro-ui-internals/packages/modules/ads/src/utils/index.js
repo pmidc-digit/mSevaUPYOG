@@ -361,7 +361,32 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
       const items = groups[key];
 
       const sorted = items.slice().sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
+      console.log("sorted", sorted);
+      const GAP = 7;
 
+      const dateRanges = [];
+      if (sorted.length) {
+        let rangeStart = sorted[0].bookingDate || null;
+        let rangeEnd = sorted[0].bookingDate || null;
+
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = new Date(rangeEnd);
+          const curr = new Date(sorted[i].bookingDate);
+
+          const diffDays = Math.round((curr - prev) / (24 * 60 * 60 * 1000));
+
+          if (diffDays <= GAP) {
+            rangeEnd = sorted[i].bookingDate;
+          } else {
+            dateRanges.push([rangeStart, rangeEnd]);
+            rangeStart = sorted[i].bookingDate;
+            rangeEnd = sorted[i].bookingDate;
+          }
+        }
+
+        dateRanges.push([rangeStart, rangeEnd]);
+      }
+      const dateRangesFlat = dateRanges.map(([start, end]) => `${start} to ${end}`).join(", ");
       const startDate = sorted[0]?.bookingDate || null;
       const endDate = sorted[sorted.length - 1]?.bookingDate || null;
       const numberOfDays = sorted.length;
@@ -386,6 +411,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         startDate,
         endDate,
         numberOfDays,
+        dateRangesFlat,
         addType: first.addType,
         faceArea: first.faceArea,
         nightLight: first.nightLight,
@@ -418,36 +444,36 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
 };
 
 //cart slots changed or not
- export const areCartSlotsEqual = (a = [], b = []) => {
-    if (a?.length !== b?.length) return false;
+export const areCartSlotsEqual = (a = [], b = []) => {
+  if (a?.length !== b?.length) return false;
 
-    // sort by ad.id for stable comparison
-    const sortByAd = (arr) => [...arr]?.sort((x, y) => String(x?.ad?.id).localeCompare(String(y?.ad?.id)));
+  // sort by ad.id for stable comparison
+  const sortByAd = (arr) => [...arr]?.sort((x, y) => String(x?.ad?.id).localeCompare(String(y?.ad?.id)));
 
-    const sortedA = sortByAd(a);
-    const sortedB = sortByAd(b);
+  const sortedA = sortByAd(a);
+  const sortedB = sortByAd(b);
 
-    return sortedA.every((item, idx) => {
-      const other = sortedB[idx];
-      if (String(item?.ad?.id) !== String(other?.ad?.id)) return false;
+  return sortedA.every((item, idx) => {
+    const other = sortedB[idx];
+    if (String(item?.ad?.id) !== String(other?.ad?.id)) return false;
 
-      // compare slots by bookingDate (or any unique key)
-      const slotsA = item?.slots?.map((s) => s?.bookingDate)?.sort();
-      const slotsB = other?.slots?.map((s) => s?.bookingDate)?.sort();
+    // compare slots by bookingDate (or any unique key)
+    const slotsA = item?.slots?.map((s) => s?.bookingDate)?.sort();
+    const slotsB = other?.slots?.map((s) => s?.bookingDate)?.sort();
 
-      if (slotsA?.length !== slotsB?.length) return false;
-      return slotsA?.every((date, i) => date === slotsB[i]);
-    });
-  };
+    if (slotsA?.length !== slotsB?.length) return false;
+    return slotsA?.every((date, i) => date === slotsB[i]);
+  });
+};
 
 // slots are equal
-  export const areSlotsEqual = (a = [], b = []) => {
-    if (a?.length !== b?.length) return false;
-    const key = (s) => s?.bookingDate; // or slotId if available
-    const aKeys = a?.map(key).sort();
-    const bKeys = b?.map(key).sort();
-    return JSON?.stringify(aKeys) === JSON?.stringify(bKeys);
-  };
+export const areSlotsEqual = (a = [], b = []) => {
+  if (a?.length !== b?.length) return false;
+  const key = (s) => s?.bookingDate; // or slotId if available
+  const aKeys = a?.map(key).sort();
+  const bKeys = b?.map(key).sort();
+  return JSON?.stringify(aKeys) === JSON?.stringify(bKeys);
+};
 
 // Transforms raw booking data into grouped ad objects with enriched metadata and slot arrays
 export function transformAdsData(adsData) {

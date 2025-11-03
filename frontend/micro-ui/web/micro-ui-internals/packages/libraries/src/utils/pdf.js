@@ -1,7 +1,7 @@
 import { Fonts } from "./fonts";
 import React, { ReactDOM} from "react";
-const pdfMake = require("pdfmake/build/pdfmake.js");
 import QRCode from "qrcode";
+const pdfMake = require("pdfmake/build/pdfmake.js");
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -122,7 +122,6 @@ const localGovLogo  =
   const module = applicationNumber && typeof applicationNumber === 'string' && applicationNumber.includes("-") 
     ? applicationNumber.split("-")[1] 
     : null;
-  
   if(module==="PGR"){
     
     qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}&grievancetype=${details[0]?.values[1]?.value}&grievancesubtype=${details[0]?.values[2]?.value}&priority=${details[0]?.values[3]?.value}&address=${details[1]?.values[0]?.value},${details[1]?.values[1]?.value},${details[1]?.values[2]?.value},${details[1]?.values[3]?.value},${details[1]?.values[4]?.value},${details[1]?.values[5]?.value}`);
@@ -244,7 +243,9 @@ const jsPdfGeneratorNDC = async ({
       ? -100
       : -60;
 
-
+  const baseUrl = window.location.origin;
+  let qrCodeDataUrl = "";
+  qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
   const dd = {
     background: [
       {
@@ -281,16 +282,28 @@ const jsPdfGeneratorNDC = async ({
         logo,
         tenantId,
         heading,
-        applicationNumber
+        applicationNumber,
+        qrCodeDataUrl
       ),
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
+      stack: [
+        { text: t("NDC_ISSUED_BY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 2, 0, 0], bold:true },
+        { text: t("NDC_COMPETENT_AUTHORITY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 2, 0, 0] },
+        { text: t("NDC_OFFICER_NAME_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 8, 0, 0], bold: true },
+        { text: t("NDC_OFFICER_DESIGNATION_TEXT_ENG"), font: "Hind", fontSize: 11 }
+      ],
+      alignment: "right",
+      margin: [0, 20, 20, 0] 
+    },
+    {
         text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
         font: "Hind",
         fontSize: 11,
         color: "#6f777c",
         margin: [10, 10],
-      },
+      }
+
     ],
 
     defaultStyle: {
@@ -333,7 +346,8 @@ const jsPdfGeneratorNDC = async ({
       : -60;
 
   const baseUrl= window.location.origin;
-  // let qrCodeDataUrl=""
+  let qrCodeDataUrl = "";
+    qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}`);
   const module=applicationNumber.split("-")[1]
   const splitURL = imageURL.split("filestore")?.[1];
   
@@ -361,7 +375,7 @@ const jsPdfGeneratorNDC = async ({
       };
     },
     content: [
-      ...createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber,qrCodeDataUrl),
       ...createContent(details, applicationNumber, base64Image,phoneNumber,logo, tenantId,breakPageLimit),
       {
         text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
@@ -1140,66 +1154,61 @@ headerData.push({
   
 }
 
-function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber){
+function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenantId, heading, applicationNumber,qrCodeDataUrl){
     let headerData = [];
     headerData.push({
-      style: 'tableExample',
-      layout: "noBorders",
-      //fillColor: "#f7e0d4",
-      margin: [0, 10, 0, 0],
-      table: {
-        widths: ['100%'],
-        body: [
-          [
-          {
-              text: heading, //"New Sewerage Connection",
+  style: 'tableExample',
+  layout: "noBorders",
+  margin: [0, 0, 0, 0],
+  table: {
+    widths: ['25%', '50%', '25%'], // left, center, right
+    body: [
+      [
+        // Left: Logo
+        {
+          image: logo || getBase64Image(tenantId) || localGovLogo,
+          width: 78,
+          margin: [10, 10],
+          alignment: "left"
+        },
+
+        // Center: Heading + Name stacked
+        {
+          stack: [
+            {
+              text: heading,
               bold: true,
               fontSize: 19,
               alignment: "center",
-              decoration : "underline"
-             
-          }
-           ]
-        ]
-       }
-    });
-    headerData.push({
-      style : 'tableExample',
-      layout: "noBorders",
-      margin:[0,0,0,0],
-      table:{
-        widths:['100%'],
-        body:[
-          [{
-            
-              text: `${name}`, 
-              alignment:"center",
+              decoration: "underline",
+              margin: [0, 15, 0, 4]
+            },
+            {
+              text: `${name}`,
               fontSize: 11,
-              //bold: true
-                
-          }]
-        ]
-      }
-  })
-  headerData.push({
-    style : 'tableExample',
-    layout: "noBorders",
-    margin: [0, -65, 40, 20],
-    table:{
-      widths: ['60%'],
-      body:[
-        [
-          {
-            image: logo|| getBase64Image(tenantId) || localGovLogo,
-            width: 78,
-            margin: [10, 10],
-            // fit:[50,50]
-          }, 
-          
+              alignment: "center"
+            }
+          ],
+          alignment: "center"
+        },
+
+        // Right: QR code (if available)
+        qrCodeDataUrl
+          ? {
+              image: qrCodeDataUrl,
+              width: 78,
+              margin: [10, 10],
+              alignment: "right"
+            }
+          : {}
       ]
-      ]
-    }
-})
+    ]
+  }
+});
+
+
+
+ 
 //   headerData.push({
 //     style : 'tableExample',
 //     layout: "noBorders",
@@ -1473,37 +1482,43 @@ function createContent(details,applicationNumber, qrCodeDataUrl,logo, tenantId,p
 
 function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
   const detailsBlocks = [];
-
   details.forEach((detail, index) => {
-    // Section heading
     if (detail?.title) {
       detailsBlocks.push({
-        style: "tableExample",
-        margin: [10, 20, 10, 10],
-        layout: "noBorders",
-        table: {
-          widths: ["100%"],
-          body: [
-            [
+        columns: [
+          {
+            width: "*",
+            stack: [
               {
-                text: detail?.title,
-                border: [true, true, true, false],
-                color: "#454545",
-                fontSize: 14,
-                bold: true,
+                style: "tableExample",
+                margin: [10, 20, 10, 2],
+                layout: "noBorders",
+                table: {
+                  widths: ["100%"],
+                  body: [
+                    [
+                      {
+                        text: detail.title,
+                        border: [true, true, true, false],
+                        color: "#454545",
+                        fontSize: 14,
+                        bold: true,
+                      },
+                    ],
+                  ],
+                },
               },
             ],
-          ],
-        },
+          },
+        ],
       });
     }
 
-    // The actual body content (single block of text, full width)
     if (detail?.value) {
       detailsBlocks.push({
         style: "tableExample",
         layout: "noBorders",
-        margin: [10, 10, 10, 0],
+        margin: [10, -5, 10, 0],
         table: {
           widths: ["100%"],
           body: [
@@ -1522,6 +1537,7 @@ function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumbe
 
   return detailsBlocks;
 }
+
 
 function createContentForDetailsWithLengthOfTwo(values, data, column1, column2, num = 0) {
     values.forEach((value, index) => {

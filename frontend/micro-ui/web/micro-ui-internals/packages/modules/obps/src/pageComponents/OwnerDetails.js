@@ -329,7 +329,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         setCanmovenext(true)
       }
     })
-    if (!canmovenext && ownershipCategory && !ownershipCategory?.code.includes("SINGLEOWNER")) {
+    if (!canmovenext && ownershipCategory && !ownershipCategory?.code?.includes("SINGLEOWNER")) {
       if (flag == 1) setCanmovenext(false)
       else setCanmovenext(true)
     }
@@ -713,12 +713,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       return
     }
 
-    if (ismultiple === true && fields.length === 1) {
-      window.scrollTo(0, 0)
-      setApiLoading(false);
-      setError("BPA_ERROR_MULTIPLE_OWNER")
-      return
-    }
+    // if (ismultiple === true && fields.length === 1) {
+    //   window.scrollTo(0, 0)
+    //   setApiLoading(false);
+    //   setError("BPA_ERROR_MULTIPLE_OWNER")
+    //   return
+    // }
 
 
       setIsDisable(true)

@@ -87,14 +87,14 @@ public class LAYOUTService {
 		Object additionalDetailsData = nocRequest.getLayout().getNocDetails().getAdditionalDetails();
 
 		// Cast to LinkedHashMap
-		LinkedHashMap<String, Object> additionalDetailsMap = (LinkedHashMap<String, Object>) additionalDetailsData;
+		Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
 
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
 		String acres=null;
 // Access values
 		String ulbType = (String) siteDetails.get("ulbType");
-		LinkedHashMap<String, Object> buildingCategory = (LinkedHashMap<String, Object>) siteDetails.get("buildingCategory");
+		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
 		String buildingCategoryType = (String) buildingCategory.get("code");
 		if(buildingCategoryType.equals("RESIDENTIAL_PLOTTED")){
 			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");

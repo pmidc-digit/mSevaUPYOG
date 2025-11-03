@@ -1,6 +1,7 @@
 package org.egov.layout.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.internal.LinkedTreeMap;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
@@ -19,7 +20,9 @@ import org.egov.layout.workflow.WorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -75,16 +78,29 @@ public class PaymentUpdateService {
 			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 			String tenantIdFromPaymentDetails = paymentRequest.getPayment().getTenantId();
 			for(PaymentDetail paymentDetail : paymentDetails){
-				if (paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.NOC_MODULE )) {
+				if (paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.LAYOUT_MODULE )) {
 					log.info("Start PaymentUpdateService.process method.");
 					LayoutSearchCriteria searchCriteria = new LayoutSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
 					searchCriteria.setApplicationNo(paymentDetail.getBill().getConsumerCode());
 					List<Layout> nocs = nocService.search(searchCriteria, requestInfo);
 
+
+
+
 					String tenantIdFromSearch = nocs.get(0).getTenantId();
 
+					Object additionalDetailsData =nocs.get(0).getNocDetails().getAdditionalDetails();
+
+					// Cast to LinkedHashMap
+					Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
+
+					// Get siteDetails as a Map
+					Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
+					String businessService = (String) siteDetails.get("businessService");
+
                     nocs.forEach(application -> {
+
 								Workflow workflow=new Workflow();
 								workflow.setAction(LAYOUTConstants.ACTION_PAY);
 								application.setWorkflow(workflow);
@@ -108,11 +124,13 @@ public class PaymentUpdateService {
 //					wfIntegrator.callWorkFlow(updateRequest,LAYOUTConstants.NOC_BUSINESS_SERVICE);
 //                    log.info(" applications uuid is : {}", updateRequest.getApplications().get(0).getUuid());
 //                    log.info(" the status of the applications is : {}", updateRequest.getApplications().get(0).getApplicationStatus());
-					enrichmentService.postStatusEnrichment(updateRequest, LAYOUTConstants.NOC_BUSINESS_SERVICE);
+					enrichmentService.postStatusEnrichment(updateRequest, businessService);
 
 					/*
 					 * calling repository to update the object in ndc tables
 					 */
+
+
 					nocService.update(updateRequest);
 			}
 		 }

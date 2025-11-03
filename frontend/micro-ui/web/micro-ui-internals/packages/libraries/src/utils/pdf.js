@@ -309,9 +309,9 @@ const jsPdfGeneratorNDC = async ({
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
         stack: [
-          { text: t("NDC_ISSUED_BY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 2, 0, 0], bold: true },
-          { text: t("NDC_COMPETENT_AUTHORITY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 2, 0, 0] },
-          { text: t("NDC_OFFICER_NAME_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0,2, 0, 0], bold: true },
+          { text: t("NDC_ISSUED_BY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
+          { text: t("NDC_COMPETENT_AUTHORITY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
+          { text: t("NDC_OFFICER_NAME_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0,0, 0, 0], bold: true },
           { text: t("NDC_OFFICER_DESIGNATION_TEXT_ENG"), font: "Hind", fontSize: 11 },
           { text: approvalDate, font: "Hind", fontSize: 11 }
         ],
@@ -1217,6 +1217,11 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
               },
               {
                 text: ` Municipal Corporation ${ulb}`,
+                fontSize: 11,
+                alignment: "center",
+              },
+              {
+                text: "No Dues Certificate",
                 fontSize: 11,
                 alignment: "center",
               },

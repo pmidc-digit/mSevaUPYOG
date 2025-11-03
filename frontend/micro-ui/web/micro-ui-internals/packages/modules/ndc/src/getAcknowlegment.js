@@ -97,10 +97,12 @@ This is to certify that, as per the records and data with ${ulbName} , all appli
 ${t("NDC_VALIDITY_TEXT_ENG")} ${t("NDC_VALIDITY_NOTE_PB")}
 This is only a No Dues Certificate for municipal dues as on date and it does not regulate the compliance of building regulations, change of land use, any fire safety regulations or any other compliance under any act/rules. ${t(
     "NDC_BUILDING_NOTE_PB"
-  )} This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. ${t("NDC_AUTHORITY_NOTE_PB")}
+  )} 
+This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. ${t("NDC_AUTHORITY_NOTE_PB")}
 
-  In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it   shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council and Municipal Commissioner will have the full right to recover the same.
- ${t("NDC_DISCREPANCY_NOTE_PB")} This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. ${t(
+In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it   shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council and Municipal Commissioner will have the full right to recover the same.
+ ${t("NDC_DISCREPANCY_NOTE_PB")}
+This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. ${t(
     "NDC_OWNERSHIP_NOTE_PB"
   )} 
 `;

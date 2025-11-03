@@ -1,9 +1,7 @@
-package org.egov.layout.web.model.calculator;
+package org.egov.noc.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-
-import org.egov.layout.web.model.Layout;
 
 @Getter
 @Setter
@@ -11,7 +9,7 @@ import org.egov.layout.web.model.Layout;
 @NoArgsConstructor
 @Builder
 public class CalculationCriteria {
-	@JsonProperty("LAYOUT")
+	@JsonProperty("Layout")
 	private Layout layout = null;
 
     @JsonProperty("applicationNumber")

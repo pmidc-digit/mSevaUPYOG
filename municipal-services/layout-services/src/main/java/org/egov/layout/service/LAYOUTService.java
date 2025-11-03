@@ -19,8 +19,6 @@ import org.egov.layout.util.LAYOUTConstants;
 import org.egov.layout.util.LAYOUTUtil;
 import org.egov.layout.validator.LAYOUTValidator;
 import org.egov.layout.web.model.*;
-import org.egov.layout.web.model.bpa.BPA;
-import org.egov.layout.web.model.bpa.BPAResponse;
 import org.egov.layout.web.model.bpa.BPASearchCriteria;
 import org.egov.layout.web.model.calculator.CalculationCriteria;
 import org.egov.layout.web.model.calculator.CalculationReq;
@@ -168,7 +166,7 @@ public class LAYOUTService {
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
-				.noc(request.getLayout())
+				.layout(request.getLayout())
 				.tenantId(request.getLayout().getTenantId())
 				.applicationNumber(request.getLayout().getApplicationNo())
 				.build();

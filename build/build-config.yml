@@ -969,5 +969,6 @@ config:
     build:
       - work-dir: "municipal-services/layout-calculator"
         image-name: "layout-calculator"
-      - work-dir: "municipal-services/layout-calculator/migration"
-        image-name: "layout-calculator-db"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/layout-calculator/migration"
+   #     image-name: "layout-calculator-db"

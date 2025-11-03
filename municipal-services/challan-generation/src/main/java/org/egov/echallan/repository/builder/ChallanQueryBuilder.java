@@ -24,10 +24,17 @@ public class ChallanQueryBuilder {
     private static final String INNER_JOIN_STRING = " INNER JOIN ";
     private static final String LEFT_JOIN_STRING = " LEFT JOIN ";
 
-    private static final String QUERY = "SELECT echallan.*,chaladdr.*,doc.*, echallan.id as challan_id_alias,echallan.tenantid as challan_tenantId,echallan.lastModifiedTime as " +
+    private static final String QUERY = "SELECT echallan.*,chaladdr.*, echallan.id as challan_id_alias,echallan.tenantid as challan_tenantId,echallan.lastModifiedTime as " +
             "challan_lastModifiedTime,echallan.createdBy as challan_createdBy,echallan.lastModifiedBy as challan_lastModifiedBy,echallan.createdTime as " +
             "challan_createdTime,chaladdr.id as chaladdr_id," +
-            "echallan.accountId as uuid,echallan.description as description,echallan.challanStatus as challanStatus  FROM eg_challan echallan"
+            "echallan.accountId as uuid,echallan.description as description,echallan.challanStatus as challanStatus," +
+            "echallan.receiptnumber as receiptnumber,echallan.challan_amount as challan_amount," +
+            "echallan.offence_type_name as offence_type_name,echallan.offence_category_name as offence_category_name," +
+            "echallan.offence_subcategory_name as offence_subcategory_name,echallan.additionalDetail as additionalDetail," +
+            "doc.document_detail_id,doc.challan_id,doc.document_type,doc.filestore_id," +
+            "doc.createdby as doc_createdby,doc.lastmodifiedby as doc_lastmodifiedby," +
+            "doc.createdtime as doc_createdtime,doc.lastmodifiedtime as doc_lastmodifiedtime " +
+            "FROM eg_challan echallan"
             +INNER_JOIN_STRING
             +"eg_challanAddress chaladdr ON chaladdr.challanid = echallan.id"
             + LEFT_JOIN_STRING
@@ -104,9 +111,10 @@ public class ChallanQueryBuilder {
             }
 
             if (criteria.getChallanNo() != null) {
+                List<String> challanNos = Arrays.asList(criteria.getChallanNo().split(","));
                 addClauseIfRequired(preparedStmtList, builder);
-                builder.append("  echallan.challanno = ? ");
-                preparedStmtList.add(criteria.getChallanNo());
+                builder.append(" echallan.challanno IN (").append(createQuery(challanNos)).append(")");
+                addToPreparedStatement(preparedStmtList, challanNos);
             }
             if (criteria.getStatus() != null) {
                 List<String> status = Arrays.asList(criteria.getStatus().split(","));

@@ -3,6 +3,7 @@ package org.egov.echallan.service;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -11,6 +12,7 @@ import org.egov.echallan.config.ChallanConfiguration;
 import org.egov.echallan.enums.ChallanStatusEnum;
 import org.egov.echallan.model.Amount;
 import org.egov.echallan.model.Challan;
+import org.egov.echallan.model.Challan.StatusEnum;
 import org.egov.echallan.model.ChallanRequest;
 import org.egov.echallan.model.SearchCriteria;
 import org.egov.echallan.repository.ChallanRepository;
@@ -127,6 +129,45 @@ public class ChallanService {
 		// Ensure additionalDetail is not null to prevent persister issues
 		if (challan.getAdditionalDetail() == null) {
 			challan.setAdditionalDetail(new HashMap<>());
+		}
+		
+		// Copy amount array to additionalDetail so it can be retrieved in search
+		if (challan.getAmount() != null && !challan.getAmount().isEmpty()) {
+			try {
+				// Ensure amount objects have taxHeadCode (set default if missing)
+				for (Amount amount : challan.getAmount()) {
+					if (StringUtils.isBlank(amount.getTaxHeadCode())) {
+						amount.setTaxHeadCode("CH.CHALLAN_FINE"); // Default tax head code
+					}
+				}
+				
+				// Convert additionalDetail to Map if it's not already
+				@SuppressWarnings("unchecked")
+				Map<String, Object> additionalDetailMap;
+				ObjectMapper mapper = new ObjectMapper();
+				if (challan.getAdditionalDetail() instanceof Map) {
+					additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+				} else {
+					// If it's JsonNode or other type, convert to Map
+					@SuppressWarnings("unchecked")
+					Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+					additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+				}
+				
+				// Convert amount list to JSON-serializable format and add to additionalDetail
+				List<Map<String, Object>> amountList = new ArrayList<>();
+				for (Amount amount : challan.getAmount()) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> amountMap = (Map<String, Object>) (Object) mapper.convertValue(amount, Map.class);
+					amountList.add(amountMap);
+				}
+				additionalDetailMap.put("amount", amountList);
+				challan.setAdditionalDetail(additionalDetailMap);
+				
+			} catch (Exception e) {
+				log.warn("Failed to copy amount to additionalDetail for challan {}: {}", 
+					challan.getChallanNo(), e.getMessage());
+			}
 		}
 		
 		// Set initial challan status
@@ -295,6 +336,46 @@ public class ChallanService {
 		 List<Challan> searchResult = searchChallans(request);
 		 validator.validateUpdateRequest(request,searchResult);
 		 enrichmentService.enrichUpdateRequest(request);
+		 
+		 // Copy amount array to additionalDetail so it can be retrieved in search
+		 Challan challan = request.getChallan();
+		 if (challan.getAmount() != null && !challan.getAmount().isEmpty()) {
+			 try {
+				 // Ensure amount objects have taxHeadCode (set default if missing)
+				 for (Amount amount : challan.getAmount()) {
+					 if (StringUtils.isBlank(amount.getTaxHeadCode())) {
+						 amount.setTaxHeadCode("CH.CHALLAN_FINE"); // Default tax head code
+					 }
+				 }
+				 
+				 // Convert additionalDetail to Map if it's not already
+				 @SuppressWarnings("unchecked")
+				 Map<String, Object> additionalDetailMap;
+				 ObjectMapper mapper = new ObjectMapper();
+				 if (challan.getAdditionalDetail() instanceof Map) {
+					 additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+				 } else {
+					 // If it's JsonNode or other type, convert to Map
+					 @SuppressWarnings("unchecked")
+					 Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+					 additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+				 }
+				 
+				 // Convert amount list to JSON-serializable format and add to additionalDetail
+				 List<Map<String, Object>> amountList = new ArrayList<>();
+				 for (Amount amount : challan.getAmount()) {
+					 @SuppressWarnings("unchecked")
+					 Map<String, Object> amountMap = (Map<String, Object>) (Object) mapper.convertValue(amount, Map.class);
+					 amountList.add(amountMap);
+				 }
+				 additionalDetailMap.put("amount", amountList);
+				 challan.setAdditionalDetail(additionalDetailMap);
+				 
+			 } catch (Exception e) {
+				 log.warn("Failed to copy amount to additionalDetail for challan {}: {}", 
+					 challan.getChallanNo(), e.getMessage());
+			 }
+		 }
 
 
 

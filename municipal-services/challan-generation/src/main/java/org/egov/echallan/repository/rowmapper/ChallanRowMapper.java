@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -21,13 +24,13 @@ import java.util.*;
 
 
 @Component
+@Slf4j
 public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
 	@Autowired
     private ObjectMapper mapper;
 
     public List<Challan> extractData(ResultSet rs) throws SQLException, DataAccessException {
         Map<String, Challan> challanMap = new LinkedHashMap<>();
-        List<DocumentDetail> documentDetails = new ArrayList<DocumentDetail>();
         while (rs.next()) {
             String id = rs.getString("challan_id_alias");
             Challan currentChallan = challanMap.get(id);
@@ -46,6 +49,10 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                         .lastModifiedTime(lastModifiedTime)
                         .build();
                 try {
+                // Get BigDecimal values with null handling
+                BigDecimal challanAmount = rs.getBigDecimal("challan_amount");
+                if(rs.wasNull()) { challanAmount = null; }
+                
                 currentChallan = Challan.builder().auditDetails(auditdetails)
                 		.accountId(rs.getString("uuid"))
                 		.challanNo(rs.getString("challanno"))
@@ -60,11 +67,29 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
 //                        .applicationStatus(rs.getString("applicationstatus"))
                         .receiptNumber(rs.getString("receiptnumber"))
                 		.filestoreid(rs.getString("filestoreid"))
+                        .challanAmount(challanAmount)
+                        .offenceTypeName(rs.getString("offence_type_name"))
+                        .offenceCategoryName(rs.getString("offence_category_name"))
+                        .offenceSubCategoryName(rs.getString("offence_subcategory_name"))
                         .id(id)
                         .build();
                 if(pgObj!=null){
                     JsonNode additionalDetail = mapper.readTree(pgObj.getValue());
                     currentChallan.setAdditionalDetail(additionalDetail);
+                    
+                    // Extract amount array from additionalDetail JSONB if it exists
+                    if(additionalDetail != null && additionalDetail.has("amount")) {
+                        JsonNode amountNode = additionalDetail.get("amount");
+                        if(amountNode != null && amountNode.isArray()) {
+                            try {
+                                List<Amount> amountList = mapper.convertValue(amountNode, 
+                                    mapper.getTypeFactory().constructCollectionType(List.class, Amount.class));
+                                currentChallan.setAmount(amountList);
+                            } catch (Exception e) {
+                                log.warn("Failed to parse amount array from additionalDetail for challan {}: {}", id, e.getMessage());
+                            }
+                        }
+                    }
                 }
                 }
                 catch (IOException e){
@@ -73,7 +98,7 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                 challanMap.put(id,currentChallan);
             }
             addAddressToChallan(rs, currentChallan);
-            addDocumentToChallan(rs,currentChallan,documentDetails);
+            addDocumentToChallan(rs,currentChallan);
 
         }
        
@@ -115,26 +140,48 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
     }
 
 
-private void addDocumentToChallan(ResultSet rs,Challan challan,List<DocumentDetail> documentDetails)throws SQLException{
-
-
-        /**
-         * document_detail_id, booking_id, document_type, filestore_id, createdby,
-         * lastmodifiedby, createdtime, lastmodifiedtime
-         */
-        AuditDetails auditdetails = AuditDetails.builder().createdBy(rs.getString("createdby"))
-                .createdTime(rs.getLong("createdtime")).lastModifiedBy(rs.getString("lastmodifiedby"))
-                .lastModifiedTime(rs.getLong("lastmodifiedtime")).build();
-        DocumentDetail details = DocumentDetail.builder().documentDetailId(rs.getString("document_detail_id"))
-                .challanId(rs.getString("challan_id")).documentType(rs.getString("document_type"))
-                .fileStoreId(rs.getString("filestore_id")).auditDetails(auditdetails).build();
-
-        documentDetails.add(details);
-        challan.setUploadedDocumentDetails(documentDetails);
-
-
-
-}
+    private void addDocumentToChallan(ResultSet rs, Challan challan) throws SQLException {
+        String documentDetailId = rs.getString("document_detail_id");
+        if(documentDetailId != null && !documentDetailId.isEmpty()) {
+            /**
+             * Using explicitly aliased columns to avoid ambiguity with challan and address audit columns
+             * document_detail_id, challan_id, document_type, filestore_id, 
+             * doc_createdby, doc_lastmodifiedby, doc_createdtime, doc_lastmodifiedtime
+             */
+            Long docCreatedTime = rs.getLong("doc_createdtime");
+            if(rs.wasNull()) { docCreatedTime = null; }
+            Long docLastModifiedTime = rs.getLong("doc_lastmodifiedtime");
+            if(rs.wasNull()) { docLastModifiedTime = null; }
+            
+            AuditDetails auditdetails = AuditDetails.builder()
+                    .createdBy(rs.getString("doc_createdby"))
+                    .createdTime(docCreatedTime)
+                    .lastModifiedBy(rs.getString("doc_lastmodifiedby"))
+                    .lastModifiedTime(docLastModifiedTime)
+                    .build();
+            
+            // Check if document already exists to avoid duplicates
+            List<DocumentDetail> existingDocs = challan.getUploadedDocumentDetails();
+            if(existingDocs == null) {
+                existingDocs = new ArrayList<>();
+            }
+            
+            boolean exists = existingDocs.stream()
+                .anyMatch(doc -> documentDetailId.equals(doc.getDocumentDetailId()));
+            
+            if(!exists) {
+                DocumentDetail details = DocumentDetail.builder()
+                        .documentDetailId(documentDetailId)
+                        .challanId(rs.getString("challan_id"))
+                        .documentType(rs.getString("document_type"))
+                        .fileStoreId(rs.getString("filestore_id"))
+                        .auditDetails(auditdetails)
+                        .build();
+                existingDocs.add(details);
+                challan.setUploadedDocumentDetails(existingDocs);
+            }
+        }
+    }
 
 
 

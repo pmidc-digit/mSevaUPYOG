@@ -3,6 +3,7 @@ package org.egov.echallan.service;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.echallan.config.ChallanConfiguration;
+import org.egov.echallan.model.Amount;
 import org.egov.echallan.model.AuditDetails;
 import org.egov.echallan.model.Challan;
 import org.egov.echallan.model.Challan.StatusEnum;
@@ -21,6 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.jayway.jsonpath.JsonPath;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -179,7 +183,80 @@ public class EnrichmentService {
             log.warn("User enrichment failed for challan search, continuing without user details: {}", ex.getMessage());
             // Continue without user enrichment
         }
+        
+        // Enrich amount from billing service for each challan
+        enrichAmountFromBillingService(challans, requestInfo);
+        
         return challans;
+    }
+    
+    /**
+     * Enriches challans with amount data from billing service
+     * Fetches bill details using challanNo and extracts amount array from billAccountDetails
+     */
+    private void enrichAmountFromBillingService(List<Challan> challans, RequestInfo requestInfo) {
+        for (Challan challan : challans) {
+            // Skip if amount is already populated or challanNo is missing
+            if (challan.getAmount() != null && !challan.getAmount().isEmpty()) {
+                continue;
+            }
+            
+            if (challan.getChallanNo() == null || challan.getChallanNo().isEmpty()) {
+                continue;
+            }
+            
+            try {
+                StringBuilder billUri = new StringBuilder(config.getBillingHost());
+                billUri.append(config.getFetchBillEndpoint());
+                billUri.append("?tenantId=").append(challan.getTenantId());
+                billUri.append("&consumerCode=").append(challan.getChallanNo());
+                billUri.append("&businessService=").append(challan.getBusinessService());
+                
+                org.egov.echallan.model.RequestInfoWrapper requestInfoWrapper = 
+                    org.egov.echallan.model.RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+                
+                Object billResponse = serviceRequestRepository.fetchResult(billUri, requestInfoWrapper);
+                
+                if (billResponse != null) {
+                    // Parse bill response and extract amount array
+                    JsonPath jsonPath = JsonPath.compile("$.Bill[0].billDetails[0].billAccountDetails");
+                    List<Map<String, Object>> billAccountDetails = jsonPath.read(billResponse);
+                    
+                    if (billAccountDetails != null && !billAccountDetails.isEmpty()) {
+                        List<Amount> amountList = new ArrayList<>();
+                        for (Map<String, Object> accountDetail : billAccountDetails) {
+                            String taxHeadCode = (String) accountDetail.get("taxHeadCode");
+                            Object amountObj = accountDetail.get("amount");
+                            
+                            if (taxHeadCode != null && amountObj != null) {
+                                BigDecimal amountValue = null;
+                                if (amountObj instanceof Number) {
+                                    amountValue = new BigDecimal(amountObj.toString());
+                                } else if (amountObj instanceof String) {
+                                    amountValue = new BigDecimal((String) amountObj);
+                                }
+                                
+                                if (amountValue != null) {
+                                    Amount amount = Amount.builder()
+                                        .taxHeadCode(taxHeadCode)
+                                        .amount(amountValue)
+                                        .build();
+                                    amountList.add(amount);
+                                }
+                            }
+                        }
+                        
+                        if (!amountList.isEmpty()) {
+                            challan.setAmount(amountList);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to fetch amount from billing service for challan {}: {}", 
+                    challan.getChallanNo(), e.getMessage());
+                // Continue without amount enrichment
+            }
+        }
     }
     
     

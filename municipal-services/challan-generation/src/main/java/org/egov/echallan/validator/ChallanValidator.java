@@ -1,7 +1,6 @@
 package org.egov.echallan.validator;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,13 +37,9 @@ public class ChallanValidator {
 	public void validateFields(ChallanRequest request, Object mdmsData) {
 		Challan challan = request.getChallan();
 		List<Map<String,Object>> taxPeriods = null;
-		List<String> requiredTaxHeadCodes =new ArrayList<String>();
-		List<String> currentTaxHeadCodes = new ArrayList<String>();
 		Map<String, String> errorMap = new HashMap<>();
 
 		taxPeriods =  JsonPath.read(mdmsData, MDMS_FINACIALYEAR_PATH);
-		String jsonPath = MDMS_TAXHEADCODES_PATH.replace("{}",challan.getBusinessService());
-		requiredTaxHeadCodes = JsonPath.read(mdmsData, jsonPath);
 
 		List<Amount> entAmount = challan.getAmount();
 		int totalAmt = 0;
@@ -52,8 +47,6 @@ public class ChallanValidator {
 			for (Amount amount : entAmount) {
 				if (amount.getAmount() != null) {
 					totalAmt += amount.getAmount().intValue();
-					if (amount.getTaxHeadCode() != null && !amount.getTaxHeadCode().isEmpty())
-						currentTaxHeadCodes.add(amount.getTaxHeadCode());
 					if (amount.getAmount().compareTo(new BigDecimal(0)) == -1)
 						errorMap.put("Negative Amount", "Amount cannot be negative");
 				}
@@ -97,12 +90,7 @@ public class ChallanValidator {
 //		if (!localityCodes.contains(echallan.getAddress().getLocality().getCode()))
 //			errorMap.put("Invalid Locality", "Locality details are invalid");
 
-        if(!currentTaxHeadCodes.isEmpty() && !requiredTaxHeadCodes.isEmpty()){
-        	if(!currentTaxHeadCodes.containsAll(requiredTaxHeadCodes))
-				errorMap.put("INAVLID_TAXHEAD_CODE_DETAILS", "Mandatory taxhead codes details are not present in request for provided business service");
-		}
-        else
-			errorMap.put("INAVLID_TAXHEAD_CODE_DETAILS", "Taxhead codes details are not present in request or in mdms records for provided business service");
+        // Tax head code validation removed - all tax head codes are optional (isRequired is always false in MDMS)
 
 		if (!errorMap.isEmpty())
         	 throw new CustomException(errorMap);

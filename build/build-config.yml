@@ -964,3 +964,10 @@ config:
         dockerfile: 'build/maven/Dockerfile'
       - work-dir: "municipal-services/layout-services/src/main/resources/db"
         image-name: "layout-services-db"
+
+  - name: "builds/upyog/municipal-services/layout-calculator"
+    build:
+      - work-dir: "municipal-services/layout-calculator"
+        image-name: "layout-calculator"
+      - work-dir: "municipal-services/layout-calculator/migration"
+        image-name: "layout-calculator-db"

@@ -104,6 +104,8 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
 
         dateRanges.push([rangeStart, rangeEnd]);
       }
+      const dateRangesFlat = dateRanges.map(([start, end]) => `${start} to ${end}`).join(", ");
+
       const startDate = sorted[0]?.bookingDate || null;
       const endDate = sorted[sorted.length - 1]?.bookingDate || null;
       const numberOfDays = sorted.length;
@@ -128,7 +130,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         startDate,
         endDate,
         numberOfDays,
-        dateRanges,
+        dateRangesFlat,
         addType: first.addType,
         faceArea: first.faceArea,
         nightLight: first.nightLight,

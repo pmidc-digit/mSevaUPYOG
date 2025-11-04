@@ -331,7 +331,7 @@ const PTRApplicationDetails = () => {
             </div>
                 <span class="header-value">This is to certify that the ${petData?.petDetails?.petType || "Dog"} kept by Mr./Mrs./Ms. ${
           petData?.owner?.name || "Not Specified"
-        } at (Address) ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
+        } at ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
           petData?.owner?.mobileNumber || "Not Specified"
         } is registered with Municipal Corporation ${ulb} as per following details:</span>
                 <div class="main-content">
@@ -355,7 +355,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petGender || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">${t("PTR_PET_AGE")}</span>
+                        <span class="detail-label">Pet Age</span>
                         <span class="detail-value">${formatPetAge(petData?.petDetails?.petAge, t) || t("CS_NA")}</span>
                       </div>
                       <div class="detail-row">

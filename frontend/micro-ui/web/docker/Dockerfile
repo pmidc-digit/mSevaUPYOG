@@ -12,7 +12,7 @@ RUN yarn add @mseva/digit-ui-module-engagement@1.1.29
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.6
 RUN yarn add @mseva/digit-ui-module-core@1.0.46
 RUN yarn add @mseva/digit-ui-module-common@1.1.12
-RUN yarn add @mseva/digit-ui-module-ws@1.0.13
+RUN yarn add @mseva/digit-ui-module-ws@1.0.14
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.1.39
 RUN yarn add @mseva/digit-ui-module-swach@1.0.46

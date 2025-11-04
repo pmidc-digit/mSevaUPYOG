@@ -466,7 +466,7 @@ export const areCartSlotsEqual = (a = [], b = []) => {
   });
 };
 
-export const haveSlotsChanged=(previousSlots, updatedSlots)=> {
+export const haveSlotsChanged = (previousSlots, updatedSlots) => {
   // Use advertisementId + bookingDate as the unique key
   const makeKey = (slot) => `${slot.advertisementId}|${slot.bookingDate}`;
 
@@ -488,9 +488,7 @@ export const haveSlotsChanged=(previousSlots, updatedSlots)=> {
   }
 
   return false; // no changes
-}
-
-
+};
 
 // slots are equal
 export const areSlotsEqual = (a = [], b = []) => {
@@ -565,3 +563,24 @@ export const formatLabel = (key) => {
     ?.map((word) => word?.charAt(0)?.toUpperCase() + word?.slice(1)) // Capitalize each word
     ?.join(" "); // Join back into a single string
 };
+
+export const allowedKeys = [
+  "addType",
+  "location",
+  "faceArea",
+  "nightLight",
+  "bookingId",
+  "bookingDate",
+  "advertisementId",
+  "bookingFromTime",
+  "bookingToTime",
+  "tenantId",
+  "amount",
+  "advertisementName",
+  "poleNo",
+  "imageSrc",
+  "width",
+  "height",
+  "lightType",
+  "status",
+];

@@ -5,7 +5,7 @@ import { FormComposer, Toast, ActionBar, SubmitBar, Menu } from "@mseva/digit-ui
 import _ from "lodash";
 import { UPDATE_ADSNewApplication_FORM } from "../../redux/action/ADSNewApplicationActions";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
-import { haveSlotsChanged } from "../../utils";
+import { allowedKeys, haveSlotsChanged } from "../../utils";
 
 const NewADSStepFormFive = ({ config, onBackClick, t }) => {
   const history = useHistory();
@@ -144,29 +144,7 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
       modifiedSlots?.push(previousMap?.get(key));
     } else {
       // Exists only in updated → take only whitelisted keys
-      const allowedKeys = [
-        "addType",
-        "location",
-        "faceArea",
-        "nightLight",
-        "bookingId",
-        "bookingDate",
-        "advertisementId",
-        "bookingFromTime",
-        "bookingToTime",
-        "tenantId",
-        "amount",
-        "advertisementName",
-        "poleNo",
-        "imageSrc",
-        "width",
-        "height",
-        "lightType",
-        "status",
-      ];
-
       const filteredSlot = Object?.fromEntries(Object.entries(updatedSlot)?.filter(([key]) => allowedKeys?.includes(key)));
-
       // 🔑 Override bookingId here
       filteredSlot.bookingId = bookingId;
       filteredSlot.status = "BOOKING_CREATED";

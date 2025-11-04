@@ -972,3 +972,19 @@ config:
         dockerfile: 'build/maven/Dockerfile'
    #   - work-dir: "municipal-services/layout-calculator/migration"
    #     image-name: "layout-calculator-db"
+
+  - name: 'builds/upyog/municipal-services/layout-clu-services'
+    build:
+      - work-dir: 'municipal-services/layout-clu-services'
+        image-name: 'layout-clu-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/layout-clu-services/src/main/resources/db"
+        image-name: "layout-clu-services-db"
+
+  - name: "builds/upyog/municipal-services/layout-clu-calculator"
+    build:
+      - work-dir: "municipal-services/layout-clu-calculator"
+        image-name: "layout-clu-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/layout-clu-calculator/migration"
+    #    image-name: "layout-clu-calculator-db"

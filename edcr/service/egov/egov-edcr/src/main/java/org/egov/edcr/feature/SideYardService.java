@@ -277,7 +277,8 @@ public class SideYardService extends GeneralRule {
                                 	if (buildingHeight.compareTo(BigDecimal.valueOf(10)) <= 0 && block.getBuilding()
                                             .getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) <= 0) {
                                 		checkSideYardCommon(pl, block.getBuilding(), buildingHeight,
-                                                block.getName(), setback.getLevel(), plot, minlength, max, occupancy.getTypeHelper(),sideYard1Result,sideYard2Result);
+                                                block.getName(), setback.getLevel(), plot, minlength, max, 
+                                                occupancy.getTypeHelper(),sideYard1Result,sideYard2Result, sideYard1.getMinimumDistance(), sideYard2.getMinimumDistance());
                                     }
                                 	
 									/*
@@ -344,7 +345,8 @@ public class SideYardService extends GeneralRule {
     }
     // Added by Bimal 18-March-2924 to check Side yard based on plot are not on height
     private void checkSideYardCommon(final Plan pl, Building building, BigDecimal buildingHeight, String blockName,
-            Integer level, final Plot plot, final double min, final double max, final OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+            Integer level, final Plot plot, final double min, final double max, final OccupancyTypeHelper mostRestrictiveOccupancy, 
+            SideYardResult sideYard1Result, SideYardResult sideYard2Result, BigDecimal minDistanceSideYard1, BigDecimal minDistanceSideYard2) {
 
     	BigDecimal plotArea = pl.getPlot().getArea();
         String rule = SIDE_YARD_DESC;
@@ -360,13 +362,14 @@ public class SideYardService extends GeneralRule {
         		|| A_PO.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 
         	processSideYardResidential(pl, blockName, level, min,
-        			mostRestrictiveOccupancy, rule, subRule, buildingHeight, plotArea, sideYard1Result,sideYard2Result);
+        			mostRestrictiveOccupancy, rule, subRule, buildingHeight, plotArea, sideYard1Result,sideYard2Result, minDistanceSideYard1, minDistanceSideYard2);
         }
     }
     // Added by Bimal 18-March-2924 to check Side yard based on plot are not on height
     private void processSideYardResidential(Plan pl, String blockName, Integer level, final double min,
     		final OccupancyTypeHelper mostRestrictiveOccupancy, String rule, String subRule,
-    		BigDecimal buildingHeight, BigDecimal plotArea, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+    		BigDecimal buildingHeight, BigDecimal plotArea, SideYardResult sideYard1Result, SideYardResult sideYard2Result, 
+    		BigDecimal minDistanceSideYard1, BigDecimal minDistanceSideYard2) {
     	LOG.info("Processing SideYardResidential:");
     	
     	// Set minVal based on plot area and buildingHeight
@@ -410,7 +413,7 @@ public class SideYardService extends GeneralRule {
 	    	LOG.info("Side Yard Service: min value validity True: actual/expected :"+min+"/"+minVal);
 	    }
     	compareSideYardResult(blockName, minVal, BigDecimal.valueOf(min),
-    			mostRestrictiveOccupancy, subRule, rule, valid, level, sideYard1Result, sideYard2Result);
+    			mostRestrictiveOccupancy, subRule, rule, valid, level, sideYard1Result, sideYard2Result , minDistanceSideYard1, minDistanceSideYard2);
     }
     
     private Boolean validateMinimumAndMeanValue(final BigDecimal min,  final BigDecimal minval, BigDecimal plotArea) {
@@ -431,7 +434,9 @@ public class SideYardService extends GeneralRule {
 
     // Added by Bimal 18-March-2924 to check Side yard based on plot are not on height
     private void compareSideYardResult(String blockName, BigDecimal exptDistance, BigDecimal actualDistance,
-            OccupancyTypeHelper mostRestrictiveOccupancy, String subRule, String rule, Boolean valid, Integer level, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+            OccupancyTypeHelper mostRestrictiveOccupancy, String subRule, String rule, Boolean valid, Integer level, 
+            SideYardResult sideYard1Result, SideYardResult sideYard2Result, BigDecimal minDistanceSideYard1, 
+            BigDecimal minDistanceSideYard2) {
 
         String occupancyName;
         if (mostRestrictiveOccupancy.getSubtype() != null)
@@ -445,8 +450,14 @@ public class SideYardService extends GeneralRule {
         sideYard1Result.subRule = subRule;
         sideYard1Result.blockName = blockName;
         sideYard1Result.level = level;
-        sideYard1Result.actualDistance = actualDistance;
+//        sideYard1Result.actualDistance = actualDistance;
+        sideYard1Result.actualDistance = minDistanceSideYard1;
         sideYard1Result.expectedDistance = exptDistance;
+        if (sideYard1Result.actualDistance.compareTo(sideYard1Result.expectedDistance) >= 0) {
+            sideYard1Result.status = true;  // ✅ OK if actual >= expected
+        } else {
+            sideYard1Result.status = false; // ❌ Invalid if actual < expected
+        }
         sideYard1Result.status = valid;
         sideYard1Result.desc = "Plot less than 200Sqm excepted Distance is optional so true in all cases";
         LOG.info("SideYard1Result: actualDistance/expectedDistance and status:" + sideYard1Result.actualDistance +"/"+sideYard1Result.expectedDistance +"and "+sideYard1Result.status);
@@ -456,17 +467,23 @@ public class SideYardService extends GeneralRule {
         sideYard2Result.subRule = subRule;
         sideYard2Result.blockName = blockName;
         sideYard2Result.level = level;
-        sideYard2Result.actualDistance = actualDistance;
+        //sideYard2Result.actualDistance = actualDistance;
+        sideYard2Result.actualDistance = minDistanceSideYard2;
         sideYard2Result.expectedDistance = exptDistance;
         sideYard2Result.desc = "Plot less than 200Sqm excepted Distance is optional so true in all cases";
-        if (valid) {
-        	// Set status for the side yard result
-            sideYard2Result.status = valid;
-            
-        }
-        else {
-        	// Set status for the side yard result
-            sideYard2Result.status = valid;
+//        if (valid) {
+//        	// Set status for the side yard result
+//            sideYard2Result.status = valid;
+//            
+//        }
+//        else {
+//        	// Set status for the side yard result
+//            sideYard2Result.status = valid;
+//        }
+        if (sideYard2Result.actualDistance.compareTo(sideYard2Result.expectedDistance) >= 0) {
+            sideYard2Result.status = true;  // ✅ OK if actual >= expected
+        } else {
+            sideYard2Result.status = false; // ❌ Invalid if actual < expected
         }
     }
 

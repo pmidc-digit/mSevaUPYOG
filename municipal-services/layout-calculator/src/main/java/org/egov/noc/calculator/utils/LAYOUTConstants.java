@@ -110,23 +110,7 @@ public class LAYOUTConstants {
 
 	public static final String NOC_URBAN_DEVELOPMENT_CESS = "LAYOUT_URBAN_DEVELOPMENT_CESS";
 
-	public static final String NOC_MALBA_CHARGES = "LAYOUT_MALBA_CHARGES";
 
-	public static final String NOC_WATER_CHARGES = "LAYOUT_WATER_CHARGES";
-
-	public static final String NOC_MINING_CHARGES = "LAYOUT_MINING_CHARGES";
-
-	public static final String NOC_GAUSHALA_CHARGES_CESS = "LAYOUT_GAUSHALA_CHARGES_CESS";
-
-	public static final String NOC_LABOUR_CESS = "LAYOUT_LABOUR_CESS";
-
-	public static final String NOC_RAIN_WATER_HARVESTING_CHARGES = "LAYOUT_RAIN_WATER_HARVESTING_CHARGES";
-
-	public static final String NOC_CLUBBING_CHARGES = "LAYOUT_CLUBBING_CHARGES";
-
-	public static final String NOC_SUB_DIVISION_CHARGES = "LAYOUT_SUB-DIVISION_CHARGES";
-
-	public static final String NOC_OTHER_CHARGES = "LAYOUT_OTHER_CHARGES";
 	
 	public static final BigDecimal SQYARD_TO_SQFEET = BigDecimal.valueOf(9.0);
 	

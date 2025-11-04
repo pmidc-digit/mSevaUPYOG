@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -79,10 +80,14 @@ public class CalculationService {
 			BigDecimal basementArea = new BigDecimal(0);
 			String category = "";
 			String finYear = "";
+			String roadTypeVal = "";
 
 //			Object additionalDetailsData = criteria.getNoc().getNocDetails().getAdditionalDetails();
 
 
+			Map<String, Object> siteDetails1 = (Map<String, Object>)((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).get("siteDetails");
+			LinkedHashMap<String, Object> roadType = (LinkedHashMap<String, Object>) siteDetails1.get("roadType");
+			roadTypeVal = (String) roadType.get("name");
 
 			if(criteria.getLayout().getLayoutDetails().getAdditionalDetails() != null) {
 				Map<String, Object> siteDetails = (Map<String, Object>)((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).get("siteDetails");
@@ -96,7 +101,7 @@ public class CalculationService {
 					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString().trim());
 				if(siteDetails.get("buildingCategory") != null) {
 					LinkedHashMap<String, Object> buildingCategory = (LinkedHashMap<String, Object>) siteDetails.get("buildingCategory");
-					category = (String) buildingCategory.get("code");
+					category = (String) buildingCategory.get("name");
 
 				}
 				
@@ -108,7 +113,7 @@ public class CalculationService {
 				
 			}
 			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, LAYOUTConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
-			estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea);
+			estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal);
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
 			
@@ -157,7 +162,7 @@ public class CalculationService {
 	 * @param finYear Current financial year
 	 * @return List of TaxHeadEstimate for the Demand creation
 	 */
-	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea) {
+	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea,String roadType) {
 		List<TaxHeadEstimate> estimates = new LinkedList<>();
 		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_CHARGES_TYPE_PATH);
 		
@@ -171,40 +176,18 @@ public class CalculationService {
 			
 			case LAYOUTConstants.NOC_PROCESSING_FEES:
 			case LAYOUTConstants.NOC_CLU_CHARGES:
+				if(chargesType.containsKey("slabs")) {
+					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
+							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
+					Double cluSlabAmount = slabAmountMap.containsKey(roadType) ? slabAmountMap.get(roadType) : slabAmountMap.get("Other Road");
+					amount = BigDecimal.valueOf(cluSlabAmount).multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
+				}
+				break;
 			case LAYOUTConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES:
 				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
 				break;
-			case LAYOUTConstants.NOC_MALBA_CHARGES:
-				BigDecimal sqFeetArea = builtUpArea.multiply(LAYOUTConstants.SQYARD_TO_SQFEET);
-				Double slabAmount = (Double)((List<Map<String, Object>>)chargesType.get("slabs")).stream().filter(slab -> {
-					return sqFeetArea.compareTo(new BigDecimal(slab.get("fromPlotArea").toString())) >= 0 
-					        && sqFeetArea.compareTo(new BigDecimal(slab.get("toPlotArea").toString())) <= 0;
-				}).map(slab -> slab.get("rate")).findFirst().orElse(0.0);
-				if(slabAmount == 0.0) {
-					List<Object> slabs = (List<Object>)chargesType.get("slabs");
-					Map<String, Object> maxSlab = (Map<String, Object>)slabs.get(slabs.size() -1 );
-					amount = sqFeetArea.subtract(new BigDecimal((Double)maxSlab.get("toPlotArea")))
-							.multiply(rate).add(new BigDecimal((Double)maxSlab.get("rate")));
-				}else
-					amount = new BigDecimal(slabAmount);
-				break;
-			case LAYOUTConstants.NOC_MINING_CHARGES:
-				amount=rate.multiply(basementArea.multiply(LAYOUTConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
-				break;
-			case LAYOUTConstants.NOC_LABOUR_CESS:
-				amount=rate.multiply(builtUpArea.multiply(LAYOUTConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
-				break;
-			case LAYOUTConstants.NOC_CLUBBING_CHARGES:
-				amount=rate.multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
-				break;
-			case LAYOUTConstants.NOC_WATER_CHARGES:
-			case LAYOUTConstants.NOC_URBAN_DEVELOPMENT_CESS:
-			case LAYOUTConstants.NOC_GAUSHALA_CHARGES_CESS:
-			case LAYOUTConstants.NOC_RAIN_WATER_HARVESTING_CHARGES:
-			case LAYOUTConstants.NOC_SUB_DIVISION_CHARGES:
-			case LAYOUTConstants.NOC_OTHER_CHARGES:
-				amount = rate.setScale(0, RoundingMode.HALF_UP);
-				break;	
+
+
 			}
 			
 			estimate.setEstimateAmount(amount);
@@ -223,14 +206,7 @@ public class CalculationService {
 			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.HALF_UP));
 		});
 		
-		//Updating Water Charges based on Malba Charges
-		estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_WATER_CHARGES)).forEach(estimate -> {
-			BigDecimal amount = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_MALBA_CHARGES))
-					.map(est -> est.getEstimateAmount()).findFirst().orElse(BigDecimal.ZERO)
-					.multiply(estimate.getEstimateAmount()).divide(new BigDecimal(100.0)).setScale(0, RoundingMode.HALF_UP);
-			estimate.setEstimateAmount(amount);
-		});
-		
+
 		return estimates;
 	}
 

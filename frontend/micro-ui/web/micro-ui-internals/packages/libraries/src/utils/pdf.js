@@ -296,7 +296,7 @@ const jsPdfGeneratorNDC = async ({
       {
         stack: [
           { 
-            text: `Date : ${currentDate}`, 
+            text: `Date : ${approvalDate}`, 
             font: "Hind", 
             fontSize: 11, 
             margin: [0, 2, 0, 0], 
@@ -309,10 +309,10 @@ const jsPdfGeneratorNDC = async ({
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
         stack: [
-          { text: t("NDC_ISSUED_BY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
-          { text: t("NDC_COMPETENT_AUTHORITY_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
-          { text: t("NDC_OFFICER_NAME_TEXT_ENG"), font: "Hind", fontSize: 11, margin: [0,0, 0, 0], bold: true },
-          { text: t("NDC_OFFICER_DESIGNATION_TEXT_ENG"), font: "Hind", fontSize: 11 },
+          { text: "Issued By", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
+          { text: "Competent Authority", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
+          { text: "Name of Officer", font: "Hind", fontSize: 11, margin: [0,0, 0, 0], bold: true },
+          { text: "Designation of Officer", font: "Hind", fontSize: 11 },
           { text: approvalDate, font: "Hind", fontSize: 11 }
         ],
         alignment: "right",

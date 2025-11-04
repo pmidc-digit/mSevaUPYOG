@@ -40,24 +40,26 @@ public class CalculationTypeCache {
 	@Autowired
 	private ObjectMapper mapper;
 
-	private static Map<String, List<CalculationType>> feeTypeCache = new HashMap<>();
+	// Cache keyed by tenantId:hallCode to avoid cross-tenant collisions
+	private static Map<String, List<CalculationType>> feeTypeCache = new java.util.concurrent.ConcurrentHashMap<>();
 
 	public List<CalculationType> getcalculationType(RequestInfo requestInfo, String tenantId, String moduleName,
 			CommunityHallBookingDetail bookingDetail) {
 
-		String hallCode = bookingDetail.getCommunityHallCode();
+	String hallCode = bookingDetail.getCommunityHallCode();
+	String cacheKey = tenantId + ":" + hallCode;
 
-		if (feeTypeCache.isEmpty() || !feeTypeCache.containsKey(hallCode)) {
+	if (feeTypeCache.isEmpty() || !feeTypeCache.containsKey(cacheKey)) {
 
-			List<CalculationType> calculationTypes = new ArrayList<CalculationType>();
-			StringBuilder uri = new StringBuilder();
-			uri.append(config.getMdmsHost()).append(config.getMdmsPath());
+	    List<CalculationType> calculationTypes = new ArrayList<CalculationType>();
+	    StringBuilder uri = new StringBuilder();
+	    uri.append(config.getMdmsHost()).append(config.getMdmsPath());
 
-			MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestCalculationType(requestInfo, tenantId, moduleName,
-					bookingDetail.getCommunityHallCode());
-			
-			MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
-					MdmsResponse.class);
+	    MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestCalculationType(requestInfo, tenantId, moduleName,
+		    bookingDetail.getCommunityHallCode());
+
+	    MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
+		    MdmsResponse.class);
 			if (mdmsResponse.getMdmsRes().get(config.getModuleName()) == null) {
 				throw new CustomException("FEE_NOT_AVAILABLE", "Community Hall Fee not available.");
 			}
@@ -79,19 +81,19 @@ public class CalculationTypeCache {
 						try {
 							calculationTypes = mapper.readValue(faceAreaNode.toString(),
 									mapper.getTypeFactory().constructCollectionType(List.class, CalculationType.class));
-							feeTypeCache.put(hallCode, calculationTypes);
+							feeTypeCache.put(cacheKey, calculationTypes);
 						} catch (JsonProcessingException e) {
 							log.error("Error converting calculation types: ", e);
 						}
 					}
 				}
 			}
-			log.info("Loaded calculation type data for all hall codes : " + feeTypeCache);
+			log.info("Loaded calculation type data for tenant/hall codes : " + feeTypeCache);
 		}
 
-		log.info("Calculation type for hall code : {} is : {}", hallCode, feeTypeCache.get(hallCode));
+		log.info("Calculation type for tenant: {} hall code: {} is : {}", tenantId, hallCode, feeTypeCache.get(cacheKey));
 
-		return feeTypeCache.get(hallCode);
+		return feeTypeCache.get(cacheKey);
 
 	}
 

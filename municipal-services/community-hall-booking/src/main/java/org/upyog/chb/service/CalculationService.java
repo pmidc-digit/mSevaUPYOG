@@ -46,7 +46,8 @@ public class CalculationService {
 	 */
 	public List<DemandDetail> calculateDemand(CommunityHallBookingRequest bookingRequest) {
 
-		String tenantId = bookingRequest.getHallsBookingApplication().getTenantId().split("\\.")[0];
+	// Use full tenant id (eg: pb.nangak) so MDMS calls are tenant-specific
+	String tenantId = bookingRequest.getHallsBookingApplication().getTenantId();
 
 		List<TaxHeadMaster> headMasters = mdmsUtil.getTaxHeadMasterList(bookingRequest.getRequestInfo(), tenantId,
 				CommunityHallBookingConstants.BILLING_SERVICE);
@@ -174,7 +175,7 @@ public class CalculationService {
 	 * This is the PER DAY booking fee, NOT the total
 	 */
 	private BigDecimal getBaseAmountFromMDMS(CommunityHallBookingRequest bookingRequest) {
-		String tenantId = bookingRequest.getHallsBookingApplication().getTenantId().split("\\.")[0];
+	String tenantId = bookingRequest.getHallsBookingApplication().getTenantId();
 
 		List<CalculationType> calculationTypes = calculationTypeCache.getcalculationType(
 				bookingRequest.getRequestInfo(),
@@ -296,7 +297,7 @@ public class CalculationService {
 			CommunityHallBookingRequest bookingRequest,
 			BigDecimal securityDepositPaid) {
 
-		String tenantId = bookingRequest.getHallsBookingApplication().getTenantId().split("\\.")[0];
+	String tenantId = bookingRequest.getHallsBookingApplication().getTenantId();
 		String currentFY = feeCalculationUtil.getCurrentFinancialYear();
 		BigDecimal baseAmount = getBaseAmountFromMDMS(bookingRequest);
 		int daysAfterEvent = calculateDaysAfterEvent(bookingRequest);

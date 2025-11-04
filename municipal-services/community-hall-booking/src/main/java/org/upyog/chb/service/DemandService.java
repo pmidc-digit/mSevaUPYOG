@@ -143,11 +143,12 @@ public class DemandService {
 			throw new CustomException(CommunityHallBookingConstants.MULTIPLE_HALL_CODES_ERROR, "Booking of multiple halls are not allowed");
 		}
 		
-		if (estimationCriteria.getTenantId().split("\\.").length == 1) {
+		if (estimationCriteria.getTenantId() == null || !estimationCriteria.getTenantId().contains(".")) {
 			throw new CustomException(CommunityHallBookingConstants.INVALID_TENANT, "Please provide valid tenant id for booking creation");
 		}
-		
-		String tenantId = estimationCriteria.getTenantId().split("\\.")[0];
+
+		// Use full tenant id (eg: pb.nangak) for MDMS calls
+		String tenantId = estimationCriteria.getTenantId();
 		
 		CommunityHallBookingDetail bookingDetail = CommunityHallBookingDetail.builder().tenantId(tenantId)
 				.bookingSlotDetails(estimationCriteria.getBookingSlotDetails())

@@ -69,14 +69,14 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 	public CommunityHallBookingDetail createBooking(@Valid CommunityHallBookingRequest communityHallsBookingRequest) {
 		log.info("Create community hall booking for user : "
 				+ communityHallsBookingRequest.getRequestInfo().getUserInfo().getUuid());
-		// TODO move to util calss 
-		String tenantId = communityHallsBookingRequest.getHallsBookingApplication().getTenantId().split("\\.")[0];
-		if (communityHallsBookingRequest.getHallsBookingApplication().getTenantId().split("\\.").length == 1) {
-			throw new CustomException(CommunityHallBookingConstants.INVALID_TENANT,
-					"Please provide valid tenant id for booking creation");
-		}
+	// Use full tenant id (eg: pb.nangak) so MDMS calls are tenant-specific
+	String tenantId = communityHallsBookingRequest.getHallsBookingApplication().getTenantId();
+	if (tenantId == null || !tenantId.contains(".")) {
+	    throw new CustomException(CommunityHallBookingConstants.INVALID_TENANT,
+		    "Please provide valid tenant id for booking creation");
+	}
 
-		Object mdmsData = mdmsUtil.mDMSCall(communityHallsBookingRequest.getRequestInfo(), tenantId);
+	Object mdmsData = mdmsUtil.mDMSCall(communityHallsBookingRequest.getRequestInfo(), tenantId);
 
 		// 1. Validate request master data to confirm it has only valid data in records
 		hallBookingValidator.validateCreate(communityHallsBookingRequest, mdmsData);
@@ -332,9 +332,13 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			throw new CustomException("INVALID_REQUEST", "Booking request or booking application cannot be null");
 		}
 
-		String bookingNo = communityHallsBookingRequest.getHallsBookingApplication().getBookingNo();
-		String tenantId = communityHallsBookingRequest.getHallsBookingApplication().getTenantId().split("\\.")[0];
-		Object mdmsData = mdmsUtil.mDMSCall(communityHallsBookingRequest.getRequestInfo(), tenantId);
+	String bookingNo = communityHallsBookingRequest.getHallsBookingApplication().getBookingNo();
+	String tenantId = communityHallsBookingRequest.getHallsBookingApplication().getTenantId();
+	if (tenantId == null || !tenantId.contains(".")) {
+	    throw new CustomException(CommunityHallBookingConstants.INVALID_TENANT,
+		    "Please provide valid tenant id for booking update");
+	}
+	Object mdmsData = mdmsUtil.mDMSCall(communityHallsBookingRequest.getRequestInfo(), tenantId);
 		log.info("Updating booking for booking no : {}", bookingNo);
 
 		if (bookingNo == null) {

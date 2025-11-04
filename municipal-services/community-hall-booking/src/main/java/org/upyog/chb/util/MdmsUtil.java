@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
@@ -41,7 +43,8 @@ public class MdmsUtil {
 	@Autowired
 	private ObjectMapper mapper;
 
-	private static Object mdmsMap = null;
+	// Per-tenant MDMS cache. Keyed by full tenantId (eg: pb.nangal)
+	private static Map<String, Object> mdmsMap = new ConcurrentHashMap<>();
 
 	/*
 	 * @Autowired private MDMSClient mdmsClient;
@@ -62,12 +65,13 @@ public class MdmsUtil {
 	 */
 	public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
 		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
-		Object result = null;
-		if (mdmsMap == null) {
+		// Try per-tenant cache first
+		Object result = mdmsMap.get(tenantId);
+		if (result == null) {
 			result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-			setMDMSDataMap(result);
-		} else {
-			result = getMDMSDataMap();
+			if (result != null) {
+				mdmsMap.put(tenantId, result);
+			}
 		}
 
 		// Object result = mdmsClient.getMDMSData(mdmsCriteriaReq);
@@ -146,12 +150,13 @@ public class MdmsUtil {
 
 	}
 
-	public static void setMDMSDataMap(Object mdmsDataMap) {
-		mdmsMap = mdmsDataMap;
+	// Utility accessors (if needed elsewhere) can remain, but prefer direct map usage
+	public static void setMDMSDataForTenant(String tenantId, Object mdmsData) {
+		mdmsMap.put(tenantId, mdmsData);
 	}
 
-	public static Object getMDMSDataMap() {
-		return mdmsMap;
+	public static Object getMDMSDataForTenant(String tenantId) {
+		return mdmsMap.get(tenantId);
 	}
 
 	public List<TaxHeadMaster> getTaxHeadMasterList(RequestInfo requestInfo, String tenantId, String moduleName) {

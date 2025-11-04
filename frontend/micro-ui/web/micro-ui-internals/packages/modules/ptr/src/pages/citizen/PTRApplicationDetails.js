@@ -456,7 +456,7 @@ const PTRApplicationDetails = () => {
                 </div>
 
                 <div class="terms-section">
-                  <div class="terms-title">TERMS AND CONDITIONS</div>
+                  <div class="terms-title">${t("TERMS AND CONDITIONS")}</div>
                   <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
                   <ol class="terms-list">
                     <li>${t("PET_NEW_TERM_1")}</li>
@@ -475,14 +475,6 @@ const PTRApplicationDetails = () => {
                     <li>${t("PET_NEW_TERM_14")}</li>
                     <li>${t("PET_NEW_TERM_15")}</li>
                     <li>${t("PET_NEW_TERM_16")}</li>
-                    <li>${t("PET_NEW_TERM_17")}</li>
-                    <li>
-                      ${t("PET_TERM_PART_1")}
-                      ${t("PETTOKEN_DATE")}
-                      ${t("PETTOKEN_ADDRESS")}
-                      ${t("PET_TERM_PART_2")}
-                    </li>
-                    <li>${t("PET_NEW_TERM_19")}</li>
                   </ol>
 
                   <div style="text-align: center;">

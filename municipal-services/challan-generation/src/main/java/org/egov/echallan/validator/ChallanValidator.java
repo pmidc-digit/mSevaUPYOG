@@ -121,23 +121,38 @@ public class ChallanValidator {
 		Map<String, String> errorMap = new HashMap<>();
 		if (searchResult.size() == 0)
 			errorMap.put("INVALID_UPDATE_REQ_NOT_EXIST", "The Challan to be updated is not in database");
-		Challan searchchallan = searchResult.get(0);
-		if(!challan.getBusinessService().equalsIgnoreCase(searchchallan.getBusinessService()))
-			errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_BSERVICE", "The business service is not matching with the Search result");
-		if(!challan.getChallanNo().equalsIgnoreCase(searchchallan.getChallanNo()))
-			errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_CHALLAN_NO", "The Challan Number is not matching with the Search result");
-		if(!challan.getAddress().getId().equalsIgnoreCase(searchchallan.getAddress().getId()))
-			errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_ADDRESS", "Address is not matching with the Search result");
-		if(!challan.getCitizen().getUuid().equalsIgnoreCase(searchchallan.getCitizen().getUuid()))
-			errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_ADDRESS", "User Details not matching with the Search result");
-		if(!challan.getCitizen().getName().equalsIgnoreCase(searchchallan.getCitizen().getName()))
-			errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_NAME", "User Details not matching with the Search result");
-		if(!challan.getCitizen().getMobileNumber().equalsIgnoreCase(searchchallan.getCitizen().getMobileNumber()))
-			errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_MOBILENO", "User Details not matching with the Search result");
-		if(searchchallan.getApplicationStatus()!=StatusEnum.ACTIVE)
-			errorMap.put("INVALID_UPDATE_REQ_CHALLAN_INACTIVE", "Challan cannot be updated/cancelled");
-		if(!challan.getTenantId().equalsIgnoreCase(request.getRequestInfo().getUserInfo().getTenantId()))
-       	 	errorMap.put("INVALID_UPDATE_REQ_INVALID_TENANTID", "Invalid tenant id");
+		if (errorMap.isEmpty() && searchResult.size() > 0) {
+			Challan searchchallan = searchResult.get(0);
+			if(StringUtils.isNotBlank(challan.getBusinessService()) && StringUtils.isNotBlank(searchchallan.getBusinessService()) 
+					&& !challan.getBusinessService().equalsIgnoreCase(searchchallan.getBusinessService()))
+				errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_BSERVICE", "The business service is not matching with the Search result");
+			if(StringUtils.isNotBlank(challan.getChallanNo()) && StringUtils.isNotBlank(searchchallan.getChallanNo()) 
+					&& !challan.getChallanNo().equalsIgnoreCase(searchchallan.getChallanNo()))
+				errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_CHALLAN_NO", "The Challan Number is not matching with the Search result");
+			if(challan.getAddress() != null && searchchallan.getAddress() != null 
+					&& challan.getAddress().getId() != null && searchchallan.getAddress().getId() != null
+					&& !challan.getAddress().getId().equalsIgnoreCase(searchchallan.getAddress().getId()))
+				errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_ADDRESS", "Address is not matching with the Search result");
+			// Validate citizen UUID only (immutable identifier) - name and mobile can be updated
+			if(challan.getCitizen() != null && searchchallan.getCitizen() != null) {
+				// Only validate UUID as it's the immutable identifier - name and mobile can be updated
+				if(challan.getCitizen().getUuid() != null && searchchallan.getCitizen().getUuid() != null
+						&& !challan.getCitizen().getUuid().equalsIgnoreCase(searchchallan.getCitizen().getUuid()))
+					errorMap.put("INVALID_UPDATE_REQ_NOTMATCHED_UUID", "User UUID not matching with the Search result");
+				// Name and mobile number are allowed to be updated, so we don't validate them
+			} else if(challan.getCitizen() != null && challan.getCitizen().getUuid() != null 
+					&& (searchchallan.getCitizen() == null || searchchallan.getCitizen().getUuid() == null)) {
+				// If request has citizen UUID but search result doesn't, log warning but don't fail
+				log.warn("Citizen UUID in request but not found in search result for challan: {}", challan.getChallanNo());
+			}
+			if(searchchallan.getApplicationStatus()!=StatusEnum.ACTIVE)
+				errorMap.put("INVALID_UPDATE_REQ_CHALLAN_INACTIVE", "Challan cannot be updated/cancelled");
+			if(StringUtils.isNotBlank(challan.getTenantId()) && request.getRequestInfo() != null 
+					&& request.getRequestInfo().getUserInfo() != null 
+					&& StringUtils.isNotBlank(request.getRequestInfo().getUserInfo().getTenantId())
+					&& !challan.getTenantId().equalsIgnoreCase(request.getRequestInfo().getUserInfo().getTenantId()))
+       	 		errorMap.put("INVALID_UPDATE_REQ_INVALID_TENANTID", "Invalid tenant id");
+		}
 		if (!errorMap.isEmpty())
             throw new CustomException(errorMap);
 		

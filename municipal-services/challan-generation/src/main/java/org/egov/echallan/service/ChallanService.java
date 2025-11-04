@@ -335,10 +335,19 @@ public class ChallanService {
 		 validator.validateFields(request, mdmsData);
 		 List<Challan> searchResult = searchChallans(request);
 		 validator.validateUpdateRequest(request,searchResult);
+		 
+		 // Preserve original citizen data from database - prevent citizen updates
+		 Challan challan = request.getChallan();
+		 if (searchResult != null && !searchResult.isEmpty() && searchResult.get(0).getCitizen() != null) {
+			 Challan existingChallan = searchResult.get(0);
+			 // Preserve the original citizen data from database
+			 challan.setCitizen(existingChallan.getCitizen());
+			 log.info("Preserved original citizen data for challan: {}", challan.getChallanNo());
+		 }
+		 
 		 enrichmentService.enrichUpdateRequest(request);
 		 
 		 // Copy amount array to additionalDetail so it can be retrieved in search
-		 Challan challan = request.getChallan();
 		 if (challan.getAmount() != null && !challan.getAmount().isEmpty()) {
 			 try {
 				 // Ensure amount objects have taxHeadCode (set default if missing)

@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+// import { useDispatch } from "react-redux";
 import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, CardLabelError } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import ADSAddressField from "./ADSAddressField";
 import AvailabilityModal from "./ADSAvailibilityModal";
 import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
-import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
-import { areCartSlotsEqual, getScheduleMessage, validateSchedule } from "../utils";
+// import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
+import {getScheduleMessage, validateSchedule } from "../utils";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
@@ -23,7 +23,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const { data: location = [] } = Digit.Hooks.ads.useADSLocationMDMS(tenantId);
   const { data: scheduleType = [] } = Digit.Hooks.ads.useADSScheduleTypeMDMS(tenantId);
   const [cartSlots, setCartSlots] = useState([]);
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const {
     control,
@@ -62,19 +62,19 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   }, [adsForLocation.length]);
 
   const filterAds = (selected) => {
-    const filtered = mdmsAds.filter((ad) => String(ad.locationCode) === String(selected.code));
+    const filtered = mdmsAds?.filter((ad) => String(ad?.locationCode) === String(selected?.code));
     setAdsForLocation(filtered);
     setValue("ads", []);
     // auto geo from MDMS location
     const locObj = (Array.isArray(location) && location.find((l) => String(l.code) === String(selected.code))) || null;
     if (locObj?.geo_tag?.latitude && locObj?.geo_tag?.longitude) {
       setValue("geoLocation", {
-        formattedAddress: locObj.name || selected.code,
-        latitude: locObj.geo_tag.latitude,
-        longitude: locObj.geo_tag.longitude,
-        lat: locObj.geo_tag.latitude,
-        lng: locObj.geo_tag.longitude,
-        placeId: locObj.locationCode,
+        formattedAddress: locObj?.name || selected?.code,
+        latitude: locObj?.geo_tag?.latitude,
+        longitude: locObj?.geo_tag?.longitude,
+        lat: locObj?.geo_tag?.latitude,
+        lng: locObj?.geo_tag?.longitude,
+        placeId: locObj?.locationCode,
       });
     }
   };
@@ -86,40 +86,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setShowToast({ label: t("ADS_ONE_AD_ATLEAST"), error: true });
       return;
     }
+    
 
-    // Only check if Redux has ads
-    if (currentStepData?.ads?.length > 0) {
-      const unchanged = areCartSlotsEqual(cartSlots, currentStepData?.ads);
-      if (unchanged) {
-        goNext(cartSlots);
-        return;
-      }
-    }
-
-    const enrichedSlots =
-      cartSlots?.flatMap((item) =>
-        item.slots.map((slot) => ({
-          ...slot,
-          isTimerRequired: true,
-        }))
-      ) ?? [];
-
-    const payload = { advertisementSlotSearchCriteria: enrichedSlots };
-
-    try {
-      const response = await Digit.ADSServices.slot_search(payload, tenantId);
-      if (response) {
-        // ✅ Store creation time
-        const createTime = Date.now();
-        dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", createTime));
-
-        goNext(cartSlots);
-      } else {
-        setShowToast({ label: t("COMMON_SOMETHING_WENT_WRONG_LABEL"), error: true });
-      }
-    } catch (error) {
-      setShowToast({ label: t("COMMON_SOMETHING_WENT_WRONG_LABEL"), error: true });
-    }
+     goNext(cartSlots);
   };
 
   useEffect(() => {

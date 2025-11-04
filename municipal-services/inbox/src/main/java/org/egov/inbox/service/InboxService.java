@@ -700,9 +700,9 @@ public class InboxService {
             // processInstance fetch (BPA multi-tenant citizen special handling)
             ProcessInstanceResponse processInstanceResponse;
 
-            if (processCriteria != null 
+            if (processCriteria != null
                     && !ObjectUtils.isEmpty(processCriteria.getModuleName())
-                    && processCriteria.getModuleName().equals(BPA) 
+                    && processCriteria.getModuleName().equals(BPA)
                     && roles.contains(BpaConstants.CITIZEN)) {
 
                 Map<String, List<String>> tenantAndApplnNoForProcessInstance = new HashMap<>();
@@ -710,7 +710,7 @@ public class InboxService {
                 for (Object businessId : businessIds) {
                     for (Map.Entry<String, List<String>> tenantAppln : tenantAndApplnNumbersMap.entrySet()) {
                         String tenantId = tenantAppln.getKey();
-                        if (tenantAppln.getValue().contains(businessId) 
+                        if (tenantAppln.getValue().contains(businessId)
                                 && tenantAndApplnNoForProcessInstance.containsKey(tenantId)) {
 
                             tenantAndApplnNoForProcessInstance.get(tenantId)

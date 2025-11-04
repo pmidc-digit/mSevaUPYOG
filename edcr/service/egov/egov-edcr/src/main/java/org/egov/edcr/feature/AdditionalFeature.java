@@ -155,7 +155,7 @@ public class AdditionalFeature extends FeatureProcess {
     public static final String FIRE_PROTECTION_AND_FIRE_SAFETY_REQUIREMENTS_DESC = "Fire Protection And Fire Safety Requirements";
 
     public static final BigDecimal HEIGHT_WITH_STILT = BigDecimal.valueOf(17.5);
-    public static final BigDecimal HEIGHT_WITHOUT_STILT = BigDecimal.valueOf(15);
+    public static final BigDecimal HEIGHT_WITHOUT_STILT = BigDecimal.valueOf(21);
     @Override
     public Plan validate(Plan pl) {
         HashMap<String, String> errors = new HashMap<>();
@@ -527,7 +527,7 @@ public class AdditionalFeature extends FeatureProcess {
                     isAccepted = buildingHeight.compareTo(HEIGHT_WITH_STILT) <= 0;
                 	requiredBuildingHeight = "<= " + HEIGHT_WITH_STILT;
                 } else {
-                    maxHeight = BigDecimal.valueOf(15); // without stilt
+                    maxHeight = BigDecimal.valueOf(21); // without stilt
                     isAccepted = buildingHeight.compareTo(HEIGHT_WITHOUT_STILT) <= 0;
                 	requiredBuildingHeight = "<= " + HEIGHT_WITHOUT_STILT;
                 }

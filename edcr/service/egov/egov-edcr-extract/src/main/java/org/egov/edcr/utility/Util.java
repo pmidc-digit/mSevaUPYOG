@@ -889,6 +889,42 @@ public class Util {
 
         return polygonArea(x, y, dxfPolyline.getVertexCount());
     }
+    
+    public static BigDecimal getPolyLineLength(DXFPolyline dxfPolyline) {
+        if (dxfPolyline == null) {
+            return BigDecimal.ZERO;
+        }
+
+        List<Double> x = new ArrayList<>();
+        List<Double> y = new ArrayList<>();
+
+        Iterator<?> vertexIterator = dxfPolyline.getVertexIterator();
+        while (vertexIterator.hasNext()) {
+            DXFVertex dxfVertex = (DXFVertex) vertexIterator.next();
+            Point point = dxfVertex.getPoint();
+            x.add(point.getX());
+            y.add(point.getY());
+        }
+
+        double totalLength = 0.0;
+        int n = x.size();
+
+        for (int i = 0; i < n - 1; i++) {
+            double dx = x.get(i + 1) - x.get(i);
+            double dy = y.get(i + 1) - y.get(i);
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // If polyline is closed, add distance between last and first point
+        if (dxfPolyline.isClosed() && n > 1) {
+            double dx = x.get(0) - x.get(n - 1);
+            double dy = y.get(0) - y.get(n - 1);
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+
+        return BigDecimal.valueOf(totalLength).setScale(2, RoundingMode.HALF_UP);
+    }
+
 
     public static List<DXFLWPolyline> getPolyLinesByLayer(DXFDocument dxfDocument, String name) {
 

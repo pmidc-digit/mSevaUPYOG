@@ -311,15 +311,25 @@ public class PlanService {
         //edcrRequest.setRequestInfo(null);
         //Setting edcr Data to Plan        
         //plan.setEdcrRequest(edcrRequest);
+        // validate planInfo city and tenantId city
+        
+        String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
+        
+        if(!plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
+        	//"Invalid ULB: Plan ULB and login ULB must be the same."
+        	plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
+        }
+        
         LOG.info("Setting mdms master data");
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
         LOG.info("mdms master data set successfully");
 //        plan = applyRules(plan, amd, cityDetails);
-        if(plan.getErrors().containsKey("Not authorized to scrutinize")) {
+        if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB")) {
         	
         }else {
         	plan = applyRules(plan, amd, cityDetails,features);
         }
+        
         LOG.info("Competency Role Checked successfully ");
         
       
@@ -713,6 +723,15 @@ public class PlanService {
             LOG.error("error", e);
         }
     }
+    
+    public static String getCityFromTenant(String tenantId) {
+        if (tenantId != null && tenantId.contains(".")) {
+            String[] parts = tenantId.split("\\.");
+            return parts.length > 1 ? parts[1] : tenantId;
+        }
+        return tenantId;
+    }
+    
 }
 
 

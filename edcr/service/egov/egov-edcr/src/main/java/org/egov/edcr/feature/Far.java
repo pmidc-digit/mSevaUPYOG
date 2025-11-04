@@ -82,6 +82,12 @@ import static org.egov.edcr.constants.DxfFileConstants.S_SC;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.G_PHI;
 import static org.egov.edcr.constants.DxfFileConstants.G_NPHI;
+
+import static org.egov.edcr.constants.DxfFileConstants.C;
+import static org.egov.edcr.constants.DxfFileConstants.C_MA;
+import static org.egov.edcr.constants.DxfFileConstants.C_MIP;
+import static org.egov.edcr.constants.DxfFileConstants.C_MOP;
+
 import static org.egov.edcr.utility.DcrConstants.DECIMALDIGITS_MEASUREMENTS;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.PLOT_AREA;
@@ -869,12 +875,26 @@ public class Far extends FeatureProcess {
 			return codesMap.get(M_HOTHC);
 		else if (codes.contains(E_SACA))
 			return codesMap.get(E_SACA);
+		
+		else if (codes.contains(C_MA))
+			return codesMap.get(C_MA);
+		
+		else if (codes.contains(C_MIP))
+			return codesMap.get(C_MIP);
+		
+		else if (codes.contains(C_MOP))
+			return codesMap.get(C_MOP);
+		
 		else if (codes.contains(G))
 			return codesMap.get(G);
 		else if (codes.contains(F))
 			return codesMap.get(F);
 		else if (codes.contains(A))
 			return codesMap.get(A);
+		
+		else if (codes.contains(C))
+			return codesMap.get(C);
+		
 		else
 			return null;
 

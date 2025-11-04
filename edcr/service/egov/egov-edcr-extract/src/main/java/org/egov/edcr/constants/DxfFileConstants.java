@@ -38,7 +38,7 @@ public class DxfFileConstants {
     public static final int OCCUPANCY_B1_COLOR_CODE = 4;
     public static final int OCCUPANCY_B2_COLOR_CODE = 14;
     public static final int OCCUPANCY_B3_COLOR_CODE = 15;
-    // public static final int OCCUPANCY_C_COLOR_CODE = 5;
+    public static final int OCCUPANCY_C_COLOR_CODE = 5;
     public static final int OCCUPANCY_D_COLOR_CODE = 6;
     public static final int OCCUPANCY_E_COLOR_CODE = 7;
     public static final int OCCUPANCY_F_COLOR_CODE = 8;

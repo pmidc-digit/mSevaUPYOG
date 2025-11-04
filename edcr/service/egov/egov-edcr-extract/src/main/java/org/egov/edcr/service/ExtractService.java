@@ -490,7 +490,7 @@ public class ExtractService {
 		        
 		        try {
 		        	LOG.info("fetching roles data from mdms");
-		            Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), plan.getEdcrRequest().getTenantId(), roleCode);
+		            Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), "pb", roleCode);
 
 		            if (mdmsData != null) {
 		                Map<String, List<Map<String, Object>>> mdmsResponse =

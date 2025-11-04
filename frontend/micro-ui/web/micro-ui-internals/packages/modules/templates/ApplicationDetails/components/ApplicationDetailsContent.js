@@ -97,10 +97,8 @@ function ApplicationDetailsContent({
           console.error("Payment fetch error:", error);
         }
       }
-    };
-
-    fetchPaymentHistory();
-  }, [applicationData?.connectionNo, applicationData?.tenantId, applicationData?.serviceType, tenantId]);
+    }
+  }, [applicationData?.connectionNo, applicationDetails?.colletionOfData]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");

@@ -466,6 +466,30 @@ export const areCartSlotsEqual = (a = [], b = []) => {
   });
 };
 
+export const haveSlotsChanged = (previousSlots, updatedSlots) => {
+  // Use advertisementId + bookingDate as the unique key
+  const makeKey = (slot) => `${slot.advertisementId}|${slot.bookingDate}`;
+
+  const prevKeys = new Set(previousSlots.map(makeKey));
+  const updatedKeys = new Set(updatedSlots.map(makeKey));
+
+  // Check if any previous slot is missing in updated
+  for (let key of prevKeys) {
+    if (!updatedKeys.has(key)) {
+      return true; // removed slot
+    }
+  }
+
+  // Check if any updated slot is new compared to previous
+  for (let key of updatedKeys) {
+    if (!prevKeys.has(key)) {
+      return true; // new slot
+    }
+  }
+
+  return false; // no changes
+};
+
 // slots are equal
 export const areSlotsEqual = (a = [], b = []) => {
   if (a?.length !== b?.length) return false;
@@ -539,3 +563,24 @@ export const formatLabel = (key) => {
     ?.map((word) => word?.charAt(0)?.toUpperCase() + word?.slice(1)) // Capitalize each word
     ?.join(" "); // Join back into a single string
 };
+
+export const allowedKeys = [
+  "addType",
+  "location",
+  "faceArea",
+  "nightLight",
+  "bookingId",
+  "bookingDate",
+  "advertisementId",
+  "bookingFromTime",
+  "bookingToTime",
+  "tenantId",
+  "amount",
+  "advertisementName",
+  "poleNo",
+  "imageSrc",
+  "width",
+  "height",
+  "lightType",
+  "status",
+];

@@ -59,12 +59,15 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.egov.common.entity.edcr.Block;
@@ -303,6 +306,153 @@ public class SetBackService extends FeatureProcess {
         }
 
         // Process each block separately
+//        for (Map.Entry<String, List<ScrutinyDetail>> entry : blockWiseDetails.entrySet()) {
+//            String blockPrefix = entry.getKey();
+//            List<ScrutinyDetail> blockDetails = entry.getValue();
+//
+//            BigDecimal rearAndSideSetback = BigDecimal.ZERO;
+//            Map<String, String> detailsMap = new HashMap<>();
+//            String status = Result.Not_Accepted.getResultVal();
+//            boolean permissibleIsMeters = false; // flag to decide if we append "m"
+//            boolean isResidential = false;
+//
+//            for (ScrutinyDetail scrutinyDetail : blockDetails) {
+//                String key = scrutinyDetail.getKey();
+//                
+//             // ✅ Extract occupancy from details
+//                String occupancyType = "";
+//                if (scrutinyDetail.getDetail() != null && !scrutinyDetail.getDetail().isEmpty()) {
+//                    Map<String, String> detail = scrutinyDetail.getDetail().get(0);
+//                    if (detail.containsKey("Occupancy")) {
+//                        occupancyType = detail.get("Occupancy");
+//                    }
+//                }
+//                
+//                if ("Residential".equalsIgnoreCase(occupancyType)) {
+//                	isResidential = true;
+//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                }else {
+//                	if (key.contains("Front")) {
+//                        // Keep Front setbacks directly
+//                        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                    } else if (key.contains("Rear") || key.contains("Side")) {
+//                        List<Map<String, String>> detailsList = scrutinyDetail.getDetail();
+//                        if (detailsList == null) continue;
+//
+//                        for (Map<String, String> detail : detailsList) {
+//                            detail.forEach((k, v) -> {
+//                                if (v != null) {
+//                                    detailsMap.put(k, v);
+//                                }
+//                            });
+//                        }
+//
+//                        // Sum up Provided values
+//                     // Take only the first valid "Provided" value from the detailsList (avoid summing multiple side setbacks inside same ScrutinyDetail)
+//                        BigDecimal providedValue = detailsList.stream()
+//                                .map(detail -> detail.get("Provided"))
+//                                .filter(Objects::nonNull)
+//                                .map(String::trim)
+//                                // remove non-numeric characters except dot and minus (handles "2.00m", "2.00 m", etc.)
+//                                .map(s -> s.replaceAll("[^0-9.\\-]", ""))
+//                                .filter(s -> !s.isEmpty())
+//                                .map(s -> {
+//                                    try {
+//                                        return new BigDecimal(s);
+//                                    } catch (NumberFormatException e) {
+//                                        LOG.warn("Invalid Provided value for {}: {}", key, s);
+//                                        return null;
+//                                    }
+//                                })
+//                                .filter(Objects::nonNull)
+//                                .findFirst()   // <-- get only the first valid value
+//                                .orElse(BigDecimal.ZERO);
+//
+//
+//                        rearAndSideSetback = rearAndSideSetback.add(providedValue);
+//                        LOG.info("Provided setback for key [{}] = {}", key, providedValue);
+//                    }
+//                }
+//
+//                
+//            }
+//            
+//            if(!isResidential) {
+//            	rearAndSideSetback = rearAndSideSetback.setScale(2, RoundingMode.HALF_UP);
+//
+//                if (rearAndSideSetback.compareTo(BigDecimal.ZERO) > 0) {
+//                    BigDecimal permissibleValue = BigDecimal.ZERO;
+//                    String permissibleDisplay = "";
+//                    String permissibleStr = detailsMap.get("Permissible");
+//
+//                    if (permissibleStr != null && !permissibleStr.trim().isEmpty()) {
+//                        permissibleStr = permissibleStr.trim();
+//
+//                        // Case 1: Permissible in meters (contains "m")
+//                        if (permissibleStr.toLowerCase().contains("m")) {
+//                            permissibleIsMeters = true;
+//                            String numericPart = permissibleStr.replaceAll("[^0-9.]", "");
+//                            if (!numericPart.isEmpty()) {
+//                                permissibleValue = new BigDecimal(numericPart).setScale(2, RoundingMode.HALF_UP);
+//                                permissibleDisplay = permissibleValue + " m";
+//                            }
+//                        }
+//                        // Case 2: Permissible as percentage (e.g., "20")
+//                        else {
+//                            try {
+//                                BigDecimal percentage = new BigDecimal(permissibleStr);
+//                                permissibleValue = plotArea
+//                                        .multiply(percentage)
+//                                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+//                                permissibleDisplay = permissibleStr + "% of plot area (" + permissibleValue + ")";
+//                            } catch (NumberFormatException e) {
+//                                LOG.warn("Invalid numeric Permissible value: {}", permissibleStr);
+//                            }
+//                        }
+//                    }
+//
+//                    // ✅ Compare permissible vs provided
+//                    if (rearAndSideSetback.compareTo(permissibleValue) >= 0) {
+//                        status = Result.Accepted.getResultVal();
+//                    }
+//
+//                    // ✅ Create combined key like "Block_1_Rear_And_Side Setback"
+//                    String combinedKey = blockPrefix + "_Rear Setback";
+//
+//                    LOG.info("Block [{}]: Provided = {}, Permissible = {}, Status = {}",
+//                            blockPrefix, rearAndSideSetback, permissibleValue, status);
+//
+//                    // ✅ Create new scrutiny detail entry
+//                    ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+//                    scrutinyDetail.addColumnHeading(1, RULE_NO);
+//                    scrutinyDetail.addColumnHeading(2, LEVEL);
+//                    scrutinyDetail.addColumnHeading(3, OCCUPANCY);
+//                    scrutinyDetail.addColumnHeading(4, FIELDVERIFIED);
+//                    scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
+//                    scrutinyDetail.addColumnHeading(6, PROVIDED);
+//                    scrutinyDetail.addColumnHeading(7, STATUS);
+//                    //scrutinyDetail.setHeading(REAR_AND_SIDE_YARD_DESC);
+//
+//                    scrutinyDetail.setKey(combinedKey);
+//
+//                    Map<String, String> details = new HashMap<>();
+//                    details.put(RULE_NO, RULE);
+//                    details.put(LEVEL, detailsMap.get("Level"));
+//                    details.put(OCCUPANCY, detailsMap.get("Occupancy"));
+//                    details.put(PERMISSIBLE, permissibleDisplay);
+//
+//                    // ✅ Only append "m" to provided if permissible was in meters
+//                    details.put(PROVIDED, permissibleIsMeters ? rearAndSideSetback + " m" : rearAndSideSetback.toPlainString());
+//                    details.put(STATUS, status);
+//
+//                    scrutinyDetail.getDetail().add(details);
+//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                }
+//            }
+//
+//            
+//        }
+        
         for (Map.Entry<String, List<ScrutinyDetail>> entry : blockWiseDetails.entrySet()) {
             String blockPrefix = entry.getKey();
             List<ScrutinyDetail> blockDetails = entry.getValue();
@@ -310,64 +460,87 @@ public class SetBackService extends FeatureProcess {
             BigDecimal rearAndSideSetback = BigDecimal.ZERO;
             Map<String, String> detailsMap = new HashMap<>();
             String status = Result.Not_Accepted.getResultVal();
-            boolean permissibleIsMeters = false; // flag to decide if we append "m"
+            boolean permissibleIsMeters = false;
             boolean isResidential = false;
+
+            // Collect all Rear+Side detail rows for this block (process them together, once)
+            List<Map<String, String>> rearSideAll = new ArrayList<>();
 
             for (ScrutinyDetail scrutinyDetail : blockDetails) {
                 String key = scrutinyDetail.getKey();
-                
-             // ✅ Extract occupancy from details
+
+                // Extract occupancy type (from current scrutinyDetail)
                 String occupancyType = "";
                 if (scrutinyDetail.getDetail() != null && !scrutinyDetail.getDetail().isEmpty()) {
-                    Map<String, String> detail = scrutinyDetail.getDetail().get(0);
-                    if (detail.containsKey("Occupancy")) {
-                        occupancyType = detail.get("Occupancy");
-                    }
+                    Map<String, String> firstDetail = scrutinyDetail.getDetail().get(0);
+                    occupancyType = firstDetail.getOrDefault("Occupancy", "");
                 }
-                
+
+                // If residential, push the whole scrutinyDetail to report as-is
                 if ("Residential".equalsIgnoreCase(occupancyType)) {
-                	isResidential = true;
+                    isResidential = true;
                     pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-                }else {
-                	if (key.contains("Front")) {
-                        // Keep Front setbacks directly
-                        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-                    } else if (key.contains("Rear") || key.contains("Side")) {
-                        List<Map<String, String>> detailsList = scrutinyDetail.getDetail();
-                        if (detailsList == null) continue;
-
-                        for (Map<String, String> detail : detailsList) {
-                            detail.forEach((k, v) -> {
-                                if (v != null) {
-                                    detailsMap.put(k, v);
-                                }
-                            });
-                        }
-
-                        // Sum up Provided values
-                        BigDecimal providedValue = detailsList.stream()
-                                .map(detail -> detail.get("Provided"))
-                                .filter(Objects::nonNull)
-                                .map(value -> {
-                                    try {
-                                        return new BigDecimal(value.trim());
-                                    } catch (NumberFormatException e) {
-                                        LOG.warn("Invalid Provided value for {}: {}", key, value);
-                                        return BigDecimal.ZERO;
-                                    }
-                                })
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                        rearAndSideSetback = rearAndSideSetback.add(providedValue);
-                        LOG.info("Provided setback for key [{}] = {}", key, providedValue);
-                    }
+                    continue; // skip rear/side aggregation for this scrutinyDetail (residential handled separately)
                 }
 
-                
+                // For non-residential: front goes directly; rear & side are collected for combined processing
+                if (key != null && key.contains("Front")) {
+                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                } else if (key != null && (key.contains("Rear") || key.contains("Side"))) {
+                    List<Map<String, String>> detailsList = scrutinyDetail.getDetail();
+                    if (detailsList != null && !detailsList.isEmpty()) {
+                        // copy detail rows into the combined list for block-level processing
+                        for (Map<String, String> d : detailsList) {
+                            // also capture meta keys once (prefer first occurrences)
+                            if (d.containsKey("Level")) detailsMap.putIfAbsent("Level", d.get("Level"));
+                            if (d.containsKey("Occupancy")) detailsMap.putIfAbsent("Occupancy", d.get("Occupancy"));
+                            if (d.containsKey("Permissible")) detailsMap.putIfAbsent("Permissible", d.get("Permissible"));
+
+                            rearSideAll.add(new HashMap<>(d)); // add a copy to avoid accidental mutation
+                        }
+                    }
+                }
             }
-            
-            if(!isResidential) {
-            	rearAndSideSetback = rearAndSideSetback.setScale(2, RoundingMode.HALF_UP);
+
+            // Process the collected Rear+Side rows once per block (deduplicate and sum)
+            if (!isResidential && !rearSideAll.isEmpty()) {
+                // Use a set to avoid duplicate rows. Key uses Side Number + Provided normalized (fallback to Provided alone)
+                Set<String> seen = new HashSet<>();
+                for (Map<String, String> detail : rearSideAll) {
+                    String sideNumber = detail.getOrDefault("Side Number", detail.getOrDefault("SideNumber", detail.get("Side Number"))); // safe read
+                    String providedRaw = detail.get("Provided");
+                    if (providedRaw == null || providedRaw.trim().isEmpty()) continue;
+
+                    // normalize provided: remove non-numeric except dot and minus
+                    String normalizedProvided = providedRaw.trim().replaceAll("[^0-9.\\-]", "");
+                    if (normalizedProvided.isEmpty()) continue;
+
+                    // dedupe key: prefer sideNumber if present
+                    String uniqKey = (StringUtils.isNotBlank(sideNumber) ? sideNumber.trim() + "|" : "") + normalizedProvided;
+
+                    if (seen.contains(uniqKey)) {
+                        LOG.debug("Skipping duplicate rear/side detail (dupKey={})", uniqKey);
+                        continue;
+                    }
+                    seen.add(uniqKey);
+
+                    // parse and add
+                    BigDecimal providedValue;
+                    try {
+                        providedValue = new BigDecimal(normalizedProvided);
+                    } catch (NumberFormatException e) {
+                        LOG.warn("Invalid Provided value for block {}: {}", blockPrefix, providedRaw);
+                        continue;
+                    }
+
+                    rearAndSideSetback = rearAndSideSetback.add(providedValue);
+                    LOG.info("Block [{}] - adding Provided {} (sideNumber={}): running total = {}", blockPrefix, providedValue, sideNumber, rearAndSideSetback);
+                }
+            }
+
+            // After processing, if not residential, produce the summary row (same as earlier)
+            if (!isResidential) {
+                rearAndSideSetback = rearAndSideSetback.setScale(2, RoundingMode.HALF_UP);
 
                 if (rearAndSideSetback.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal permissibleValue = BigDecimal.ZERO;
@@ -376,8 +549,6 @@ public class SetBackService extends FeatureProcess {
 
                     if (permissibleStr != null && !permissibleStr.trim().isEmpty()) {
                         permissibleStr = permissibleStr.trim();
-
-                        // Case 1: Permissible in meters (contains "m")
                         if (permissibleStr.toLowerCase().contains("m")) {
                             permissibleIsMeters = true;
                             String numericPart = permissibleStr.replaceAll("[^0-9.]", "");
@@ -385,9 +556,7 @@ public class SetBackService extends FeatureProcess {
                                 permissibleValue = new BigDecimal(numericPart).setScale(2, RoundingMode.HALF_UP);
                                 permissibleDisplay = permissibleValue + " m";
                             }
-                        }
-                        // Case 2: Permissible as percentage (e.g., "20")
-                        else {
+                        } else {
                             try {
                                 BigDecimal percentage = new BigDecimal(permissibleStr);
                                 permissibleValue = plotArea
@@ -400,47 +569,39 @@ public class SetBackService extends FeatureProcess {
                         }
                     }
 
-                    // ✅ Compare permissible vs provided
                     if (rearAndSideSetback.compareTo(permissibleValue) >= 0) {
                         status = Result.Accepted.getResultVal();
                     }
 
-                    // ✅ Create combined key like "Block_1_Rear_And_Side Setback"
                     String combinedKey = blockPrefix + "_Rear Setback";
+                    LOG.info("Block [{}]: Provided = {}, Permissible = {}, Status = {}", blockPrefix, rearAndSideSetback, permissibleValue, status);
 
-                    LOG.info("Block [{}]: Provided = {}, Permissible = {}, Status = {}",
-                            blockPrefix, rearAndSideSetback, permissibleValue, status);
+                    ScrutinyDetail summaryDetail = new ScrutinyDetail();
+                    summaryDetail.addColumnHeading(1, RULE_NO);
+                    summaryDetail.addColumnHeading(2, LEVEL);
+                    summaryDetail.addColumnHeading(3, OCCUPANCY);
+                    summaryDetail.addColumnHeading(4, FIELDVERIFIED);
+                    summaryDetail.addColumnHeading(5, PERMISSIBLE);
+                    summaryDetail.addColumnHeading(6, PROVIDED);
+                    summaryDetail.addColumnHeading(7, STATUS);
 
-                    // ✅ Create new scrutiny detail entry
-                    ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
-                    scrutinyDetail.addColumnHeading(1, RULE_NO);
-                    scrutinyDetail.addColumnHeading(2, LEVEL);
-                    scrutinyDetail.addColumnHeading(3, OCCUPANCY);
-                    scrutinyDetail.addColumnHeading(4, FIELDVERIFIED);
-                    scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
-                    scrutinyDetail.addColumnHeading(6, PROVIDED);
-                    scrutinyDetail.addColumnHeading(7, STATUS);
-                    //scrutinyDetail.setHeading(REAR_AND_SIDE_YARD_DESC);
+                    summaryDetail.setKey(combinedKey);
 
-                    scrutinyDetail.setKey(combinedKey);
+                    Map<String, String> summaryMap = new HashMap<>();
+                    summaryMap.put(RULE_NO, RULE);
+                    summaryMap.put(LEVEL, detailsMap.get("Level"));
+                    summaryMap.put(OCCUPANCY, detailsMap.get("Occupancy"));
+                    summaryMap.put(PERMISSIBLE, permissibleDisplay);
+                    summaryMap.put(PROVIDED, permissibleIsMeters ? rearAndSideSetback + " m" : rearAndSideSetback.toPlainString());
+                    summaryMap.put(STATUS, status);
 
-                    Map<String, String> details = new HashMap<>();
-                    details.put(RULE_NO, RULE);
-                    details.put(LEVEL, detailsMap.get("Level"));
-                    details.put(OCCUPANCY, detailsMap.get("Occupancy"));
-                    details.put(PERMISSIBLE, permissibleDisplay);
-
-                    // ✅ Only append "m" to provided if permissible was in meters
-                    details.put(PROVIDED, permissibleIsMeters ? rearAndSideSetback + " m" : rearAndSideSetback.toPlainString());
-                    details.put(STATUS, status);
-
-                    scrutinyDetail.getDetail().add(details);
-                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                    summaryDetail.getDetail().add(summaryMap);
+                    pl.getReportOutput().getScrutinyDetails().add(summaryDetail);
                 }
             }
-
-            
         }
+
+
     }
 
 

@@ -310,12 +310,13 @@ public class SideYardService extends GeneralRule {
 			                        
 									  	checkSideYardForIndustrial(pl, block.getBuilding(), buildingHeight,
 									  			block.getName(), setback.getLevel(), plot, minlength, max, minMeanlength,
-									  			maxMeanLength, occupancy.getTypeHelper(), sideYard1Result, sideYard2Result , sideYard2, sideYard1, setback);
+									  			maxMeanLength, occupancy.getTypeHelper(), sideYard1Result, sideYard2Result , 
+									  			sideYard2, sideYard1, setback);
 								}else {									
 										 checkSideYardForOtherOccupancies(pl, block.getBuilding(),
 												  buildingHeight, block.getName(), setback.getLevel(), plot, minlength, max,
 												  minMeanlength, maxMeanLength, occupancy.getTypeHelper(), sideYard1Result,
-												  sideYard2Result, errors); 
+												  sideYard2Result, errors, sideYard1.getArea(), sideYard2.getArea()); 
 								}
 									 
 
@@ -971,7 +972,8 @@ public class SideYardService extends GeneralRule {
     private void checkSideYardForOtherOccupancies(final Plan pl, Building building, BigDecimal buildingHeight,
             String blockName, Integer level, final Plot plot, final double min, final double max, double minMeanlength,
             double maxMeanLength, final OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result,
-            SideYardResult sideYard2Result, HashMap<String, String> errors) {
+            SideYardResult sideYard2Result, HashMap<String, String> errors, BigDecimal areaSideYard1, 
+            BigDecimal areaSideYard2) {
 
         String rule = SIDE_YARD_DESC;
         String subRule = RULE_35;
@@ -1023,10 +1025,17 @@ public class SideYardService extends GeneralRule {
         if (min >= side2val.doubleValue())
             valid2 = true;
 
-        compareSideYard2Result(blockName, side2val, BigDecimal.valueOf(min), BigDecimal.ZERO,
+//        compareSideYard2Result(blockName, side2val, BigDecimal.valueOf(min), BigDecimal.ZERO,
+//                BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
+//                level);
+//        compareSideYard1Result(blockName, side1val, BigDecimal.valueOf(max), BigDecimal.ZERO,
+//                BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
+//                level);
+        
+        compareSideYard2Result(blockName, side2val, areaSideYard2, BigDecimal.ZERO,
                 BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
                 level);
-        compareSideYard1Result(blockName, side1val, BigDecimal.valueOf(max), BigDecimal.ZERO,
+        compareSideYard1Result(blockName, side1val, areaSideYard1, BigDecimal.ZERO,
                 BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
                 level);
 

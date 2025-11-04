@@ -27,7 +27,7 @@ CREATE INDEX idx_eg_clu_owner_tenantid ON eg_clu_owner (tenantid);
 
 
 
-CREATE SEQUENCE SEQ_EG_CLU_RECEIPT_ID
+CREATE SEQUENCE SEQ_EG_CL_RECEIPT_ID
     START WITH 1
     INCREMENT BY 1
 

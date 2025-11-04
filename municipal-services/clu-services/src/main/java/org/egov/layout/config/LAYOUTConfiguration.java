@@ -62,10 +62,10 @@ public class LAYOUTConfiguration {
 	@Value("${egov.demand.create.endpoint}")
 	private String demandCreateEndpoint;
 
-	@Value("${egov.layoutcalculator.host}")
+	@Value("${egov.clucalculator.host}")
 	private String nocCalculatorHost;
 
-	@Value("${egov.layoutcalculator.endpoint}")
+	@Value("${egov.clucalculator.endpoint}")
 	private String nocCalculatorEndpoint;
 
 	@Value("${egov.localization.statelevel}")

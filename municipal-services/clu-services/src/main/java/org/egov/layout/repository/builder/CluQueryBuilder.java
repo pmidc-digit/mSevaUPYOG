@@ -19,7 +19,7 @@ public class CluQueryBuilder {
 	@Autowired
 	private CLUConfiguration nocConfig;
 	
-	@Value("${egov.layout.fuzzysearch.isFuzzyEnabled}")
+	@Value("${egov.clu.fuzzysearch.isFuzzyEnabled}")
 	private boolean isFuzzyEnabled;
 
 //	private static final String QUERY = "SELECT layout.*,nocdoc.*,layout.id as noc_id,layout.tenantid as noc_tenantId,layout.lastModifiedTime as "

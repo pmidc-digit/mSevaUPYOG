@@ -56,7 +56,7 @@ public class CLUConfiguration {
 	@Value("${egov.localization.search.endpoint}")
 	private String localizationSearchEndpoint;
 
-	@Value("${layout.taxhead.master.code}")
+	@Value("${clu.taxhead.master.code}")
 	private String taxHeadMasterCode;
 
 	@Value("${egov.demand.create.endpoint}")
@@ -110,16 +110,16 @@ public class CLUConfiguration {
 	@Value("${persister.update.clu.workflow.topic}")
 	private String updateWorkflowTopic;
 	
-	@Value("${egov.layout.pagination.default.limit}")
+	@Value("${egov.clu.pagination.default.limit}")
 	private Integer defaultLimit;
 
-	@Value("${egov.layout.pagination.default.offset}")
+	@Value("${egov.clu.pagination.default.offset}")
 	private Integer defaultOffset;
 
-	@Value("${egov.layout.pagination.max.limit}")
+	@Value("${egov.clu.pagination.max.limit}")
 	private Integer maxSearchLimit;
 	
-	@Value("${layout.offline.doc.required}")
+	@Value("${clu.offline.doc.required}")
 	private Boolean nocOfflineDocRequired;
 
 	//bpa configuration

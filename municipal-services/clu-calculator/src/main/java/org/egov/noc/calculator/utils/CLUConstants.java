@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LAYOUTConstants {
+public class CLUConstants {
 
 	public static final String SEARCH_MODULE = "rainmaker-nocsrv";
 	public static final String TENANT_ID_FIELD_FOR_SEARCH_URL = "tenantId=";

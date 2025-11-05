@@ -1,6 +1,7 @@
 package org.egov.noc.calculator.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.egov.noc.calculator.utils.CLUConstants;
 import org.egov.noc.calculator.web.models.Clu;
 import org.egov.noc.calculator.web.models.RequestInfoWrapper;
 import org.egov.noc.calculator.web.models.demand.Demand;
@@ -11,11 +12,10 @@ import org.egov.noc.calculator.web.models.demand.TaxHeadEstimate;
 import org.egov.tracer.model.CustomException;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
-import org.egov.noc.calculator.config.LAYOUTCalculatorConfig;
+import org.egov.noc.calculator.config.CLUCalculatorConfig;
 import org.egov.noc.calculator.repository.DemandRepository;
 import org.egov.noc.calculator.repository.ServiceRequestRepository;
 import org.egov.noc.calculator.utils.CalculatorUtils;
-import org.egov.noc.calculator.utils.LAYOUTConstants;
 import org.egov.noc.calculator.web.models.Calculation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ import java.util.*;
 public class DemandService {
 
     @Autowired
-    private LAYOUTCalculatorConfig nocConfiguration;
+    private CLUCalculatorConfig nocConfiguration;
 
     @Autowired
     private CalculatorUtils utils;
@@ -73,10 +73,10 @@ public class DemandService {
 
 
             List<Demand> searchResult = searchDemand(calculation.getTenantId(),Collections.singleton(calculation.getLayout().getApplicationNo())
-                    , requestInfo,calculation,LAYOUTConstants.LAYOUT_BUSINESS_SERVICE);
+                    , requestInfo,calculation, CLUConstants.LAYOUT_BUSINESS_SERVICE);
 
             if(CollectionUtils.isEmpty(searchResult))
-                throw new CustomException(LAYOUTConstants.INVALID_UPDATE,"No demand exists for applicationNumber: "+calculation.getLayout().getApplicationNo());
+                throw new CustomException(CLUConstants.INVALID_UPDATE,"No demand exists for applicationNumber: "+calculation.getLayout().getApplicationNo());
 
             Demand demand = searchResult.get(0);
             List<DemandDetail> demandDetails = demand.getDemandDetails();
@@ -163,7 +163,7 @@ public class DemandService {
              response = mapper.convertValue(result,DemandResponse.class);
         }
         catch (IllegalArgumentException e){
-            throw new CustomException(LAYOUTConstants.PARSING_ERROR,"Failed to parse response from Demand Search");
+            throw new CustomException(CLUConstants.PARSING_ERROR,"Failed to parse response from Demand Search");
         }
 
         if(CollectionUtils.isEmpty(response.getDemands()))
@@ -218,7 +218,7 @@ public class DemandService {
 //                    .tenantId(calculation.getTenantId())
 //                    .consumerCode(calculation.getApplicationNumber())
 //                    .consumerType("NOC_APPLICATION_FEE")
-//                    .businessService(LAYOUTConstants.NOC_BUSINESS_SERVICE)
+//                    .businessService(CLUConstants.NOC_BUSINESS_SERVICE)
 //                    .payer(owner)
 //                    .minimumAmountPayable(nocConfiguration.getMinimumPayableAmount())
 //                    .taxPeriodFrom(calculation.getTaxPeriodFrom())
@@ -230,7 +230,7 @@ public class DemandService {
                     .tenantId(calculation.getTenantId())
                     .consumerCode(calculation.getApplicationNumber())
                     .consumerType("LAYOUT_APPLICATION_FEE")
-                    .businessService(LAYOUTConstants.LAYOUT_BUSINESS_SERVICE)
+                    .businessService(CLUConstants.LAYOUT_BUSINESS_SERVICE)
                     .payer(owner)
                     .minimumAmountPayable(nocConfiguration.getMinimumPayableAmount())
                     .taxPeriodFrom(calculation.getTaxPeriodFrom())
@@ -264,7 +264,7 @@ public class DemandService {
                 DemandResponse.class);
         if (CollectionUtils.isEmpty(res.getDemands())) {
             Map<String, String> map = new HashMap<>();
-            map.put(LAYOUTConstants.EMPTY_DEMAND_ERROR_CODE, LAYOUTConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+            map.put(CLUConstants.EMPTY_DEMAND_ERROR_CODE, CLUConstants.EMPTY_DEMAND_ERROR_MESSAGE);
             	throw new CustomException(map);
         }
 
@@ -354,7 +354,7 @@ public class DemandService {
         if(roundOff.compareTo(BigDecimal.ZERO)!=0){
                  DemandDetail roundOffDemandDetail = DemandDetail.builder()
                     .taxAmount(roundOff)
-                    .taxHeadMasterCode(LAYOUTConstants.MDMS_ROUNDOFF_TAXHEAD)
+                    .taxHeadMasterCode(CLUConstants.MDMS_ROUNDOFF_TAXHEAD)
                     .tenantId(tenantId)
                     .collectionAmount(BigDecimal.ZERO)
                     .build();

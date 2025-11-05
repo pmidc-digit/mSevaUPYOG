@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.egov.layout.util.LAYOUTConstants;
+import org.egov.layout.util.CLUConstants;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class MDMSValidator {
 	public void validateMdmsData(CluRequest nocRequest, Object mdmsData) {
 
 		Map<String, List<String>> masterData = getAttributeValues(mdmsData);
-		String[] masterArray = { LAYOUTConstants.CLU_TYPE};
+		String[] masterArray = { CLUConstants.CLU_TYPE};
 
 		validateIfMasterPresent(masterArray, masterData);
 	}
@@ -49,14 +49,14 @@ public class MDMSValidator {
 	 */
 	public Map<String, List<String>> getAttributeValues(Object mdmsData) {
 
-		List<String> modulepaths = Arrays.asList(LAYOUTConstants.LAYOUT_JSONPATH_CODE, LAYOUTConstants.COMMON_MASTER_JSONPATH_CODE);
+		List<String> modulepaths = Arrays.asList(CLUConstants.LAYOUT_JSONPATH_CODE, CLUConstants.COMMON_MASTER_JSONPATH_CODE);
 		final Map<String, List<String>> mdmsResMap = new HashMap<>();
 		modulepaths.forEach(modulepath -> {
 			try {
 				mdmsResMap.putAll(JsonPath.read(mdmsData, modulepath));
 			} catch (Exception e) {
-				throw new CustomException(LAYOUTConstants.INVALID_TENANT_ID_MDMS_KEY,
-						LAYOUTConstants.INVALID_TENANT_ID_MDMS_MSG);
+				throw new CustomException(CLUConstants.INVALID_TENANT_ID_MDMS_KEY,
+						CLUConstants.INVALID_TENANT_ID_MDMS_MSG);
 			}
 		});
 		return mdmsResMap;

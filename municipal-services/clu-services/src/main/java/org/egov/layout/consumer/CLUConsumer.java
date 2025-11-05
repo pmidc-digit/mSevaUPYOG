@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
-public class NOCConsumer {
+public class CLUConsumer {
 
 	@Autowired
 	private NOCNotificationService notificationService;

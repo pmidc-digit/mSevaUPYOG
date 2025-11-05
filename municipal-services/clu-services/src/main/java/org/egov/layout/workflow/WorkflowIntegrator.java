@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.egov.layout.config.LAYOUTConfiguration;
-import org.egov.layout.util.LAYOUTConstants;
+import org.egov.layout.config.CLUConfiguration;
+import org.egov.layout.util.CLUConstants;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.tracer.model.CustomException;
@@ -58,10 +58,10 @@ public class WorkflowIntegrator {
 
 	private RestTemplate rest;
 
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
-	public WorkflowIntegrator(RestTemplate rest, LAYOUTConfiguration config) {
+	public WorkflowIntegrator(RestTemplate rest, CLUConfiguration config) {
 		this.rest = rest;
 		this.config = config;
 	}
@@ -83,7 +83,7 @@ public class WorkflowIntegrator {
 		obj.put(BUSINESSIDKEY, noc.getApplicationNo());
 		obj.put(TENANTIDKEY, wfTenantId);
 		obj.put(BUSINESSSERVICEKEY, bussinessServiceValue);
-		obj.put(MODULENAMEKEY, LAYOUTConstants.CLU_MODULE);
+		obj.put(MODULENAMEKEY, CLUConstants.CLU_MODULE);
 		obj.put(ACTIONKEY, noc.getWorkflow().getAction());
 		
 		if(noc.getWorkflow().getComment() != null)

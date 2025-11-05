@@ -2,10 +2,10 @@ package org.egov.noc.calculator.services;
 
 import java.util.LinkedHashMap;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.noc.calculator.config.LAYOUTCalculatorConfig;
+import org.egov.noc.calculator.config.CLUCalculatorConfig;
 import org.egov.noc.calculator.repository.ServiceRequestRepository;
-import org.egov.noc.calculator.utils.LAYOUTConstants;
-import org.egov.noc.calculator.web.models.LAYOUTResponse;
+import org.egov.noc.calculator.utils.CLUConstants;
+import org.egov.noc.calculator.web.models.CLUResponse;
 import org.egov.noc.calculator.web.models.Clu;
 import org.egov.noc.calculator.web.models.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class LAYOUTService {
+public class CLUService {
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -23,7 +23,7 @@ public class LAYOUTService {
 	private ObjectMapper mapper;
 
 	@Autowired
-	private LAYOUTCalculatorConfig config;
+	private CLUCalculatorConfig config;
 
 	public Clu getNOC(RequestInfo requestInfo, String tenantId, String applicationNo) {
 		StringBuilder url = getNOCSearchURL();
@@ -36,12 +36,12 @@ public class LAYOUTService {
 		LinkedHashMap responseMap = null;
 		responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(url, new RequestInfoWrapper(requestInfo));
 
-		LAYOUTResponse nocResponse = null;
+		CLUResponse nocResponse = null;
 
 		try {
-			nocResponse = mapper.convertValue(responseMap, LAYOUTResponse.class);
+			nocResponse = mapper.convertValue(responseMap, CLUResponse.class);
 		} catch (IllegalArgumentException e) {
-			throw new CustomException(LAYOUTConstants.PARSING_ERROR, "Error while parsing response of TradeLicense Search");
+			throw new CustomException(CLUConstants.PARSING_ERROR, "Error while parsing response of TradeLicense Search");
 		}
 
 		return nocResponse.getLAYOUT().size() > 0 ? nocResponse.getLAYOUT().get(0) : null ;

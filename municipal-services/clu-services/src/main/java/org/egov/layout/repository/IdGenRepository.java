@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.web.model.idgen.IdGenerationRequest;
 import org.egov.layout.web.model.idgen.IdGenerationResponse;
 import org.egov.layout.web.model.idgen.IdRequest;
@@ -22,10 +22,10 @@ public class IdGenRepository {
 
 	private RestTemplate restTemplate;
 
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
-	public IdGenRepository(RestTemplate restTemplate, LAYOUTConfiguration config) {
+	public IdGenRepository(RestTemplate restTemplate, CLUConfiguration config) {
 		this.restTemplate = restTemplate;
 		this.config = config;
 	}

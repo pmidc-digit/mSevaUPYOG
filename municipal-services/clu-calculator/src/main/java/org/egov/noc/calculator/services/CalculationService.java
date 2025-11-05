@@ -5,7 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.noc.calculator.utils.LAYOUTConstants;
+import org.egov.noc.calculator.utils.CLUConstants;
 import org.egov.noc.calculator.utils.ResponseInfoFactory;
 import org.egov.noc.calculator.web.models.Calculation;
 import org.egov.noc.calculator.web.models.CalculationCriteria;
@@ -41,7 +41,7 @@ public class CalculationService {
 	private ObjectMapper mapper;
 	
 	@Autowired
-    private LAYOUTService nocService;
+    private CLUService nocService;
 
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
@@ -67,7 +67,7 @@ public class CalculationService {
          		criteria.setLayout(noc);
 			 	}
 			 if (criteria.getLayout() == null)
-	                throw new CustomException(LAYOUTConstants.INVALID_APPLICATION_NUMBER, "Demand cannot be generated for applicationNumber " +
+	                throw new CustomException(CLUConstants.INVALID_APPLICATION_NUMBER, "Demand cannot be generated for applicationNumber " +
 	                		criteria.getApplicationNumber() + "  NOC application with this number does not exist ");
 			 
 			
@@ -107,13 +107,13 @@ public class CalculationService {
 					finYear = (today.getYear()-1) + "-" + (today.getYear()) % 2000;
 				
 			}
-			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, LAYOUTConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
+			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, CLUConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
 			estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea);
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
 			
-			List<Long> taxPeriodFrom = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_TAX_PERIOD_FROM_PATH);
-			List<Long> taxPeriodTo = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_TAX_PERIOD_TO_PATH);
+			List<Long> taxPeriodFrom = JsonPath.read(mdmsData, CLUConstants.MDMS_TAX_PERIOD_FROM_PATH);
+			List<Long> taxPeriodTo = JsonPath.read(mdmsData, CLUConstants.MDMS_TAX_PERIOD_TO_PATH);
 			
 			Calculation calculation = new Calculation();
 			calculation.setApplicationNumber(criteria.getApplicationNumber());
@@ -159,7 +159,7 @@ public class CalculationService {
 	 */
 	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea) {
 		List<TaxHeadEstimate> estimates = new LinkedList<>();
-		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_CHARGES_TYPE_PATH);
+		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, CLUConstants.MDMS_CHARGES_TYPE_PATH);
 		
 		chargesTypejsonOutput.forEach(chargesType -> {
 			BigDecimal rate = new BigDecimal(chargesType.containsKey("rate") ? (Double) chargesType.get("rate") : 0.0);
@@ -169,13 +169,13 @@ public class CalculationService {
 			
 			switch (taxhead) {
 			
-			case LAYOUTConstants.NOC_PROCESSING_FEES:
-			case LAYOUTConstants.NOC_CLU_CHARGES:
-			case LAYOUTConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES:
+			case CLUConstants.NOC_PROCESSING_FEES:
+			case CLUConstants.NOC_CLU_CHARGES:
+			case CLUConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES:
 				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
 				break;
-			case LAYOUTConstants.NOC_MALBA_CHARGES:
-				BigDecimal sqFeetArea = builtUpArea.multiply(LAYOUTConstants.SQYARD_TO_SQFEET);
+			case CLUConstants.NOC_MALBA_CHARGES:
+				BigDecimal sqFeetArea = builtUpArea.multiply(CLUConstants.SQYARD_TO_SQFEET);
 				Double slabAmount = (Double)((List<Map<String, Object>>)chargesType.get("slabs")).stream().filter(slab -> {
 					return sqFeetArea.compareTo(new BigDecimal(slab.get("fromPlotArea").toString())) >= 0 
 					        && sqFeetArea.compareTo(new BigDecimal(slab.get("toPlotArea").toString())) <= 0;
@@ -188,21 +188,21 @@ public class CalculationService {
 				}else
 					amount = new BigDecimal(slabAmount);
 				break;
-			case LAYOUTConstants.NOC_MINING_CHARGES:
-				amount=rate.multiply(basementArea.multiply(LAYOUTConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
+			case CLUConstants.NOC_MINING_CHARGES:
+				amount=rate.multiply(basementArea.multiply(CLUConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
 				break;
-			case LAYOUTConstants.NOC_LABOUR_CESS:
-				amount=rate.multiply(builtUpArea.multiply(LAYOUTConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
+			case CLUConstants.NOC_LABOUR_CESS:
+				amount=rate.multiply(builtUpArea.multiply(CLUConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
 				break;
-			case LAYOUTConstants.NOC_CLUBBING_CHARGES:
+			case CLUConstants.NOC_CLUBBING_CHARGES:
 				amount=rate.multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
 				break;
-			case LAYOUTConstants.NOC_WATER_CHARGES:
-			case LAYOUTConstants.NOC_URBAN_DEVELOPMENT_CESS:
-			case LAYOUTConstants.NOC_GAUSHALA_CHARGES_CESS:
-			case LAYOUTConstants.NOC_RAIN_WATER_HARVESTING_CHARGES:
-			case LAYOUTConstants.NOC_SUB_DIVISION_CHARGES:
-			case LAYOUTConstants.NOC_OTHER_CHARGES:
+			case CLUConstants.NOC_WATER_CHARGES:
+			case CLUConstants.NOC_URBAN_DEVELOPMENT_CESS:
+			case CLUConstants.NOC_GAUSHALA_CHARGES_CESS:
+			case CLUConstants.NOC_RAIN_WATER_HARVESTING_CHARGES:
+			case CLUConstants.NOC_SUB_DIVISION_CHARGES:
+			case CLUConstants.NOC_OTHER_CHARGES:
 				amount = rate.setScale(0, RoundingMode.HALF_UP);
 				break;	
 			}
@@ -215,17 +215,17 @@ public class CalculationService {
 		});
 		
 		//Updating Urban Development Cess based on other fees
-		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
-			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_PROCESSING_FEES) ||
-					est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_CLU_CHARGES) ||
-					est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES))
+		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
+			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_PROCESSING_FEES) ||
+					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_CLU_CHARGES) ||
+					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES))
 			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
 			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.HALF_UP));
 		});
 		
 		//Updating Water Charges based on Malba Charges
-		estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_WATER_CHARGES)).forEach(estimate -> {
-			BigDecimal amount = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_MALBA_CHARGES))
+		estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_WATER_CHARGES)).forEach(estimate -> {
+			BigDecimal amount = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_MALBA_CHARGES))
 					.map(est -> est.getEstimateAmount()).findFirst().orElse(BigDecimal.ZERO)
 					.multiply(estimate.getEstimateAmount()).divide(new BigDecimal(100.0)).setScale(0, RoundingMode.HALF_UP);
 			estimate.setEstimateAmount(amount);

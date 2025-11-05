@@ -3,9 +3,9 @@ package org.egov.layout.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
-import org.egov.layout.util.LAYOUTConstants;
+import org.egov.layout.util.CLUConstants;
 import org.egov.layout.web.model.calculator.Calculation;
 import org.egov.layout.web.model.demand.Demand;
 import org.egov.layout.web.model.demand.DemandDetail;
@@ -24,7 +24,7 @@ import java.util.List;
 public class DemandService {
 
     @Autowired
-    private LAYOUTConfiguration nocConfiguration;
+    private CLUConfiguration nocConfiguration;
 
     @Autowired
     private ObjectMapper mapper = new ObjectMapper();
@@ -44,7 +44,7 @@ public class DemandService {
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId()).consumerCode(calculation.getApplicationNumber())
                     .consumerType("NOC_APPLICATION_FEE")
-                    .businessService(LAYOUTConstants.CLU_MODULE)
+                    .businessService(CLUConstants.CLU_MODULE)
                     .taxPeriodFrom(System.currentTimeMillis()).taxPeriodTo(System.currentTimeMillis())
                     .demandDetails(Collections.singletonList(demandDetail))
                     .build();

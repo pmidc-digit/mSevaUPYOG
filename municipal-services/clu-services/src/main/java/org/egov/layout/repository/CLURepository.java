@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.producer.Producer;
-import org.egov.layout.repository.builder.LayoutQueryBuilder;
-import org.egov.layout.repository.rowmapper.LayoutRowMapper;
+import org.egov.layout.repository.builder.CluQueryBuilder;
+import org.egov.layout.repository.rowmapper.CluRowMapper;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.LayoutSearchCriteria;
@@ -17,22 +17,22 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Slf4j
-public class LAYOUTRepository {
+public class CLURepository {
 	
 	@Autowired
 	private Producer producer;
 	
 	@Autowired
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
-	private LayoutQueryBuilder queryBuilder;
+	private CluQueryBuilder queryBuilder;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
-	private LayoutRowMapper rowMapper;
+	private CluRowMapper rowMapper;
 	
 	/**
 	 * push the nocRequest object to the producer on the save topic

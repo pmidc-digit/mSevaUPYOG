@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.producer.Producer;
 import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.Clu;
@@ -16,10 +16,10 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import static org.egov.layout.util.LAYOUTConstants.ACTION_STATUS_CREATED;
-import static org.egov.layout.util.LAYOUTConstants.ACTION_STATUS_INITIATED;
-import static org.egov.layout.util.LAYOUTConstants.ACTION_STATUS_REJECTED;
-import static org.egov.layout.util.LAYOUTConstants.ACTION_STATUS_APPROVED;
+import static org.egov.layout.util.CLUConstants.ACTION_STATUS_CREATED;
+import static org.egov.layout.util.CLUConstants.ACTION_STATUS_INITIATED;
+import static org.egov.layout.util.CLUConstants.ACTION_STATUS_REJECTED;
+import static org.egov.layout.util.CLUConstants.ACTION_STATUS_APPROVED;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NotificationUtil {
 
 	@Autowired
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
 	private Producer producer;
@@ -91,7 +91,7 @@ public class NotificationUtil {
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getLocalizationHost()).append(config.getLocalizationContextPath())
 				.append(config.getLocalizationSearchEndpoint()).append("?").append("locale=").append(locale)
-				.append("&tenantId=").append(tenantId).append("&module=").append(LAYOUTConstants.SEARCH_MODULE);
+				.append("&tenantId=").append(tenantId).append("&module=").append(CLUConstants.SEARCH_MODULE);
 		return uri;
 	}
 
@@ -190,7 +190,7 @@ public class NotificationUtil {
 	 */
 	private String getInitiatedMsg(Clu noc, String message) {
 		String type = null;
-		if(noc.getCluType().equalsIgnoreCase(LAYOUTConstants.FIRE_NOC_TYPE)){
+		if(noc.getCluType().equalsIgnoreCase(CLUConstants.FIRE_NOC_TYPE)){
 			type = "Fire";
 		}else{
 			type = "AAI";

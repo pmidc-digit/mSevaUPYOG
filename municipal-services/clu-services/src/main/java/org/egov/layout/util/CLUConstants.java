@@ -3,7 +3,7 @@ package org.egov.layout.util;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LAYOUTConstants {
+public class CLUConstants {
 
 
 

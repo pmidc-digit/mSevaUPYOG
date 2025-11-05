@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.layout.config.LAYOUTConfiguration;
-import org.egov.layout.repository.LAYOUTRepository;
+import org.egov.layout.config.CLUConfiguration;
+import org.egov.layout.repository.CLURepository;
 import org.egov.layout.repository.ServiceRequestRepository;
-import org.egov.layout.util.LAYOUTConstants;
-import org.egov.layout.util.LAYOUTUtil;
-import org.egov.layout.validator.LAYOUTValidator;
+import org.egov.layout.util.CLUConstants;
+import org.egov.layout.util.CLUUtil;
+import org.egov.layout.validator.CLUValidator;
 import org.egov.layout.web.model.*;
 import org.egov.layout.web.model.bpa.BPASearchCriteria;
 import org.egov.layout.web.model.calculator.CalculationCriteria;
@@ -41,26 +41,26 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class LAYOUTService {
+public class CLUService {
 	
 	@Autowired
-	private LAYOUTValidator nocValidator;
+	private CLUValidator nocValidator;
 	
 	@Autowired
 	private WorkflowIntegrator wfIntegrator;
 	
 	@Autowired
-	private LAYOUTUtil nocUtil;
+	private CLUUtil nocUtil;
 
 	@Autowired
 	UserService userService;
 
 
 	@Autowired
-	private LAYOUTRepository nocRepository;
+	private CLURepository nocRepository;
 
 	@Autowired
-	private LAYOUTConfiguration nocConfiguration;
+	private CLUConfiguration nocConfiguration;
 	
 	@Autowired
 	private EnrichmentService enrichmentService;
@@ -69,7 +69,7 @@ public class LAYOUTService {
 	private WorkflowService workflowService;
 	
 	@Autowired
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -145,11 +145,11 @@ public class LAYOUTService {
 		nocValidator.validateCreate(nocRequest,  mdmsData);
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
-//		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(LAYOUTConstants.WORKFLOWCODE));
+//		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(CLUConstants.WORKFLOWCODE));
 			wfIntegrator.callWorkFlow(nocRequest, businessService);
-			//wfIntegrator.callWorkFlow(nocRequest, LAYOUTConstants.NOC_BUSINESS_SERVICE);
+			//wfIntegrator.callWorkFlow(nocRequest, CLUConstants.NOC_BUSINESS_SERVICE);
 		}else{
-		  nocRequest.getLayout().setApplicationStatus(LAYOUTConstants.CREATED_STATUS);
+		  nocRequest.getLayout().setApplicationStatus(CLUConstants.CREATED_STATUS);
 		}
 
 
@@ -207,7 +207,7 @@ public class LAYOUTService {
 		if (owners != null) {
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
 		}
-		if(nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_APPLY)){
+		if(nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_APPLY)){
 			searchResult = new Clu();
 			searchResult.setAuditDetails(nocRequest.getLayout().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getLayout().getApplicationNo());
@@ -235,13 +235,13 @@ public class LAYOUTService {
 				log.info("NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
 				throw new CustomException("AutoApproveException","NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
 			}
-//			nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(LAYOUTConstants.MODE), mdmsData);
+//			nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(CLUConstants.MODE), mdmsData);
 
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 				
-				if (nocRequest.getLayout().getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_APPROVE)) {
+				if (nocRequest.getLayout().getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_APPROVE)) {
 					getCalculation(nocRequest);
 				}
 				
@@ -335,7 +335,7 @@ public class LAYOUTService {
 //					if (additionalDetailsObj instanceof Map) {
 //						Map<String, String> details = (Map<String, String>) additionalDetailsObj;
 //
-//						String sourceRefId = details.get(LAYOUTConstants.SOURCE_RefId);
+//						String sourceRefId = details.get(CLUConstants.SOURCE_RefId);
 //						if (bpa.getApplicationNo().equals(sourceRefId)) {
 //							additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
 //						}
@@ -356,7 +356,7 @@ public class LAYOUTService {
 //				try {
 //					response = mapper.convertValue(result, ProcessInstanceResponse.class);
 //				} catch (IllegalArgumentException e) {
-//					throw new CustomException(LAYOUTConstants.PARSING_ERROR, "Failed to parse response of Workflow");
+//					throw new CustomException(CLUConstants.PARSING_ERROR, "Failed to parse response of Workflow");
 //				}
 //				if(response.getProcessInstances()!=null && !response.getProcessInstances().isEmpty()) {
 //					ProcessInstance nocProcess = response.getProcessInstances().get(0);
@@ -397,7 +397,7 @@ public class LAYOUTService {
 //				if (additionalDetailsObj instanceof Map) {
 //					Map<String, String> details = (Map<String, String>) additionalDetailsObj;
 //
-//					String sourceRefId = details.get(LAYOUTConstants.SOURCE_RefId);
+//					String sourceRefId = details.get(CLUConstants.SOURCE_RefId);
 //					if (sourceRefId != null) {
 //						uri.append("&applicationNo=").append(sourceRefId);
 //					}
@@ -430,7 +430,7 @@ public class LAYOUTService {
 				try {
 					response = mapper.convertValue(result, ProcessInstanceResponse.class);
 				} catch (IllegalArgumentException e) {
-					throw new CustomException(LAYOUTConstants.PARSING_ERROR, "Failed to parse response of Workflow");
+					throw new CustomException(CLUConstants.PARSING_ERROR, "Failed to parse response of Workflow");
 				}
 				log.info("ProcessInstance :: " + response.getProcessInstances());
 				if(response.getProcessInstances()!=null && !response.getProcessInstances().isEmpty()) {

@@ -3,14 +3,14 @@ package org.egov.noc.calculator.services;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.egov.noc.calculator.config.LAYOUTCalculatorConfig;
+import org.egov.noc.calculator.config.CLUCalculatorConfig;
 import org.egov.noc.calculator.repository.ServiceRequestRepository;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
-import org.egov.noc.calculator.utils.LAYOUTConstants;
+import org.egov.noc.calculator.utils.CLUConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class MDMSService {
 	 private ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired
-	private LAYOUTCalculatorConfig config;
+	private CLUCalculatorConfig config;
 	
     private MdmsCriteriaReq getMDMSRequest(RequestInfo requestInfo, String tenantId) {
 
@@ -35,9 +35,9 @@ public class MDMSService {
 
         final String flatFeeFilter = "$.[?(@.flatFee!=null)]";
 
-        flatFeeMasterDetails.add(MasterDetail.builder().name(LAYOUTConstants.NOC_FEE_MODULE).filter(flatFeeFilter).build());
+        flatFeeMasterDetails.add(MasterDetail.builder().name(CLUConstants.NOC_FEE_MODULE).filter(flatFeeFilter).build());
         ModuleDetail flatFeeModule = ModuleDetail.builder().masterDetails(flatFeeMasterDetails)
-                .moduleName(LAYOUTConstants.CLU_MODULE.toLowerCase()).build();
+                .moduleName(CLUConstants.CLU_MODULE.toLowerCase()).build();
 
         List<ModuleDetail> moduleDetails = new ArrayList<>();
         moduleDetails.add(flatFeeModule);
@@ -83,9 +83,9 @@ public class MDMSService {
         List<MasterDetail> sanctionFeeChargesDetails = new ArrayList<>();
         Long currentTime = System.currentTimeMillis();
         final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.Category == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
-        sanctionFeeChargesDetails.add(MasterDetail.builder().name(LAYOUTConstants.MDMS_CHARGES_TYPE).filter(filterCodeForCharges).build());
+        sanctionFeeChargesDetails.add(MasterDetail.builder().name(CLUConstants.MDMS_CHARGES_TYPE).filter(filterCodeForCharges).build());
         ModuleDetail fyModuleDtls = ModuleDetail.builder().masterDetails(sanctionFeeChargesDetails)
-                .moduleName(LAYOUTConstants.CLU_MODULE.toLowerCase()).build();
+                .moduleName(CLUConstants.CLU_MODULE.toLowerCase()).build();
         
 
         List<ModuleDetail> moduleDetails = new ArrayList<>();

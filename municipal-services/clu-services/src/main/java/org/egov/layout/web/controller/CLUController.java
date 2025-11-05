@@ -44,7 +44,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.egov.layout.config.ResponseInfoFactory;
-import org.egov.layout.service.LAYOUTService;
+import org.egov.layout.service.CLUService;
 import org.egov.layout.web.model.*;
 import org.egov.layout.web.model.CluRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +58,13 @@ import org.springframework.web.bind.annotation.RestController;
 	
 @RestController
 @RequestMapping("v1/clu")
-public class LAYOUTController {
+public class CLUController {
 	
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 	
 	@Autowired
-	private LAYOUTService nocService;
+	private CLUService nocService;
 
 	@PostMapping(value = "/_create")
 	public ResponseEntity<CluResponse> create(@Valid @RequestBody CluRequest nocRequest) {

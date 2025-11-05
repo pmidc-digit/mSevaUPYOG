@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
-import org.egov.layout.config.LAYOUTConfiguration;
-import org.egov.layout.repository.LAYOUTRepository;
-import org.egov.layout.util.LAYOUTConstants;
-import org.egov.layout.util.LAYOUTUtil;
+import org.egov.layout.config.CLUConfiguration;
+import org.egov.layout.repository.CLURepository;
+import org.egov.layout.util.CLUConstants;
+import org.egov.layout.util.CLUUtil;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.Workflow;
@@ -27,11 +27,11 @@ import java.util.Map;
 @Slf4j
 public class PaymentUpdateService {
 
-	private LAYOUTService nocService;
+	private CLUService nocService;
 
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
-	private LAYOUTRepository repository;
+	private CLURepository repository;
 
 	private WorkflowIntegrator wfIntegrator;
 
@@ -41,15 +41,15 @@ public class PaymentUpdateService {
 
 	private WorkflowService workflowService;
 
-	private LAYOUTUtil util;
+	private CLUUtil util;
 
 //	@Value("${workflow.bpa.businessServiceCode.fallback_enabled}")
 //	private Boolean pickWFServiceNameFromTradeTypeOnly;
 
 	@Autowired
-	public PaymentUpdateService(LAYOUTService service, LAYOUTConfiguration config, LAYOUTRepository repository,
+	public PaymentUpdateService(CLUService service, CLUConfiguration config, CLURepository repository,
 								WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper,
-								WorkflowService workflowService, LAYOUTUtil util) {
+								WorkflowService workflowService, CLUUtil util) {
 		this.nocService = service;
 		this.config = config;
 		this.repository = repository;
@@ -76,7 +76,7 @@ public class PaymentUpdateService {
 			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 			String tenantIdFromPaymentDetails = paymentRequest.getPayment().getTenantId();
 			for(PaymentDetail paymentDetail : paymentDetails){
-				if (paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.CLU_MODULE)) {
+				if (paymentDetail.getBusinessService().equalsIgnoreCase(CLUConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(CLUConstants.CLU_MODULE)) {
 					log.info("Start PaymentUpdateService.process method.");
 					LayoutSearchCriteria searchCriteria = new LayoutSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
@@ -100,9 +100,9 @@ public class PaymentUpdateService {
                     nocs.forEach(application -> {
 
 								Workflow workflow=new Workflow();
-								workflow.setAction(LAYOUTConstants.ACTION_PAY);
+								workflow.setAction(CLUConstants.ACTION_PAY);
 								application.setWorkflow(workflow);
-//								application.setAction(LAYOUTConstants.ACTION_PAY);
+//								application.setAction(CLUConstants.ACTION_PAY);
 							}
 						);
 
@@ -119,7 +119,7 @@ public class PaymentUpdateService {
 					/*
 					 * calling workflow to update status
 					 */
-//					wfIntegrator.callWorkFlow(updateRequest,LAYOUTConstants.NOC_BUSINESS_SERVICE);
+//					wfIntegrator.callWorkFlow(updateRequest,CLUConstants.NOC_BUSINESS_SERVICE);
 //                    log.info(" applications uuid is : {}", updateRequest.getApplications().get(0).getUuid());
 //                    log.info(" the status of the applications is : {}", updateRequest.getApplications().get(0).getApplicationStatus());
 					enrichmentService.postStatusEnrichment(updateRequest, businessService);

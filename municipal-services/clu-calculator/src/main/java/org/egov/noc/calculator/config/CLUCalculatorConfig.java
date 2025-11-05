@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Data
-public class LAYOUTCalculatorConfig {
+public class CLUCalculatorConfig {
 
 
     @Value("${egov.billingservice.host}")

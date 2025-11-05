@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.*;
 import org.egov.tracer.model.CustomException;
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class UserService {
 
 	@Autowired
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.service.UserService;
 import org.egov.layout.util.NotificationUtil;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class NOCNotificationService {
 
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	private NotificationUtil util;
 
@@ -34,8 +34,8 @@ public class NOCNotificationService {
 	private UserService userService;
 
 	@Autowired
-	public NOCNotificationService(LAYOUTConfiguration config, NotificationUtil util,
-								  ServiceRequestRepository serviceRequestRepository) {
+	public NOCNotificationService(CLUConfiguration config, NotificationUtil util,
+                                  ServiceRequestRepository serviceRequestRepository) {
 		this.config = config;
 		this.util = util;
 		this.serviceRequestRepository = serviceRequestRepository;

@@ -1,7 +1,7 @@
 package org.egov.layout.workflow;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.RequestInfoWrapper;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WorkflowService {
 	
 	@Autowired
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;

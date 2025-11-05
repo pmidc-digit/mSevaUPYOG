@@ -23,7 +23,7 @@ import com.google.gson.Gson;
 import static org.reflections.Reflections.log;
 
 @Component
-public class LayoutRowMapper implements ResultSetExtractor<List<Clu>> {
+public class CluRowMapper implements ResultSetExtractor<List<Clu>> {
 	/**
 	 * extracts the data from the resultSet and populate the NOC Objects
 	 * @see ResultSetExtractor#extractData(ResultSet)

@@ -4,7 +4,7 @@ package org.egov.noc.calculator.utils;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.egov.noc.calculator.config.LAYOUTCalculatorConfig;
+import org.egov.noc.calculator.config.CLUCalculatorConfig;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import static org.egov.noc.calculator.utils.LAYOUTConstants.*;
+import static org.egov.noc.calculator.utils.CLUConstants.*;
 
 @Slf4j
 @Component
@@ -26,7 +26,7 @@ import static org.egov.noc.calculator.utils.LAYOUTConstants.*;
 public class CalculatorUtils {
 
     @Autowired
-    private LAYOUTCalculatorConfig config;
+    private CLUCalculatorConfig config;
 
     @Autowired
     private ObjectMapper mapper;

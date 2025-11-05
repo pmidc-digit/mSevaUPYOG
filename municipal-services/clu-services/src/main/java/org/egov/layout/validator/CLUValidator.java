@@ -2,8 +2,8 @@ package org.egov.layout.validator;
 
 import java.util.*;
 
-import org.egov.layout.config.LAYOUTConfiguration;
-import org.egov.layout.util.LAYOUTConstants;
+import org.egov.layout.config.CLUConfiguration;
+import org.egov.layout.util.CLUConstants;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.Document;
@@ -17,13 +17,13 @@ import org.springframework.util.StringUtils;
 import com.jayway.jsonpath.JsonPath;
 
 @Component
-public class LAYOUTValidator {
+public class CLUValidator {
 
 	@Autowired
 	private MDMSValidator mdmsValidator;
 
 	@Autowired
-	private LAYOUTConfiguration nocConfiguration;
+	private CLUConfiguration nocConfiguration;
 
 	/**
 	 * validates the nocRequest for documents
@@ -71,15 +71,15 @@ public class LAYOUTValidator {
 
 		if (!ObjectUtils.isEmpty(noc.getWorkflow()) && !StringUtils.isEmpty(noc.getWorkflow().getAction())) {
 
-			if ((noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_APPROVE) && mode.equals(LAYOUTConstants.ONLINE_MODE)) || (mode.equals(LAYOUTConstants.OFFLINE_MODE)
-					&& noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_AUTO_APPROVE) && nocConfiguration.getNocOfflineDocRequired())) {
+			if ((noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_APPROVE) && mode.equals(CLUConstants.ONLINE_MODE)) || (mode.equals(CLUConstants.OFFLINE_MODE)
+					&& noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_AUTO_APPROVE) && nocConfiguration.getNocOfflineDocRequired())) {
 				validateRequiredDocuments(noc, mdmsData);
-			} else if (!noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_REJECT) && !noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_VOID)
+			} else if (!noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_REJECT) && !noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_VOID)
 					&& !ObjectUtils.isEmpty(noc.getDocuments())) {
 				validateAttachedDocumentTypes(noc, mdmsData);
 			}
 
-			if (noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_REJECT) && StringUtils.isEmpty(noc.getWorkflow().getComment()))
+			if (noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_REJECT) && StringUtils.isEmpty(noc.getWorkflow().getComment()))
 				errorMap.put("NOC_UPDATE_ERROR_COMMENT_REQUIRED", "Comment is mandaotory, please provide the comments ");
 		} else if (!ObjectUtils.isEmpty(noc.getDocuments())) {
 			validateAttachedDocumentTypes(noc, mdmsData);
@@ -97,7 +97,7 @@ public class LAYOUTValidator {
 	 * @return
 	 */
 	public Map<String, String> getOrValidateBussinessService(Clu noc, Object mdmsData) {
-		List<Map<String, Object>> result = JsonPath.read(mdmsData, LAYOUTConstants.CLUTYPE_JSONPATH_CODE);
+		List<Map<String, Object>> result = JsonPath.read(mdmsData, CLUConstants.CLUTYPE_JSONPATH_CODE);
 		if (result.isEmpty()) {
 			throw new CustomException("MDMS DATA ERROR", "Unable to fetch NocType from MDMS");
 		}
@@ -109,16 +109,16 @@ public class LAYOUTValidator {
 		}
 		Object additionalDetailsObj = noc.getNocDetails().getAdditionalDetails();
 		Map<String, String> businessValues = new HashMap<>();
-//		businessValues.put(LAYOUTConstants.MODE, (String) jsonOutput.get(0).get(LAYOUTConstants.MODE));
+//		businessValues.put(CLUConstants.MODE, (String) jsonOutput.get(0).get(CLUConstants.MODE));
 		String uniquePropertyId = UUID.randomUUID().toString();
-		businessValues.put(LAYOUTConstants.SOURCE_RefId, uniquePropertyId);
-//		if (jsonOutput.get(0).get(LAYOUTConstants.MODE).equals(LAYOUTConstants.ONLINE_MODE))
-//			businessValues.put(LAYOUTConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(LAYOUTConstants.ONLINE_WF));
+		businessValues.put(CLUConstants.SOURCE_RefId, uniquePropertyId);
+//		if (jsonOutput.get(0).get(CLUConstants.MODE).equals(CLUConstants.ONLINE_MODE))
+//			businessValues.put(CLUConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(CLUConstants.ONLINE_WF));
 //		else
-//			businessValues.put(LAYOUTConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(LAYOUTConstants.OFFLINE_WF));
+//			businessValues.put(CLUConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(CLUConstants.OFFLINE_WF));
 
-		if (!ObjectUtils.isEmpty(noc.getWorkflow()) && !StringUtils.isEmpty(noc.getWorkflow().getAction()) && noc.getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE)) {
-			businessValues.put(LAYOUTConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
+		if (!ObjectUtils.isEmpty(noc.getWorkflow()) && !StringUtils.isEmpty(noc.getWorkflow().getAction()) && noc.getWorkflow().getAction().equals(CLUConstants.ACTION_INITIATE)) {
+			businessValues.put(CLUConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
 		}
 
 //		layout.setAdditionalDetails(businessValues);
@@ -150,7 +150,7 @@ public class LAYOUTValidator {
 
 		String filterExp = "$.[?(@.applicationType=='" + noc.getApplicationType() + "' && @.nocType=='" + noc.getCluType() + "')].docTypes";
 
-		List<Object> docTypes = JsonPath.read(masterData.get(LAYOUTConstants.NOC_DOC_TYPE_MAPPING), filterExp);
+		List<Object> docTypes = JsonPath.read(masterData.get(CLUConstants.NOC_DOC_TYPE_MAPPING), filterExp);
 
 		if (CollectionUtils.isEmpty(docTypes)) {
 			throw new CustomException("MDMS_DATA_ERROR", "Unable to fetch layout document mapping");
@@ -159,7 +159,7 @@ public class LAYOUTValidator {
 		List<String> docTypeMappings = JsonPath.read(docTypes, "$..documentType");
 
 		filterExp = "$.[?(@.active==true)].code";
-		List<String> validDocumentTypes = JsonPath.read(masterData.get(LAYOUTConstants.DOCUMENT_TYPE), filterExp);
+		List<String> validDocumentTypes = JsonPath.read(masterData.get(CLUConstants.DOCUMENT_TYPE), filterExp);
 
 		if (!CollectionUtils.isEmpty(documents)) {
 			List<String> addedDocTypes = new ArrayList<String>();
@@ -216,10 +216,10 @@ public class LAYOUTValidator {
 	private void validateRequiredDocuments(Clu noc, Object mdmsData) {
 		Map<String, List<String>> masterData = mdmsValidator.getAttributeValues(mdmsData);
 
-		if (!noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_REJECT) && !noc.getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_VOID)) {
+		if (!noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_REJECT) && !noc.getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_VOID)) {
 			List<Document> documents = noc.getDocuments();
 			String filterExp = "$.[?(@.applicationType=='" + noc.getApplicationType() + "' && @.nocType=='" + noc.getCluType() + "')].docTypes";
-			List<Object> docTypeMappings = JsonPath.read(masterData.get(LAYOUTConstants.NOC_DOC_TYPE_MAPPING), filterExp);
+			List<Object> docTypeMappings = JsonPath.read(masterData.get(CLUConstants.NOC_DOC_TYPE_MAPPING), filterExp);
 			if (CollectionUtils.isEmpty(docTypeMappings)) {
 				throw new CustomException("MDMS_DATA_ERROR", "Unable to fetch layout document mapping");
 			}
@@ -231,7 +231,7 @@ public class LAYOUTValidator {
 			List<String> requiredDocTypes = JsonPath.read(docTypeMappings, filterExp);
 
 			filterExp = "$.[?(@.active==true)].code";
-			List<String> validDocumentTypes = JsonPath.read(masterData.get(LAYOUTConstants.DOCUMENT_TYPE), filterExp);
+			List<String> validDocumentTypes = JsonPath.read(masterData.get(CLUConstants.DOCUMENT_TYPE), filterExp);
 
 			if (!CollectionUtils.isEmpty(documents)) {
 				documents.forEach(document -> {

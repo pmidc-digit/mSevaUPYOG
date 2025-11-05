@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 @Component
-public class LAYOUTConfiguration {
+public class CLUConfiguration {
 
 	@Value("${app.timezone}")
 	private String timeZone;

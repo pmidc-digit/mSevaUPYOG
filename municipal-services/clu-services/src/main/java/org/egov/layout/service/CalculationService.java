@@ -5,7 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 
 import org.egov.layout.config.ResponseInfoFactory;
-import org.egov.layout.util.LAYOUTUtil;
+import org.egov.layout.util.CLUUtil;
 import org.egov.layout.web.model.calculator.Calculation;
 import org.egov.layout.web.model.calculator.CalculationCriteria;
 import org.egov.layout.web.model.calculator.CalculationReq;
@@ -25,7 +25,7 @@ public class CalculationService {
 
 
     @Autowired
-    private LAYOUTUtil nocUtil;
+    private CLUUtil nocUtil;
 
     @Autowired
     private ResponseInfoFactory responseInfoFactory;

@@ -25,14 +25,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LAYOUTResponse {
+public class CLUResponse {
   @JsonProperty("ResponseInfo")
   private ResponseInfo responseInfo = null;
 
   @JsonProperty("Clu")
   private List<Clu> LAYOUT = null;
 
-  public LAYOUTResponse responseInfo(ResponseInfo responseInfo) {
+  public CLUResponse responseInfo(ResponseInfo responseInfo) {
     this.responseInfo = responseInfo;
     return this;
   }
@@ -52,7 +52,7 @@ public class LAYOUTResponse {
     this.responseInfo = responseInfo;
   }
 
-  public LAYOUTResponse NOC(List<Clu> NOC) {
+  public CLUResponse NOC(List<Clu> NOC) {
     this.LAYOUT = NOC;
     return this;
   }
@@ -81,7 +81,7 @@ public class LAYOUTResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    LAYOUTResponse nocResponse = (LAYOUTResponse) o;
+    CLUResponse nocResponse = (CLUResponse) o;
     return Objects.equals(this.responseInfo, nocResponse.responseInfo) &&
         Objects.equals(this.LAYOUT, nocResponse.LAYOUT);
   }
@@ -94,7 +94,7 @@ public class LAYOUTResponse {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class LAYOUTResponse {\n");
+    sb.append("class CLUResponse {\n");
     
     sb.append("    responseInfo: ").append(toIndentedString(responseInfo)).append("\n");
     sb.append("    NOC: ").append(toIndentedString(LAYOUT)).append("\n");

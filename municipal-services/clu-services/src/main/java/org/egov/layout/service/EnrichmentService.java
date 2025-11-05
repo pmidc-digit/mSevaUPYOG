@@ -8,10 +8,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.IdGenRepository;
-import org.egov.layout.util.LAYOUTConstants;
-import org.egov.layout.util.LAYOUTUtil;
+import org.egov.layout.util.CLUConstants;
+import org.egov.layout.util.CLUUtil;
 import org.egov.layout.web.model.AuditDetails;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.Document;
@@ -33,10 +33,10 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 public class EnrichmentService {
 
 	@Autowired
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
-	private LAYOUTUtil nocUtil;
+	private CLUUtil nocUtil;
 
 	@Autowired
 	private IdGenRepository idGenRepository;
@@ -89,7 +89,7 @@ public class EnrichmentService {
 			});
 		if (!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 				&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())
-				&& nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE)) {
+				&& nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_INITIATE)) {
 
 		}
 	}
@@ -207,8 +207,8 @@ public class EnrichmentService {
 			State stateObj = workflowService.getCurrentState(noc.getApplicationStatus(), businessService);
 			String state = stateObj != null ? stateObj.getState() : StringUtils.EMPTY;
 
-			if (state.equalsIgnoreCase(LAYOUTConstants.APPROVED_STATE)
-					|| state.equalsIgnoreCase(LAYOUTConstants.AUTOAPPROVED_STATE)) {
+			if (state.equalsIgnoreCase(CLUConstants.APPROVED_STATE)
+					|| state.equalsIgnoreCase(CLUConstants.AUTOAPPROVED_STATE)) {
 
 				Map<String, Object> additionalDetail = null;
 				if (noc.getNocDetails().getAdditionalDetails() != null) {
@@ -223,17 +223,17 @@ public class EnrichmentService {
 //						.getIdResponses();
 //				layout.setNocNo(idResponses.get(0).getId());
 			}
-			if (state.equalsIgnoreCase(LAYOUTConstants.VOIDED_STATUS)) {
+			if (state.equalsIgnoreCase(CLUConstants.VOIDED_STATUS)) {
 				noc.setStatus(Status.INACTIVE);
 			}
 		}
 		
-		if (noc.getWorkflow() != null && noc.getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE)) {
+		if (noc.getWorkflow() != null && noc.getWorkflow().getAction().equals(CLUConstants.ACTION_INITIATE)) {
 			Map<String, String> details = (Map<String, String>) noc.getNocDetails().getAdditionalDetails();
-			details.put(LAYOUTConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
+			details.put(CLUConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
 
 			String uniquePropertyId = UUID.randomUUID().toString();
-			details.put(LAYOUTConstants.SOURCE_RefId, uniquePropertyId);
+			details.put(CLUConstants.SOURCE_RefId, uniquePropertyId);
 
 			noc.getNocDetails().setAdditionalDetails(details);
 		}

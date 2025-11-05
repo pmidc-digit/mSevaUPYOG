@@ -10,22 +10,22 @@ import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.AuditDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LAYOUTUtil {
+public class CLUUtil {
 
-	private LAYOUTConfiguration config;
+	private CLUConfiguration config;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired
-	public LAYOUTUtil(LAYOUTConfiguration config, ServiceRequestRepository serviceRequestRepository) {
+	public CLUUtil(CLUConfiguration config, ServiceRequestRepository serviceRequestRepository) {
 		this.config = config;
 		this.serviceRequestRepository = serviceRequestRepository;
 	}
@@ -82,17 +82,17 @@ public class LAYOUTUtil {
 
 		final String nocFilterCode = "$.[?(@.isActive==true)]";
 
-		nocMasterDtls.add(MasterDetail.builder().name(LAYOUTConstants.CLU_TYPE).filter(nocFilterCode).build());
-		nocMasterDtls.add(MasterDetail.builder().name(LAYOUTConstants.NOC_DOC_TYPE_MAPPING).build());
+		nocMasterDtls.add(MasterDetail.builder().name(CLUConstants.CLU_TYPE).filter(nocFilterCode).build());
+		nocMasterDtls.add(MasterDetail.builder().name(CLUConstants.NOC_DOC_TYPE_MAPPING).build());
 		ModuleDetail nocModuleDtls = ModuleDetail.builder().masterDetails(nocMasterDtls)
-				.moduleName(LAYOUTConstants.CLU_MODULE).build();
+				.moduleName(CLUConstants.CLU_MODULE).build();
 		
 		final String filterCode = "$.[?(@.active==true)]";
 
 		List<MasterDetail> commonMasterDetails = new ArrayList<>();
-			commonMasterDetails.add(MasterDetail.builder().name(LAYOUTConstants.DOCUMENT_TYPE).filter(filterCode).build());
+			commonMasterDetails.add(MasterDetail.builder().name(CLUConstants.DOCUMENT_TYPE).filter(filterCode).build());
 		ModuleDetail commonMasterMDtl = ModuleDetail.builder().masterDetails(commonMasterDetails)
-				.moduleName(LAYOUTConstants.COMMON_MASTERS_MODULE).build();
+				.moduleName(CLUConstants.COMMON_MASTERS_MODULE).build();
 
 		return Arrays.asList(nocModuleDtls, commonMasterMDtl);
 	}	
@@ -152,13 +152,13 @@ public class LAYOUTUtil {
 
 		List<MasterDetail> layoutMasterDetails = new ArrayList<>();
 		layoutMasterDetails.add(MasterDetail.builder()
-				.name(LAYOUTConstants.WORKFLOW_CONFIG)
+				.name(CLUConstants.WORKFLOW_CONFIG)
 				.filter(filter)
 				.build());
 
 		List<ModuleDetail> result = new LinkedList<>();
 		result.add(ModuleDetail.builder()
-				.moduleName(LAYOUTConstants.CLU_MODULE)
+				.moduleName(CLUConstants.CLU_MODULE)
 				.masterDetails(layoutMasterDetails)
 				.build());
 

@@ -3,7 +3,7 @@ package org.egov.layout.repository.builder;
 import java.util.Arrays;
 import java.util.List;
 
-import org.egov.layout.config.LAYOUTConfiguration;
+import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.web.model.LayoutSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,10 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class LayoutQueryBuilder {
+public class CluQueryBuilder {
 
 	@Autowired
-	private LAYOUTConfiguration nocConfig;
+	private CLUConfiguration nocConfig;
 	
 	@Value("${egov.layout.fuzzysearch.isFuzzyEnabled}")
 	private boolean isFuzzyEnabled;

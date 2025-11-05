@@ -5,7 +5,7 @@ import org.egov.noc.calculator.web.models.demand.Demand;
 import org.egov.noc.calculator.web.models.demand.DemandRequest;
 import org.egov.noc.calculator.web.models.demand.DemandResponse;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.noc.calculator.config.LAYOUTCalculatorConfig;
+import org.egov.noc.calculator.config.CLUCalculatorConfig;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -20,7 +20,7 @@ public class DemandRepository {
     private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
-    private LAYOUTCalculatorConfig config;
+    private CLUCalculatorConfig config;
 
     @Autowired
     private ObjectMapper mapper;

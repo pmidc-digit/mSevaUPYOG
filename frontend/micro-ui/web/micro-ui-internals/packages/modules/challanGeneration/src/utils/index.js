@@ -136,3 +136,37 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
         : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${consumerCode}.pdf`);
   }
 };
+
+export const businessServiceList = (isCode = false) => {
+  let isSearchScreen = window.location.href.includes("/search");
+  const availableBusinessServices = [
+    {
+      code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+      active: true,
+      roles: ["FIRE_NOC_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+    },
+    {
+      code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+      active: true,
+      roles: ["AIRPORT_AUTHORITY_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
+    },
+  ];
+
+  const newAvailableBusinessServices = [];
+  const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+  availableBusinessServices.map(({ roles }, index) => {
+    roles.map((role) => {
+      loggedInUserRoles.map((el) => {
+        if (el.code === role) {
+          isCode
+            ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code)
+            : newAvailableBusinessServices.push(availableBusinessServices?.[index]);
+        }
+      });
+    });
+  });
+
+  return newAvailableBusinessServices;
+};

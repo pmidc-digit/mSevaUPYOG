@@ -35,9 +35,11 @@ const LayoutProfessionalDetails = (_props) => {
 
   const { data: allCities, isLoading: isAllCitiesLoading } = Digit.Hooks.obps.useTenants();
   const [cities, setCities] = useState(allCities);
-  // console.log("allCities here", allCities);
-  // console.log("cities here ", cities);
+  // const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
 
+  
+  
+console.log("first page");
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>

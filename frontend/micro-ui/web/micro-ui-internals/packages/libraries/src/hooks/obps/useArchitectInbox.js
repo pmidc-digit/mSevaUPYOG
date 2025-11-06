@@ -16,7 +16,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
     // const USER_UUID = Digit.UserService.getUser()?.info?.uuid;
     
     const _filters = {
-        normalizedTenantId,
+        tenantId: normalizedTenantId,
 		processSearchCriteria: {
             moduleName: moduleName ? moduleName : "bpa-services",
 			businessService: businessService?.length > 0 ? [businessService] : ["BPA_LOW", "BPA", "BPA_OC"],

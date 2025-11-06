@@ -1,0 +1,584 @@
+import {
+  Header,
+  Row,
+  StatusTable,
+  Loader,
+  Card,
+  CardSubHeader,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  DisplayPhotos,
+  Toast,
+  ConnectingCheckPoints,
+  CheckPoint,
+} from "@mseva/digit-ui-react-components"
+import React, { useEffect, useState, useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams, useHistory } from "react-router-dom"
+import LayoutModal from "../../../pageComponents/LayoutModal"
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  console.log("checkpoint here", checkpoint)
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
+  console.log("wfDocuments", wfDocuments)
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    time: checkpoint?.auditDetails?.timing,
+    name: checkpoint?.assigner?.name,
+    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  }
+
+  return (
+    <div>
+      {comment?.length > 0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            const fullImage = thumbnailsToShow.fullImage?.[idx] || src
+            Digit.Utils.zoomImage(fullImage)
+          }}
+        />
+      )}
+
+      {wfDocuments?.length > 0 && (
+        <div>
+          <div>
+            {/* <LayoutDocument value={{ workflowDocs: wfDocuments}} index={index}/> */}
+            <p>{t("LAYOUT_WORKFLOW_DOCUMENTS")}</p>
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.time && <p>{caption.time}</p>}
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+      </div>
+    </div>
+  )
+}
+
+const LayoutEmployeeApplicationOverview = () => {
+  const { id } = useParams()
+  const { t } = useTranslation()
+  const tenantId = window.localStorage.getItem("Employee.tenant-id")
+  const history = useHistory()
+  const state = tenantId?.split(".")[0]
+  const [showToast, setShowToast] = useState(null)
+  const [error, setError] = useState(null)
+
+  const [showErrorToast, setShowErrorToastt] = useState(null)
+  const [errorOne, setErrorOne] = useState(null)
+  const [displayData, setDisplayData] = useState({})
+  const [isDetailsLoading, setIsDetailsLoading] = useState(false)
+
+  const [getEmployees, setEmployees] = useState([])
+  const [getLoader, setLoader] = useState(false)
+  const [getWorkflowService, setWorkflowService] = useState([])
+
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNumber: id }, tenantId, {
+    cacheTime: 0,
+  })
+  const applicationDetails = data?.resData
+  console.log("applicationDetails here==>", applicationDetails)
+
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: id,
+    moduleCode: "Layout_mcUp", // Layout business service
+  })
+
+  console.log("workflowDetails here=>", workflowDetails)
+
+  if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions]
+
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    workflowDetails.data.initialActionState =
+      workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {}
+    workflowDetails.data.actionState = { ...workflowDetails.data }
+  }
+
+  useEffect(() => {
+    let WorkflowService = null
+    ;(async () => {
+      setLoader(true)
+      WorkflowService = await Digit.WorkflowService.init(tenantId, "Layout_mcUp")
+      setLoader(false)
+      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states)
+    })()
+  }, [tenantId])
+
+  const [displayMenu, setDisplayMenu] = useState(false)
+  const [selectedAction, setSelectedAction] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+
+  const closeMenu = () => {
+    setDisplayMenu(false)
+  }
+
+  const closeToast = () => {
+    setShowToast(null)
+  }
+
+  const closeToastOne = () => {
+    setShowErrorToastt(null)
+  }
+
+  let user = Digit.UserService.getUser()
+  const menuRef = useRef()
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
+
+  if (window.location.href.includes("/obps") || window.location.href.includes("/layout")) {
+    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject")
+    const userInfo = userInfos ? JSON.parse(userInfos) : {}
+    user = userInfo?.value
+  }
+
+  const userRoles = user?.info?.roles?.map((e) => e.code)
+
+  useEffect(() => {
+    if (workflowDetails) {
+      workflowDetails.revalidate()
+    }
+
+    if (data) {
+      data.revalidate()
+    }
+  }, [])
+
+  const actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+    })
+
+  console.log("actions here", actions)
+
+  useEffect(() => {
+    const layoutObject = applicationDetails?.Layout?.[0]
+
+    if (layoutObject) {
+      const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
+      const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
+      const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
+      const Documents = layoutObject?.documents || []
+
+      const finalDisplayData = {
+        applicantDetails: applicantDetails ? [applicantDetails] : [],
+        siteDetails: siteDetails ? [siteDetails] : [],
+        coordinates: coordinates ? [coordinates] : [],
+        Documents: Documents.length > 0 ? Documents : [],
+      }
+
+      setDisplayData(finalDisplayData)
+    }
+  }, [applicationDetails?.Layout])
+
+    useEffect(() => {
+    console.log("[v0] useEffect triggered - id changed to:", id)
+
+    if (workflowDetails) {
+      workflowDetails.revalidate()
+    }
+
+    if (data) {
+      data.revalidate()
+    }
+  }, [id]) // Added id to dependency array
+
+  function onActionSelect(action) {
+    console.log("selected action", action)
+    const appNo = applicationDetails?.Layout?.[0]?.applicationNumber
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action)
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState)
+    setEmployees(filterRoles?.[0]?.actions)
+
+    const payload = {
+      Licenses: [action],
+    }
+
+    if (action?.action == "EDIT") {
+      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`)
+    } else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
+    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      submitAction(payload)
+    } else if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/Layout_mcUp/${appNo}/${tenantId}?tenantId=${tenantId}`)
+    } else {
+      setShowModal(true)
+      setSelectedAction(action)
+    }
+  }
+
+  const submitAction = async (data) => {
+    console.log("[v0] submitAction called with data:", data)
+
+    try {
+      const filtData = data?.Licenses?.[0]
+      console.log("[v0] filtData:", filtData)
+
+      if (!filtData) {
+        console.error("[v0] ERROR: filtData is undefined")
+        setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
+        return
+      }
+
+      const layoutObject = applicationDetails?.Layout?.[0]
+      console.log("[v0] layoutObject:", layoutObject)
+
+      if (!layoutObject) {
+        console.error("[v0] ERROR: layoutObject is undefined")
+        setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
+        return
+      }
+
+      const updatedApplicant = {
+        ...layoutObject,
+        workflow: {
+          action: filtData.action,
+          assignes: filtData?.assignee,
+          comment: filtData?.comment,
+          documents: filtData?.wfDocuments,
+        },
+      }
+
+      const finalPayload = {
+        Layout: updatedApplicant,
+      }
+
+      console.log("[v0] finalPayload:", JSON.stringify(finalPayload, null, 2))
+
+      const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId)
+      console.log("[v0] API response:", response)
+
+      if (response?.ResponseInfo?.status === "successful") {
+        if (filtData?.action === "CANCEL") {
+          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
+          workflowDetails.revalidate()
+          setSelectedAction(null)
+        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
+          console.log("We are calling employee response page")
+          history.replace({
+            pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNumber}`,
+            state: { data: response },
+          })
+        } else {
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
+          workflowDetails.revalidate()
+          setSelectedAction(null)
+        }
+      } else {
+        console.error("[v0] API response not successful:", response)
+        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })
+        setSelectedAction(null)
+      }
+    } catch (err) {
+      console.error("[v0] ERROR in submitAction:", err)
+      console.error("[v0] Error message:", err?.message)
+      console.error("[v0] Error stack:", err?.stack)
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
+    }
+  }
+
+  const closeModal = () => {
+    setSelectedAction(null)
+    setShowModal(false)
+  }
+
+  const getFloorLabel = (index) => {
+    if (index === 0) return t("LAYOUT_GROUND_FLOOR_AREA_LABEL")
+
+    const floorNumber = index
+    const lastDigit = floorNumber % 10
+    const lastTwoDigits = floorNumber % 100
+
+    let suffix = "th"
+    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+      if (lastDigit === 1) suffix = "st"
+      else if (lastDigit === 2) suffix = "nd"
+      else if (lastDigit === 3) suffix = "rd"
+    }
+
+    return `${floorNumber}${suffix} ${t("LAYOUT_FLOOR_AREA_LABEL")}`
+  }
+
+  console.log("displayData here", displayData)
+
+  return (
+    <div className={"employee-main-application-details"}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
+        <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
+      </div>
+
+      <Card>
+        <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
+        {displayData?.applicantDetails?.map((detail, index) => (
+          <div
+            key={index}
+            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+          >
+            <StatusTable>
+              <Row label={t("LAYOUT_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
+              <Row label={t("LAYOUT_FIRM_Application")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
+              <Row label={t("LAYOUT_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
+              <Row
+                label={t("LAYOUT_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
+                text={detail?.applicantFatherHusbandName || "N/A"}
+              />
+              <Row label={t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
+              <Row label={t("LAYOUT_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
+              <Row
+                label={t("LAYOUT_APPLICANT_GENDER_LABEL")}
+                text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"}
+              />
+              <Row label={t("LAYOUT_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
+              <Row label={t("LAYOUT_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+
+      {displayData?.applicantDetails?.professionalName &&
+        displayData?.applicantDetails?.map((detail, index) => (
+          <React.Fragment key={index}>
+            <Card>
+              <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
+              <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+                <StatusTable>
+                  <Row label={t("LAYOUT_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
+                  <Row label={t("LAYOUT_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
+                  <Row
+                    label={t("LAYOUT_PROFESSIONAL_REGISTRATION_ID_LABEL")}
+                    text={detail?.professionalRegId || "N/A"}
+                  />
+                  <Row
+                    label={t("LAYOUT_PROFESSIONAL_MOBILE_NO_LABEL")}
+                    text={detail?.professionalMobileNumber || "N/A"}
+                  />
+                  <Row label={t("LAYOUT_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
+                </StatusTable>
+              </div>
+            </Card>
+          </React.Fragment>
+        ))}
+
+      <Card>
+        <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
+        {displayData?.siteDetails?.map((detail, index) => (
+          <div
+            key={index}
+            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+          >
+            <StatusTable>
+              <Row label={t("LAYOUT_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
+              <Row label={t("LAYOUT_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
+              <Row label={t("LAYOUT_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
+              <Row label={t("LAYOUT_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("LAYOUT_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
+              <Row label={t("LAYOUT_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
+              <Row label={t("LAYOUT_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
+              <Row
+                label={t("LAYOUT_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}
+                text={detail?.areaLeftForRoadWidening || "N/A"}
+              />
+              <Row
+                label={t("LAYOUT_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}
+                text={detail?.netPlotAreaAfterWidening || "N/A"}
+              />
+              <Row label={t("LAYOUT_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
+              <Row label={t("LAYOUT_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
+              <Row
+                label={t("LAYOUT_BUILDING_STATUS_LABEL")}
+                text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"}
+              />
+              <Row
+                label={t("LAYOUT_IS_BASEMENT_AREA_PRESENT_LABEL")}
+                text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
+              />
+
+              {detail?.buildingStatus == "Built Up" && (
+                <Row label={t("LAYOUT_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"} />
+              )}
+
+              {detail?.buildingStatus == "Built Up" &&
+                detail?.floorArea?.map((floor, floorIndex) => (
+                  <Row key={floorIndex} label={getFloorLabel(floorIndex)} text={floor.value || "N/A"} />
+                ))}
+
+              {detail?.buildingStatus == "Built Up" && (
+                <Row label={t("LAYOUT_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"} />
+              )}
+
+              <Row label={t("LAYOUT_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("LAYOUT_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+              <Row label={t("LAYOUT_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
+              <Row label={t("LAYOUT_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
+              <Row label={t("LAYOUT_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
+              <Row label={t("LAYOUT_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
+              <Row label={t("LAYOUT_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+        {displayData?.siteDetails?.map((detail, index) => (
+          <div
+            key={index}
+            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+          >
+            <StatusTable>
+              <Row label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
+              <Row
+                label={t("LAYOUT_BUILDING_CATEGORY_LABEL")}
+                text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
+              />
+              <Row
+                label={t("LAYOUT_LAYOUT_TYPE_LABEL")}
+                text={detail?.specificationLayoutType?.name || detail?.specificationLayoutType || "N/A"}
+              />
+              <Row
+                label={t("LAYOUT_RESTRICTED_AREA_LABEL")}
+                text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
+              />
+              <Row
+                label={t("LAYOUT_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
+                text={
+                  detail?.specificationIsSiteUnderMasterPlan?.code ||
+                  detail?.specificationIsSiteUnderMasterPlan ||
+                  "N/A"
+                }
+              />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
+        {displayData?.coordinates?.map((detail, index) => (
+          <div
+            key={index}
+            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+          >
+            <StatusTable>
+              <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+              <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+              <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+              <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("LAYOUT_TITLE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>
+          {displayData?.Documents?.length > 0 ? (
+            <div>
+              {displayData.Documents.map((doc, index) => (
+                <Row key={index} label={doc.documentType || `Document ${index + 1}`} text={doc.fileName || "N/A"} />
+              ))}
+            </div>
+          ) : (
+            <div>{t("LAYOUT_NO_DOCUMENTS_MSG")}</div>
+          )}
+        </StatusTable>
+      </Card>
+
+      {workflowDetails?.data?.timeline && (
+        <Card>
+          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+          {workflowDetails?.data?.timeline.length === 1 ? (
+            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
+          ) : (
+            <ConnectingCheckPoints>
+              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
+                <CheckPoint
+                  key={index}
+                  keyValue={index}
+                  isCompleted={index === 0}
+                  label={t("LAYOUT_STATUS_" + checkpoint.status)}
+                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
+                />
+              ))}
+            </ConnectingCheckPoints>
+          )}
+        </Card>
+      )}
+
+      {actions?.length > 0 && (
+        <ActionBar>
+          {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+            <Menu
+              localeKeyPrefix={`WF_EMPLOYEE_LAYOUT`}
+              options={actions}
+              optionKey={"action"}
+              t={t}
+              onSelect={onActionSelect}
+            />
+          ) : null}
+          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        </ActionBar>
+      )}
+
+      {showModal ? (
+        <div>
+          <LayoutModal
+            t={t}
+            action={selectedAction}
+            tenantId={tenantId}
+            state={state}
+            getEmployees={getEmployees}
+            id={id}
+            applicationDetails={applicationDetails}
+            applicationData={applicationDetails?.Layout}
+            closeModal={closeModal}
+            submitAction={submitAction}
+            actionData={workflowDetails?.data?.timeline}
+            workflowDetails={workflowDetails}
+            showToast={showToast}
+            setShowToast={setShowToast}
+            closeToast={closeToast}
+            errors={error}
+            showErrorToast={showErrorToast}
+            errorOne={errorOne}
+            closeToastOne={closeToastOne}
+          />
+          <p>{t("LAYOUT_MODAL_PLACEHOLDER")}</p>
+        </div>
+      ) : null}
+
+      {showToast && (
+        <Toast
+          error={showToast?.error}
+          warning={showToast?.warning}
+          label={t(showToast?.message)}
+          onClose={closeToast}
+        />
+      )}
+
+      {(isLoading || getLoader) && <Loader page={true} />}
+    </div>
+  )
+}
+
+export default LayoutEmployeeApplicationOverview

@@ -38,6 +38,7 @@ const WrapPaymentComponent = (props) => {
 
   const [allowFetchBill, setallowFetchBill] = useState(false);
   const { businessService: business_service, consumerCode, tenantId, receiptNumber } = useParams();
+  console.log('tenantId here', tenantId)
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -493,6 +494,35 @@ const WrapPaymentComponent = (props) => {
     }
   };
 
+ const printNDCReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      console.log('consumerCode for ndc', consumerCode)
+      console.log('tenantId for ndc', tenantId)
+      const applicationDetails = await Digit.NDCService.NDCsearch({
+        tenantId,
+        filters: { applicationNo: consumerCode }
+      });
+      let application = applicationDetails?.Applications?.[0];
+      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "ndc-receipt"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
+  
+
   const printADVReceipt = async () => {
     if (printing) return;
     setPrinting(true);
@@ -938,6 +968,21 @@ const WrapPaymentComponent = (props) => {
           )}
         </div>
       ) : null}
+
+      {business_service == "NDC" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "15px",
+          }}
+        >
+          <SubmitBar onSubmit={printNDCReceipt} label={t("CS_DOWNLOAD_RECEIPT")} />
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        </div>
+      ) : null}
       {business_service == "adv-services" ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={IconWrapperStyle} onClick={printing ? undefined : printADVReceipt}>
@@ -1048,7 +1093,7 @@ const WrapPaymentComponent = (props) => {
       <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
     </Link>
   </div>
-) : !(business_service === "adv-services" || business_service === "chb-services") && (
+) : !(business_service === "adv-services" || business_service === "chb-services" || business_service === "NDC") && (
 
         <div
           style={{
@@ -1548,6 +1593,28 @@ const WrapPaymentZeroComponent = (props) => {
     }
   };
 
+  const printNDCReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const  applicationDetails  = await Digit.NDCService.NDCsearch({ applicationNo: consumerCode }, tenantId);
+      let application = applicationDetails.Applications;
+      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "ndc-receipt"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
   let bannerText;
   if (workflw) {
     bannerText = `CITIZEN_SUCCESS_UC_PAYMENT_MESSAGE`;
@@ -1987,6 +2054,20 @@ const WrapPaymentZeroComponent = (props) => {
         </div>
       ) : null}
 
+    {business_service == "NDC" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "15px",
+          }}
+        >
+          <SubmitBar onSubmit={printNDCReceipt} label={t("CS_DOWNLOAD_RECEIPT")} />
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        </div>
+      ) : null}
       {business_service == "sv-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />

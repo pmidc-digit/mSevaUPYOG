@@ -396,6 +396,10 @@ import useULBList from "./obps/useULBList";
 import useUlbType from "./obps/useUlbType";
 import useEDCRForm from "./obps/useEDCRForm";
 
+//Layout
+import { useLayoutSearchApplication } from "./obps/useSearchApplication";
+import useLayoutInbox from "./obps/useLayoutInbox";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -608,6 +612,9 @@ const obps = {
   useUlbType,
   useEDCRForm,
   useBPACalculation,
+  useLayoutSearchApplication,
+  useLayoutInbox
+
 };
 
 const events = {

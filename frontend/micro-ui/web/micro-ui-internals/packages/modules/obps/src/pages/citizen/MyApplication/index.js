@@ -15,6 +15,8 @@ const MyApplication = () => {
   const [finalData, setFinalData] = useState([]);
   const [labelMessage, setLableMessage] = useState(false);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
+    const [layoutData, setLayoutData] = useState([])
+  const [isLayoutLoading, setIsLayoutLoading] = useState(true)
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   // const userInfo = Digit.UserService.getUser();
@@ -27,7 +29,13 @@ const MyApplication = () => {
 
   console.log(requestor, "PPPP");
 
+  // layout application here 
+
+
+
   const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
+
+
   
   const { data: dataPunjab, isLoading: isLoadingPunjab, revalidate: revalidatePunjab } = Digit.Hooks.obps.useBPAREGSearch(
   "pb.punjab", 
@@ -36,6 +44,7 @@ const MyApplication = () => {
   {cacheTime : 0}
 );
 
+
   const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(tenantId, {
     requestor,
     mobileNumber: requestor,
@@ -43,6 +52,30 @@ const MyApplication = () => {
     offset: 0,
   }, {enabled: !isLoading ? true : false});
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(Digit.ULBService.getStateId(), "BPA", ["RiskTypeComputation"]);
+
+
+
+    const searchLayoutApplications = async () => {
+    try {
+      setIsLayoutLoading(true)
+      const searchParams = {
+        mobileNumber: requestor,
+      }
+
+      const response = await Digit.OBPSService.LayoutSearch(tenantId, searchParams)
+      console.log("[v0] Layout search response:", response)
+
+      if (response?.Layout) {
+        setLayoutData(response.Layout)
+      }
+    } catch (error) {
+      console.error("[v0] Layout search error:", error)
+      setLayoutData([])
+    } finally {
+      setIsLayoutLoading(false)
+    }
+  }
+
 
   console.log(bpaData, "BBBB");
   const getBPAREGFormData = (data) => {
@@ -133,8 +166,14 @@ const MyApplication = () => {
     };
   }, []);
 
+   useEffect(() => {
+    if (requestor) {
+      searchLayoutApplications()
+    }
+  }, [requestor])
+
   useEffect(() => {
-    if (!isLoading && !isBpaSearchLoading) {
+    if (!isLoading && !isBpaSearchLoading && !isLayoutLoading) {
       let searchConvertedArray = [];
       let sortConvertedArray = [];
       if (data?.Licenses?.length) {
@@ -173,6 +212,15 @@ const MyApplication = () => {
         });
       }
 
+      if (layoutData?.length) {
+        layoutData.forEach((layout) => {
+          layout.sortNumber = 0
+          layout.modifiedTime = layout.auditDetails?.lastModifiedTime || null
+          layout.type = "LAYOUT"
+          searchConvertedArray.push(layout)
+        })
+      }
+
       // useEffect(() => {
       //   if (!isBpaSearchLoading) {
       //     console.log("Raw BPA Data ===>", bpaData);
@@ -188,9 +236,9 @@ const MyApplication = () => {
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
+  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, isLayoutLoading, bpaData, data, layoutData]);
 
-  if (isLoading || isLoadingPunjab || isBpaSearchLoading) {
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isLayoutLoading) {
     return <Loader />;
   }
 
@@ -204,6 +252,10 @@ const MyApplication = () => {
 
     if (typeof bpaDataLength == "number") {
       count = count + bpaDataLength;
+    }
+
+     if (typeof layoutDataLength == "number") {
+      count = count + layoutDataLength
     }
 
     if (count > 0) return `(${count})`;
@@ -305,7 +357,32 @@ const MyApplication = () => {
 
             </Card>
           );
-        } else {
+        } else if (application.type === "LAYOUT") {
+          return (
+            <Card key={index}>
+              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
+              <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={t("LAYOUT_APPLICATION")} />
+              <KeyNote keyValue={t("BPA_LAYOUT_TYPE_LABEL")} note={application?.layoutType || "LAYOUT"} />
+              <KeyNote
+                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
+                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
+                noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
+              />
+              <Link
+                to={{
+                  pathname: `/digit-ui/citizen/obps/layout/${application?.applicationNo}`,
+                  state: { data: { Layout: [application] } },
+                }}
+              >
+
+                <SubmitBar label={t("TL_VIEW_DETAILS")} />
+              </Link>
+            </Card>
+          )
+        
+        
+        
+         } else {
           return (
             <Card key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />

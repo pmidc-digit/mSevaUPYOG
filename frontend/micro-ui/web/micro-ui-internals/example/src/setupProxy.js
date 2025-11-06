@@ -109,7 +109,8 @@ module.exports = function (app) {
     "/ndc-services",
     "/ndc-calculator",
     '/bpa-calculator',
-    "/noc-calculator"
+    "/noc-calculator",
+    "/layout-services",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

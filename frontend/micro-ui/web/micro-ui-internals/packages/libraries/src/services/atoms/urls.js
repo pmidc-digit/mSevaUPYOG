@@ -185,7 +185,10 @@ const Urls = {
     edcrreportdownload: "/bpa-services/v1/bpa/_permitorderedcr",
     getSearchDetails: "/inbox/v1/dss/_search",
     payment_search: "/collection-services/payments/BPREG/_search",
-    bpaCalculator: "/bpa-calculator/_calculate"
+    bpaCalculator: "/bpa-calculator/_calculate",
+    layoutCreate: "/layout-services/v1/layout/_create",
+    layoutSearch: "/layout-services/v1/layout/_search",
+    layoutUpdate: "/layout-services/v1/layout/_update",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",

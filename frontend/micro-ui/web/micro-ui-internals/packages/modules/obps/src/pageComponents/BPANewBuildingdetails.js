@@ -1025,9 +1025,9 @@ if (anyYes && !ecbcCertificateFile) {
           disabled={true}
         />
         <ErrorMessage error={errors.Ulblisttype} />
-      </div>
+      {/* </div>
 
-      <div >
+      <div > */}
 
         <CardLabel>{`${t("BPA_APPROVED_COLONY")} *`}</CardLabel>
         <Controller
@@ -1090,7 +1090,7 @@ if (anyYes && !ecbcCertificateFile) {
               <div
                 style={{
                   position: "relative",
-                  zIndex: "100",
+                  zIndex: "1",
                   right: "95px",
                   marginTop: "-24px",
                   marginRight: Webview ? "-20px" : "-20px",
@@ -1101,6 +1101,7 @@ if (anyYes && !ecbcCertificateFile) {
               </div>
             </div>
             <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
+            <div style={{marginBottom: "15px"}}>
             <UploadFile
               id={"noc-doc"}
               onUpload={selectfile}
@@ -1112,11 +1113,12 @@ if (anyYes && !ecbcCertificateFile) {
               error={errors.file}
             />
             {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
+            </div>
           </React.Fragment>
         )}
-      </div>
+      {/* </div>
 
-      <div>
+      <div> */}
 
         <CardLabel>{`${t("BPA_MASTER_PLAN")} *`}</CardLabel>
         <Controller
@@ -1260,9 +1262,9 @@ if (anyYes && !ecbcCertificateFile) {
             {errors.rating && <ErrorMessage error={errors.rating} />}
           </React.Fragment>
         )}
-      </div>
+      {/* </div>
 
-      <div>
+      <div> */}
 
         <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}</CardLabel>
         <Controller
@@ -1299,9 +1301,9 @@ if (anyYes && !ecbcCertificateFile) {
           )}
         />
         <ErrorMessage error={errors.proposedSite} />
-      </div>
+      {/* </div>
 
-      <div>
+      <div> */}
 
         <CardLabel>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)}</CardLabel>
         <Controller

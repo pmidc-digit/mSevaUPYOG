@@ -237,7 +237,8 @@ const BpaApplicationDetail = () => {
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
-    setAgree(!agree)
+    setShowTermsPopup(true)
+    setAgree(true)
   }
 
   const state = Digit.ULBService.getStateId()
@@ -249,8 +250,8 @@ const BpaApplicationDetail = () => {
   const [isOTPVerified, setIsOTPVerified] = useState(false)
   const [otpError, setOTPError] = useState("")
   const [otpSuccess, setOTPSuccess] = useState("");
-  const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(null)
-  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
+  const otpVerifiedTimestamp = sessionStorage.getItem("otpVerifiedTimestampcitizen") || "";
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid") || "";
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
 
@@ -277,14 +278,7 @@ const BpaApplicationDetail = () => {
   };
 
   const handleTermsLinkClick = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isOTPVerified) {
       setShowTermsPopup(true)
-      console.log("is clicked popup")
-    } else {
-      alert("Please verify yourself")
-    }
   }
 
   const checkLabels = () => {
@@ -292,8 +286,8 @@ const BpaApplicationDetail = () => {
       <div>
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
         <br />
-        {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
-        {isCitizenDeclared && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
+        {/* {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />} */}
+        {isCitizenDeclared !== "" && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
       </div>
     )
   }
@@ -365,14 +359,54 @@ const BpaApplicationDetail = () => {
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
     fileUrl: doc.values?.[0]?.fileURL || null,
   }));
-  const documentsColumns = [
+  const documentsColumnsOwner = [
     {
-      Header: t("BPA_DOCUMENT_NAME"),
+      Header: t("BPA_OWNER_DETAILS_LABEL"),
       accessor: "title",
       Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
-      Header: t("BPA_DOCUMENT_FILE"),
+      Header: t(" "),
+      accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+  const documentsColumns = [
+    {
+      Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
+      accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+  const documentsColumnsECBC = [
+    {
+      Header: t("BPA_ECBC_DETAILS_LABEL"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
@@ -393,7 +427,7 @@ const BpaApplicationDetail = () => {
       Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
-      Header: t("BPA_DOCUMENT_FILE"),
+      Header: t(" "),
       accessor: "value",
       Cell: ({ value }) =>
         value ? (
@@ -770,6 +804,33 @@ useEffect(() => {
     //   return 
     // }
     console.log("SelectedAction", action)
+    const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
+    if (isCitizenConsentIncluded) {
+      if (!agree) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_accepted")
+        });
+        return;
+      }
+      if (!otpVerifiedTimestamp) { //notto
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
+        });
+        return;
+      }
+      if (!sessionStorage.getItem("CitizenConsentdocFilestoreid")) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_uploaded")
+        });
+        return;
+      }
+    }
     if (action === "FORWARD") {
       history.replace(
         `/digit-ui/citizen/obps/sendbacktocitizen/ocbpa/${data?.applicationData?.tenantId}/${data?.applicationData?.applicationNo}/check`,
@@ -985,20 +1046,19 @@ useEffect(() => {
     let updatedDocuments
     let additionalDetails
     if (isCitizenConsentIncluded) {
-
-      if (!isOTPVerified) {
-        setIsEnableLoader(false);
-        setShowToast({
-          key: "error",
-          action: t("Not_OTP_VERIFIED")
-        });
-        return;
-      }
       if (!agree) {
         setIsEnableLoader(false);
         setShowToast({
           key: "error",
           action: t("Citizen_Consent_was_not_accepted")
+        });
+        return;
+      }
+      if (!otpVerifiedTimestamp) { //notto
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
         });
         return;
       }
@@ -1373,7 +1433,7 @@ useEffect(() => {
                     style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
                   >
                     {!detail?.isTitleVisible ? (
-                      <CardSubHeader style={{ fontSize: "24px" }}>{t(detail?.title)}</CardSubHeader>
+                      <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
                     ) : null}
 
                     <div
@@ -1468,7 +1528,7 @@ useEffect(() => {
                                 />
                               ) : null}
                               {!detail?.isTitleRepeat && value?.isHeader ? (
-                                <CardSubHeader style={{ fontSize: "20px" }}>{t(value?.title)}</CardSubHeader>
+                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
                               ) : null}
                             </div>
                           ))
@@ -1559,9 +1619,9 @@ useEffect(() => {
                           : null}
 
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
-                          <StatusTable>
-                            <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                          {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                          <StatusTable>                            
                             {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1574,14 +1634,14 @@ useEffect(() => {
                               isPaginationRequired={false}
                             />}
                           </StatusTable>
-                          <StatusTable>
-                            <CardHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardHeader>
-                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                          {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                          <StatusTable>                            
                             {(pdfLoading || isFileLoading) ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={ecbcDocumentsData}
-                              columns={documentsColumns}
+                              columns={documentsColumnsECBC}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
                               autoSort={true}
@@ -1589,14 +1649,14 @@ useEffect(() => {
                               isPaginationRequired={false}
                             />}
                           </StatusTable>
-                          <StatusTable>
-                            <CardHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardHeader>
-                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                          {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                          <StatusTable>                            
                             {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={ownerDocumentsData}
-                              columns={documentsColumns}
+                              columns={documentsColumnsOwner}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
                               autoSort={true}
@@ -1950,9 +2010,9 @@ useEffect(() => {
               <React.Fragment>
                 <div>
                   <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-                  <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} />
+                  {/* <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} /> */}
                   <br></br>
-                  {showMobileInput && (
+                  {/* {showMobileInput && (
                     <React.Fragment>
                       <br></br>
                       <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
@@ -1975,28 +2035,18 @@ useEffect(() => {
 
                       <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                     </React.Fragment>
-                  )}
-                  {showOTPInput && (
+                  )} */}
+                  {/* {showOTPInput && (
                     <React.Fragment>
                       <br></br>
-                      <CardLabel>{t("BPA_OTP")}</CardLabel>
-                      {/* <TextInput
-                      t={t}
-                      type="text"
-                      isMandatory={true}
-                      optionKey="i18nKey"
-                      name="otp"
-                      value={otp}
-                      onChange={handleOTPChange}
-                      {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-                    /> */}
+                      <CardLabel>{t("BPA_OTP")}</CardLabel>                    
                       <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
                       <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                       {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
                       {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
                     </React.Fragment>
-                  )}
+                  )} */}
                 </div>
                 <br></br>
 

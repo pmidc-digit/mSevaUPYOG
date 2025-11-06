@@ -266,7 +266,7 @@ useEffect(() => {
   const handleSubmit = async () => {
     const address = {...currentStepData?.createdResponse?.landInfo?.address};
     address.pincode = pincode.length>0 ? pincode : "";
-    address.city = selectedCity?.code;
+    address.city = selectedCity?.name;
     address.locality = selectedLocality;
     // address.street = street;
     // address.landmark = landmark;

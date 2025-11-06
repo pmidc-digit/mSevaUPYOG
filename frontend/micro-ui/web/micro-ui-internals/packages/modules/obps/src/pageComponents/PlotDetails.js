@@ -71,7 +71,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
 
-console.log("sessionStorageData",userInfo,LicenseData?.Licenses?.[0]?.licenseNumber, LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo);
+console.log("sessionStorageData",data);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -167,6 +167,9 @@ console.log("sessionStorageData",userInfo,LicenseData?.Licenses?.[0]?.licenseNum
   useEffect(()=>{
     if(data && data?.planDetail?.planInfoProperties?.KHASRA_NO){
       setKhasraNumber(data?.planDetail?.planInfoProperties?.KHASRA_NO);
+    }
+    if(data && data?.planDetail?.planInformation?.plotBndryWallLength && boundaryWallLength === ""){
+      setBoundaryWallLength(data?.planDetail?.planInformation?.plotBndryWallLength?.toString());
     }
   },[currentStepData?.BasicDetails?.edcrDetails])
 
@@ -571,7 +574,7 @@ useEffect(() => {
           )}
             
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}
-          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
+          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}
           {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", currentStepData?.cpt?.zonalMapping?.ward)}
           {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number" , currentStepData?.cpt?.zonalMapping?.zone)}
           {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}

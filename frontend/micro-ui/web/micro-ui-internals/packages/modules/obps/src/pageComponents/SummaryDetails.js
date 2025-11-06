@@ -818,6 +818,80 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={currentStepData?.createdResponse?.applicationNo} />
                     </StatusTable>
                 </Card>
+
+                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>
+                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
+                            label={<EditIcon color="white" style={{ color: "white" }} />}
+
+                            onClick={() => { }}
+                        /> */}
+                        {currentStepData?.createdResponse?.landInfo?.owners &&
+                            currentStepData?.createdResponse?.landInfo?.owners?.length > 0 &&
+                            currentStepData?.createdResponse?.landInfo?.owners?.map((ob, index) => (
+                                <div
+                                    key={index}
+                                    style={
+                                        currentStepData?.createdResponse?.landInfo?.owners.length > 1
+                                            ? {
+                                                marginTop: "19px",
+                                                background: "#FAFAFA",
+                                                border: "1px solid #D6D5D4",
+                                                borderRadius: "4px",
+                                                padding: "8px",
+                                                lineHeight: "19px",
+                                                maxWidth: "960px",
+                                                minWidth: "280px",
+                                            }
+                                            : {}
+                                    }
+                                >
+                                    {currentStepData?.createdResponse?.landInfo?.owners.length > 1 && (
+                                        <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
+                                            {t("COMMON_OWNER")} {index + 1}
+                                        </CardSubHeader>
+                                    )}
+                                    <StatusTable >
+                                        <Row
+                                            className="border-none"
+                                            // textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
+                                            label={t(`CORE_COMMON_NAME`)}
+                                            text={ob?.name || "N/A"}
+
+                                        />
+                                        <Row
+                                            className="border-none"
+                                            label={t(`BPA_APPLICANT_GENDER_LABEL`)}
+                                            text={ob?.gender?.i18nKey ? t(ob.gender.i18nKey) : ob?.gender || "N/A"}
+
+                                        />
+                                        <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
+                                        <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
+                                        <Row className="border-none" label={t(`BPA_APPLICANT_ADDRESS_LABEL`)} text={ob?.permanentAddress || t("CS_NA")} />
+                                        <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "Yes" : "No"}`} />
+                                    </StatusTable>
+                                </div>
+                            ))}
+                    </StatusTable>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>
+                        {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
+                            className="customTable table-border-style"
+                            t={t}
+                            data={ownerDocumentsData}
+                            columns={documentsColumns}
+                            getCellProps={() => ({ style: {} })}
+                            disableSort={false}
+                            autoSort={true}
+                            manualPagination={false}
+                            isPaginationRequired={false}
+                        />}
+                    </StatusTable>
+                </Card>
+
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
                         {t(`BPA_BASIC_DETAILS_TITLE`)}
@@ -895,6 +969,25 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.wardnumber || t("CS_NA")}
                             
                         />
+                    </StatusTable>
+                </Card>
+
+                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable >                                                
+                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
+                            label={<EditIcon color="white" style={{ color: "white" }} />}
+
+                            onClick={() => { }}
+                        /> */}
+                        <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />
+                        <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")} />
+                        <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.locality?.name || t("CS_NA")} />
+                        <Row className="border-none" label={t(`BPA_LAT`)} text={currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.latitude ? currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : t("CS_NA")} />
+                        <Row className="border-none" label={t(`BPA_LONG`)} text={currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.longitude ? currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : t("CS_NA")} />
+                        {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
+                        {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
                     </StatusTable>
                 </Card>
 
@@ -1093,113 +1186,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         <Row className="border-none" label={t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned} />
                     </StatusTable>
                 </Card>
-
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <StatusTable>                        
-                        {pdfLoading ? <Loader /> : <Table
-                            className="customTable table-border-style"
-                            t={t}
-                            data={ecbcDocumentsData}
-                            columns={documentsColumns}
-                            getCellProps={() => ({ style: {} })}
-                            disableSort={false}
-                            autoSort={true}
-                            manualPagination={false}
-                            isPaginationRequired={false}
-                        />}
-                    </StatusTable>
-                </Card>
-
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <StatusTable >                                                
-                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
-                            label={<EditIcon color="white" style={{ color: "white" }} />}
-
-                            onClick={() => { }}
-                        /> */}
-                        <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />
-                        <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")} />
-                        <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.locality?.name || t("CS_NA")} />
-                        {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
-                        {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
-                    </StatusTable>
-                </Card>
-
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <StatusTable>                        
-                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
-                            label={<EditIcon color="white" style={{ color: "white" }} />}
-
-                            onClick={() => { }}
-                        /> */}
-                        {currentStepData?.createdResponse?.landInfo?.owners &&
-                            currentStepData?.createdResponse?.landInfo?.owners?.length > 0 &&
-                            currentStepData?.createdResponse?.landInfo?.owners?.map((ob, index) => (
-                                <div
-                                    key={index}
-                                    style={
-                                        currentStepData?.createdResponse?.landInfo?.owners.length > 1
-                                            ? {
-                                                marginTop: "19px",
-                                                background: "#FAFAFA",
-                                                border: "1px solid #D6D5D4",
-                                                borderRadius: "4px",
-                                                padding: "8px",
-                                                lineHeight: "19px",
-                                                maxWidth: "960px",
-                                                minWidth: "280px",
-                                            }
-                                            : {}
-                                    }
-                                >
-                                    {currentStepData?.createdResponse?.landInfo?.owners.length > 1 && (
-                                        <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
-                                            {t("COMMON_OWNER")} {index + 1}
-                                        </CardSubHeader>
-                                    )}
-                                    <StatusTable >
-                                        <Row
-                                            className="border-none"
-                                            // textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
-                                            label={t(`CORE_COMMON_NAME`)}
-                                            text={ob?.name || "N/A"}
-                                            
-                                        />
-                                        <Row
-                                            className="border-none"
-                                            label={t(`BPA_APPLICANT_GENDER_LABEL`)}
-                                            text={ob?.gender?.i18nKey ? t(ob.gender.i18nKey) : ob?.gender || "N/A"}
-                                            
-                                        />
-                                        <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
-                                        <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
-                                        <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "Yes" : "No"}`} />
-                                    </StatusTable>
-                                </div>
-                            ))}
-                    </StatusTable>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <StatusTable>                                                
-                                                {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
-                                                  className="customTable table-border-style"
-                                                  t={t}
-                                                  data={ownerDocumentsData}
-                                                  columns={documentsColumns}
-                                                  getCellProps={() => ({ style: {} })}
-                                                  disableSort={false}
-                                                  autoSort={true}
-                                                  manualPagination={false}
-                                                  isPaginationRequired={false}
-                                                />}
-                                              </StatusTable>
-                </Card>
+                
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
@@ -1229,12 +1216,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.District || t("CS_NA")}
                             
                         />
-                        <Row
+                        {/* <Row
                             className="border-none"
                             label={t(`BPA_BUILDING_STATUS_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.buildingStatus || t("CS_NA")}
                             
-                        />
+                        /> */}
                         <Row
                             className="border-none"
                             label={t(`BPA_CORE_AREA_LABEL`)}
@@ -1287,6 +1274,24 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.greenbuilding || t("CS_NA")}
                             
                         />
+                    </StatusTable>
+                </Card>
+
+                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>                        
+                        {pdfLoading ? <Loader /> : <Table
+                            className="customTable table-border-style"
+                            t={t}
+                            data={ecbcDocumentsData}
+                            columns={documentsColumns}
+                            getCellProps={() => ({ style: {} })}
+                            disableSort={false}
+                            autoSort={true}
+                            manualPagination={false}
+                            isPaginationRequired={false}
+                        />}
                     </StatusTable>
                 </Card>
 

@@ -940,18 +940,16 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       <div className="field-container">
                         <div
                           style={{
-                            position: "relative",
-                            zIndex: "100",
-                            left: "35px",
-                            marginTop: "-24px",
-                            marginLeft: Webview ? "-25px" : "-25px",    
-                            borderRight: "1px solid"
+                            marginBottom: "24px",
+                            padding: "3px 2px",
+                            border: "1px solid #b4b4b4",
+                            borderRadius: "8px 0px 0px 8px"
                           }}
                         >
                           +91
                         </div>
                         <TextInput
-                          style={{ background: "#FAFAFA", padding: "0px 39px" }}
+                          style={{ background: "#FAFAFA", padding: "0px 4px", borderRadius: "0px 8px 8px 0px", width: "96%"  }}
                           type={"text"}
                           t={t}
                           isMandatory={false}
@@ -970,7 +968,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                           style={{
                             position: "relative",
                             zIndex: "100",
-                            right: "35px",
+                            right: "44px",
                             marginTop: "-24px",
                             marginRight: Webview ? "-20px" : "-20px",
                           }}

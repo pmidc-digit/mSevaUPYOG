@@ -16,7 +16,8 @@ import {
   UploadFile,
   ActionBar,
   SubmitBar,
-  CustomButton
+  CustomButton,
+  TextArea
 } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
@@ -328,7 +329,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         setCanmovenext(true)
       }
     })
-    if (!canmovenext && ownershipCategory && !ownershipCategory?.code.includes("SINGLEOWNER")) {
+    if (!canmovenext && ownershipCategory && !ownershipCategory?.code?.includes("SINGLEOWNER")) {
       if (flag == 1) setCanmovenext(false)
       else setCanmovenext(true)
     }
@@ -532,9 +533,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         { userName: fields?.[indexValue]?.mobileNumber },
         {},
       )
-      const found = usersResponse?.user?.[0]?.roles?.filter(
-        (el) => el.code === "BPA_ARCHITECT" || el.code === "BPA_SUPERVISOR",
-      )?.[0]
+      // const found = usersResponse?.user?.[0]?.roles?.filter(
+      //   (el) => el.code === "BPA_ARCHITECT" || el.code === "BPA_SUPERVISOR",
+      // )?.[0]
       if (usersResponse?.user?.length === 0) {
         setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" })
         return
@@ -573,10 +574,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           setCanmovenext(true)
         else setCanmovenext(false)
 
-        if (found) {
+        if (ownerNo === user?.info?.mobileNumber) {
           setCanmovenext(false)
           //setownerRoleCheck(found);
-          setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION_${found?.code}` })
+          setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION` })
           return
         }
       }
@@ -631,6 +632,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const validateOwners = (owners, ownershipCategory, setErrors) => {
     let isValid = true;
     let newErrors = {};
+    console.log("ownersss", owners)
 
     // Ownership category mandatory
     if (!ownershipCategory?.code) {
@@ -711,12 +713,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       return
     }
 
-    if (ismultiple === true && fields.length === 1) {
-      window.scrollTo(0, 0)
-      setApiLoading(false);
-      setError("BPA_ERROR_MULTIPLE_OWNER")
-      return
-    }
+    // if (ismultiple === true && fields.length === 1) {
+    //   window.scrollTo(0, 0)
+    //   setApiLoading(false);
+    //   setError("BPA_ERROR_MULTIPLE_OWNER")
+    //   return
+    // }
 
 
       setIsDisable(true)
@@ -941,14 +943,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                             position: "relative",
                             zIndex: "100",
                             left: "35px",
-                            marginTop: "-24.5px",
-                            marginLeft: Webview ? "-25px" : "-25px",
+                            marginTop: "-24px",
+                            marginLeft: Webview ? "-25px" : "-25px",    
+                            borderRight: "1px solid"
                           }}
                         >
                           +91
                         </div>
                         <TextInput
-                          style={{ background: "#FAFAFA", padding: "0px 35px" }}
+                          style={{ background: "#FAFAFA", padding: "0px 39px" }}
                           type={"text"}
                           t={t}
                           isMandatory={false}
@@ -1165,7 +1168,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         resize: "vertical",
                       }}
                       placeholder="Enter complete address"
-                      value={field.permanentAddress}
+                      value={field?.permanentAddress || ""}
                       onChange={(e) => setOwnerAddress(index, e)}
                     />
                     <ErrorMessage message={errors[`address_${index}`]} />

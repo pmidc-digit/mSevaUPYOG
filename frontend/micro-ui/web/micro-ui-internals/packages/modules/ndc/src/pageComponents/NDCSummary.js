@@ -27,7 +27,15 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   let docs = formData?.DocummentDetails?.documents?.documents;
 
+  console.log("formData", formData);
+
   const appId = formData?.apiData?.Applications?.[0]?.applicationNo || formData?.responseData?.[0]?.applicationNo;
+
+  const propertyDet = formData?.apiData?.Applications?.[0]?.NdcDetails || formData?.responseData?.[0]?.NdcDetails;
+
+  const filterType = propertyDet?.filter((item) => item?.businessService == "PT");
+
+  console.log("filterType", filterType);
 
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -50,6 +58,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         {
           applicationNumber: appId,
           tenantId: tenantId,
+          propertyType: filterType?.[0]?.additionalDetails?.propertyType,
         },
       ],
     };

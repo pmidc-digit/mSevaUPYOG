@@ -38,7 +38,7 @@ function ADSSummary({ t }) {
     marginBottom: "0.75rem",
     padding: "0 1.5rem",
   };
-   const headerRow1 = {
+  const headerRow1 = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -86,7 +86,7 @@ function ADSSummary({ t }) {
 
   const boldLabelStyle = { fontWeight: "500", color: "#333" };
 
-  const cartDetails = formData?.ads
+  const cartDetails = formData?.ads;
 
   const renderRow = (label, value) => (
     <div style={labelFieldPairStyle}>
@@ -97,6 +97,7 @@ function ADSSummary({ t }) {
     </div>
   );
 
+  // const updatedCartSlots = formData?.ads?.flatMap((item) => item.slots);
 
   return (
     <div className="application-summary">
@@ -125,8 +126,7 @@ function ADSSummary({ t }) {
             </span>
           </div>
 
-
-            <ADSCartDetails cartDetails={cartDetails} t={t}/>
+          <ADSCartDetails cartDetails={cartDetails} t={t} />
         </div>
       </Card>
 
@@ -138,7 +138,7 @@ function ADSSummary({ t }) {
               {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
-          {docs.length > 0 ? (
+          {docs?.length > 0 ? (
             <div style={documentsContainerStyle}>
               {docs.map((doc, idx) => (
                 <div key={idx} style={documentCardStyle}>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { useLocation } from "react-router-dom";
-import { SubmitBar } from "@mseva/digit-ui-react-components";
+import { SubmitBar, CardLabel, OTPInput, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 // Fixed ArchitectConsent component
@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 // - avoids embedding TimeStamp directly inside a static comparison string
 // - safer upload with params+TimeStamp merged
 
-const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp, currentStepData, formData }) => {
+const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp, currentStepData, formData, onSelect }) => {
   const { state } = useLocation();
   const { t } = useTranslation();
 
@@ -18,6 +18,12 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   const user = Digit.UserService.getUser();
   const architecname = user?.info?.name || "";
   const architectmobileNumber = user?.info?.mobileNumber || "";
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [otp, setOTP] = useState("");
+  const [otpError, setOTPError] = useState("");
+  const [otpSuccess, setOTPSuccess] = useState("");
+  const [setOtpLoading, setSetOtpLoading] = useState(false);
+  const [getOtpLoading, setGetOtpLoading] = useState(false);
 
   // IMPORTANT: destructure both params and setParams so you can update session storage
   const [params, setParams] = Digit.Hooks.useSessionStorage(
@@ -27,6 +33,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
 
   const [isUploading, setIsUploading] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
+  const [userSelected, setUser] = useState(null);
 
   // Map fields safely from params (these may be undefined)
   const architectid = currentStepData?.createdResponse?.additionalDetails?.architectid || "";
@@ -43,12 +50,32 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
 
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
-  const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
-  const DateOnly = TimeStamp ? new Date(TimeStamp).toISOString().split("T")[0] : "";
+  // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
+  const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.timeStamp?.TimeStamp || "");
+  const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.timeStamp?.isArchitectDeclared || "");
+  const DateOnly = TimeStamp
+  ? (() => {
+      const d = new Date(TimeStamp);
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    })()
+  : "";
 
-  const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
+  // const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
 
-  console.log(params, "PARAM");
+  console.log(currentStepData, isArchitectDeclared, TimeStamp, "PARAM");
+
+  useEffect(() => {
+    console.log("currentStepDataInArchitectConsent", currentStepData);
+    if(currentStepData?.Timestamp?.TimeStamp){
+      setTimeout(currentStepData?.Timestamp?.TimeStamp)
+    }
+    if(currentStepData?.Timestamp?.isArchitectDeclared){
+      setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared)
+    }
+  }, [currentStepData]);
 
   // update session only if setParams exists and we need to write the timestamp
   useEffect(() => {
@@ -68,68 +95,14 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
     }
   }, [params, setParams, TimeStamp]);
 
-  // Build the declaration string — use TimeStamp (always defined as string)
-  // const selfdeclarationform = `
-  //  To,
-  //  <b>${ulbgrade}</b>
-  //  <b>${district}</b>
-   
-   
-  //  Dear Sir or Madam,
-
-  //  I, under signed Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype}</b>) having Registration No. 
-  //  <b>${architectid}</b> is appointed by the <b>${ownername}</b> Mobile number <b>${mobile}</b> for the development on
-  //  land bearing Kh. No <b>${khasranumber}</b> Area <b>${area}</b> (Sq.mts).
-    
-  //  This site falls in ward number <b>${ward}</b> zone number <b>${zone}</b>  in the Master plan of 
-  //  <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permi
-  //  -ssible in this area.
-  
-  //  I am currently registered as <b>${architecttype}</b> with the Competent Authority and empane
-  //  -lled under Self-Certification Scheme.
-  
-  //  I hereby certify that I/we have appointed by the owner to prepare the plans, sections and 
-  //  details, structural details as required under the Punjab Municipal Building Byelaws for the 
-  //  above mentioned project. 
-  
-  //  That the drawings prepared and uploaded along with other necessary documents on this 
-  //  E-Naksha Platform are as per the provisions of Punjab Municipal Building Byelaws and th
-  //  -is building plan has been applied under Self-Certification Scheme. 
-  
-  //  I certify that:
-  //  That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and 
-  //  other applicable instructions/ regulations, which are in force and I undertake to fulfill the 
-  //  same.
-  
-  //  That plans have been prepared within the framework of provisions of the Master Plan and app
-  //  -licable Building Bye Laws / Regulations. 
-  
-  //  That site does not falls in any prohibited area/ government land/ encroachment or any other 
-  //  land restricted for building construction or in any unauthorized colony. 
-  
-  //  That plan is in conformity to structural safety norms. 
-  
-  //  That I have seen the originals of all the documents uploaded and Nothing is concealed 
-  //  thereof. 
-  
-  //  That all the requisite documents/NOC required to be uploaded have been uploaded on 
-  //  E-Naksha portal along with plan. 
-  
-  //  That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.
-   
-
-
-  //  This Document is Verified By OTP at <b>${TimeStamp}</b>
-
-
-  //  Name of Professional - <b>${architecname}</b> 
-  //  Designation - <b>${architecttype}</b>
-  //  Architect Id - <b>${architectid}</b> 
-  //  Mobile Number - <b>${architectmobileNumber}</b>
-   
-                                  
-  //   `;
-
+  useEffect(() => {
+    if (!userSelected) {
+      return;
+    }
+    Digit.SessionStorage.set("citizen.userRequestObject", user);
+    Digit.UserService.setUser(userSelected);
+    setCitizenDetail(userSelected?.info, userSelected?.access_token, state);
+  }, [userSelected]);
 
 
 const selfdeclarationform = `
@@ -153,7 +126,7 @@ const selfdeclarationform = `
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${currentStepData?.createdResponse?.landInfo?.address?.locality?.name?.split("-")?.[0]?.trim() || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
@@ -185,7 +158,7 @@ const selfdeclarationform = `
    
 
     <!-- Signature / details table (dotted cells like your doc) -->
-    <table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
+    ${TimeStamp !== ""?`<table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
       <tr>
         <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
           <div style="font-weight:700; margin-bottom:6px;">Date:</div>
@@ -219,7 +192,7 @@ const selfdeclarationform = `
               <td style="padding:6px; font-weight:700;">Signature:</td>
               <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || '<date> <time>'}</b></td>
             </tr>
-          </table>
+          </table>`:""}
         </td>
       </tr>
     </table>
@@ -254,15 +227,32 @@ const selfdeclarationform = `
 
   const openModal = () => setShowTermsPopup(true);
   const closeModal = () => setShowTermsPopup(false);
+      
+  const setCitizenDetail = (userObject, token, tenantId) => {
+    let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
+    localStorage.setItem("Citizen.tenant-id", tenantId);
+    localStorage.setItem("tenant-id", tenantId);
+    localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
+    localStorage.setItem("locale", locale);
+    localStorage.setItem("Citizen.locale", locale);
+    localStorage.setItem("token", token);
+    localStorage.setItem("Citizen.token", token);
+    localStorage.setItem("user-info", JSON.stringify(userObject));
+    localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
+  };
 
-  const uploadSelfDeclaration = async () => {
+  const uploadSelfDeclaration = async (event) => {
     try {
+      const timestamp = await handleVerifyOTPClick(event);
+      if(timestamp === ""){
+        return;
+      }
       setIsUploading(true);
       const paramsWithTimestamp = {
         ...currentStepData?.createdResponse,
         additionalDetails: {
           ...currentStepData?.createdResponse?.additionalDetails,
-          TimeStamp
+          timestamp
         },
         edcrDetail: {
           ...currentStepData?.BasicDetails?.edcrDetail,
@@ -273,7 +263,11 @@ const selfdeclarationform = `
 
       if (result?.filestoreIds?.[0]) {
         alert("File Uploaded Successfully");
-        sessionStorage.setItem("ArchitectConsentdocFilestoreid", result.filestoreIds[0]);
+        // sessionStorage.setItem("ArchitectConsentdocFilestoreid", result.filestoreIds[0]);
+        onSelect({
+          isArchitectDeclared: result?.filestoreIds?.[0],
+          TimeStamp: timestamp
+        });
         setIsFileUploaded(true);
       } else {
         alert("File Upload Failed");
@@ -283,6 +277,73 @@ const selfdeclarationform = `
       alert("Error Uploading PDF: " + (error?.message || error));
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleGetOTPClick = async (e) => {
+    e.preventDefault(); // Prevent form submission
+    try {
+      setGetOtpLoading(true);
+      const response = await Digit.UserService.sendOtp({
+        otp: {
+          mobileNumber: architectmobileNumber || "",
+          tenantId: user?.info?.tenantId,
+          userType: user?.info?.type,
+          type: "login",
+        },
+      });
+
+      if (response.isSuccessful) {
+        setGetOtpLoading(false);
+        setShowOTPInput(true);
+      } else {
+        console.error("Error sending OTP Response is false:", response.error);
+        alert("Something Went Wrong");
+        setGetOtpLoading(false);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      alert("Something went wrong");
+      setGetOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOTPClick = async (e) => {
+    e.preventDefault(); // Prevent form submission
+    console.log("OTP++++++++>");
+    const requestData = {
+      username: architectmobileNumber || "",
+      password: otp,
+      tenantId: user?.info?.tenantId,
+      userType: user?.info?.type,
+    };
+    try {
+      setSetOtpLoading(true)
+      // const response = await Digit.UserService.authenticate(requestData);
+      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      if (ResponseInfo.status === "Access Token generated successfully") {
+        // setIsOTPVerified(true);
+        setOTPSuccess(t("VERIFIED"));
+        setOTPError(false);
+        const currentTimestamp = new Date();
+        setOTPVerifiedTimestamp(currentTimestamp);
+        sessionStorage.setItem("otpVerifiedTimestamp", currentTimestamp.toISOString());
+        setSetOtpLoading(false);
+        setUser({ info, ...tokens });
+        return currentTimestamp;
+      } else {
+        // setIsOTPVerified(false);
+        setOTPError(t("WRONG OTP"));
+        setSetOtpLoading(false)
+        return ""
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      alert("OTP Verification Error ");
+      // setIsOTPVerified(false);
+      setOTPError(t("OTP Verification Error"));
+      setSetOtpLoading(false);
+      return "";
     }
   };
 
@@ -352,13 +413,27 @@ const selfdeclarationform = `
 
           </div>
 
-          {!isArchitectDeclared && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
-            <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
-            <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
-          </div>}
-          
-          {isArchitectDeclared && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
-            <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+          {(isUploading || setOtpLoading) ? <Loader />: <div>
+            {(isArchitectDeclared === "") && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+              <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+              <SubmitBar label={t("BPA_UPLOAD")} onSubmit={handleGetOTPClick} disabled={getOtpLoading} />
+            </div>}
+            {/* uploadSelfDeclaration  - isUploading || isFileUploaded */}
+
+            {!(isArchitectDeclared === "") && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+              <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+            </div>}
+
+            {showOTPInput && !TimeStamp && (
+              <React.Fragment>
+                <br></br>
+                <CardLabel>{t("BPA_OTP")}</CardLabel>
+                <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
+                {setOtpLoading ? <Loader /> : <SubmitBar label={t("VERIFY_OTP")} onSubmit={uploadSelfDeclaration} />}
+                {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
+                {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+              </React.Fragment>
+            )}
           </div>}
         </div>
       </Modal>

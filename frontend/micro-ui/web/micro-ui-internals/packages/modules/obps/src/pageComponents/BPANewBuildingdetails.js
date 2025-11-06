@@ -112,7 +112,7 @@ useEffect(()=>{
     if (!Ulblisttype) newErrors.Ulblisttype = t("ULB Type is required")
     if (!approvedColony) newErrors.approvedColony = t("Approved Colony is required")
     if (!masterPlan) newErrors.masterPlan = t("Master Plan is required")
-    if (!buildingStatus) newErrors.buildingStatus = t("Building Status is required")
+    // if (!buildingStatus) newErrors.buildingStatus = t("Building Status is required")
     if (!purchasedFAR) newErrors.purchasedFAR = t("Purchased FAR is required")
     if (!greenbuilding) newErrors.greenbuilding = t("Green Building is required")
     if (!restrictedArea) newErrors.restrictedArea = t("Restricted Area is required")
@@ -843,7 +843,8 @@ if (anyYes && !ecbcCertificateFile) {
       District, // plain text
       rating: typeof rating === "string" ? rating : rating?.code,
       masterPlan: masterPlan?.code,
-      buildingStatus: buildingStatus?.code,
+      // buildingStatus: buildingStatus?.code,
+      buildingStatus:"",
       purchasedFAR: purchasedFAR?.value,
       providedFAR,
       greenbuilding: greenbuilding?.code,
@@ -923,6 +924,8 @@ if (anyYes && !ecbcCertificateFile) {
       borderRadius: "8px",
    
       boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+
+      paddingBottom: "50px"
     };
   
     const headingStyle = {
@@ -1022,9 +1025,9 @@ if (anyYes && !ecbcCertificateFile) {
           disabled={true}
         />
         <ErrorMessage error={errors.Ulblisttype} />
-      </div>
+      {/* </div>
 
-      <div >
+      <div > */}
 
         <CardLabel>{`${t("BPA_APPROVED_COLONY")} *`}</CardLabel>
         <Controller
@@ -1087,7 +1090,7 @@ if (anyYes && !ecbcCertificateFile) {
               <div
                 style={{
                   position: "relative",
-                  zIndex: "100",
+                  zIndex: "1",
                   right: "95px",
                   marginTop: "-24px",
                   marginRight: Webview ? "-20px" : "-20px",
@@ -1098,6 +1101,7 @@ if (anyYes && !ecbcCertificateFile) {
               </div>
             </div>
             <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
+            <div style={{marginBottom: "15px"}}>
             <UploadFile
               id={"noc-doc"}
               onUpload={selectfile}
@@ -1109,11 +1113,12 @@ if (anyYes && !ecbcCertificateFile) {
               error={errors.file}
             />
             {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
+            </div>
           </React.Fragment>
         )}
-      </div>
+      {/* </div>
 
-      <div>
+      <div> */}
 
         <CardLabel>{`${t("BPA_MASTER_PLAN")} *`}</CardLabel>
         <Controller
@@ -1155,7 +1160,7 @@ if (anyYes && !ecbcCertificateFile) {
           </React.Fragment>
         )}
 
-        <CardLabel>{`${t("BPA_BUILDING_STATUS")} *`}</CardLabel>
+        {/* <CardLabel>{`${t("BPA_BUILDING_STATUS")} *`}</CardLabel>
         <Controller
           control={control}
           name={"buildingStatus"}
@@ -1171,7 +1176,7 @@ if (anyYes && !ecbcCertificateFile) {
             />
           )}
         />
-        <ErrorMessage error={errors.buildingStatus} />
+        <ErrorMessage error={errors.buildingStatus} /> */}
 
         <CardLabel>{`${t("BPA_PURCHASED_FAR")} *`}</CardLabel>
         <Controller
@@ -1257,9 +1262,9 @@ if (anyYes && !ecbcCertificateFile) {
             {errors.rating && <ErrorMessage error={errors.rating} />}
           </React.Fragment>
         )}
-      </div>
+      {/* </div>
 
-      <div>
+      <div> */}
 
         <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}</CardLabel>
         <Controller
@@ -1296,9 +1301,9 @@ if (anyYes && !ecbcCertificateFile) {
           )}
         />
         <ErrorMessage error={errors.proposedSite} />
-      </div>
+      {/* </div>
 
-      <div>
+      <div> */}
 
         <CardLabel>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)}</CardLabel>
         <Controller

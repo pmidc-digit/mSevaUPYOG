@@ -21,7 +21,15 @@ const SelfCertificationResponse = (props) => {
 
   const onSubmit = () => {
     history.push(`/digit-ui/citizen`);
+    window.location.reload();
   };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }, [])
 
   useEffect(async () => {
         if(selfCertificationCode){

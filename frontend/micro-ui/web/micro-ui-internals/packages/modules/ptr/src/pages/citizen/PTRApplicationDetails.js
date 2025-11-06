@@ -21,7 +21,7 @@ import { pdfDownloadLink } from "../../utils";
 import PTRDocument from "../../pageComponents/PTRDocument";
 import get from "lodash/get";
 import { size } from "lodash";
-
+import QRCode from "qrcode";
 const PTRApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -31,6 +31,7 @@ const PTRApplicationDetails = () => {
   const isCitizen = window.location.href.includes("citizen");
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [approver, setApprover] = useState(null);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -48,6 +49,19 @@ const PTRApplicationDetails = () => {
 
   const pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
   const application = pet_details;
+
+  const { data: approverData, isLoading: approverDataLoading } = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: petId,
+    moduleCode: "ptr",
+  });
+
+  useEffect(() => {
+    if (!approverDataLoading && approverData) {
+      const name = approverData?.processInstances?.[1]?.assigner?.name;
+      setApprover(name);
+    }
+  }, [approverDataLoading, approverData]);
 
   // sessionStorage.setItem("ptr-pet", JSON.stringify(application));
 
@@ -108,7 +122,13 @@ const PTRApplicationDetails = () => {
     return <Loader />;
   }
 
+  if (isLoading || approverDataLoading) {
+    return <Loader />;
+  }
+
   const printCertificate = async () => {
+    const qrDataURL = await QRCode.toDataURL(window.location.href);
+
     try {
       if (!data?.PetRegistrationApplications?.[0]) {
         throw new Error("Pet registration data is missing");
@@ -116,6 +136,8 @@ const PTRApplicationDetails = () => {
 
       const createCertificateHTML = () => {
         const petData = data.PetRegistrationApplications[0];
+        console.log("petData", petData);
+        const ulb = petData?.tenantId.split(".")[1];
         const currentDate = new Date().toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "2-digit",
@@ -137,41 +159,56 @@ const PTRApplicationDetails = () => {
                 body { 
                   font-family: 'Times New Roman', serif; 
                   margin: 0; 
-                  padding: 20px;
-                  font-size: 14px;
-                  line-height: 1.4;
+                  font-size: 11px;
                 }
                 .certificate-container {
                   max-width: 800px;
                   margin: 0 auto;
                   border: 3px solid #000;
-                  padding: 30px;
                   background: white;
                 }
                 .header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
                   text-align: center;
-                  margin-bottom: 30px;
-                  border-bottom: 2px solid #000;
-                  padding-bottom: 20px;
+                  margin-bottom: 5px;
+                  position: relative;
+                }
+                  .header-value{
+                    border: none;
+                    display: flex;
+                    text-align: center;
+                  }
+                .header-center {
+                  text-align: center;
+                  flex: 1;
+                  padding-right: 80px
+                }
+                .header-disclaimer {
+                  text-align: center;
+                  flex: 1;
+                }
+                .header-right {
+                  flex: 0 0 auto;
                 }
                 .title {
-                  font-size: 18px;
+                  font-size: 13px;
                   font-weight: bold;
                   margin: 10px 0;
-                  text-transform: uppercase;
                 }
                 .subtitle {
-                  font-size: 16px;
-                  margin: 5px 0;
+                  font-size: 10px;
                   color: #666;
                 }
                 .main-content {
                   display: flex;
-                  gap: 30px;
-                  margin: 20px 0;
+                  gap: 10px;
+                  margin: 10px 0;
+                  align-items:flex-start;
+                  margin-bottom: -13px;
                 }
                 .details-section {
-                  flex: 1;
                 }
                 .pet-image-section {
                   flex-shrink: 0;
@@ -179,48 +216,60 @@ const PTRApplicationDetails = () => {
                   order: 2;
                 }
                 .pet-image {
-                  width: 150px;
-                  height: 150px;
+                  width: 100px;
+                  max-width: 100%;
+                  aspect-ratio : 1 / 1;
+                  height: auto;
                   border: 2px solid #000;
                   object-fit: cover;
                   margin-bottom: 10px;
+                  border-right-width: 2px;
+                  margin-right: 50px;
+                  margin-top: 20px;
                   display: block;
                 }
                 .image-label {
                   font-size: 12px;
                   font-weight: bold;
                   text-align: center;
+                  border-right-width: 30px;
+                  margin-right: 50px;
                 }
                 .details-grid {
                   display: grid;
-                  grid-template-columns: 1fr 1fr;
-                  gap: 15px 30px;
-                  margin: 20px 0;
+                  grid-template-columns: 290px 280px;
+                  overflow: hidden;
+                  margin: 10px 0;
+                  margin-left : 40px;
                 }
                 .detail-row {
-                  display: flex;
-                  margin-bottom: 8px;
-                }
+                display: grid;
+                grid-template-columns: 140px 180px;
+                overflow:hidden;
+                border: 1px solid black;
+              }
                 .detail-label {
-                  font-weight: bold;
-                  min-width: 150px;
-                  margin-right: 10px;
+                font-weight: bold;
+                white-space: normal;    
+                word-break: break-word; 
+                margin-left: 10px;
+                flex-shrink: 1;         
                 }
                 .detail-value {
-                  flex: 1;
-                  border-bottom: 1px dotted #000;
                   padding-bottom: 2px;
+                  margin-right: 10px;
                 }
                 .owner-section {
-                  margin: 30px 0;
-                  border-top: 1px solid #000;
-                  padding-top: 20px;
+                  margin: 5px 40px;
+                  margin-bottom: 0px;
+                  display: grid;
+                  grid-template-columns: 50%;
                 }
                 .footer-section {
-                  margin-top: 40px;
+                  margin: 0px 40px;
                   display: flex;
                   justify-content: space-between;
-                  align-items: flex-end;
+                  align-items: anchor-center;
                 }
                 .signature-area {
                   text-align: center;
@@ -228,13 +277,13 @@ const PTRApplicationDetails = () => {
                 }
                 .signature-line {
                   border-top: 1px solid #000;
-                  margin: 30px 0 5px 0;
+                  margin: 10px 0 5px 0;
                 }
                 .terms-section {
-                  margin-top: 30px;
                   border-top: 2px solid #000;
-                  padding-top: 20px;
-                  font-size: 12px;
+                  padding-top: 5px;
+                  font-size: 9px;
+                  margin: 0px 10px;
                 }
                 .terms-title {
                   font-weight: bold;
@@ -245,24 +294,50 @@ const PTRApplicationDetails = () => {
                   padding-left: 20px;
                 }
                 .terms-list li {
-                  margin-bottom: 8px;
-                  text-align: justify;
+                  margin-bottom: 2px;
+                  text-align: left;
                 }
                 @media print {
                   body { background: white !important; }
                 }
+                @media (max-width: 700px) {   
+                .main-content {
+                  flex-wrap: wrap;
+                }
+                .pet-image {
+                  width: 100px;           
+                  max-width: 100%;
+                  height: auto;
+                  aspect-ratio: 1/1;
+                }
+              }
               </style>
             </head>
             <body>
               <div class="certificate-container">
-                <div class="header">
-                  <div class="title">MUNICIPAL CORPORATION</div>
+              <div class="header">
+              <div>
+                <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
+                    style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
+              </div>
+              <div class="header-center">
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
                   <div class="subtitle">Pet Registration Certificate</div>
-                </div>
-                
+                  <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
+              </div>
+              <div class="header-right">
+              </div>
+            </div>
+                <span class="header-value">This is to certify that the ${petData?.petDetails?.petType || "Dog"} kept by Mr./Mrs./Ms. ${
+          petData?.owner?.name || "Not Specified"
+        } at ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
+          petData?.owner?.mobileNumber || "Not Specified"
+        } is registered with Municipal Corporation ${ulb} as per following details:</span>
                 <div class="main-content">
                   <div class="details-section">
-                    <div class="details-grid">
+                    <span class="detail-label">Pet Information</span>
+                    <div class="details-grid">                      
                       <div class="detail-row">
                         <span class="detail-label">Category</span>
                         <span class="detail-value">${petData?.petDetails?.petType || "Dog"}</span>
@@ -280,7 +355,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petGender || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">${t("PTR_PET_AGE")}</span>
+                        <span class="detail-label">Pet Age</span>
                         <span class="detail-value">${formatPetAge(petData?.petDetails?.petAge, t) || t("CS_NA")}</span>
                       </div>
                       <div class="detail-row">
@@ -288,7 +363,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petColor || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">Registration Number</span>
+                        <span class="detail-label">Application Number</span>
                         <span class="detail-value">${petData?.applicationNumber || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
@@ -297,7 +372,7 @@ const PTRApplicationDetails = () => {
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">Issue Date</span>
-                         <span className="detail-value">
+                         <span class="detail-value">
                        ${
                          petData?.auditDetails?.lastModifiedTime
                            ? new Date(petData.auditDetails?.lastModifiedTime).toLocaleDateString("en-GB")
@@ -306,13 +381,20 @@ const PTRApplicationDetails = () => {
                       </span>
                       </div>
 
-
                       <div class="detail-row">
                         <span class="detail-label">License Valid Upto</span>
-                      <span className="detail-value">
+                      <span class="detail-value">
                        ${petData?.validityDate ? new Date(petData.validityDate * 1000).toLocaleDateString("en-GB") : "N/A"}
                         
                       </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Amount</span>
+                        <span class="detail-value">Rs. ${reciept_data?.Payments?.[0]?.totalAmountPaid || "Not Specified"}/-</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">G8/Receipt No</span>
+                        <span class="detail-value">${reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.receiptNumber || "Not Specified"}</span>
                       </div>
                     </div>
                   </div>
@@ -333,6 +415,7 @@ const PTRApplicationDetails = () => {
                   </div>
                 </div>
 
+                <span class="detail-label">Owner Information</span>
                 <div class="owner-section">
                   <div class="detail-row">
                     <span class="detail-label">Owner Name</span>
@@ -348,13 +431,23 @@ const PTRApplicationDetails = () => {
                   </div>
                 </div>
 
+                <div class="header">
+                <div class="header-left"> </div>
+                  <div class="header-disclaimer">
+                    <div class="title">DISCLAIMER</div>
+                    <div class="subtitle">${t("PET_DISCLAIMER")}</div>
+                    <div class="header-right"></div>
+                  </div>
+                </div>
+
                 <div class="footer-section">
                   <div>
                     <div>Date:........................</div>
                     <div>Place:.......................</div>
                   </div>
                   <div class="signature-area">
-                    <div>Approved by</div>
+                    <div class="detail-label">Approved by</div>
+                    <span class="detail-value">${approver || "Not Specified"}</span>
                     <div class="signature-line"></div>
                     <div>Licensing Authority(CSI)</div>
                     <div>Municipal Corporation</div>
@@ -363,17 +456,38 @@ const PTRApplicationDetails = () => {
                 </div>
 
                 <div class="terms-section">
-                  <div class="terms-title">Note:- The license is being issued on the following conditions:-</div>
+                  <div class="terms-title">TERMS AND CONDITIONS</div>
+                  <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
                   <ol class="terms-list">
-                    <li>The owner shall ensure proper space, accommodation, food and medical treatment to the dog.</li>
-                    <li>The owner shall keep the dog protected by getting it vaccinated against Rabies from a Govt. Veterinary Practitioner or Veterinary Practitioner duly registered with Indian Veterinary Council( IVC) or State Veterinary Council (SVC).</li>
-                    <li>The owner shall keep the dog chained/ leashed while taking it outside. All ferocious dogs shall be duly muzzled and a stick shall be carried by the escort accompanying the dog while taking it out.</li>
-                    <li>The owner shall ensure that the dog will wear a collar affixed with the metal token issued by the Registration Authority at all the times.</li>
-                    <li>The owner shall not indulge in breeding of dogs for commercial purposes and trading of dogs within the area of Municipal Corporation. In case it is found that dog is being kept for breeding or trading /commercial purposes by him/her, the Registration Authority shall impound dog/s besides imposing a fine as fixed by the Municipal Corporation , SAS Nagar upon him/her.</li>
-                    <li>The owner shall not allow the dog to defecate in public places such as residential areas, green belts, parks, streets, roads, road berms and other common places etc. In case the dog defecates at the above specified places, he/she shall arrange to get the excreta of the dog removed from the said place at his/her own level. The owner shall take his/her dog to defecate in the isolated areas which are not visited by the residents and other members of the public. The owner shall not allow the dog to defecate near the residences of other neighbours to their annoyance.</li>
-                    <li>The owner shall allow the Registration Authority or a Veterinary Doctor, Chief Sanitary Inspector, Sanitary Inspector or any other officer of the Municipal Corporation authorized by the Registration Authority to inspect the premises of dog and the owner shall allow that person to enter and inspect his/her premises at all reasonable times to ensure that no cruelty is being done to the animal (prevention of cruelty to Animals Act 1960).</li>
-                    <li>The owner shall abide by the provision of Bye Laws notified by Government of Punjab Notification No. 5/13/2020-1LG4/1877 dated 12/10/2020 and adopted by Municipal Corporation , SAS Nagar vide its resolution No. 30 dated 28/06/2021.</li>
+                    <li>${t("PET_NEW_TERM_1")}</li>
+                    <li>${t("PET_NEW_TERM_2")}</li>
+                    <li>${t("PET_NEW_TERM_3")}</li>
+                    <li>${t("PET_NEW_TERM_4")}</li>
+                    <li>${t("PET_NEW_TERM_5")}</li>
+                    <li>${t("PET_NEW_TERM_6")}</li>
+                    <li>${t("PET_NEW_TERM_7")}</li>
+                    <li>${t("PET_NEW_TERM_8")}</li>
+                    <li>${t("PET_NEW_TERM_9")}</li>
+                    <li>${t("PET_NEW_TERM_10")}</li>
+                    <li>${t("PET_NEW_TERM_11")}</li>
+                    <li>${t("PET_NEW_TERM_12")}</li>
+                    <li>${t("PET_NEW_TERM_13")}</li>
+                    <li>${t("PET_NEW_TERM_14")}</li>
+                    <li>${t("PET_NEW_TERM_15")}</li>
+                    <li>${t("PET_NEW_TERM_16")}</li>
+                    <li>${t("PET_NEW_TERM_17")}</li>
+                    <li>
+                      ${t("PET_TERM_PART_1")}
+                      ${t("PETTOKEN_DATE")}
+                      ${t("PETTOKEN_ADDRESS")}
+                      ${t("PET_TERM_PART_2")}
+                    </li>
+                    <li>${t("PET_NEW_TERM_19")}</li>
                   </ol>
+
+                  <div style="text-align: center;">
+                    <img src="${qrDataURL}" style="width: 80px; height: 80px;" />
+                </div>
                 </div>
               </div>
             </body>
@@ -415,6 +529,7 @@ const PTRApplicationDetails = () => {
 
       const createAcknowledgementHTML = () => {
         const petData = data.PetRegistrationApplications[0];
+        const ulb = petData?.tenantId.split(".")[1];
         const currentDate = new Date().toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "long",
@@ -443,9 +558,19 @@ const PTRApplicationDetails = () => {
                 }
                 .header {
                   text-align: center;
-                  margin-bottom: 30px;
                   border-bottom: 2px solid #333;
-                  padding-bottom: 20px;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  position: relative;
+                }
+                  .header-center {
+                  text-align: center;
+                  flex: 1;
+                  padding-right: 80px
+                }
+                  .header-right {
+                  flex: 0 0 auto;
                 }
                 .title {
                   font-size: 20px;
@@ -459,14 +584,12 @@ const PTRApplicationDetails = () => {
                   color: #666;
                 }
                 .acknowledgement-text {
-                  margin: 20px 0;
                   text-align: justify;
                   font-size: 15px;
                 }
                 .details-table {
                   width: 100%;
                   border-collapse: collapse;
-                  margin: 20px 0;
                 }
                 .details-table th,
                 .details-table td {
@@ -480,7 +603,6 @@ const PTRApplicationDetails = () => {
                   width: 40%;
                 }
                 .footer {
-                  margin-top: 30px;
                   text-align: center;
                   font-size: 12px;
                   color: #666;
@@ -493,15 +615,24 @@ const PTRApplicationDetails = () => {
             <body>
               <div class="acknowledgement-container">
                 <div class="header">
-                  <div class="title">Pet Registration Acknowledgement</div>
-                  <div class="subtitle">Municipal Corporation</div>
-                </div>
+              <div>
+                <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
+                    style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
+              </div>
+              <div class="header-center">
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
+                  <div class="subtitle">Pet Registration Acknowledgment</div>
+                  <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
+              </div>
+              <div class="header-right">
+              </div>
+            </div>
                 
                 <div class="acknowledgement-text">
-                  This is to acknowledge that we have received your application for pet registration. 
-                  Your application has been processed and the details are as follows:
-                </div>
-                
+                ${t("PTR_ACKN_TERM_1")}
+              </div>
+
                 <table class="details-table">
                   <tr>
                     <th>Application Number</th>
@@ -537,20 +668,20 @@ const PTRApplicationDetails = () => {
                   </tr>
                   <tr>
                     <th>Application Status</th>
-                    <td style="color: #28a745; font-weight: bold;">${petData?.status || "SUBMITTED"}</td>
+                    <td style="color: #28a745; font-weight: bold;">${t(petData?.status) || "SUBMITTED"}</td>
                   </tr>
                 </table>
                 
                 <div class="acknowledgement-text">
-                  Please keep this acknowledgement for your records. You will be notified once your 
-                  application is processed and approved. For any queries, please contact the Municipal 
-                  Corporation office with your application number.
+                  ${t("PTR_ACKN_TERM_2")}
                 </div>
+
                 
                 <div class="footer">
                   <p>Generated on: ${currentDate}</p>
                   <p>Municipal Corporation</p>
                   <p>This is a computer-generated document and does not require a signature.</p>
+                  <p>https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home</p>
                 </div>
               </div>
             </body>

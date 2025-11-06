@@ -1,55 +1,35 @@
 import React, { useEffect, useState } from "react";
-import {
-  TextInput,
-  CardLabel,
-  MobileNumber,
-  ActionBar,
-  SubmitBar,
-  LabelFieldPair,
-  TextArea,
-  CardLabelError,
-  Toast,
-} from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar, TextArea, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { Loader } from "../../../challanGeneration/src/components/Loader";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
 import { useDispatch } from "react-redux";
 
 const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => {} }) => {
   const dispatch = useDispatch();
-  const isEmployee = typeof window !== "undefined" && window.location?.pathname?.includes("/employee");
-  const formStorageKey = `ads_form_${isEmployee ? "employee" : "citizen"}`;
   const userInfo = Digit.UserService.getUser();
   const isCitizen = window.location.href.includes("citizen");
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const { mobileNumber, emailId, name } = userInfo?.info;
-  // const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
   const [showToast, setShowToast] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors },
     trigger,
   } = useForm({
     mode: "onChange",
     defaultValues: {
-      // firstName: isCitizen ? firstName || "" : "",
-      // lastName: isCitizen ? lastName || "" : "",
-      name: name || "",
+      name: isCitizen ? name || "" : "",
       emailId: isCitizen ? emailId || "" : "",
       mobileNumber: isCitizen ? mobileNumber || "" : "",
-      // SGST: "",
-      // selfDeclaration: false,
-      // clientName: "",
       address: "",
       pincode: "",
     },
   });
-
-  // Prefill from Redux state
-  if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
@@ -63,8 +43,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
       // If applicant details also need to be prefilled
       if (created?.applicantDetail) {
-        // setValue("firstName", created.applicantDetail.applicantName?.split(" ")[0] || "");
-        // setValue("lastName", created.applicantDetail.applicantName?.split(" ")[1] || "");
         setValue("name", created.applicantDetail.applicantName || "");
         setValue("emailId", created.applicantDetail.applicantEmailId || "");
         setValue("mobileNumber", created.applicantDetail.applicantMobileNo || "");
@@ -72,21 +50,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
   }, [currentStepData, setValue]);
 
-  useEffect(() => {
-    // 1) Prefer in-memory draft (survives SPA remounts, cleared on hard reload)
-    try {
-      const mem = window.__ADS_FORM_DRAFT?.[formStorageKey];
-      if (mem && typeof mem === "object") {
-        reset(mem);
-        console.info("[ADS] rehydrated form from in-memory draft");
-        return;
-      }
-    } catch (e) {
-      console.warn("[ADS] failed to rehydrate from in-memory", e);
-    }
-  }, []); // run once on mount
-
-  // Auto close toast after 2 seconds
 
   const onSubmit = async (data) => {
     const applicationDate = Date.now();
@@ -94,7 +57,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       item.slots.map((slot) => ({
         ...slot,
         advertisementId: item.ad.id,
-        status: "BOOKED",
+        status: "BOOKING_CREATED",
       }))
     );
 
@@ -108,16 +71,15 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         addressLine1: data?.address || "",
       },
       applicantDetail: {
-        // applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-        applicantName: data.name || "",
-        applicantEmailId: data.emailId || "",
-        applicantMobileNo: data.mobileNumber || "",
+        applicantName: data?.name || "",
+        applicantEmailId: data?.emailId || "",
+        applicantMobileNo: data?.mobileNumber || "",
         applicantDetailId: "",
       },
       owners: [
         {
-          name: data.name || "",
-          mobileNumber: data.mobileNumber || "",
+          name: data?.name || "",
+          mobileNumber: data?.mobileNumber || "",
           tenantId,
           type: "CITIZEN",
         },
@@ -131,20 +93,43 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         nextState: "",
       },
     };
-
-    // ✅ Check if booking already exists in Redux
+    // ✅ If booking already exists, skip slot_search & create
     const existingBookingNo = currentStepData?.CreatedResponse?.bookingNo;
     if (existingBookingNo) {
-      // just move forward with existing data, no API call
       goNext(formData);
       return;
     }
 
-    // Otherwise, hit create API
+    setIsLoading(true);
     try {
-      const payload = { bookingApplication: formData };
-      const response = await Digit.ADSServices.create(payload, tenantId);
+      // 1. Prepare enriched slots for slot_search
+      const enrichedSlots =
+        currentStepData?.ads?.flatMap((item) =>
+          item?.slots?.map((slot) => ({
+            ...slot,
+            isTimerRequired: true,
+          }))
+        ) ?? [];
 
+      const payload = { advertisementSlotSearchCriteria: enrichedSlots };
+
+      // 2. Call slot_search
+      const slotResponse = await Digit.ADSServices.slot_search(payload, tenantId);
+
+      if (!slotResponse) {
+        setShowToast({ key: true, label: t("COMMON_SOMETHING_WENT_WRONG_LABEL") });
+        return;
+      }
+
+      // 3. Store reservation expiry time
+      const createTime = Date.now();
+      dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", createTime));
+
+      // 4. Wait 2 seconds before create
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // 5. Call create API
+      const response = await Digit.ADSServices.create({ bookingApplication: formData }, tenantId);
       const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
@@ -154,22 +139,12 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
         goNext(formData);
       } else {
-        dispatch(
-          UPDATE_ADSNewApplication_FORM("CreatedResponse", {
-            draft: true,
-            bookingApplication: formData,
-          })
-        );
-        setShowToast({
-          key: true,
-          label: t("CORE_SOMETHING_WENT_WRONG"),
-        });
+        setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
       }
     } catch (err) {
-      setShowToast({
-        key: true,
-        label: t("CORE_SOMETHING_WENT_WRONG"),
-      });
+      setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -186,46 +161,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div style={{ maxWidth: !isCitizen && "500px" }}>
-        {/* <CardLabel>
-          {t("NDC_FIRST_NAME")}
-          <span style={mandatoryStyle}>*</span>{" "}
-        </CardLabel>
-        <Controller
-          control={control}
-          name="firstName"
-          rules={{
-            required: t("PTR_FIRST_NAME_REQUIRED"),
-            pattern: {
-              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
-            },
-            minLength: { value: 2, message: "Minimum 2 characters" },
-            maxLength: { value: 100, message: "Maximum 100 characters" },
-          }}
-          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
-        />
-        {errors.firstName && <CardLabelError style={errorStyle}>{errors.firstName.message}</CardLabelError>}
-
-        <CardLabel>
-          {t("NDC_LAST_NAME")}
-          <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="lastName"
-          rules={{
-            required: t("PTR_LAST_NAME_REQUIRED"),
-            pattern: {
-              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
-            },
-            minLength: { value: 2, message: "Minimum 2 characters" },
-            maxLength: { value: 100, message: "Maximum 100 characters" },
-          }}
-          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
-        />
-        {errors.lastName && <CardLabelError style={errorStyle}>{errors.lastName.message}</CardLabelError>} */}
-
         <CardLabel className="card-label-smaller">
           {`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span style={mandatoryStyle}>*</span>{" "}
         </CardLabel>
@@ -359,7 +294,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       </div>
 
       <ActionBar>
-        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+        <SubmitBar style={{ background: " white", color: "#2947a3", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
 
         <SubmitBar label="Next" submit="submit" />
       </ActionBar>
@@ -374,6 +309,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           isDleteBtn={true}
         />
       )}
+
+      {isLoading && <Loader page={true} />}
     </form>
   );
 };

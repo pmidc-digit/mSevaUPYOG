@@ -1,17 +1,18 @@
 import React, { use, useEffect, useState } from "react";
-import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair, UploadFile } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 import { parse, format } from "date-fns";
 
 const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+  const isCitizen = window.location.href.includes("citizen");
   const [getHallDetails, setHallDetails] = useState([]);
   const [getHallCodes, setHallCodes] = useState([]);
   const [getSlots, setSlots] = useState([]);
   const [loader, setLoader] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-
-  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+  const [error, setError] = useState(null);
 
   const {
     control,
@@ -20,6 +21,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     reset,
     formState: { errors },
     getValues,
+    watch,
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
@@ -34,8 +36,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     { name: "SpecialCategory" },
   ]);
   const { data: CHBHallCode = [], isLoading: CHBHallCodeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "HallCode" }]);
-
-  console.log("CHBHallCode", CHBHallCode);
+  const { data: CHBReason = [], isLoading: CHBReasonLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "DiscountReason" }]);
+  const { data: CHBCalculationType = [], isLoading: CHBCalcLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "CalculationType" }]);
 
   const fiterHalls = (selected) => {
     const filteredHalls = CHBDetails?.CHB?.CommunityHalls?.filter((hall) => hall.locationCode === selected?.code) || [];
@@ -48,14 +50,12 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const slotsSearch = async (data) => {
     setLoader(true);
 
-    console.log("data", data);
-
     const payload = {
       tenantId: tenantId,
       communityHallCode: data.communityHallId,
       hallCode: data?.HallCode,
       bookingStartDate: getValues()?.startDate,
-      bookingEndDate: getValues()?.startDate,
+      bookingEndDate: getValues()?.endDate,
       isTimerRequired: false,
     };
     try {
@@ -69,9 +69,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   const onSubmit = (data) => {
-    console.log("data==??", data);
     const userInfo = Digit.UserService.getUser()?.info || {};
     const now = Date.now();
+
+    const additionalDetails = {
+      // disImage: isCitizenDeclared, // ✅ always include this
+      ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
+      ...(data?.discountAmount && { discountAmount: data.discountAmount }),
+    };
 
     // Map booking slots from hall details
     const bookingSlotDetails = data?.slots?.map((slot) => {
@@ -83,17 +88,30 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       return {
         bookingDate: formattedDate,
         bookingEndDate: formattedDate,
-        bookingFromTime: slot?.fromTime || "13:47",
-        bookingToTime: slot?.toTime || "14:54",
+        bookingFromTime: slot?.fromTime || "00:00",
+        bookingToTime: slot?.toTime || "23:59",
         hallCode: slot?.hallCode,
         status: "INITIATE",
         capacity: hallInfo?.capacity || null,
       };
     });
 
+    // extract amount
+    const match = CHBCalculationType.CHB.CalculationType?.find((item) => Object.keys(item).includes(getHallDetails?.[0]?.communityHallId));
+
+    const amount = match?.[getHallDetails?.[0]?.communityHallId]?.[0]?.amount || null;
+    const slotCount = Array.isArray(bookingSlotDetails) ? bookingSlotDetails.length : 0;
+
+    // Convert amount to number safely
+    const numericAmount = Number(amount) || 0;
+
+    // Calculate final amount safely
+    const finalAmount = numericAmount * slotCount;
+
     const payload = {
       hallsBookingApplication: {
         tenantId,
+        ...(additionalDetails && { additionalDetails }),
         bookingStatus: "INITIATED",
         applicationDate: now,
         communityHallCode: getHallDetails?.[0]?.communityHallId || "",
@@ -101,6 +119,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         purpose: {
           purpose: data?.purpose?.code,
         },
+        amount: finalAmount,
         specialCategory: { category: data?.specialCategory?.code },
         purposeDescription: data?.purposeDescription,
         bookingSlotDetails,
@@ -119,8 +138,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         },
       },
     };
-    console.log("payload", payload);
-    // return;
+    console.log("finalpayload", payload);
     goNext(payload);
   };
 
@@ -133,17 +151,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const purposeOptions = CHBPurpose.CHB.Purpose || [];
       const specialCategoryOptions = SpecialCategory.CHB.SpecialCategory || [];
       const hallCodeOptions = CHBHallCode?.CHB?.HallCode;
+      const discReasonOptions = CHBReason?.CHB?.DiscountReason;
 
       const selectedCommHall = communityHallsOptions?.find((item) => item?.communityHallId == formattedData?.communityHallCode);
       const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose);
       const selectedSpecialCat = specialCategoryOptions?.find((item) => item?.code == formattedData?.specialCategory?.category);
       const selectHallCode = hallCodeOptions?.find((item) => item?.HallCode == formattedData?.bookingSlotDetails?.[0]?.hallCode);
-
-      console.log("formattedData", formattedData);
+      const selectReason = discReasonOptions?.find((item) => item?.reasonName == formattedData?.additionalDetails?.reason);
 
       setValue("siteId", selectedCommHall || null);
       setValue("hallCode", selectHallCode || null);
       setValue("startDate", formattedData?.bookingSlotDetails?.[0]?.bookingDate);
+      setValue("endDate", formattedData?.bookingSlotDetails.at(-1)?.bookingEndDate);
       setShowInfo(true);
       fiterHalls(selectedCommHall);
 
@@ -151,7 +170,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       // slotsSearch(selectHallCode);
 
       slotsSearch(selectHallCode).then((response) => {
-        console.log("response", response);
         const slotsData = response?.hallSlotAvailabiltityDetails || [];
         setSlots(slotsData);
         // Now set form value
@@ -161,20 +179,22 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("purpose", selectedPurpose || null);
       setValue("specialCategory", selectedSpecialCat || null);
       setValue("purposeDescription", formattedData.purposeDescription || "");
+      setValue("discountAmount", formattedData?.additionalDetails?.discountAmount || "");
+      setValue("reason", selectReason || null);
+      // disImage
     }
   }, [currentStepData, setValue]);
 
-  useEffect(() => {
-    console.log("getSlots", getSlots);
-  }, [getSlots]);
+  const startDate = watch("startDate");
 
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
+          {/* SELECT_HALL_NAME */}
           <div>
             <CardLabel>
-              Select Hall Name <span style={{ color: "red" }}>*</span>
+              {t("SELECT_HALL_NAME")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -190,6 +210,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     // Reset dependent fields properly
                     setValue("hallCode", null);
                     setValue("startDate", "");
+                    setValue("endDate", "");
                     setSlots([]); // also clear any previous slots
                     setShowInfo(false); // hide extra info until hallCode re-selected
                   }}
@@ -202,9 +223,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.siteId && <p style={{ color: "red" }}>{errors.siteId.message}</p>}
           </div>
 
+          {/* SELECT_DATE */}
           <LabelFieldPair style={{ marginTop: "20px" }}>
             <CardLabel>
-              {t("Select Date")} <span style={{ color: "red" }}>*</span>
+              {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <div style={{ width: "50%" }} className="field">
               <Controller
@@ -231,9 +253,45 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             </div>
           </LabelFieldPair>
 
+          {/* SELECT End DATE */}
+          <LabelFieldPair style={{ marginTop: "20px" }}>
+            <CardLabel>
+              {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div style={{ width: "50%" }} className="field">
+              <Controller
+                control={control}
+                name={"endDate"}
+                render={(props) => (
+                  <TextInput
+                    style={{ marginBottom: 0 }}
+                    type={"date"}
+                    className="form-field"
+                    value={props.value}
+                    min={
+                      startDate
+                        ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                    }
+                    max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
+                    // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled={!startDate}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+
+          {/* HALL_CODE */}
           <div style={{ marginTop: "20px" }}>
             <CardLabel>
-              Hall Code <span style={{ color: "red" }}>*</span>
+              {t("HALL_CODE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -244,7 +302,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   style={{ marginBottom: 0 }}
                   className="form-field"
                   select={(e) => {
-                    console.log("e", e);
                     props.onChange(e);
                     slotsSearch(e);
                     setShowInfo(true);
@@ -258,10 +315,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {errors.hallCode && <p style={{ color: "red" }}>{errors.hallCode.message}</p>}
           </div>
 
+          {/* AVAILABLE_SLOTS */}
           {getSlots?.length > 0 && (
             <div style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
-                {t("Available Slots")} <span style={{ color: "red" }}>*</span>
+                {t("AVAILABLE_SLOTS")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
 
               <Controller
@@ -286,12 +344,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     }}
                   >
                     {getSlots?.map((slot, idx) => {
-                      const isChecked = field.value?.some((s) => s.hallCode === slot.hallCode);
+                      const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
+                      const isChecked = field.value?.some(
+                        (s) =>
+                          s.hallCode === slot.hallCode &&
+                          s.bookingDate === slot.bookingDate &&
+                          s.fromTime === slot.fromTime &&
+                          s.toTime === slot.toTime
+                      );
                       const isAvailable = slot.slotStaus?.toLowerCase() === "available";
 
                       return (
                         <label
-                          key={idx}
+                          key={slotKey}
                           style={{
                             border: "1px solid #ccc",
                             borderRadius: "8px",
@@ -304,7 +369,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                             gap: "6px",
                           }}
                         >
-                          <input
+                          {/* <input
                             type="checkbox"
                             checked={isChecked}
                             disabled={!isAvailable}
@@ -313,7 +378,70 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               if (e.target.checked) {
                                 field.onChange([...(field.value || []), slot]);
                               } else {
-                                field.onChange((field.value || []).filter((s) => s.hallCode !== slot.hallCode));
+                                field.onChange(
+                                  (field.value || []).filter(
+                                    (s) =>
+                                      !(
+                                        s.hallCode === slot.hallCode &&
+                                        s.bookingDate === slot.bookingDate &&
+                                        s.fromTime === slot.fromTime &&
+                                        s.toTime === slot.toTime
+                                      )
+                                  )
+                                );
+                              }
+                            }}
+                          /> */}
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            disabled={!isAvailable}
+                            onChange={(e) => {
+                              if (!isAvailable) return;
+
+                              let updatedSlots = [...(field.value || [])];
+
+                              if (e.target.checked) {
+                                // Add clicked slot
+                                updatedSlots.push(slot);
+
+                                // Sort slots by date and time for consistent order
+                                const sortedSlots = [...getSlots].sort(
+                                  (a, b) =>
+                                    new Date(a.bookingDate) - new Date(b.bookingDate) || (a.fromTime || "00:00").localeCompare(b.fromTime || "00:00")
+                                );
+
+                                // Get indexes of selected slots
+                                const allSelectedKeys = updatedSlots.map((s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}`);
+
+                                const firstIndex = sortedSlots.findIndex(
+                                  (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[0]
+                                );
+                                const lastIndex = sortedSlots.findIndex(
+                                  (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[allSelectedKeys.length - 1]
+                                );
+
+                                // Automatically select all slots between first and last
+                                const minIndex = Math.min(firstIndex, lastIndex);
+                                const maxIndex = Math.max(firstIndex, lastIndex);
+
+                                const continuousSlots = sortedSlots
+                                  .slice(minIndex, maxIndex + 1)
+                                  .filter((s) => s.slotStaus?.toLowerCase() === "available");
+
+                                field.onChange(continuousSlots);
+                              } else {
+                                // Uncheck → remove that slot only
+                                updatedSlots = updatedSlots.filter(
+                                  (s) =>
+                                    !(
+                                      s.hallCode === slot.hallCode &&
+                                      s.bookingDate === slot.bookingDate &&
+                                      s.fromTime === slot.fromTime &&
+                                      s.toTime === slot.toTime
+                                    )
+                                );
+                                field.onChange(updatedSlots);
                               }
                             }}
                           />
@@ -340,7 +468,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           )}
 
           <div style={{ display: showInfo ? "block" : "none" }}>
-            {" "}
+            {/* CHB_PURPOSE */}
             <div style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
                 {t("CHB_PURPOSE")} <span style={{ color: "red" }}>*</span>
@@ -363,6 +491,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
               {errors.purpose && <p style={{ color: "red" }}>{errors.purpose.message}</p>}
             </div>
+
+            {/* CHB_SPECIAL_CATEGORY */}
             <div style={{ marginBottom: "20px" }}>
               <CardLabel>
                 {t("CHB_SPECIAL_CATEGORY")} <span style={{ color: "red" }}>*</span>
@@ -385,7 +515,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
               {errors.specialCategory && <p style={{ color: "red" }}>{errors.specialCategory.message}</p>}
             </div>
-            <LabelFieldPair>
+
+            {/* CHB_PURPOSE_DESCRIPTION */}
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -400,7 +532,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   }}
                   render={(props) => (
                     <TextArea
-                      style={{ marginBottom: 0 }}
+                      style={{ marginBottom: 0, marginTop: 0 }}
                       type={"textarea"}
                       value={props.value}
                       onChange={(e) => {
@@ -415,13 +547,72 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 {errors.purposeDescription && <p style={{ color: "red" }}>{errors.purposeDescription.message}</p>}
               </div>
             </LabelFieldPair>
+
+            {!isCitizen && (
+              <React.Fragment>
+                {/* Discount Amount */}
+                <div style={{ marginBottom: "20px", width: "50%" }}>
+                  <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
+                  <Controller
+                    control={control}
+                    name="discountAmount"
+                    render={(props) => (
+                      <TextInput
+                        type="number"
+                        style={{ marginBottom: 0, width: "100%" }}
+                        value={props.value}
+                        error={errors?.name?.message}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+
+                {/* Discount Reason */}
+                <div style={{ marginBottom: "20px" }}>
+                  <CardLabel>
+                    {t("CHB_DISCOUNT_REASON")} <span style={{ color: "red" }}>*</span>
+                  </CardLabel>
+                  <Controller
+                    control={control}
+                    name={"reason"}
+                    defaultValue={null}
+                    render={(props) => (
+                      <Dropdown
+                        style={{ marginBottom: 0 }}
+                        className="form-field"
+                        select={props.onChange}
+                        selected={props.value}
+                        option={CHBReason?.CHB?.DiscountReason}
+                        optionKey="reasonName"
+                      />
+                    )}
+                  />
+                </div>
+              </React.Fragment>
+            )}
           </div>
         </div>
+
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
-      {(CHBLocationLoading || CHBLoading || CHBPurposeLoading || CHBSpecialCategoryLoading || CHBHallCodeLoading || loader) && <Loader page={true} />}
+
+      {(CHBCalcLoading ||
+        CHBReasonLoading ||
+        CHBLocationLoading ||
+        CHBLoading ||
+        CHBPurposeLoading ||
+        CHBSpecialCategoryLoading ||
+        CHBHallCodeLoading ||
+        loader) && <Loader page={true} />}
     </React.Fragment>
   );
 };

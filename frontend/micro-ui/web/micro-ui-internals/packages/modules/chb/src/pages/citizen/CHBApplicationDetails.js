@@ -165,6 +165,7 @@ const CHBApplicationDetails = () => {
 
   const getChbAcknowledgement = async () => {
     const applications = application || {};
+    console.log('applications for chbb', applications)
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
     Digit.Utils.pdf.generate(acknowldgementDataAPI);
@@ -282,7 +283,7 @@ const CHBApplicationDetails = () => {
       hallName: chb_details?.communityHallName,
       hallCode: t(slot.hallCode) + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
-      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
+      bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
   return (
     <React.Fragment>

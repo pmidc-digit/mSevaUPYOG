@@ -1,29 +1,12 @@
-import {
-  Card,
-  CardSubHeader,
-  CardSectionHeader,
-  Header,
-  Loader,
-  Row,
-  StatusTable,
-  MultiLink,
-  ActionBar,
-  SubmitBar,
-  Menu,
-  Toast,
-} from "@mseva/digit-ui-react-components";
-import React, { useRef, useEffect, useMemo, useState } from "react";
+import { Card, CardSubHeader, Header, Loader, Row, StatusTable, MultiLink, Toast } from "@mseva/digit-ui-react-components";
+import React, { useRef, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams, Link } from "react-router-dom";
 import ADSDocument from "../../pageComponents/ADSDocument";
-import ApplicationTable from "../../components/ApplicationTable";
 import { pdfDownloadLink, transformBookingResponseToBookingData, transformAdsData } from "../../utils";
-import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
-import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 import getAcknowledgement from "../../getAcknowledgment";
-import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 import ADSCartDetails from "../../pageComponents/ADSCartDetails";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
@@ -72,6 +55,7 @@ const ADSApplicationDetails = () => {
     filters: { bookingNo: acknowledgementIds },
   });
   const new_data = transformBookingResponseToBookingData(adsData);
+  console.log('new_data my here', new_data)
 
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
@@ -329,23 +313,6 @@ const ADSApplicationDetails = () => {
     onClick: () => downloadAcknowledgement(application),
   });
 
-  const columns = [
-    { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
-    // { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
-    { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
-    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
-    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
-  ];
-  const adslistRows =
-    ads_details?.cartDetails?.map((slot) => ({
-      addType: `${t(slot.addType)}`,
-      faceArea: `${t(slot.faceArea)}`,
-      nightLight: `${t(slot.nightLight ? "Yes" : "No")}`,
-      bookingDate: `${t(slot.bookingDate)}`,
-      bookingStatus: `${t(slot.status)}`,
-    })) || [];
-
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("CHB_FEE_RECEIPT"),
@@ -381,7 +348,7 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
-            <Row className="border-none" label={t("BOOKING_STATUS")} text={ads_details?.bookingStatus} />
+            <Row className="border-none" label={t("BOOKING_STATUS")} text={t(ads_details?.bookingStatus)} />
             {ads_details?.receiptNo && (
               <Row className="border-none" label={t("CITIZEN_SUCCESS_ADVT_HOARDINGS_PAYMENT_RECEIPT_NO")} text={ads_details?.receiptNo} />
             )}

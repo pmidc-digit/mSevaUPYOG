@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { scrutinyDetailsData } from "../utils";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
+import { PayTwoTable } from "./PayTwoTable";
 
 const thStyle = {
     border: "1px solid #ddd",
@@ -67,7 +68,7 @@ const FeeEstimation = ({
 
     const [isLoading, setIsLoading] = useState(false);
     const [BPA, setBPA] = useState({ ...(currentStepData?.createdResponse || {}) })
-    const [recalculate, setRecalculate] = useState(false);
+    // const [recalculate, setRecalculate] = useState(false);
     const [sanctionFeeData, setSanctionFeeData] = useState(adjustedAmounts || []);
 
 
@@ -243,14 +244,18 @@ const FeeEstimation = ({
     //     }
     // }, [recalculate])
 
-    useEffect(() => {
-        if (recalculate) {
-            refetchSanctionFee();
-            setRecalculate(false);
-        }
-    }, [recalculate, refetchSanctionFee]);
+    // useEffect(() => {
+    //     if (recalculate) {
+    //         refetchSanctionFee();
+    //         setRecalculate(false);
+    //     }
+    // }, [recalculate, refetchSanctionFee]);
 
     const handleAdjustedAmountChange = (index, value, ammount) => {
+        if(Number(value)>ammount){
+            setShowToast({ key: "error", message: "Adjusted_Amount_More_Than_Ammount" });
+            return;
+        }
         setSanctionFeeData((prev) =>
             prev.map((item) =>
                 item.index === index
@@ -264,7 +269,7 @@ const FeeEstimation = ({
     const handleFileUpload = async (index, e) => {
         const file = e.target.files[0];
         try {
-            setSanctionFeeData((prev) => // For direct Upload of File use setAdjustedAmounts
+            setAdjustedAmounts((prev) => // For direct Upload of File use setAdjustedAmounts
                 prev.map((item, i) =>
                     i === index ? { ...item, onDocumentLoading: true } : item
                 ));
@@ -273,22 +278,21 @@ const FeeEstimation = ({
                 file,
                 stateCode,
             )
-            console.log("Uploading file for row index:", index, file, response);
             if (response?.data?.files?.length > 0) {
-                setSanctionFeeData((prev) => // For direct Upload of File use setAdjustedAmounts
+                setAdjustedAmounts((prev) => // For direct Upload of File use setAdjustedAmounts
                     prev.map((item, i) =>
                         i === index ? { ...item, filestoreId: response?.data?.files[0]?.fileStoreId, onDocumentLoading: false, documentError: null } : item
                     ));
             } else {
                 //   setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_FILE_UPLOAD_ERROR") }))
-                setSanctionFeeData((prev) => // For direct Upload of File use setAdjustedAmounts
+                setAdjustedAmounts((prev) => // For direct Upload of File use setAdjustedAmounts
                     prev.map((item, i) =>
                         i === index ? { ...item, filestoreId: null, documentError: t("PT_FILE_UPLOAD_ERROR"), onDocumentLoading: false } : item
                     ));
                 setShowToast({ key: "error", message: "PT_FILE_UPLOAD_ERROR" });
             }
         } catch (err) {
-            setSanctionFeeData((prev) => // For direct Upload of File use setAdjustedAmounts
+            setAdjustedAmounts((prev) => // For direct Upload of File use setAdjustedAmounts
                 prev.map((item, i) =>
                     i === index ? { ...item, filestoreId: null, documentError: t("PT_FILE_UPLOAD_ERROR"), onDocumentLoading: false } : item
                 ));
@@ -297,7 +301,7 @@ const FeeEstimation = ({
     };
 
     const handleFileDelete = (index) => {
-        setSanctionFeeData((prev) => // For direct Upload of File use setAdjustedAmounts
+        setAdjustedAmounts((prev) => // For direct Upload of File use setAdjustedAmounts
             prev.map((item, i) =>
                 i === index ? { ...item, filestoreId: null } : item
             )
@@ -321,7 +325,6 @@ const FeeEstimation = ({
 
 
     const getUrlForDocumentView = async (filestoreId, index) => {
-        console.log("Fetching URL for filestoreId:", filestoreId, "at index:", index);
         if (filestoreId?.length === 0) return;
 
         try {
@@ -333,7 +336,6 @@ const FeeEstimation = ({
             // Call Digit service
             const result = await Digit.UploadServices.Filefetch([filestoreId], stateCode);
             if (result?.data) {
-                console.log("Fetched document URL:", result.data);
                 const fileUrl = result.data[filestoreId];
                 if (fileUrl) {
                     setSanctionFeeData((prev) =>
@@ -363,7 +365,12 @@ const FeeEstimation = ({
         if (jumpTo) window.open(jumpTo);
     }
 
-    console.log("sanctionFeeData", sanctionFeeData);
+    const onAdjustedAmountBlur = () => {
+        if(JSON.stringify(sanctionFeeData) === JSON.stringify(adjustedAmounts)){
+            return ;
+        }
+        refetchSanctionFee();
+    }
 
 
 
@@ -372,6 +379,7 @@ const FeeEstimation = ({
     return (
         <div>
             {/* Application Fee Table */}
+            <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_FEE_DETAILS")}</CardSubHeader>
             {bpaCalculatorLoading ? <Loader /> : <div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
                 {t("BPA_APPLICATION_FEE")}
             </CardSubHeader>
@@ -388,7 +396,9 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            <div style={{ overflowX: "auto" }}>
+            <PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t}}/>
+
+            {/* <div style={{ overflowX: "auto" }}>
                 <CardSubHeader style={{ fontSize: "20px", color: "#3f4351", marginTop: "24px" }}>
                     {t("BPA_SANCTION_FEE")}
                 </CardSubHeader>
@@ -408,7 +418,7 @@ const FeeEstimation = ({
                             <th style={thStyle}>{t("BPA_AMOUNT")}</th>
                             <th style={thStyle}>{t("BPA_ADJUSTED_AMOUNT")}</th>
                             {(disable || isEmployee) ? null : <th style={thStyle}>{t("BPA_FILE_UPLOAD")}</th>}
-                            <th style={thStyle}>{t("BPA_VIEW_DOCUMENT")}</th> {/* New Column */}
+                            <th style={thStyle}>{t("BPA_VIEW_DOCUMENT")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -434,6 +444,7 @@ const FeeEstimation = ({
                                             onChange={(e) =>
                                                 handleAdjustedAmountChange(row.index, e.target.value, row.amount)
                                             }
+                                            onBlur={onAdjustedAmountBlur}
                                             disable={disable}
                                             style={{
                                                 width: "100%",
@@ -479,10 +490,10 @@ const FeeEstimation = ({
                     </tbody>
                 </table>
 
-            </div>
-            {disable ? null : <div style={{ paddingTop: "16px", textAlign: isMobile ? "center" : "right" }}>
+            </div> */}
+            {/* {disable ? null : <div style={{ paddingTop: "16px", textAlign: isMobile ? "center" : "right" }}>
                 <SubmitBar onSubmit={() => { setRecalculate(true) }} label={t("Recalculate")} disabled={!isEditable} />
-            </div>}
+            </div>} */}
 
             {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
         </div>

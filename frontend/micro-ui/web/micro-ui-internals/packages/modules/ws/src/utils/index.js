@@ -949,7 +949,7 @@ export const updatePayloadOfWSDisconnection = async (data, type) => {
     processInstance: {
       ...data?.processInstance,
       businessService: type === "WATER" ? "DisconnectWSConnection" : "DisconnectSWConnection",
-      action: "SUBMIT_APPLICATION",
+      action:type === "WATER" ? "SUBMIT_APPLICATION" : "FORWARD_FOR_INSPECTION",
     },
   };
   /* use customiseCreateFormData hook to make some chnages to the water object */

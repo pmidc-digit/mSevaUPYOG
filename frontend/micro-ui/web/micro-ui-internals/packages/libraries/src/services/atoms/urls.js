@@ -23,7 +23,7 @@ const Urls = {
   Swach_search: `/swach-services/v2/request/_search`,
   Swach_update: `/swach-services/v2/request/_update`,
   Swach_attendence: `/swach-services/v2/request/image/_create`,
-   Swach_ViewAttendence: `/swach-services/v2/attendance/_search`,
+  Swach_ViewAttendence: `/swach-services/v2/attendance/_search`,
   OTP_Send: "/user-otp/v1/_send",
   Authenticate: "/user/oauth/token",
   RegisterUser: "/user/citizen/_create",
@@ -118,7 +118,7 @@ const Urls = {
 
   challangeneration: {
     search: "/echallan-services/eChallan/v1/_search",
-    create: "/echallan-services/eChallan/v1/_create?",
+    create: "/challan-services/Challan/v1/_create",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
     search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
@@ -291,8 +291,7 @@ const Urls = {
     nocSearch: "/noc-services/v1/noc/_search",
     nocCreate: "/noc-services/v1/noc/_create",
     update: "/noc-services/v1/noc/_update",
-    nocCalculator: "/noc-calculator/v1/_calculate"
-    
+    nocCalculator: "/noc-calculator/v1/_calculate",
   },
   reports: {
     reportSearch: "/report/",
@@ -314,6 +313,7 @@ const Urls = {
     update: "/adv-services/booking/v1/_update",
     slot_search: "/adv-services/booking/v1/_slot-search",
     estimateCreate: "/adv-services/booking/v1/_estimate",
+    slot_modify: "/adv-services/booking/v1/_cart/modify",
   },
 
   chb: {

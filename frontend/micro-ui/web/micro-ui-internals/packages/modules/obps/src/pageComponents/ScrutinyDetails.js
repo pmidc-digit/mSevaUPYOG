@@ -113,13 +113,16 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     const floors = []
     let totalBuiltUpArea = 0
     let totalFloorArea = 0
+    let totalDeduction = 0
 
     block?.building?.floors?.forEach((ob) => {
       const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
       const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+      const deduction = Number(ob.occupancies?.[0]?.deduction) || 0
 
       totalBuiltUpArea += builtUp
       totalFloorArea += floor
+      totalDeduction += deduction
 
       floors.push({
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
@@ -127,6 +130,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
       
         BuildupArea: Number(builtUp).toFixed(2),
+        Deduction: Number(deduction).toFixed(2),
         FloorArea: Number(floor).toFixed(2),
       })
     })
@@ -137,6 +141,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
       Level: "",
       Occupancy: "",
       BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+      Deduction: `${Number(totalDeduction).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
       FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
     })
 
@@ -204,6 +209,10 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
       id: "BuildupArea",
     },
     {
+      name: "BPA_TABLE_COL_DEDUCTION",
+      id: "Deduction",
+    },
+    {
       name: "BPA_TABLE_COL_FLOORAREA",
       id: "FloorArea",
     },
@@ -268,6 +277,16 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
           Footer: (info) => {
             const total = info.rows.reduce((sum, row) => sum + (Number(row.values.BuildupArea) || 0), 0)
             return `${t("BPA_TOTAL_BUILDUPAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+          },
+        }
+      } else if (ob.id === "Deduction") {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+          Footer: (info) => {
+            const total = info.rows.reduce((sum, row) => sum + (Number(row.values.FloorArea) || 0), 0)
+            return `${t("BPA_TOTAL_Deduction")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
           },
         }
       } else if (ob.id === "FloorArea") {
@@ -530,7 +549,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
             <Row
               className="border-none"
               label={t("BPA_PERMISSIBLE_FAR")}
-              text={data?.planDetail?.farDetails?.permissableFar ? data?.planDetail?.farDetails?.permissableFar : "N?A"}
+              text={data?.planDetail?.farDetails?.permissableFar !== null ? data?.planDetail?.farDetails?.permissableFar : "N/A"}
                 
                 
               // text={t("N/A")}

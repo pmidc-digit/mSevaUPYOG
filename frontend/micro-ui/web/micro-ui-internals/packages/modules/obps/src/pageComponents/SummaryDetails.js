@@ -30,7 +30,7 @@ import Timeline from "../components/Timeline"
 import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
-import { OTPInput, CardLabelError } from "@mseva/digit-ui-react-components";
+import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import FeeEstimation from "./FeeEstimation"
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
@@ -42,7 +42,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [showMobileInput, setShowMobileInput] = useState(false)
     const architectmobilenumber = user?.info?.mobileNumber;
     const [mobileNumber, setMobileNumber] = useState(() => architectmobilenumber || "");
-    const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
+    // const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
+    const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.Timestamp?.isArchitectDeclared || "");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [apiLoading, setApiLoading] = useState(false);
     const tenantId = localStorage.getItem("CITIZEN.CITY");
@@ -59,6 +60,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "0";
       });
     const [userSelected, setUser] = useState(null);
+    const [showToast, setShowToast] = useState(null)
     
     
       const [otherCharges, setOtherCharges] = useState(() => {
@@ -136,6 +138,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     
         setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
         setUploadedFileLess(otherDetails.lessAdjustmentFeeFiles || []);
+      }
+      if(currentStepData?.Timestamp?.isArchitectDeclared){
+        setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared);
+      }
+      if(currentStepData?.Timestamp?.TimeStamp){        
+        setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp);
       }
     }, [currentStepData]);
 
@@ -220,10 +228,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [otpError, setOTPError] = useState("");
     const [otpSuccess, setOTPSuccess] = useState("");
 
-    const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(() => {
-        const stored = sessionStorage.getItem("otpVerifiedTimestamp");
-        return stored ? new Date(stored) : null;
-    });
+    const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(currentStepData?.TimeStamp?.TimeStamp || "");
 
     const [agree, setAgree] = useState(() => {
         const stored = sessionStorage.getItem("professionalAgree");
@@ -273,13 +278,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         const floors = []
         let totalBuiltUpArea = 0
         let totalFloorArea = 0
+        let totalDeduction = 0
 
         block?.building?.floors?.forEach((ob) => {
             const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
             const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+            const deduction = Number(ob.occupancies?.[0]?.deduction) || 0
 
             totalBuiltUpArea += builtUp
             totalFloorArea += floor
+            totalDeduction += deduction
 
             floors.push({
                 Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
@@ -287,6 +295,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 Occupancy: t(`${ob.occupancies?.[0]?.type}`),
 
                 BuildupArea: Number(builtUp).toFixed(2),
+                Deduction: Number(deduction).toFixed(2),
                 FloorArea: Number(floor).toFixed(2),
             })
         })
@@ -297,6 +306,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             Level: "",
             Occupancy: "",
             BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+            Deduction: `${Number(totalDeduction).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
             FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
         })
 
@@ -308,6 +318,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         { name: "BPA_TABLE_COL_LEVEL", id: "Level" },
         { name: "BPA_TABLE_COL_OCCUPANCY", id: "Occupancy" },
         { name: "BPA_TABLE_COL_BUILDUPAREA", id: "BuildupArea" },
+        { name: "BPA_TABLE_COL_DEDUCTION", id: "Deduction" },
         { name: "BPA_TABLE_COL_FLOORAREA", id: "FloorArea" },
         // { name: "BPA_TABLE_COL_CARPETAREA", id: "CarpetArea" },
     ];
@@ -366,21 +377,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
 
     const handleTermsLinkClick = (e) => {
-        e.preventDefault();
-        if (isOTPVerified) {
-            setShowTermsPopup(true);
-        } else {
-            alert("Please verify yourself");
-        }
+        setShowTermsPopup(true);
     };
 
     const setdeclarationhandler = (e) => {
         // e.preventDefault(); // Prevent form submission
-        console.log("setdeclarationhandler", e);
-        if (!isOTPVerified) {
-            setShowMobileInput(true);
-        } else {
-            setAgree(!agree);
+        
+        if (!otpVerifiedTimestamp || otpVerifiedTimestamp === "") {
+            console.log("setdeclarationhandler", e, isOTPVerified);
+            setShowTermsPopup(true);
+            setAgree(true);
         }
     };
 
@@ -389,7 +395,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             <div>
                 {t("I_AGREE_TO_BELOW_UNDERTAKING")}
                 <br />
-                {!isArchitectDeclared && <LinkButton style={{ marginLeft: "-55px", background: "#fff" }} label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
+                {/* {!isArchitectDeclared && <LinkButton style={{ marginLeft: "-55px", background: "#fff" }} label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />} */}
                 {isArchitectDeclared && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
             </div>
         );
@@ -440,7 +446,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             Cell: ({ value }) => value || t("CS_NA"),
         },
         {
-            Header: t("BPA_DOCUMENT_FILE"),
+            Header: t(""),
             accessor: "fileUrl",
             Cell: ({ value }) =>
                 value ? (
@@ -541,10 +547,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         });
 
     async function onSubmitCheck(action) {
-        if (!isArchitectDeclared) {
-            alert(t("Please_declare_and_upload_architect_consent"));
-            return;
-        }
+        // if (!isArchitectDeclared) {
+        //     alert(t("Please_declare_and_upload_architect_consent"));
+        //     return;
+        // }
         if (!action) {
             alert(t("Something_went_wrong"));
             return;
@@ -593,7 +599,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     documents,
                     workflow: {
                         action: workflowAction,
-                        assignes: [accountId]
+                        assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
                     }
                 }
             }, tenantId)
@@ -616,7 +622,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // onSubmitCheck(action);
         // setShowModal(true);
         // setSelectedAction(action);
-        console.log("Selected Action", action?.action)
+        console.log("Selected Action", action?.action, otpVerifiedTimestamp, isArchitectDeclared, agree);
+        if(action?.action !== "SAVE_AS_DRAFT" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "")){
+            if(!agree){
+                setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
+                return
+            }
+            if(otpVerifiedTimestamp === ""){
+                setShowToast({ key: "true", error: true, message: t("User OTP Not Verified") })
+                return
+            }if(isArchitectDeclared === ""){
+                setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Uploaded") })
+                return
+            }
+        }
         setIsSubmitting(true);
         try {
             await onSubmitCheck(action?.action);
@@ -734,6 +753,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         console.log("ECBCDocs", fileUrls);
     }, [fileUrls])
 
+    const closeToast = () => {
+        setShowToast(null)
+    }
+
     function setOtherChargesVal(value) {
     if (/^[0-9]*$/.test(value)) {
       setOtherCharges(value);
@@ -791,16 +814,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
             <div style={{ marginTop: "30px", paddingBottom: "30px" }}>
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <StatusTable>
+                    <StatusTable >
                         <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={currentStepData?.createdResponse?.applicationNo} />
                     </StatusTable>
                 </Card>
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
                         {t(`BPA_BASIC_DETAILS_TITLE`)}
-                    </CardHeader>
+                    </CardSubHeader>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <StatusTable>
+                    <StatusTable >
                         <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(currentStepData?.BasicDetails?.applicationDate))} />
                         <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)} text={t(`WF_BPA_${currentStepData?.BasicDetails?.applicationType}`)} />
                         <Row className="border-none" label={t(`BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL`)} text={t(currentStepData?.BasicDetails?.serviceType)} />
@@ -810,9 +833,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <StatusTable>
-                        <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
-                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable >
+                        
 
                         {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
@@ -829,26 +853,31 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     } ${t(`BPA_SQ_MTRS_LABEL`)}`
                                     : t("CS_NA")
                             }
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_PLOT_NUMBER_LABEL`)}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_KHATHA_NUMBER_LABEL`)}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.registrationDetails || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_BOUNDARY_WALL_LENGTH_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.boundaryWallLength || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
@@ -858,19 +887,21 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 currentStepData?.createdResponse?.additionalDetails?.khasraNumber ||
                                 t("CS_NA")
                             }
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_WARD_NUMBER_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.wardnumber || t("CS_NA")}
+                            
                         />
                     </StatusTable>
                 </Card>
 
                 <Card>
-                    <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardSubHeader>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
 
                     <div style={{ marginTop: "19px", background: "#FAFAFA", border: "1px solid #D6D5D4", borderRadius: "4px", padding: "12px", maxWidth: "960px", minWidth: "280px" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "15px" }}>
@@ -918,66 +949,77 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 {/* <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                {/* <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader> */}
+                {/* <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }} style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader> */}
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-                    <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
-                    <StatusTable>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
+                    <StatusTable >
                         <Row
                             className="border-none"
                             label={t("BPA_PLOT_AREA_M2")}
                             // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area} ${t(`BPA_SQ_MTRS_LABEL`)}` : t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t("BPA_KHATUNI_NUMBER")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATUNI_NO || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t("BPA_DISTRICT")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}
-                        />
-                        <Row className="border-none" label={t("BPA_MAUZA")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")} />
+                            
+                        />                        
                         <Row
                             className="border-none"
                             label={t("BPA_AREA_TYPE")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AREA_TYPE || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t("BPA_LAND_USE_ZONE")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.LAND_USE_ZONE || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t("BPA_NUMBER_OF_FLOORS")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.NUMBER_OF_FLOORS || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t("BPA_ULB_TYPE")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ULB_TYPE || t("CS_NA")}
+                            
                         />
-
-                        <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+                        <Row className="border-none" label={t("BPA_MAUZA")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")} />
+                        </StatusTable>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+                    <StatusTable >
                         <Row className="border-none" label={t("BPA_AVG_PLOT_DEPTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_DEPTH} />
                         <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
-
-                        <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+                    </StatusTable>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+                    <StatusTable >
                         <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")} />
                         <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
-
-                        <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+                    </StatusTable>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+                    <StatusTable >
                         <Row
                             className="border-none"
                             label={t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}
+                            
                         />
                     </StatusTable>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
                     {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.map((block, index) => (
                         <div
                             key={index}
@@ -996,7 +1038,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     : {}
                             }
                         >
-                            <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+                            <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
                                 {t("BPA_BLOCK_SUBHEADER")} {index + 1}
                             </CardSubHeader>
                             <StatusTable>
@@ -1030,8 +1072,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     ))}
 
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
-                    <StatusTable style={{ border: "none" }}>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+                    <StatusTable >
                         <Row
                             className="border-none"
                             label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
@@ -1040,11 +1082,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
                                     : t("CS_NA")
                             }
+                            
                         ></Row>
                     </StatusTable>
 
-                    <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                    <StatusTable>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <StatusTable >
                         <Row className="border-none" label={t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad} />
                         <Row className="border-none" label={t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad} />
                         <Row className="border-none" label={t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned} />
@@ -1052,9 +1095,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <StatusTable>
-                        <CardHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardHeader>
-                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>                        
                         {pdfLoading ? <Loader /> : <Table
                             className="customTable table-border-style"
                             t={t}
@@ -1070,9 +1113,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <StatusTable>
-                        <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
-                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable >                                                
                         {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
 
@@ -1087,9 +1130,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-                    <StatusTable>
-                        <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
-                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>                        
                         {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
 
@@ -1116,21 +1159,23 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     }
                                 >
                                     {currentStepData?.createdResponse?.landInfo?.owners.length > 1 && (
-                                        <CardSubHeader>
+                                        <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
                                             {t("COMMON_OWNER")} {index + 1}
                                         </CardSubHeader>
                                     )}
-                                    <StatusTable>
+                                    <StatusTable >
                                         <Row
                                             className="border-none"
                                             // textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
                                             label={t(`CORE_COMMON_NAME`)}
                                             text={ob?.name || "N/A"}
+                                            
                                         />
                                         <Row
                                             className="border-none"
                                             label={t(`BPA_APPLICANT_GENDER_LABEL`)}
                                             text={ob?.gender?.i18nKey ? t(ob.gender.i18nKey) : ob?.gender || "N/A"}
+                                            
                                         />
                                         <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
                                         <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
@@ -1139,9 +1184,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </div>
                             ))}
                     </StatusTable>
-                    <StatusTable>
-                                                <CardHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardHeader>
-                                                <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>                                                
                                                 {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
                                                   className="customTable table-border-style"
                                                   t={t}
@@ -1157,43 +1202,50 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <StatusTable>
-                        <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
-                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>                                                
                         <Row
                             className="border-none"
                             label={t(`BPA_APPROVED_COLONY_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_ULB_TYPE_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_ULB_NAME_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.UlbName || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_DISTRICT_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.District || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_BUILDING_STATUS_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.buildingStatus || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_CORE_AREA_LABEL`)}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.coreArea || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_PROPOSED_SITE_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.proposedSite || t("CS_NA")}
+                            
                         />
                         {currentStepData?.createdResponse?.additionalDetails?.schemes === "SCHEME" && (
                             <React.Fragment>
@@ -1201,16 +1253,19 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     className="border-none"
                                     label={t(`BPA_SCHEME_TYPE_LABEL`)}
                                     text={currentStepData?.createdResponse?.additionalDetails?.schemesselection || t("CS_NA")}
+                                    
                                 />
                                 <Row
                                     className="border-none"
                                     label={t(`BPA_SCHEME_NAME_LABEL`)}
                                     text={currentStepData?.createdResponse?.additionalDetails?.schemeName || t("CS_NA")}
+                                    
                                 />
                                 <Row
                                     className="border-none"
                                     label={t(`BPA_TRANFERRED_SCHEME_LABEL`)}
                                     text={currentStepData?.createdResponse?.additionalDetails?.transferredscheme || t("CS_NA")}
+                                    
                                 />
                             </React.Fragment>
                         )}
@@ -1218,24 +1273,27 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             className="border-none"
                             label={t(`BPA_PURCHASED_FAR_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.purchasedFAR || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_MASTER_PLAN_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}
+                            
                         />
                         <Row
                             className="border-none"
                             label={t(`BPA_GREEN_BUILDING_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.greenbuilding || t("CS_NA")}
+                            
                         />
                     </StatusTable>
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <StatusTable>
-                        <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
+                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <StatusTable>                        
                         {pdfLoading ? <Loader /> : <Table
                             className="customTable table-border-style"
                             t={t}
@@ -1270,10 +1328,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    {currentStepData?.createdResponse?.status === "INITIATED" && (
+                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
+                    {/* {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && (
                         <div>
-                            {/* <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel> */}
-                            {/* <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
                             <br></br>
                             {showMobileInput && (
                                 <React.Fragment>
@@ -1305,14 +1362,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </React.Fragment>
                             )}
                         </div>
-                    )}
+                    )} */}
                     <br></br>
                     <br></br>
                     <div>
                         {/* <CHANGE> Added checked prop to make checkbox active state visible */}
                         <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
                         {showTermsPopup && (
-                            <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} currentStepData={currentStepData} formData={formData}/>
+                            <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} currentStepData={currentStepData} formData={formData} onSelect={onSelect}/>
                         )}
                     </div>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
@@ -1347,9 +1404,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
                         <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
                     ) : null}
-                    <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={!agree || !isOTPVerified || isSubmitting || !isArchitectDeclared} />
+                    <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={isSubmitting} />
                 </ActionBar>
             </div>
+            {showToast && (
+                <Toast
+                error={showToast?.error}
+                warning={showToast?.warning}
+                label={t(showToast?.message)}
+                isDleteBtn={true}
+                onClose={closeToast}
+                />
+            )}
         </React.Fragment>
     )
 }

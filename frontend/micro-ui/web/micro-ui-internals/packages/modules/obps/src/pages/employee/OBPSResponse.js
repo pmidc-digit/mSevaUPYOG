@@ -22,9 +22,12 @@ const OBPSResponse = (props) => {
 
   let workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: bpaData?.tenantId, id: bpaData?.applicationNo, moduleCode: "BPA" });
 
-  console.log(workflowDetails, "OOOOO");
   useEffect(async () => {
     setIsLoader(true);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
     const bpaResponse = await Digit.OBPSService.BPASearch(tenantId, { applicationNo: bpaData?.applicationNo });
     console.log(bpaResponse, "UYTRTYU");
     // let businessService = "BPA.LOW_RISK_PERMIT_FEE";
@@ -99,7 +102,6 @@ const OBPSResponse = (props) => {
     });
   }
 
-  console.log("}}}}}");
 
   return (
     <div>

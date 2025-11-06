@@ -1,6 +1,5 @@
 package org.upyog.adv.repository.impl;
 
-import java.security.acl.Owner;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
@@ -503,7 +502,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 				rs -> {
 				List<String> ids = new ArrayList<>();
 				while (rs.next()) {
-					ids.add(rs.getString("booking_id"));
+					ids.add(rs.getString("booking_no"));
 				}
 				return ids;
 			});

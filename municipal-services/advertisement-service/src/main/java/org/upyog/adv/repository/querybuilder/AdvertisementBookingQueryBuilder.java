@@ -119,13 +119,18 @@ public class AdvertisementBookingQueryBuilder {
     public static final String PAYMENT_TIMER_DELETE_BY_SLOT = "DELETE FROM eg_adv_payment_timer WHERE booking_id = ? "
 	    + "AND advertisementId = ? AND booking_date = ?::DATE AND add_type = ? AND face_area = ? AND night_light = ?";
 
-	// Find bookings that are BOOKED and whose all cart rows have booking_date < today
-	public static final String FETCH_BOOKINGS_ELIGIBLE_FOR_VERIFICATION =
-	    "SELECT DISTINCT eabd.booking_id, eabd.booking_no, eabd.tenant_id " +
-	    "FROM eg_adv_booking_detail eabd " +
-	    "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id " +
-	    "WHERE eabd.booking_status = 'BOOKED' " +
-	    "GROUP BY eabd.booking_id, eabd.booking_no, eabd.tenant_id ";
+	// Find bookings that are BOOKED and whose max cart.booking_date < CURRENT_DATE
+	// This ensures we only pick bookings whose latest slot date is in the past.
+    public static final String FETCH_BOOKINGS_ELIGIBLE_FOR_VERIFICATION =
+            "SELECT eabd.booking_id, eabd.booking_no, eabd.tenant_id " +
+                    "FROM eg_adv_booking_detail eabd " +
+                    "INNER JOIN ( " +
+                    "    SELECT booking_id, MAX(booking_date) as max_booking_date " +
+                    "    FROM eg_adv_cart_detail " +
+                    "    GROUP BY booking_id " +
+                    ") eacd ON eabd.booking_id = eacd.booking_id " +
+                    "WHERE eabd.booking_status = 'BOOKED' " +
+                    "AND eacd.max_booking_date < CURRENT_DATE";
 
 	public static final String UPDATE_BOOKING_STATUS_BY_ID =
 	    "UPDATE eg_adv_booking_detail SET booking_status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE booking_id = ?";

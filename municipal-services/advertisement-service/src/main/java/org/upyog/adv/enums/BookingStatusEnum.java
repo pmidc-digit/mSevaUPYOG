@@ -9,7 +9,8 @@ public enum BookingStatusEnum {
 	PENDING_FOR_VERIFICATION,
 	PAYMENT_FAILED,
 	CANCELLED,
-	BOOKING_EXPIRED;
+	BOOKING_EXPIRED,
+    PENDING_FOR_INSPECTION;
 	String status;
 	
 	public String getStatus() {

@@ -160,6 +160,28 @@ public class UserService {
 		}
 		return d.getTime();
 	}
+    public OwnerInfo searchSystemUser() {
+        UserSearchRequest userSearchRequest = new UserSearchRequest();
+        userSearchRequest.setUserType("SYSTEM");
+        userSearchRequest.setUserName("SYSTEM");
+        // default to state-level tenant 'pb' as example; adjust if you want to make it configurable
+        userSearchRequest.setTenantId("pb");
+
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+
+        // Use existing userCall flow
+        try {
+            UserResponse resp = userCall(userSearchRequest, uri);
+            if (resp == null || CollectionUtils.isEmpty(resp.getUser())) {
+                throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+            }
+            // Return the first matched user
+            OwnerInfo owner = resp.getUser().get(0);
+            return owner;
+        } catch (Exception ex) {
+            throw new CustomException("USER_SEARCH_FAILED", "Failed to search system user: " + ex.getMessage());
+        }
+    }
 
 
 	public void createUser(RequestInfo requestInfo, BookingDetail application) {

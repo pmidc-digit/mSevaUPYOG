@@ -238,11 +238,6 @@ const MyApplication = () => {
       </div>
 
 
-
-
-
-
-
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           return (

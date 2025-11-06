@@ -310,6 +310,7 @@ const Urls = {
     update: "/adv-services/booking/v1/_update",
     slot_search: "/adv-services/booking/v1/_slot-search",
     estimateCreate: "/adv-services/booking/v1/_estimate",
+    slot_modify: "/adv-services/booking/v1/_cart/modify",
   },
 
   chb: {

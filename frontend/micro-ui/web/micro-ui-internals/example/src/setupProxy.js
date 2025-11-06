@@ -78,11 +78,6 @@ module.exports = function (app) {
     "/sv-services/street-vending/_search",
     "/sv-services/street-vending/_update",
     "/sv-services/street-vending/_deletedraft",
-    "/adv-services/booking/v1/_create",
-    "/adv-services/booking/v1/_search",
-    "/adv-services/booking/v1/_update",
-    "/adv-services/booking/v1/_slot-search",
-    "/adv-services/booking/v1/_estimate",
     "/chb-services/booking/v1/_create",
     "/chb-services/booking/v1/_search",
     "/chb-services/booking/v1/_update",
@@ -109,7 +104,8 @@ module.exports = function (app) {
     "/ndc-services",
     "/ndc-calculator",
     '/bpa-calculator',
-    "/noc-calculator"
+    "/noc-calculator",
+    "/adv-services"
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

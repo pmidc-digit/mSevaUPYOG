@@ -3,14 +3,17 @@ package org.egov.garbagecollection.service;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.garbagecollection.constants.GCConstants;
+import org.egov.garbagecollection.util.GcServicesUtil;
+import org.egov.garbagecollection.web.models.*;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
-import org.egov.waterconnection.repository.ServiceRequestRepository;
-import org.egov.waterconnection.repository.WaterDao;
-import org.egov.waterconnection.util.EncryptionDecryptionUtil;
+import org.egov.garbagecollection.repository.ServiceRequestRepository;
+import org.egov.garbagecollection.repository.GcDao;
+import org.egov.garbagecollection.util.EncryptionDecryptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,15 +21,18 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
+import static org.egov.garbagecollection.constants.GCConstants.WNS_ENCRYPTION_MODEL;
+import static org.egov.garbagecollection.constants.GCConstants.WNS_PLUMBER_ENCRYPTION_MODEL;
+
 @Slf4j
 @Service
 public class GcEncryptionService {
 
     @Autowired
-    private WaterDao waterDao;
+    private GcDao gcDao;
 
     @Autowired
-    WaterServiceImpl waterService;
+    GcServiceImpl gcService;
 
     @Autowired
     EncryptionDecryptionUtil encryptionDecryptionUtil;
@@ -49,7 +55,7 @@ public class GcEncryptionService {
     private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
-    private WaterServicesUtil waterServicesUtil;
+    private GcServicesUtil waterServicesUtil;
 
     /**
      * Initiates Water applications/connections data encryption
@@ -58,8 +64,8 @@ public class GcEncryptionService {
      * @param requestInfo
      * @return all water applications with encrypted data
      */
-    public WaterConnectionResponse updateOldData(SearchCriteria criteria, RequestInfo requestInfo) {
-        WaterConnectionResponse waterConnectionResponse = updateBatchCriteria(requestInfo, criteria);
+    public GarbageConnectionResponse updateOldData(SearchCriteria criteria, RequestInfo requestInfo) {
+        GarbageConnectionResponse waterConnectionResponse = updateBatchCriteria(requestInfo, criteria);
         return waterConnectionResponse;
     }
 
@@ -68,20 +74,20 @@ public class GcEncryptionService {
      * <p>
      * Setting the batch size and initial offset values below
      */
-    public WaterConnectionResponse updateBatchCriteria(RequestInfo requestInfo, SearchCriteria criteria) {
-        List<WaterConnection> waterConnectionList = new ArrayList();
-        WaterConnectionResponse waterConnectionResponse;
+    public GarbageConnectionResponse updateBatchCriteria(RequestInfo requestInfo, SearchCriteria criteria) {
+        List<GarbageConnection> waterConnectionList = new ArrayList();
+        GarbageConnectionResponse waterConnectionResponse;
 
         if (CollectionUtils.isEmpty(criteria.getTenantIds())) {
             //mdms call for tenantIds in case tenantIds array is not sent in criteria
             Set<String> tenantIds = getAllTenantsFromMdms(requestInfo);
             criteria.setTenantIds(tenantIds);
         }
-        List<WaterConnection> finalWaterList = new LinkedList<>();
+        List<GarbageConnection> finalWaterList = new LinkedList<>();
         for (String tenantId : criteria.getTenantIds()) {
             criteria.setTenantId(tenantId);
 
-            EncryptionCount encryptionCount = waterDao.getLastExecutionDetail(criteria);
+            EncryptionCount encryptionCount = gcDao.getLastExecutionDetail(criteria);
 
             if (criteria.getLimit() == null)
                 criteria.setLimit(Integer.valueOf(batchSize));
@@ -94,7 +100,7 @@ public class GcEncryptionService {
             waterConnectionList = initiateEncryption(requestInfo, criteria);
             finalWaterList.addAll(waterConnectionList);
         }
-        waterConnectionResponse = WaterConnectionResponse.builder().waterConnection(finalWaterList)
+        waterConnectionResponse = GarbageConnectionResponse.builder().garbageConnections(finalWaterList)
                 .build();
         return waterConnectionResponse;
     }
@@ -106,18 +112,18 @@ public class GcEncryptionService {
      * @param requestInfo
      * @return all water applications with encrypted data
      */
-    public List<WaterConnection> initiateEncryption(RequestInfo requestInfo, SearchCriteria criteria) {
-        List<WaterConnection> finalWaterList = new LinkedList<>();
+    public List<GarbageConnection> initiateEncryption(RequestInfo requestInfo, SearchCriteria criteria) {
+        List<GarbageConnection> finalWaterList = new LinkedList<>();
         Map<String, String> responseMap = new HashMap<>();
 
-        WaterConnectionResponse waterConnectionResponse;
+        GarbageConnectionResponse garbageConnectionResponse;
 
         EncryptionCount encryptionCount;
 
         Integer startBatch = Math.toIntExact(criteria.getOffset());
         Integer batchSizeInput = Math.toIntExact(criteria.getLimit());
 
-        Integer count = waterDao.getTotalApplications(criteria);
+        Integer count = gcDao.getTotalApplications(criteria);
         Map<String, String> map = new HashMap<>();
 
         log.info("Count: " + count);
@@ -125,27 +131,27 @@ public class GcEncryptionService {
 
         while (startBatch < count) {
             long startTime = System.nanoTime();
-            List<WaterConnection> waterConnectionList = new LinkedList<>();
+            List<GarbageConnection> garbageConnectionList = new LinkedList<>();
             try {
-                waterConnectionResponse = waterService.plainSearch(criteria, requestInfo);
+                garbageConnectionResponse = gcService.plainSearch(criteria, requestInfo);
                 countPushed = 0;
 
-                for (WaterConnection waterConnection : waterConnectionResponse.getWaterConnection()) {
+                for (GarbageConnection waterConnection : garbageConnectionResponse.getGarbageConnections()) {
                     /* encrypt here */
-                    waterConnection = encryptionDecryptionUtil.encryptObject(waterConnection, WNS_ENCRYPTION_MODEL, WaterConnection.class);
-                    waterConnection = encryptionDecryptionUtil.encryptObject(waterConnection, WNS_PLUMBER_ENCRYPTION_MODEL, WaterConnection.class);
+                    waterConnection = encryptionDecryptionUtil.encryptObject(waterConnection, WNS_ENCRYPTION_MODEL, GarbageConnection.class);
+                    waterConnection = encryptionDecryptionUtil.encryptObject(waterConnection, WNS_PLUMBER_ENCRYPTION_MODEL, GarbageConnection.class);
 
-                    WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder()
+                    GarbageConnectionRequest waterConnectionRequest = GarbageConnectionRequest.builder()
                             .requestInfo(requestInfo)
-                            .waterConnection(waterConnection)
+                            .garbageConnection(waterConnection)
                             .isOldDataEncryptionRequest(Boolean.TRUE)
                             .build();
 
-                    waterConnectionRequest.getWaterConnection().setAuditDetails(waterServicesUtil
+                    waterConnectionRequest.getGarbageConnection().setAuditDetails(waterServicesUtil
                             .getAuditDetails(waterConnectionRequest.getRequestInfo().getUserInfo().getUuid(), false));
-                    waterDao.updateOldWaterConnections(waterConnectionRequest);
+                    gcDao.updateOldGarbageConnections(waterConnectionRequest);
                     countPushed++;
-                    waterConnectionList.add(waterConnection);
+                    garbageConnectionList.add(waterConnection);
                     map.put("message", "Encryption successfull till batchOffset : " + criteria.getOffset() + ". Records encrypted in current batch : " + countPushed);
                 }
             } catch (Exception e) {
@@ -164,9 +170,9 @@ public class GcEncryptionService {
                         .encryptiontime(System.currentTimeMillis())
                         .build();
 
-                waterDao.updateEncryptionStatus(encryptionCount);
+                gcDao.updateEncryptionStatus(encryptionCount);
 
-                finalWaterList.addAll(waterConnectionList);
+                finalWaterList.addAll(garbageConnectionList);
                 return finalWaterList;
             }
 
@@ -186,11 +192,11 @@ public class GcEncryptionService {
                     .encryptiontime(System.currentTimeMillis())
                     .build();
 
-            waterDao.updateEncryptionStatus(encryptionCount);
+            gcDao.updateEncryptionStatus(encryptionCount);
             startBatch = startBatch + batchSizeInput;
             criteria.setOffset(Integer.valueOf(startBatch));
-            log.info("WaterConnections Count which pushed into kafka topic:" + countPushed);
-            finalWaterList.addAll(waterConnectionList);
+            log.info("GarbageConnections Count which pushed into kafka topic:" + countPushed);
+            finalWaterList.addAll(garbageConnectionList);
         }
         criteria.setOffset(Integer.valueOf(batchOffset));
 
@@ -206,11 +212,11 @@ public class GcEncryptionService {
     private Set<String> getAllTenantsFromMdms(RequestInfo requestInfo) {
 
         String tenantId = (requestInfo.getUserInfo().getTenantId());
-        String jsonPath = WCConstants.TENANTS_JSONPATH_ROOT;
+        String jsonPath = GCConstants.TENANTS_JSONPATH_ROOT;
 
-        MasterDetail mstrDetail = MasterDetail.builder().name(WCConstants.TENANTS_MASTER_ROOT)
+        MasterDetail mstrDetail = MasterDetail.builder().name(GCConstants.TENANTS_MASTER_ROOT)
                 .filter("$.*").build();
-        ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(WCConstants.TENANT_MASTER_MODULE)
+        ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(GCConstants.TENANT_MASTER_MODULE)
                 .masterDetails(Arrays.asList(mstrDetail)).build();
         MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId(tenantId)
                 .build();

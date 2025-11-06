@@ -249,7 +249,7 @@ public class WorkflowService {
 		Set<String> applicationNos = garbageConnections.stream().map(GarbageConnection::getApplicationNo)
 				.collect(Collectors.toSet());
 		List<ProcessInstance> processInstanceList = getProcessInstance(requestInfo, applicationNos, tenantId,
-				config.getModifyWSBusinessServiceName());
+				config.getModifyGCBusinessServiceName());
 		processInstanceList.forEach(processInstance -> {
 			if (!processInstance.getState().getIsTerminateState()) {
 				throw new CustomException("WS_APP_EXIST_IN_WF",

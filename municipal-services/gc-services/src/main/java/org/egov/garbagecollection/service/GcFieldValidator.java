@@ -76,22 +76,22 @@ public class GcFieldValidator implements GcActionValidator {
 				errorMap.put("INVALID_WATER_CONNECTION_TYPE", "Connection type should not be empty");
 			}
 
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getWaterSource())) {
-				errorMap.put("INVALID_WATER_SOURCE", "WaterConnection cannot be created  without water source");
-			}
-
-			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() == null && !isRegularizedOrLegacy) {
-				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
-			}
-
-			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() != null && !isRegularizedOrLegacy) {
-				for (RoadCuttingInfo roadCuttingInfo : garbageConnectionRequest.getGarbageConnection()
-						.getRoadCuttingInfo()) {
-					if (StringUtils.isEmpty(roadCuttingInfo.getRoadType())) {
-						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
-					}
-				}
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getWaterSource())) {
+//				errorMap.put("INVALID_WATER_SOURCE", "WaterConnection cannot be created  without water source");
+//			}
+//
+//			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() == null && !isRegularizedOrLegacy) {
+//				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
+//			}
+//
+//			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() != null && !isRegularizedOrLegacy) {
+//				for (RoadCuttingInfo roadCuttingInfo : garbageConnectionRequest.getGarbageConnection()
+//						.getRoadCuttingInfo()) {
+//					if (StringUtils.isEmpty(roadCuttingInfo.getRoadType())) {
+//						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
+//					}
+//				}
+//			}
 
 			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate())
 					|| garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()
@@ -103,21 +103,21 @@ public class GcFieldValidator implements GcActionValidator {
 		if (GCConstants.APPROVE_CONNECTION_CONST
 				.equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
 
-			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() == null && !isRegularizedOrLegacy) {
-				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
-			}
-
-			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() != null && !isRegularizedOrLegacy) {
-				for (RoadCuttingInfo roadCuttingInfo : garbageConnectionRequest.getGarbageConnection()
-						.getRoadCuttingInfo()) {
-					if (StringUtils.isEmpty(roadCuttingInfo.getRoadType())) {
-						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
-					}
-					if (roadCuttingInfo.getRoadCuttingArea() == null) {
-						errorMap.put("INVALID_ROAD_CUTTING_AREA", "Road cutting area should not be empty");
-					}
-				}
-			}
+//			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() == null && !isRegularizedOrLegacy) {
+//				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
+//			}
+//
+//			if (garbageConnectionRequest.getGarbageConnection().getRoadCuttingInfo() != null && !isRegularizedOrLegacy) {
+//				for (RoadCuttingInfo roadCuttingInfo : garbageConnectionRequest.getGarbageConnection()
+//						.getRoadCuttingInfo()) {
+//					if (StringUtils.isEmpty(roadCuttingInfo.getRoadType())) {
+//						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
+//					}
+//					if (roadCuttingInfo.getRoadCuttingArea() == null) {
+//						errorMap.put("INVALID_ROAD_CUTTING_AREA", "Road cutting area should not be empty");
+//					}
+//				}
+//			}
 		}
 	}
 
@@ -160,13 +160,13 @@ public class GcFieldValidator implements GcActionValidator {
 					errorMap.put("DATE_EFFECTIVE_FROM_LESS_THAN_EXCECUTION_DATE",
 							"Date effective from cannot be before connection execution date");
 				}
-				if ((garbageConnectionRequest.getGarbageConnection().getMeterInstallationDate() != null)
-						&& (garbageConnectionRequest.getGarbageConnection()
-						.getMeterInstallationDate() > garbageConnectionRequest.getGarbageConnection()
-						.getDateEffectiveFrom())) {
-					errorMap.put("DATE_EFFECTIVE_FROM_LESS_THAN_METER_INSTALLATION_DATE",
-							"Date effective from cannot be before meter installation date");
-				}
+//				if ((garbageConnectionRequest.getGarbageConnection().getMeterInstallationDate() != null)
+//						&& (garbageConnectionRequest.getGarbageConnection()
+//						.getMeterInstallationDate() > garbageConnectionRequest.getGarbageConnection()
+//						.getDateEffectiveFrom())) {
+//					errorMap.put("DATE_EFFECTIVE_FROM_LESS_THAN_METER_INSTALLATION_DATE",
+//							"Date effective from cannot be before meter installation date");
+//				}
 
 			}
 		}

@@ -70,7 +70,7 @@ public class WorkflowIntegrator {
 			wfBusinessServiceName = config.getWsWorkflowReconnectionName();
 		}
 		else if(wsUtil.isModifyConnectionRequest(garbageConnectionRequest)) {
-			wfBusinessServiceName = config.getModifyWSBusinessServiceName();
+			wfBusinessServiceName = config.getModifyGCBusinessServiceName();
 		}
 		
 		ProcessInstance processInstance = ProcessInstance.builder()

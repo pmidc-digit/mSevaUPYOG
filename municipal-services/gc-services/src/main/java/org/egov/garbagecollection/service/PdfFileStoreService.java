@@ -13,8 +13,7 @@ import org.egov.garbagecollection.repository.GcDaoImpl;
 import org.egov.garbagecollection.repository.ServiceRequestRepository;
 import org.egov.garbagecollection.util.GcServicesUtil;
 import org.egov.garbagecollection.validator.ValidateProperty;
-import org.egov.garbagecollection.web.models.GarbageConnectionRequest;
-import org.egov.garbagecollection.web.models.Property;
+import org.egov.garbagecollection.web.models.*;
 import org.egov.garbagecollection.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +83,7 @@ public class PdfFileStoreService {
 	 */
 	public String getFileStoreId(GarbageConnectionRequest garbageConnectionRequest, Property property, String applicationKey) {
 		CalculationCriteria criteria = CalculationCriteria.builder().applicationNo(garbageConnectionRequest.getGarbageConnection().getApplicationNo())
-				.waterConnection(garbageConnectionRequest.getGarbageConnection()).tenantId(property.getTenantId()).build();
+				.garbageConnection(garbageConnectionRequest.getGarbageConnection()).tenantId(property.getTenantId()).build();
 		CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
 				.requestInfo(garbageConnectionRequest.getRequestInfo()).isconnectionCalculation(false).isDisconnectionRequest(false).isReconnectionRequest(false).build();
 		String applicationStatus = workflowService.getApplicationStatus(garbageConnectionRequest.getRequestInfo(),
@@ -92,7 +91,7 @@ public class PdfFileStoreService {
 				garbageConnectionRequest.getGarbageConnection().getTenantId(),
 				config.getBusinessServiceValue());
 		try {
-			Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getEstimationURL(), calRequest);
+			Object response = serviceRequestRepository.fetchResult(gcServiceUtil.getEstimationURL(), calRequest);
 			CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
 			JSONObject waterObject = mapper.convertValue(garbageConnectionRequest.getGarbageConnection(), JSONObject.class);
 			if (CollectionUtils.isEmpty(calResponse.getCalculation())) {

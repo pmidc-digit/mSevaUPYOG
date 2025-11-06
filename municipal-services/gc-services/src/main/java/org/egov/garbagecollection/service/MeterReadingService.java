@@ -57,10 +57,10 @@ public class MeterReadingService {
 							.lastReadingDate(request.getGarbageConnection().getConnectionExecutionDate().longValue())
 							.build()).requestInfo(request.getRequestInfo()).build();
 					log.info("MeterConnectionRequest::::"+ req);
-					Object response = serviceRequestRepository.fetchResult(gcServicesUtil.getMeterReadingCreateURL(),
-							req);
-					MeterReadingResponse readingResponse = mapper.convertValue(response, MeterReadingResponse.class);
-					log.info("MeterReading Response ::::"+mapper.writeValueAsString(readingResponse));
+//					Object response = serviceRequestRepository.fetchResult(gcServicesUtil.getMeterReadingCreateURL(),
+//							req);
+//					MeterReadingResponse readingResponse = mapper.convertValue(response, MeterReadingResponse.class);
+//					log.info("MeterReading Response ::::"+mapper.writeValueAsString(readingResponse));
 				}
 			} else {
 				log.info("Intial Meter Reading Not Present!!");

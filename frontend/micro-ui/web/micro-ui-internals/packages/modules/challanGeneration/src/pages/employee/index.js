@@ -14,8 +14,6 @@ const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const mobileView = innerWidth <= 640;
-
-  console.log("her here here here");
   const inboxInitialState = {
     searchParams: {
       // uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },

@@ -1,15 +1,14 @@
 import useInbox from "../useInbox";
 
 const useChallanInbox = ({ tenantId, filters, config = {} }) => {
-  const { offset, limit, sortOrder, challanNo, mobileNumber, businessService } = filters;
-  console.log("filters", filters);
+  const { offset, limit, sortOrder, challanNo, mobileNumber, businessService, status } = filters;
   // let { assignee } = filterForm;
   // const { applicationNumber } = searchForm;
   // const { mobileNumber } = searchForm;
   // const { limit, offset } = filters;
   const user = Digit.UserService.getUser();
-  const status = filters?.filterForm?.applicationStatus;
-
+  // const status = filters?.filterForm?.applicationStatus;
+  console.log("filters", filters);
   // const selectedStatuses = getFilter?.applicationStatus?.map((s) => s?.code) || [];
 
   const _filters = {
@@ -18,21 +17,26 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
       assignee: "",
       moduleName: "Challan_Generation",
       businessService: ["Challan_Generation"],
-      ...(status?.length > 0 ? { status: status } : {}),
+      ...(status && status.length > 0 ? { status: status } : {}),
+      // ...(status?.length > 0 ? { status: status } : {}),
     },
 
     moduleSearchCriteria:
       status?.length > 0
         ? {
-            status: status,
+            // ...(status && status.length > 0 ? { challanStatus: status } : {}),
             sortOrder: sortOrder,
             ...(challanNo ? { challanNo } : {}),
+            ...(businessService && businessService.length > 0 ? { offenceTypeName: businessService.join(",") } : {}),
+            // ...(businessService ? { offenceTypeName: businessService } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
           }
         : {
-            // status: status,
+            // ...(status && status.length > 0 ? { challanStatus: status.join } : {}),
             sortOrder: sortOrder,
             ...(challanNo ? { challanNo } : {}),
+            ...(businessService && businessService.length > 0 ? { offenceTypeName: businessService.join(",") } : {}),
+            // ...(businessService ? { offenceTypeName: businessService } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
           },
     limit,
@@ -45,7 +49,6 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => {
         const tableData = data?.items?.map((application) => {
-          console.log("application===", application);
           const dataRes = application?.businessObject;
           const dataForm = application?.ProcessInstance;
           return {

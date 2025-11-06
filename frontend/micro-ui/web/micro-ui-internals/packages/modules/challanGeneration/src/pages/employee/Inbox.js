@@ -106,7 +106,7 @@ const Inbox = ({
     filters: { ...searchParams, ...paginationParams },
   });
 
-  console.log("inboxData", data);
+  console.log("data==", data);
 
   // useEffect(() => {
   //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
@@ -220,7 +220,7 @@ const Inbox = ({
   } else {
     return (
       <div>
-        {isInbox && <Header>{t("ACTION_TEST_NATIONAL_MCOLLECT")}</Header>}
+        {/* {isInbox && <Header>{t("ACTION_TEST_CHALLANGENERATION")}</Header>} */}
         <DesktopInbox
           businessService={businessService}
           data={formedData}
@@ -246,6 +246,7 @@ const Inbox = ({
           totalRecords={data?.totalCount}
           filterComponent={filterComponent}
           isLoader={isLoader}
+          statutes={data?.statuses}
         />
       </div>
     );

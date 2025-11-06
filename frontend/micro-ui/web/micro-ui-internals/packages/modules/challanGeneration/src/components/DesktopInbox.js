@@ -6,10 +6,10 @@ import { getActionButton } from "../utils";
 import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
+import InboxFilter from "./inbox/NewInboxFilter";
 
-const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
+const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...props }) => {
   const { data } = props;
-  console.log("data", props);
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
   const tenantId = Digit.ULBService.getCurrentPermanentCity();
@@ -185,14 +185,20 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
         <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.businessService} />
           <div>
-            {
-              <FilterComponent
-                defaultSearchParams={props.defaultSearchParams}
-                onFilterChange={props.onFilterChange}
-                searchParams={props.searchParams}
-                type="desktop"
-              />
-            }
+            {/* <FilterComponent
+              defaultSearchParams={props.defaultSearchParams}
+              onFilterChange={props.onFilterChange}
+              searchParams={props.searchParams}
+              type="desktop"
+            /> */}
+            {/* import InboxFilter from "./components/inbox/NewInboxFilter"; */}
+            <InboxFilter
+              defaultSearchParams={props.defaultSearchParams}
+              onFilterChange={props.onFilterChange}
+              searchParams={props.searchParams}
+              type="desktop"
+              statutes={statutes}
+            />
             {/* <Filter
               businessService={props.businessService}
               searchParams={props.searchParams}

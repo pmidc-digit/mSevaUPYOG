@@ -16,6 +16,8 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
 
   let result;
 
+  console.log("copming here");
+
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
@@ -100,7 +102,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         {getChallanData?.map((bill, index) => {
           return (
             <Card key={index}>
-              <KeyNote keyValue={t("CHALLAN_AMOUNT")} note={bill?.amount ? bill?.amount : 0} />
+              <KeyNote keyValue={t("CHALLAN_AMOUNT")} note={bill?.amount ? bill?.amount?.[0]?.amount : 0} />
               <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.applicationStatus)} />
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
@@ -131,12 +133,12 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         </div> */}
       </div>
 
-      <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
+      {/* <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <p>{t("CHALLAN_NOT_ABLE_TO_FIND_BILL_MSG")} </p>
         <p className="link">
           <Link to="/digit-ui/citizen/mcollect/search">{t("UC_CLICK_HERE_TO_SEARCH_LINK")}</Link>
         </p>
-      </div>
+      </div> */}
       {loader && <Loader page={true} />}
     </div>
   );

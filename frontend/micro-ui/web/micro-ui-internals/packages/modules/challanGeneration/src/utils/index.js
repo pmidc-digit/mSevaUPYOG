@@ -120,8 +120,6 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
   const data = await Digit.PaymentService.getReciept(tenantId, bussinessService, { consumerCodes: consumerCode });
   const payments = data?.Payments[0];
 
-  console.log("payments", payments);
-
   let response = null;
   if (payments?.fileStoreId) {
     response = { filestoreIds: [payments?.fileStoreId] };

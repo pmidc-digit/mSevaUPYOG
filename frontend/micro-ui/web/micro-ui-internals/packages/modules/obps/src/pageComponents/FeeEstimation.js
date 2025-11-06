@@ -379,6 +379,7 @@ const FeeEstimation = ({
     return (
         <div>
             {/* Application Fee Table */}
+            <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_FEE_DETAILS")}</CardSubHeader>
             {bpaCalculatorLoading ? <Loader /> : <div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
                 {t("BPA_APPLICATION_FEE")}
             </CardSubHeader>

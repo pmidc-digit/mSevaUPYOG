@@ -101,7 +101,6 @@ const PTRApplicationDetails = () => {
     { enabled: acknowledgementIds ? true : false }
   );
 
-  console.log("reciept_data", reciept_data);
   if (!pet_details.workflow) {
     const workflow = {
       id: null,
@@ -136,7 +135,6 @@ const PTRApplicationDetails = () => {
 
       const createCertificateHTML = () => {
         const petData = data.PetRegistrationApplications[0];
-        console.log("petData", petData);
         const ulb = petData?.tenantId.split(".")[1];
         const currentDate = new Date().toLocaleDateString("en-IN", {
           day: "2-digit",

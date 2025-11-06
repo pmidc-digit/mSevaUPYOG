@@ -7,7 +7,6 @@ import MyChallanResultsComponent from "./myChallan";
 const MyChallans = () => {
   const { t } = useTranslation();
   const { path } = useRouteMatch();
-
   const params = useMemo(() =>
     config.map(
       (step) => {
@@ -22,16 +21,17 @@ const MyChallans = () => {
   );
 
   return (
-    <Switch>
-      <Route path={`${path}`} exact>
-        <MyChallanResultsComponent
-          template={params[0].labels}
-          header={params[0].texts.header}
-          actionButtonLabel={params[0].texts.actionButtonLabel}
-          t={t}
-        />
-      </Route>
-    </Switch>
+    // <div>testing</div>
+    // <Switch>
+    //   <Route path={`${path}`} exact>
+    <MyChallanResultsComponent
+      template={params[0].labels}
+      header={params[0].texts.header}
+      actionButtonLabel={params[0].texts.actionButtonLabel}
+      t={t}
+    />
+    //   </Route>
+    // </Switch>
   );
 };
 

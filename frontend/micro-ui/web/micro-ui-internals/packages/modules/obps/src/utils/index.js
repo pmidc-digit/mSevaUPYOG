@@ -646,6 +646,13 @@ export const convertEpochToDateDMY = (dateEpoch) => {
   return `${day}/${month}/${year}`;
 };
 
+
+export const pdfDocumentName = (documentLink = "", index = 0) => {
+  let documentName = decodeURIComponent(documentLink.split("?")[0].split("/").pop().slice(13)) || `Document - ${index + 1}`;
+  return documentName;
+};
+
+
 export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocdata, t) => {
   const getBlockIds = (unit) => {
     let blocks = {};

@@ -79,6 +79,12 @@ public class PetConfiguration {
 	@Value("${egov.idgen.ptrtoken.name}")
 	private String petTokenName;
 
+	@Value("${egov.idgen.ptrregnum.format}")
+	private String petRegNumFormat;
+
+	@Value("${egov.idgen.ptrregnum.name}")
+	private String petRegNumName;
+
 	// NOTIFICATION TOPICS
 	@Value("${kafka.topics.notification.sms}")
 	private String smsNotifTopic;

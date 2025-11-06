@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class PetRegistrationService {
 
@@ -117,15 +120,21 @@ public class PetRegistrationService {
 
 		enrichmentService.enrichPetApplicationUponUpdate(petRegistrationRequest);
 
-		if (petRegistrationRequest.getPetRegistrationApplications().get(0).getWorkflow().getAction()
-				.equals(ACTION_APPROVE)) {
+		PetRegistrationApplication application = petRegistrationRequest.getPetRegistrationApplications().get(0);
+		
+		boolean isApproveAction = application.getWorkflow().getAction().equals(ACTION_APPROVE);
+		
+		if (isApproveAction) {
 			demandService.createDemand(petRegistrationRequest);
 		}
+		
+		// Update workflow status - this will set the status from workflow response
 		wfService.updateWorkflowStatus(petRegistrationRequest);
 
 		producer.push(config.getUpdatePtrTopic(), petRegistrationRequest);
-		return petRegistrationRequest.getPetRegistrationApplications().get(0);
+		return application;
 	}
+
 
 	public void runJob(String servicename, String jobname, RequestInfo requestInfo) {
 		if (servicename == null)

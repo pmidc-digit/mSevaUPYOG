@@ -12,8 +12,6 @@ import org.egov.ptr.models.workflow.ProcessInstanceResponse;
 import org.egov.ptr.models.workflow.State;
 import org.egov.ptr.repository.PetRegistrationRepository;
 import org.egov.ptr.repository.ServiceRequestRepository;
-import org.egov.ptr.util.NotificationUtil;
-import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,9 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentNotificationService {
 
 	private static final String PET_SERVICES = "pet-services";
-
-	@Autowired
-	private NotificationUtil util;
 
 	@Autowired
 	private ObjectMapper mapper;
@@ -50,6 +45,9 @@ public class PaymentNotificationService {
 	@Autowired
 	private PetRegistrationRepository petRegistrationRepository;
 
+	@Autowired
+	private org.egov.ptr.util.PetUtil petUtil;
+
 
 
 	/**
@@ -57,53 +55,112 @@ public class PaymentNotificationService {
 	 * Performs defensive null checks and validates the payment request before proceeding.
 	 */
 	public void process(PaymentRequest paymentRequest, String topic) throws JsonProcessingException {
-		log.info("Receipt consumer class entry {}", paymentRequest);
 		try {
-//			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
-			log.info("Payment request in pet method: {}", paymentRequest);
-
-			// Defensive checks for null or empty payment data
-			if (paymentRequest == null || paymentRequest.getPayment() == null ||
-					paymentRequest.getPayment().getPaymentDetails() == null ||
+			if (paymentRequest == null || paymentRequest.getPayment() == null || 
+					paymentRequest.getPayment().getPaymentDetails() == null || 
 					paymentRequest.getPayment().getPaymentDetails().isEmpty()) {
-				log.error("Invalid payment data; missing payment details: {}", paymentRequest);
+				log.error("Invalid payment request structure");
 				return;
 			}
 
 			String businessService = paymentRequest.getPayment().getPaymentDetails().get(0).getBusinessService();
 
 			if (PET_SERVICES.equals(businessService)) {
-				String applicationNumber = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
-
-				updateWorkflowStatus(paymentRequest);
-				updateApplicationStatusWithWorkflow(paymentRequest);
-				
+				processPaymentAndUpdateApplication(paymentRequest);
 			} else {
-				log.info("Ignoring payment with business service: {}", businessService);
+				log.debug("Ignoring payment with business service: {} (expected: {})", businessService, PET_SERVICES);
 			}
-		} catch (IllegalArgumentException e) {
-			log.error("Illegal argument exception occurred in pet process: {}", e.getMessage(), e);
 		} catch (Exception e) {
-			log.error("An unexpected exception occurred in pet process: {}", e.getMessage(), e);
+			log.error("Error processing payment notification: {}", e.getMessage(), e);
 		}
 	}
 
+	/**
+	 * Main method to process payment and update application status
+	 * 1. Calls workflow with PAY action to transition to APPROVED
+	 * 2. Fetches updated process instance to verify APPROVED status
+	 * 3. Generates petRegistrationNumber if needed
+	 * 4. Updates database with APPROVED status and petRegistrationNumber
+	 */
+	private void processPaymentAndUpdateApplication(PaymentRequest paymentRequest) {
+		String applicationNumber = null;
+		String tenantId = null;
+		
+		try {
+			applicationNumber = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
+			tenantId = paymentRequest.getPayment().getTenantId();
+			
+			log.info("Processing payment for application: {}", applicationNumber);
+			
+			State workflowState = transitionWorkflowToApproved(paymentRequest);
+			if (workflowState == null) {
+				log.error("Workflow transition failed for application: {}", applicationNumber);
+				return;
+			}
+			
+			ProcessInstance updatedProcessInstance = fetchProcessInstanceFromWorkflow(applicationNumber, tenantId, paymentRequest.getRequestInfo());
+			if (updatedProcessInstance == null || updatedProcessInstance.getState() == null) {
+				log.error("Could not fetch process instance for application: {}", applicationNumber);
+				return;
+			}
+			
+			State state = updatedProcessInstance.getState();
+			String applicationStatus = state.getApplicationStatus() != null ? state.getApplicationStatus() : state.getState();
+			
+			if (!"APPROVED".equals(applicationStatus)) {
+				log.warn("Application status is not APPROVED after payment: {} for application: {}", applicationStatus, applicationNumber);
+				return;
+			}
+			
+			PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
+					.applicationNumber(Collections.singletonList(applicationNumber))
+					.tenantId(tenantId)
+					.build();
+
+			List<PetRegistrationApplication> applications = petRegistrationRepository.getApplications(criteria);
+			if (applications == null || applications.isEmpty()) {
+				log.error("No application found for application number: {}", applicationNumber);
+				return;
+			}
+
+			PetRegistrationApplication application = applications.get(0);
+			generatePetRegistrationNumberAndUpdateDatabase(application, applicationStatus, paymentRequest.getRequestInfo());
+			
+		} catch (Exception e) {
+			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
+		}
+	}
 	
 	/**
-	 * Updates the workflow status by initiating a workflow request.
+	 * Transitions workflow to APPROVED state by calling workflow service with PAY action
+	 * Returns the state from workflow response
 	 */
-	public void updateWorkflowStatus(PaymentRequest paymentRequest) {
-		ProcessInstance processInstance = getProcessInstanceForPTR(paymentRequest);
-		if (processInstance == null) {
-			log.error("ProcessInstance is null, skipping workflow update");
-			return;
+	private State transitionWorkflowToApproved(PaymentRequest paymentRequest) {
+		try {
+			ProcessInstance processInstance = getProcessInstanceForPTR(paymentRequest);
+			if (processInstance == null) {
+				log.error("ProcessInstance is null, cannot transition workflow");
+				return null;
+			}
+			
+			Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(paymentRequest.getPayment().getTenantId()).build();
+			paymentRequest.getRequestInfo().getUserInfo().getRoles().add(role);
+			
+			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(
+					paymentRequest.getRequestInfo(),
+					Collections.singletonList(processInstance));
+			
+			State state = callWorkFlow(workflowRequest);
+			if (state == null) {
+				log.error("Workflow transition returned null state");
+			}
+			
+			return state;
+			
+		} catch (Exception e) {
+			log.error("Error transitioning workflow to APPROVED: {}", e.getMessage(), e);
+			return null;
 		}
-		log.info("Process instance of pet application {}", processInstance);
-		Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(paymentRequest.getPayment().getTenantId()).build();
-		paymentRequest.getRequestInfo().getUserInfo().getRoles().add(role);
-		ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(paymentRequest.getRequestInfo(),
-				Collections.singletonList(processInstance));
-		callWorkFlow(workflowRequest);
 	}
 
 	/**
@@ -145,22 +202,18 @@ public class PaymentNotificationService {
 	 * Handles null/empty responses safely.
 	 */
 	public State callWorkFlow(ProcessInstanceRequest workflowReq) {
-		log.info("Workflow Request for pet service for final step {}", workflowReq);
-
 		State state = null;
 		try {
 			StringBuilder url = new StringBuilder(configs.getWfHost().concat(configs.getWfTransitionPath()));
-			log.info("URL for calling workflow service: {}", url);
-
 			Object object = serviceRequestRepository.fetchResult(url, workflowReq);
-			if (object!=null) {
-				log.error("No response from workflow service for request: {}", workflowReq);
+			if (object == null) {
+				log.error("No response from workflow service");
 				return null;
 			}
 
 			ProcessInstanceResponse response = mapper.convertValue(object, ProcessInstanceResponse.class);
 			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
-				log.error("Empty response or process instances from workflow service");
+				log.error("Empty response from workflow service");
 				return null;
 			}
 
@@ -172,102 +225,158 @@ public class PaymentNotificationService {
 	}
 
 	/**
-	 * Updates application status with workflow
+	 * Generates petRegistrationNumber if needed and updates database with APPROVED status
 	 */
-	public void updateApplicationStatusWithWorkflow(PaymentRequest paymentRequest) {
+	private void generatePetRegistrationNumberAndUpdateDatabase(PetRegistrationApplication application, String status, RequestInfo requestInfo) {
 		try {
-			String applicationNumber = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
+			String applicationNumber = application.getApplicationNumber();
+			String petRegistrationNumber = application.getPetRegistrationNumber();
 			
-			// Create PetRegistrationApplication object
-			PetRegistrationApplication petApplication = PetRegistrationApplication.builder()
-					.applicationNumber(applicationNumber)
-					.status("APPROVED")
-					.build();
+			if (petRegistrationNumber == null || petRegistrationNumber.isEmpty()) {
+				if (application.getApplicationType() != null && "RENEWAPPLICATION".equals(application.getApplicationType())) {
+					petRegistrationNumber = getPetRegistrationNumberFromPreviousApplication(application, requestInfo);
+					if (petRegistrationNumber != null && !petRegistrationNumber.isEmpty()) {
+						log.info("Reused petRegistrationNumber: {} from previous application for renewal: {}", 
+								petRegistrationNumber, applicationNumber);
+					}
+				}
+				
+				if (petRegistrationNumber == null || petRegistrationNumber.isEmpty()) {
+					List<String> regNumList = petUtil.getIdList(requestInfo, application.getTenantId(), 
+							configs.getPetRegNumName(), configs.getPetRegNumFormat(), 1);
+					
+					if (regNumList != null && !regNumList.isEmpty()) {
+						petRegistrationNumber = regNumList.get(0);
+						log.info("Generated petRegistrationNumber: {} for application: {}", petRegistrationNumber, applicationNumber);
+					} else {
+						log.error("Failed to generate petRegistrationNumber for application: {}", applicationNumber);
+					}
+				}
+			}
 			
-			// Create PetRegistrationRequest
-			PetRegistrationRequest petRequest = PetRegistrationRequest.builder()
-					.requestInfo(paymentRequest.getRequestInfo())
-					.petRegistrationApplications(Collections.singletonList(petApplication))
-					.build();
-
-
-			// Update application status
-			updateApplicationStatus(petRequest);
-			
-			log.info("Application status updated to APPROVED for: " + applicationNumber);
+			updateDatabaseWithStatusAndPetRegNumber(application, status, petRegistrationNumber, requestInfo);
 			
 		} catch (Exception e) {
-			log.error("Failed to update application status: " + e.getMessage(), e);
+			log.error("Error generating petRegistrationNumber and updating database for application: {}, Error: {}", 
+					application.getApplicationNumber(), e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * Fetches the current process instance from workflow service
+	 */
+	private ProcessInstance fetchProcessInstanceFromWorkflow(String businessId, String tenantId, RequestInfo requestInfo) {
+		try {
+			StringBuilder url = new StringBuilder(configs.getWfHost());
+			url.append(configs.getWfProcessInstanceSearchPath());
+			url.append("?tenantId=").append(tenantId);
+			url.append("&businessIds=").append(businessId);
+			
+			org.egov.ptr.web.contracts.RequestInfoWrapper requestInfoWrapper = 
+					org.egov.ptr.web.contracts.RequestInfoWrapper.builder()
+					.requestInfo(requestInfo)
+					.build();
+			
+			Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
+			if (result == null) {
+				log.error("No response from workflow service when fetching process instance");
+				return null;
+			}
+			
+			ProcessInstanceResponse response = mapper.convertValue(result, ProcessInstanceResponse.class);
+			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
+				log.error("Empty response from workflow service");
+				return null;
+			}
+			
+			org.egov.ptr.models.workflow.ProcessInstance wfProcessInstance = response.getProcessInstances().get(0);
+			
+			ProcessInstance processInstance = new ProcessInstance();
+			processInstance.setBusinessId(wfProcessInstance.getBusinessId());
+			processInstance.setTenantId(wfProcessInstance.getTenantId());
+			processInstance.setBusinessService(wfProcessInstance.getBusinessService());
+			processInstance.setState(wfProcessInstance.getState());
+			
+			return processInstance;
+			
+		} catch (Exception e) {
+			log.error("Error fetching process instance from workflow service: {}", e.getMessage(), e);
+			return null;
 		}
 	}
 
-	/**
-	 * Updates application status in database
-	 */
-	private void updateApplicationStatus(PetRegistrationRequest petRequest) {
-		try {
-			String applicationNumber = petRequest.getPetRegistrationApplications().get(0).getApplicationNumber();
-			log.info("Updating application synchronously for application no : {}", applicationNumber);
-
-			if (applicationNumber == null) {
-				throw new CustomException("INVALID_APPLICATION_CODE",
-						"Application number not valid. Failed to update application status for : " + applicationNumber);
-			}
-
-			PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
-					.applicationNumber(Collections.singletonList(applicationNumber))
-					.build();
-
-			List<PetRegistrationApplication> applications = petRegistrationRepository.getApplications(criteria);
-
-			if (applications == null || applications.isEmpty()) {
-				throw new CustomException("INVALID_APPLICATION_CODE",
-						"No application found for application number : " + applicationNumber);
-			}
-
-			PetRegistrationApplication application = applications.get(0);
-
-			petRequest.setPetRegistrationApplications(applications);
-			application.setStatus("APPROVED");
-
-			// Update application status directly in database (skip enrichment service)
-			updateApplicationInDatabase(application, petRequest.getRequestInfo());
-
-			log.info("Application status updated in database for: {}", applicationNumber);
-
-		} catch (Exception e) {
-			log.error("Failed to update application in database: {}", e.getMessage(), e);
-		}
-	}
 
 	/**
-	 * Updates application status directly in database
+	 * Updates database with status and petRegistrationNumber
 	 */
-	private void updateApplicationInDatabase(PetRegistrationApplication application, RequestInfo requestInfo) {
+	private void updateDatabaseWithStatusAndPetRegNumber(PetRegistrationApplication application, String status, 
+			String petRegistrationNumber, RequestInfo requestInfo) {
 		try {
-			// Update application status in database
-			String updateQuery = "UPDATE eg_ptr_registration SET status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE applicationnumber = ?";
-			
-			// Get current timestamp
+			String applicationNumber = application.getApplicationNumber();
+			String updateQuery;
+			Object[] params;
 			long currentTime = System.currentTimeMillis();
 			
-			// Execute update query
-			int rowsUpdated = petRegistrationRepository.getJdbcTemplate().update(updateQuery, 
-				application.getStatus(),
-				requestInfo.getUserInfo().getUuid(),
-				currentTime,
-				application.getApplicationNumber()
-			);
+			if (petRegistrationNumber != null && !petRegistrationNumber.isEmpty()) {
+				updateQuery = "UPDATE eg_ptr_registration SET status = ?, petregistrationnumber = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE applicationnumber = ?";
+				params = new Object[]{
+					status,
+					petRegistrationNumber,
+					requestInfo.getUserInfo().getUuid(),
+					currentTime,
+					applicationNumber
+				};
+			} else {
+				updateQuery = "UPDATE eg_ptr_registration SET status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE applicationnumber = ?";
+				params = new Object[]{
+					status,
+					requestInfo.getUserInfo().getUuid(),
+					currentTime,
+					applicationNumber
+				};
+			}
+			
+			int rowsUpdated = petRegistrationRepository.getJdbcTemplate().update(updateQuery, params);
 			
 			if (rowsUpdated > 0) {
-				log.info("Application status updated in database for: {}", application.getApplicationNumber());
+				log.info("Updated application status to APPROVED - ApplicationNumber: {}, petRegistrationNumber: {}", 
+						applicationNumber, petRegistrationNumber != null ? petRegistrationNumber : "null");
+				application.setStatus(status);
+				if (petRegistrationNumber != null && !petRegistrationNumber.isEmpty()) {
+					application.setPetRegistrationNumber(petRegistrationNumber);
+				}
 			} else {
-				log.warn("No rows updated for application: {}", application.getApplicationNumber());
+				log.warn("No rows updated for application: {}", applicationNumber);
 			}
 			
 		} catch (Exception e) {
-			log.error("Failed to update application in database for: {}", application.getApplicationNumber(), e);
+			log.error("Failed to update database for application: {}, Error: {}", 
+					application.getApplicationNumber(), e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * Gets petRegistrationNumber from previous application for renewal
+	 */
+	private String getPetRegistrationNumberFromPreviousApplication(PetRegistrationApplication application, RequestInfo requestInfo) {
+		try {
+			if (application.getPreviousApplicationNumber() != null && !application.getPreviousApplicationNumber().isEmpty()) {
+				PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
+						.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
+						.tenantId(application.getTenantId())
+						.build();
+				List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
+				if (previousApps != null && !previousApps.isEmpty()) {
+					PetRegistrationApplication previousApp = previousApps.get(0);
+					if (previousApp.getPetRegistrationNumber() != null && !previousApp.getPetRegistrationNumber().isEmpty()) {
+						return previousApp.getPetRegistrationNumber();
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching petRegistrationNumber from previous application: {}", e.getMessage(), e);
+		}
+		return null;
 	}
 
 }

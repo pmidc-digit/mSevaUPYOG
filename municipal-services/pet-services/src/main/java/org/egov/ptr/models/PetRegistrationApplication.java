@@ -72,6 +72,9 @@ public class PetRegistrationApplication {
 	@JsonProperty("previousApplicationNumber")
 	private String previousApplicationNumber;
 
+	@JsonProperty("petRegistrationNumber")
+	private String petRegistrationNumber;
+
 	@JsonProperty("propertyId")
 	private String propertyId;
 

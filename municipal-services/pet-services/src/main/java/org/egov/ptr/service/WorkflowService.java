@@ -26,6 +26,9 @@ import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class WorkflowService {
 
@@ -48,7 +51,16 @@ public class WorkflowService {
 			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(petRegistrationRequest.getRequestInfo(),
 					Collections.singletonList(processInstance));
 			State state = callWorkFlow(workflowRequest);
-			petRegistrationRequest.getPetRegistrationApplications().get(0).setStatus(state.getApplicationStatus());
+			
+			if (state != null) {
+				// Use applicationStatus if available, otherwise use state
+				String statusToSet = state.getApplicationStatus() != null ? state.getApplicationStatus() : state.getState();
+				log.info("Workflow transition completed - State: {}, ApplicationStatus: {}, Setting status to: {}", 
+						state.getState(), state.getApplicationStatus(), statusToSet);
+				petRegistrationRequest.getPetRegistrationApplications().get(0).setStatus(statusToSet);
+			} else {
+				log.warn("Workflow state is null for application: {}", application.getApplicationNumber());
+			}
 		});
 	}
 

@@ -21,7 +21,7 @@ public class PetApplicationQueryBuilder {
 	// Updated BASE_PTR_QUERY with new columns from eg_ptr_registration
 	private static final String BASE_PTR_QUERY = " SELECT ptr.id as pid, ptr.tenantid as ptenantid, ptr.applicationNumber as papplicationnumber, "
 			+ "ptr.applicationType as papplicationtype, ptr.validityDate as pvaliditydate, "
-			+ "ptr.status as pstatus, ptr.expireFlag as pexpireflag, ptr.petToken as ppettoken, ptr.previousApplicationNumber as ppreviousapplicationnumber, ptr.propertyId as ppropertyId, "
+			+ "ptr.status as pstatus, ptr.expireFlag as pexpireflag, ptr.petToken as ppettoken, ptr.previousApplicationNumber as ppreviousapplicationnumber, ptr.petregistrationnumber as ppetregistrationnumber, ptr.propertyId as ppropertyId, "
 			+ "ptr.createdby as pcreatedby, ptr.lastmodifiedby as plastmodifiedby, ptr.createdtime as pcreatedtime, ptr.lastmodifiedtime as plastmodifiedtime ,";
 
 	// Updated PET_SELECT_QUERY with new columns from eg_ptr_petdetails

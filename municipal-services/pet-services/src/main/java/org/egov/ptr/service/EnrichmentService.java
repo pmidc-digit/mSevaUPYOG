@@ -7,6 +7,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +41,9 @@ public class EnrichmentService {
 
 	@Autowired
 	private OwnerRepository ownerRepository;
+
+	@Autowired
+	private org.egov.ptr.repository.PetRegistrationRepository petRegistrationRepository;
 
 	public void enrichPetApplication(PetRegistrationRequest petRegistrationRequest) {
 		RequestInfo requestInfo = petRegistrationRequest.getRequestInfo();
@@ -79,6 +83,8 @@ public class EnrichmentService {
 
 
 			if (isRenewPetApplication(application)) {
+				// Try to copy petRegistrationNumber from previous application if available
+				copyPetRegistrationNumberFromPreviousApplication(application, requestInfo);
 				enrichRenewalDetails(application, validityDateUnix);
 			}
 
@@ -158,6 +164,46 @@ public class EnrichmentService {
 		petRenewalAuditDetails.setTokenNumber(application.getPetToken());
 		petRenewalAuditDetails.setPetRegistrationId(application.getId());
 
+	}
+
+	/**
+	 * Copies petRegistrationNumber from previous application for renewal applications
+	 */
+	private void copyPetRegistrationNumberFromPreviousApplication(PetRegistrationApplication application, RequestInfo requestInfo) {
+		try {
+			// Only proceed if petRegistrationNumber is not already set
+			if (application.getPetRegistrationNumber() != null && !application.getPetRegistrationNumber().isEmpty()) {
+				log.info("petRegistrationNumber already set for renewal application: {}", application.getApplicationNumber());
+				return;
+			}
+
+			// Try to get from previousApplicationNumber
+			if (application.getPreviousApplicationNumber() != null && !application.getPreviousApplicationNumber().isEmpty()) {
+				PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
+						.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
+						.tenantId(application.getTenantId())
+						.build();
+				List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
+				if (previousApps != null && !previousApps.isEmpty()) {
+					PetRegistrationApplication previousApp = previousApps.get(0);
+					if (previousApp.getPetRegistrationNumber() != null && !previousApp.getPetRegistrationNumber().isEmpty()) {
+						application.setPetRegistrationNumber(previousApp.getPetRegistrationNumber());
+						log.info("Copied petRegistrationNumber: {} from previous application: {} to renewal: {}", 
+								previousApp.getPetRegistrationNumber(), 
+								application.getPreviousApplicationNumber(), 
+								application.getApplicationNumber());
+						return;
+					}
+				}
+			}
+
+			// If not found, log warning - petRegistrationNumber will be generated later during payment/approval
+			log.info("petRegistrationNumber not found in previous application for renewal: {}. It will be generated after payment approval.", 
+					application.getApplicationNumber());
+		} catch (Exception e) {
+			log.error("Error copying petRegistrationNumber from previous application: {}", e.getMessage(), e);
+			// Continue processing - petRegistrationNumber will be generated later during payment/approval
+		}
 	}
 
 

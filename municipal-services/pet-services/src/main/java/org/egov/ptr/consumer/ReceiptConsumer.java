@@ -1,7 +1,5 @@
 package org.egov.ptr.consumer;
 
-import java.util.HashMap;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.ptr.models.collection.PaymentRequest;
 import org.egov.ptr.service.PaymentNotificationService;
@@ -22,17 +20,43 @@ public class ReceiptConsumer {
 	@Autowired
 	private PaymentNotificationService paymentNotificationService;
 
-	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
-	public void listenPayments(final String rawRecord,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+	@org.springframework.beans.factory.annotation.Value("${kafka.topics.receipt.create}")
+	private String receiptTopic;
 
-		log.info("Incoming raw message: {}", rawRecord);
+	@javax.annotation.PostConstruct
+	public void init() {
+		log.info("ReceiptConsumer initialized - Listening to topic: {}, group: egov-pet-service", receiptTopic);
+	}
+
+	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	public void listenPayments(final String rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+		
+		if (rawRecord == null || rawRecord.isEmpty()) {
+			log.error("Received empty payment message from topic: {}", topic);
+			return;
+		}
+		
 		try {
 			PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
+			
+			if (record == null || record.getPayment() == null || 
+					record.getPayment().getPaymentDetails() == null || record.getPayment().getPaymentDetails().isEmpty()) {
+				log.error("Invalid payment request structure");
+				return;
+			}
+			
+			String businessService = record.getPayment().getPaymentDetails().get(0).getBusinessService();
+			String consumerCode = record.getPayment().getPaymentDetails().get(0).getBill() != null 
+					? record.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode() : "N/A";
+			
+			log.info("Processing payment notification - businessService: {}, consumerCode: {}", businessService, consumerCode);
+			
 			paymentNotificationService.process(record, topic);
+			
 		} catch (JsonProcessingException e) {
-			log.info("Catch block in listenPayments method of Pet service consumer");
-			e.printStackTrace();
+			log.error("JSON deserialization error in payment notification: {}", e.getMessage(), e);
+		} catch (Exception e) {
+			log.error("Error processing payment notification: {}", e.getMessage(), e);
 		}
-
 	}
 }

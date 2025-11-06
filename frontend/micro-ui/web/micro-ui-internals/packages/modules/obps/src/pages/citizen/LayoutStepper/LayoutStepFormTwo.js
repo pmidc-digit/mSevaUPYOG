@@ -10,9 +10,13 @@ import { Controller, useForm, useFieldArray } from "react-hook-form";
 const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
+  const [showToast, setShowToast] = useState(false);
+  const [isErrorToast, setIsErrorToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  
   const {
     control,
     handleSubmit,
@@ -31,6 +35,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const currentStepData = useSelector(function (state) {
     return state.obps.OBPSFormReducer.formData;
   });
+  const applicationNo = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationNo);
 
 //   useEffect(() => {
 //   const formattedData = currentStepData?.siteDetails;
@@ -50,57 +55,138 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
 
-  const onSubmit = (data) => {
+  const onSubmit = async(data) => {
     trigger();
     
     dispatch(UPDATE_OBPS_FORM(config.key, data));
+
+     if (applicationNo) {
+      console.log("Skipping Create API, already have applicationNo:", applicationNo);
+      onGoNext();
+      return;
+    }
     
     // Use updated data 
-    callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+    await callCreateAPI({ ...currentStepData, siteDetails:{...data} });
   };
 
 
-  const callCreateAPI= async (formData)=>{ 
+  // const callCreateAPI= async (formData)=>{ 
         
-        // Prepare nocFormData
-        const nocFormData = {...formData};
+  //       // Prepare nocFormData
+  //       const nocFormData = {...formData};
 
-        console.log("nocFormData ==>", nocFormData)
+  //       console.log("nocFormData ==>", nocFormData)
     
-        // Final payload
-        const payload = {
-          Noc: {
-              applicationType: "NEW",
-              documents: [],
-              nocType: "NOC",
-              status: "ACTIVE",
-              tenantId,
-              workflow: {action: "INITIATE"},
-              nocDetails:{
-                additionalDetails: nocFormData,
-                tenantId
-              }
-            },
+  //       // Final payload
+  //       const payload = {
+  //         Noc: {
+  //             applicationType: "NEW",
+  //             documents: [],
+  //             nocType: "NOC",
+  //             status: "ACTIVE",
+  //             tenantId,
+  //             workflow: {action: "INITIATE"},
+  //             nocDetails:{
+  //               additionalDetails: nocFormData,
+  //               tenantId
+  //             }
+  //           },
+  //       }
+
+  //       console.log("final Payload here==>", payload);
+        
+  //       // const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
+    
+  //       // if (response?.ResponseInfo?.status === "successful") {
+  //       //   dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
+  //       //   onGoNext();
+  //       //   return { isSuccess: true, response };
+  //       // } else {
+  //       //   return { isSuccess: false, response };
+  //       // }
+
+  //       setTimeout(()=>{
+  //         console.log("we are inside setTime out");
+  //       }, 1000);
+
+  //       onGoNext();
+  // }
+
+
+  const callCreateAPI = async (formData) => {
+  // <CHANGE> Get user info and auth token for RequestInfo
+  const userInfo = Digit.UserService.getUser()?.info;
+  const authToken = Digit.UserService.getUser()?.access_token;
+
+  console.log("[v0] Form data for API:", formData);
+
+  // <CHANGE> Build payload matching backend API structure
+  const payload = {
+    Layout: {
+      applicationType: "NEW",
+      documents: [],
+      layoutType: "LAYOUT",
+      status: "ACTIVE",
+      tenantId: tenantId,
+      owners: [
+        {
+          mobileNumber: userInfo?.mobileNumber || formData?.applicationDetails?.applicantMobileNumber,
+          name: userInfo?.name || formData?.applicationDetails?.applicantOwnerOrFirmName,
+          emailId: userInfo?.emailId || formData?.applicationDetails?.applicantEmailId,
+          userName: userInfo?.userName || userInfo?.mobileNumber
         }
+      ],
+      workflow: {
+        action: "INITIATE"
+      },
+      layoutDetails: {
+        additionalDetails: {
+          applicationDetails: formData?.applicationDetails || {},
+          siteDetails: formData?.siteDetails || {}
+        },
+        tenantId: tenantId
+      }
+    },
+  };
 
-        console.log("final Payload here==>", payload);
-        
-        // const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
-    
-        // if (response?.ResponseInfo?.status === "successful") {
-        //   dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
-        //   onGoNext();
-        //   return { isSuccess: true, response };
-        // } else {
-        //   return { isSuccess: false, response };
-        // }
+  console.log("[v0] Final API payload:", payload);
 
-        setTimeout(()=>{
-          console.log("we are inside setTime out");
-        }, 1000);
+  try {
+    // <CHANGE> Call the actual API using the service you created
+    const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
 
+    console.log("[v0] API Response:", response);
+
+    if (response?.Layout?.[0]) {
+      const applicationNumber = response.Layout[0].applicationNumber;
+      const applicationId = response.Layout[0].id;
+
+      console.log("[v0] Application created successfully:", applicationNumber);
+
+      dispatch(UPDATE_OBPS_FORM("applicationNumber", applicationNumber));
+      dispatch(UPDATE_OBPS_FORM("applicationId", applicationId));
+      dispatch(UPDATE_OBPS_FORM("apiResponse", response.Layout[0]));
+
+      setTimeout(() => {
         onGoNext();
+      }, 1500);
+
+      return { isSuccess: true, response };
+    } else {
+      throw new Error("Invalid response from server");
+    }
+  } catch (error) {
+    console.error("[v0] API Error:", error);
+    
+    // <CHANGE> Show error toast
+    setIsErrorToast(true);
+    setToastMessage(error?.response?.data?.Errors?.[0]?.message || t("FAILED_TO_CREATE_APPLICATION"));
+    setShowToast(true);
+
+    return { isSuccess: false, error };
   }
+};
 
 
 

@@ -6,11 +6,13 @@ import { UPDATE_CHBApplication_FORM, RESET_CHB_APPLICATION_FORM } from "../../re
 import { useState } from "react";
 import CHBSummary from "../../pageComponents/CHBSummary";
 import _ from "lodash";
+import { Loader } from "../../components/Loader";
 
 const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [showToast, setShowToast] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [error, setError] = useState("");
   const isCitizen = window.location.href.includes("citizen");
   const tenantId = window.location.href.includes("citizen")
@@ -85,14 +87,21 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
+    setLoader(true);
 
     // return;
-    const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
-    dispatch(RESET_CHB_APPLICATION_FORM());
-    if (response?.responseInfo?.status == "SUCCESSFUL") {
-      return { isSuccess: true, response };
-    } else {
-      return { isSuccess: false, response };
+    try {
+      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
+      setLoader(false);
+      dispatch(RESET_CHB_APPLICATION_FORM());
+      if (response?.responseInfo?.status == "SUCCESSFUL") {
+        return { isSuccess: true, response };
+      } else {
+        return { isSuccess: false, response };
+      }
+    } catch (error) {
+      setLoader(false);
+      return error;
     }
   };
 
@@ -124,6 +133,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         onBackClick={onGoBack}
       /> */}
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {loader && <Loader page={true} />}
     </React.Fragment>
   );
 };

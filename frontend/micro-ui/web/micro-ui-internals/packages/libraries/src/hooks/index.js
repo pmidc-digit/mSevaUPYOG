@@ -155,6 +155,7 @@ import useChallanGenerationCategory from "./challanGeneration/useChallanGenerati
 import useChallanGenerationCategoryTypes from "./challanGeneration/useChallanGenerationCategoryTypes";
 import useChallanGenerationTaxHeads from "./challanGeneration/useChallanGenerationTaxHeads";
 import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenerationFormConfig";
+import useChallanInbox from "./challanGeneration/useInbox";
 
 import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
 import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
@@ -396,6 +397,10 @@ import useULBList from "./obps/useULBList";
 import useUlbType from "./obps/useUlbType";
 import useEDCRForm from "./obps/useEDCRForm";
 
+//Layout
+import { useLayoutSearchApplication } from "./obps/useSearchApplication";
+import useLayoutInbox from "./obps/useLayoutInbox";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -608,6 +613,9 @@ const obps = {
   useUlbType,
   useEDCRForm,
   useBPACalculation,
+  useLayoutSearchApplication,
+  useLayoutInbox
+
 };
 
 const events = {
@@ -719,7 +727,7 @@ const noc = {
   useNOCDocumentSearch,
   useNocType,
   useNOCFeeCalculator,
-  useNOCSearchApplicationByIdOrMobile
+  useNOCSearchApplicationByIdOrMobile,
 };
 
 const ndc = {
@@ -740,6 +748,7 @@ const challangeneration = {
   useChallanGenerationCategoryTypes,
   useChallanGenerationTaxHeads,
   useChallanGenerationFormConfig,
+  useInbox: useChallanInbox,
 };
 const rentandlease = {
   useRentAndLeaseRecieptSearch,

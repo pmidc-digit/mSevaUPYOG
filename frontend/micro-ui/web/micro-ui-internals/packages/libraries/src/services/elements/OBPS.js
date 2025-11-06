@@ -115,6 +115,40 @@ export const OBPSService = {
       params: {},
       auth: window.location.href.includes("openlink") ? false : true,
     }),
+
+  LayoutCreate: (details, tenantId) =>
+    Request({
+      url: Urls.obps.layoutCreate,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: window.location.href.includes("openlink") ? false : true,
+      method: "POST",
+      params: {},
+      auth: window.location.href.includes("openlink") ? false : true,
+    }),
+
+  LayoutSearch: (tenantId, details, params) =>
+    Request({
+      url: Urls.obps.layoutSearch,
+      params: { tenantId, ...params },
+      auth: true,
+      userService: true,
+      method: "POST",
+      data: details,
+    }),
+  LayoutUpdate: (details, tenantId) =>
+    Request({
+      url: Urls.obps.layoutUpdate,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: window.location.href.includes("openlink") ? false : true,
+      method: "POST",
+      params: {},
+      auth: window.location.href.includes("openlink") ? false : true,
+    }),
+
   BPAREGGetBill: (tenantId, filters = {}) =>
     Request({
       url: Urls.obps.bpaRegGetBill,

@@ -174,7 +174,7 @@ const CitizenApplicationOverview = () => {
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-    const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress,tenantInfo, t);
 
     console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generateNDC(acknowledgementData);
@@ -201,6 +201,20 @@ const CitizenApplicationOverview = () => {
     }
   );
 
+  let address, formattedAddress;
+
+if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
+  address = propertyDetailsFetch.Properties[0].address;
+  formattedAddress = [
+    address?.doorNo,
+    address?.buildingName,   // colony/building
+    address?.street,
+    address?.locality?.name, // locality name
+    address?.city
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }

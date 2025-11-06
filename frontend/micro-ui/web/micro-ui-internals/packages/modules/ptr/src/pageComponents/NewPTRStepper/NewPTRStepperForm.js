@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-//
 // import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../config/Create/citizenStepperConfig";
@@ -13,6 +12,7 @@ import {
 } from "../../redux/action/PTRNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+import { Loader } from "../../components/Loader";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -147,6 +147,7 @@ const NewPTRStepperForm = () => {
         {t("PET_REGISTRATION_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
+      {isLoading && <Loader page={true} />}
       {showToast && (
         <Toast
           error={showToast.key}

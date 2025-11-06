@@ -11,15 +11,26 @@ import {
   CitizenInfoLabel,
 } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
+import { useSelector } from "react-redux";
 
 const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
-  const tenantId = Digit.ULBService.getStateId();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [documents, setDocuments] = useState(formData?.documents?.documents);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
 
   const stateId = Digit.ULBService.getStateId();
+
+
+  const applicationNo = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationNo);
+  const layoutResponse = useSelector((state) => state.obps.OBPSFormReducer.formData?.layoutResponse);
+  const applicationDetails = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationDetails);
+  const siteDetails = useSelector((state) => state.obps.OBPSFormReducer.formData?.siteDetails);
+
+  console.log(" Application No from Redux:", applicationNo);
+  console.log(" Layout Response from Redux:", layoutResponse);
+
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["LayoutDocuments"]);
   console.log("data for documents here", data)
@@ -49,9 +60,22 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
+
+  console.log(formData, "FORMDATA");
   return (
     <div>
+     
       {/* <Timeline currentStep={4} /> */}
+        { 
+          applicationNo ? (
+          <CitizenInfoLabel
+            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+            text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${applicationNo} ${t("BPA_DOCS_INFORMATION")}`}
+            className={"info-banner-wrap-citizen-override"}
+          />
+        ) : (
+          ""
+        )}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.BPA?.LayoutDocuments?.map((document, index) => {
@@ -82,7 +106,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   // console.log("filetetetetet",filteredDocument, documents, doc);
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }

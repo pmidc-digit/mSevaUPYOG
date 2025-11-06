@@ -386,6 +386,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
 
         dateRanges.push([rangeStart, rangeEnd]);
       }
+      const dateRangesFlat = dateRanges.map(([start, end]) => `${start} to ${end}`).join(", ");
       const startDate = sorted[0]?.bookingDate || null;
       const endDate = sorted[sorted.length - 1]?.bookingDate || null;
       const numberOfDays = sorted.length;
@@ -410,7 +411,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         startDate,
         endDate,
         numberOfDays,
-        dateRanges,
+        dateRangesFlat,
         addType: first.addType,
         faceArea: first.faceArea,
         nightLight: first.nightLight,
@@ -463,6 +464,30 @@ export const areCartSlotsEqual = (a = [], b = []) => {
     if (slotsA?.length !== slotsB?.length) return false;
     return slotsA?.every((date, i) => date === slotsB[i]);
   });
+};
+
+export const haveSlotsChanged = (previousSlots, updatedSlots) => {
+  // Use advertisementId + bookingDate as the unique key
+  const makeKey = (slot) => `${slot.advertisementId}|${slot.bookingDate}`;
+
+  const prevKeys = new Set(previousSlots.map(makeKey));
+  const updatedKeys = new Set(updatedSlots.map(makeKey));
+
+  // Check if any previous slot is missing in updated
+  for (let key of prevKeys) {
+    if (!updatedKeys.has(key)) {
+      return true; // removed slot
+    }
+  }
+
+  // Check if any updated slot is new compared to previous
+  for (let key of updatedKeys) {
+    if (!prevKeys.has(key)) {
+      return true; // new slot
+    }
+  }
+
+  return false; // no changes
 };
 
 // slots are equal
@@ -538,3 +563,24 @@ export const formatLabel = (key) => {
     ?.map((word) => word?.charAt(0)?.toUpperCase() + word?.slice(1)) // Capitalize each word
     ?.join(" "); // Join back into a single string
 };
+
+export const allowedKeys = [
+  "addType",
+  "location",
+  "faceArea",
+  "nightLight",
+  "bookingId",
+  "bookingDate",
+  "advertisementId",
+  "bookingFromTime",
+  "bookingToTime",
+  "tenantId",
+  "amount",
+  "advertisementName",
+  "poleNo",
+  "imageSrc",
+  "width",
+  "height",
+  "lightType",
+  "status",
+];

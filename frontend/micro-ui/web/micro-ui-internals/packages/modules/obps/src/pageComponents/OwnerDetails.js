@@ -943,14 +943,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                             position: "relative",
                             zIndex: "100",
                             left: "35px",
-                            marginTop: "-22.5px",
-                            marginLeft: Webview ? "-25px" : "-25px",
+                            marginTop: "-24px",
+                            marginLeft: Webview ? "-25px" : "-25px",    
+                            borderRight: "1px solid"
                           }}
                         >
                           +91
                         </div>
                         <TextInput
-                          style={{ background: "#FAFAFA", padding: "0px 35px" }}
+                          style={{ background: "#FAFAFA", padding: "0px 39px" }}
                           type={"text"}
                           t={t}
                           isMandatory={false}

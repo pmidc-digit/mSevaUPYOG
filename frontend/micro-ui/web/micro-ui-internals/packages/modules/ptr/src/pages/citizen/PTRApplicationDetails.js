@@ -157,15 +157,12 @@ const PTRApplicationDetails = () => {
                 body { 
                   font-family: 'Times New Roman', serif; 
                   margin: 0; 
-                  padding: 20px;
-                  font-size: 14px;
-                  line-height: 1.4;
+                  font-size: 11px;
                 }
                 .certificate-container {
                   max-width: 800px;
                   margin: 0 auto;
                   border: 3px solid #000;
-                  padding: 30px;
                   background: white;
                 }
                 .header {
@@ -173,10 +170,14 @@ const PTRApplicationDetails = () => {
                   justify-content: space-between;
                   align-items: center;
                   text-align: center;
-                  margin-bottom: 20px;
-                  border-bottom: 2px solid #333;
+                  margin-bottom: 5px;
                   position: relative;
                 }
+                  .header-value{
+                    border: none;
+                    display: flex;
+                    text-align: center;
+                  }
                 .header-center {
                   text-align: center;
                   flex: 1;
@@ -190,24 +191,22 @@ const PTRApplicationDetails = () => {
                   flex: 0 0 auto;
                 }
                 .title {
-                  font-size: 18px;
+                  font-size: 13px;
                   font-weight: bold;
                   margin: 10px 0;
-                  text-transform: uppercase;
                 }
                 .subtitle {
-                  font-size: 16px;
-                  margin: 5px 0;
+                  font-size: 10px;
                   color: #666;
                 }
                 .main-content {
                   display: flex;
-                  gap: 30px;
-                  margin: 20px 0;
+                  gap: 10px;
+                  margin: 10px 0;
                   align-items:flex-start;
+                  margin-bottom: -13px;
                 }
                 .details-section {
-                  flex: 1;
                 }
                 .pet-image-section {
                   flex-shrink: 0;
@@ -222,46 +221,53 @@ const PTRApplicationDetails = () => {
                   border: 2px solid #000;
                   object-fit: cover;
                   margin-bottom: 10px;
+                  border-right-width: 2px;
+                  margin-right: 50px;
+                  margin-top: 20px;
                   display: block;
                 }
                 .image-label {
                   font-size: 12px;
                   font-weight: bold;
                   text-align: center;
+                  border-right-width: 30px;
+                  margin-right: 50px;
                 }
                 .details-grid {
                   display: grid;
-                  grid-template-columns: 1fr 1fr;
-                  gap: 15px 30px;
-                  margin: 20px 0;
+                  grid-template-columns: 290px 280px;
+                  overflow: hidden;
+                  margin: 10px 0;
+                  margin-left : 40px;
                 }
                 .detail-row {
-  display: flex;
-  margin-bottom: 8px;
-  align-items: flex-start; 
-}
+                display: grid;
+                grid-template-columns: 140px 180px;
+                overflow:hidden;
+                border: 1px solid black;
+              }
                 .detail-label {
-  font-weight: bold;
-  min-width: 150px;       
-  margin-right: 10px;
-  white-space: normal;    
-  word-break: break-word; 
-  flex-shrink: 1;         }
+                font-weight: bold;
+                white-space: normal;    
+                word-break: break-word; 
+                margin-left: 10px;
+                flex-shrink: 1;         
+                }
                 .detail-value {
-                  flex: 1;
-                  border-bottom: 1px dotted #000;
                   padding-bottom: 2px;
+                  margin-right: 10px;
                 }
                 .owner-section {
-                  margin: 30px 0;
-                  border-top: 1px solid #000;
-                  padding-top: 20px;
+                  margin: 5px 40px;
+                  margin-bottom: 0px;
+                  display: grid;
+                  grid-template-columns: 50%;
                 }
                 .footer-section {
-                  margin-top: 40px;
+                  margin: 0px 40px;
                   display: flex;
                   justify-content: space-between;
-                  align-items: flex-end;
+                  align-items: anchor-center;
                 }
                 .signature-area {
                   text-align: center;
@@ -269,13 +275,13 @@ const PTRApplicationDetails = () => {
                 }
                 .signature-line {
                   border-top: 1px solid #000;
-                  margin: 30px 0 5px 0;
+                  margin: 10px 0 5px 0;
                 }
                 .terms-section {
-                  margin-top: 30px;
                   border-top: 2px solid #000;
-                  padding-top: 20px;
-                  font-size: 12px;
+                  padding-top: 5px;
+                  font-size: 9px;
+                  margin: 0px 10px;
                 }
                 .terms-title {
                   font-weight: bold;
@@ -286,8 +292,8 @@ const PTRApplicationDetails = () => {
                   padding-left: 20px;
                 }
                 .terms-list li {
-                  margin-bottom: 8px;
-                  text-align: justify;
+                  margin-bottom: 2px;
+                  text-align: left;
                 }
                 @media print {
                   body { background: white !important; }
@@ -310,20 +316,20 @@ const PTRApplicationDetails = () => {
               <div class="header">
               <div>
                 <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
-                    style="width: 120px; height: 120px;" />
+                    style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
               </div>
               <div class="header-center">
-                <div class="title">MUNICIPAL CORPORATION ${ulb}</div>
-                  <div class="subtitle">VETERINARY SERVICES- HEALTH BRANCH</div>
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
                   <div class="subtitle">Pet Registration Certificate</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>
               <div class="header-right">
               </div>
             </div>
-                <span class="detail-value">This is to certify that the ${petData?.petDetails?.petType || "Dog"} kept by Mr./Mrs./Ms. ${
+                <span class="header-value">This is to certify that the ${petData?.petDetails?.petType || "Dog"} kept by Mr./Mrs./Ms. ${
           petData?.owner?.name || "Not Specified"
-        } at (Address) ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
+        } at ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
           petData?.owner?.mobileNumber || "Not Specified"
         } is registered with Municipal Corporation ${ulb} as per following details:</span>
                 <div class="main-content">
@@ -347,7 +353,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petGender || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">${t("PTR_PET_AGE")}</span>
+                        <span class="detail-label">Pet Age</span>
                         <span class="detail-value">${formatPetAge(petData?.petDetails?.petAge, t) || t("CS_NA")}</span>
                       </div>
                       <div class="detail-row">
@@ -355,7 +361,7 @@ const PTRApplicationDetails = () => {
                         <span class="detail-value">${petData?.petDetails?.petColor || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">Registration Number</span>
+                        <span class="detail-label">Application Number</span>
                         <span class="detail-value">${petData?.applicationNumber || "Not Specified"}</span>
                       </div>
                       <div class="detail-row">
@@ -478,7 +484,7 @@ const PTRApplicationDetails = () => {
                   </ol>
 
                   <div style="text-align: center;">
-                    <img src="${qrDataURL}" style="width: 120px; height: 120px;" />
+                    <img src="${qrDataURL}" style="width: 80px; height: 80px;" />
                 </div>
                 </div>
               </div>
@@ -550,9 +556,19 @@ const PTRApplicationDetails = () => {
                 }
                 .header {
                   text-align: center;
-                  margin-bottom: 30px;
                   border-bottom: 2px solid #333;
-                  padding-bottom: 20px;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  position: relative;
+                }
+                  .header-center {
+                  text-align: center;
+                  flex: 1;
+                  padding-right: 80px
+                }
+                  .header-right {
+                  flex: 0 0 auto;
                 }
                 .title {
                   font-size: 20px;
@@ -566,14 +582,12 @@ const PTRApplicationDetails = () => {
                   color: #666;
                 }
                 .acknowledgement-text {
-                  margin: 20px 0;
                   text-align: justify;
                   font-size: 15px;
                 }
                 .details-table {
                   width: 100%;
                   border-collapse: collapse;
-                  margin: 20px 0;
                 }
                 .details-table th,
                 .details-table td {
@@ -587,7 +601,6 @@ const PTRApplicationDetails = () => {
                   width: 40%;
                 }
                 .footer {
-                  margin-top: 30px;
                   text-align: center;
                   font-size: 12px;
                   color: #666;
@@ -600,9 +613,19 @@ const PTRApplicationDetails = () => {
             <body>
               <div class="acknowledgement-container">
                 <div class="header">
-                  <div class="title">Pet Registration Acknowledgement</div>
-                  <div class="subtitle">Municipal Corporation ${ulb}</div>
-                </div>
+              <div>
+                <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
+                    style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
+              </div>
+              <div class="header-center">
+                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                  <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
+                  <div class="subtitle">Pet Registration Acknowledgment</div>
+                  <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
+              </div>
+              <div class="header-right">
+              </div>
+            </div>
                 
                 <div class="acknowledgement-text">
                 ${t("PTR_ACKN_TERM_1")}
@@ -643,7 +666,7 @@ const PTRApplicationDetails = () => {
                   </tr>
                   <tr>
                     <th>Application Status</th>
-                    <td style="color: #28a745; font-weight: bold;">${petData?.status || "SUBMITTED"}</td>
+                    <td style="color: #28a745; font-weight: bold;">${t(petData?.status) || "SUBMITTED"}</td>
                   </tr>
                 </table>
                 
@@ -656,6 +679,7 @@ const PTRApplicationDetails = () => {
                   <p>Generated on: ${currentDate}</p>
                   <p>Municipal Corporation</p>
                   <p>This is a computer-generated document and does not require a signature.</p>
+                  <p>https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home</p>
                 </div>
               </div>
             </body>

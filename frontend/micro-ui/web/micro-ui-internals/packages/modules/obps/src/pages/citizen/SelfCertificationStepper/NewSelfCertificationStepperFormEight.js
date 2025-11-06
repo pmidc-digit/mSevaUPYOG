@@ -52,8 +52,8 @@ const NewSelfCertificationStepFormEight = ({ config, onGoNext, onBackClick }) =>
 
   function goNext(data) {
     console.log("NewSelfCertificationStepFormFour", data)
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
-    onGoNext();
+    dispatch(UPDATE_OBPS_FORM("Timestamp", data));
+    // onGoNext();
   }
 
   function onGoBack(data) {

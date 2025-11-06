@@ -215,7 +215,7 @@ useEffect(() => {
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
+      <div style={{ marginBottom: "16px", marginTop: "20px" }}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
             {`${t(propertyIdInput.label)}`}
@@ -223,7 +223,7 @@ useEffect(() => {
           </CardLabel>
           <div
             className="field ndc_property_search"
-            style={{ marginTop: "20px", display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            style={{ display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
             ref={myElementRef}
             id="search-property-field"
           >
@@ -247,7 +247,7 @@ useEffect(() => {
 
           </div>
         </LabelFieldPair>
-        <StatusTable >{formData?.cpt?.details && <Row className="border-none" label={t(`PT_ACKNOWLEDGEMENT_NUMBER`)} text={formData?.cpt?.details?.acknowldgementNumber || NA} />}</StatusTable>
+        {formData?.cpt?.details && <StatusTable><Row className="border-none" label={t(`PT_ACKNOWLEDGEMENT_NUMBER`)} text={formData?.cpt?.details?.acknowldgementNumber || NA} /></StatusTable>}
 
         {showToast && (
           <Toast

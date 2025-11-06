@@ -275,28 +275,12 @@ const jsPdfGeneratorNDC = async ({
     margin: [20, 20, 20, 20],
 
     header: {},
-
-    footer: function (currentPage, pageCount) {
-      return {
-        columns: [
-          {
-            text: `Page ${currentPage}`,
-            alignment: "right",
-            margin: [0, -17, 50, 0],
-            fontSize: 11,
-            color: "#6f777c",
-            font: "Hind",
-          },
-        ],
-      };
-    },
-
     content: [
       ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl),
       {
         stack: [
           { 
-            text: `Date : ${approvalDate}`, 
+            text: `Date Of Issuance : ${approvalDate}`, 
             font: "Hind", 
             fontSize: 11, 
             margin: [0, 2, 0, 0], 
@@ -322,7 +306,7 @@ const jsPdfGeneratorNDC = async ({
         text: "Note: The authenticity of this document can be verified by scanning the QR code mentioned on the document.",
         font: "Hind",
         fontSize: 8,
-        color: "#6f777c",
+        color: "#000000",
         margin: [10, 10],
         alignment: "center",
       },
@@ -1523,7 +1507,7 @@ function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumbe
                       {
                         text: detail.title,
                         border: [true, true, true, false],
-                        color: "#454545",
+                        color: "#000000ff",
                         fontSize: 14,
                         bold: true,
                       },

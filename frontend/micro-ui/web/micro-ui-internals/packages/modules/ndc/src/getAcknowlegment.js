@@ -62,7 +62,7 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, tenantInfo, t) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
@@ -87,25 +87,60 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   console.log(tenantInfo, "TENANT INFO IN ACKNOWLEDGEMENT");
 
   // Build single certificate body by concatenating translated fragments and dynamic values
-  const certificateBody = `
-NDC No: : ${appData?.applicationNo} ,  Property ID : ${propertyId} ,  Property Type: ${propertyType}
+  const certificateBody = [
+  {
+    text: `NDC No: ${appData?.applicationNo}, Property ID: ${propertyId}, Property Type: ${propertyType}\n`,
+    bold: true,
+  },
+  {
+    text: `Property Address: ${formattedAddress}\n`,
+    bold: true,
+  },
+  {
+    text: `Applicant Name: ${applicantName} (s/o, d/o) ${appData?.owners?.[0]?.fatherOrHusbandName} resident of ${address}.\n`,
+    bold: true,
+  },
+  {
+    text: [
+      { text: `• This is to certify that, as per the records and data with ${ulbName}, all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. `, bold: true },
+      { text: `${t("NDC_CERTIFY_NOTE_ONE_PB")} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")}\n`, bold: false }
+    ]
+  },
 
-Applicant Name: ${applicantName} (s/o, d/o) ${appData?.owners?.[0]?.fatherOrHusbandName} for the land/building located at ${address}.
-This is to certify that, as per the records and data with ${ulbName} , all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. ${t(
-    "NDC_CERTIFY_NOTE_ONE_PB"
-  )} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")} 
-${t("NDC_VALIDITY_TEXT_ENG")} ${t("NDC_VALIDITY_NOTE_PB")}
-This is only a No Dues Certificate for municipal dues as on date and it does not regulate the compliance of building regulations, change of land use, any fire safety regulations or any other compliance under any act/rules. ${t(
-    "NDC_BUILDING_NOTE_PB"
-  )} 
-This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. ${t("NDC_AUTHORITY_NOTE_PB")}
+  {
+    text: [
+      { text: `• This No Dues Certificate is valid for one month from the date of issuance.`, bold: true },
+      { text: `${t("NDC_VALIDITY_NOTE_PB")}\n`, bold: false }
+    ]
+  },
+  {
+    text: [
+      { text: `• This is only a No Dues Certificate for municipal dues as on date and it does not regulate the compliance of building regulations, change of land use, any fire safety regulations or any other compliance under any act/rules. `, bold: true },
+      { text: `${t("NDC_BUILDING_NOTE_PB")}\n`, bold: false }
+    ]
+  },
+  {
+    text: [
+      { text: `• This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. `, bold: true },
+      { text: `${t("NDC_AUTHORITY_NOTE_PB")}\n`, bold: false }
+    ]
+  },
+  {
+    text: [
+      { text: `• In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council, which will have the full right to recover the same. `, bold: true },
+      { text: `${t("NDC_DISCREPANCY_NOTE_PB")}\n`, bold: false }
+    ]
+  },
+  {
+    text: [
+      { text: `• This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. `, bold: true },
+      { text: `${t("NDC_OWNERSHIP_NOTE_PB")}\n`, bold: false }
+    ]
+  }
+];
 
-In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it   shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council and Municipal Commissioner will have the full right to recover the same.
- ${t("NDC_DISCREPANCY_NOTE_PB")}
-This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. ${t(
-    "NDC_OWNERSHIP_NOTE_PB"
-  )} 
-`;
+
+
 
   return {
     t,

@@ -32,7 +32,6 @@ import DocumentsPreview from "../../../templates/ApplicationDetails/components/D
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import FeeEstimation from "./FeeEstimation"
-import { labelStyle, rowContainerStyleEven, rowContainerStyleOdd, statusTableStyle, textStyle } from "../styles/tableStyle";
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const { t } = useTranslation();

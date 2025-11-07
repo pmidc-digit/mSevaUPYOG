@@ -44,6 +44,7 @@ const App = ({ path }) => {
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
+  const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   return (
@@ -51,6 +52,7 @@ const App = ({ path }) => {
       <div className="ws-citizen-wrapper">
        {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
+        <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />

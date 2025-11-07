@@ -192,7 +192,17 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           link: `layout/apply`,
           i18nKey: t("BPA_LAYOUT_LABEL"),
         },
-        
+      ],
+      styles: { minWidth: "90%", minHeight: "90%" },
+    },
+    {
+      title: t("ACTION_TEST_CLU_HOME"),
+      Icon: <EDCRIcon className="fill-path-primary-main" />,
+      links: [
+        {
+          link: `clu/apply`,
+          i18nKey: t("BPA_CHANGE_OF_LAND_USE_LABEL"),
+        },
       ],
       styles: { minWidth: "90%", minHeight: "90%" },
     },

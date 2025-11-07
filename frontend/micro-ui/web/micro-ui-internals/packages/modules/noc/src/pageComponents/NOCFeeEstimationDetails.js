@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import {isEqual} from "lodash";
 
 const NOCFeeEstimationDetails = ({ formData }) => {
   const { t } = useTranslation();
@@ -61,10 +62,15 @@ const NOCFeeEstimationDetails = ({ formData }) => {
       enabled: !!payload,
     }
   );
+ 
+  const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
   useEffect(() => {
-   revalidate();
-  }, [formData?.siteDetails]);
+   if (!isEqual(prevSiteDetails, formData?.siteDetails)) {
+     revalidate();
+     setPrevSiteDetails(formData?.siteDetails);
+   }
+  }, [formData?.siteDetails])
 
 
   const applicationFeeDataWithTotal = useMemo(() => {

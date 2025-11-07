@@ -26,6 +26,9 @@ public class PetApplicationSearchCriteria {
 	@JsonProperty("applicationNumber")
 	private List<String> applicationNumber;
 
+	@JsonProperty("petRegistrationNumber")
+	private List<String> petRegistrationNumber;
+
 	@JsonProperty("mobileNumber")
 	private String mobileNumber;
 

@@ -78,9 +78,9 @@ public class PaymentNotificationService {
 	/**
 	 * Main method to process payment and update application status
 	 * 1. Calls workflow with PAY action to transition to APPROVED
-	 * 2. Fetches updated process instance to verify APPROVED status
+	 * 2. Fetches updated process instance to get the current status
 	 * 3. Generates petRegistrationNumber if needed
-	 * 4. Updates database with APPROVED status and petRegistrationNumber
+	 * 4. Updates database with the status from workflow and petRegistrationNumber
 	 */
 	private void processPaymentAndUpdateApplication(PaymentRequest paymentRequest) {
 		String applicationNumber = null;
@@ -92,24 +92,32 @@ public class PaymentNotificationService {
 			
 			log.info("Processing payment for application: {}", applicationNumber);
 			
+			// Transition workflow with PAY action
 			State workflowState = transitionWorkflowToApproved(paymentRequest);
 			if (workflowState == null) {
 				log.error("Workflow transition failed for application: {}", applicationNumber);
 				return;
 			}
 			
+			// Fetch the updated process instance to get the current state
 			ProcessInstance updatedProcessInstance = fetchProcessInstanceFromWorkflow(applicationNumber, tenantId, paymentRequest.getRequestInfo());
-			if (updatedProcessInstance == null || updatedProcessInstance.getState() == null) {
-				log.error("Could not fetch process instance for application: {}", applicationNumber);
-				return;
+			if (updatedProcessInstance != null && updatedProcessInstance.getState() != null) {
+				workflowState = updatedProcessInstance.getState();
+			} else {
+				log.warn("Could not fetch updated process instance for application: {}, using state from workflow transition", applicationNumber);
 			}
 			
-			State state = updatedProcessInstance.getState();
-			String applicationStatus = state.getApplicationStatus() != null ? state.getApplicationStatus() : state.getState();
+			// Get the application status from workflow state
+			String applicationStatus = workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState();
 			
+			log.info("Workflow state for application {} - State: {}, ApplicationStatus: {}, Final status: {}", 
+					applicationNumber, workflowState.getState(), workflowState.getApplicationStatus(), applicationStatus);
+			
+			// For payment completion, we expect APPROVED status
 			if (!"APPROVED".equals(applicationStatus)) {
-				log.warn("Application status is not APPROVED after payment: {} for application: {}", applicationStatus, applicationNumber);
-				return;
+				log.warn("Application status is not APPROVED after payment: {} for application: {}. Will force to APPROVED.", applicationStatus, applicationNumber);
+			} else {
+				log.info("Application status is APPROVED after payment for application: {}", applicationNumber);
 			}
 			
 			PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
@@ -124,6 +132,24 @@ public class PaymentNotificationService {
 			}
 
 			PetRegistrationApplication application = applications.get(0);
+			
+			// For both new and renewal applications, ALWAYS set status to APPROVED after payment completion
+			// This ensures consistency regardless of what workflow returns (same logic as new applications)
+			String applicationType = application.getApplicationType();
+			boolean isRenewal = applicationType != null && "RENEWAPPLICATION".equals(applicationType);
+			
+			// Always use APPROVED status after payment completion for both new and renewal applications
+			// Workflow should return APPROVED, but we enforce it to ensure consistency
+			if (!"APPROVED".equals(applicationStatus)) {
+				log.warn("Workflow returned status '{}' instead of APPROVED for application: {} (type: {}). Forcing to APPROVED.", 
+						applicationStatus, applicationNumber, applicationType);
+			}
+			applicationStatus = "APPROVED";
+			
+			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
+					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
+			
+			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
 			generatePetRegistrationNumberAndUpdateDatabase(application, applicationStatus, paymentRequest.getRequestInfo());
 			
 		} catch (Exception e) {
@@ -336,17 +362,21 @@ public class PaymentNotificationService {
 				};
 			}
 			
+			log.info("Executing database update for application: {} with status: {}, petRegistrationNumber: {}", 
+					applicationNumber, status, petRegistrationNumber != null ? petRegistrationNumber : "null");
+			
 			int rowsUpdated = petRegistrationRepository.getJdbcTemplate().update(updateQuery, params);
 			
 			if (rowsUpdated > 0) {
-				log.info("Updated application status to APPROVED - ApplicationNumber: {}, petRegistrationNumber: {}", 
-						applicationNumber, petRegistrationNumber != null ? petRegistrationNumber : "null");
+				log.info("Successfully updated application - ApplicationNumber: {}, Status: {}, petRegistrationNumber: {}, Rows updated: {}", 
+						applicationNumber, status, petRegistrationNumber != null ? petRegistrationNumber : "null", rowsUpdated);
 				application.setStatus(status);
 				if (petRegistrationNumber != null && !petRegistrationNumber.isEmpty()) {
 					application.setPetRegistrationNumber(petRegistrationNumber);
 				}
 			} else {
-				log.warn("No rows updated for application: {}", applicationNumber);
+				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, petRegNum={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
+						applicationNumber, updateQuery, status, petRegistrationNumber, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
 			}
 			
 		} catch (Exception e) {

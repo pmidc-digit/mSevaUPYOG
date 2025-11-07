@@ -101,6 +101,13 @@ public class PetApplicationQueryBuilder {
 					.append(" ) ");
 			addToPreparedStatement(subQueryParams, criteria.getApplicationNumber());
 		}
+		if (!CollectionUtils.isEmpty(criteria.getPetRegistrationNumber())) {
+			addClauseIfRequired(subQuery, subQueryParams);
+			subQuery.append(" ptr.petregistrationnumber IN ( ")
+					.append(createQuery(criteria.getPetRegistrationNumber()))
+					.append(" ) ");
+			addToPreparedStatement(subQueryParams, criteria.getPetRegistrationNumber());
+		}
 		if (!CollectionUtils.isEmpty(criteria.getOwnerUuids())) {
 			addClauseIfRequired(subQuery, subQueryParams);
 			subQuery.append(" owner.uuid IN ( ").append(createQuery(criteria.getOwnerUuids())).append(" ) ");

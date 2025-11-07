@@ -62,7 +62,7 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
@@ -71,7 +71,10 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
                        
   const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
-  const propertyId = appData?.NdcDetails?.[0]?.consumerCode;
+  const ptObj = appData?.NdcDetails?.find(item => item.businessService === 'PT');
+  const propertyId = ptObj?.consumerCode;
+  console.log('ptObj', ptObj)
+
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
@@ -88,18 +91,22 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
 
   // Build single certificate body by concatenating translated fragments and dynamic values
   const certificateBody = [
-  {
-    text: `NDC No: ${appData?.applicationNo}, Property ID: ${propertyId}, Property Type: ${propertyType}\n`,
-    bold: true,
-  },
-  {
-    text: `Property Address: ${formattedAddress}\n`,
-    bold: true,
-  },
-  {
-    text: `Applicant Name: ${applicantName} (s/o, d/o) ${appData?.owners?.[0]?.fatherOrHusbandName} resident of ${address}.\n`,
-    bold: true,
-  },
+  { text: "NDC No: ", bold: false },
+  { text: `${appData?.applicationNo}`, bold: true },
+  { text: ", Property ID: ", bold: false },
+  { text: `${propertyId}`, bold: true },
+  { text: ", Property Type: ", bold: false },
+  { text: `${propertyType}\n`, bold: true },
+
+  { text: "Property Address: ", bold: false },
+  { text: `${formattedAddress}\n`, bold: true },
+
+  { text: "Applicant Name: ", bold: false },
+  { text: `${applicantName}`, bold: true },
+  { text: " (s/o, d/o) ", bold: false },
+  { text: `${appData?.owners?.[0]?.fatherOrHusbandName || "NA"}`, bold: true },
+  { text: " resident of ", bold: false },
+  { text: `${address}.\n`, bold: true },
   {
     text: [
       { text: `• This is to certify that, as per the records and data with ${ulbName}, all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. `, bold: true },
@@ -145,6 +152,8 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   return {
     t,
     approvalDate,
+    approver,
+    ulbType,
     tenantId: appData?.tenantId,
     // Use readable city dynamically
     name: ` No Dues Certificate  \n ${t(tenantInfo?.i18nKey)}`,

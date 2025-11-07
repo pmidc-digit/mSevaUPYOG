@@ -51,6 +51,7 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
 
   return (
     <Card>
+      {application?.petRegistrationNumber && <KeyNote keyValue={t("PTR_REGISTRATION_NUMBER")} note={application?.petRegistrationNumber} />}
       <KeyNote keyValue={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
       <KeyNote keyValue={t("REPORT_FSM_RESULT_APPLICANTNAME")} note={application?.owner?.name} />
       <KeyNote keyValue={t("PTR_APPLICATION_CATEGORY")} note={t("PTR_APPLICATION")} />

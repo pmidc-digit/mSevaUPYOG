@@ -60,7 +60,7 @@ public class EnrichmentService {
 				.lastModifiedTime(System.currentTimeMillis()).build();
 
 		LocalDateTime nextMarch31At8PM = calculateNextMarch31At8PM();
-		long validityDateUnix = nextMarch31At8PM.atZone(ZoneId.systemDefault()).toEpochSecond();
+		long validityDateUnix = nextMarch31At8PM.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
 		int index = 0;
 		for (PetRegistrationApplication application : applications) {

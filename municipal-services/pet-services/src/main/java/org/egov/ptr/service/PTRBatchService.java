@@ -52,7 +52,7 @@ public class PTRBatchService {
 			nextMarch31 = nextMarch31.plusYears(1);
 		}
 		LocalDateTime nextMarch31At8PM = LocalDateTime.of(nextMarch31, LocalTime.of(20, 0));
-		long validityDateUnix = nextMarch31At8PM.atZone(ZoneId.systemDefault()).toEpochSecond();
+		long validityDateUnix = nextMarch31At8PM.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
 		List<String> tenantIdsFromRepository = repository.fetchPetApplicationTenantIds();
 

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,9 +33,6 @@ public class FeeCalculationUtil {
         
         // Step 1: Validate business rules
         if (!isFeeApplicable(feeConfig, daysElapsed, currentFY)) {
-            log.info("Fee {} not applicable - Active: {}, FromFY: {}, DaysElapsed: {}, ApplicableAfterDays: {}", 
-                    feeConfig.getFeeType(), feeConfig.getActive(), feeConfig.getFromFY(), 
-                    daysElapsed, feeConfig.getApplicableAfterDays());
             return BigDecimal.ZERO;
         }
 
@@ -272,5 +270,175 @@ public class FeeCalculationUtil {
         long currentTimeMillis = System.currentTimeMillis();
         long elapsedMillis = currentTimeMillis - applicationDateMillis;
         return (int) (elapsedMillis / (24 * 60 * 60 * 1000));
+    }
+    
+    /**
+     * Calculates days from validity date to application creation date
+     * Used for penalty calculation in renewal applications
+     * 
+     * @param validityDateMillis Validity date in milliseconds (from previous application)
+     * @param applicationDateMillis Application creation date in milliseconds
+     * @return Number of days from validity date to application date (can be negative if before validity date)
+     */
+    public int calculateDaysFromValidityDate(long validityDateMillis, long applicationDateMillis) {
+        long elapsedMillis = applicationDateMillis - validityDateMillis;
+        return (int) (elapsedMillis / (24 * 60 * 60 * 1000));
+    }
+    
+    /**
+     * Calculates tiered penalty based on days from validity date
+     * Tier structure:
+     * - 0-30 days: No penalty (0)
+     * - 30-60 days: 100rs per month
+     * - 60-90 days: 200rs per month
+     * - 90+ days: 700rs per month
+     * 
+     * The penalty is calculated by summing up penalties for each tier range.
+     * 
+     * @param penaltyConfigs List of penalty configurations from MDMS (should be sorted by startingDay)
+     * @param daysFromValidityDate Days elapsed from validity date
+     * @param currentFY Current financial year
+     * @return Calculated penalty amount
+     */
+    public BigDecimal calculateTieredPenalty(List<AdditionalFeeRate> penaltyConfigs, 
+            int daysFromValidityDate, String currentFY) {
+        
+        // If days are negative or zero, no penalty
+        if (daysFromValidityDate <= 0) {
+            return BigDecimal.ZERO;
+        }
+        
+        // First 30 days: No penalty
+        if (daysFromValidityDate <= 30) {
+            return BigDecimal.ZERO;
+        }
+        
+        // If no configurations from MDMS, use default tiered structure
+        if (penaltyConfigs == null || penaltyConfigs.isEmpty()) {
+            log.warn("No penalty configurations from MDMS, using default tiered structure");
+            return calculateDefaultTieredPenalty(daysFromValidityDate);
+        }
+        
+        // Sort configurations by startingDay (ascending)
+        List<AdditionalFeeRate> sortedConfigs = new ArrayList<>(penaltyConfigs);
+        sortedConfigs.sort((a, b) -> {
+            int dayA = parseStartingDay(a.getStartingDay());
+            int dayB = parseStartingDay(b.getStartingDay());
+            return Integer.compare(dayA, dayB);
+        });
+        
+        // Calculate penalty by summing up each tier
+        BigDecimal totalPenalty = BigDecimal.ZERO;
+        int previousDay = 30; // Start from day 30 (grace period ends)
+        
+        for (AdditionalFeeRate config : sortedConfigs) {
+            if (!isTieredPenaltyApplicable(config, daysFromValidityDate, currentFY)) {
+                continue;
+            }
+            
+            int startingDay = parseStartingDay(config.getStartingDay());
+            BigDecimal penaltyPerMonth = config.getFlatAmount();
+            
+            if (penaltyPerMonth == null || penaltyPerMonth.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+            
+            // Determine the end day for this tier (next tier's starting day or daysFromValidityDate)
+            int endDay = daysFromValidityDate;
+            for (AdditionalFeeRate nextConfig : sortedConfigs) {
+                int nextStartingDay = parseStartingDay(nextConfig.getStartingDay());
+                if (nextStartingDay > startingDay && nextStartingDay <= daysFromValidityDate) {
+                    endDay = nextStartingDay;
+                    break;
+                }
+            }
+            
+            // Calculate days in this tier
+            int daysInTier = Math.max(0, endDay - Math.max(previousDay, startingDay));
+            if (daysInTier > 0) {
+                // Calculate months (rounded up)
+                int months = (int) Math.ceil(daysInTier / 30.0);
+                BigDecimal tierPenalty = penaltyPerMonth.multiply(new BigDecimal(months));
+                totalPenalty = totalPenalty.add(tierPenalty);
+            }
+            
+            previousDay = Math.max(previousDay, endDay);
+        }
+        
+        return totalPenalty;
+    }
+    
+    /**
+     * Calculates default tiered penalty when MDMS configuration is not available
+     * Tier structure:
+     * - 0-30 days: No penalty
+     * - 31-60 days: 100rs per month
+     * - 61-90 days: 200rs per month
+     * - 91+ days: 700rs per month
+     */
+    private BigDecimal calculateDefaultTieredPenalty(int daysFromValidityDate) {
+        if (daysFromValidityDate <= 30) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal totalPenalty = BigDecimal.ZERO;
+        
+        // Tier 1: 31-60 days at 100rs per month
+        if (daysFromValidityDate > 30) {
+            int daysInTier1 = Math.min(30, daysFromValidityDate - 30);
+            int months1 = (int) Math.ceil(daysInTier1 / 30.0);
+            totalPenalty = totalPenalty.add(new BigDecimal("100").multiply(new BigDecimal(months1)));
+        }
+        
+        // Tier 2: 61-90 days at 200rs per month
+        if (daysFromValidityDate > 60) {
+            int daysInTier2 = Math.min(30, daysFromValidityDate - 60);
+            int months2 = (int) Math.ceil(daysInTier2 / 30.0);
+            totalPenalty = totalPenalty.add(new BigDecimal("200").multiply(new BigDecimal(months2)));
+        }
+        
+        // Tier 3: 91+ days at 700rs per month
+        if (daysFromValidityDate > 90) {
+            int daysInTier3 = daysFromValidityDate - 90;
+            int months3 = (int) Math.ceil(daysInTier3 / 30.0);
+            totalPenalty = totalPenalty.add(new BigDecimal("700").multiply(new BigDecimal(months3)));
+        }
+        
+        return totalPenalty;
+    }
+    
+    /**
+     * Parses startingDay from configuration (handles string to int conversion)
+     */
+    private int parseStartingDay(String startingDay) {
+        if (startingDay == null || startingDay.trim().isEmpty()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(startingDay.trim());
+        } catch (NumberFormatException e) {
+            log.warn("Invalid startingDay value: {}, defaulting to 0", startingDay);
+            return 0;
+        }
+    }
+    
+    /**
+     * Checks if tiered penalty configuration is applicable
+     * This method is specifically for tiered penalty calculation
+     */
+    private boolean isTieredPenaltyApplicable(AdditionalFeeRate feeConfig, int daysElapsed, String currentFY) {
+        // Check if fee is active
+        if (!isActive(feeConfig)) {
+            return false;
+        }
+        
+        // Check financial year (flexible matching)
+        if (!isFinancialYearApplicable(feeConfig, currentFY)) {
+            return false;
+        }
+        
+        // For tiered penalty, we check startingDay instead of applicableAfterDays
+        int startingDay = parseStartingDay(feeConfig.getStartingDay());
+        return daysElapsed >= startingDay;
     }
 }

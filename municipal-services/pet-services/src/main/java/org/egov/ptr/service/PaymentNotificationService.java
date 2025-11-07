@@ -257,9 +257,13 @@ public class PaymentNotificationService {
 		try {
 			String applicationNumber = application.getApplicationNumber();
 			String petRegistrationNumber = application.getPetRegistrationNumber();
+			boolean isRenewal = application.getApplicationType() != null && "RENEWAPPLICATION".equals(application.getApplicationType());
 			
+			// For renewal applications, if petRegistrationNumber is already set (copied during creation), use it
+			// For new applications, generate it if not set
 			if (petRegistrationNumber == null || petRegistrationNumber.isEmpty()) {
-				if (application.getApplicationType() != null && "RENEWAPPLICATION".equals(application.getApplicationType())) {
+				if (isRenewal) {
+					// Try to get from previous application if not already set
 					petRegistrationNumber = getPetRegistrationNumberFromPreviousApplication(application, requestInfo);
 					if (petRegistrationNumber != null && !petRegistrationNumber.isEmpty()) {
 						log.info("Reused petRegistrationNumber: {} from previous application for renewal: {}", 
@@ -267,16 +271,24 @@ public class PaymentNotificationService {
 					}
 				}
 				
+				// Generate new petRegistrationNumber only if still not set (for new applications or if previous app didn't have it)
 				if (petRegistrationNumber == null || petRegistrationNumber.isEmpty()) {
 					List<String> regNumList = petUtil.getIdList(requestInfo, application.getTenantId(), 
 							configs.getPetRegNumName(), configs.getPetRegNumFormat(), 1);
 					
 					if (regNumList != null && !regNumList.isEmpty()) {
 						petRegistrationNumber = regNumList.get(0);
-						log.info("Generated petRegistrationNumber: {} for application: {}", petRegistrationNumber, applicationNumber);
+						log.info("Generated petRegistrationNumber: {} for application: {} (type: {})", 
+								petRegistrationNumber, applicationNumber, isRenewal ? "RENEWAL" : "NEW");
 					} else {
 						log.error("Failed to generate petRegistrationNumber for application: {}", applicationNumber);
 					}
+				}
+			} else {
+				// petRegistrationNumber is already set (for renewals, it was copied during creation)
+				if (isRenewal) {
+					log.info("Using existing petRegistrationNumber: {} for renewal application: {} (already set during creation)", 
+							petRegistrationNumber, applicationNumber);
 				}
 			}
 			

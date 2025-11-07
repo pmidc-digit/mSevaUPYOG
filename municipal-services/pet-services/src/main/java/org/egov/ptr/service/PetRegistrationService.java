@@ -65,18 +65,9 @@ public class PetRegistrationService {
 
 		wfService.updateWorkflowStatus(petRegistrationRequest);
 		petRegistrationRequest.getPetRegistrationApplications().forEach(application -> {
-			// Log petRegistrationNumber before sending to Kafka to verify it's set
 			if (RENEW_PET_APPLICATION.equals(application.getApplicationType())) {
-				log.info("Sending renewal application to Kafka - ApplicationNumber: {}, petRegistrationNumber: {}, Topic: {}", 
-						application.getApplicationNumber(), 
-						application.getPetRegistrationNumber() != null ? application.getPetRegistrationNumber() : "NULL",
-						config.getRenewPtrTopic());
 				producer.push(config.getRenewPtrTopic(), petRegistrationRequest);
 			} else if (NEW_PET_APPLICATION.equals(application.getApplicationType())) {
-				log.info("Sending new application to Kafka - ApplicationNumber: {}, petRegistrationNumber: {}, Topic: {}", 
-						application.getApplicationNumber(), 
-						application.getPetRegistrationNumber() != null ? application.getPetRegistrationNumber() : "NULL",
-						config.getCreatePtrTopic());
 				producer.push(config.getCreatePtrTopic(), petRegistrationRequest);
 			}
 		});
@@ -152,6 +143,5 @@ public class PetRegistrationService {
 		ptrBatchService.getPetApplicationsAndPerformAction(servicename, jobname, requestInfo);
 
 	}
-
 
 }

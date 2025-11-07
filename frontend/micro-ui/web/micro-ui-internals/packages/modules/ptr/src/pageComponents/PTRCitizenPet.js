@@ -36,6 +36,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   const pathParts = window.location.pathname.split("/");
   const id = pathParts[pathParts.length - 1];
+  const checkNumber = pathParts[pathParts.length - 2];
   const checkForRenew = id == "renew-application";
 
   const today = new Date();
@@ -105,6 +106,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         pincode,
         addressId: currentStepData.ownerDetails.address,
       },
+      previousApplicationNumber: checkNumber ? checkNumber : null,
       applicationType: checkForRenew ? "RENEWAPPLICATION" : "NEWAPPLICATION",
       ownerName: name, //change to ownerName
       fatherName: filteredOwnerDetails?.fatherOrHusbandName,
@@ -303,7 +305,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   // - integers 1..14 optionally with .1-.11
   // - OR 15 (no decimal)
   // - OR 0.x or .x with x in 1..11
-  const AGE_REGEX = /^(?:(?:[1-9]|1[0-4])(?:\.(?:[1-9]|1[01]))?|15|0?\.(?:[1-9]|1[01]))$/;
+  // const AGE_REGEX = /^(?:(?:[1-9]|1[0-4])(?:\.(?:[1-9]|1[01]))?|15|0?\.(?:[1-9]|1[01]))$/;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -467,53 +469,33 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petAge"
             rules={{
               required: t("PTR_PET_AGE_REQUIRED"),
-              pattern: { value: AGE_REGEX, message: t("PTR_PET_AGE_INVALID") },
+              // pattern: { value: AGE_REGEX, message: t("PTR_PET_AGE_INVALID") },
               // validate: (val) => {
-              //   const age = Number(val);
-              //   if (isNaN(age)) return t("PTR_PET_AGE_INVALID");
-              //   // allow any positive decimal (e.g. 0.1). change 0.01 to 0.1 if you want a floor of 0.1
-              //   if (age <= 0) return "Pet age must be greater than 0";
-              //   if (age > 23) return "Pet age cannot be greater than 23";
-              //   const vaccDate = watch("lastVaccineDate");
-              //   if (!vaccDate) return true;
-              //   const yearsFromVacc = yearsSince(vaccDate); // integer years
-              //   // Round pet age to nearest whole number for vaccine-date comparison (per tester request)
-              //   let roundedAge;
+              //   if (!val) return t("PTR_PET_AGE_REQUIRED");
+              //   const normalized = val.startsWith(".") ? `0${val}` : val;
+              //   if (!AGE_REGEX.test(normalized)) return t("PTR_PET_AGE_INVALID_FORMAT");
 
-              //   if (age > 0 && age < 1) {
-              //     roundedAge = 1; // special case for anything between 0 and 1
-              //   } else {
-              //     roundedAge = Math.floor(age); // always round down for 1 and above
+              //   const { years, months } = parsePetAge(normalized);
+
+              //   // months must be 0..11, but regex already guarantees months ∈ {1..11} when present
+              //   if (months < 0 || months > 11) return t("PTR_PET_AGE_INVALID_MONTHS");
+
+              //   // forbid total > 15 years (so 15.x is invalid)
+              //   if (years > 15 || (years === 15 && months > 0)) return t("PTR_PET_AGE_MAX");
+
+              //   // you had a vaccine check earlier — example below:
+              //   const vaccDate = watch("lastVaccineDate"); // make sure you included `watch` from useForm
+              //   if (vaccDate) {
+              //     // compute integer years since vaccine (or whichever rule you want)
+              //     const yearsSinceVaccine = yearsSince(vaccDate); // your existing helper
+              //     // decide your rule: at least `yearsSinceVaccine`
+              //     // Here we convert custom age to floor(totalYears) for comparison (same rule you had before)
+              //     const roundedAge = years > 0 && years < 1 ? 1 : Math.floor(years + months / 12);
+              //     if (roundedAge < yearsSinceVaccine) return t("PTR_PET_AGE_LESS_THAN_VACC");
               //   }
 
-              //   return roundedAge >= yearsFromVacc || `Pet age must be at least ${yearsFromVacc} year(s)`;
+              //   return true;
               // },
-              validate: (val) => {
-                if (!val) return t("PTR_PET_AGE_REQUIRED");
-                const normalized = val.startsWith(".") ? `0${val}` : val;
-                if (!AGE_REGEX.test(normalized)) return t("PTR_PET_AGE_INVALID_FORMAT");
-
-                const { years, months } = parsePetAge(normalized);
-
-                // months must be 0..11, but regex already guarantees months ∈ {1..11} when present
-                if (months < 0 || months > 11) return t("PTR_PET_AGE_INVALID_MONTHS");
-
-                // forbid total > 15 years (so 15.x is invalid)
-                if (years > 15 || (years === 15 && months > 0)) return t("PTR_PET_AGE_MAX");
-
-                // you had a vaccine check earlier — example below:
-                const vaccDate = watch("lastVaccineDate"); // make sure you included `watch` from useForm
-                if (vaccDate) {
-                  // compute integer years since vaccine (or whichever rule you want)
-                  const yearsSinceVaccine = yearsSince(vaccDate); // your existing helper
-                  // decide your rule: at least `yearsSinceVaccine`
-                  // Here we convert custom age to floor(totalYears) for comparison (same rule you had before)
-                  const roundedAge = years > 0 && years < 1 ? 1 : Math.floor(years + months / 12);
-                  if (roundedAge < yearsSinceVaccine) return t("PTR_PET_AGE_LESS_THAN_VACC");
-                }
-
-                return true;
-              },
             }}
             render={(props) => (
               <TextInput

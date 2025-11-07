@@ -795,6 +795,10 @@ const PTRApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
+            {pet_details?.petRegistrationNumber && (
+              <Row className="border-none" label={t("PTR_REGISTRATION_NUMBER")} text={pet_details?.petRegistrationNumber} />
+            )}
+            <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
             <Row
               className="border-none"
@@ -803,7 +807,6 @@ const PTRApplicationDetails = () => {
             />
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
-            <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>

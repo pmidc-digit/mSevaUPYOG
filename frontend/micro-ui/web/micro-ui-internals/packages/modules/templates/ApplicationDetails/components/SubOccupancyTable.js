@@ -114,12 +114,12 @@ const SubOccupancyTable = ({ edcrDetails, applicationData }) => {
   return (
     <Fragment>
       <div style={{ background: "#FAFAFA", border: "1px solid #D6D5D4", padding: "8px", borderRadius: "4px", maxWidth: "950px", minWidth: "280px" }}>
-        <StatusTable>
+        {/* <StatusTable> */}
           {edcrDetails?.values?.map((value, index) => {
             if (value?.isHeader) return <CardSubHeader style={{fontSize: "20px", paddingBottom: "10px"}}>{t(value?.title)}</CardSubHeader>
             else return <Row className="border-none" labelStyle={{width: "100%", fontSize: "20px"}} key={`${value.title}`} label={`${t(`${value.title}`)}`} text={value?.value ? value?.value : ""} />
           })}
-        </StatusTable>
+        {/* </StatusTable> */}
 
         {edcrDetails?.subOccupancyTableDetails?.[0]?.value?.planDetail?.blocks.map((block, index) => (
           <div key={index} style={edcrDetails?.subOccupancyTableDetails?.[0]?.value?.planDetail?.blocks?.length > 0 ? {marginBottom: "30px", background: "#FAFAFA", border: "1px solid #D6D5D4", padding: "8px", borderRadius: "4px", maxWidth: "950px", minWidth: "280px"} : {marginBottom: "30px"}}>

@@ -89,6 +89,7 @@ const CitizenApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [appDetails, setAppDetails] = useState({});
   const [showToast, setShowToast] = useState(null);
+  const [approver, setApprover] = useState(null);
 
   const [ndcDatils, setNdcDetails] = useState([]);
   const [displayData, setDisplayData] = useState({});
@@ -106,6 +107,24 @@ const CitizenApplicationOverview = () => {
     moduleCode: "ndc-services",
   });
 
+
+
+
+  useEffect(() => {
+  if (workflowDetails) {
+    console.log('workflowDetails here', workflowDetails)
+    const approveInstance = workflowDetails?.data?.processInstances?.find(
+      (pi) => pi?.action === "APPROVE"
+    );
+
+    const name = approveInstance?.assigner?.name || "NA";
+
+    setApprover(name);
+  }
+}, [workflowDetails]);
+
+console.log('approver for ndc', approver)
+
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   let user = Digit.UserService.getUser();
@@ -118,7 +137,6 @@ const CitizenApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
-
   const removeDuplicatesByUUID = (arr) => {
     const seen = new Set();
     return arr.filter((item) => {
@@ -174,7 +192,9 @@ const CitizenApplicationOverview = () => {
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress,tenantInfo, t);
+    console.log('tenantInfo', tenantInfo)
+    const ulbType = tenantInfo?.city?.ulbType;
+    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress,tenantInfo, t,approver,ulbType);
 
     console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generateNDC(acknowledgementData);

@@ -6,11 +6,9 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ptr.config.PetConfiguration;
@@ -174,6 +172,8 @@ public class EnrichmentService {
 
 	/**
 	 * Copies petRegistrationNumber and petToken from previous application for renewal applications
+	 * This method ensures that renewal applications inherit these values from the previous application
+	 * and they are saved to the database at create time.
 	 */
 	private void copyPetRegistrationNumberFromPreviousApplication(PetRegistrationApplication application, RequestInfo requestInfo) {
 		try {
@@ -187,74 +187,86 @@ public class EnrichmentService {
 				return;
 			}
 
-			// Try to get from previousApplicationNumber
-			if (application.getPreviousApplicationNumber() != null && !application.getPreviousApplicationNumber().isEmpty()) {
-				log.info("Looking for petRegistrationNumber and petToken in previous application: {} for renewal: {}", 
-						application.getPreviousApplicationNumber(), application.getApplicationNumber());
-				
-				PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
-						.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
-						.tenantId(application.getTenantId())
-						.build();
-				List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
-				
-				if (previousApps != null && !previousApps.isEmpty()) {
-					PetRegistrationApplication previousApp = previousApps.get(0);
-					log.info("Found previous application: {} with petRegistrationNumber: {}, petToken: {}", 
-							previousApp.getApplicationNumber(), 
-							previousApp.getPetRegistrationNumber(), 
-							previousApp.getPetToken());
-					
-					boolean copiedAny = false;
-					
-					// Copy petRegistrationNumber if not already set and available in previous app
-					if (!petRegNumSet && previousApp.getPetRegistrationNumber() != null && !previousApp.getPetRegistrationNumber().isEmpty()) {
-						application.setPetRegistrationNumber(previousApp.getPetRegistrationNumber());
-						copiedAny = true;
-						log.info("Copied petRegistrationNumber: {} from previous application: {} to renewal: {}", 
-								previousApp.getPetRegistrationNumber(), 
-								application.getPreviousApplicationNumber(), 
-								application.getApplicationNumber());
-					} else if (!petRegNumSet) {
-						log.warn("Previous application: {} exists but petRegistrationNumber is null or empty", previousApp.getApplicationNumber());
-					}
-					
-					// Copy petToken if not already set and available in previous app
-					if (!petTokenSet && previousApp.getPetToken() != null && !previousApp.getPetToken().isEmpty()) {
-						application.setPetToken(previousApp.getPetToken());
-						copiedAny = true;
-						log.info("Copied petToken: {} from previous application: {} to renewal: {}", 
-								previousApp.getPetToken(), 
-								application.getPreviousApplicationNumber(), 
-								application.getApplicationNumber());
-					} else if (!petTokenSet) {
-						log.warn("Previous application: {} exists but petToken is null or empty", previousApp.getApplicationNumber());
-					}
-					
-					if (copiedAny) {
-						log.info("SUCCESS: Copied values from previous application: {} to renewal: {} - petRegistrationNumber: {}, petToken: {}. Values will be persisted to DB.", 
-								application.getPreviousApplicationNumber(), 
-								application.getApplicationNumber(),
-								application.getPetRegistrationNumber() != null ? application.getPetRegistrationNumber() : "null",
-								application.getPetToken() != null ? application.getPetToken() : "null");
-					}
-					
-					return;
-				} else {
-					log.warn("Previous application not found: {} for renewal: {}", 
-							application.getPreviousApplicationNumber(), application.getApplicationNumber());
-				}
-			} else {
-				log.warn("previousApplicationNumber is null or empty for renewal application: {}", application.getApplicationNumber());
+			// Validate that previousApplicationNumber is provided
+			if (application.getPreviousApplicationNumber() == null || application.getPreviousApplicationNumber().isEmpty()) {
+				log.error("previousApplicationNumber is null or empty for renewal application: {}. Cannot copy petToken and petRegistrationNumber.", 
+						application.getApplicationNumber());
+				throw new CustomException("PREVIOUS_APPLICATION_NUMBER_REQUIRED", 
+						"previousApplicationNumber is required for renewal applications to copy petToken and petRegistrationNumber");
 			}
 
-			// If not found, log warning - values will be generated later during payment/approval
-			log.info("petRegistrationNumber and/or petToken not found in previous application for renewal: {}. They will be generated after payment approval if needed.", 
-					application.getApplicationNumber());
+			log.info("Looking for petRegistrationNumber and petToken in previous application: {} for renewal: {}", 
+					application.getPreviousApplicationNumber(), application.getApplicationNumber());
+			
+			// Search for previous application by application number
+			PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
+					.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
+					.tenantId(application.getTenantId())
+					.build();
+			List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
+			
+			if (previousApps == null || previousApps.isEmpty()) {
+				log.error("Previous application not found: {} for renewal: {}. Cannot copy petToken and petRegistrationNumber.", 
+						application.getPreviousApplicationNumber(), application.getApplicationNumber());
+				throw new CustomException("PREVIOUS_APPLICATION_NOT_FOUND", 
+						"Previous application with number " + application.getPreviousApplicationNumber() + " not found. Cannot copy petToken and petRegistrationNumber for renewal.");
+			}
+
+			PetRegistrationApplication previousApp = previousApps.get(0);
+			log.info("Found previous application: {} with petRegistrationNumber: {}, petToken: {}", 
+					previousApp.getApplicationNumber(), 
+					previousApp.getPetRegistrationNumber(), 
+					previousApp.getPetToken());
+			
+			boolean copiedAny = false;
+			
+			// Copy petRegistrationNumber if not already set and available in previous app
+			if (!petRegNumSet) {
+				if (previousApp.getPetRegistrationNumber() != null && !previousApp.getPetRegistrationNumber().isEmpty()) {
+					application.setPetRegistrationNumber(previousApp.getPetRegistrationNumber());
+					copiedAny = true;
+					log.info("Copied petRegistrationNumber: {} from previous application: {} to renewal: {}", 
+							previousApp.getPetRegistrationNumber(), 
+							application.getPreviousApplicationNumber(), 
+							application.getApplicationNumber());
+				} else {
+					log.warn("Previous application: {} exists but petRegistrationNumber is null or empty", previousApp.getApplicationNumber());
+				}
+			}
+			
+			// Copy petToken if not already set and available in previous app
+			if (!petTokenSet) {
+				if (previousApp.getPetToken() != null && !previousApp.getPetToken().isEmpty()) {
+					application.setPetToken(previousApp.getPetToken());
+					copiedAny = true;
+					log.info("Copied petToken: {} from previous application: {} to renewal: {}", 
+							previousApp.getPetToken(), 
+							application.getPreviousApplicationNumber(), 
+							application.getApplicationNumber());
+				} else {
+					log.warn("Previous application: {} exists but petToken is null or empty", previousApp.getApplicationNumber());
+				}
+			}
+			
+			if (copiedAny) {
+				log.info("SUCCESS: Copied values from previous application: {} to renewal: {} - petRegistrationNumber: {}, petToken: {}. Values will be persisted to DB at create time.", 
+						application.getPreviousApplicationNumber(), 
+						application.getApplicationNumber(),
+						application.getPetRegistrationNumber() != null ? application.getPetRegistrationNumber() : "null",
+						application.getPetToken() != null ? application.getPetToken() : "null");
+			} else {
+				log.warn("No values were copied from previous application: {} to renewal: {}. Both petRegistrationNumber and petToken may be missing in previous application.", 
+						application.getPreviousApplicationNumber(), application.getApplicationNumber());
+			}
+			
+		} catch (CustomException e) {
+			// Re-throw CustomException as-is
+			throw e;
 		} catch (Exception e) {
 			log.error("Error copying petRegistrationNumber and petToken from previous application for renewal: {}. Error: {}", 
 					application.getApplicationNumber(), e.getMessage(), e);
-			// Continue processing - values will be generated later during payment/approval
+			throw new CustomException("ERROR_COPYING_PREVIOUS_APPLICATION_DATA", 
+					"Failed to copy petToken and petRegistrationNumber from previous application: " + e.getMessage());
 		}
 	}
 

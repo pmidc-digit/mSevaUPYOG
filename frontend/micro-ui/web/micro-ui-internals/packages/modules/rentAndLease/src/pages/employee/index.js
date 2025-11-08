@@ -82,6 +82,10 @@ const EmployeeApp = ({ path, url, userType }) => {
           />
           {" "}
           <PrivateRoute path={`${path}/new-application`} component={() => <NewChallan parentUrl={url} />} />
+          <PrivateRoute path={`${path}/new-rent-lease-application`} component={() => {
+            const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
+            return <NewRentAndLeaseStepperForm />;
+          }} />
           <PrivateRoute
             path={`${path}/search`}
             component={() => (

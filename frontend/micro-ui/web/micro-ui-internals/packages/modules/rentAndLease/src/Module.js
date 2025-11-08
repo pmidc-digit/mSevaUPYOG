@@ -20,16 +20,48 @@ import SearchReceipt from "./pages/employee/SearchReceipt";
 import SearchChallan from "./pages/employee/SearchChallan";
 import SearchBill from "./pages/employee/SearchBill";
 import GroupBill from "./pages/employee/GroupBills";
+import getRootReducer from "./redux/reducer";
+import NewRentAndLeaseStepperForm from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepperForm";
+import NewRentAndLeaseStepFormOne from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormOne";
+import NewRentAndLeaseStepFormTwo from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormTwo";
+import NewRentAndLeaseStepFormThree from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormThree";
+import NewRentAndLeaseStepFormFour from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormFour";
+import RentAndLeaseCitizenDetails from "./pageComponents/RentAndLeaseCitizenDetails";
+import RentAndLeasePropertyDetails from "./pageComponents/RentAndLeasePropertyDetails";
+import RentAndLeaseSelectProofIdentity from "./pageComponents/RentAndLeaseSelectProofIdentity";
+import RentAndLeaseSummary from "./pageComponents/RentAndLeaseSummary";
+import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
+import CustomDatePicker from "./pageComponents/CustomDatePicker";
+import { Loader as RentAndLeaseLoader } from "./components/Loader";
+
+export const RentAndLeaseReducers = getRootReducer;
 
 export const RentAndLeaseModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
   Digit.SessionStorage.set("ChallanGeneration_TENANTS", tenants);
+  const { path, url } = useRouteMatch();
+
+  // Register components
+  useEffect(() => {
+    initRentAndLeaseComponents();
+  }, []);
+
+  useEffect(
+    () =>
+      userType === "employee" &&
+      Digit.LocalizationService.getLocale({
+        modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+        locale: Digit.StoreData.getCurrentLanguage(),
+        tenantId: Digit.ULBService.getCurrentTenantId(),
+      }),
+    []
+  );
+
   if (isLoading) {
     return <Loader />;
   }
-  const { path, url } = useRouteMatch();
 
   if (userType === "employee") {
     return <EmployeeApp path={path} url={url} userType={userType} />;
@@ -38,7 +70,7 @@ export const RentAndLeaseModule = ({ stateCode, userType, tenants }) => {
 
 export const RentAndLeaseLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("PT_CREATE_PROPERTY112", {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("RENT_LEASE_CREATE", {});
 
   useEffect(() => {
     clearParams();
@@ -52,6 +84,10 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
     {
       link: `${matchPath}/My-Challans`,
       i18nKey: t("UC_MY_CHALLANS"),
+    },
+    {
+      link: `${matchPath}/new-application`,
+      i18nKey: t("RENT_LEASE_CREATE_APPLICATION"),
     },
   ];
 
@@ -77,6 +113,19 @@ const componentsToRegister = {
   SearchBill,
   GroupBill,
   MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  // New stepper form components
+  NewRentAndLeaseStepperForm,
+  NewRentAndLeaseStepFormOne,
+  NewRentAndLeaseStepFormTwo,
+  NewRentAndLeaseStepFormThree,
+  NewRentAndLeaseStepFormFour,
+  RentAndLeaseCitizenDetails,
+  RentAndLeasePropertyDetails,
+  RentAndLeaseSelectProofIdentity,
+  RentAndLeaseSummary,
+  RentAndLeaseDocument,
+  CustomDatePicker,
+  RentAndLeaseLoader,
 };
 
 export const initRentAndLeaseComponents = () => {

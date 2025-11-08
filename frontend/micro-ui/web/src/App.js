@@ -26,6 +26,7 @@ import {
   RentAndLeaseModule,
   RentAndLeaseLinks,
   initRentAndLeaseComponents,
+  RentAndLeaseReducers,
 } from "@mseva/digit-ui-module-rentandlease";
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import {
@@ -207,6 +208,7 @@ const moduleReducers = (initData) => ({
   noc: NOCReducers(initData),
   obps: OBPSReducers(initData),
   challan: ChallanReducers(initData),
+  rentAndLease: RentAndLeaseReducers(initData),
 });
 
 function App() {

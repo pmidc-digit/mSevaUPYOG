@@ -1,0 +1,53 @@
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Toast } from "@mseva/digit-ui-react-components";
+import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
+import { useState } from "react";
+import RentAndLeaseCitizenDetails from "../RentAndLeaseCitizenDetails";
+import { useTranslation } from "react-i18next";
+import _ from "lodash";
+
+const NewRentAndLeaseStepFormOne = ({ config, onGoNext, onBackClick }) => {
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+
+  const currentStepData = useSelector(function (state) {
+    return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
+  });
+
+  function goNext(data) {
+    console.log("NewRentAndLeaseStepFormOne - goNext called with data:", data);
+    console.log("NewRentAndLeaseStepFormOne - config.key:", config.key);
+    console.log("NewRentAndLeaseStepFormOne - onGoNext function:", onGoNext);
+    dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM(config.key, data));
+    console.log("NewRentAndLeaseStepFormOne - About to call onGoNext()");
+    if (onGoNext && typeof onGoNext === 'function') {
+      onGoNext();
+    } else {
+      console.error("NewRentAndLeaseStepFormOne - onGoNext is not a function!", onGoNext);
+    }
+  }
+
+  function onGoBack(data) {
+    onBackClick(config.key, data);
+  }
+
+  const closeToast = () => {
+    setShowToast(false);
+    setError("");
+  };
+
+  return (
+    <React.Fragment>
+      <div className="employeeCard">
+        <RentAndLeaseCitizenDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+        {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      </div>
+    </React.Fragment>
+  );
+};
+
+export default NewRentAndLeaseStepFormOne;
+

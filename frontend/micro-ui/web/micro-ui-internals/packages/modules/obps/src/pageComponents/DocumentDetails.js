@@ -36,6 +36,7 @@ import DocumentsPreview from "../../../templates/ApplicationDetails/components/D
 import { stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
 import EXIF from "exif-js";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, currentStepData, onGoBack }) => {
   const stateId = Digit.ULBService.getStateId();
@@ -157,6 +158,12 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
   const onSkip = () => onSelect();
   function onAdd() { }
+  useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });
+  }, [])
   useEffect(() => {
     const allRequiredDocumentsCode = bpaTaxDocuments.filter((e) => e.required).map((e) => e.code);
 
@@ -416,20 +423,21 @@ function SelectDocument({
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
         <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
-          <UploadFile
+          <CustomUploadFile
             id={"tl-doc"}
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
             }}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept="image/*,.pdf"
           // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
-          {uploadedFile ? <div>
+          {/* {uploadedFile ? <div>
             <SubmitBar onSubmit={() => {routeTo(uploadedFile)}} label={t("CS_VIEW_DOCUMENT")} />
-          </div> : null }
+          </div> : null } */}
         </div>
       </LabelFieldPair>
 

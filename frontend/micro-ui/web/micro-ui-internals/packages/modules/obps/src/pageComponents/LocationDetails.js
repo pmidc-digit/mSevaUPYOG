@@ -56,6 +56,13 @@ const [isFileLoading, setIsFileLoading] = useState(false);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });
+  }, [])
+
   useEffect(()=>{
     if(typeof selectedCity === "string"){
       if(selectedCity?.includes("pb.")){
@@ -494,6 +501,8 @@ if (response?.data?.files?.length > 0) {
     borderRadius: "8px",
  
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+
+    maxHeight: "130px"
   };
 
   const headingStyle = {
@@ -683,7 +692,7 @@ return (
         </div>
 
         {/* Site Photograph Section */}
-        <div style={sectionStyle}>
+        <div style={{backgroundColor: "#ffffff", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",}}>
           <h2 style={headingStyle}>{t("BPA_LOC_SITE_PHOTOGRAPH")}</h2>
 
           <UploadFile

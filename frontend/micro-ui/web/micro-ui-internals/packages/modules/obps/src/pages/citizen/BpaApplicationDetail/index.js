@@ -168,16 +168,6 @@ const BpaApplicationDetail = () => {
   const ecbcDocumentsData = useMemo(() => {
   const docs = getDocsFromFileUrls(fileUrls) || [];
 
-  if (docs.length === 0) {
-    return [
-      {
-        id: 0,
-        title: t("CS_NA"),
-        fileUrl: null,
-      },
-    ];
-  }
-
   return docs.map((doc, index) => ({
     id: index,
     title: doc.title ? t(doc.title) : t("CS_NA"),
@@ -1742,7 +1732,7 @@ useEffect(() => {
                             />}                          
                           {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                          
-                            {(pdfLoading || isFileLoading) ? <Loader /> : <Table
+                            {ecbcDocumentsData?.length>0 &&<div>{(pdfLoading || isFileLoading) ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={ecbcDocumentsData}
@@ -1752,7 +1742,7 @@ useEffect(() => {
                               autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}                          
+                            />}</div>}
                           {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
                             
@@ -2110,6 +2100,7 @@ useEffect(() => {
         {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && (
           <div>
             <Card>
+              <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
               <React.Fragment>
                 <div>
                   <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>

@@ -8,6 +8,14 @@ const EDCRAcknowledgement = (props) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(false);
   console.log("D++++++++");
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });
+  }, [])
+
   useEffect(() => {
     console.log("props.data.type =>", props?.data?.type);
     console.log("Before setting: isPermitApplication =", sessionStorage.getItem("isPermitApplication"));

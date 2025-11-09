@@ -226,7 +226,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     </div>
 
     <div style="margin-top:-52px;">
-      <p style="margin-bottom:-32px;"><strong>To,</strong></p>
+      <p style="margin-bottom:-32px;"><strong>To</strong></p>
       <p style="margin-bottom:-32px;"><strong>${ulbselection || "<ULB Type>"}</strong></p>
       <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import {isEqual} from "lodash";
+import _ from "lodash";
 
 const NOCFeeEstimationDetails = ({ formData }) => {
   const { t } = useTranslation();
@@ -66,7 +66,7 @@ const NOCFeeEstimationDetails = ({ formData }) => {
   const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
   useEffect(() => {
-   if (!isEqual(prevSiteDetails, formData?.siteDetails)) {
+   if (!_.isEqual(prevSiteDetails, formData?.siteDetails)) {
      revalidate();
      setPrevSiteDetails(formData?.siteDetails);
    }

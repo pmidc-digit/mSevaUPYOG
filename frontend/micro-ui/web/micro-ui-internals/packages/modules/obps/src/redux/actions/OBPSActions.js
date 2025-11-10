@@ -1,4 +1,4 @@
-import { UPDATE_OBPS_FORMType, SET_OBPS_STEPType,RESET_OBPS_FORMType } from "./types";
+import { UPDATE_OBPS_FORMType, SET_OBPS_STEPType,RESET_OBPS_FORMType, UPDATE_OBPS_CoOrdinatesType} from "./types";
 
 export const UPDATE_OBPS_FORM = (key, value) => ({
   type: UPDATE_OBPS_FORMType,
@@ -12,4 +12,9 @@ export const SET_OBPS_STEP = (step) => ({
 
 export const RESET_OBPS_FORM = () => ({
   type: RESET_OBPS_FORMType,
+});
+
+export const UPDATE_OBPS_CoOrdinates = (key, value) => ({
+  type: UPDATE_OBPS_CoOrdinatesType,
+  payload: { key, value },
 });

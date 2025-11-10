@@ -6,12 +6,13 @@ import { getActionButton } from "../utils";
 import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
+import InboxFilter from "./inbox/NewInboxFilter";
 
-const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
+const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...props }) => {
   const { data } = props;
-  console.log("data", data);
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
+  const tenantId = Digit.ULBService.getCurrentPermanentCity();
 
   // challans, workFlowData
 
@@ -50,7 +51,8 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
         return (
           <div>
             <span className="link">
-              <Link to={`${props.parentRoute}/challansearch/` + row.original?.["challanNo"]}>{row.original?.["challanNo"]}</Link>
+              <Link to={`${props.parentRoute}/application/${row.original?.challanNo}/${tenantId}`}>{row.original?.["challanNo"]}</Link>
+              {/* <Link to={`${props.parentRoute}/challansearch/` + row.original?.["challanNo"]}>{row.original?.["challanNo"]}</Link> */}
             </span>
           </div>
         );
@@ -65,29 +67,20 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       mobileCell: (original) => GetMobCell(original?.["name"]),
     },
     {
-      Header: t("UC_SERVICE_CATEGORY_LABEL"),
+      Header: t("CHALLAN_OFFENCE_TYPE"),
       Cell: ({ row }) => {
-        let code = stringReplaceAll(`${row.original?.["businessService"]}`, ".", "_");
-        code = code.toUpperCase();
-        return GetCell(t(`BILLINGSERVICE_BUSINESSSERVICE_${code}`));
+        return GetCell(`${row.original?.["offenceName"]}`);
       },
-      mobileCell: (original) => GetMobCell(`BILLINGSERVICE_BUSINESSSERVICE_${original?.["businessService"]}`),
+      mobileCell: (original) => GetMobCell(original?.["offenceName"]),
     },
-    {
-      Header: t("UC_RECEPIT_NO_LABEL"),
-      Cell: ({ row }) => {
-        return row.original?.["receiptNumber"] ? GetCell(`${row.original?.["receiptNumber"]}`) : "-";
-      },
-      mobileCell: (original) => GetMobCell(original?.["receiptNumber"]) || "-",
-    },
-    {
-      Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
-      Cell: ({ row }) => {
-        const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
-        return GetCell(t(`${dueDate}`));
-      },
-      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
-    },
+    // {
+    //   Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
+    //   Cell: ({ row }) => {
+    //     const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
+    //     return GetCell(t(`${dueDate}`));
+    //   },
+    //   mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
+    // },
     {
       Header: t("UC_COMMON_TOTAL_AMT"),
       Cell: ({ row }) => {
@@ -103,38 +96,38 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       },
       mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
     },
-    {
-      Header: t("WS_COMMON_TABLE_COL_ACTION"),
-      Cell: ({ row }) => {
-        const amount = row.original?.totalAmount;
-        let action = "ACTIVE";
-        if (amount > 0) action = "COLLECT";
-        if (action == "COLLECT") {
-          return (
-            <div>
-              <span className="link">
-                <Link
-                  to={{
-                    pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
-                  }}
-                >
-                  {t(`UC_${action}`)}
-                </Link>
-              </span>
-            </div>
-          );
-        } else if (row.original?.applicationStatus == "PAID") {
-          return (
-            <div>
-              <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
-            </div>
-          );
-        } else {
-          return GetCell(t(`${"CS_NA"}`));
-        }
-      },
-      mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
-    },
+    // {
+    //   Header: t("WS_COMMON_TABLE_COL_ACTION"),
+    //   Cell: ({ row }) => {
+    //     const amount = row.original?.totalAmount;
+    //     let action = "ACTIVE";
+    //     if (amount > 0) action = "COLLECT";
+    //     if (action == "COLLECT") {
+    //       return (
+    //         <div>
+    //           <span className="link">
+    //             <Link
+    //               to={{
+    //                 pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
+    //               }}
+    //             >
+    //               {t(`UC_${action}`)}
+    //             </Link>
+    //           </span>
+    //         </div>
+    //       );
+    //     } else if (row.original?.applicationStatus == "PAID") {
+    //       return (
+    //         <div>
+    //           <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
+    //         </div>
+    //       );
+    //     } else {
+    //       return GetCell(t(`${"CS_NA"}`));
+    //     }
+    //   },
+    //   mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+    // },
   ];
 
   let result;
@@ -192,14 +185,20 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
         <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.businessService} />
           <div>
-            {
-              <FilterComponent
-                defaultSearchParams={props.defaultSearchParams}
-                onFilterChange={props.onFilterChange}
-                searchParams={props.searchParams}
-                type="desktop"
-              />
-            }
+            {/* <FilterComponent
+              defaultSearchParams={props.defaultSearchParams}
+              onFilterChange={props.onFilterChange}
+              searchParams={props.searchParams}
+              type="desktop"
+            /> */}
+            {/* import InboxFilter from "./components/inbox/NewInboxFilter"; */}
+            <InboxFilter
+              defaultSearchParams={props.defaultSearchParams}
+              onFilterChange={props.onFilterChange}
+              searchParams={props.searchParams}
+              type="desktop"
+              statutes={statutes}
+            />
             {/* <Filter
               businessService={props.businessService}
               searchParams={props.searchParams}

@@ -235,6 +235,8 @@ const jsPdfGeneratorNDC = async ({
   details,
   applicationNumber,
   approvalDate,
+  approver,
+  ulbType,
   t = (text) => text,
   imageURL,
 }) => {
@@ -264,6 +266,7 @@ const jsPdfGeneratorNDC = async ({
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
   qrCodeDataUrl = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
+  const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   const dd = {
     background: [
       {
@@ -273,30 +276,13 @@ const jsPdfGeneratorNDC = async ({
       },
     ],
     margin: [20, 20, 20, 20],
-
     header: {},
-
-    footer: function (currentPage, pageCount) {
-      return {
-        columns: [
-          {
-            text: `Page ${currentPage}`,
-            alignment: "right",
-            margin: [0, -17, 50, 0],
-            fontSize: 11,
-            color: "#6f777c",
-            font: "Hind",
-          },
-        ],
-      };
-    },
-
     content: [
-      ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl),
+      ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType),
       {
         stack: [
           { 
-            text: `Date : ${approvalDate}`, 
+            text: `Date Of Issuance : ${approvalDate}`, 
             font: "Hind", 
             fontSize: 11, 
             margin: [0, 2, 0, 0], 
@@ -308,24 +294,40 @@ const jsPdfGeneratorNDC = async ({
       },
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
-        stack: [
-          { text: "Issued By", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
-          { text: "Competent Authority", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
-          { text: "Name of Officer", font: "Hind", fontSize: 11, margin: [0,0, 0, 0], bold: true },
-          { text: "Designation of Officer", font: "Hind", fontSize: 11 },
-          { text: approvalDate, font: "Hind", fontSize: 11 }
+        text: [
+          { text: "Approved By  ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
+          { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
         ],
-        alignment: "right",
-        margin: [0, 0, 20, 0],
+        alignment: "left",
+        margin: [9, 10, 20, 0],
       },
       {
-        text: "Note: The authenticity of this document can be verified by scanning the QR code mentioned on the document.",
-        font: "Hind",
-        fontSize: 8,
-        color: "#6f777c",
-        margin: [10, 10],
-        alignment: "center",
+        stack: [
+          { text: "Issuing Authority", font: "Hind", fontSize: 11, bold: true, margin: [0, -10, 0, 0] },
+          {
+            text: [
+              { text: ulbType + " ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0],bold: true },
+              { text: ulb, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true }
+
+            ]
+          }
+        ],
+        alignment: "right",
+        margin: [0, 0, 20, 0]
       },
+      {
+      stack: [
+        { text: "Note:-", font: "Hind", fontSize: 8 },
+        { text: "1. The authenticity of this document can be verified by scanning the QR code mentioned on the document.", font: "Hind", fontSize: 8 },
+        { text: "2. For further information please visit 'https://mseva.lgpunjab.gov.in/' ", font: "Hind", fontSize: 8 },
+        { text: "3. The responsibility of verification of this document before accepting the same for any legal purposes would rest with the Institution / Organization / Company or any other Entity where this document is produced.", font: "Hind", fontSize: 8 },
+        { text: "4. This is computer generated certificate and does not require hand written signature.", font: "Hind", fontSize: 8 },
+        { text: "5. In case of any discrepancy please inform the issuing authority of the certificate.", font: "Hind", fontSize: 8 }
+      ],
+      alignment: "left",
+      margin: [10, 2]
+    },
+
     ],
 
     defaultStyle: {
@@ -1185,7 +1187,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
   return headerData;
 }
 
-function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl) {
+function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType) {
   const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
@@ -1216,7 +1218,7 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
                 margin: [0, 15, 0, 4],
               },
               {
-                text: ` Municipal Corporation ${ulb}`,
+                text: ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`,
                 fontSize: 11,
                 alignment: "center",
               },
@@ -1514,7 +1516,7 @@ function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumbe
             stack: [
               {
                 style: "tableExample",
-                margin: [10, 20, 10, 2],
+                margin: [10, 20, 0, 2],
                 layout: "noBorders",
                 table: {
                   widths: ["100%"],
@@ -1523,7 +1525,7 @@ function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumbe
                       {
                         text: detail.title,
                         border: [true, true, true, false],
-                        color: "#454545",
+                        color: "#000000ff",
                         fontSize: 14,
                         bold: true,
                       },

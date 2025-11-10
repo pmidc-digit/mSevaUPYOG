@@ -168,16 +168,6 @@ const BpaApplicationDetail = () => {
   const ecbcDocumentsData = useMemo(() => {
   const docs = getDocsFromFileUrls(fileUrls) || [];
 
-  if (docs.length === 0) {
-    return [
-      {
-        id: 0,
-        title: t("CS_NA"),
-        fileUrl: null,
-      },
-    ];
-  }
-
   return docs.map((doc, index) => ({
     id: index,
     title: doc.title ? t(doc.title) : t("CS_NA"),
@@ -803,8 +793,8 @@ useEffect(() => {
     //   alert("Please Accept Terms, Upload and Accept Decleration");
     //   return 
     // }
-    console.log("SelectedAction", action)
     const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
+    console.log("SelectedAction", action, isCitizenConsentIncluded, isUserCitizen)
     if (isCitizenConsentIncluded) {
       if (!agree) {
         setIsEnableLoader(false);
@@ -847,20 +837,114 @@ useEffect(() => {
       getBPAFormData(data?.applicationData, mdmsData, history, t)
     }
     if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "APPROVE_AND_PAY"){
+      if(!validateDataForAction(action)){
+        return;
+      }
       saveAsDraft(data?.applicationData, action)
     }
     setSelectedAction(action)
     setDisplayMenu(false)
   }
 
+  const validateDataForAction = (action) => {
+    if(action === "SEND_TO_CITIZEN"){
+      const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      if(!isArchitectUnderTakingIncluded) {
+        setShowToast({
+          key: "error",
+          action: "Please_Upload_Architect_UnderTaking"
+        })
+        return false
+      }
+      else{
+        return true
+      }
+    }
+    else if(action === "APPROVE_AND_PAY"){
+      if (!isTocAccepted) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Terms_And_Condition_Not_Accepted")
+        });
+        return false;
+      }
+      else if (!agree) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_accepted")
+        });
+        return false;
+      }
+      else if (!otpVerifiedTimestamp) { //notto
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
+        });
+        return false;
+      }
+      else if (!sessionStorage.getItem("CitizenConsentdocFilestoreid")) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_uploaded")
+        });
+        return false;
+      }
+      else{
+        return true
+      }
+    }
+    else{
+      return true;
+    }
+  }
+
   const saveAsDraft = async (data,action ) => {
     console.log("SEND_TO_CITIZEN_Action",data)
+    const app = data || {};
+    const docs = Array.isArray(app.documents) ? app.documents : [];
+    const dedupedDocs = Array.from(
+      docs.reduce((map, doc) => {
+        const key = doc?.documentType;
+        if (!key) return map;
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, doc);
+        } else if (!existing.fileStoreId && doc.fileStoreId) {
+          map.set(key, doc);
+        }
+        return map;
+      }, new Map()).values()
+    );
+    const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen;
+
     if(!data?.additionalDetails?.selfCertificationCharges){
       setShowToast({
         key: "error",
         action: "Please_Complete_Application_First"
       })
       return;
+    }
+    let updatedDocuments
+    if(action === "APPROVE_AND_PAY" && isCitizenConsentIncluded){
+      const citizenUndertakingExists = dedupedDocs?.some(
+        (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
+      )
+      updatedDocuments = [
+        ...dedupedDocs.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
+        ...(citizenUndertakingExists
+          ? dedupedDocs.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
+          : [
+            {
+              documentType: "CITIZEN.UNDERTAKING",
+              fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+              fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+            },
+          ]),
+      ]
     }
     const userInfo = Digit.UserService.getUser()
     const accountId = userInfo?.info?.uuid
@@ -871,6 +955,7 @@ useEffect(() => {
                 BPA: {
                   ...data,
                   riskType: data?.additionalDetails?.riskType,
+                  documents: (isCitizenConsentIncluded && action === "APPROVE_AND_PAY") ? updatedDocuments : app.documents,
                   workflow: {
                         action: workflowAction,
                         assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
@@ -879,7 +964,12 @@ useEffect(() => {
             }, tenantId)
             if (result?.ResponseInfo?.status === "successful") {
                 setApiLoading(false);
-                history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`);
+                if(action === "APPROVE_AND_PAY"){
+                  history.replace(`/digit-ui/citizen/obps/response`, { data: result });                  
+                }
+                else{
+                  history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`);
+                }                
             } else {
                 alert(t("BPA_CREATE_APPLICATION_FAILED"));
                 setApiLoading(false);
@@ -1123,6 +1213,7 @@ useEffect(() => {
         },
         onSuccess: (data, variables) => {
           setIsEnableLoader(false);
+          console.log("dataOfResponse", data);
           history.replace(`/digit-ui/citizen/obps/response`, { data: data });
           setShowModal(false);
           setShowToast({ key: "success", action: selectedAction });
@@ -1426,11 +1517,11 @@ useEffect(() => {
             console.log("detailforme", detail)
             return (
               <div key={index}>
-                {detail?.title === "BPA_BASIC_DETAILS_TITLE" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
+                {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
                 {!detail?.isNotAllowed ? (
                   <Card
                     key={index}
-                    style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
+                    // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
                   >
                     {!detail?.isTitleVisible ? (
                       <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
@@ -1452,6 +1543,13 @@ useEffect(() => {
                           : {}
                       }
                     >
+                      {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                          ? detail?.additionalDetails?.values?.map((value) => (
+                            <div key={value?.title}>
+                              {!detail?.isTitleRepeat && value?.isHeader ? (
+                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                              ) : null}
+                      </div>)) : null}
                       <StatusTable>
                         {/* to get common values */}
                         {detail?.isCommon && detail?.values?.length > 0
@@ -1527,9 +1625,9 @@ useEffect(() => {
                                   }
                                 />
                               ) : null}
-                              {!detail?.isTitleRepeat && value?.isHeader ? (
+                              {/* {!detail?.isTitleRepeat && value?.isHeader ? (
                                 <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
-                              ) : null}
+                              ) : null} */}
                             </div>
                           ))
                           : null}
@@ -1620,8 +1718,7 @@ useEffect(() => {
 
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
                           {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                          <StatusTable>                            
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
                             {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1632,12 +1729,10 @@ useEffect(() => {
                               autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}
-                          </StatusTable>
+                            />}                          
                           {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                          <StatusTable>                            
-                            {(pdfLoading || isFileLoading) ? <Loader /> : <Table
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                          
+                            {ecbcDocumentsData?.length>0 &&<div>{(pdfLoading || isFileLoading) ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={ecbcDocumentsData}
@@ -1647,24 +1742,11 @@ useEffect(() => {
                               autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}
-                          </StatusTable>
+                            />}</div>}
                           {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                          <StatusTable>                            
-                            {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
-                              className="customTable table-border-style"
-                              t={t}
-                              data={ownerDocumentsData}
-                              columns={documentsColumnsOwner}
-                              getCellProps={() => ({ style: {} })}
-                              disableSort={false}
-                              autoSort={true}
-                              manualPagination={false}
-                              isPaginationRequired={false}
-                            />}
-                          </StatusTable>
-                          </>)}
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                            
+                          </>)}                          
 
                         {/* to get FieldInspection values */}
                         {detail?.isFieldInspection &&
@@ -1820,6 +1902,17 @@ useEffect(() => {
                             </div>
                           )}
                       </StatusTable>
+                      {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <div style={{ marginTop: "5px" }}>{(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
+                        className="customTable table-border-style"
+                        t={t}
+                        data={ownerDocumentsData}
+                        columns={documentsColumnsOwner}
+                        getCellProps={() => ({ style: {} })}
+                        disableSort={false}
+                        autoSort={true}
+                        manualPagination={false}
+                        isPaginationRequired={false}
+                      />}</div>}
                     </div>
                   </Card>
                 ) : null}
@@ -2007,6 +2100,7 @@ useEffect(() => {
         {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && (
           <div>
             <Card>
+              <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
               <React.Fragment>
                 <div>
                   <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>

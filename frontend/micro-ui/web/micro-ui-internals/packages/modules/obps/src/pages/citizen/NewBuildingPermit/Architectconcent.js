@@ -51,17 +51,31 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
   // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
-  const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.timeStamp?.TimeStamp || "");
-  const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.timeStamp?.isArchitectDeclared || "");
-  const DateOnly = TimeStamp
-  ? (() => {
-      const d = new Date(TimeStamp);
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    })()
-  : "";
+  const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.TimeStamp?.TimeStamp || "");
+  const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.TimeStamp?.isArchitectDeclared || "");
+  const parseFormattedTimestamp = (str) => {
+    // Example input: "06 November 2025 Thursday 05:16:41 PM IST"
+    const [day, monthName, year, , time, period] = str?.split(" ");
+    const [hour, minute, second] = time?.split(":");
+    const month = new Date(`${monthName} 1, 2000`).getMonth(); // get month index
+
+    let h = Number(hour);
+    if (period === "PM" && h !== 12) h += 12;
+    if (period === "AM" && h === 12) h = 0;
+
+    return new Date(year, month, Number(day), h, Number(minute), Number(second));
+  };
+  const d = TimeStamp === "" ? "" : parseFormattedTimestamp(TimeStamp);
+  const DateOnly = TimeStamp === "" ? "" : `${String(d?.getDate()).padStart(2, "0")}/${String(d?.getMonth() + 1).padStart(2, "0")}/${d?.getFullYear()}`;
+  // const DateOnly = TimeStamp
+  // ? (() => {
+  //     const d = new Date(TimeStamp);
+  //     const month = String(d.getMonth() + 1).padStart(2, "0");
+  //     const day = String(d.getDate()).padStart(2, "0");
+  //     const year = d.getFullYear();
+  //     return `${day}/${month}/${year}`;
+  //   })()
+  // : "";
 
   // const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
 
@@ -70,7 +84,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   useEffect(() => {
     console.log("currentStepDataInArchitectConsent", currentStepData);
     if(currentStepData?.Timestamp?.TimeStamp){
-      setTimeout(currentStepData?.Timestamp?.TimeStamp)
+      setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp)
     }
     if(currentStepData?.Timestamp?.isArchitectDeclared){
       setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared)
@@ -117,7 +131,7 @@ const selfdeclarationform = `
     </div>
 
     <div style="margin-top:-52px;">
-      <p style="margin-bottom:-32px;"><strong>To:</strong></p>
+      <p style="margin-bottom:-32px;"><strong>To</strong></p>
       <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.districtName}</p>
@@ -262,7 +276,7 @@ const selfdeclarationform = `
       const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [paramsWithTimestamp] }, "architectconsent");
 
       if (result?.filestoreIds?.[0]) {
-        alert("File Uploaded Successfully");
+        alert(t("File Uploaded Successfully"));
         // sessionStorage.setItem("ArchitectConsentdocFilestoreid", result.filestoreIds[0]);
         onSelect({
           isArchitectDeclared: result?.filestoreIds?.[0],
@@ -326,11 +340,29 @@ const selfdeclarationform = `
         setOTPSuccess(t("VERIFIED"));
         setOTPError(false);
         const currentTimestamp = new Date();
-        setOTPVerifiedTimestamp(currentTimestamp);
-        sessionStorage.setItem("otpVerifiedTimestamp", currentTimestamp.toISOString());
+        const opts = {
+          timeZone: "Asia/Kolkata",  // ensures IST
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+          timeZoneName: "short"
+        };
+
+        const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(currentTimestamp);
+        const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+        // assemble in required order: day month year weekday time dayPeriod timezone
+        const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
+        setOTPVerifiedTimestamp(formatted);
+        sessionStorage.setItem("otpVerifiedTimestamp", formatted);
         setSetOtpLoading(false);
         setUser({ info, ...tokens });
-        return currentTimestamp;
+        return formatted;
       } else {
         // setIsOTPVerified(false);
         setOTPError(t("WRONG OTP"));

@@ -45,6 +45,13 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   console.log(subOccupancy, data, "OCCUPANCY");
 
   useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });
+  }, [])
+
+  useEffect(() => {
     if (!isMdmsLoading && currentStepData?.BasicDetails?.occupancyType) {
       const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
 
@@ -510,7 +517,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
               }
             ></Row>
           </StatusTable>
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
           <CardSubHeader style={headingStyle}>
             {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
           </CardSubHeader>
@@ -541,7 +548,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
             ></Row>
           </StatusTable>
 
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
           <CardSubHeader style={headingStyle}>
             {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
           </CardSubHeader>
@@ -574,10 +581,10 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
             ></Row>
           </StatusTable>
 
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
           <CardSubHeader style={headingStyle}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
           {data?.planDetail?.blocks?.map((block, index) => (
-            <div key={index} style={{ marginTop: "20px" }}>
+            <div key={index} style={{ marginTop: "5px" }}>
    
 
 
@@ -624,7 +631,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
      
             </div>
           ))}
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
           <CardSubHeader style={headingStyle}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
             <Row

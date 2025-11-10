@@ -130,6 +130,8 @@ const Urls = {
     reciept_search: "/collection-services/payments/:businessService/_search",
     generate_pdf: "/pdf-service/v1/_create",
     file_fetch: "/filestore/v1/files/url",
+    create_new: "/challan-generation/challan/_create",
+    search_new: "/challan-generation/challan/_search",
   },
 
   rentAndLease: {

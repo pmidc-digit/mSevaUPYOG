@@ -64,6 +64,19 @@ import CitizenConsent from "./pages/citizen/BpaApplicationDetail/CitizenConsent"
 
 import getRootReducer from "./redux/reducers";
 
+import CLUStepperForm from "./pages/citizen/ChangeOfLand/CLUStepperForm";
+import CLUStepFormOne from "./pages/citizen/ChangeOfLand/CLUStepFormOne";
+import CLUStepFormTwo from "./pages/citizen/ChangeOfLand/CLUStepFormTwo";
+import CLUStepFormThree from "./pages/citizen/ChangeOfLand/CLUStepFormThree";
+import CLUStepFormFour from "./pages/citizen/ChangeOfLand/CLUStepFormFour";
+import CLULocalityInfo from "./pageComponents/CLULocalityInfo";
+import CLUSiteDetails from "./pageComponents/CLUSiteDetails";
+import CLUSpecificationDetails from "./pageComponents/CLUSpecificationDetails";
+import CLUDocumentsRequired from "./pageComponents/CLUDocumentsRequired";
+import CLUApplicantDetails from "./pageComponents/CLUApplicantDetails";
+import CLUProfessionalDetails from "./pageComponents/CLUProfessionalDetails";
+import CLUSummary from "./pageComponents/CLUSummary";
+
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
 import LayoutStepFormTwo from "./pages/citizen/LayoutStepper/LayoutStepFormTwo";
@@ -237,7 +250,19 @@ const componentsToRegister = {
   dummy,
   LayoutApplicationOverview,
   LayoutResponseEmployee,
-  NewLayoutEditLayoutApplication: EditLayoutApplication
+  NewLayoutEditLayoutApplication: EditLayoutApplication,
+  CLUStepperForm,
+  CLUStepFormOne,
+  CLUStepFormTwo,
+  CLUStepFormThree,
+  CLUStepFormFour ,
+  CLULocalityInfo,
+  CLUSiteDetails,
+  CLUSpecificationDetails,
+  CLUDocumentsRequired,
+  CLUApplicantDetails,
+  CLUProfessionalDetails,
+  CLUSummary
 }
 
 export const initOBPSComponents = () => {

@@ -22,6 +22,10 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(state, "BPA", ["homePageUrlLinks"]);
   const [showToast, setShowToast] = useState(null);
   const [totalCount, setTotalCount] = useState("-");
+  const user = Digit.UserService?.getUser()
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const isUserLoggedIn = user?.access_token
+  const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || (user?.info?.roles?.some(role => role?.code?.includes("BPA")) && user?.info?.roles?.find(role => role?.code?.includes("BPA"))?.tenantId === tenantId);
 
   const closeToast = () => {
     window.location.replace("/digit-ui/citizen/all-services");
@@ -93,13 +97,14 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         });
       });
       const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
+      console.log("uniqueRoles",uniqueRoles)
       let isRoute = false;
       uniqueRoles?.map((unRole) => {
         if (userRoles?.includes(unRole) && !isRoute) {
           isRoute = true;
         }
       });
-      if (!isRoute) {
+      if (!isUserRegistered) {
         setStakeholderRoles(false);
         setShowToast({ key: "true", message: t("BPA_LOGIN_HOME_VALIDATION_MESSAGE_LABEL") });
       } else {
@@ -192,7 +197,17 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           link: `layout/apply`,
           i18nKey: t("BPA_LAYOUT_LABEL"),
         },
-        
+      ],
+      styles: { minWidth: "90%", minHeight: "90%" },
+    },
+    {
+      title: t("ACTION_TEST_CLU_HOME"),
+      Icon: <EDCRIcon className="fill-path-primary-main" />,
+      links: [
+        {
+          link: `clu/apply`,
+          i18nKey: t("BPA_CHANGE_OF_LAND_USE_LABEL"),
+        },
       ],
       styles: { minWidth: "90%", minHeight: "90%" },
     },

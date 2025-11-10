@@ -117,7 +117,7 @@ const PTRWFApplicationTimeline = (props) => {
                 // pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`,
 
                 pathname: isCitizen
-                  ? `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`
+                  ? `/digit-ui/citizen/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}`
                   : `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}`,
 
                 state: { tenantId: props.application.tenantId, applicationNumber: props?.application?.applicationNumber },

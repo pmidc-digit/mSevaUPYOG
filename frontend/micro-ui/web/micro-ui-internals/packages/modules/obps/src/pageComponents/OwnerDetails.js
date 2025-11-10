@@ -22,6 +22,7 @@ import {
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 const ErrorMessage = ({ message }) => {
   if (!message) return null;
@@ -29,7 +30,7 @@ const ErrorMessage = ({ message }) => {
 };
 
 const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData, onGoBack }) => {
-  console.log("formdatatstd", formData)
+  console.log("formdatatstd", currentStepData)
 
   let validation = {}
   sessionStorage.removeItem("currentPincode")
@@ -260,7 +261,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     }
   }, [genderList])
 
-  useEffect(() => {
+  useEffect(() => {    
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });      
     try {
       const raw = sessionStorage.getItem("Digit.BUILDING_PERMIT")
       if (!raw) return
@@ -662,6 +667,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         newErrors[`name_${index}`] = t("Name is required");
         isValid = false;
       }
+      if(owner?.isPrimaryOwner && owner?.name && !(owner?.name?.trim() === currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName?.trim())){
+        newErrors[`name_${index}`] = t("PRIMARY_OWNER_APPLICANT_NAME_VALIDATION_MESSAGE");
+        isValid = false;
+      }
       if (!owner?.gender?.code) {
         newErrors[`gender_${index}`] = t("Gender is required");
         isValid = false;
@@ -940,18 +949,16 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       <div className="field-container">
                         <div
                           style={{
-                            position: "relative",
-                            zIndex: "100",
-                            left: "35px",
-                            marginTop: "-24px",
-                            marginLeft: Webview ? "-25px" : "-25px",    
-                            borderRight: "1px solid"
+                            marginBottom: "24px",
+                            padding: "3px 2px",
+                            border: "1px solid #b4b4b4",
+                            borderRadius: "8px 0px 0px 8px"
                           }}
                         >
                           +91
                         </div>
                         <TextInput
-                          style={{ background: "#FAFAFA", padding: "0px 39px" }}
+                          style={{ background: "#FAFAFA", padding: "0px 4px", borderRadius: "0px 8px 8px 0px", width: "96%"  }}
                           type={"text"}
                           t={t}
                           isMandatory={false}
@@ -970,7 +977,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                           style={{
                             position: "relative",
                             zIndex: "100",
-                            right: "35px",
+                            right: "44px",
                             marginTop: "-24px",
                             marginRight: Webview ? "-20px" : "-20px",
                           }}
@@ -1061,7 +1068,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       style={{ marginTop: "30px" }}
                     >{`${t("Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB)")} *`}</CardLabel>
                     <div style={{display:"flex", flexDirection:Webview?"row":"column", gap:"15px"}}>
-                    <UploadFile
+                    <CustomUploadFile
                       id={`document-upload-${index}`}
                       onUpload={selectDocumentFile(index)}
                       onDelete={() => {
@@ -1069,20 +1076,21 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }))
                         setErrors((prev) => ({ ...prev, [`documentFile_${index}`]: "Document upload is required" }))
                       }}
+                      uploadedFile={fields?.[index]?.additionalDetails?.documentFile || documentUploadedFiles[index]}
                       message={fields?.[index]?.additionalDetails?.documentFile || documentUploadedFiles[index] ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                       error={errors[`documentFile_${index}`]}
                       uploadMessage=""
                       accept=".pdf"
                     />
-                    {fields?.[index]?.additionalDetails?.documentFile ? <div>
+                    {/* {fields?.[index]?.additionalDetails?.documentFile ? <div>
                       <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.documentFile)}} label={t("CS_VIEW_DOCUMENT")} />
-                    </div> : null }
+                    </div> : null } */}
                     </div>
                     <ErrorMessage message={errors[`documentFile_${index}`]} />
 
                     <CardLabel style={{ marginTop: "30px" }}>{`${t("Upload Owner Photo")} *`}</CardLabel>
                     <div style={{display:"flex", flexDirection:Webview?"row":"column", gap:"15px"}}>
-                    <UploadFile
+                    <CustomUploadFile
                       id={`photo-upload-${index}`}
                       onUpload={selectPhotoFile(index)}
                       onDelete={() => {
@@ -1090,14 +1098,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }))
                         setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "Owner photo is required" }))
                       }}
+                      uploadedFile={fields?.[index]?.additionalDetails?.ownerPhoto || photoUploadedFiles[index]}
                       message={fields?.[index]?.additionalDetails?.ownerPhoto || photoUploadedFiles[index]? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                       error={errors[`ownerPhoto_${index}`]}
                       uploadMessage=""
                       accept="image/*"
                     />
-                    {fields?.[index]?.additionalDetails?.ownerPhoto ? <div>
+                    {/* {fields?.[index]?.additionalDetails?.ownerPhoto ? <div>
                       <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.ownerPhoto)}} label={t("CS_VIEW_DOCUMENT")} />
-                    </div> : null }
+                    </div> : null } */}
                     </div>
                     <ErrorMessage message={errors[`ownerPhoto_${index}`]} />
 
@@ -1132,7 +1141,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     {field.authorizedPerson && (
                       <React.Fragment>
                         <CardLabel>{`${t("Authorization Letter (PDF, Max 5MB)")}`}</CardLabel>
-                        <UploadFile
+                        <CustomUploadFile
                           id={`auth-letter-${index}`}
                           onUpload={selectAuthLetterFile(index)}
                           onDelete={() => {
@@ -1146,6 +1155,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                               }))
                             }
                           }}
+                          uploadedFile={authLetterUploadedFiles[index]}
                           message={
                             authLetterUploadedFiles[index] ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")
                           }

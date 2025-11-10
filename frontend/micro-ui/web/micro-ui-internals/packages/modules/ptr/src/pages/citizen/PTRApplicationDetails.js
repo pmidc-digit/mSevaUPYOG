@@ -32,10 +32,13 @@ const PTRApplicationDetails = () => {
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
+  
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
+  const tenantInfo = tenants?.find((tenant) => tenant?.code === tenantId);
+console.log('tenantInfo', tenantInfo)
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({
     tenantId,
     filters: { applicationNumber: acknowledgementIds },
@@ -43,6 +46,8 @@ const PTRApplicationDetails = () => {
 
   const [billData, setBillData] = useState(null);
 
+  const ulb= tenantInfo?.city?.name;
+  const ulbType =tenantInfo?.city?.ulbType;
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
 
   const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
@@ -101,7 +106,6 @@ const PTRApplicationDetails = () => {
     { enabled: acknowledgementIds ? true : false }
   );
 
-  console.log("reciept_data", reciept_data);
   if (!pet_details.workflow) {
     const workflow = {
       id: null,
@@ -136,8 +140,6 @@ const PTRApplicationDetails = () => {
 
       const createCertificateHTML = () => {
         const petData = data.PetRegistrationApplications[0];
-        console.log("petData", petData);
-        const ulb = petData?.tenantId.split(".")[1];
         const currentDate = new Date().toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "2-digit",
@@ -279,10 +281,16 @@ const PTRApplicationDetails = () => {
                   border-top: 1px solid #000;
                   margin: 10px 0 5px 0;
                 }
+                  .pet-sub {
+                  font-size: 10px;
+                  margin: 5px 0;
+                  color: #666;
+                  font-weight: bold;
+                }
                 .terms-section {
                   border-top: 2px solid #000;
                   padding-top: 5px;
-                  font-size: 9px;
+                  font-size: 11px;
                   margin: 0px 10px;
                 }
                 .terms-title {
@@ -310,6 +318,10 @@ const PTRApplicationDetails = () => {
                   height: auto;
                   aspect-ratio: 1/1;
                 }
+                .dis-section{
+                  font-size: 12px;
+                  margin: 0px 10px;
+                }
               }
               </style>
             </head>
@@ -321,9 +333,9 @@ const PTRApplicationDetails = () => {
                     style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
               </div>
               <div class="header-center">
-                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                <div class="title">${t(ulbType)} ${t(ulb)}</div>
                   <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
-                  <div class="subtitle">Pet Registration Certificate</div>
+                  <div class="pet-sub">Pet Registration Certificate</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>
               <div class="header-right">
@@ -333,7 +345,7 @@ const PTRApplicationDetails = () => {
           petData?.owner?.name || "Not Specified"
         } at ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
           petData?.owner?.mobileNumber || "Not Specified"
-        } is registered with Municipal Corporation ${ulb} as per following details:</span>
+        } is registered with ${ulbType} ${ulb} as per following details:</span>
                 <div class="main-content">
                   <div class="details-section">
                     <span class="detail-label">Pet Information</span>
@@ -435,7 +447,7 @@ const PTRApplicationDetails = () => {
                 <div class="header-left"> </div>
                   <div class="header-disclaimer">
                     <div class="title">DISCLAIMER</div>
-                    <div class="subtitle">${t("PET_DISCLAIMER")}</div>
+                    <div class="dis-section">${t("PET_DISCLAIMER")}</div>
                     <div class="header-right"></div>
                   </div>
                 </div>
@@ -449,14 +461,14 @@ const PTRApplicationDetails = () => {
                     <div class="detail-label">Approved by</div>
                     <span class="detail-value">${approver || "Not Specified"}</span>
                     <div class="signature-line"></div>
-                    <div>Licensing Authority(CSI)</div>
-                    <div>Municipal Corporation</div>
+                    <div>Licensing Authority</div>
+                    <div>${t(ulbType)}</div>
                  
                   </div>
                 </div>
 
                 <div class="terms-section">
-                  <div class="terms-title">TERMS AND CONDITIONS</div>
+                  <div class="terms-title">${t("TERMS AND CONDITIONS")}</div>
                   <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
                   <ol class="terms-list">
                     <li>${t("PET_NEW_TERM_1")}</li>
@@ -475,18 +487,10 @@ const PTRApplicationDetails = () => {
                     <li>${t("PET_NEW_TERM_14")}</li>
                     <li>${t("PET_NEW_TERM_15")}</li>
                     <li>${t("PET_NEW_TERM_16")}</li>
-                    <li>${t("PET_NEW_TERM_17")}</li>
-                    <li>
-                      ${t("PET_TERM_PART_1")}
-                      ${t("PETTOKEN_DATE")}
-                      ${t("PETTOKEN_ADDRESS")}
-                      ${t("PET_TERM_PART_2")}
-                    </li>
-                    <li>${t("PET_NEW_TERM_19")}</li>
                   </ol>
 
                   <div style="text-align: center;">
-                    <img src="${qrDataURL}" style="width: 80px; height: 80px;" />
+                    <img src="${qrDataURL}" style="width: 100px; height: 100px;" />
                 </div>
                 </div>
               </div>
@@ -583,6 +587,12 @@ const PTRApplicationDetails = () => {
                   margin: 5px 0;
                   color: #666;
                 }
+                  .pet-sub {
+                  font-size: 16px;
+                  margin: 5px 0;
+                  color: #666;
+                  font-weight: bold;
+                }
                 .acknowledgement-text {
                   text-align: justify;
                   font-size: 15px;
@@ -620,9 +630,9 @@ const PTRApplicationDetails = () => {
                     style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
               </div>
               <div class="header-center">
-                <div class="title">${t("Municipal Corporation")} ${ulb.replace(/^./, (c) => c.toUpperCase())}</div>
+                <div class="title">${t(ulbType)} ${t(ulb)}</div>
                   <div class="subtitle">${t("Veterinary Services- Health Branch")}</div>
-                  <div class="subtitle">Pet Registration Acknowledgment</div>
+                  <div class="pet-sub">Pet Registration Acknowledgment</div>
                   <div class="subtitle">(U/S 399 (1)(E) of PMC Act,1976)</div>
               </div>
               <div class="header-right">
@@ -679,7 +689,7 @@ const PTRApplicationDetails = () => {
                 
                 <div class="footer">
                   <p>Generated on: ${currentDate}</p>
-                  <p>Municipal Corporation</p>
+                  <p>${t(ulbType)}</p>
                   <p>This is a computer-generated document and does not require a signature.</p>
                   <p>https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home</p>
                 </div>
@@ -805,6 +815,10 @@ const PTRApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
+            {pet_details?.petRegistrationNumber && (
+              <Row className="border-none" label={t("PTR_REGISTRATION_NUMBER")} text={pet_details?.petRegistrationNumber} />
+            )}
+            <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
             <Row
               className="border-none"
@@ -813,7 +827,6 @@ const PTRApplicationDetails = () => {
             />
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
-            <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>

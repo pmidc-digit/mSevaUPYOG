@@ -103,8 +103,9 @@ module.exports = function (app) {
     "/egov-esign",
     "/ndc-services",
     "/ndc-calculator",
-    '/bpa-calculator',
+    "/bpa-calculator",
     "/noc-calculator",
+    "/challan-generation",
     "/layout-services",
     "/adv-services",
     "/layout-calculator"

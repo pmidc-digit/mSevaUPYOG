@@ -62,15 +62,29 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
   const [userSelected, setUser] = useState(null);
   const [setOtpLoading, setSetOtpLoading] = useState(false);
   const stateCode = Digit.ULBService.getStateId()
-  const DateOnly = TimeStamp 
-  ? (() => {
-      const date = new Date(TimeStamp);
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
-    })()
-  : "";
+  const parseFormattedTimestamp = (str) => {
+    // Example input: "06 November 2025 Thursday 05:16:41 PM IST"
+    const [day, monthName, year, , time, period] = str?.split(" ");
+    const [hour, minute, second] = time?.split(":");
+    const month = new Date(`${monthName} 1, 2000`).getMonth(); // get month index
+
+    let h = Number(hour);
+    if (period === "PM" && h !== 12) h += 12;
+    if (period === "AM" && h === 12) h = 0;
+
+    return new Date(year, month, Number(day), h, Number(minute), Number(second));
+  };
+  const d = TimeStamp === "" ? "" : parseFormattedTimestamp(TimeStamp);
+  const DateOnly = TimeStamp === "" ? "" : `${String(d?.getDate()).padStart(2, "0")}/${String(d?.getMonth() + 1).padStart(2, "0")}/${d?.getFullYear()}`;
+  // const DateOnly = TimeStamp 
+  // ? (() => {
+  //     const date = new Date(TimeStamp);
+  //     const day = String(date.getDate()).padStart(2, "0");
+  //     const month = String(date.getMonth() + 1).padStart(2, "0");
+  //     const year = date.getFullYear();
+  //     return `${day}/${month}/${year}`;
+  //   })()
+  // : "";
 
   const handleVerifyOTPClick = async () => {
     const requestData = {
@@ -86,8 +100,26 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
       if (ResponseInfo.status === "Access Token generated successfully") {        
         setOTPSuccess(t("VERIFIED"))
         const currentTimestamp = new Date()
-        setOTPVerifiedTimestamp(currentTimestamp)
-        sessionStorage.setItem("otpVerifiedTimestampcitizen", currentTimestamp.toISOString())
+        const opts = {
+          timeZone: "Asia/Kolkata",  // ensures IST
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+          timeZoneName: "short"
+        };
+
+        const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(currentTimestamp);
+        const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+        // assemble in required order: day month year weekday time dayPeriod timezone
+        const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
+        setOTPVerifiedTimestamp(formatted)
+        sessionStorage.setItem("otpVerifiedTimestampcitizen", formatted)
         setUser({ info, ...tokens });
         setSetOtpLoading(false)
         return currentTimestamp
@@ -194,7 +226,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     </div>
 
     <div style="margin-top:-52px;">
-      <p style="margin-bottom:-32px;"><strong>To,</strong></p>
+      <p style="margin-bottom:-32px;"><strong>To</strong></p>
       <p style="margin-bottom:-32px;"><strong>${ulbselection || "<ULB Type>"}</strong></p>
       <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
     </div>

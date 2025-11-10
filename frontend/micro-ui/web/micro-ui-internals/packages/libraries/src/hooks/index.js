@@ -155,6 +155,7 @@ import useChallanGenerationCategory from "./challanGeneration/useChallanGenerati
 import useChallanGenerationCategoryTypes from "./challanGeneration/useChallanGenerationCategoryTypes";
 import useChallanGenerationTaxHeads from "./challanGeneration/useChallanGenerationTaxHeads";
 import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenerationFormConfig";
+import useChallanInbox from "./challanGeneration/useInbox";
 
 import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
 import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
@@ -746,7 +747,7 @@ const noc = {
   useNOCDocumentSearch,
   useNocType,
   useNOCFeeCalculator,
-  useNOCSearchApplicationByIdOrMobile
+  useNOCSearchApplicationByIdOrMobile,
 };
 
 const ndc = {
@@ -767,6 +768,7 @@ const challangeneration = {
   useChallanGenerationCategoryTypes,
   useChallanGenerationTaxHeads,
   useChallanGenerationFormConfig,
+  useInbox: useChallanInbox,
 };
 const rentandlease = {
   useRentAndLeaseRecieptSearch,

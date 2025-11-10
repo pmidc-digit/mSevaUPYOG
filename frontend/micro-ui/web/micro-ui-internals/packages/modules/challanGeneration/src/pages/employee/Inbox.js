@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useReducer, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+import { businessServiceList } from "../../utils";
 
 const Inbox = ({
   parentRoute,
@@ -28,6 +29,7 @@ const Inbox = ({
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
   const [isLoader, setIsLoader] = useState(false);
+  const [getFilter, setFilter] = useState();
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const paginationParams = isMobile
@@ -36,11 +38,75 @@ const Inbox = ({
 
   const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
 
-  const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
+  // const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
+  //   tenantId,
+  //   filters: { ...searchParams, ...paginationParams },
+  //   isMcollectAppChanged,
+  // });
+
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("Challan.INBOX");
+
+  const searchFormDefaultValues = {
+    // add defaults if needed
+  };
+
+  const filterFormDefaultValues = {
+    moduleName: "Challan_Generation", // <--- default moduleName for CHB inbox
+    applicationStatus: [],
+    businessService: null,
+    locality: [],
+    assignee: "ASSIGNED_TO_ALL",
+    businessServiceArray: businessServiceList(true) || [],
+  };
+
+  const tableOrderFormDefaultValues = {
+    sortBy: "",
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    offset: 0,
+    sortOrder: "DESC",
+  };
+
+  const formInitValue = useMemo(() => {
+    return (
+      InboxObjectInSessionStorage || {
+        filterForm: filterFormDefaultValues,
+        searchForm: searchFormDefaultValues,
+        tableForm: tableOrderFormDefaultValues,
+      }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
+    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
+    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
+  ]);
+
+  const [formState, dispatch] = useReducer(formReducer, formInitValue);
+
+  function formReducer(state, payload) {
+    switch (payload.action) {
+      case "mutateSearchForm":
+        Digit.SessionStorage.set("Challan.INBOX", { ...state, searchForm: payload.data });
+        return { ...state, searchForm: payload.data };
+      case "mutateFilterForm":
+        Digit.SessionStorage.set("Challan.INBOX", { ...state, filterForm: payload.data });
+        return { ...state, filterForm: payload.data };
+      case "mutateTableForm":
+        Digit.SessionStorage.set("Challan.INBOX", { ...state, tableForm: payload.data });
+        return { ...state, tableForm: payload.data };
+      default:
+        return state;
+    }
+  }
+
+  const { isLoading: hookLoading, data } = Digit.Hooks.challangeneration.useInbox({
     tenantId,
+    // filters: { ...formState, getFilter },
+    // filters: { ...formState, getFilter },
     filters: { ...searchParams, ...paginationParams },
-    isMcollectAppChanged,
   });
+
+  console.log("data==", data);
 
   // useEffect(() => {
   //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
@@ -83,15 +149,16 @@ const Inbox = ({
     }
   }, [data]);
 
-  const formedData = (data?.challans || []).map((item) => ({
-    challanNo: item?.challanNo,
-    name: item?.citizen?.name,
-    applicationStatus: item?.applicationStatus,
+  const formedData = (data?.table || []).map((item) => ({
+    challanNo: item?.applicationId,
+    name: item?.offenderName,
+    applicationStatus: item?.status,
     businessService: item?.businessService,
-    totalAmount: businessIdToOwnerMappings[item.challanNo]?.totalAmount || 0,
-    dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
-    tenantId: item?.tenantId,
-    receiptNumber: item?.receiptNumber,
+    totalAmount: item?.amount || 0,
+    offenceName: item?.offenceTypeName,
+    // dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
+    // tenantId: item?.tenantId,
+    // receiptNumber: item?.receiptNumber,
   }));
 
   useEffect(() => {
@@ -128,62 +195,63 @@ const Inbox = ({
       title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
       componentInFront: "+91",
     },
-    { label: t("UC_RECEPIT_NO_LABEL"), name: "receiptNumber" },
+    // { label: t("UC_RECEPIT_NO_LABEL"), name: "receiptNumber" },
   ];
 
-  if (rest?.data?.length !== null) {
-    if (isMobile) {
-      return (
-        <MobileInbox
+  // if (rest?.data?.length !== null) {
+  if (isMobile) {
+    return (
+      <MobileInbox
+        data={formedData}
+        defaultSearchParams={initialStates.searchParams}
+        isLoading={hookLoading}
+        isSearch={!isInbox}
+        searchFields={getSearchFields()}
+        onFilterChange={handleFilterChange}
+        onSearch={handleFilterChange}
+        onSort={handleSort}
+        parentRoute={parentRoute}
+        searchParams={searchParams}
+        sortParams={sortParams}
+        // tableConfig={rest?.tableConfig}
+        filterComponent={filterComponent}
+      />
+    );
+  } else {
+    return (
+      <div>
+        {/* {isInbox && <Header>{t("ACTION_TEST_CHALLANGENERATION")}</Header>} */}
+        <DesktopInbox
+          businessService={businessService}
           data={formedData}
-          defaultSearchParams={initialStates.searchParams}
+          // tableConfig={rest?.tableConfig}
           isLoading={hookLoading}
+          defaultSearchParams={initialStates.searchParams}
           isSearch={!isInbox}
-          searchFields={getSearchFields()}
           onFilterChange={handleFilterChange}
+          searchFields={getSearchFields()}
           onSearch={handleFilterChange}
           onSort={handleSort}
+          onNextPage={fetchNextPage}
+          onPrevPage={fetchPrevPage}
+          onLastPage={fetchLastPage}
+          onFirstPage={fetchFirstPage}
+          currentPage={Math.floor(pageOffset / pageSize)}
+          pageSizeLimit={pageSize}
+          disableSort={false}
+          onPageSizeChange={handlePageSizeChange}
           parentRoute={parentRoute}
           searchParams={searchParams}
           sortParams={sortParams}
-          tableConfig={rest?.tableConfig}
+          totalRecords={data?.totalCount}
           filterComponent={filterComponent}
+          isLoader={isLoader}
+          statutes={data?.statuses}
         />
-      );
-    } else {
-      return (
-        <div>
-          {isInbox && <Header>{t("ACTION_TEST_NATIONAL_MCOLLECT")}</Header>}
-          <DesktopInbox
-            businessService={businessService}
-            data={formedData}
-            tableConfig={rest?.tableConfig}
-            isLoading={hookLoading}
-            defaultSearchParams={initialStates.searchParams}
-            isSearch={!isInbox}
-            onFilterChange={handleFilterChange}
-            searchFields={getSearchFields()}
-            onSearch={handleFilterChange}
-            onSort={handleSort}
-            onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            onLastPage={fetchLastPage}
-            onFirstPage={fetchFirstPage}
-            currentPage={Math.floor(pageOffset / pageSize)}
-            pageSizeLimit={pageSize}
-            disableSort={false}
-            onPageSizeChange={handlePageSizeChange}
-            parentRoute={parentRoute}
-            searchParams={searchParams}
-            sortParams={sortParams}
-            totalRecords={data?.totalCount}
-            filterComponent={filterComponent}
-            isLoader={isLoader}
-          />
-        </div>
-      );
-    }
+      </div>
+    );
   }
+  // }
 
   return null;
 };

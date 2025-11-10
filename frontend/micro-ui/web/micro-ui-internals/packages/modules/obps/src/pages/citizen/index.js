@@ -49,6 +49,7 @@ const App = ({ path }) => {
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
+  const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
   const LayoutResponseCitizen = Digit.ComponentRegistryService.getComponent("LayoutResponseCitizen");
   const LayoutResponseEmployee = Digit.ComponentRegistryService.getComponent("LayoutResponseEmployee");
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
@@ -61,6 +62,7 @@ const App = ({ path }) => {
        {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={NewLayoutEditLayoutApplication} />
+        <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseEmployee} />

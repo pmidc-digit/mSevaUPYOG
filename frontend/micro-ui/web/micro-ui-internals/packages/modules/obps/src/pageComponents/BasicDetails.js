@@ -40,6 +40,10 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
 
   useEffect(() => {
     sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });
   },[])
 
   const handleKeyPress = async (event) => {

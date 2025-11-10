@@ -4,7 +4,7 @@ import { Request } from "../atoms/Utils/Request";
 export const ChallanGenerationService = {
   search: ({ tenantId, filters }) =>
     Request({
-      url: Urls.challangeneration.search,
+      url: Urls.challangeneration.search_new,
       useCache: false,
       method: "POST",
       auth: true,
@@ -14,7 +14,7 @@ export const ChallanGenerationService = {
 
   create: (details, tenantId) =>
     Request({
-      url: Urls.challangeneration.create,
+      url: Urls.challangeneration.create_new,
       data: details,
       useCache: true,
       method: "POST",

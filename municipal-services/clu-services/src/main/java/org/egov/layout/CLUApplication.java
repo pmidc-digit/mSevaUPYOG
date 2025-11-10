@@ -46,10 +46,10 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
 @Import({ TracerConfiguration.class })
-public class LayoutApplication {
+public class CLUApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LayoutApplication.class, args);
+		SpringApplication.run(CLUApplication.class, args);
 	}
 
 }

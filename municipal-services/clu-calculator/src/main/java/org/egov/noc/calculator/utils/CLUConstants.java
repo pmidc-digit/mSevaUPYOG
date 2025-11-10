@@ -100,7 +100,7 @@ public class CLUConstants {
 	
 	public static final String MDMS_CHARGES_TYPE_PATH  = "$.MdmsRes.clu.ChargesType.*.Charges.*.[?( @.applicable==true )]";
 	
-	public static final String MDMS_CHARGES_TYPE_CODE  = "101";
+	public static final String MDMS_CHARGES_TYPE_CODE  = "103";
 
 	public static final String NOC_PROCESSING_FEES = "CLU_PROCESSING_FEES";
 
@@ -110,23 +110,7 @@ public class CLUConstants {
 
 	public static final String NOC_URBAN_DEVELOPMENT_CESS = "CLU_URBAN_DEVELOPMENT_CESS";
 
-	public static final String NOC_MALBA_CHARGES = "CLU_MALBA_CHARGES";
 
-	public static final String NOC_WATER_CHARGES = "CLU_WATER_CHARGES";
-
-	public static final String NOC_MINING_CHARGES = "CLU_MINING_CHARGES";
-
-	public static final String NOC_GAUSHALA_CHARGES_CESS = "CLU_GAUSHALA_CHARGES_CESS";
-
-	public static final String NOC_LABOUR_CESS = "CLU_LABOUR_CESS";
-
-	public static final String NOC_RAIN_WATER_HARVESTING_CHARGES = "CLU_RAIN_WATER_HARVESTING_CHARGES";
-
-	public static final String NOC_CLUBBING_CHARGES = "CLU_CLUBBING_CHARGES";
-
-	public static final String NOC_SUB_DIVISION_CHARGES = "CLU_SUB-DIVISION_CHARGES";
-
-	public static final String NOC_OTHER_CHARGES = "CLU_OTHER_CHARGES";
 	
 	public static final BigDecimal SQYARD_TO_SQFEET = BigDecimal.valueOf(9.0);
 	

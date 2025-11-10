@@ -1,56 +1,94 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast } from "@mseva/digit-ui-react-components";
+import {FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
 import { useState } from "react";
-import RentAndLeaseSelectProofIdentity from "../RentAndLeaseSelectProofIdentity";
-import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
-const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t: tProp }) => {
+const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
-  const { t: tHook } = useTranslation();
-  const t = tProp || tHook;
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
-  const currentStepData = useSelector(function (state) {
-    return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
-  });
+  const stateId = Digit.ULBService.getStateId();
+  const { isLoading, data: mdmsData } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId);
 
-  const handleSelect = (key, data) => {
-    if (data?.missingDocs && data.missingDocs.length > 0) {
-      setError(`Please upload required documents: ${data.missingDocs.join(", ")}`);
+  // const currentStepData = useSelector(function (state) {
+  //   return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
+  // });
+
+   const currentStepData = useSelector(function (state) {
+      return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData && state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
+        ? state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
+        : {};
+    });
+  console.log("currentStepData", currentStepData);
+
+  function goNext(finaldata) {
+    const missingFields = validation(finaldata);
+    if (missingFields.length > 0) {
+      setError(`You haven't uploaded: ${missingFields[0].replace(".", "_").toUpperCase()}`);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
       }, 3000);
       return;
     }
-    if (key && data) {
-      dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM(key, data));
-    }
     onGoNext();
-  };
+  }
+
+  function validation(documents) {
+    if (!isLoading) {
+      const ndcDocumentsType = mdmsData || [];
+      const documentsData = documents?.documents?.documents || [];
+
+      // Step 1: Extract required document codes from ndcDocumentsType
+      const requiredDocs = ndcDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
+
+      // Step 2: Extract uploaded documentTypes
+      const uploadedDocs = documentsData.map((doc) => doc.documentType);
+
+      // Step 3: Identify missing required document codes
+      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc));
+
+      return missingDocs;
+    }
+  }
+
+  function onGoBack(data) {
+    onBackClick(config.key, data);
+  }
 
   const closeToast = () => {
     setShowToast(false);
     setError("");
   };
 
-  // Get the config from currStepConfig body
-  const stepConfig = config?.currStepConfig?.[0]?.body?.[0] || { key: config?.key || "documents" };
+  const onFormValueChange = (setValue = true, data) => {
+    if (!_.isEqual(data, currentStepData)) {
+      dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM(config?.key, data));
+    }
+  };
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   return (
     <React.Fragment>
       <div className="employeeCard">
-        <RentAndLeaseSelectProofIdentity
-          t={t}
-          config={stepConfig}
-          onSelect={handleSelect}
-          userType="citizen"
-          formData={currentStepData}
-        />
+         <FormComposer
+        defaultValues={currentStepData}
+        config={config.currStepConfig}
+        onSubmit={goNext}
+        onFormValueChange={onFormValueChange}
+        label={t(`${config.texts.submitBarLabel}`)}
+        currentStep={config.currStepNumber}
+        onBackClick={onGoBack}
+      />
         {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       </div>
     </React.Fragment>
@@ -58,4 +96,3 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t: tProp 
 };
 
 export default NewRentAndLeaseStepFormThree;
-

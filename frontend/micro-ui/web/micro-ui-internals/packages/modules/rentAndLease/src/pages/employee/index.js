@@ -56,11 +56,12 @@ const EmployeeApp = ({ path, url, userType }) => {
   const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("SearchChallan");
   const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
   const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
+  const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
 
   return (
     <Switch>
       <React.Fragment>
-        <div className="ground-container" >
+        <div className="ground-container">
           <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
             <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
               {t("ES_COMMON_HOME")}
@@ -79,19 +80,15 @@ const EmployeeApp = ({ path, url, userType }) => {
                 isInbox={true}
               />
             )}
-          />
-          {" "}
+          />{" "}
           <PrivateRoute path={`${path}/new-application`} component={() => <NewChallan parentUrl={url} />} />
-          <PrivateRoute path={`${path}/new-rent-lease-application`} component={() => {
-            const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
-            return <NewRentAndLeaseStepperForm />;
-          }} />
           <PrivateRoute
             path={`${path}/search`}
             component={() => (
               <Inbox parentRoute={path} businessService="PT" middlewareSearch={searchMW} initialStates={inboxInitialState} isInbox={false} />
             )}
           />
+          <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} />
           <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}

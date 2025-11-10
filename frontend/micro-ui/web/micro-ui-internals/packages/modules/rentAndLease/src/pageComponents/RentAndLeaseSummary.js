@@ -14,13 +14,6 @@ function RentAndLeaseSummary({ t }) {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-  };
-
   const sectionStyle = {
     backgroundColor: "#ffffff",
     padding: "1rem 0",
@@ -41,13 +34,6 @@ function RentAndLeaseSummary({ t }) {
     fontSize: "1.25rem",
     color: "#2e4a66",
     margin: 0,
-  };
-
-  const editLabelStyle = {
-    cursor: "pointer",
-    color: "#2e86de",
-    fontWeight: 600,
-    fontSize: "0.9rem",
   };
 
   const labelFieldPairStyle = {
@@ -110,21 +96,27 @@ function RentAndLeaseSummary({ t }) {
           {renderRow(t("CORE_COMMON_PINCODE"), applicant?.pincode)}
         </div>
       </Card>
-
       <Card className="summary-section">
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("ES_TITILE_PROPERTY_DETAILS")}</h3>
+        {renderRow(
+          t("RENT_LEASE_PROPERTY_TYPE") || "Property Type",
+          property?.propertyType?.name || property?.propertyType?.code || property?.propertyType || "NA"
+        )}
+        {renderRow(
+          t("RENT_LEASE_PROPERTY_SPECIFIC") || "Property Specific",
+          property?.propertySpecific?.name || property?.propertySpecific?.code || property?.propertySpecific || "NA"
+        )}
+        {renderRow(
+          t("RENT_LEASE_LOCATION_TYPE") || "Location Type",
+          property?.locationType?.name || property?.locationType?.code || property?.locationType || "NA"
+        )}
+        {property?.selectedProperty && (
+          <div>
+            {renderRow(t("RENT_LEASE_SELECTED_PROPERTY") || "Selected Property", property?.selectedProperty?.title || "NA")}
+            {renderRow(t("RENT_LEASE_PROPERTY_AREA") || "Area", property?.selectedProperty?.area || "NA")}
+            {renderRow(t("RENT_LEASE_PROPERTY_ADDRESS") || "Address", property?.selectedProperty?.address || "NA")}
+            {renderRow(t("RENT_LEASE_RENT_AMOUNT") || "Rent", property?.selectedProperty?.rent || "NA")}
           </div>
-
-          {renderRow(t("RENT_LEASE_PROPERTY_TYPE"), property?.propertyType?.name || property?.propertyType)}
-          {renderRow(t("RENT_LEASE_PROPERTY_AREA"), property?.propertyArea)}
-          {renderRow(t("RENT_LEASE_LEASE_START_DATE"), formatDate(property?.leaseStartDate, t))}
-          {renderRow(t("RENT_LEASE_LEASE_END_DATE"), formatDate(property?.leaseEndDate, t))}
-          {renderRow(t("RENT_LEASE_RENT_AMOUNT"), property?.rentAmount)}
-          {renderRow(t("RENT_LEASE_PROPERTY_ADDRESS"), property?.propertyAddress)}
-          {renderRow(t("RENT_LEASE_DESCRIPTION"), property?.description)}
-        </div>
+        )}
       </Card>
 
       <Card className="summary-section">
@@ -158,4 +150,3 @@ function RentAndLeaseSummary({ t }) {
 }
 
 export default RentAndLeaseSummary;
-

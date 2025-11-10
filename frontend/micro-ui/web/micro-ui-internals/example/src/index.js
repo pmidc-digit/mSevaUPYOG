@@ -15,7 +15,7 @@ import {
   initChallanGenerationComponents,
   ChallanReducers,
 } from "@mseva/digit-ui-module-challangeneration";
-import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
+import { RentAndLeaseModule, RentAndLeaseLinks,RentAndLeaseReducers } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
@@ -193,6 +193,7 @@ const initDigitUI = () => {
     noc: NOCReducers(initData),
     obps: OBPSReducers(initData),
     challan: ChallanReducers(initData),
+    rentAndLease: RentAndLeaseReducers(initData),
   });
 
   window.Digit.Customizations = {

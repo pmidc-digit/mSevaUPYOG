@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
-import { citizenConfig } from "../../config/Create/citizenStepperConfig";
+import { citizenConfig,employeeConfig } from "../../config/Create/citizenStepperConfig";
 import {
   SET_RENTANDLEASE_NEW_APPLICATION_STEP,
   RESET_RENTANDLEASE_NEW_APPLICATION_FORM,
@@ -14,33 +14,34 @@ import { Loader } from "../../components/Loader";
 
 //Config for steps
 const createApplicationConfig = [
-  {
-    head: "OWNER DETAILS",
-    stepLabel: "ES_TITILE_OWNER_DETAILS",
+   {
+    head: "PROPERTY DETAILS",
+    // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
+    stepLabel: "Property Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
     component: "NewRentAndLeaseStepFormOne",
-    key: "applicantDetails",
-    withoutLabel: true,
-    texts: {
-      submitBarLabel: "CS_COMMON_NEXT",
-    },
-  },
-  {
-    head: "PROPERTY DETAILS",
-    // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
-    stepLabel: "Property Details",
-    stepNumber: 2,
-    isStepEnabled: true,
-    type: "component",
-    component: "NewRentAndLeaseStepFormTwo",
     key: "propertyDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
+  {
+    head: "OWNER DETAILS",
+    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewRentAndLeaseStepFormTwo",
+    key: "applicantDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+ 
   {
     head: "DOCUMENT DETAILS",
     stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
@@ -69,11 +70,65 @@ const createApplicationConfig = [
   },
 ];
 
-const updatedCreateApplicationConfig = createApplicationConfig.map((item) => {
-  return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
-});
 
-const NewRentAndLeaseStepperForm = () => {
+const createEmployeeConfig = [
+   {
+    head: "PROPERTY DETAILS",
+    // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
+    stepLabel: "Property Details",
+    stepNumber: 1,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewRentAndLeaseStepFormOne",
+    key: "propertyDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+  {
+    head: "OWNER DETAILS",
+    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewRentAndLeaseStepFormTwo",
+    key: "applicantDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+ 
+  {
+    head: "DOCUMENT DETAILS",
+    stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewRentAndLeaseStepFormThree",
+    key: "documents",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+  {
+    head: "SUMMARY DETAILS",
+    stepLabel: "ES_TITILE_SUMMARY_DETAILS",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewRentAndLeaseStepFormFour",
+    key: "summary",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_SUBMIT",
+    },
+  },
+];
+
+const NewRentAndLeaseStepperForm = ({ userType }) => {
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -99,6 +154,21 @@ const NewRentAndLeaseStepperForm = () => {
   //     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("responseData", applicationData.RentAndLeaseApplications));
   //   }
   // }, [applicationData, id, dispatch]);
+
+
+   const config = userType === "employee" ? createEmployeeConfig : createApplicationConfig;
+  const updatedCreateApplicationConfig = config.map((item) => {
+    return {
+      ...item,
+      currStepConfig: (userType === "employee" ? employeeConfig : citizenConfig).filter(
+        (newConfigItem) => newConfigItem.stepNumber === item.stepNumber
+      ),
+    };
+  });
+
+// const updatedCreateApplicationConfig = createApplicationConfig.map((item) => {
+//   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+// });
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_RENTANDLEASE_NEW_APPLICATION_STEP(updatedStepNumber));

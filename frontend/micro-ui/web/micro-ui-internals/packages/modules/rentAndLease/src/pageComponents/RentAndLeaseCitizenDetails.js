@@ -13,7 +13,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 
-const RentAndLeaseCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
+const RentAndLeaseCitizenDetails = ({ t, goNext,onGoBack, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const userInfo = Digit.UserService.getUser();
@@ -72,7 +72,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, currentStepData, validateStep }
       name: t("PTR_FIRST_NAME_REQUIRED"),
       emailId: t("PTR_EMAIL_REQUIRED"),
       mobileNumber: t("PTR_MOBILE_REQUIRED"),
-      fatherOrHusbandName: t("PTR_FATHER_HUSBAND_NAME_REQUIRED"),
       address: t("PTR_ADDRESS_REQUIRED"),
       pincode: t("PTR_PINCODE_REQUIRED"),
     };
@@ -187,38 +186,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, currentStepData, validateStep }
         </LabelFieldPair>
         {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
 
-        {/* Father/Husband Name */}
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_FATHER_HUSBAND")}`} *</CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              name="fatherOrHusbandName"
-              rules={{
-                required: t("PTR_FATHER_HUSBAND_NAME_REQUIRED"),
-                pattern: {
-                  value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
-                  message: t("PTR_FATHER_HUSBAND_NAME_INVALID"),
-                },
-                maxLength: { value: 100, message: "Maximum 100 characters" },
-                minLength: { value: 2, message: "Minimum 2 characters" },
-              }}
-              render={({ value, onChange, onBlur }) => (
-                <TextInput
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  onBlur={(e) => {
-                    onBlur(e);
-                    trigger("fatherOrHusbandName");
-                  }}
-                  t={t}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors.fatherOrHusbandName && <CardLabelError style={errorStyle}>{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
-
         {/* Address */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("PT_COMMON_COL_ADDRESS")}`} *</CardLabel>
@@ -283,8 +250,16 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, currentStepData, validateStep }
         {errors.pincode && <CardLabelError style={errorStyle}>{getErrorMessage("pincode")}</CardLabelError>}
 
         <ActionBar>
+           <SubmitBar
+                  label="Back"
+                  style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "5px" }}
+                  onSubmit={onGoBack}
+                />
           <SubmitBar label={t("Next")} submit="submit" />
         </ActionBar>
+
+
+            
       </form>
     </React.Fragment>
   );

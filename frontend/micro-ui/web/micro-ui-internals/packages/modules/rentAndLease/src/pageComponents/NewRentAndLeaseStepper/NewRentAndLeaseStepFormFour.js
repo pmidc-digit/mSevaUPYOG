@@ -1,11 +1,14 @@
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM, RESET_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
+import {
+  UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM,
+  RESET_RENTANDLEASE_NEW_APPLICATION_FORM,
+} from "../../redux/action/RentAndLeaseNewApplicationActions";
 import RentAndLeaseSummary from "../RentAndLeaseSummary";
 
 const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }) => {
@@ -103,15 +106,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     // Adapt this to your RentAndLease service structure
     // This is a placeholder - you'll need to adjust based on your actual API structure
     const { CreatedResponse, applicantDetails, propertyDetails: propertyDetailsFromData, documents: documentWrapper } = data;
-    const {
-      applicant,
-      propertyDetails,
-      documents,
-      applicantName,
-      mobileNumber,
-      workflow: existingWorkflow,
-      ...otherDetails
-    } = CreatedResponse || {};
+    const { applicant, propertyDetails, documents, applicantName, mobileNumber, workflow: existingWorkflow, ...otherDetails } = CreatedResponse || {};
 
     const formData = {
       ...CreatedResponse,
@@ -206,9 +201,15 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   return (
     <React.Fragment>
-      <div className="employeeCard">
-        <RentAndLeaseSummary t={t} />
-      </div>
+      <FormComposer
+        defaultValues={currentStepData}
+        config={config.currStepConfig}
+        onSubmit={goNext}
+        onFormValueChange={onFormValueChange}
+        label={t(`${config.texts.submitBarLabel}`)}
+        currentStep={config.currStepNumber}
+        onBackClick={onGoBack}
+      />
       <ActionBar>
         <SubmitBar
           label={t("CS_COMMON_BACK")}
@@ -220,11 +221,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           <Menu localeKeyPrefix={t(`WF_CITIZEN_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null}
 
-        {actions && actions.length > 0 ? (
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-        ) : (
-          <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={() => goNext({ action: "SUBMIT" })} />
-        )}
+        <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
 
       {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
@@ -233,4 +230,3 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 };
 
 export default NewRentAndLeaseStepFormFour;
-

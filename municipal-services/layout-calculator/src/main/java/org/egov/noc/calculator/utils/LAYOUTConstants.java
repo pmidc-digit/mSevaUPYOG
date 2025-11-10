@@ -100,7 +100,7 @@ public class LAYOUTConstants {
 	
 	public static final String MDMS_CHARGES_TYPE_PATH  = "$.MdmsRes.layout.ChargesType.*.Charges.*.[?( @.applicable==true )]";
 	
-	public static final String MDMS_CHARGES_TYPE_CODE  = "101";
+	public static final String MDMS_CHARGES_TYPE_CODE  = "105";
 
 	public static final String NOC_PROCESSING_FEES = "LAYOUT_PROCESSING_FEES";
 

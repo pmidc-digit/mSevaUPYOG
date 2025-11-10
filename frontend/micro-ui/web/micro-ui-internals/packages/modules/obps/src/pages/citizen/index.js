@@ -47,6 +47,7 @@ const App = ({ path }) => {
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
+  const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
   const LayoutResponseCitizen = Digit.ComponentRegistryService.getComponent("LayoutResponseCitizen");
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
@@ -56,6 +57,7 @@ const App = ({ path }) => {
       <div className="ws-citizen-wrapper">
        {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
+        <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
         <PrivateRoute path={`${path}/layout/:id`} component={LayoutApplicationSummary} />

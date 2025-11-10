@@ -2,22 +2,30 @@ import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 
-const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+const ChallanDocuments = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  setError: setFormError,
+  clearErrors: clearFormErrors,
+  formState,
+  data,
+  isLoading,
+  error,
+  setError,
+}) => {
   const [documents, setDocuments] = useState(formData?.documents?.documents);
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
-
-  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
-
-  console.log("data", data);
 
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
-    console.log("documentStep config.key", documentStep);
     onSelect(config.key, documentStep);
   };
   const onSkip = () => onSelect();
@@ -58,7 +66,7 @@ const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: s
               />
             );
           })}
-          {error && <Toast label={error} onClose={() => setError(null)} error />}
+          {error && <Toast isDleteBtn={true} label={error} onClose={() => setError(null)} error />}
         </FormStep>
       ) : (
         <Loader />
@@ -69,7 +77,6 @@ const ChallanDocuments = ({ t, config, onSelect, userType, formData, setError: s
 
 function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const [selectedDocument, setSelectedDocument] = useState(
@@ -108,7 +115,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (selectedDocument?.code) {
-      console.log("selectedDocument", documents);
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -131,7 +137,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (documents?.length > 0) {
-      console.log("documents", documents);
       handleSubmit();
     }
   }, [documents]);

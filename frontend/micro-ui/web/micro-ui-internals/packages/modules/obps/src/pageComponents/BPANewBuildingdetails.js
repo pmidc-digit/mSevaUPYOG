@@ -725,35 +725,35 @@ if (anyYes && !ecbcCertificateFile) {
   }
 
   function setEcbcElectricalLoadHandler(option) {
-    console.log("[v0] ECBC Electrical Load selected:", option)
-    console.log("[v0] Option code:", option?.code)
+    console.log("  ECBC Electrical Load selected:", option)
+    console.log("  Option code:", option?.code)
     setEcbcElectricalLoad(option)
     setErrors((prev) => ({ ...prev, ecbcElectricalLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option)
+      console.log("  State after update:", option)
     }, 100)
   }
 
   function setEcbcDemandLoadHandler(option) {
-    console.log("[v0] ECBC Demand Load selected:", option)
-    console.log("[v0] Option code:", option?.code)
+    console.log("  ECBC Demand Load selected:", option)
+    console.log("  Option code:", option?.code)
     setEcbcDemandLoad(option)
     setErrors((prev) => ({ ...prev, ecbcDemandLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option)
+      console.log("  State after update:", option)
     }, 100)
   }
 
   function setEcbcAirConditionedHandler(option) {
-    console.log("[v0] ECBC Air Conditioned selected:", option)
-    console.log("[v0] Option code:", option?.code)
+    console.log("  ECBC Air Conditioned selected:", option)
+    console.log("  Option code:", option?.code)
     setEcbcAirConditioned(option)
     setErrors((prev) => ({ ...prev, ecbcAirConditioned: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option)
+      console.log("  State after update:", option)
     }, 100)
   }
 

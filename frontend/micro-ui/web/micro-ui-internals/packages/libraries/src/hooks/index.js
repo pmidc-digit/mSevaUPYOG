@@ -397,8 +397,15 @@ import useUlbType from "./obps/useUlbType";
 import useEDCRForm from "./obps/useEDCRForm";
 
 //Layout
-import { useLayoutSearchApplication } from "./obps/useSearchApplication";
+
 import useLayoutInbox from "./obps/useLayoutInbox";
+import useLayoutFeeCalculator from "./obps/useLayoutFeeCalculator";
+import useLayoutBuildingType from "./obps/useLayoutBuildingType";
+import useLayoutBuildingCategory from "./obps/useLayoutBuildingCategory";
+import useLayoutRoadType from "./obps/useLayoutRoadType";
+import useLayoutType from "./obps/useLayoutType";
+import {useLayoutSearchApplication} from "./obps/useSearchApplication";
+import {useLayoutCitizenSearchApplication} from "./obps/useLayoutCitizenSearchApplication";
 
 const pgr = {
   useComplaintDetails,
@@ -612,8 +619,21 @@ const obps = {
   useUlbType,
   useEDCRForm,
   useBPACalculation,
-  useLayoutSearchApplication,
-  useLayoutInbox
+  useLayoutInbox,
+  useLayoutFeeCalculator,
+
+
+
+  useLayoutBuildingType,  
+  useLayoutBuildingCategory,  
+  useLayoutRoadType, 
+  useLayoutType,
+
+useLayoutSearchApplication,
+  useLayoutBuildingType,  
+  useLayoutBuildingCategory,  
+  useLayoutRoadType, 
+  useLayoutCitizenSearchApplication
 
 };
 

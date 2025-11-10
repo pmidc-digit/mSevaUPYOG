@@ -282,7 +282,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         return base
       })
     } catch (err) {
-      console.log("[v0] Failed reading applicantName from sessionStorage:", err)
+      console.log("  Failed reading applicantName from sessionStorage:", err)
     }
   }, [])
 

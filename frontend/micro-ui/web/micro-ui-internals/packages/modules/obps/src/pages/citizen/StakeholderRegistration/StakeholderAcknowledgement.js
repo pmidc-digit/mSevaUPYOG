@@ -514,7 +514,7 @@ import getAcknowledgementData from "../../../../getAcknowlegment";
 //   const [mutationData, setMutationData] = useState(null);
 //   const [hasMutated, setHasMutated] = useState(false);
 
-//   console.log("[v0] Mutation state:", { 
+//   console.log("  Mutation state:", { 
 //     isLoading: mutation.isLoading, 
 //     isSuccess: mutation.isSuccess, 
 //     isError: mutation.isError,
@@ -527,7 +527,7 @@ import getAcknowledgementData from "../../../../getAcknowlegment";
 //     const workflowActionType = sessionStorage.getItem("workflowActionType")
 
 //     if (workflowActionCompleted === "true") {
-//       console.log("[v0] Workflow action already completed:", workflowActionType)
+//       console.log("  Workflow action already completed:", workflowActionType)
 //       const storedMutationData = sessionStorage.getItem("stakeholder.mutationData")
 //       if (storedMutationData) {
 //         const parsedData = JSON.parse(storedMutationData)
@@ -545,14 +545,14 @@ import getAcknowledgementData from "../../../../getAcknowlegment";
 
 //     if (data) {
 //       try {
-//         console.log("[v0] Starting mutation...")
+//         console.log("  Starting mutation...")
 //         const tenantId = data?.result?.Licenses[0]?.tenantId || window?.localStorage?.getItem("CITIZEN.CITY")
 //         data.tenantId = tenantId
 //         const formdata = convertToStakeholderObject(data)
 
 //         mutation.mutate(formdata, {
 //           onSuccess: (responseData, variables, context) => {
-//             console.log("[v0] Mutation successful:", responseData)
+//             console.log("  Mutation successful:", responseData)
 //             sessionStorage.setItem("isStakeholderRegistered", "true")
 //             sessionStorage.setItem("stakeholder.mutationData", JSON.stringify(responseData))
 //             setMutationData(responseData)
@@ -563,11 +563,11 @@ import getAcknowledgementData from "../../../../getAcknowlegment";
 //             }
 //           },
 //           onError: (error) => {
-//             console.error("[v0] Mutation failed:", error)
+//             console.error("  Mutation failed:", error)
 //           },
 //         })
 //       } catch (err) {
-//         console.error("[v0] Error in mutation setup:", err)
+//         console.error("  Error in mutation setup:", err)
 //       }
 //     }
 //   }, [data])
@@ -775,7 +775,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
     const workflowActionCompleted = sessionStorage.getItem("workflowActionCompleted")
     const workflowActionType = sessionStorage.getItem("workflowActionType")
 
-    console.log("[v0] Mutation state:", {
+    console.log("  Mutation state:", {
       isLoading: mutation.isLoading,
       isSuccess: mutation.isSuccess,
       isError: mutation.isError,
@@ -785,15 +785,15 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
     })
 
     if (workflowActionCompleted === "true") {
-      console.log("[v0] Workflow action already completed:", workflowActionType)
+      console.log("  Workflow action already completed:", workflowActionType)
 
       setIsAcknowledgementReady(true)
 
       const storedMutationData = sessionStorage.getItem("mutationData")
       if (storedMutationData) {
-        console.log("[v0] Retrieved stored mutation data")
+        console.log("  Retrieved stored mutation data")
       } else {
-        console.log("[v0] No stored mutation data found, setting acknowledgement ready anyway")
+        console.log("  No stored mutation data found, setting acknowledgement ready anyway")
       }
 
       return 
@@ -802,13 +802,13 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
     const isStakeholderRegistered = sessionStorage.getItem("isStakeholderRegistered")
 
     if (isStakeholderRegistered === "true" || hasMutated) {
-      console.log("[v0] Already registered or mutated, skipping")
+      console.log("  Already registered or mutated, skipping")
       return
     }
 
     if (!hasMutated && data) {
       try {
-        console.log("[v0] Starting mutation...")
+        console.log("  Starting mutation...")
         const tenantId = data?.result?.Licenses[0]?.tenantId || window?.localStorage?.getItem("CITIZEN.CITY")
         data.tenantId = tenantId
         const formdata = convertToStakeholderObject(data)
@@ -817,7 +817,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
 
         mutation.mutate(formdata, {
           onSuccess: (responseData, variables, context) => {
-            console.log("[v0] Mutation successful:", responseData)
+            console.log("  Mutation successful:", responseData)
             sessionStorage.setItem("isStakeholderRegistered", "true")
             sessionStorage.setItem("mutationData", JSON.stringify(responseData))
             setMutationData(responseData)
@@ -828,11 +828,11 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
             }
           },
           onError: (error) => {
-            console.error("[v0] Mutation failed:", error)
+            console.error("  Mutation failed:", error)
           },
         })
       } catch (err) {
-        console.error("[v0] Error in mutation setup:", err)
+        console.error("  Error in mutation setup:", err)
       }
     }
   }, []) 

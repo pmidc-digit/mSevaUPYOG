@@ -16,11 +16,45 @@ import {
 const LayoutProfessionalDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
 
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo here", userInfo);
+
+  useEffect(() => {
+    const fetchTLServiceData = async () => {
+      try {
+        const storedUserInfo = localStorage.getItem("user-info")
+        if (!storedUserInfo) {
+          console.log("  No userInfo in localStorage")
+          return
+        }
+
+        const parsedUserInfo = JSON.parse(storedUserInfo)
+        const mobileNumber = parsedUserInfo?.mobileNumber
+
+        if (mobileNumber && Digit?.TLService) {
+          const params = {
+            tenantId: parsedUserInfo?.tenantId || tenantId || "pb",
+            mobileNumber: mobileNumber,
+          }
+          const config = {}
+
+          console.log("  TL Service params:", params)
+          const data = await Digit.TLService.search(params, config)
+          console.log("  TL Service response:", data)
+          // Process the data as needed
+        }
+      } catch (error) {
+        console.error("  Error fetching TL Service data:", error)
+      }
+    }
+
+    fetchTLServiceData()
+  }, [tenantId])
+
 
   useEffect(() => {
     console.log("currentStepData2", currentStepData);

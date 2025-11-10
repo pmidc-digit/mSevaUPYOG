@@ -94,6 +94,8 @@ import LayoutApplicationDetails from "./pages/citizen/Applications/LayoutApplica
 import LayoutApplicationSummary from "./pages/citizen/Applications/LayoutApplicationSummary";
 import LayoutInbox from "./pages/employee/Inbox/LayoutInbox";
 import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
+import LayoutResponseEmployee from "./pages/employee/ApplicationOverview/LayoutResponseEmployee";
+import EditLayoutApplication from "./pageComponents/EditApplication/EditLayoutApplication";
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -233,7 +235,9 @@ const componentsToRegister = {
   SelfCertificationResponse,
   CustomLandingPage,
   dummy,
-  LayoutApplicationOverview
+  LayoutApplicationOverview,
+  LayoutResponseEmployee,
+  NewLayoutEditLayoutApplication: EditLayoutApplication
 }
 
 export const initOBPSComponents = () => {

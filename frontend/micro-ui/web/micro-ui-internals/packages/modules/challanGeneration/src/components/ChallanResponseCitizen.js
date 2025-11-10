@@ -33,8 +33,8 @@ const ChallanResponseCitizen = (props) => {
   // };
 
   const handlePayment = () => {
-    return;
-    history.push(`/digit-ui/employee/payment/collect/NDC/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
+    // return;
+    history.push(`/digit-ui/employee/payment/collect/Challan_Generation/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
 
@@ -48,7 +48,7 @@ const ChallanResponseCitizen = (props) => {
           // message={"Community Hall Booking Application Submitted Successfully"}
           message={t("CHALLAN_APPLICATION_CREATED")}
           applicationNumber={ndcCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHB_APPROVAL_NUMBER`)}
+          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHALLAN_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}

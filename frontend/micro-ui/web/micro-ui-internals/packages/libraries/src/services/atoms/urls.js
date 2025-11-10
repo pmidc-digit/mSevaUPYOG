@@ -130,6 +130,8 @@ const Urls = {
     reciept_search: "/collection-services/payments/:businessService/_search",
     generate_pdf: "/pdf-service/v1/_create",
     file_fetch: "/filestore/v1/files/url",
+    create_new: "/challan-generation/challan/_create",
+    search_new: "/challan-generation/challan/_search",
   },
 
   rentAndLease: {
@@ -186,6 +188,9 @@ const Urls = {
     getSearchDetails: "/inbox/v1/dss/_search",
     payment_search: "/collection-services/payments/BPREG/_search",
     bpaCalculator: "/bpa-calculator/_calculate",
+    layoutCreate: "/layout-services/v1/layout/_create",
+    layoutSearch: "/layout-services/v1/layout/_search",
+    layoutUpdate: "/layout-services/v1/layout/_update",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",
@@ -310,6 +315,7 @@ const Urls = {
     update: "/adv-services/booking/v1/_update",
     slot_search: "/adv-services/booking/v1/_slot-search",
     estimateCreate: "/adv-services/booking/v1/_estimate",
+    slot_modify: "/adv-services/booking/v1/_cart/modify",
   },
 
   chb: {

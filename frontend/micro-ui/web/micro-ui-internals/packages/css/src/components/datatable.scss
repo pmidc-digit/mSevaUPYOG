@@ -1,70 +1,115 @@
 .data-table {
-  @apply text-text-primary;
+  color: #0d43a7;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  padding-bottom: 0;
+}
 
-  .row {
-    @apply flex border-b border-border pb-sm mb-sm;
+.data-table .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 15px 30px;
+  border-bottom: 1px solid var(--border, #e0e0e0);
+}
 
-    span {
-      width: 70%;
-      display: contents;
-    }
+.data-table .row:nth-child(odd) {
+  background-color: #eeeeee;
+}
 
-    h2 {
-      width: 40%;
-      @apply font-bold text-heading-s;
-    }
+.data-table .row:nth-child(even) {
+  background-color: #ffffff;
+}
 
-    .value {
-      width: 50%;
-      @apply text-heading-s;
-      word-break: break-all;
-    }
-    .caption {
-      width: 70%;
-      @apply text-heading-s text-text-secondary;
-    }
-  }
+.data-table .row h2 {
+  font-weight: 600;
+  text-align: left;
+  width: 60%;
+  margin: 0;
+}
 
-  .last {
-    border: none;
-    padding: 0;
-    margin: 0;
-  }
+.data-table .row .value {
+  text-align: left;
+  width: 40%;
+  word-break: break-word;
+}
+
+.data-table .row .caption {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+}
+
+.data-table .row span {
+  width: 70%;
+  display: contents;
+}
+
+.data-table .last {
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .employee-data-table {
-  .row {
-    @apply flex pb-sm mb-sm;
+  color: #0d43a7;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  padding-bottom: 0;
+}
 
-    span {
-      width: 70%;
-      display: contents;
-    }
+.employee-data-table .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 15px 30px;
+  border-bottom: 1px solid var(--border, #e0e0e0);
+}
 
-    h2 {
-      width: 30%;
-      @apply font-bold text-heading-s;
-    }
+.employee-data-table .row:nth-child(odd) {
+  background-color: #eeeeee;
+}
 
-    .value {
-      width: 50%;
-      @apply text-heading-s;
-    }
+.employee-data-table .row:nth-child(even) {
+  background-color: #ffffff;
+}
 
-    .caption {
-      width: 70%;
-      @apply text-heading-s text-text-secondary;
-    }
-  }
-  .vendor-details-row {
-    margin-left: 15px !important;
-  }
+.employee-data-table .row h2 {
+  font-weight: 600;
+  text-align: left;
+  width: 60%;
+  margin: 0;
+}
 
-  .last {
-    border: none;
-    padding: 0;
-    margin: 0;
-  }
+.employee-data-table .row .value {
+  text-align: left;
+  width: 40%;
+  word-break: break-word;
+}
+
+.employee-data-table .row .caption {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+}
+
+.employee-data-table .row span {
+  width: 70%;
+  display: contents;
+}
+
+.employee-data-table .last {
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .pt-citizen {

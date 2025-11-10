@@ -22,6 +22,9 @@ import ApplicationDetails from "./ApplicationDetail";
 //import EdcrInbox from "./EdcrInbox";
 import OBPSResponse from "../employee/OBPSResponse";
 import Inbox from "../employee/Inbox";
+import LayoutResponseCitizen from "./Applications/LayoutResponseCitizen";
+import LayoutApplicantDetails from "../../pageComponents/LayoutApplicantDetails";
+import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
 
 const App = ({ path }) => {
   const location = useLocation();
@@ -45,6 +48,8 @@ const App = ({ path }) => {
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
   const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
+  const LayoutResponseCitizen = Digit.ComponentRegistryService.getComponent("LayoutResponseCitizen");
+  const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   return (
@@ -54,6 +59,9 @@ const App = ({ path }) => {
       <Switch>
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
+        <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
+        <PrivateRoute path={`${path}/layout/:id`} component={LayoutApplicationSummary} />
+        
         <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <Search {...props} parentRoute={path} />} />

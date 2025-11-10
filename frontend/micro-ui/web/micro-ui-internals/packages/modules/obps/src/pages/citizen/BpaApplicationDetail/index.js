@@ -168,16 +168,6 @@ const BpaApplicationDetail = () => {
   const ecbcDocumentsData = useMemo(() => {
   const docs = getDocsFromFileUrls(fileUrls) || [];
 
-  if (docs.length === 0) {
-    return [
-      {
-        id: 0,
-        title: t("CS_NA"),
-        fileUrl: null,
-      },
-    ];
-  }
-
   return docs.map((doc, index) => ({
     id: index,
     title: doc.title ? t(doc.title) : t("CS_NA"),
@@ -237,7 +227,8 @@ const BpaApplicationDetail = () => {
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
-    setAgree(!agree)
+    setShowTermsPopup(true)
+    setAgree(true)
   }
 
   const state = Digit.ULBService.getStateId()
@@ -249,8 +240,8 @@ const BpaApplicationDetail = () => {
   const [isOTPVerified, setIsOTPVerified] = useState(false)
   const [otpError, setOTPError] = useState("")
   const [otpSuccess, setOTPSuccess] = useState("");
-  const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(null)
-  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
+  const otpVerifiedTimestamp = sessionStorage.getItem("otpVerifiedTimestampcitizen") || "";
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid") || "";
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
 
@@ -277,14 +268,7 @@ const BpaApplicationDetail = () => {
   };
 
   const handleTermsLinkClick = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isOTPVerified) {
       setShowTermsPopup(true)
-      console.log("is clicked popup")
-    } else {
-      alert("Please verify yourself")
-    }
   }
 
   const checkLabels = () => {
@@ -292,8 +276,8 @@ const BpaApplicationDetail = () => {
       <div>
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
         <br />
-        {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
-        {isCitizenDeclared && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
+        {/* {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />} */}
+        {isCitizenDeclared !== "" && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
       </div>
     )
   }
@@ -365,14 +349,54 @@ const BpaApplicationDetail = () => {
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
     fileUrl: doc.values?.[0]?.fileURL || null,
   }));
-  const documentsColumns = [
+  const documentsColumnsOwner = [
     {
-      Header: t("BPA_DOCUMENT_NAME"),
+      Header: t("BPA_OWNER_DETAILS_LABEL"),
       accessor: "title",
       Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
-      Header: t("BPA_DOCUMENT_FILE"),
+      Header: t(" "),
+      accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+  const documentsColumns = [
+    {
+      Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
+      accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+  const documentsColumnsECBC = [
+    {
+      Header: t("BPA_ECBC_DETAILS_LABEL"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
@@ -393,7 +417,7 @@ const BpaApplicationDetail = () => {
       Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
-      Header: t("BPA_DOCUMENT_FILE"),
+      Header: t(" "),
       accessor: "value",
       Cell: ({ value }) =>
         value ? (
@@ -769,7 +793,34 @@ useEffect(() => {
     //   alert("Please Accept Terms, Upload and Accept Decleration");
     //   return 
     // }
-    console.log("SelectedAction", action)
+    const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
+    console.log("SelectedAction", action, isCitizenConsentIncluded, isUserCitizen)
+    if (isCitizenConsentIncluded) {
+      if (!agree) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_accepted")
+        });
+        return;
+      }
+      if (!otpVerifiedTimestamp) { //notto
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
+        });
+        return;
+      }
+      if (!sessionStorage.getItem("CitizenConsentdocFilestoreid")) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_uploaded")
+        });
+        return;
+      }
+    }
     if (action === "FORWARD") {
       history.replace(
         `/digit-ui/citizen/obps/sendbacktocitizen/ocbpa/${data?.applicationData?.tenantId}/${data?.applicationData?.applicationNo}/check`,
@@ -786,20 +837,114 @@ useEffect(() => {
       getBPAFormData(data?.applicationData, mdmsData, history, t)
     }
     if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "APPROVE_AND_PAY"){
+      if(!validateDataForAction(action)){
+        return;
+      }
       saveAsDraft(data?.applicationData, action)
     }
     setSelectedAction(action)
     setDisplayMenu(false)
   }
 
+  const validateDataForAction = (action) => {
+    if(action === "SEND_TO_CITIZEN"){
+      const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      if(!isArchitectUnderTakingIncluded) {
+        setShowToast({
+          key: "error",
+          action: "Please_Upload_Architect_UnderTaking"
+        })
+        return false
+      }
+      else{
+        return true
+      }
+    }
+    else if(action === "APPROVE_AND_PAY"){
+      if (!isTocAccepted) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Terms_And_Condition_Not_Accepted")
+        });
+        return false;
+      }
+      else if (!agree) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_accepted")
+        });
+        return false;
+      }
+      else if (!otpVerifiedTimestamp) { //notto
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
+        });
+        return false;
+      }
+      else if (!sessionStorage.getItem("CitizenConsentdocFilestoreid")) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_uploaded")
+        });
+        return false;
+      }
+      else{
+        return true
+      }
+    }
+    else{
+      return true;
+    }
+  }
+
   const saveAsDraft = async (data,action ) => {
     console.log("SEND_TO_CITIZEN_Action",data)
+    const app = data || {};
+    const docs = Array.isArray(app.documents) ? app.documents : [];
+    const dedupedDocs = Array.from(
+      docs.reduce((map, doc) => {
+        const key = doc?.documentType;
+        if (!key) return map;
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, doc);
+        } else if (!existing.fileStoreId && doc.fileStoreId) {
+          map.set(key, doc);
+        }
+        return map;
+      }, new Map()).values()
+    );
+    const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen;
+
     if(!data?.additionalDetails?.selfCertificationCharges){
       setShowToast({
         key: "error",
         action: "Please_Complete_Application_First"
       })
       return;
+    }
+    let updatedDocuments
+    if(action === "APPROVE_AND_PAY" && isCitizenConsentIncluded){
+      const citizenUndertakingExists = dedupedDocs?.some(
+        (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
+      )
+      updatedDocuments = [
+        ...dedupedDocs.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
+        ...(citizenUndertakingExists
+          ? dedupedDocs.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
+          : [
+            {
+              documentType: "CITIZEN.UNDERTAKING",
+              fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+              fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+            },
+          ]),
+      ]
     }
     const userInfo = Digit.UserService.getUser()
     const accountId = userInfo?.info?.uuid
@@ -810,6 +955,7 @@ useEffect(() => {
                 BPA: {
                   ...data,
                   riskType: data?.additionalDetails?.riskType,
+                  documents: (isCitizenConsentIncluded && action === "APPROVE_AND_PAY") ? updatedDocuments : app.documents,
                   workflow: {
                         action: workflowAction,
                         assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
@@ -818,7 +964,12 @@ useEffect(() => {
             }, tenantId)
             if (result?.ResponseInfo?.status === "successful") {
                 setApiLoading(false);
-                history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`);
+                if(action === "APPROVE_AND_PAY"){
+                  history.replace(`/digit-ui/citizen/obps/response`, { data: result });                  
+                }
+                else{
+                  history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`);
+                }                
             } else {
                 alert(t("BPA_CREATE_APPLICATION_FAILED"));
                 setApiLoading(false);
@@ -985,20 +1136,19 @@ useEffect(() => {
     let updatedDocuments
     let additionalDetails
     if (isCitizenConsentIncluded) {
-
-      if (!isOTPVerified) {
-        setIsEnableLoader(false);
-        setShowToast({
-          key: "error",
-          action: t("Not_OTP_VERIFIED")
-        });
-        return;
-      }
       if (!agree) {
         setIsEnableLoader(false);
         setShowToast({
           key: "error",
           action: t("Citizen_Consent_was_not_accepted")
+        });
+        return;
+      }
+      if (!otpVerifiedTimestamp) { //notto
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
         });
         return;
       }
@@ -1063,6 +1213,7 @@ useEffect(() => {
         },
         onSuccess: (data, variables) => {
           setIsEnableLoader(false);
+          console.log("dataOfResponse", data);
           history.replace(`/digit-ui/citizen/obps/response`, { data: data });
           setShowModal(false);
           setShowToast({ key: "success", action: selectedAction });
@@ -1366,14 +1517,14 @@ useEffect(() => {
             console.log("detailforme", detail)
             return (
               <div key={index}>
-                {detail?.title === "BPA_BASIC_DETAILS_TITLE" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
+                {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
                 {!detail?.isNotAllowed ? (
                   <Card
                     key={index}
-                    style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
+                    // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
                   >
                     {!detail?.isTitleVisible ? (
-                      <CardSubHeader style={{ fontSize: "24px" }}>{t(detail?.title)}</CardSubHeader>
+                      <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
                     ) : null}
 
                     <div
@@ -1392,6 +1543,13 @@ useEffect(() => {
                           : {}
                       }
                     >
+                      {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                          ? detail?.additionalDetails?.values?.map((value) => (
+                            <div key={value?.title}>
+                              {!detail?.isTitleRepeat && value?.isHeader ? (
+                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                              ) : null}
+                      </div>)) : null}
                       <StatusTable>
                         {/* to get common values */}
                         {detail?.isCommon && detail?.values?.length > 0
@@ -1467,9 +1625,9 @@ useEffect(() => {
                                   }
                                 />
                               ) : null}
-                              {!detail?.isTitleRepeat && value?.isHeader ? (
-                                <CardSubHeader style={{ fontSize: "20px" }}>{t(value?.title)}</CardSubHeader>
-                              ) : null}
+                              {/* {!detail?.isTitleRepeat && value?.isHeader ? (
+                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                              ) : null} */}
                             </div>
                           ))
                           : null}
@@ -1559,9 +1717,8 @@ useEffect(() => {
                           : null}
 
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
-                          <StatusTable>
-                            <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                          {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
                             {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1572,39 +1729,24 @@ useEffect(() => {
                               autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}
-                          </StatusTable>
-                          <StatusTable>
-                            <CardHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardHeader>
-                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                            {(pdfLoading || isFileLoading) ? <Loader /> : <Table
+                            />}                          
+                          {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                          
+                            {ecbcDocumentsData?.length>0 &&<div>{(pdfLoading || isFileLoading) ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={ecbcDocumentsData}
-                              columns={documentsColumns}
+                              columns={documentsColumnsECBC}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
                               autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}
-                          </StatusTable>
-                          <StatusTable>
-                            <CardHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardHeader>
-                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                            {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
-                              className="customTable table-border-style"
-                              t={t}
-                              data={ownerDocumentsData}
-                              columns={documentsColumns}
-                              getCellProps={() => ({ style: {} })}
-                              disableSort={false}
-                              autoSort={true}
-                              manualPagination={false}
-                              isPaginationRequired={false}
-                            />}
-                          </StatusTable>
-                          </>)}
+                            />}</div>}
+                          {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                            
+                          </>)}                          
 
                         {/* to get FieldInspection values */}
                         {detail?.isFieldInspection &&
@@ -1760,6 +1902,17 @@ useEffect(() => {
                             </div>
                           )}
                       </StatusTable>
+                      {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <div style={{ marginTop: "5px" }}>{(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
+                        className="customTable table-border-style"
+                        t={t}
+                        data={ownerDocumentsData}
+                        columns={documentsColumnsOwner}
+                        getCellProps={() => ({ style: {} })}
+                        disableSort={false}
+                        autoSort={true}
+                        manualPagination={false}
+                        isPaginationRequired={false}
+                      />}</div>}
                     </div>
                   </Card>
                 ) : null}
@@ -1947,12 +2100,13 @@ useEffect(() => {
         {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && (
           <div>
             <Card>
+              <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
               <React.Fragment>
                 <div>
                   <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-                  <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} />
+                  {/* <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} /> */}
                   <br></br>
-                  {showMobileInput && (
+                  {/* {showMobileInput && (
                     <React.Fragment>
                       <br></br>
                       <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
@@ -1975,28 +2129,18 @@ useEffect(() => {
 
                       <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                     </React.Fragment>
-                  )}
-                  {showOTPInput && (
+                  )} */}
+                  {/* {showOTPInput && (
                     <React.Fragment>
                       <br></br>
-                      <CardLabel>{t("BPA_OTP")}</CardLabel>
-                      {/* <TextInput
-                      t={t}
-                      type="text"
-                      isMandatory={true}
-                      optionKey="i18nKey"
-                      name="otp"
-                      value={otp}
-                      onChange={handleOTPChange}
-                      {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-                    /> */}
+                      <CardLabel>{t("BPA_OTP")}</CardLabel>                    
                       <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
                       <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                       {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
                       {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
                     </React.Fragment>
-                  )}
+                  )} */}
                 </div>
                 <br></br>
 

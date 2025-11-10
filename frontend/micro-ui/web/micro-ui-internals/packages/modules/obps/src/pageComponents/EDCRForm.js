@@ -5,6 +5,7 @@ import { getPattern, stringReplaceAll, sortDropdownNames } from "../utils";
 
 import useEDCRForm from "../../../../libraries/src/hooks/obps/useEDCRForm";
 import { set } from "lodash";
+import { CustomLoader } from "./CustomLoader";
 
 const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast, errorStyle }) => {
   const { pathname: url } = useLocation();
@@ -192,11 +193,18 @@ useEffect(() => {
   if (isLoading ) {
     return <Loader />;
   }
-  if(isSubmitBtnDisable){
-    return <div>
-        <div className="loader-message">{t("EDCR_SCRUTINY_LOADING_MESSAGE")}</div>
-      </div>
-  }
+  // if(isSubmitBtnDisable){
+  //   return <div>      
+  //       <div className="loader-message">{t("EDCR_SCRUTINY_LOADING_MESSAGE")}</div>
+  //     </div>
+  // }
+
+  if (isSubmitBtnDisable) {
+  return (
+    <CustomLoader message={"EDCR_SCRUTINY_LOADING_MESSAGE"} />
+  );
+}
+
 
   return (
 

@@ -102,6 +102,12 @@ import NewSelfCertificationStepFormEight from "./pages/citizen/SelfCertification
 import SelfCertificationResponse from "./pages/citizen/SelfCertificationStepper/SelfCertificationResponse"
 import CustomLandingPage from "./pages/citizen/CustomLandingPage";
 
+import LayoutResponseCitizen from "./pages/citizen/Applications/LayoutResponseCitizen";
+import LayoutApplicationDetails from "./pages/citizen/Applications/LayoutApplicationSummary";
+import LayoutApplicationSummary from "./pages/citizen/Applications/LayoutApplicationSummary";
+import LayoutInbox from "./pages/employee/Inbox/LayoutInbox";
+import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
+
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = ["bpa", "bpareg", "common"]; //"bpa";
@@ -138,6 +144,11 @@ const OBPSLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/home`,
       i18nKey: t("BPA_CITIZEN_HOME_ARCHITECT_LOGIN_LABEL"),
     },
+    {
+      link: `${matchPath}/layout`,
+      i18nKey: t("BPA_CITIZEN_HOME_ARCHITECT_LOGIN_LABEL"),
+    },
+
   ];
 
   return (
@@ -181,6 +192,7 @@ const componentsToRegister = {
   OBPSSearchApplication,
   InspectionReport,
   BPAInbox: Inbox,
+  LayoutInbox,
   StakeholderInbox: stakeholderInbox,
   StakeholderCheckPage,
   BPACheckPage,
@@ -220,6 +232,8 @@ const componentsToRegister = {
   LayoutSummary,
   LayoutLocalityInfo,
   LayoutCLUDetails,
+  LayoutResponseCitizen,
+  LayoutApplicationSummary,
   NewSelfCertificationStepForm,
   NewSelfCertificationStepFormOne,
   NewSelfCertificationStepFormTwo,
@@ -232,6 +246,7 @@ const componentsToRegister = {
   SelfCertificationResponse,
   CustomLandingPage,
   dummy,
+  LayoutApplicationOverview,
   CLUStepperForm,
   CLUStepFormOne,
   CLUStepFormTwo,

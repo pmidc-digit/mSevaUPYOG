@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  TextInput,
-  CardLabel,
-  MobileNumber,
-  ActionBar,
-  SubmitBar,
-  TextArea,
-  CardLabelError,
-  Toast,
-} from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar, TextArea, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { Loader } from "../../../challanGeneration/src/components/Loader";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
 import { useDispatch } from "react-redux";
 
@@ -20,6 +12,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const { mobileNumber, emailId, name } = userInfo?.info;
   const [showToast, setShowToast] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     control,
@@ -30,14 +23,13 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   } = useForm({
     mode: "onChange",
     defaultValues: {
-      name: isCitizen ? name || "": "",
+      name: isCitizen ? name || "" : "",
       emailId: isCitizen ? emailId || "" : "",
       mobileNumber: isCitizen ? mobileNumber || "" : "",
       address: "",
       pincode: "",
     },
   });
-
 
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
@@ -65,7 +57,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       item.slots.map((slot) => ({
         ...slot,
         advertisementId: item.ad.id,
-        status: "BOOKED",
+        status: "BOOKING_CREATED",
       }))
     );
 
@@ -79,16 +71,15 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         addressLine1: data?.address || "",
       },
       applicantDetail: {
-        // applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-        applicantName: data.name || "",
-        applicantEmailId: data.emailId || "",
-        applicantMobileNo: data.mobileNumber || "",
+        applicantName: data?.name || "",
+        applicantEmailId: data?.emailId || "",
+        applicantMobileNo: data?.mobileNumber || "",
         applicantDetailId: "",
       },
       owners: [
         {
-          name: data.name || "",
-          mobileNumber: data.mobileNumber || "",
+          name: data?.name || "",
+          mobileNumber: data?.mobileNumber || "",
           tenantId,
           type: "CITIZEN",
         },
@@ -102,20 +93,43 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         nextState: "",
       },
     };
-
-    // ✅ Check if booking already exists in Redux
+    // ✅ If booking already exists, skip slot_search & create
     const existingBookingNo = currentStepData?.CreatedResponse?.bookingNo;
     if (existingBookingNo) {
-      // just move forward with existing data, no API call
       goNext(formData);
       return;
     }
 
-    // Otherwise, hit create API
+    setIsLoading(true);
     try {
-      const payload = { bookingApplication: formData };
-      const response = await Digit.ADSServices.create(payload, tenantId);
+      // 1. Prepare enriched slots for slot_search
+      const enrichedSlots =
+        currentStepData?.ads?.flatMap((item) =>
+          item?.slots?.map((slot) => ({
+            ...slot,
+            isTimerRequired: true,
+          }))
+        ) ?? [];
 
+      const payload = { advertisementSlotSearchCriteria: enrichedSlots };
+
+      // 2. Call slot_search
+      const slotResponse = await Digit.ADSServices.slot_search(payload, tenantId);
+
+      if (!slotResponse) {
+        setShowToast({ key: true, label: t("COMMON_SOMETHING_WENT_WRONG_LABEL") });
+        return;
+      }
+
+      // 3. Store reservation expiry time
+      const createTime = Date.now();
+      dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", createTime));
+
+      // 4. Wait 2 seconds before create
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // 5. Call create API
+      const response = await Digit.ADSServices.create({ bookingApplication: formData }, tenantId);
       const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
@@ -125,22 +139,12 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
         goNext(formData);
       } else {
-        dispatch(
-          UPDATE_ADSNewApplication_FORM("CreatedResponse", {
-            draft: true,
-            bookingApplication: formData,
-          })
-        );
-        setShowToast({
-          key: true,
-          label: t("CORE_SOMETHING_WENT_WRONG"),
-        });
+        setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
       }
     } catch (err) {
-      setShowToast({
-        key: true,
-        label: t("CORE_SOMETHING_WENT_WRONG"),
-      });
+      setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -157,7 +161,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div style={{ maxWidth: !isCitizen && "500px" }}>
-
         <CardLabel className="card-label-smaller">
           {`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span style={mandatoryStyle}>*</span>{" "}
         </CardLabel>
@@ -291,7 +294,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       </div>
 
       <ActionBar>
-        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+        <SubmitBar style={{ background: " white", color: "#2947a3", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
 
         <SubmitBar label="Next" submit="submit" />
       </ActionBar>
@@ -306,6 +309,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           isDleteBtn={true}
         />
       )}
+
+      {isLoading && <Loader page={true} />}
     </form>
   );
 };

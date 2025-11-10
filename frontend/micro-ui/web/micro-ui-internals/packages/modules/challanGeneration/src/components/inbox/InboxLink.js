@@ -8,9 +8,9 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   const [links, setLinks] = useState([]);
   const allLinks = [
     {
-      text: t("UC_GENERATE_NEW_CHALLAN"),
-      link: "/digit-ui/employee/challangeneration/generate-challan",
-      roles: [],
+      // text: t("UC_GENERATE_NEW_CHALLAN"),
+      // link: "/digit-ui/employee/challangeneration/generate-challan",
+      // roles: [],
     },
     // {
     //   text: "Search Receipt",
@@ -44,13 +44,22 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       <span className="logo">
         <PTIcon />
       </span>{" "}
-      <span className="text">{t("UC_COMMON_HEADER_SEARCH")}</span>
+      <span style={{ fontSize: "18px", paddingLeft: "0" }} className="text">
+        {t("ACTION_TEST_CHALLANGENERATION")}
+      </span>
     </div>
   );
 
   return (
     <Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter inboxLinks">
-      <div className="complaint-links-container">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        className="complaint-links-container"
+      >
         {GetLogo()}
         <div className="body">
           {links.map(({ link, text, hyperlink = false, accessTo = [] }, index) => {

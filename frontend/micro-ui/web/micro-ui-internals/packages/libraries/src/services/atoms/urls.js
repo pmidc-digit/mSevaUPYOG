@@ -191,6 +191,8 @@ const Urls = {
     layoutCreate: "/layout-services/v1/layout/_create",
     layoutSearch: "/layout-services/v1/layout/_search",
     layoutUpdate: "/layout-services/v1/layout/_update",
+    layoutCalculator:"/layout-calculator/v1/_calculate",
+    layoutCollectionSearch:"/collection-services/payments/layout/_search",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",

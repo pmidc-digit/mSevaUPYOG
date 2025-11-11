@@ -721,7 +721,7 @@ const LayoutApplicationOverview = () => {
     }
 
     try {
-      const response = await Digit.OBPSService.LayoutUpdate({ tenantId, details: finalPayload })
+      const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload })
 
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {

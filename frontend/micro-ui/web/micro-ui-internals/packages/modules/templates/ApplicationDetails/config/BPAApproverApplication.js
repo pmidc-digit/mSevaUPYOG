@@ -27,6 +27,7 @@ export const configBPAApproverApplication = ({
   if(action?.action == "REVOCATE" || action?.action == "REJECT") {
     isCommentRequired = true;
   }
+  console.log("actionInModal", action);
   
   return {
     label: {
@@ -38,9 +39,9 @@ export const configBPAApproverApplication = ({
       {
         body: [
           {
-            label: action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING") ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
+            label: action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT") ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
             type: "dropdown",
-            populators: (action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING")) ? null : (
+            populators: (action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT")) ? null : (
               <DropdownWithDesignation
                 option={approvers}
                 autoComplete="off"

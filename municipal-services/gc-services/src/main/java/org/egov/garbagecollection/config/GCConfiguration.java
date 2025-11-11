@@ -48,7 +48,7 @@ public class GCConfiguration {
     private String idGenPath;
 
     // Workflow
-    @Value("${create.ws.workflow.name}")
+    @Value("${create.gc.workflow.name}")
     private String businessServiceValue;
 
     @Value("${workflow.context.path}")
@@ -66,7 +66,7 @@ public class GCConfiguration {
     @Value("${is.external.workflow.enabled}")
     private Boolean isExternalWorkFlowEnabled;
 
-    @Value("${egov.waterservice.updatewaterconnection.workflow.topic}")
+    @Value("${egov.garbageservice.updategarbageconnection.workflow.topic}")
     private String workFlowUpdateTopic;
 
     // Localization
@@ -106,10 +106,10 @@ public class GCConfiguration {
     private Boolean isEmailNotificationEnabled;
 
     // Water Topic
-    @Value("${egov.garbageservice.createwaterconnection.topic}")
+    @Value("${egov.garbageservice.creategarbageconnection.topic}")
     private String onGarbageSaved;
 
-    @Value("${egov.garbageservice.updatewaterconnection.topic}")
+    @Value("${egov.garbageservice.updategarbageconnection.topic}")
     private String onGarbageUpdated;
 	
 	@Value("${egov.msg.download.receipt.link}")
@@ -132,10 +132,10 @@ public class GCConfiguration {
     private String egovInternalMicroserviceUserUuid;
 
     // water connection Calculator
-    @Value("${egov.ws.calculation.host}")
+    @Value("${egov.gc.calculation.host}")
     private String calculatorHost;
 
-    @Value("${egov.ws.calculation.endpoint}")
+    @Value("${egov.gc.calculation.endpoint}")
     private String calculateEndpoint;
 
     @Value("${egov.receipt.businessservice.topic}")
@@ -147,19 +147,19 @@ public class GCConfiguration {
 //    @Value("${ws.meterreading.create.endpoint}")
 //    private String createMeterReadingEndpoint;
 
-    @Value("${ws.mseva.app.link}")
+    @Value("${gc.mseva.app.link}")
     private String mSevaAppLink;
 
-    @Value("${ws.view.history.link}")
+    @Value("${gc.view.history.link}")
     private String viewHistoryLink;
 
-    @Value("${ws.mypayments.link}")
+    @Value("${gc.mypayments.link}")
     private String myPaymentsLink;
 
-    @Value("${ws.connectiondetails.link}")
+    @Value("${gc.connectiondetails.link}")
     private String connectionDetailsLink;
 
-    @Value("${ws.application.pay.link}")
+    @Value("${gc.application.pay.link}")
     private String applicationPayLink;
 
     @Value("${egov.usr.events.download.receipt.link}")
@@ -168,16 +168,16 @@ public class GCConfiguration {
     @Value("${egov.usr.events.pay.link}")
     private String userEventApplicationPayLink;
 
-    @Value("${egov.ws.estimate.endpoint}")
+    @Value("${egov.gc.estimate.endpoint}")
     private String estimationEndpoint;
 
     @Value("${egov.collectiom.payment.search}")
     private String paymentSearch;
 
-    @Value("${ws.pdfservice.link}")
+    @Value("${gc.pdfservice.link}")
     private String pdfServiceLink;
 
-    @Value("${ws.fileStore.link}")
+    @Value("${gc.fileStore.link}")
     private String fileStoreLink;
 
     @Value("${egov.shortener.url}")
@@ -189,10 +189,10 @@ public class GCConfiguration {
     @Value("${egov.filestore.host}")
     private String fileStoreHost;
 
-    @Value("${ws.editnotification.topic}")
+    @Value("${gc.editnotification.topic}")
     private String editNotificationTopic;
 
-    @Value("${ws.consume.filestoreids.topic}")
+    @Value("${gc.consume.filestoreids.topic}")
     private String fileStoreIdsTopic;
 
     @Value("${egov.garbageservice.savefilestoreIds.topic}")
@@ -229,10 +229,10 @@ public class GCConfiguration {
     @Value("${egov.reconnect.businessservice}")
     private String reconnectBusinessServiceName;
     
-    @Value("${egov.idgen.wdcid.name}")
+    @Value("${egov.idgen.gdcid.name}")
     private String waterDisconnectionIdGenName;
 
-    @Value("${egov.idgen.wdcid.format}")
+    @Value("${egov.idgen.gdcid.format}")
     private String waterDisconnectionIdGenFormat;
     
     @Value("${egov.receipt.disconnection.businessservice.topic}")
@@ -248,7 +248,7 @@ public class GCConfiguration {
 	 * waterResconnectionIdGenFormat;
 	 */
 
-    @Value("${egov.water.connection.document.access.audit.kafka.topic}")
+    @Value("${egov.garbage.connection.document.access.audit.kafka.topic}")
     private String documentAuditTopic;
 
     @Value("${egov.billing.service.host}")

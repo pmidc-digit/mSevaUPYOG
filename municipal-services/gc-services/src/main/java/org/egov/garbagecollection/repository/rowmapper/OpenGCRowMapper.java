@@ -76,6 +76,24 @@ public class OpenGCRowMapper implements ResultSetExtractor<List<GarbageConnectio
 
     private void addChildrenToProperty(ResultSet rs, GarbageConnection garbageConnection) throws SQLException {
         addHoldersDeatilsToGarbageConnection(rs, garbageConnection);
+        addDocumentToGarbageConnecti(rs, garbageConnection);
+    }
+    private void addDocumentToGarbageConnecti(ResultSet rs, GarbageConnection garbageConnection) throws SQLException {
+        String document_Id = rs.getString("doc_Id");
+        String isActive = rs.getString("doc_active");
+        boolean documentActive = false;
+        if (!StringUtils.isEmpty(isActive)) {
+            documentActive = Status.ACTIVE.name().equalsIgnoreCase(isActive);
+        }
+        if (!StringUtils.isEmpty(document_Id) && documentActive) {
+            Document applicationDocument = new Document();
+            applicationDocument.setId(document_Id);
+            applicationDocument.setDocumentType(rs.getString("documenttype"));
+            applicationDocument.setFileStoreId(rs.getString("filestoreid"));
+            applicationDocument.setDocumentUid(rs.getString("doc_Id"));
+            applicationDocument.setStatus(Status.fromValue(isActive));
+            garbageConnection.addDocumentsItem(applicationDocument);
+        }
     }
 
 
@@ -107,3 +125,5 @@ public class OpenGCRowMapper implements ResultSetExtractor<List<GarbageConnectio
         }
     }
 }
+
+

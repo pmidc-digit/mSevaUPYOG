@@ -30,6 +30,8 @@ public class GCConstants {
 
 	public static final String MDMS_WC_CONNECTION_CATEGORY = "connectionCategory";
 
+
+
 	public static final String MDMS_WC_CONNECTION_TYPE = "connectionType";
 
 	public static final String MDMS_WC_WATER_SOURCE = "waterSource";
@@ -201,7 +203,7 @@ public class GCConstants {
 
 	public static final List<String> FIELDS_TO_CHECK = Collections.unmodifiableList(Arrays.asList("rainWaterHarvesting",
 			"waterSource", "meterId", "meterInstallationDate", "proposedPipeSize", "proposedTaps", "pipeSize",
-			"noOfTaps", "oldConnectionNo", "roadType", "roadCuttingArea", "connectionExecutionDate",
+			"noOfTaps", "oldConnectionNo", "connectionExecutionDate",
 			"connectionCategory", "connectionType", "documentType", "fileStoreId", "licenseNo"));
 
 	public static final String WS_EDIT_SMS = "WS_EDIT_SMS_MESSAGE";
@@ -252,6 +254,8 @@ public class GCConstants {
 	public static final String ESTIMATION_DATE_CONST = "estimationLetterDate";
 
 	public static final String LOCALITY = "locality";
+	public static final String connectionCategory = "connectionCategory";
+	public static final String OTHER_FEE_CONST = "othersFee";
 
 	public static final List<String> ADDITIONAL_OBJ_CONSTANT = Collections
 			.unmodifiableList(Arrays.asList(ADHOC_PENALTY, ADHOC_REBATE, ADHOC_PENALTY_REASON, ADHOC_PENALTY_COMMENT,

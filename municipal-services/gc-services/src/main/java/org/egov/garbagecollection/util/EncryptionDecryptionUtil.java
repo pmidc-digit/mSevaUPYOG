@@ -33,7 +33,7 @@ public class EncryptionDecryptionUtil {
     @Value(("${state.level.tenant.id}"))
     private String stateLevelTenantId;
 
-    @Value(("${water.decryption.abac.enabled}"))
+    @Value(("${garbage.decryption.abac.enabled}"))
     private boolean abacEnabled;
 
     public EncryptionDecryptionUtil(EncryptionService encryptionService) {

@@ -463,10 +463,13 @@ public class GcServiceImpl implements GcService {
 		waterConnectionRequest.setGarbageConnection(enrichmentService
 				.enrichPropertyDetails(waterConnectionList, criteria, waterConnectionRequest.getRequestInfo()).get(0));
 
-		// Call workflow
-		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+
 		// call calculator service to generate the demand for one time fee
 		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
+
+		// Call workflow
+		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+
 		// check for edit and send edit notification
 		gcDao1.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
 		// Enrich file store Id After payment

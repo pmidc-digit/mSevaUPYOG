@@ -53,16 +53,16 @@ public class GcDaoImpl implements GcDao {
 	@Autowired
 	private EncryptionCountRowMapper encryptionCountRowMapper;
 
-	@Value("${egov.waterservice.createwaterconnection.topic}")
+	@Value("${egov.garbageservice.creategarbageconnection.topic}")
 	private String createWaterConnection;
 
-	@Value("${egov.waterservice.updatewaterconnection.topic}")
+	@Value("${egov.garbageservice.updategarbageconnection.topic}")
 	private String updateWaterConnection;
 
-	@Value("${egov.waterservice.oldDataEncryptionStatus.topic}")
+	@Value("${egov.garbageservice.oldDataEncryptionStatus.topic}")
 	private String encryptionStatusTopic;
 
-	@Value("${egov.waterservice.update.oldData.topic}")
+	@Value("${egov.garbageservice.update.oldData.topic}")
 	private String updateOldDataEncTopic;
 
 	@Override
@@ -254,7 +254,7 @@ public class GcDaoImpl implements GcDao {
 		preparedStmtList.add(criteria.getOffset());
 		preparedStmtList.add(criteria.getLimit());
 
-		List<String> ids = jdbcTemplate.query("SELECT id from eg_ws_connection ORDER BY createdtime offset " +
+		List<String> ids = jdbcTemplate.query("SELECT id from eg_gc_connection ORDER BY createdtime offset " +
 						" ? " +
 						"limit ? ",
 				preparedStmtList.toArray(),

@@ -38,15 +38,15 @@ public class GcQueryBuilder {
     private static String holderSelectValues = "connectionholder.tenantid as holdertenantid, connectionholder.connectionid as holderapplicationId, userid, connectionholder.status as holderstatus, isprimaryholder, connectionholdertype, holdershippercentage, connectionholder.relationship as holderrelationship, connectionholder.createdby as holdercreatedby, connectionholder.createdtime as holdercreatedtime, connectionholder.lastmodifiedby as holderlastmodifiedby, connectionholder.lastmodifiedtime as holderlastmodifiedtime";
 
     
-	private static final String GARBAGE_SEARCH_QUERY = "SELECT count(*) OVER() AS full_count, conn.*, gc.*, document.*, plumber.*, gc.connectionCategory, gc.connectionType,"
+	private static final String GARBAGE_SEARCH_QUERY = "SELECT count(*) OVER() AS full_count, conn.*, gc.*, document.*,connectionholder.*, gc.connectionCategory, gc.connectionType,"
 //			+ " gc.meterId, gc.meterInstallationDate, gc.pipeSize, gc.noOfTaps, gc.proposedPipeSize, gc.proposedTaps, "
 			+ " gc.connection_id as connection_Id, gc.connectionExecutionDate, gc.appCreatedDate as gc_appCreatedDate, "
 			+ " gc.detailsprovidedby, gc.estimationfileStoreId , gc.sanctionfileStoreId , gc.estimationLetterDate,"
-			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id, conn.roadcuttingarea,"
+			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id, "
 			+ " conn.action, conn.adhocpenalty, conn.adhocrebate, conn.adhocpenaltyreason, conn.applicationType, conn.channel, conn.dateEffectiveFrom,"
 			+ " conn.adhocpenaltycomment, conn.adhocrebatereason, conn.adhocrebatecomment, conn.createdBy as gc_createdBy, conn.lastModifiedBy as gc_lastModifiedBy,"
-			+ " conn.createdTime as gc_createdTime, conn.lastModifiedTime as gc_lastModifiedTime,conn.additionaldetails, "
-			+ " conn.locality, conn.isoldapplication, conn.roadtype, conn.disconnectionreason, conn.isDisconnectionTemporary, gc.disconnectionExecutionDate, document.id as doc_Id, document.documenttype, document.filestoreid, document.active as doc_active "
+			+ " conn.createdTime as gc_createdTime, conn.lastModifiedTime as gc_lastModifiedTime,conn.additionaldetails,connectionholder.tenantid as holdertenantid, "
+			+ " conn.locality, conn.isoldapplication,conn.disconnectionreason, conn.isDisconnectionTemporary, gc.disconnectionExecutionDate, document.id as doc_Id, document.documenttype, document.filestoreid, document.active as doc_active ,connectionholder.userid as userid,connectionholder.relationship as holderrelationship, connectionholder.status as holderstatus, connectionholder.connectionid as holderapplicationId"
 			+ " FROM eg_gc_connection conn "
 			+  INNER_JOIN_STRING 
 			+" eg_gc_service gc ON gc.connection_id = conn.id"

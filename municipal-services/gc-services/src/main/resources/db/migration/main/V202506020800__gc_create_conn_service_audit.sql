@@ -34,8 +34,10 @@ CREATE INDEX index_eg_gc_connection_audit_connectionno ON public.eg_gc_connectio
 CREATE INDEX index_eg_gc_connection_audit_oldconnectionno ON public.eg_gc_connection_audit USING btree (oldconnectionno);
 CREATE INDEX index_eg_gc_connection_audit_property_id ON public.eg_gc_connection_audit USING btree (property_id);
 CREATE INDEX index_eg_gc_connection_audit_tenantid ON public.eg_gc_connection_audit USING btree (tenantid);
-=====================================================
-CREATE TABLE IF NOT EXISTS eg_ws_connection_audit
+
+
+
+CREATE TABLE IF NOT EXISTS eg_gc_connection_audit
 (
   id character varying(64) NOT NULL,
   tenantid character varying(250) NOT NULL,
@@ -60,12 +62,12 @@ CREATE TABLE IF NOT EXISTS eg_ws_connection_audit
   lastModifiedTime bigint
 );
 
-CREATE INDEX IF NOT EXISTS index_eg_ws_connection_audit_tenantId ON eg_ws_connection_audit (tenantid);
-CREATE INDEX IF NOT EXISTS index_eg_ws_connection_audit_applicationNo ON eg_ws_connection_audit (applicationno);
-CREATE INDEX IF NOT EXISTS index_eg_ws_connection_audit_connectionNo ON eg_ws_connection_audit (connectionno);
-CREATE INDEX IF NOT EXISTS index_eg_ws_connection_audit_oldConnectionNo ON eg_ws_connection_audit (oldconnectionno);
-CREATE INDEX IF NOT EXISTS index_eg_ws_connection_audit_property_id ON eg_ws_connection_audit (property_id);
-CREATE INDEX IF NOT EXISTS index_eg_ws_connection_audit_applicationstatus ON eg_ws_connection_audit (applicationstatus);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_tenantId ON eg_gc_connection_audit (tenantid);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_applicationNo ON eg_gc_connection_audit (applicationno);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_connectionNo ON eg_gc_connection_audit (connectionno);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_oldConnectionNo ON eg_gc_connection_audit (oldconnectionno);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_property_id ON eg_gc_connection_audit (property_id);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_applicationstatus ON eg_gc_connection_audit (applicationstatus);
 
 CREATE TABLE IF NOT EXISTS eg_gc_service_audit (
 	connection_id varchar(64) NOT NULL,
@@ -87,3 +89,19 @@ CREATE TABLE IF NOT EXISTS eg_gc_service_audit (
 );
 
 CREATE INDEX IF NOT EXISTS index_eg_gc_service_audit_appCreatedDate ON eg_gc_service_audit (appCreatedDate);
+
+
+CREATE SEQUENCE SEQ_GC_CON_ID
+    START WITH 1
+    INCREMENT BY 1
+
+
+
+CREATE SEQUENCE SEQ_GC_APP_ID
+    START WITH 1
+    INCREMENT BY 1
+
+
+    CREATE SEQUENCE DC_SEQ_GC_APP_ID
+        START WITH 1
+        INCREMENT BY 1

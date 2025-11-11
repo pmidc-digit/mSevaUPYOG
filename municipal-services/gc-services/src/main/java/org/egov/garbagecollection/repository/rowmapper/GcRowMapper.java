@@ -85,6 +85,8 @@ public class GcRowMapper implements ResultSetExtractor<List<GarbageConnection>> 
 				additionalDetails.put(GCConstants.ESTIMATION_DATE_CONST, rs.getBigDecimal("estimationLetterDate"));
 				additionalDetails.put(GCConstants.LOCALITY, rs.getString("locality"));
 
+
+
 				currentGarbageConnection.setAdditionalDetails(additionalDetails);
 				currentGarbageConnection
 						.processInstance(ProcessInstance.builder().action((rs.getString("action"))).build());

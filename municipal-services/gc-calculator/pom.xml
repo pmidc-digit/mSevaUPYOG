@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.egov</groupId>
-	<artifactId>ws-calculator</artifactId>
+	<artifactId>gc-calculator</artifactId>
 	<version>1.4.3-SNAPSHOT</version>
 	<name>ws-calculation</name>
 	<description>Demo project for Spring Boot</description>
@@ -158,28 +158,28 @@
 				<configuration>
 					<jsonLibrary>jackson2</jsonLibrary>
 					<classes>
-						<class>org.egov.wscalculation.web.models.Demand$StatusEnum</class>
-						<class>org.egov.wscalculation.web.models.Connection$StatusEnum</class>
-						<class>org.egov.wscalculation.web.models.MeterConnectionRequest</class>
-						<class>org.egov.wscalculation.web.models.MeterReadingResponse</class>
-						<class>org.egov.wscalculation.web.models.MeterReadingSearchCriteria</class>
-						<class>org.egov.wscalculation.web.models.CalculationReq</class>
-						<class>org.egov.wscalculation.web.models.CalculationRes</class>
-						<class>org.egov.wscalculation.web.models.GetBillCriteria</class>
-						<class>org.egov.wscalculation.web.models.DemandResponse</class>
-						<class>org.egov.wscalculation.web.models.AdhocTaxReq</class>
-						<class>org.egov.wscalculation.web.models.RequestInfoWrapper</class>
-						<class>org.egov.wscalculation.web.models.users.User</class>
+						<class>org.egov.gccalculation.web.models.Demand$StatusEnum</class>
+						<class>org.egov.gccalculation.web.models.Connection$StatusEnum</class>
+						<class>org.egov.gccalculation.web.models.MeterConnectionRequest</class>
+						<class>org.egov.gccalculation.web.models.MeterReadingResponse</class>
+						<class>org.egov.gccalculation.web.models.MeterReadingSearchCriteria</class>
+						<class>org.egov.gccalculation.web.models.CalculationReq</class>
+						<class>org.egov.gccalculation.web.models.CalculationRes</class>
+						<class>org.egov.gccalculation.web.models.GetBillCriteria</class>
+						<class>org.egov.gccalculation.web.models.DemandResponse</class>
+						<class>org.egov.gccalculation.web.models.AdhocTaxReq</class>
+						<class>org.egov.gccalculation.web.models.RequestInfoWrapper</class>
+						<class>org.egov.gccalculation.web.models.users.User</class>
 					        <class>org.egov.common.contract.request.User</class>
 					</classes>
 					<customTypeNaming>
-						<typeNaming>org.egov.wscalculation.web.models.Demand$StatusEnum:DemandStatus</typeNaming>
-						<typeNaming>org.egov.wscalculation.web.models.Connection$StatusEnum:ConnectionStatus</typeNaming>
-						<typeNaming>org.egov.wscalculation.web.models.users.User:WaterUserStatus</typeNaming>
+						<typeNaming>org.egov.gccalculation.web.models.Demand$StatusEnum:DemandStatus</typeNaming>
+						<typeNaming>org.egov.gccalculation.web.models.Connection$StatusEnum:ConnectionStatus</typeNaming>
+						<typeNaming>org.egov.gccalculation.web.models.users.User:WaterUserStatus</typeNaming>
 						<typeNaming>org.egov.common.contract.request.User:User</typeNaming>
 					</customTypeNaming>
-					<customTypeMapping>org.egov.common.contract.request.RequestInfo:RequestInfo</customTypeMapping>
-					<customTypeMapping>org.egov.common.contract.response.ResponseInfo:ResponseInfo</customTypeMapping>
+<!--					<customTypeMapping>org.egov.common.contract.request.RequestInfo:RequestInfo</customTypeMapping>-->
+<!--					<customTypeMapping>org.egov.common.contract.response.ResponseInfo:ResponseInfo</customTypeMapping>-->
 					<namespace>Digit</namespace>
 					<debug>true</debug>
 					<outputKind>module</outputKind>

@@ -28,7 +28,7 @@ public class DocumentRepository {
 
 	private static final String WS_APP_DOC_INSERT_QUERY = "Insert into eg_ws_applicationdocument(id, tenantid,documenttype ,filestoreid,wsid,active ,documentuid ,createdby,lastmodifiedby,createdtime ,lastmodifiedtime) values(:id, :tenantid,:documenttype ,:filestoreid,:wsid,:active ,:documentuid ,:createdby,:lastmodifiedby,:createdtime ,:lastmodifiedtime);";
 
-	private static final String WS_CONNECTION_UUID_QUERY = "select id,connectionno from eg_ws_connection where connectionno in(:connectionNo) and tenantid=:tenantId";
+	private static final String WS_CONNECTION_UUID_QUERY = "select id,connectionno from eg_gc_connection where connectionno in(:connectionNo) and tenantid=:tenantId";
 
 	public void saveDocuments(List<DocumentDetails> documents) {
 
@@ -37,7 +37,7 @@ public class DocumentRepository {
 		for (DocumentDetails document : documents) {
 			documentBatchValues.add(new MapSqlParameterSource("id", UUID.randomUUID().toString())
 					.addValue("documenttype", document.getDocumentType())
-					.addValue("filestoreid", document.getFileStoreId()).addValue("wsid", document.getConnectionUid())
+					.addValue("filestoreid", document.getFileStoreId()).addValue("gcid", document.getConnectionUid())
 					.addValue("active", document.getStatus().toString()).addValue("documentuid", null)
 					.addValue("createdby", document.getUserUid()).addValue("lastmodifiedby", document.getUserUid())
 					.addValue("createdtime", new Date().getTime()).addValue("lastmodifiedtime", new Date().getTime())

@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS eg_gc_service (
 );
 CREATE INDEX IF NOT EXISTS index_eg_gc_service_appcreateddate ON public.eg_gc_service USING btree (appcreateddate);
 CREATE INDEX IF NOT EXISTS index_eg_gc_service_connectioncategory ON public.eg_gc_service USING btree (connectioncategory);
-CREATE INDEX IF NOT EXISTS index_eg_gc_service_usagecategory ON public.eg_gc_service USING btree (usagecategory);
+--CREATE INDEX IF NOT EXISTS index_eg_gc_service_usagecategory ON public.eg_gc_service USING btree (usagecategory);
 
 CREATE TABLE public.eg_gc_applicationdocument (
 	id varchar(64) NOT NULL,

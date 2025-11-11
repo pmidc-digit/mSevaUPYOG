@@ -84,8 +84,8 @@ CREATE INDEX clu_index ON eg_clu
 
 CREATE SEQUENCE SEQ_EG_CLU_APPLICATION
 START WITH 1
-INCREMENT BY 1
-CACHE 20;
+INCREMENT BY 1;
+
 
 CREATE INDEX idx_eg_clu_details_cluuuid ON eg_clu_details (cluid);
 

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { transformBookingResponseToBookingData } from "../../index";
+import { ChallanData } from "../../index";
 
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
@@ -48,6 +49,8 @@ const WrapPaymentComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
+    let challanEmpData = ChallanData(tenantId, consumerCode);
+  
   const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
     retry: false,
     staleTime: Infinity,
@@ -442,6 +445,60 @@ const WrapPaymentComponent = (props) => {
     } else return "N/A";
   };
 
+  const printChallanReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
+      const challan = {
+        ...applicationDetails,
+        ...challanEmpData,
+      };
+      console.log("applicationDetails", applicationDetails);
+      let application = challan;
+      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), challan: application }] },
+          "challangeneration-receipt"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
+  const printChallanNotice = async () => {
+    if (chbPermissionLoading) return;
+    setChbPermissionLoading(true);
+    try {
+      const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
+      const challan = {
+        ...applicationDetails,
+        ...challanEmpData,
+      };
+      console.log("applicationDetails", applicationDetails);
+      let application = challan;
+      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { challan: { ...application, ...(payments?.Payments?.[0] || {}) } },
+          "challan-notice"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setChbPermissionLoading(false);
+    }
+  };
   const printPermissionLetter = async () => {
     if (chbPermissionLoading) return;
     setChbPermissionLoading(true);
@@ -969,6 +1026,42 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null}
 
+      {business_service == "Challan_Generation" ? (
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
+                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printChallanReceipt}>
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CHB_FEE_RECEIPT")}
+                    </>
+                  )}
+                </div>
+                <div className="primary-label-btn d-grid" onClick={chbPermissionLoading ? undefined : printChallanNotice}>
+                  {chbPermissionLoading ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("Challan_Notice")}
+                    </>
+                  )}
+                </div>
+                 {business_service == "Challan_Generation" && (
+            <Link to={`/digit-ui/citizen/challangeneration-home`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginLeft: "100px" }} />
+            </Link>
+          )}
+              </div>
+            ) : null}
+
       {business_service == "NDC" ? (
         <div
           style={{
@@ -1093,7 +1186,7 @@ const WrapPaymentComponent = (props) => {
       <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
     </Link>
   </div>
-) : !(business_service === "adv-services" || business_service === "chb-services" || business_service === "NDC") && (
+) : !(business_service === "adv-services" || business_service === "chb-services" || business_service === "NDC" || business_service === "Challan_Generation") && (
 
         <div
           style={{

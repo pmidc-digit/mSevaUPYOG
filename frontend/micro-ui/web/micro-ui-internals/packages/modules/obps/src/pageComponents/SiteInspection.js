@@ -1,0 +1,74 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, ImageUploadHandler, SubmitBar, StatusTable, Row } from "@mseva/digit-ui-react-components";
+import { useForm, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import _ from "lodash";
+import { useLocation } from "react-router-dom";
+import OBPSDocumentsEmp from "./OBPSDocumentsEmp";
+import { CustomImageUploadHandler } from "../components/CustomImageUploadHandler";
+import CustomLocationSearch from "../components/CustomLocationSearch";
+
+
+const createUnitDetails = () => ({
+    InspectionDate: "",
+    InspectionTime: "",
+    Checklist: [],
+    Documents: [],
+    key: Date.now(),
+});
+
+const CustomGeoLocationButton = ({geoLocation}) =>{
+    const { t } = useTranslation();
+    const routeTo = () => {
+        window.open(`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocation.latitude).toFixed(6)}&long=${Number(geoLocation.longitude).toFixed(6)}`, "_blank")
+    }
+
+    return (
+        <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo()}
+        />
+    )
+}
+
+export const SiteInspection = ({ siteImages, setSiteImages, geoLocations, setGeoLocations }) => {
+    const { t } = useTranslation();
+    const { pathname } = useLocation();
+    const isEditScreen = pathname.includes("/modify-application/");
+    const tenantId = Digit.ULBService.getCurrentTenantId();
+    const stateId = Digit.ULBService.getStateId();
+    
+
+    const handleUpload = (ids) => {
+        setSiteImages(ids)
+    }
+
+    return (
+        <div>
+            <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INPECTION_IMAGES")}</CardSectionHeader>                               
+                <CustomImageUploadHandler tenantId={stateId} uploadedImages={siteImages || null} onPhotoChange={(ids) => {handleUpload(ids)}} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />                
+
+                {geoLocations?.length > 0 &&
+                <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CustomLocationSearch position={geoLocations}/>
+                </React.Fragment>
+                }
+                {/* {geoLocations?.length > 0 &&
+                <React.Fragment>                
+                <StatusTable>
+                {geoLocations?.map((value, index) => 
+                    <Row 
+                        className="border-none"
+                        label={t("SITE_GEO_LOCATION_"+(index+1))}
+                        actionButton={<CustomGeoLocationButton geoLocation={value}/>}
+                    />
+                )}
+                </StatusTable>
+                </React.Fragment>
+                } */}
+            </React.Fragment>            
+        </div>
+    );
+};

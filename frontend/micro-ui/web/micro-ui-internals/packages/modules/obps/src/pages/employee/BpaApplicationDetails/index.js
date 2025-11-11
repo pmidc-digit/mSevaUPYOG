@@ -43,6 +43,7 @@ import BPAActionModal from "../../../../../templates/ApplicationDetails/Modal/BP
 import FeeEstimation from "../../../pageComponents/FeeEstimation";
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto";
 import BPAApplicationTimeline from "../../citizen/BpaApplicationDetail/BPAApplicationTimeline";
+import { SiteInspection } from "../../../pageComponents/SiteInspection";
 
 const BpaApplicationDetail = () => {
 
@@ -51,7 +52,7 @@ const BpaApplicationDetail = () => {
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem('tenant-id')
   const [showToast, setShowToast] = useState(null);
-  const [canSubmit, setSubmitValve] = useState(false);
+  const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
   const history = useHistory();
   // delete
@@ -87,6 +88,8 @@ const BpaApplicationDetail = () => {
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
   const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  const [siteImages, setSiteImages] = useState(data?.applicationData?.additionalDetails?.siteImages || [])
+  const [geoLocations, setGeoLocations] = useState(data?.applicationData?.additionalDetails?.geoLocations || [])
   const { isLoadingg, data: blockReason } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["BlockReason"]);
 
   console.log("fileUrls", fileUrls)
@@ -114,6 +117,7 @@ const BpaApplicationDetail = () => {
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
   console.log("DATA DATA", data);
+  const [appData, setAppData] = useState(data);
 
 
 
@@ -146,6 +150,7 @@ const BpaApplicationDetail = () => {
     if (!isLoading && data?.applicationData?.additionalDetails) {
       const charges = data.applicationData.additionalDetails.selfCertificationCharges || {};
 
+      setAppData(data);
       setDevelopment(charges.BPA_DEVELOPMENT_CHARGES || "");
       setOtherCharges(charges.BPA_OTHER_CHARGES || "");
       setLessAdjusment(charges.BPA_LESS_ADJUSMENT_PLOT || "");
@@ -155,8 +160,32 @@ const BpaApplicationDetail = () => {
       setMalbafees(charges.BPA_MALBA_CHARGES || "");
       setWaterCharges(charges.BPA_WATER_CHARGES || "");
       setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
+
+      if(data?.applicationData?.additionalDetails?.siteImages?.length > 0){
+        setSiteImages(data?.applicationData?.additionalDetails?.siteImages)
+        sessionStorage.setItem("Field_Inspection_siteImages",JSON.stringify(data?.applicationData?.additionalDetails?.siteImages))
+      }else{
+        sessionStorage.setItem("Field_Inspection_siteImages","null")
+      }
+      if(data?.applicationData?.additionalDetails?.geoLocations?.length > 0){
+        setGeoLocations(data?.applicationData?.additionalDetails?.geoLocations)
+        sessionStorage.setItem("Field_Inspection_geoLocations",JSON.stringify(data?.applicationData?.additionalDetails?.geoLocations))
+      }else{
+        sessionStorage.setItem("Field_Inspection_geoLocations","null")
+      }
+      if(data?.applicationData?.additionalDetails?.FieldReports){
+        
+        sessionStorage.setItem("Field_Inspection_FieldReports",JSON.stringify(data?.applicationData?.additionalDetails?.FieldReports))
+      }else{
+        sessionStorage.setItem("Field_Inspection_FieldReports","null")
+      }
+
     }
   }, [isLoading, data]);
+
+  useEffect(() => {
+    console.log("SiteImagesInCustomHandler" , siteImages);
+  } ,[siteImages])
 
 
   useEffect(() => {
@@ -513,6 +542,13 @@ const BpaApplicationDetail = () => {
       timelineSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  const handleViewInspecction = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById('fieldInspection');
+    if (timelineSection) {
+      timelineSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   const {
     isLoading: updatingApplication,
     isError: updateApplicationError,
@@ -551,7 +587,8 @@ const BpaApplicationDetail = () => {
   }, []);
 
   const onFormValueChange = (setValue, formData, formState) => {
-    setSubmitValve(!Object.keys(formState.errors).length);
+    setSubmitValve(formData?.FieldReports?.[0]);
+    console.log("formDataForInspectionReport", formData);
   };
 
   let configs = newConfig?.InspectionReportConfig ? newConfig?.InspectionReportConfig : newConfigFI;
@@ -856,6 +893,10 @@ const BpaApplicationDetail = () => {
 
   function onActionSelect(action) {
     console.log("SelectedAction", action)
+    if(action?.action === "SEND_FOR_INSPECTION_REPORT" && siteImages?.length === 0){
+      alert(t("Please_Add_Site_Images_With_Geo_Location"))
+      return
+    }
     if (action) {
       if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
@@ -876,8 +917,92 @@ const BpaApplicationDetail = () => {
     setDisplayMenu(false);
   }
 
+  const documentData = useMemo(() => siteImages?.map((value, index) => ({
+        title: `SITE_IMAGE_${index+1}`,
+        imageFileStoreId: value,
+        geoLocation: geoLocations[index] 
+    })), [siteImages,geoLocations])
+
+  function routeToImage(filestoreId) {
+          getUrlForDocumentView(filestoreId)
+      }
+  
+      const getUrlForDocumentView = async (filestoreId) => {
+          if (filestoreId?.length === 0) return;
+          try {
+              const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+              if (result?.data) {
+                  const fileUrl = result.data[filestoreId];
+                  if (fileUrl) {
+                      window.open(fileUrl, "_blank");
+                  } else {
+                      if(props?.setError){
+                          props?.setError(t("CS_FILE_FETCH_ERROR"));
+                      }else{
+                          console.error(t("CS_FILE_FETCH_ERROR"))
+                      }
+                  }
+              } else {
+                  if (props?.setError) {
+                      props?.setError(t("CS_FILE_FETCH_ERROR"));
+                  } else {
+                      console.error(t("CS_FILE_FETCH_ERROR"))
+                  }
+              }
+          } catch (e) {
+              if (props?.setError) {
+                  props?.setError(t("CS_FILE_FETCH_ERROR"));
+              } else {
+                  console.error(t("CS_FILE_FETCH_ERROR"))
+              }
+          }
+      }
+  
+      const routeToGeo = (geoLocation) => {
+             window.open(`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocation.latitude).toFixed(6)}&long=${Number(geoLocation.longitude).toFixed(6)}`, "_blank")
+      }
+  
+      const documentsColumnsSiteImage = [
+          {
+            Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+            accessor: "title",
+            Cell: ({ value }) => t(value) || t("CS_NA"),
+          },
+          {
+            Header: t(" "),
+            accessor: "imageFileStoreId",
+            Cell: ({ value }) =>
+              {          
+                return value ? (
+                <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                  label={t("View Image")}
+                  onClick={() => routeToImage(value)}
+                />
+              ) : (
+                t("CS_NA")
+              )},
+          },
+          {
+            Header: t(" "),
+            accessor: "geoLocation",
+            Cell: ({ value }) =>
+              {          
+                return value ? (
+                <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                  label={t("View Location")}
+                  onClick={() => routeToGeo(value)}
+                />
+              ) : (
+                t("CS_NA")
+              )},
+          },
+        ];
+
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     console.log("SelectedActionData", data);
+    // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
+    //   alert(t("Please fill in the comments before submitting  "))
+    // }
     if (data?.BPA?.comment?.length == 0) {
       alert(t("Please fill in the comments before submitting"))
     }
@@ -911,9 +1036,7 @@ const BpaApplicationDetail = () => {
           return;
         }
       }
-      if (mutate) {
-        setIsEnableLoader(true);
-        mutate({
+      let payload = {
           ...data,
           BPA: {
             ...data?.BPA,
@@ -930,10 +1053,29 @@ const BpaApplicationDetail = () => {
                 BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
                 BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
                 BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
-              }
+              },
+              siteImages: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? siteImages : data?.BPA?.additionalDetails?.siteImages,
+              geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
+              // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
             }
           }
-        }, {
+        }
+        if(data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT"){
+          payload = {
+            ...payload,
+            BPA: {
+              ...payload?.BPA,
+              workflow: {
+              action: payload?.BPA?.workflow?.action,
+              // assignes: payload?.BPA?.workflow?.assignes,
+              assignee: []
+            }
+            }
+          }
+        }
+      if (mutate) {
+        setIsEnableLoader(true);
+        mutate(payload, {
           onError: (error, variables) => {
             setIsEnableLoader(false);
             setShowToast({ key: "error", error });
@@ -1013,9 +1155,9 @@ const BpaApplicationDetail = () => {
   return (
     <Fragment>
       <div className={"employee-main-application-details"}>        
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+        <div className={"employee-application-details"} style={{ marginBottom: "15px",display: "flex", flexDirection: !isMobile? "row" : "column" }}>
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
+          <div style={{ margin: "10px, 0px" ,display: "flex", gap: "8px", alignItems:!isMobile?"center":"left",flexDirection: !isMobile? "row" : "column"  }}>
             {/* <div style={{}}>
               {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
                 className="multilinkWrapper"
@@ -1027,6 +1169,7 @@ const BpaApplicationDetail = () => {
               />}
             </div> */}
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+            {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&<LinkButton label={t("VIEW_INSPECTION")} style={{ color: "#A52A2A" }} onClick={handleViewInspecction}></LinkButton>}
           </div>
         </div>
         {/* <ApplicationDetailsTemplate
@@ -1049,6 +1192,7 @@ const BpaApplicationDetail = () => {
         timelineStatusPrefix={`WF_${workflowDetails?.data?.applicationBusinessService ? workflowDetails?.data?.applicationBusinessService : data?.applicationData?.businessService}_`}
       /> */}        
 
+        <div style={{marginTop: isMobile?"100px":""}}>
         {data?.applicationDetails
           ?.filter((ob) => Object.keys(ob)?.length > 0)
           .map((detail, index, arr) => {
@@ -1457,6 +1601,7 @@ const BpaApplicationDetail = () => {
               </div>
             )
           })}
+        </div>
 
         <Card>
           {workflowDetails?.data?.timeline?.length > 0 && (
@@ -1638,7 +1783,33 @@ const BpaApplicationDetail = () => {
           </ActionBar>
         )}
 
-        {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && <FormComposer
+        {
+          data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
+          <Card>
+            <div id="fieldInspection"></div>
+            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />
+          </Card>
+        }
+
+        {
+          data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages.length > 0 && <Card>
+            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+            <Table
+              className="customTable table-border-style"
+              t={t}
+              data={documentData}
+              columns={documentsColumnsSiteImage}
+              getCellProps={() => ({ style: {} })}
+              disableSort={false}
+              autoSort={true}
+              manualPagination={false}
+              isPaginationRequired={false}
+            />
+          </Card>
+        }
+
+        {/* {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !isLoading &&
+        <FormComposer
           heading={t("")}
           isDisabled={!canSubmit}
           config={configs.map((config) => {
@@ -1657,7 +1828,9 @@ const BpaApplicationDetail = () => {
           breaklineStyle={{ border: "0px" }}
           className={"employeeCard-override"}
           cardClassName={"employeeCard-override"}
-        />}
+          onSubmit={() => {console.log("")}}
+        />
+        } */}
       </div>
 
     </Fragment>

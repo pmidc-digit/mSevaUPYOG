@@ -14,6 +14,32 @@ export const printReciept = async (businessService, receiptNumber) => {
   window.open(fileStore[response.filestoreIds[0]], "_blank");
 };
 
+export const ChallanData = (tenantId, consumerCode) => {
+  const wfData = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: consumerCode,
+    moduleCode: "challan-generation",
+    role: "EMPLOYEE",
+  });
+
+  const officerInstance = wfData?.data?.processInstances?.find((pi) => pi?.action === "SUBMIT");
+
+  const codes = officerInstance?.assigner?.userName;
+  const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
+  console.log("employeeData", employeeData);
+  const officerRaw = employeeData?.data?.Employees?.[0];
+  const officerAssignment = officerRaw?.assignments?.[0];
+
+  const officer = officerRaw
+    ? {
+        code: officerRaw.code,
+        id: officerRaw.id,
+        department: officerAssignment?.department,
+      }
+    : null;
+
+  return { officer };
+};
 export const getActionButton = (businessService, receiptNumber) => {
   const { t } = useTranslation();
   return (

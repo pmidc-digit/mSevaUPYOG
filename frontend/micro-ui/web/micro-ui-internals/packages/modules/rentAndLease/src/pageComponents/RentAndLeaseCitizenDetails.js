@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   CardLabel,
@@ -12,13 +12,15 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
+import { Loader } from "../../../challanGeneration/src/components/Loader";
 
-const RentAndLeaseCitizenDetails = ({ t, goNext,onGoBack, currentStepData, validateStep }) => {
+const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const userInfo = Digit.UserService.getUser();
   const { mobileNumber, emailId, name } = userInfo?.info || {};
   const apiDataCheck = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData?.responseData);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isCitizen = window.location.href.includes("citizen");
   const {
@@ -87,10 +89,80 @@ const RentAndLeaseCitizenDetails = ({ t, goNext,onGoBack, currentStepData, valid
     handleSubmit(onSubmit)(e);
   };
 
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const handleMobileChange = async (value) => {
+    // only proceed if we have at least 10 digits
+    if (!value || value.length < 10) return;
+    setIsLoading(true);
+    try {
+      const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+      const user = userData?.user?.[0] || {};
+      setValue("name", user.name || "");
+      setValue("emailId", user.emailId || "");
+      setValue("address", user.permanentAddress || "");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const debouncedHandleMobileChange = React.useCallback(
+    debounce(handleMobileChange, 700),
+    [] // add dependencies here if handleMobileChange depends on props/state
+  );
+
   return (
     <React.Fragment>
       <form onSubmit={handleFormSubmit}>
         <CardSectionHeader className="card-section-header">{t("PTR_CITIZEN_DETAILS")}</CardSectionHeader>
+        {/* Mobile Number */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="mobileNumber"
+              rules={{
+                required: t("PTR_MOBILE_REQUIRED"),
+                pattern: {
+                  value: /^[6-9][0-9]{9}$/,
+                  message: t("PTR_MOBILE_INVALID"),
+                },
+                minLength: { value: 10, message: t("PTR_MOBILE_MIN_LENGTH") },
+                maxLength: { value: 10, message: t("PTR_MOBILE_MAX_LENGTH") },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <MobileNumber
+                  value={value}
+                  onChange={
+                    !isCitizen &&
+                    ((e) => {
+                      onChange(e);
+                      debouncedHandleMobileChange(e);
+                    })
+                  }
+                  onBlur={
+                    isCitizen &&
+                    ((e) => {
+                      onBlur(e);
+                      trigger("mobileNumber");
+                    })
+                  }
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
         {/* Applicant Name */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} *</CardLabel>
@@ -153,38 +225,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext,onGoBack, currentStepData, valid
           </div>
         </LabelFieldPair>
         {errors.emailId && <CardLabelError style={errorStyle}>{getErrorMessage("emailId")}</CardLabelError>}
-
-        {/* Mobile Number */}
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              name="mobileNumber"
-              rules={{
-                required: t("PTR_MOBILE_REQUIRED"),
-                pattern: {
-                  value: /^[6-9][0-9]{9}$/,
-                  message: t("PTR_MOBILE_INVALID"),
-                },
-                minLength: { value: 10, message: t("PTR_MOBILE_MIN_LENGTH") },
-                maxLength: { value: 10, message: t("PTR_MOBILE_MAX_LENGTH") },
-              }}
-              render={({ value, onChange, onBlur }) => (
-                <MobileNumber
-                  value={value}
-                  onChange={onChange}
-                  onBlur={(e) => {
-                    onBlur(e);
-                    trigger("mobileNumber");
-                  }}
-                  t={t}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
 
         {/* Address */}
         <LabelFieldPair>
@@ -250,20 +290,17 @@ const RentAndLeaseCitizenDetails = ({ t, goNext,onGoBack, currentStepData, valid
         {errors.pincode && <CardLabelError style={errorStyle}>{getErrorMessage("pincode")}</CardLabelError>}
 
         <ActionBar>
-           <SubmitBar
-                  label="Back"
-                  style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "5px" }}
-                  onSubmit={onGoBack}
-                />
+          <SubmitBar
+            label="Back"
+            style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "5px" }}
+            onSubmit={onGoBack}
+          />
           <SubmitBar label={t("Next")} submit="submit" />
         </ActionBar>
-
-
-            
+        {isLoading && <Loader page={true} />}
       </form>
     </React.Fragment>
   );
 };
 
 export default RentAndLeaseCitizenDetails;
-

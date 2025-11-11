@@ -240,8 +240,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
+      {/* Start Date */}
       <LabelFieldPair>
-        <CardLabel>{t("ADS_START_DATE_TIME")}</CardLabel>
+        <CardLabel className="card-label-smaller">{t("RAL_START_DATE")} *</CardLabel>
         <Controller
           control={control}
           name="startDate"
@@ -252,34 +253,33 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
               const today = new Date(todayISO);
               const chosen = new Date(value);
               if (chosen < today) {
-                return t("PTR_START_DATE_NOT_IN_PAST"); // custom translation key
+                return t("PTR_START_DATE_NOT_IN_PAST");
               }
               return true;
             },
           }}
-          render={(props) => (
-            <input
-              type="date"
-              min={todayISO}
-              value={props.value || ""}
-              onChange={(e) => props.onChange(e.target.value)}
-              style={{
-                width: "100%",
-                maxWidth: "327px",
-                padding: "12px",
-                fontSize: 13,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-              }}
-            />
+          render={({ value, onChange, onBlur }) => (
+            <div className="form-field">
+              <TextInput
+                type="date"
+                min={todayISO}
+                value={value || ""}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("startDate");
+                }}
+                t={t}
+              />
+            </div>
           )}
         />
       </LabelFieldPair>
-      {errors?.startDate && <CardLabelError>{errors?.startDate?.message}</CardLabelError>}
+      {errors?.startDate && <CardLabelError style={errorStyle}>{errors?.startDate?.message}</CardLabelError>}
 
       {/* End Date */}
-      <LabelFieldPair style={{ margin: "12px 0px" }}>
-        <CardLabel>{t("ADS_END_DATE_TIME")}</CardLabel>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("RAL_END_DATE")}</CardLabel>
         <Controller
           control={control}
           name="endDate"
@@ -294,25 +294,23 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
               return true;
             },
           }}
-          render={(props) => (
-            <input
+          render={({ value, onChange, onBlur }) => (
+            <div className="form-field">
+            <TextInput
               type="date"
               min={watch("startDate") || todayISO}
-              value={props.value || ""}
-              onChange={(e) => props.onChange(e.target.value)}
-              style={{
-                width: "100%",
-                maxWidth: "327px",
-                padding: "12px",
-                fontSize: 13,
-                borderRadius: 6,
-                border: "1px solid #ccc",
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={(e) => {
+                onBlur(e);
+                trigger("endDate");
               }}
             />
+            </div>
           )}
         />
       </LabelFieldPair>
-      {errors?.endDate && <CardLabelError>{errors?.endDate?.message}</CardLabelError>}
+      {errors?.endDate && <CardLabelError style={errorStyle}>{errors?.endDate?.message}</CardLabelError>}
 
       {/* Property Type Dropdown */}
       <LabelFieldPair>

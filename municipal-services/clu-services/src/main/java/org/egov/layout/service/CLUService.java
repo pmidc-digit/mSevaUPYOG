@@ -96,14 +96,9 @@ public class CLUService {
 		String ulbType = (String) siteDetails.get("ulbType");
 		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
 		String buildingCategoryType = (String) buildingCategory.get("code");
-		if(buildingCategoryType.equals("RESIDENTIAL_PLOTTED")){
-			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");
-		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE_BUILDING")){
-			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
-		}
-		else{
-			acres = (String) siteDetails.get("areaUnderCommercialUseInSqM");
-		}
+
+			acres = (String) siteDetails.get("specificationPlotArea");
+
 
 
 		BigDecimal acresBD = BigDecimal.ZERO;

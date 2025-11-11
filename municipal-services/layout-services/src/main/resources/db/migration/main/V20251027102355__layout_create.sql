@@ -84,8 +84,8 @@ CREATE INDEX layout_index ON eg_layout
 
 CREATE SEQUENCE SEQ_EG_LAYOUT_APPLICATION
 START WITH 1
-INCREMENT BY 1
-CACHE 20;
+INCREMENT BY 1;
+
 
 CREATE INDEX idx_eg_layout_details_layoutuuid ON eg_layout_details (layoutid);
 

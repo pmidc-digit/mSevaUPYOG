@@ -532,13 +532,13 @@ public class AdditionalFeature extends FeatureProcess {
                 	requiredBuildingHeight = "<= " + HEIGHT_WITHOUT_STILT;
                 }
 
-                if (buildingHeight.compareTo(maxHeight) > 0) {
-                    errors.put("BUILDING_HEIGHT_ERROR",
-                            "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
-                    pl.addErrors(errors);
-                    isAccepted = false;
-                    requiredBuildingHeight = "<= " + maxHeight.toString();
-                }
+//                if (buildingHeight.compareTo(maxHeight) > 0) {
+//                    errors.put("BUILDING_HEIGHT_ERROR",
+//                            "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
+//                    pl.addErrors(errors);
+//                    isAccepted = false;
+//                    requiredBuildingHeight = "<= " + maxHeight.toString();
+//                }
             }else {
             	errors.put("BUILDING_HEIGHT_ERROR","Building height not defined in plan");
                 pl.addErrors(errors);
@@ -640,7 +640,8 @@ public class AdditionalFeature extends FeatureProcess {
 //                details.put(DxfFileConstants.ROAD_WIDTH, roadWidth.toString());
                 details.put(PERMISSIBLE, requiredBuildingHeight);
                 details.put(PROVIDED, String.valueOf(buildingHeight));
-                details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+//                details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+                details.put(STATUS, Result.Accepted.getResultVal());
                 scrutinyDetail.getDetail().add(details);
                 pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             }

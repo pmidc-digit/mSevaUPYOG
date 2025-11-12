@@ -353,7 +353,14 @@ const CHBApplicationDetails = () => {
   }
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = {
-      hallsBookingApplication: data?.hallsBookingApplication || [],
+      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
+              return new Date(a.bookingDate) - new Date(b.bookingDate);
+            })
+          };
+        })
     };
 
     let fileStoreId = application?.permissionLetterFilestoreId;

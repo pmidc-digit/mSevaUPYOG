@@ -96,11 +96,11 @@ const LayoutInbox = ({ parentRoute }) => {
     filters: { ...formState },
   })
 
-  console.log("[v0] Inbox hook data:", inboxData)
+  console.log("  Inbox hook data:", inboxData)
 
   useEffect(() => {
     if (inboxData) {
-      console.log("[v0] Setting inbox data:", inboxData)
+      console.log("  Setting inbox data:", inboxData)
       setStatusData(inboxData?.statuses || [])
       setTableData(inboxData?.table || [])
       setTotalCountData(inboxData?.totalCount || 0)

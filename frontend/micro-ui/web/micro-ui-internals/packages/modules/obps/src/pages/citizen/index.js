@@ -26,6 +26,8 @@ import LayoutResponseCitizen from "./Applications/LayoutResponseCitizen";
 import LayoutApplicantDetails from "../../pageComponents/LayoutApplicantDetails";
 import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
 
+
+
 const App = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
@@ -49,7 +51,9 @@ const App = ({ path }) => {
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
   const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
   const LayoutResponseCitizen = Digit.ComponentRegistryService.getComponent("LayoutResponseCitizen");
+  const LayoutResponseEmployee = Digit.ComponentRegistryService.getComponent("LayoutResponseEmployee");
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
+  const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   return (
@@ -57,10 +61,13 @@ const App = ({ path }) => {
       <div className="ws-citizen-wrapper">
        {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
+        <PrivateRoute path={`${path}/layout/edit-application/:id`} component={NewLayoutEditLayoutApplication} />
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
+        <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseEmployee} />
         <PrivateRoute path={`${path}/layout/:id`} component={LayoutApplicationSummary} />
+        
         
         <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />

@@ -63,13 +63,13 @@ const MyApplication = () => {
       }
 
       const response = await Digit.OBPSService.LayoutSearch(tenantId, searchParams)
-      console.log("[v0] Layout search response:", response)
+      console.log("  Layout search response:", response)
 
       if (response?.Layout) {
         setLayoutData(response.Layout)
       }
     } catch (error) {
-      console.error("[v0] Layout search error:", error)
+      console.error("  Layout search error:", error)
       setLayoutData([])
     } finally {
       setIsLayoutLoading(false)

@@ -407,5 +407,11 @@ public class BPAConstants {
 	public static final String ACTION_VERIFY = "VERIFY";
 	
 	public static final String SYSTEM = "SYSTEM";
+	
+	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
+	
+	public static final String TENANT_MODULE = "tenant";
+
+	public static final String TENANTS = "tenants";
 
 }

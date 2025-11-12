@@ -1,5 +1,6 @@
 package org.egov.bpa.service;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -170,7 +171,16 @@ public class EDCRService {
 		if(buildingHeights != null && !buildingHeights.isEmpty() && buildingHeights.get(0) <  maxBuildingHight ) {
 			request.getBPA().setBusinessService(BPAConstants.BPA_LOW_MODULE_CODE);
 		}else {
-			request.getBPA().setBusinessService(null);
+			List<String> ulbTypeList = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.[?(@.code == '" + bpa.getTenantId() + "')].city.ulbType");
+			String ulbType = CollectionUtils.isEmpty(ulbTypeList) ? "" : ulbTypeList.get(0);
+			String plotArea = plotAreas.get(0).toString();
+			String filter = "$.MdmsRes.BPA.WorkflowConfig.[?(@.ulbType contains '" + ulbType + "' && @.occupancyTypes contains '" + OccupancyTypes.get(0) + "' && @.minArea < " + plotArea + " && @.maxArea >= " + plotArea + " )].businessService";
+			List<String> businessServices = JsonPath.read(mdmsData, filter);
+			
+			if(CollectionUtils.isEmpty(businessServices))
+				throw new CustomException(BPAErrorConstants.INVALID_CREATE, "Business Services not found for the Occupancy Types: " + OccupancyTypes.get(0));
+			
+			request.getBPA().setBusinessService(businessServices.get(0));
 		}
 		
 		return additionalDetails;
@@ -197,12 +207,12 @@ public class EDCRService {
 			Double plotArea = plotAreas.get(0);
 			List jsonOutput = JsonPath.read(masterData, BPAConstants.RISKTYPE_COMPUTATION);
 			String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-					+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
+					+ ") && ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
 					+ buildingHeight + "  ))].riskType";
 
 			List<String> riskTypes = JsonPath.read(jsonOutput, filterExp);
 
-			if (!CollectionUtils.isEmpty(riskTypes) && OccupancyType.equals(BPAConstants.RESIDENTIAL_OCCUPANCY)) {
+			if (!CollectionUtils.isEmpty(riskTypes)) {
 				String expectedRiskType  = riskTypes.get(0);
 
 				if (expectedRiskType == null || !expectedRiskType.equals(riskType)) {

@@ -104,6 +104,7 @@ public class BPAUtil {
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.CHECKLIST_NAME).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE_MAPPING).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.BUILDING_HEIGHT).build());
+		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.WORKFLOW_CONFIG).build());
 		ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDtls)
 				.moduleName(BPAConstants.BPA_MODULE).build();
 
@@ -122,8 +123,15 @@ public class BPAUtil {
 				.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE).build());
 		ModuleDetail nocMDtl = ModuleDetail.builder().masterDetails(nocMasterDetails)
 				.moduleName(BPAConstants.NOC_MODULE).build();
+		
+		//Tenant module for Ulb type 
+		List<MasterDetail> tenantMasterDetails = new ArrayList<>();
+		tenantMasterDetails
+				.add(MasterDetail.builder().name(BPAConstants.TENANTS).build());
+		ModuleDetail tenantMDtl = ModuleDetail.builder().masterDetails(tenantMasterDetails)
+				.moduleName(BPAConstants.TENANT_MODULE).build();
 
-		return Arrays.asList(bpaModuleDtls, commonMasterMDtl, nocMDtl);
+		return Arrays.asList(bpaModuleDtls, commonMasterMDtl, nocMDtl, tenantMDtl);
 
 	}
 

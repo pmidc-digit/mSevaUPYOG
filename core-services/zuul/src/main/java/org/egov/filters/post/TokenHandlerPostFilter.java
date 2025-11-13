@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -183,16 +184,23 @@ public class TokenHandlerPostFilter extends ZuulFilter {
             return null;
         }
 
-        // Read response body
-        String responseBody = new String(responseDataStream.readAllBytes(), StandardCharsets.UTF_8);
+        // --- Read response body (Java 8 compatible) ---
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] data = new byte[1024];
+        int nRead;
+        while ((nRead = responseDataStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        buffer.flush();
+        String responseBody = new String(buffer.toByteArray(), StandardCharsets.UTF_8);
 
-        // Reset response stream for downstream processing
+        // Reset response body for downstream filters
         ctx.setResponseBody(responseBody);
 
         try {
             JsonNode jsonNode = objectMapper.readTree(responseBody);
 
-            // Try different possible field names for auth token
+            // Possible token field names
             String[] tokenFields = {"access_token", "accessToken", "authToken", "token"};
             for (String field : tokenFields) {
                 JsonNode tokenNode = jsonNode.get(field);

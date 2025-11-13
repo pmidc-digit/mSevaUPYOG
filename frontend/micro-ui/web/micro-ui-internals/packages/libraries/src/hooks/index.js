@@ -407,6 +407,7 @@ import useLayoutRoadType from "./obps/useLayoutRoadType";
 import useLayoutType from "./obps/useLayoutType";
 import {useLayoutSearchApplication} from "./obps/useSearchApplication";
 import {useLayoutCitizenSearchApplication} from "./obps/useLayoutCitizenSearchApplication";
+import useLayoutDocumentSearch from "./obps/useLayoutDocumentSearch";
 
 const pgr = {
   useComplaintDetails,
@@ -634,7 +635,8 @@ useLayoutSearchApplication,
   useLayoutBuildingType,  
   useLayoutBuildingCategory,  
   useLayoutRoadType, 
-  useLayoutCitizenSearchApplication
+  useLayoutCitizenSearchApplication,
+  useLayoutDocumentSearch
 
 };
 

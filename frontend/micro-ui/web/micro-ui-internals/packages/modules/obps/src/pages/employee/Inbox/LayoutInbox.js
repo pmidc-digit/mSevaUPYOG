@@ -204,10 +204,10 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const PropsForInboxLinks = {
     logoIcon: <CaseIcon />,
-    headerText: "ACTION_TEST_LAYOUT",
+    headerText: "Layout",
     links: [
       {
-        text: t("LAYOUT_NEW_APPLICATION"),
+        text: t("Layout New Application"),
         link: "/digit-ui/employee/obps/layout/new-application",
       },
     ],

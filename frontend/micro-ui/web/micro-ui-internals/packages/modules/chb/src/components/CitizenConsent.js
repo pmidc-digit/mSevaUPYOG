@@ -41,14 +41,23 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     },
   };
 
-  const selfdeclarationform = `
+  // Extract readable ULB name
+const formatUlbName = (ulbName = "") => {
+  if (!ulbName) return "";
+  const parts = ulbName.split(".");
+  return parts.length > 1
+    ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1)
+    : ulbName.charAt(0).toUpperCase() + ulbName.slice(1);
+};
+const formattedUlbName = formatUlbName(getModalData?.ulbName);
+
+
+const selfdeclarationform = `
   <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; margin-top:-100px; padding:0;">
-
-
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To,</strong></p>
       <p style="margin-bottom:-32px;"><strong>The President & Executive Officer</strong></p>
-      <p style="margin-bottom:-32px;"><strong>Municipal Council,Nangal.</strong></p>
+      <p style="margin-bottom:-32px;"><strong>Municipal Council,${formattedUlbName}.</strong></p>
     </div>
 
     <p style="margin-top:-20px;"><strong>Sub:- Application for allotment of Community Centre.</strong></p>
@@ -62,36 +71,43 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      I will not cause any damage to the M.C. property. In case of damage M.C. May deduct from my security the entire cost of the restoration of damage. Suitable amount as penalty. Water charges and electricity charges. If any may also be recovered from my security.
+      I will not cause any damage to the M.C. property. In case of damage M.C. may deduct from my security the entire cost of restoration of damage, suitable amount as penalty, water charges and electricity charges if any may also be recovered from my security.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
       <strong>Note:- I will arrange the Generator temporary matter from P.S.E.B. separate for decoration lights.</strong>
     </p>
 
-    <!-- Signature / details table -->
-    <div style="display:flex; justify-content:flex-end; margin-top:6px;">
-      <table style="border-collapse:collapse; font-size:14px; width:auto;">
-        <tr>
-          <td style="padding:6px; border:1px dotted #000; font-weight:700; width:120px;">Sig.</td>
-          <td style="padding:6px; border:1px dotted #000; min-width:200px;">${getModalData?.name || ownername}</td>
-        </tr>
-        <tr>
-          <td style="padding:6px; border:1px dotted #000; font-weight:700;">Name.</td>
-          <td style="padding:6px; border:1px dotted #000;">${getModalData?.name || ownername}</td>
-        </tr>
-        <tr>
-          <td style="padding:6px; border:1px dotted #000; font-weight:700;">e-Mail.</td>
-          <td style="padding:6px; border:1px dotted #000;">${getModalData?.emailId || ownerEmail}</td>
-        </tr>
-        <tr>
-          <td style="padding:6px; border:1px dotted #000; font-weight:700;">Ph No.</td>
-          <td style="padding:6px; border:1px dotted #000;">${getModalData?.mobileNumber || ownermobileNumber}</td>
-        </tr>
-      </table>
+    <!-- Signature / details section -->
+<div style="margin-top:6px;">
+      <!-- Centered line above table -->
+      <p style="text-align:center; margin:0 0 8px 0;justify-content:flex-end; margin-right: 192px; display:flex; font-family:'Times New Roman', Times, serif;">Yours faithfully,</p>
+
+      <!-- Right-aligned table (no borders) -->
+      <div style="display:flex; justify-content:flex-end;  margin-top:-72px;">
+        <table style="border-collapse:collapse; font-size:14px; width:340px; border:0; margin-top:4px;">
+          <tr>
+            <td style="padding:6px 8px; width:120px; font-weight:700; text-align:left; border:0;">Sig.</td>
+            <td style="padding:6px 8px; text-align:left; border:0;">${getModalData?.name || ownername}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 8px; font-weight:700; text-align:left; border:0;">Name.</td>
+            <td style="padding:6px 8px; text-align:left; border:0;">${getModalData?.name || ownername}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 8px; font-weight:700; text-align:left; border:0;">Ph No.</td>
+            <td style="padding:6px 8px; text-align:left; border:0;">${getModalData?.mobileNumber || ownermobileNumber}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 8px; font-weight:700; text-align:left; border:0;">Address.</td>
+            <td style="padding:6px 8px; text-align:left; border:0;">${getModalData?.address || ""}</td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
-`
+`;
+
 
   const closeModal = () => {
     setShowTermsPopupOwner(false);

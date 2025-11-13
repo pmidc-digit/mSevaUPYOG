@@ -177,11 +177,15 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       throw new Error("Invalid response from server");
     }
   } catch (error) {
-    console.error("  API Error:", error);
+    console.error("  API Error:", error?.response?.data?.Errors?.[0]?.code, error?.response?.data?.Errors?.[0]?.message);
     
-    // <CHANGE> Show error toast
+    const backendError = error?.response?.data?.Errors?.[0] || error?.response?.Errors?.[0] || {};
+
+    const errorMessage = backendError?.message || backendError?.description || t("FAILED_TO_CREATE_APPLICATION");
+
+    // Show toast
     setIsErrorToast(true);
-    setToastMessage(error?.response?.data?.Errors?.[0]?.message || t("FAILED_TO_CREATE_APPLICATION"));
+    setToastMessage(error?.response?.data?.Errors?.[0]?.message || error?.response?.data?.Errors?.[0]?.code);
     setShowToast(true);
 
     return { isSuccess: false, error };
@@ -201,10 +205,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     onBackClick(config.key, data);
   }
 
-  const closeToast = () => {
-    setShowToast(false);
-    setError("");
-  };
+const closeToast = () => {
+  setShowToast(false);
+  setIsErrorToast(false);
+  setToastMessage("");
+};
+
 
   const LayoutLocalityInfo = Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo");
   const LayoutSiteDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails");
@@ -226,7 +232,15 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && (
+  <Toast
+    isDleteBtn={true}
+    error={isErrorToast}
+    label={toastMessage}
+    onClose={closeToast}
+  />
+)}
+
     </React.Fragment>
   );
 };

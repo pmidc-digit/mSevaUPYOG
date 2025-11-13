@@ -90,7 +90,7 @@ const LayoutApplicationOverview = () => {
   const { isLoading, data } = useLayoutSearchApplication({ applicationNumber: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
 
-  console.log(applicationDetails, "DATA")
+  console.log(applicationDetails, "DATALAYOUT")
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}

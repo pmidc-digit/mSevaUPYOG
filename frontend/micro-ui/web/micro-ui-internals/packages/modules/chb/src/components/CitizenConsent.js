@@ -17,16 +17,24 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     : window.localStorage.getItem("Employee.tenant-id");
   const [loader, setLoader] = useState(false);
 
+
   console.log("getModalData", getModalData);
 
-  const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
+
+
+
+
+
+  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+     const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
   const [isFileUploaded, setIsFileUploaded] = useState(false);
+
 
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
   const DateOnly = new Date();
 
   const updatedAdditionalDetails = {
-    ...data?.applicationData,
+    ...[data?.applicationData],
     TimeStamp: otpVerifiedTimestamp,
   };
 

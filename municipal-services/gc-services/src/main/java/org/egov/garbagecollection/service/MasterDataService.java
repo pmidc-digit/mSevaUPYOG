@@ -11,7 +11,6 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
-import org.egov.garbagecollection.constants.GCConstants;
 import org.egov.garbagecollection.repository.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +41,7 @@ public class MasterDataService {
 		MasterDetail mstrDetail = MasterDetail.builder().name(GCConstants.BILLING_PERIOD)
 				.filter("[?(@.active== " + true + " && @.connectionType== '" + GCConstants.METERED_CONNECTION + "')]")
 				.build();
-		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(GCConstants.MDMS_WC_MOD_NAME)
+		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(GCConstants.MDMS_GC_MOD_NAME)
 				.masterDetails(Arrays.asList(mstrDetail)).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId(tenantId)
 				.build();

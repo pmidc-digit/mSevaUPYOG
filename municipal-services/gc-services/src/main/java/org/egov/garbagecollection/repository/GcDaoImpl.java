@@ -126,7 +126,7 @@ public class GcDaoImpl implements GcDao {
 			{
 				garbageConnectionRequest.getGarbageConnection().setStatus(Connection.StatusEnum.INACTIVE);
 			}
-			if ((garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION)) && GCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
+			if ((garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION)) && GCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				garbageConnectionRequest.getGarbageConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
 			else if(garbageConnectionRequest.getGarbageConnection().isIsworkflowdisabled())

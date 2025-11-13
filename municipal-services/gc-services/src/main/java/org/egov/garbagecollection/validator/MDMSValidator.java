@@ -69,16 +69,20 @@ public class MDMSValidator {
 			String jsonPath = GCConstants.JSONPATH_ROOT;
 			String taxjsonPath = GCConstants.TAX_JSONPATH_ROOT;
 			String tenantId = request.getGarbageConnection().getTenantId();
+//			List<String> names = new ArrayList<>(Arrays.asList(GCConstants.MDMS_WC_CONNECTION_TYPE,
+//					GCConstants.MDMS_GC_CONNECTION_CATEGORY, GCConstants.MDMS_WC_WATER_SOURCE));
 			List<String> names = new ArrayList<>(Arrays.asList(GCConstants.MDMS_WC_CONNECTION_TYPE,
-					GCConstants.MDMS_WC_CONNECTION_CATEGORY, GCConstants.MDMS_WC_WATER_SOURCE));
-			Map<String, List<String>> codes = getAttributeValues(tenantId, GCConstants.MDMS_WC_MOD_NAME, names,
+					GCConstants.MDMS_GC_CONNECTION_CATEGORY));
+			Map<String, List<String>> codes = getAttributeValues(tenantId, GCConstants.MDMS_GC_MOD_NAME, names,
 					"$.*.code", jsonPath, request.getRequestInfo());
 			List<String> taxModelnames = new ArrayList<>(Arrays.asList(GCConstants.WC_ROADTYPE_MASTER));
-			Map<String, List<String>> codeFromCalculatorMaster = getAttributeValues(tenantId, GCConstants.WS_TAX_MODULE,
+			Map<String, List<String>> codeFromCalculatorMaster = getAttributeValues(tenantId, GCConstants.GC_TAX_MODULE,
 					taxModelnames, "$.*.code", taxjsonPath, request.getRequestInfo());
 			// merge codes
-			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_WC_CONNECTION_CATEGORY,
-					GCConstants.MDMS_WC_WATER_SOURCE, GCConstants.WC_ROADTYPE_MASTER};
+//			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_GC_CONNECTION_CATEGORY,
+//					GCConstants.MDMS_WC_WATER_SOURCE, GCConstants.WC_ROADTYPE_MASTER};
+			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_GC_CONNECTION_CATEGORY,
+					 GCConstants.WC_ROADTYPE_MASTER};
 			Map<String, List<String>> finalcodes = Stream.of(codes, codeFromCalculatorMaster).map(Map::entrySet)
 					.flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			validateMDMSData(finalmasterNames, finalcodes);
@@ -111,17 +115,23 @@ public class MDMSValidator {
 			String jsonPath = GCConstants.JSONPATH_ROOT;
 			String taxjsonPath = GCConstants.TAX_JSONPATH_ROOT;
 			String tenantId = request.getGarbageConnection().getTenantId();
+//			List<String> names = new ArrayList<>(Arrays.asList(GCConstants.MDMS_WC_CONNECTION_TYPE,
+//					GCConstants.MDMS_GC_CONNECTION_CATEGORY, GCConstants.MDMS_WC_WATER_SOURCE));
+
 			List<String> names = new ArrayList<>(Arrays.asList(GCConstants.MDMS_WC_CONNECTION_TYPE,
-					GCConstants.MDMS_WC_CONNECTION_CATEGORY, GCConstants.MDMS_WC_WATER_SOURCE));
-			Map<String, List<String>> codes = getAttributeValues(tenantId, GCConstants.MDMS_WC_MOD_NAME, names,
+					GCConstants.MDMS_GC_CONNECTION_CATEGORY));
+			Map<String, List<String>> codes = getAttributeValues(tenantId, GCConstants.MDMS_GC_MOD_NAME, names,
 					"$.*.code", jsonPath, request.getRequestInfo());
 			List<String> taxModelnames = new ArrayList<>(Arrays.asList(GCConstants.WC_ROADTYPE_MASTER));
-			Map<String, List<String>> codeFromCalculatorMaster = getAttributeValues(tenantId, GCConstants.WS_TAX_MODULE,
+			Map<String, List<String>> codeFromCalculatorMaster = getAttributeValues(tenantId, GCConstants.GC_TAX_MODULE,
 					taxModelnames, "$.*.code", taxjsonPath, request.getRequestInfo());
 
 			// merge codes
-			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_WC_CONNECTION_CATEGORY,
-					GCConstants.MDMS_WC_WATER_SOURCE, GCConstants.WC_ROADTYPE_MASTER};
+//			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_GC_CONNECTION_CATEGORY,
+//					GCConstants.MDMS_WC_WATER_SOURCE, GCConstants.WC_ROADTYPE_MASTER};
+
+			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_GC_CONNECTION_CATEGORY,
+					 GCConstants.WC_ROADTYPE_MASTER};
 			Map<String, List<String>> finalcodes = Stream.of(codes, codeFromCalculatorMaster).map(Map::entrySet)
 					.flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			validateMDMSData(finalmasterNames, finalcodes);
@@ -261,16 +271,23 @@ public class MDMSValidator {
 			String jsonPath = GCConstants.JSONPATH_ROOT;
 			String taxjsonPath = GCConstants.TAX_JSONPATH_ROOT;
 			String tenantId = request.getGarbageConnection().getTenantId();
+//			List<String> names = new ArrayList<>(Arrays.asList(GCConstants.MDMS_WC_CONNECTION_TYPE,
+//					GCConstants.MDMS_GC_CONNECTION_CATEGORY, GCConstants.MDMS_WC_WATER_SOURCE));
+
 			List<String> names = new ArrayList<>(Arrays.asList(GCConstants.MDMS_WC_CONNECTION_TYPE,
-					GCConstants.MDMS_WC_CONNECTION_CATEGORY, GCConstants.MDMS_WC_WATER_SOURCE));
-			Map<String, List<String>> codes = getAttributeValues(tenantId, GCConstants.MDMS_WC_MOD_NAME, names,
+					GCConstants.MDMS_GC_CONNECTION_CATEGORY));
+
+			Map<String, List<String>> codes = getAttributeValues(tenantId, GCConstants.MDMS_GC_MOD_NAME, names,
 					"$.*.code", jsonPath, request.getRequestInfo());
 			List<String> taxModelnames = new ArrayList<>(Arrays.asList(GCConstants.WC_ROADTYPE_MASTER));
-			Map<String, List<String>> codeFromCalculatorMaster = getAttributeValues(tenantId, GCConstants.WS_TAX_MODULE,
+			Map<String, List<String>> codeFromCalculatorMaster = getAttributeValues(tenantId, GCConstants.GC_TAX_MODULE,
 					taxModelnames, "$.*.code", taxjsonPath, request.getRequestInfo());
 			// merge codes
-			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_WC_CONNECTION_CATEGORY,
-					GCConstants.MDMS_WC_WATER_SOURCE, GCConstants.WC_ROADTYPE_MASTER};
+//			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_GC_CONNECTION_CATEGORY,
+//					GCConstants.MDMS_WC_WATER_SOURCE, GCConstants.WC_ROADTYPE_MASTER};
+
+			String[] finalmasterNames = {GCConstants.MDMS_WC_CONNECTION_TYPE, GCConstants.MDMS_GC_CONNECTION_CATEGORY,
+					GCConstants.WC_ROADTYPE_MASTER};
 			Map<String, List<String>> finalcodes = Stream.of(codes, codeFromCalculatorMaster).map(Map::entrySet)
 					.flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			validateMDMSData(finalmasterNames, finalcodes);

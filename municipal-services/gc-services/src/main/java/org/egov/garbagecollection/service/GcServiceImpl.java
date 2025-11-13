@@ -126,7 +126,7 @@ public class GcServiceImpl implements GcService {
 		String connectionNo = garbageConnectionRequest.getGarbageConnection().getConnectionNo();
 
 		
-		if (isMigration && "NEW_WATER_CONNECTION".equalsIgnoreCase(applicationType) && connectionNo != null && !connectionNo.trim().isEmpty()) {
+		if (isMigration && "NEW_GARBAGE_CONNECTION".equalsIgnoreCase(applicationType) && connectionNo != null && !connectionNo.trim().isEmpty()) {
 			    SearchCriteria criteria = new SearchCriteria();
 			    criteria.setConnectionNumber(Collections.singleton(connectionNo));
 			    criteria.setTenantId(garbageConnectionRequest.getGarbageConnection().getTenantId());
@@ -146,12 +146,12 @@ public class GcServiceImpl implements GcService {
 		if (garbageConnectionRequest.isDisconnectRequest()
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationType() != null
 						&& garbageConnectionRequest.getGarbageConnection().getApplicationType()
-								.equalsIgnoreCase(GCConstants.DISCONNECT_WATER_CONNECTION))) {
+								.equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION))) {
 			reqType = GCConstants.DISCONNECT_CONNECTION;
 			validateDisconnectionRequest(garbageConnectionRequest);
 		} else if (garbageConnectionRequest.isReconnectRequest()
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationType() != null && garbageConnectionRequest
-						.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION))) {
+						.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))) {
 			reqType = GCConstants.RECONNECTION;
 			validateReconnectionRequest(garbageConnectionRequest);
 		}
@@ -387,10 +387,10 @@ public class GcServiceImpl implements GcService {
 	public List<GarbageConnection> updateGarbageConnection(GarbageConnectionRequest waterConnectionRequest) {
 		boolean eodbPushed = false;
 		if (waterConnectionRequest.isDisconnectRequest() || waterConnectionRequest.getGarbageConnection()
-				.getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_WATER_CONNECTION)) {
+				.getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION)) {
 			return updateGarbageConnectionForDisconnectFlow(waterConnectionRequest);
 		} else if (waterConnectionRequest.isReconnectRequest() || waterConnectionRequest.getGarbageConnection()
-				.getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION)) {
+				.getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION)) {
 			return updateGarbageConnectionForReconnectFlow(waterConnectionRequest);
 		}
 		SearchCriteria criteria = new SearchCriteria();

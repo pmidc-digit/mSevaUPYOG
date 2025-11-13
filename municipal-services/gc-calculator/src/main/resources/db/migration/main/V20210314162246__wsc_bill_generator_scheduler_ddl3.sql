@@ -1,1 +1,0 @@
-ALTER TABLE eg_ws_scheduler ALTER COLUMN id SET NOT NULL;

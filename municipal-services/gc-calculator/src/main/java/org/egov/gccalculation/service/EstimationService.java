@@ -134,16 +134,16 @@ public class EstimationService {
 					.estimateAmount(waterCharge.setScale(2, 2)).build());
 
 		// Water_cess
-		// if
-		// (timeBasedExemptionsMasterMap.get(GCCalculationConstant.WC_WATER_CESS_MASTER)
-		// != null) {
-		// List<Object> waterCessMasterList = timeBasedExemptionsMasterMap
-		// .get(GCCalculationConstant.WC_WATER_CESS_MASTER);
-		// BigDecimal waterCess;
-		// waterCess = waterCessUtil.getWaterCess(waterCharge,
-		// GCCalculationConstant.Assessment_Year, waterCessMasterList);
-		// estimates.add(TaxHeadEstimate.builder().taxHeadCode(GCCalculationConstant.WS_WATER_CESS)
-		// .estimateAmount(waterCess.setScale(2, 2)).build());
+//		 if
+//		 (timeBasedExemptionsMasterMap.get(GCCalculationConstant.WC_WATER_CESS_MASTER)
+//		 != null) {
+//		 List<Object> waterCessMasterList = timeBasedExemptionsMasterMap
+//		 .get(GCCalculationConstant.WC_WATER_CESS_MASTER);
+//		 BigDecimal waterCess;
+//		 waterCess = waterCessUtil.getWaterCess(waterCharge,
+//		 GCCalculationConstant.Assessment_Year, waterCessMasterList);
+//		 estimates.add(TaxHeadEstimate.builder().taxHeadCode(GCCalculationConstant.WS_WATER_CESS)
+//		 .estimateAmount(waterCess.setScale(2, 2)).build());
 
 		// DISPOSAL DISCHARGE CHARGES
 		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection")!=null) {
@@ -426,15 +426,18 @@ public class EstimationService {
 		if (waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
 			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
 			return totalUnit;
-		} else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
-				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.noOfTapsConst)) {
-			if (waterConnection.getNoOfTaps() != null && waterConnection.getNoOfTaps() > 0)
-				return new Double(waterConnection.getNoOfTaps());
-		} else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
-				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.pipeSizeConst)) {
-			if (waterConnection.getPipeSize() == null && waterConnection.getPipeSize() > 0)
-				return waterConnection.getPipeSize();
-		} else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
+		}
+//		else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
+//				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.noOfTapsConst)) {
+//			if (waterConnection.getNoOfTaps() != null && waterConnection.getNoOfTaps() > 0)
+//				return new Double(waterConnection.getNoOfTaps());
+//	}
+//		else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
+//				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.pipeSizeConst)) {
+//			if (waterConnection.getPipeSize() == null && waterConnection.getPipeSize() > 0)
+//				return waterConnection.getPipeSize();
+//		}
+	else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.plotBasedConst)) {
 			if (property.getLandArea() != null && property.getLandArea() > 0)
 				return property.getLandArea();
@@ -448,17 +451,19 @@ public class EstimationService {
 		if (waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
 			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
 			return totalUnit;
-		} else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
-				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.noOfTapsConst)) {
-			if (waterConnection.getNoOfTaps() == null)
-				return totalUnit;
-			return new Double(waterConnection.getNoOfTaps());
-		} else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
-				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.pipeSizeConst)) {
-			if (waterConnection.getPipeSize() == null)
-				return totalUnit;
-			return waterConnection.getPipeSize();
 		}
+//		else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
+//				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.noOfTapsConst)) {
+//			if (waterConnection.getNoOfTaps() == null)
+//				return totalUnit;
+//			return new Double(waterConnection.getNoOfTaps());
+//		}
+//		else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
+//				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.pipeSizeConst)) {
+//			if (waterConnection.getPipeSize() == null)
+//				return totalUnit;
+//			return waterConnection.getPipeSize();
+//		}
 		return 0.0;
 	}
 

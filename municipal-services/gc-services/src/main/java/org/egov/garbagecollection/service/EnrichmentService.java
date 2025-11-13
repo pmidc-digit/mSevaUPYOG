@@ -45,9 +45,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.egov.garbagecollection.constants.GCConstants.DOCUMENT_ACCESS_AUDIT_MSG;
-import static org.egov.garbagecollection.constants.GCConstants.WNS_OWNER_ENCRYPTION_MODEL;
-import static org.egov.garbagecollection.constants.GCConstants.MODIFY_WATER_CONNECTION;
-import static org.egov.garbagecollection.constants.GCConstants.DISCONNECT_WATER_CONNECTION;
 
 @Service
 @Slf4j
@@ -193,16 +190,16 @@ public class EnrichmentService {
 		
 		
 		if(reqType==GCConstants.CREATE_APPLICATION) {
-			applicationType=GCConstants.NEW_WATER_CONNECTION;
+			applicationType=GCConstants.NEW_GARBAGE_CONNECTION;
 		}
 		else if(reqType==GCConstants.DISCONNECT_CONNECTION) {
-			applicationType=GCConstants.DISCONNECT_WATER_CONNECTION;
+			applicationType=GCConstants.DISCONNECT_GARBAGE_CONNECTION;
 		}
 		else if (reqType == GCConstants.RECONNECTION) {
-			applicationType=GCConstants.WATER_RECONNECTION;
+			applicationType=GCConstants.GARBAGE_RECONNECTION;
 		}
 		else {
-			applicationType=GCConstants.MODIFY_WATER_CONNECTION;
+			applicationType=GCConstants.MODIFY_GARBAGE_CONNECTION;
 		}
 		
 		garbageConnectionRequest.getGarbageConnection().setApplicationType(applicationType);

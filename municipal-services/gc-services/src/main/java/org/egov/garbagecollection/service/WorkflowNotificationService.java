@@ -83,7 +83,7 @@ public class WorkflowNotificationService {
     String mobileNoReplacer = "$mobileNo";
     String applicationKey = "$applicationkey";
     String propertyKey = "property";
-    String businessService = "WS.ONE_TIME_FEE";
+    String businessService = "GC.ONE_TIME_FEE";
 
 
 
@@ -101,8 +101,8 @@ public class WorkflowNotificationService {
             log.info("configuredChannelNames for request Type " + request.getGarbageConnection().getApplicationType() + " is :: "  + businessService+" action :  : " +request.getGarbageConnection().getProcessInstance().getAction());
             
             
-			if(request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION) || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_WATER_CONNECTION))
-            	configuredChannelNames=  notificationUtil.fetchChannelList(request.getRequestInfo(), request.getGarbageConnection().getTenantId(), "WS.CREATE", request.getGarbageConnection().getProcessInstance().getAction());
+			if(request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION) || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION))
+            	configuredChannelNames=  notificationUtil.fetchChannelList(request.getRequestInfo(), request.getGarbageConnection().getTenantId(), "GC.CREATE", request.getGarbageConnection().getProcessInstance().getAction());
             else
                 configuredChannelNames =  notificationUtil.fetchChannelList(request.getRequestInfo(), request.getGarbageConnection().getTenantId(), businessService, request.getGarbageConnection().getProcessInstance().getAction());
             log.info("configuredChannelNames for request Type " + request.getGarbageConnection().getApplicationType() + " is :: "  + configuredChannelNames);
@@ -816,7 +816,7 @@ public class WorkflowNotificationService {
         }
         else{
             consumerCode = garbageConnectionRequest.getGarbageConnection().getConnectionNo();
-            service = "WS";
+            service = "GC";
         }
         StringBuilder URL = gcServicesUtil.getcollectionURL();
         URL.append(service).append("/_search").append("?").append("consumerCodes=").append(consumerCode)

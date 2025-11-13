@@ -343,7 +343,7 @@ public class GcServicesUtil {
 				.append(config.getFetchBillEndPoint())
 				.append("?tenantId=").append(tenantId)
 				.append("&consumerCode=").append(connectionNo)
-				.append("&businessService=").append(GCConstants.WATER_SERVICE_BUSINESS_ID);
+				.append("&businessService=").append(GCConstants.GARBAGE_SERVICE_BUSINESS_ID);
 
 		try {
 			res = serviceRequestRepository.fetchResult(uri, new RequestInfoWrapper(request));
@@ -362,21 +362,21 @@ public class GcServicesUtil {
 	}
 
 	public boolean isModifyConnectionRequestForNotification(GarbageConnectionRequest garbageConnectionRequest) {
-		if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.MODIFY_WATER_CONNECTION))
+		if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.MODIFY_GARBAGE_CONNECTION))
 			return !StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionNo());
 
 		return false;
 	}
 
 	public boolean isDisconnectConnectionRequest(GarbageConnectionRequest garbageConnectionRequest) {
-		if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_WATER_CONNECTION))
+		if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION))
 			return !StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionNo());
 
 		return false;
 	}
 
 	public boolean isReconnectConnectionRequest(GarbageConnectionRequest garbageConnectionRequest) {
-		if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION))
+		if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
 			return !StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionNo());
 
 		return false;

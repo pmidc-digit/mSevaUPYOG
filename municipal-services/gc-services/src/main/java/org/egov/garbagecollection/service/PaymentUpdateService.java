@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -86,7 +85,7 @@ public class PaymentUpdateService {
 			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
 			boolean isServiceMatched = false;
 			for (PaymentDetail paymentDetail : paymentRequest.getPayment().getPaymentDetails()) {
-				if (GCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService()) ||
+				if (GCConstants.GARBAGE_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService()) ||
             paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptBusinessservice()) || paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName())) {
 					isServiceMatched = true;
 				}
@@ -189,7 +188,7 @@ public class PaymentUpdateService {
 			boolean isServiceMatched = false;
 			for (PaymentDetail paymentDetail : paymentRequest.getPayment().getPaymentDetails()) {
 				String businessservice = paymentDetail.getBusinessService();
-				if (GCConstants.WATER_SERVICE_BUSINESS_ID.equals(businessservice) || WATER_SERVICE_ONE_TIME_FEE_BUSINESS_ID.equals(businessservice)) {
+				if (GCConstants.GARBAGE_SERVICE_BUSINESS_ID.equals(businessservice) || WATER_SERVICE_ONE_TIME_FEE_BUSINESS_ID.equals(businessservice)) {
 					isServiceMatched = true;
 				}
 			}
@@ -197,10 +196,10 @@ public class PaymentUpdateService {
 				return;
 			for (PaymentDetail paymentDetail : paymentRequest.getPayment().getPaymentDetails()) {
 				log.info("Consuming Business Service : {}", paymentDetail.getBusinessService());
-				if (GCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService()) ||
+				if (GCConstants.GARBAGE_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService()) ||
 						config.getReceiptBusinessservice().equals(paymentDetail.getBusinessService())) {
 					SearchCriteria criteria = new SearchCriteria();
-					if (GCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService())) {
+					if (GCConstants.GARBAGE_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService())) {
 						criteria = SearchCriteria.builder()
 								.tenantId(paymentRequest.getPayment().getTenantId())
 								.connectionNumber(Stream.of(paymentDetail.getBill().getConsumerCode().toString()).collect(Collectors.toSet())).build();
@@ -222,7 +221,7 @@ public class PaymentUpdateService {
 					GarbageConnectionRequest garbageConnectionRequest = GarbageConnectionRequest.builder()
 							.garbageConnection(connections.get()).requestInfo(paymentRequest.getRequestInfo())
 							.build();
-					if(!(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION)) && !(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_WATER_CONNECTION)) )
+					if(!(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION)) && !(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION)) )
 					sendPaymentNotification(garbageConnectionRequest, paymentDetail);
 				}
 			}
@@ -243,7 +242,7 @@ public class PaymentUpdateService {
 		Property property = validateProperty.getOrValidateProperty(garbageConnectionRequest);
 
 		garbageConnectionRequest.getRequestInfo().setUserInfo(userInfoCopy);
-		List<String> configuredChannelNames =  notificationUtil.fetchChannelList(garbageConnectionRequest.getRequestInfo(), garbageConnectionRequest.getGarbageConnection().getTenantId(), WATER_SERVICE_BUSINESS_ID, garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction());
+		List<String> configuredChannelNames =  notificationUtil.fetchChannelList(garbageConnectionRequest.getRequestInfo(), garbageConnectionRequest.getGarbageConnection().getTenantId(), GARBAGE_SERVICE_BUSINESS_ID, garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction());
 
 		if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)) {
 			if (config.getIsUserEventsNotificationEnabled() != null && config.getIsUserEventsNotificationEnabled()) {

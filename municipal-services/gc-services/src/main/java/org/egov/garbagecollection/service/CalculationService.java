@@ -58,7 +58,7 @@ public class CalculationService {
 	 * 
 	 */
 	public void calculateFeeAndGenerateDemand(GarbageConnectionRequest request, Property property) {
-		if(GCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(request.getGarbageConnection().getProcessInstance().getAction()) && !(request.isReconnectRequest() || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION))) {
+		if(GCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(request.getGarbageConnection().getProcessInstance().getAction()) && !(request.isReconnectRequest() || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getGarbageConnection().getApplicationNo())
 					.garbageConnection(request.getGarbageConnection())
@@ -90,7 +90,7 @@ public class CalculationService {
 				throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
 			}
 		}
-		else if (GCConstants.RECONNECT_DISCONNECTION_CONST.equalsIgnoreCase(request.getGarbageConnection().getProcessInstance().getAction()) && (request.isReconnectRequest() || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION))) {
+		else if (GCConstants.RECONNECT_DISCONNECTION_CONST.equalsIgnoreCase(request.getGarbageConnection().getProcessInstance().getAction()) && (request.isReconnectRequest() || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getGarbageConnection().getApplicationNo())
 					.garbageConnection(request.getGarbageConnection())

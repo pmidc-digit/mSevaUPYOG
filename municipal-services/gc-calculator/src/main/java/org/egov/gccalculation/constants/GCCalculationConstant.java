@@ -20,9 +20,9 @@ public class GCCalculationConstant {
 	public static final String  ACTIVE_CONNECTION = "Active";
 	public static final String SERVICE_FIELD_FOR_SEARCH_URL = "service=";
 
-	public static final String SERVICE_FIELD_VALUE_WS = "WS";
+	public static final String SERVICE_FIELD_VALUE_WS = "GC";
 	
-	public static final String ONE_TIME_FEE_SERVICE_FIELD = "WS.ONE_TIME_FEE";
+	public static final String ONE_TIME_FEE_SERVICE_FIELD = "GC.ONE_TIME_FEE";
 
 	public static final String WS_CONSUMER_CODE_SEPARATOR = ":";
 
@@ -82,15 +82,15 @@ public class GCCalculationConstant {
 	 * Time Taxes Config
 	 */
 
-	public static final String WS_TIME_INTEREST = "WS_TIME_INTEREST";
+	public static final String WS_TIME_INTEREST = "GC_TIME_INTEREST";
 
-	public static final String WS_TIME_PENALTY = "WS_TIME_PENALTY";
+	public static final String WS_TIME_PENALTY = "GC_TIME_PENALTY";
 
-	public static final String WS_WATER_CESS = "WS_WATER_CESS";
+	public static final String WS_WATER_CESS = "GC_GARBAGE_CESS";
 
-	public static final String WS_CHARGE = "WS_CHARGE";
+	public static final String WS_CHARGE = "GC_CHARGE";
 	
-	public static final String WS_TIME_REBATE="WS_TIME_REBATE";
+	public static final String WS_TIME_REBATE="GC_TIME_REBATE";
 
 	/**
 	 * data fields
@@ -121,15 +121,15 @@ public class GCCalculationConstant {
 
 	public static final String FINANCIALYEAR_MASTER_KEY = "2019-20";
 
-	public static final String TAXHEADMASTER_MASTER_KEY = "WS_TAX";
+	public static final String TAXHEADMASTER_MASTER_KEY = "GC_TAX";
 
-	public static final String WS_Round_Off = "WS_Round_Off";
+	public static final String WS_Round_Off = "GC_Round_Off";
 	
-	public static final String WS_ONE_TIME_FEE_ROUND_OFF = "WS_FEE_ROUND_OFF";
+	public static final String WS_ONE_TIME_FEE_ROUND_OFF = "GC_FEE_ROUND_OFF";
 
-	public static final String WS_TAX_MODULE = "ws-services-calculation";
+	public static final String WS_TAX_MODULE = "gc-services-calculation";
 
-	public static final String WS_MODULE = "ws-services-masters";
+	public static final String WS_MODULE = "gc-services-masters";
 
 	public static final String WC_PENANLTY_MASTER = "Penalty";
 
@@ -137,7 +137,7 @@ public class GCCalculationConstant {
 
 	public static final String WC_INTEREST_MASTER = "Interest";
 
-	public static final String WC_BILLING_SLAB_MASTER = "WCBillingSlab";
+	public static final String WC_BILLING_SLAB_MASTER = "GCBillingSlab";
 
 	public static final List<String> WS_BILLING_SLAB_MASTERS = Collections
 			.unmodifiableList(Arrays.asList(WC_BILLING_SLAB_MASTER));
@@ -162,7 +162,7 @@ public class GCCalculationConstant {
 
 	public static final String ConnectionType = "connectionType";
 
-	public static final String JSONPATH_ROOT_FOR_BilingPeriod = "$.MdmsRes.ws-services-masters.billingPeriod";
+	public static final String JSONPATH_ROOT_FOR_BilingPeriod = "$.MdmsRes.gc-services-masters.billingPeriod";
 	
 //	public static final String JSONPATH_ROOT_FOR_SCHEDULER_BilingPeriod = "$.MdmsRes.ws-services-masters.schedulerBillingPeriod";
 
@@ -189,29 +189,29 @@ public class GCCalculationConstant {
 
 	public static final String SMS_RECIEVER_MASTER = "SMSReceiver";
 
-	public static final String DEMAND_SUCCESS_MESSAGE_SMS = "WATER_CONNECTION_DEMAND_SUCCESSFUL_SMS_MESSAGE";
+	public static final String DEMAND_SUCCESS_MESSAGE_SMS = "GARBAGE_CONNECTION_DEMAND_SUCCESSFUL_SMS_MESSAGE";
 
-	public static final String DEMAND_FAILURE_MESSAGE_SMS = "WATER_CONNECTION_DEMAND_FAILURE_SMS_MESSAGE";
+	public static final String DEMAND_FAILURE_MESSAGE_SMS = "GARBAGE_CONNECTION_DEMAND_FAILURE_SMS_MESSAGE";
 
-	public static final String DEMAND_SUCCESS_MESSAGE_EMAIL = "WATER_CONNECTION_DEMAND_SUCCESSFUL_EMAIL_MESSAGE";
+	public static final String DEMAND_SUCCESS_MESSAGE_EMAIL = "GARBAGE_CONNECTION_DEMAND_SUCCESSFUL_EMAIL_MESSAGE";
 
-	public static final String DEMAND_FAILURE_MESSAGE_EMAIL = "WATER_CONNECTION_DEMAND_FAILURE_EMAIL_MESSAGE";
+	public static final String DEMAND_FAILURE_MESSAGE_EMAIL = "GARBAGE_CONNECTION_DEMAND_FAILURE_EMAIL_MESSAGE";
 
-	public static final String BILL_SUCCESS_MESSAGE_SMS = "WATER_CONNECTION_BILL_SUCCESSFUL_SMS_MESSAGE";
+	public static final String BILL_SUCCESS_MESSAGE_SMS = "GARBAGE_CONNECTION_BILL_SUCCESSFUL_SMS_MESSAGE";
 
-	public static final String BILL_FAILURE_MESSAGE_SMS = "WATER_CONNECTION_BILL_FAILURE_SMS_MESSAGE";
+	public static final String BILL_FAILURE_MESSAGE_SMS = "GARBAGE_CONNECTION_BILL_FAILURE_SMS_MESSAGE";
 
-	public static final String BILL_SUCCESS_MESSAGE_EMAIL = "WATER_CONNECTION_BILL_SUCCESSFUL_EMAIL_MESSAGE";
+	public static final String BILL_SUCCESS_MESSAGE_EMAIL = "GARBAGE_CONNECTION_BILL_SUCCESSFUL_EMAIL_MESSAGE";
 
-	public static final String BILL_FAILURE_MESSAGE_EMAIL = "WATER_CONNECTION_BILL_FAILURE_EMAIL_MESSAGE";
+	public static final String BILL_FAILURE_MESSAGE_EMAIL = "GARBAGE_CONNECTION_BILL_FAILURE_EMAIL_MESSAGE";
 
-	public static final String WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE = "WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE";
+	public static final String WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE = "GARBAGE_CONNECTION_BILL_GENERATION_SMS_MESSAGE";
 	
-	public static final String WATER_CONNECTION_BILL_GENERATION_APP_MESSAGE = "WATER_CONNECTION_BILL_GENERATION_APP_MESSAGE";
+	public static final String WATER_CONNECTION_BILL_GENERATION_APP_MESSAGE = "GARBAGE_CONNECTION_BILL_GENERATION_APP_MESSAGE";
 	
 	public static final String  USREVENTS_EVENT_TYPE = "SYSTEMGENERATED";
 	
-	public static final String  USREVENTS_EVENT_NAME = "WATER BILL GENERATION";
+	public static final String  USREVENTS_EVENT_NAME = "GARBAGE BILL GENERATION";
 	
 	public static final String  USREVENTS_EVENT_POSTEDBY = "SYSTEM-WS";
 	
@@ -235,33 +235,33 @@ public class GCCalculationConstant {
 	/**
 	 * Fee Estimation Configuration
 	 */
-	public static final String WS_FORM_FEE = "WS_FORM_FEE";
+	public static final String WS_FORM_FEE = "GC_FORM_FEE";
 
-	public static final String WS_SCRUTINY_FEE = "WS_SCRUTINY_FEE";
+	public static final String WS_SCRUTINY_FEE = "GC_SCRUTINY_FEE";
 
-	public static final String WS_ONE_TIME_FEE = "WS_ONE_TIME_FEE";
+	public static final String WS_ONE_TIME_FEE = "GC_ONE_TIME_FEE";
 
-	public static final String WS_ROAD_CUTTING_CHARGE = "WS_ROAD_CUTTING_CHARGE";
+	public static final String WS_ROAD_CUTTING_CHARGE = "GC_ROAD_CUTTING_CHARGE";
 
-	public static final String WS_METER_CHARGE = "WS_METER_CHARGE";
+	public static final String WS_METER_CHARGE = "GC_METER_CHARGE";
 	
-	public static final String WS_SECURITY_DEPOSIT= "WS_SECURITY_DEPOSIT";
-	public static final String WS_METER_TESTING_FEE = "WS_METER_TESTING_FEE";
+	public static final String WS_SECURITY_DEPOSIT= "GC_SECURITY_DEPOSIT";
+	public static final String WS_METER_TESTING_FEE = "GC_METER_TESTING_FEE";
 	public static final String WS_SECURITY_CHARGE_CONST = "securityCharge";
-	public static final String WS_CONNECTION_FEE = "WS_CONNECTION_FEE";
-	public static final String WS_SECURITY_CHARGE = "WS_SECURITY_DEPOSIT";
+	public static final String WS_CONNECTION_FEE = "GC_CONNECTION_FEE";
+	public static final String WS_SECURITY_CHARGE = "GC_SECURITY_DEPOSIT";
 	
 	public static final String WS_CONNECTION_FEE_CONST = "connectionFee";
 	
-	public static final String WS_OTHER_CHARGE = "WS_OTHER_CHARGE";
+	public static final String WS_OTHER_CHARGE = "GC_OTHER_CHARGE";
 	
-	public static final String WS_TAX_AND_CESS = "WS_TAX_AND_CESS";
+	public static final String WS_TAX_AND_CESS = "GC_TAX_AND_CESS";
 	
-	public static final String WS_ADHOC_PENALTY = "WS_ADHOC_PENALTY";
+	public static final String WS_ADHOC_PENALTY = "GC_ADHOC_PENALTY";
 
-	public static final String WS_ADHOC_REBATE = "WS_ADHOC_REBATE";
+	public static final String WS_ADHOC_REBATE = "GC_ADHOC_REBATE";
 	
-	public static final String WS_RECONNECTION_CHARGE = "WS_RECONNECTION_CHARGE";
+	public static final String WS_RECONNECTION_CHARGE = "GC_RECONNECTION_CHARGE";
 	
 	public static final String FORM_FEE_CONST = "formFee";
 
@@ -289,11 +289,11 @@ public class GCCalculationConstant {
 	
 	public static final Long APPLICATION_FEE_DEMAND_EXP_DATE = 220898664000L;
 	
-	public static final String WS_TIME_ADHOC_PENALTY = "WS_TIME_ADHOC_PENALTY";
+	public static final String WS_TIME_ADHOC_PENALTY = "GC_TIME_ADHOC_PENALTY";
 	
-	public static final String WS_TIME_ADHOC_REBATE = "WS_TIME_ADHOC_REBATE";
+	public static final String WS_TIME_ADHOC_REBATE = "GC_TIME_ADHOC_REBATE";
 
-	public static final String WS_COMPOSITION_FEE="WS_COMPOSITION_FEE";
+	public static final String WS_COMPOSITION_FEE="GC_COMPOSITION_FEE";
 	
 	public static final String COMPOSITION_FEE_CONST = "compositionFee";
 	
@@ -303,9 +303,9 @@ public class GCCalculationConstant {
 
    //     public static final String connectionCategory = "connectionCategory";
 	
-	public static final String  USER_CHARGES = "WS_USER_CHARGE";
+	public static final String  USER_CHARGES = "GC_USER_CHARGE";
 	
-	public static final String OTHER_FEE="WS_OTHER_FEE";
+	public static final String OTHER_FEE="GC_OTHER_FEE";
 	
 	public static final String  BILLINGTYPE = "billingType";
 
@@ -366,7 +366,7 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 	
 	public static final String WS_NO_BILLING_PERIOD_MSG = "No billin period is active or not defined";
 	
-    public static final String WS_DUPLICATE_BILL_SCHEDULER = "WS_DUPLICATE_BILL_SCHEDULER";
+    public static final String WS_DUPLICATE_BILL_SCHEDULER = "GC_DUPLICATE_BILL_SCHEDULER";
 	
 	public static final String ADHOC_PENALTY_REASON = "adhocPenaltyReason";
 	
@@ -421,15 +421,15 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 
 	public static final String AMOUNT_KEY= "amount";
 
-	public static final String NEW_WATER_CONNECTION = "NEW_WATER_CONNECTION";
+	public static final String NEW_WATER_CONNECTION = "NEW_GARBAGE_CONNECTION";
 
-	public static final String NEWWATER_BUSINESS_SERVICE = "WS";
+	public static final String NEWWATER_BUSINESS_SERVICE = "GC";
 	
-	public static final String NEWWATER_BUSINESS_SERVICE_NEW = "NewWS1";
+	public static final String NEWWATER_BUSINESS_SERVICE_NEW = "NewGC";
 
-	public static final String MODIFY_BUSINESS_SERVICE = "ModifyWSConnection";
+	public static final String MODIFY_BUSINESS_SERVICE = "ModifyGCConnection";
 
-	public static final String DISCONNECTION_BUSINESS_SERVICE = "DisconnectWSConnection";
+	public static final String DISCONNECTION_BUSINESS_SERVICE = "DisconnectGCConnection";
 
 	public static final String PENDING_FOR_DISCONNECTION_EXECUTION = "PENDING_FOR_DISCONNECTION_EXECUTION";
 
@@ -437,9 +437,9 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 
 	public static final Long ONE_DAY_ADDON = Long.valueOf(66599000);
 
-	public static final String MODIFY_WATER_CONNECTION = "MODIFY_WATER_CONNECTION";
+	public static final String MODIFY_WATER_CONNECTION = "MODIFY_GARBAGE_CONNECTION";
 
-	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_WATER_CONNECTION";
+	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_GARBAGE_CONNECTION";
 
 	public static final String FAILURE = "Failure";
 	
@@ -447,7 +447,7 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 	
 	public static final String FAILURE_MESSAGE = "Bill already paid or Error in bill generation for consumercode: ";
 
-	public static final String WS_DUPLICATE_BILL_SCHEDULER_MSG = "WS_DUPLICATE_BILL_SCHEDULER_MSG";
+	public static final String WS_DUPLICATE_BILL_SCHEDULER_MSG = "GC_DUPLICATE_BILL_SCHEDULER_MSG";
 	
 	public static final String METER_READING_MAPPING = "meterReadingMapping"; 
 	

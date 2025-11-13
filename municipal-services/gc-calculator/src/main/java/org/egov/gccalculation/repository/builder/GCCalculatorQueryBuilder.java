@@ -67,7 +67,7 @@ public class GCCalculatorQueryBuilder {
 
 	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id  ";
 
-	private static final String BILL_SCHEDULER_STATUS_SEARCH_QUERY = "select status from eg_ws_scheduler ";
+	private static final String BILL_SCHEDULER_STATUS_SEARCH_QUERY = "select status from eg_gc_scheduler ";
 	private static final String LAST_DEMAND_GEN_FOR_CONN = " SELECT d.taxperiodfrom FROM egbs_demand_v1 d ";
 
 	private static final String isConnectionDemandAvailableForBillingCycle = "select EXISTS (select 1 from egbs_demand_v1 d ";
@@ -94,7 +94,7 @@ public class GCCalculatorQueryBuilder {
 			+ " eg_gc_service wc ON wc.connection_id = conn.id" + LEFT_OUTER_JOIN_STRING
 			+ "eg_gc_applicationdocument document ON document.gcid = conn.id" + LEFT_OUTER_JOIN_STRING
 //			+ "eg_ws_plumberinfo plumber ON plumber.wsid = conn.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_ws_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
+			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
 //			+ LEFT_OUTER_JOIN_STRING + "eg_ws_roadcuttinginfo roadcuttingInfo ON roadcuttingInfo.wsid = conn.id ";
 
 	/*
@@ -115,7 +115,7 @@ public class GCCalculatorQueryBuilder {
 			+ holderSelectValues + " FROM eg_gc_connection conn " + INNER_JOIN_STRING
 			+ " eg_gc_service wc ON wc.connection_id = conn.id" + LEFT_OUTER_JOIN_STRING
 			+ LEFT_OUTER_JOIN_STRING
-			+ "eg_ws_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
+			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
 //			+ LEFT_OUTER_JOIN_STRING + "eg_ws_roadcuttinginfo roadcuttingInfo ON roadcuttingInfo.wsid = conn.id ";
 
 	private static final String WATER_SEARCH_DEMAND_QUERY = "SELECT conn.*, wc.*, wc.connectionCategory, wc.connectionType"

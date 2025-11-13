@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkflowIntegrator {
 
-	private static final String MODULENAMEVALUE = "WS";
+	private static final String MODULENAMEVALUE = "GC";
 
 	@Autowired
 	private GCConfiguration config;
@@ -59,13 +59,13 @@ public class WorkflowIntegrator {
 	public void callWorkFlow(GarbageConnectionRequest garbageConnectionRequest, Property property) {
 		String wfBusinessServiceName = config.getBusinessServiceValue();
 
-		if((garbageConnectionRequest.isDisconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_WATER_CONNECTION)) &&
-				!(garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION))
+		if((garbageConnectionRequest.isDisconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION)) &&
+				!(garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationStatus().equalsIgnoreCase(GCConstants.PENDING_FOR_PAYMENT_STATUS_CODE)
 				&& garbageConnectionRequest.getGarbageConnection().getApplicationNo().contains(GCConstants.APPLICATION_DISCONNECTION_CODE))) {
 			wfBusinessServiceName = config.getDisconnectBusinessServiceName();
 		} 
-		else if((garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.WATER_RECONNECTION))
+		else if((garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationStatus().equalsIgnoreCase(GCConstants.DISCONNECTION_FINAL_STATE))) {
 			wfBusinessServiceName = config.getWsWorkflowReconnectionName();
 		}

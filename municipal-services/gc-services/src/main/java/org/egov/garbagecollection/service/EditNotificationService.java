@@ -47,7 +47,7 @@ public class EditNotificationService {
 	public void sendEditNotification(GarbageConnectionRequest request) {
 		try {
 			String applicationStatus = request.getGarbageConnection().getApplicationStatus();
-			List<String> configuredChannelNames =  notificationUtil.fetchChannelList(request.getRequestInfo(), request.getGarbageConnection().getTenantId(), WATER_SERVICE_BUSINESS_ID, request.getGarbageConnection().getProcessInstance().getAction());
+			List<String> configuredChannelNames =  notificationUtil.fetchChannelList(request.getRequestInfo(), request.getGarbageConnection().getTenantId(), GARBAGE_SERVICE_BUSINESS_ID, request.getGarbageConnection().getProcessInstance().getAction());
 
 			User userInfoCopy = request.getRequestInfo().getUserInfo();
 			User userInfo = notificationUtil.getInternalMicroserviceUser(request.getGarbageConnection().getTenantId());

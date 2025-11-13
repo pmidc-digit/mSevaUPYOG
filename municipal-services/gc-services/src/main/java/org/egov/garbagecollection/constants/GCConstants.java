@@ -12,9 +12,9 @@ public class GCConstants {
 
 	}
 
-	public static final String JSONPATH_ROOT = "$.MdmsRes.ws-services-masters";
+	public static final String JSONPATH_ROOT = "$.MdmsRes.gc-services-masters";
 
-	public static final String TAX_JSONPATH_ROOT = "$.MdmsRes.ws-services-calculation";
+	public static final String TAX_JSONPATH_ROOT = "$.MdmsRes.gc-services-calculation";
 
 	public static final String PROPERTY_JSONPATH_ROOT = "$.MdmsRes.PropertyTax";
 
@@ -24,11 +24,11 @@ public class GCConstants {
 
 	public static final String JSONPATH_CODE_WATER_SOURCE = "waterSource.code";
 
-	public static final String MDMS_WC_MOD_NAME = "ws-services-masters";
+	public static final String MDMS_GC_MOD_NAME = "gc-services-masters";
 
-	public static final String WS_TAX_MODULE = "ws-services-calculation";
+	public static final String GC_TAX_MODULE = "gc-services-calculation";
 
-	public static final String MDMS_WC_CONNECTION_CATEGORY = "connectionCategory";
+	public static final String MDMS_GC_CONNECTION_CATEGORY = "connectionCategory";
 
 
 
@@ -297,14 +297,14 @@ public class GCConstants {
 	public static final int DISCONNECT_CONNECTION =  3;
 	public static final int RECONNECTION =  4;
 	
-	public static final String NEW_WATER_CONNECTION = "NEW_WATER_CONNECTION";
-	public static final String MODIFY_WATER_CONNECTION = "MODIFY_WATER_CONNECTION";
-	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_WATER_CONNECTION";
-	public static final String WATER_RECONNECTION = "WATER_RECONNECTION";
+	public static final String NEW_GARBAGE_CONNECTION = "NEW_GARBAGE_CONNECTION";
+	public static final String MODIFY_GARBAGE_CONNECTION = "MODIFY_GARBAGE_CONNECTION";
+	public static final String DISCONNECT_GARBAGE_CONNECTION = "DISCONNECT_GARBAGE_CONNECTION";
+	public static final String GARBAGE_RECONNECTION = "GARBAGE_RECONNECTION";
 	
-	public static final String WATER_SERVICE_BUSINESS_ID = "WS";
+	public static final String GARBAGE_SERVICE_BUSINESS_ID = "GC";
 
-	public static final String WATER_SERVICE_ONE_TIME_FEE_BUSINESS_ID = "WS.ONE_TIME_FEE";
+	public static final String WATER_SERVICE_ONE_TIME_FEE_BUSINESS_ID = "GC.ONE_TIME_FEE";
 
 	public static final String NEW_WATER_APP_STATUS ="NEW_WATER_APPLICATION";
 
@@ -394,7 +394,7 @@ public class GCConstants {
 
 	public static final String BUSINESSSERVICE_FIELD_FOR_SEARCH_URL = "businessService=";
 
-	public static final String WATER_TAX_SERVICE_CODE = "WS";
+	public static final String WATER_TAX_SERVICE_CODE = "GC";
 
 	public static final String WORKFLOW_NODUE_COMMENT = "There is no amount to be paid, hence updating the workflow";
 

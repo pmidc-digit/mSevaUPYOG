@@ -1,0 +1,73 @@
+import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { useHistory, useLocation } from "react-router-dom";
+import { stringReplaceAll} from "../../../utils";
+import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
+
+
+const CLUResponseCitizen = (props) => {
+  const location=useLocation();
+  const {pathname, state } = location;
+  const { t } = useTranslation();
+  const history = useHistory();
+  const cluData = state?.data?.Clu?.[0];
+  console.log("cluData here", cluData);
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
+
+  const cluCode = pathname.split("/").pop(); // ✅ Extracts the last segment
+
+  const onSubmit = () => {
+    history.push(`/digit-ui/citizen`);
+  };
+
+  const onGoToHome = () => {
+    history.push(`/digit-ui/citizen/obps/home`);
+  };
+
+  const handlePayment = () => {
+    //need to change payment path as per CLU
+    history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${cluCode}/${tenantId}?tenantId=${tenantId}`);
+  };
+
+
+  const handleDownloadPdf = async () => {
+    const Property = cluData;
+    //console.log("tenants in NOC", tenants);
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, t);
+    //console.log("acknowledgementData in citizen NOC", acknowledgementData);
+    // Digit.Utils.pdf.generate(acknowledgementData);
+    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+  };
+
+
+  return (
+    <div>
+      <Card>
+        <Banner
+          message={t(`NOC_APPLICATION_${cluData?.workflow?.action}_SUCCESS_HEADER`)}
+          applicationNumber={cluCode}
+          info={cluData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(cluData?.cluType, ".", "_")}_APPLICATION_NUMBER`)}
+          successful={cluData?.applicationStatus == "REJECTED" ? false : true}
+          style={{ padding: "10px" }}
+          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
+        />
+        {cluData?.applicationStatus !== "REJECTED" ? (
+          <div>
+          <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+          </div>
+        ) : null}
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
+          <SubmitBar label={t("CORE_COMMON_GO_TO_OBPS")} onSubmit={onGoToHome} />
+          {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
+        </ActionBar>
+      </Card>
+    </div>
+  );
+};
+export default CLUResponseCitizen;

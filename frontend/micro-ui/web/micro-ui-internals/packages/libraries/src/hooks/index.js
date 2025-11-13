@@ -228,6 +228,7 @@ import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBased
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
 import { useBPACalculation } from "./obps/useBPACalculation";
+import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -614,7 +615,8 @@ const obps = {
   useEDCRForm,
   useBPACalculation,
   useLayoutSearchApplication,
-  useLayoutInbox
+  useLayoutInbox,
+  useCLUFeeCalculator
 
 };
 

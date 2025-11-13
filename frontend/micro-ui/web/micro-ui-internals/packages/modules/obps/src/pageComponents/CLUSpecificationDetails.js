@@ -62,6 +62,7 @@ const CLUSpecificationDetails = (_props) => {
                     props.onBlur(e);
                   }}
                   t={t}
+                  disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                 />
               )}
             />

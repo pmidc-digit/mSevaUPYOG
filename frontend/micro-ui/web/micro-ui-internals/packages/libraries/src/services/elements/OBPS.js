@@ -148,7 +148,46 @@ export const OBPSService = {
       params: {},
       auth: window.location.href.includes("openlink") ? false : true,
     }),
-
+  CLUCreate: ({ tenantId, filters, details }) => {
+    return Request({
+      url: Urls.obps.cluCreate,
+      data: details,
+      useCache: true,
+      method: "POST",
+      params: {},
+      auth: true,
+      userService: true,
+    });
+  },
+  CLUUpdate: ({ tenantId, filters, details }) =>
+    Request({
+      url: Urls.obps.cluUpdate,
+      data: details,
+      useCache: true,
+      userService: true,
+      method: "POST",
+      params: { tenantId, ...filters },
+      auth: true,
+  }),
+  CLUSearch: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.obps.cluSearch,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+  }),
+  CLUCalculator: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.cluCalculator,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+   }),
   BPAREGGetBill: (tenantId, filters = {}) =>
     Request({
       url: Urls.obps.bpaRegGetBill,

@@ -19,8 +19,6 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
   console.log("getModalData", getModalData);
 
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
-
   const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
   const [isFileUploaded, setIsFileUploaded] = useState(false);
 
@@ -63,11 +61,17 @@ const selfdeclarationform = `
     <p style="margin-top:-20px;"><strong>Sub:- Application for allotment of Community Centre.</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      I need the <strong>${getModalData?.communityHallName || "Community Centre"}</strong> community centre for the purpose of <strong>${getModalData?.purpose || "RELIGIOUS"}</strong> for <strong>${getModalData?.days || "1"}</strong> days, from <strong>${getModalData?.bookingDate || ""}</strong> to <strong>${getModalData?.bookingEndDate || ""}</strong>.
+      I need the <strong>${getModalData?.communityHallName || "Community Centre"}</strong> community centre for the purpose of <strong>${
+    getModalData?.purpose?.name || "RELIGIOUS"
+  }</strong> for <strong>${getModalData?.days || "1"}</strong> days, from <strong>${getModalData?.bookingDate || ""}</strong> to <strong>${
+    getModalData?.bookingEndDate || ""
+  }</strong>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      It is requested that the community centre may please allotted to me for the purpose detailed above for the period requested for, Will pay Rs. <strong>${getModalData?.security || "0"}</strong> as security and Rs. <strong>${getModalData?.rent || "0"}</strong> as rent.
+      It is requested that the community centre may please allotted to me for the purpose detailed above for the period requested for, Will pay Rs. <strong>${
+        getModalData?.security || "0"
+      }</strong> as security and Rs. <strong>${getModalData?.rent || "0"}</strong> as rent.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
@@ -108,7 +112,6 @@ const selfdeclarationform = `
   </div>
 `;
 
-
   const closeModal = () => {
     setShowTermsPopupOwner(false);
   };
@@ -118,6 +121,7 @@ const selfdeclarationform = `
     const Chb = [
       {
         ...getModalData,
+        purpose: getModalData?.purpose?.name,
         applicationNo: "CHB-0001",
         tenantId: tenantId,
       },
@@ -221,7 +225,7 @@ const selfdeclarationform = `
           {!isCitizenDeclared && (
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <br></br>
-              <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
+              <SubmitBar label={t("CHB_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
             </div>
           )}
         </div>

@@ -132,6 +132,7 @@ const Urls = {
     file_fetch: "/filestore/v1/files/url",
     create_new: "/challan-generation/challan/_create",
     search_new: "/challan-generation/challan/_search",
+    update_new: "/challan-generation/challan/_update",
   },
 
   rentAndLease: {
@@ -191,6 +192,10 @@ const Urls = {
     layoutCreate: "/layout-services/v1/layout/_create",
     layoutSearch: "/layout-services/v1/layout/_search",
     layoutUpdate: "/layout-services/v1/layout/_update",
+    cluCreate: "/clu-services/v1/clu/_create",
+    cluUpdate: "/clu-services/v1/clu/_update",
+    cluSearch: "/clu-services/v1/clu/_search",
+    cluCalculator: "/clu-calculator/v1/_calculate",
     layoutCalculator:"/layout-calculator/v1/_calculate",
     layoutCollectionSearch:"/collection-services/payments/layout/_search",
   },

@@ -140,7 +140,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       hallName: formData?.venueDetails?.[0]?.communityHallName,
       hallCode: slot.hallCode + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
-      bookingStatus: `${t(slot.status)}`,
+      bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
 
   return (
@@ -168,7 +168,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
 
         {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.ownerDetails?.hallsBookingApplication?.specialCategory?.category)}
-        {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose)}
+        {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose?.name)}
         {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.ownerDetails?.hallsBookingApplication?.purposeDescription)}
       </div>
 

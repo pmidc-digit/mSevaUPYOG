@@ -1225,12 +1225,12 @@ useEffect(() => {
     );
   }
 
-  if (workflowDetails?.data?.nextActions?.length > 0 && data?.applicationData?.status == "CITIZEN_APPROVAL_INPROCESS") {
+  if (workflowDetails?.data?.newNextAction?.length > 0 && data?.applicationData?.status == "CITIZEN_APPROVAL_INPROCESS") {
     const userInfo = Digit.UserService.getUser()
     const rolearray = userInfo?.info?.roles
     if (data?.applicationData?.status == "CITIZEN_APPROVAL_INPROCESS") {
       if (rolearray?.length == 1 && rolearray?.[0]?.code == "CITIZEN") {
-        workflowDetails.data.nextActions = workflowDetails?.data?.nextActions
+        workflowDetails.data.nextActions = workflowDetails?.data?.newNextAction
       } else {
         workflowDetails.data.nextActions = []
       }
@@ -1251,7 +1251,7 @@ useEffect(() => {
         })
       }
       if (isArchitect) {
-        workflowDetails.data.nextActions = workflowDetails?.data?.nextActions
+        workflowDetails.data.nextActions = workflowDetails?.data?.newNextAction
       } else {
         workflowDetails.data.nextActions = []
       }
@@ -1399,10 +1399,10 @@ useEffect(() => {
 
   dowloadOptions.sort((a, b) => a.order - b.order)
 
-  if (workflowDetails?.data?.nextActions?.length > 0) {
-    workflowDetails.data.nextActions = workflowDetails?.data?.nextActions?.filter((actn) => actn.action !== "INITIATE")
-    workflowDetails.data.nextActions = workflowDetails?.data?.nextActions?.filter((actn) => actn.action !== "ADHOC")
-    workflowDetails.data.nextActions = workflowDetails?.data?.nextActions?.filter(
+  if (workflowDetails?.data?.newNextAction?.length > 0) {
+    workflowDetails.data.nextActions = workflowDetails?.data?.newNextAction?.filter((actn) => actn.action !== "INITIATE")
+    workflowDetails.data.nextActions = workflowDetails?.data?.newNextAction?.filter((actn) => actn.action !== "ADHOC")
+    workflowDetails.data.nextActions = workflowDetails?.data?.newNextAction?.filter(
       (actn) => actn.action !== "SKIP_PAYMENT",
     )
   }
@@ -1924,7 +1924,7 @@ useEffect(() => {
                       <div id="timeline">
                         <BPAApplicationTimeline application={data?.applicationData} id={id} />
                         {!workflowDetails?.isLoading &&
-                          workflowDetails?.data?.nextActions?.length > 0 &&
+                          workflowDetails?.data?.newNextAction?.length > 0 &&
                           !isFromSendBack &&
                           checkBoxVisible && (
                             <CheckBox
@@ -1939,16 +1939,16 @@ useEffect(() => {
                             />
                           )}
                       </div>
-                      {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 1 && (
+                      {!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
                         //removed this styles to fix the action button in application details UM-5347
                         <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                         >
                           <div style={{ width: "100%" }}>
-                            {displayMenu && workflowDetails?.data?.nextActions ? (
+                            {displayMenu && workflowDetails?.data?.newNextAction ? (
                               <Menu
                                 style={{minWidth: "310px" }}
                                 localeKeyPrefix={"WF_BPA_ACTION"}
-                                options={workflowDetails?.data?.nextActions.map((action) => action.action)}
+                                options={workflowDetails?.data?.newNextAction.map((action) => action.action)}
                                 t={t}
                                 onSelect={onActionSelect}
                               />
@@ -1968,7 +1968,7 @@ useEffect(() => {
                           </div>
                         </ActionBar>
                       )}
-                      {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length == 1 && (
+                      {!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length == 1 && (
                         //removed this style to fix the action button in application details UM-5347
                         <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                         >
@@ -1977,13 +1977,13 @@ useEffect(() => {
                               style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
                               className="submit-bar"
                               disabled={false}
-                              name={workflowDetails?.data?.nextActions?.[0]?.action}
-                              value={workflowDetails?.data?.nextActions?.[0]?.action}
+                              name={workflowDetails?.data?.newNextAction?.[0]?.action}
+                              value={workflowDetails?.data?.newNextAction?.[0]?.action}
                               onClick={(e) => {
                                 onActionSelect(e.target.value)
                               }}
                             >
-                              {t(`WF_BPA_${workflowDetails?.data?.nextActions?.[0]?.action}`)}
+                              {t(`WF_BPA_${workflowDetails?.data?.newNextAction?.[0]?.action}`)}
                             </button>
                           </div>
                         </ActionBar>

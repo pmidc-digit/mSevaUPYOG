@@ -183,7 +183,7 @@ const CHBApplicationDetails = () => {
     let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
       let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "chbservice-receipt");
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
       const updatedApplication = {
         ...application,
         paymentReceiptFilestoreId: response?.filestoreIds[0],

@@ -531,10 +531,13 @@ const WrapPaymentComponent = (props) => {
     setPrinting(true);
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let application = {
+        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
+      };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
         let response = { filestoreIds: [payments?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] }, "chbservice-receipt");
         const updatedApplication = {
           ...applicationDetails?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],
@@ -1642,10 +1645,13 @@ const WrapPaymentZeroComponent = (props) => {
     setPrinting(true);
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let application = {
+        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
+      };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
         let response = { filestoreIds: [payments?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] }, "chbservice-receipt");
         const updatedApplication = {
           ...applicationDetails?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],

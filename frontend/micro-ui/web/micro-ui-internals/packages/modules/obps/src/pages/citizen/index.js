@@ -50,6 +50,7 @@ const App = ({ path }) => {
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
   const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
+  const CLUResponseCitizen = Digit?.ComponentRegistryService?.getComponent("CLUResponseCitizen");  
   const LayoutResponseCitizen = Digit.ComponentRegistryService.getComponent("LayoutResponseCitizen");
   const LayoutResponseEmployee = Digit.ComponentRegistryService.getComponent("LayoutResponseEmployee");
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
@@ -63,6 +64,7 @@ const App = ({ path }) => {
       <Switch>
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={NewLayoutEditLayoutApplication} />
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
+        <PrivateRoute path={`${path}/clu/response/:id`} component={CLUResponseCitizen} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseEmployee} />

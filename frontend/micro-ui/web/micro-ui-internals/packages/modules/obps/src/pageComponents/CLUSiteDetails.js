@@ -166,6 +166,7 @@ const CLUSiteDetails = (_props) => {
   }, [currentStepData, setValue, addFloor, removeFloor]);
 
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
+
   const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
 
   const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || [];
@@ -261,6 +262,7 @@ const CLUSiteDetails = (_props) => {
                     option={ulbListOptions}
                     optionKey="displayName"
                     t={t}
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -400,6 +402,7 @@ const CLUSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -433,6 +436,7 @@ const CLUSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -723,7 +727,7 @@ const CLUSiteDetails = (_props) => {
                 name={"buildingCategory"}
                 rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory} optionKey="name" t={t}/>
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory.filter((item)=> item.code !== "RESIDENTIAL_INDEPENDENT_FLOORS")} optionKey="name" t={t} disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}/>
                 )}
               />
             )}

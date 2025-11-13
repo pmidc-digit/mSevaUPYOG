@@ -398,7 +398,6 @@ import useUlbType from "./obps/useUlbType";
 import useEDCRForm from "./obps/useEDCRForm";
 
 //Layout
-
 import useLayoutInbox from "./obps/useLayoutInbox";
 import useLayoutFeeCalculator from "./obps/useLayoutFeeCalculator";
 import useLayoutBuildingType from "./obps/useLayoutBuildingType";
@@ -407,6 +406,9 @@ import useLayoutRoadType from "./obps/useLayoutRoadType";
 import useLayoutType from "./obps/useLayoutType";
 import {useLayoutSearchApplication} from "./obps/useSearchApplication";
 import {useLayoutCitizenSearchApplication} from "./obps/useLayoutCitizenSearchApplication";
+
+//CLU
+import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
 
 const pgr = {
   useComplaintDetails,
@@ -622,19 +624,16 @@ const obps = {
   useBPACalculation,
   useLayoutInbox,
   useLayoutFeeCalculator,
-
-
-
   useLayoutBuildingType,  
   useLayoutBuildingCategory,  
   useLayoutRoadType, 
   useLayoutType,
-
-useLayoutSearchApplication,
+  useLayoutSearchApplication,
   useLayoutBuildingType,  
   useLayoutBuildingCategory,  
   useLayoutRoadType, 
-  useLayoutCitizenSearchApplication
+  useLayoutCitizenSearchApplication,
+  useCLUFeeCalculator
 
 };
 

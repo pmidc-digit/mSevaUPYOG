@@ -32,13 +32,13 @@ const PTRApplicationDetails = () => {
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
-  
+
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
   const tenantInfo = tenants?.find((tenant) => tenant?.code === tenantId);
-console.log('tenantInfo', tenantInfo)
+  console.log("tenantInfo", tenantInfo);
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({
     tenantId,
     filters: { applicationNumber: acknowledgementIds },
@@ -46,8 +46,8 @@ console.log('tenantInfo', tenantInfo)
 
   const [billData, setBillData] = useState(null);
 
-  const ulb= tenantInfo?.city?.name;
-  const ulbType =tenantInfo?.city?.ulbType;
+  const ulb = tenantInfo?.city?.name;
+  const ulbType = tenantInfo?.city?.ulbType;
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
 
   const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
@@ -348,7 +348,8 @@ console.log('tenantInfo', tenantInfo)
         } is registered with ${ulbType} ${ulb} as per following details:</span>
                 <div class="main-content">
                   <div class="details-section">
-                    <span class="detail-label">Pet Information</span>
+                    <span class="detail-label">Pet Information</span> <br>
+                    <span class="detail-label">Registration No:</span> <span class="detail-label">${petData?.petRegistrationNumber || ""}</span>
                     <div class="details-grid">                      
                       <div class="detail-row">
                         <span class="detail-label">Category</span>
@@ -471,7 +472,9 @@ console.log('tenantInfo', tenantInfo)
                   <div class="terms-title">${t("TERMS AND CONDITIONS")}</div>
                   <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
                   <ol class="terms-list">
-                    <li>${t("PET_NEW_TERM_1")}</li>
+                    <li>${t("PET_TERM1A")} <strong> ${petData?.petRegistrationNumber || ""} </strong> ${t(
+          "PET_TERM1B"
+        )} <strong>'https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home'</strong></li>
                     <li>${t("PET_NEW_TERM_2")}</li>
                     <li>${t("PET_NEW_TERM_3")}</li>
                     <li>${t("PET_NEW_TERM_4")}</li>

@@ -85,7 +85,7 @@ console.log(applicationNumber,applicationId, "APPLICATION NUMBER");
 
   const searchApplication = async () => {
   if (!applicationNumber && !applicationId) {
-    console.error("[v0] No application number or ID found");
+    console.error("  No application number or ID found");
     return;
   }
 
@@ -97,13 +97,13 @@ console.log(applicationNumber,applicationId, "APPLICATION NUMBER");
     applicationNumber: applicationNumber,
   };
 
-  console.log("[v0] Searching application with params:", searchParams);
+  console.log("  Searching application with params:", searchParams);
 
   try {
     setIsSearching(true);
     const response = await Digit.OBPSService.LayoutSearch(tenantId, searchParams);
     
-    console.log("[v0] Search API Response:", response);
+    console.log("  Search API Response:", response);
 
     if (response?.Layout?.[0]) {
       const layoutData = response.Layout[0];
@@ -124,12 +124,12 @@ console.log(applicationNumber,applicationId, "APPLICATION NUMBER");
       dispatch(UPDATE_OBPS_FORM("layoutResponse", layoutData));
       dispatch(UPDATE_OBPS_FORM("applicationNo", layoutData.applicationNo));
       
-      console.log("[v0] Redux updated with search response");
+      console.log("  Redux updated with search response");
     } else {
       throw new Error("Application not found");
     }
   } catch (error) {
-    console.error("[v0] Search API Error:", error);
+    console.error("  Search API Error:", error);
     setError(t("FAILED_TO_FETCH_APPLICATION"));
     setShowToast(true);
   } finally {

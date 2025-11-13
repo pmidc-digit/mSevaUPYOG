@@ -41,6 +41,9 @@ import TLCaption from "../../../../../templates/ApplicationDetails/components/TL
 import PropertyOwners from "../../../../../templates/ApplicationDetails/components/PropertyOwners";
 import BPAActionModal from "../../../../../templates/ApplicationDetails/Modal/BPAActionModal";
 import FeeEstimation from "../../../pageComponents/FeeEstimation";
+import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto";
+import BPAApplicationTimeline from "../../citizen/BpaApplicationDetail/BPAApplicationTimeline";
+import { SiteInspection } from "../../../pageComponents/SiteInspection";
 
 const BpaApplicationDetail = () => {
 
@@ -49,7 +52,7 @@ const BpaApplicationDetail = () => {
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem('tenant-id')
   const [showToast, setShowToast] = useState(null);
-  const [canSubmit, setSubmitValve] = useState(false);
+  const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
   const history = useHistory();
   // delete
@@ -85,6 +88,8 @@ const BpaApplicationDetail = () => {
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
   const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  const [siteImages, setSiteImages] = useState(data?.applicationData?.additionalDetails?.siteImages || [])
+  const [geoLocations, setGeoLocations] = useState(data?.applicationData?.additionalDetails?.geoLocations || [])
   const { isLoadingg, data: blockReason } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["BlockReason"]);
 
   console.log("fileUrls", fileUrls)
@@ -112,6 +117,7 @@ const BpaApplicationDetail = () => {
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
   console.log("DATA DATA", data);
+  const [appData, setAppData] = useState(data);
 
 
 
@@ -144,6 +150,7 @@ const BpaApplicationDetail = () => {
     if (!isLoading && data?.applicationData?.additionalDetails) {
       const charges = data.applicationData.additionalDetails.selfCertificationCharges || {};
 
+      setAppData(data);
       setDevelopment(charges.BPA_DEVELOPMENT_CHARGES || "");
       setOtherCharges(charges.BPA_OTHER_CHARGES || "");
       setLessAdjusment(charges.BPA_LESS_ADJUSMENT_PLOT || "");
@@ -153,8 +160,32 @@ const BpaApplicationDetail = () => {
       setMalbafees(charges.BPA_MALBA_CHARGES || "");
       setWaterCharges(charges.BPA_WATER_CHARGES || "");
       setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
+
+      if(data?.applicationData?.additionalDetails?.siteImages?.length > 0){
+        setSiteImages(data?.applicationData?.additionalDetails?.siteImages)
+        sessionStorage.setItem("Field_Inspection_siteImages",JSON.stringify(data?.applicationData?.additionalDetails?.siteImages))
+      }else{
+        sessionStorage.setItem("Field_Inspection_siteImages","null")
+      }
+      if(data?.applicationData?.additionalDetails?.geoLocations?.length > 0){
+        setGeoLocations(data?.applicationData?.additionalDetails?.geoLocations)
+        sessionStorage.setItem("Field_Inspection_geoLocations",JSON.stringify(data?.applicationData?.additionalDetails?.geoLocations))
+      }else{
+        sessionStorage.setItem("Field_Inspection_geoLocations","null")
+      }
+      if(data?.applicationData?.additionalDetails?.FieldReports){
+        
+        sessionStorage.setItem("Field_Inspection_FieldReports",JSON.stringify(data?.applicationData?.additionalDetails?.FieldReports))
+      }else{
+        sessionStorage.setItem("Field_Inspection_FieldReports","null")
+      }
+
     }
   }, [isLoading, data]);
+
+  useEffect(() => {
+    console.log("SiteImagesInCustomHandler" , siteImages);
+  } ,[siteImages])
 
 
   useEffect(() => {
@@ -350,24 +381,86 @@ const BpaApplicationDetail = () => {
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
     fileUrl: doc.values?.[0]?.fileURL || null,
   }));
-  const documentsColumns = [
+  const documentsColumnsOwner = [
+      {
+        Header: t("BPA_OWNER_DETAILS_LABEL"),
+        accessor: "title",
+        Cell: ({ value }) => t(value) || t("CS_NA"),
+      },
+      {
+        Header: t(" "),
+        accessor: "fileUrl",
+        Cell: ({ value }) =>
+          value ? (
+            <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+              label={t("View")}
+              onClick={() => routeTo(value)}
+            />
+          ) : (
+            t("CS_NA")
+          ),
+      },
+    ];
+    const documentsColumns = [
+      {
+        Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+        accessor: "title",
+        Cell: ({ value }) => t(value) || t("CS_NA"),
+      },
+      {
+        Header: t(" "),
+        accessor: "fileUrl",
+        Cell: ({ value }) =>
+          value ? (
+            <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+              label={t("View")}
+              onClick={() => routeTo(value)}
+            />
+          ) : (
+            t("CS_NA")
+          ),
+      },
+    ];
+    const documentsColumnsECBC = [
+      {
+        Header: t("BPA_ECBC_DETAILS_LABEL"),
+        accessor: "title",
+        Cell: ({ value }) => t(value) || t("CS_NA"),
+      },
+      {
+        Header: t(" "),
+        accessor: "fileUrl",
+        Cell: ({ value }) =>
+          value ? (
+            <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+              label={t("View")}
+              onClick={() => routeTo(value)}
+            />
+          ) : (
+            t("CS_NA")
+          ),
+      },
+    ];
+
+  const documentsColumnsEDCR = [
     {
-      Header: t("BPA_DOCUMENT_NAME"),
+      Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
       accessor: "title",
-      Cell: ({ value }) => value || t("CS_NA"),
+      Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
-      Header: t("BPA_DOCUMENT_FILE"),
-      accessor: "fileUrl",
+      Header: t(" "),
+      accessor: "value",
       Cell: ({ value }) =>
-        value ? (
+        {          
+          return value ? (
           <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
         ) : (
           t("CS_NA")
-        ),
+        )},
     },
   ];
   // const ecbcDocumentsData = useMemo(() => {
@@ -449,6 +542,13 @@ const BpaApplicationDetail = () => {
       timelineSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  const handleViewInspecction = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById('fieldInspection');
+    if (timelineSection) {
+      timelineSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   const {
     isLoading: updatingApplication,
     isError: updateApplicationError,
@@ -487,7 +587,8 @@ const BpaApplicationDetail = () => {
   }, []);
 
   const onFormValueChange = (setValue, formData, formState) => {
-    setSubmitValve(!Object.keys(formState.errors).length);
+    setSubmitValve(formData?.FieldReports?.[0]);
+    console.log("formDataForInspectionReport", formData);
   };
 
   let configs = newConfig?.InspectionReportConfig ? newConfig?.InspectionReportConfig : newConfigFI;
@@ -777,7 +878,8 @@ const BpaApplicationDetail = () => {
       //     ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
       //     : checkpoint?.assignes?.[0]?.mobileNumber,
       comment: t(checkpoint?.comment),
-      wfComment: previousCheckpoint ? previousCheckpoint?.wfComment : [],
+      wfComment: checkpoint?.wfComment,
+      // wfComment: previousCheckpoint ? previousCheckpoint?.wfComment : [],
       thumbnailsToShow: checkpoint?.thumbnailsToShow,
     };
 
@@ -791,6 +893,10 @@ const BpaApplicationDetail = () => {
 
   function onActionSelect(action) {
     console.log("SelectedAction", action)
+    if(action?.action === "SEND_FOR_INSPECTION_REPORT" && siteImages?.length === 0){
+      alert(t("Please_Add_Site_Images_With_Geo_Location"))
+      return
+    }
     if (action) {
       if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
@@ -811,8 +917,92 @@ const BpaApplicationDetail = () => {
     setDisplayMenu(false);
   }
 
+  const documentData = useMemo(() => siteImages?.map((value, index) => ({
+        title: `SITE_IMAGE_${index+1}`,
+        imageFileStoreId: value,
+        geoLocation: geoLocations[index] 
+    })), [siteImages,geoLocations])
+
+  function routeToImage(filestoreId) {
+          getUrlForDocumentView(filestoreId)
+      }
+  
+      const getUrlForDocumentView = async (filestoreId) => {
+          if (filestoreId?.length === 0) return;
+          try {
+              const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+              if (result?.data) {
+                  const fileUrl = result.data[filestoreId];
+                  if (fileUrl) {
+                      window.open(fileUrl, "_blank");
+                  } else {
+                      if(props?.setError){
+                          props?.setError(t("CS_FILE_FETCH_ERROR"));
+                      }else{
+                          console.error(t("CS_FILE_FETCH_ERROR"))
+                      }
+                  }
+              } else {
+                  if (props?.setError) {
+                      props?.setError(t("CS_FILE_FETCH_ERROR"));
+                  } else {
+                      console.error(t("CS_FILE_FETCH_ERROR"))
+                  }
+              }
+          } catch (e) {
+              if (props?.setError) {
+                  props?.setError(t("CS_FILE_FETCH_ERROR"));
+              } else {
+                  console.error(t("CS_FILE_FETCH_ERROR"))
+              }
+          }
+      }
+  
+      const routeToGeo = (geoLocation) => {
+             window.open(`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocation.latitude).toFixed(6)}&long=${Number(geoLocation.longitude).toFixed(6)}`, "_blank")
+      }
+  
+      const documentsColumnsSiteImage = [
+          {
+            Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+            accessor: "title",
+            Cell: ({ value }) => t(value) || t("CS_NA"),
+          },
+          {
+            Header: t(" "),
+            accessor: "imageFileStoreId",
+            Cell: ({ value }) =>
+              {          
+                return value ? (
+                <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                  label={t("View Image")}
+                  onClick={() => routeToImage(value)}
+                />
+              ) : (
+                t("CS_NA")
+              )},
+          },
+          {
+            Header: t(" "),
+            accessor: "geoLocation",
+            Cell: ({ value }) =>
+              {          
+                return value ? (
+                <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                  label={t("View Location")}
+                  onClick={() => routeToGeo(value)}
+                />
+              ) : (
+                t("CS_NA")
+              )},
+          },
+        ];
+
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     console.log("SelectedActionData", data);
+    // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
+    //   alert(t("Please fill in the comments before submitting  "))
+    // }
     if (data?.BPA?.comment?.length == 0) {
       alert(t("Please fill in the comments before submitting"))
     }
@@ -846,9 +1036,7 @@ const BpaApplicationDetail = () => {
           return;
         }
       }
-      if (mutate) {
-        setIsEnableLoader(true);
-        mutate({
+      let payload = {
           ...data,
           BPA: {
             ...data?.BPA,
@@ -865,10 +1053,29 @@ const BpaApplicationDetail = () => {
                 BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
                 BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
                 BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
-              }
+              },
+              siteImages: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? siteImages : data?.BPA?.additionalDetails?.siteImages,
+              geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
+              // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
             }
           }
-        }, {
+        }
+        if(data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT"){
+          payload = {
+            ...payload,
+            BPA: {
+              ...payload?.BPA,
+              workflow: {
+              action: payload?.BPA?.workflow?.action,
+              // assignes: payload?.BPA?.workflow?.assignes,
+              assignee: []
+            }
+            }
+          }
+        }
+      if (mutate) {
+        setIsEnableLoader(true);
+        mutate(payload, {
           onError: (error, variables) => {
             setIsEnableLoader(false);
             setShowToast({ key: "error", error });
@@ -947,10 +1154,10 @@ const BpaApplicationDetail = () => {
 
   return (
     <Fragment>
-      <div className={"employee-main-application-details"}>
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-main-application-details"}>        
+        <div className={"employee-application-details"} style={{ marginBottom: "15px",display: "flex", flexDirection: !isMobile? "row" : "column" }}>
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
+          <div style={{ margin: "10px, 0px" ,display: "flex", gap: "8px", alignItems:!isMobile?"center":"left",flexDirection: !isMobile? "row" : "column"  }}>
             {/* <div style={{}}>
               {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
                 className="multilinkWrapper"
@@ -962,6 +1169,7 @@ const BpaApplicationDetail = () => {
               />}
             </div> */}
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+            {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&<LinkButton label={t("VIEW_INSPECTION")} style={{ color: "#A52A2A" }} onClick={handleViewInspecction}></LinkButton>}
           </div>
         </div>
         {/* <ApplicationDetailsTemplate
@@ -982,233 +1190,418 @@ const BpaApplicationDetail = () => {
         closeToast={closeToast}
         statusAttribute={"state"}
         timelineStatusPrefix={`WF_${workflowDetails?.data?.applicationBusinessService ? workflowDetails?.data?.applicationBusinessService : data?.applicationData?.businessService}_`}
-      /> */}
+      /> */}        
 
-        <Card>
-          {data?.applicationDetails?.map((detail, index) => (
-            <React.Fragment key={index}>
-              <div style={getMainDivStyles()}>
-                {index === 0 && !detail.asSectionHeader ? (
-                  <CardSubHeader style={{ marginBottom: "16px", fontSize: "24px" }}>{t(detail.title)}</CardSubHeader>
-                ) : (
-                  <React.Fragment>
-                    <CardSectionHeader
+        <div style={{marginTop: isMobile?"100px":""}}>
+        {data?.applicationDetails
+          ?.filter((ob) => Object.keys(ob)?.length > 0)
+          .map((detail, index, arr) => {
+            console.log("detailforme", detail)
+            return (
+              <div key={index}>
+                {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
+                {!detail?.isNotAllowed ? (
+                  <Card
+                    key={index}
+                    // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
+                  >
+                    {!detail?.isTitleVisible ? (
+                      <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
+                    ) : null}
+
+                    <div
                       style={
-                        index == 0 && checkLocation
-                          ? { marginBottom: "16px", fontSize: "24px" }
-                          : { marginBottom: "16px", marginTop: "32px", fontSize: "24px" }
+                        detail?.isBackGroundColor
+                          ? {
+                            marginTop: "19px",
+                            background: "#FAFAFA",
+                            border: "1px solid #D6D5D4",
+                            borderRadius: "4px",
+                            padding: "8px",
+                            lineHeight: "19px",
+                            maxWidth: "950px",
+                            minWidth: "280px",
+                          }
+                          : {}
                       }
                     >
-                      {t(detail?.title)}
-                      {detail?.Component ? <detail.Component /> : null}
-                    </CardSectionHeader>
-                  </React.Fragment>
-                )}
-                {detail?.isTable && (
-                  <table style={{ tableLayout: "fixed", width: "100%", borderCollapse: "collapse" }}>
-                    <tr style={{ textAlign: "left" }}>
-                      {detail?.headers.map((header) => (
-                        <th style={{ padding: "10px", paddingLeft: "0px" }}>{t(header)}</th>
-                      ))}
-                    </tr>
-
-                    {detail?.tableRows.map((row, index) => {
-                      if (index === detail?.tableRows.length - 1) {
-                        return (
-                          <>
-                            <hr style={{ width: "370%", marginTop: "15px" }} className="underline" />
-                            <tr>
-                              {row.map((element) => (
-                                <td style={{ textAlign: "left" }}>{t(element)}</td>
-                              ))}
-                            </tr>
-                          </>
-                        );
-                      }
-                      return (
-                        <tr>
-                          {row.map((element) => (
-                            <td style={{ paddingTop: "20px", textAlign: "left" }}>{t(element)}</td>
-                          ))}
-                        </tr>
-                      );
-                    })}
-                  </table>
-                )}
-                <StatusTable style={getTableStyles()}>
-                  {detail?.title &&
-                    !detail?.title.includes("NOC") &&
-                    detail?.values?.map((value, index) => {
-                      if (value.map === true && value.value !== "N/A") {
-                        return (
-                          <Row
-                            labelStyle={{ wordBreak: "break-all" }}
-                            textStyle={{ wordBreak: "break-all" }}
-                            key={t(value.title)}
-                            label={t(value.title)}
-                            text={<img src={t(value.value)} alt="" privacy={value?.privacy} />}
-                          />
-                        );
-                      }
-                      if (value?.isLink == true) {
-                        return (
-                          <Row
-                            key={t(value.title)}
-                            label={
-                              window.location.href.includes("tl") || window.location.href.includes("ws") ? (
-                                <div style={{ width: "200%" }}>
-                                  <Link to={value?.to}>
-                                    <span className="link" style={{ color: "#a82227" }}>
-                                      {t(value?.title)}
-                                    </span>
-                                  </Link>
-                                </div>
-                              ) : isNocLocation || isBPALocation ? (
-                                `${t(value.title)}`
-                              ) : (
-                                t(value.title)
+                      {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                          ? detail?.additionalDetails?.values?.map((value) => (
+                            <div key={value?.title}>
+                              {!detail?.isTitleRepeat && value?.isHeader ? (
+                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                              ) : null}
+                      </div>)) : null}
+                      <StatusTable>
+                        {/* to get common values */}
+                        {detail?.isCommon && detail?.values?.length > 0
+                          ? detail?.values?.map((value) => {
+                            if (value?.isUnit)
+                              return (
+                                <Row
+                                  className="border-none"
+                                  label={t(value?.title)}
+                                  text={
+                                    value?.value
+                                      ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}`
+                                      : t("CS_NA")
+                                  }
+                                />
                               )
-                            }
-                            text={
-                              <div>
-                                <Link to={value?.to}>
-                                  <span className="link" style={{ color: "#a82227" }}>
-                                    {value?.value}
-                                  </span>
-                                </Link>
-                              </div>
-                            }
-                            last={index === detail?.values?.length - 1}
-                            caption={value.caption}
-                            className="border-none"
-                            rowContainerStyle={getRowStyles()}
-                            labelStyle={{ wordBreak: "break-all" }}
-                            textStyle={{ wordBreak: "break-all" }}
+                            if (value?.isLink)
+                              return (
+                                <Row
+                                  className="border-none"
+                                  label={t(value?.title)}
+                                  text={
+                                    <div>
+                                      <Link to={value?.to}>
+                                        <span className="link" style={{ color: "#a82227" }}>
+                                          {value?.value}
+                                        </span>
+                                      </Link>
+                                    </div>
+                                  }
+                                />
+                              )
+                            else
+                              return (
+                                <Row
+                                  className="border-none"
+                                  label={t(value?.title)}
+                                  text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                />
+                              )
+                          })
+                          : null}
+                        {/* to get additional common values */}
+                        {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                          ? detail?.additionalDetails?.values?.map((value) => (
+                            <div key={value?.title}>
+                              {!detail?.isTitleRepeat && !value?.isHeader && !value?.isUnit ? (
+                                <Row
+                                  className="border-none"
+                                  label={t(value?.title)}
+                                  textStyle={
+                                    value?.value === "Paid"
+                                      ? { color: "darkgreen" }
+                                      : value?.value === "Unpaid"
+                                        ? { color: "red" }
+                                        : {}
+                                  }
+                                  text={
+                                    value?.value
+                                      ? getTranslatedValues(value?.value, value?.isNotTranslated)
+                                      : t("CS_NA")
+                                  }
+                                />
+                              ) : null}
+                              {!detail?.isTitleRepeat && value?.isUnit ? (
+                                <Row
+                                  className="border-none"
+                                  label={t(value?.title)}
+                                  text={
+                                    value?.value
+                                      ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}`
+                                      : t("CS_NA")
+                                  }
+                                />
+                              ) : null}
+                              {/* {!detail?.isTitleRepeat && value?.isHeader ? (
+                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                              ) : null} */}
+                            </div>
+                          ))
+                          : null}
+
+                        {/* to get subOccupancyValues values */}
+                        {detail?.isSubOccupancyTable && detail?.additionalDetails?.subOccupancyTableDetails ? (
+                          <SubOccupancyTable
+                            edcrDetails={detail?.additionalDetails}
+                            applicationData={data?.applicationData}
                           />
-                        );
-                      }
-                      return (
-                        <div>
-                          {window.location.href.includes("modify") ? (
-                            <Row
-                              className="border-none"
-                              key={`${value.title}`}
-                              label={`${t(`${value.title}`)}`}
-                              privacy={value?.privacy}
-                              text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
-                              labelStyle={{ wordBreak: "break-all" }}
-                              textStyle={{ wordBreak: "break-all" }}
+                        ) : null}
+
+                        {/* to get Scrutiny values */}
+                        {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0
+                          ? 
+                          // detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => {
+                          //   console.log("scrutinyForReportPlans", scrutiny)
+                          //   return (
+                          //   <Fragment key={scrutiny?.title}>
+                          //     {/* <Row className="border-none" label={t(scrutiny?.title)} />
+                          //     <LinkButton
+                          //       onClick={() => downloadDiagram(scrutiny?.value)}
+                          //       label={<PDFSvg />}
+                          //     ></LinkButton>
+                          //     <p
+                          //       style={{
+                          //         marginTop: "8px",
+                          //         marginBottom: "20px",
+                          //         fontWeight: "bold",
+                          //         fontSize: "16px",
+                          //         lineHeight: "19px",
+                          //         color: "#505A5F",
+                          //         fontWeight: "400",
+                          //       }}
+                          //     >
+                          //       {t(scrutiny?.text)}
+                          //     </p> */}
+                          //   </Fragment>
+                          // )})
+                          <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={detail?.additionalDetails?.scruntinyDetails}
+                              columns={documentsColumnsEDCR}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
                             />
-                          ) : (
-                            <Row
-                              key={t(value.title)}
-                              label={t(value.title)}
-                              text={getTextValue(value)}
-                              last={index === detail?.values?.length - 1}
-                              caption={value.caption}
-                              className="border-none"
-                              /* privacy object set to the Row Component */
-                              privacy={value?.privacy}
-                              // TODO, Later will move to classes
-                              rowContainerStyle={getRowStyles()}
-                              labelStyle={{ wordBreak: "break-all" }}
-                              textStyle={{ wordBreak: "break-all" }}
-                            />
+                          : null}
+                          
+
+                        {/* to get Owner values */}
+                        {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
+                          ? detail?.additionalDetails?.owners.map((owner, index) => (
+                            <div
+                              key={index}
+                              style={
+                                detail?.additionalDetails?.owners?.length > 1
+                                  ? {
+                                    marginTop: "19px",
+                                    background: "#FAFAFA",
+                                    border: "1px solid #D6D5D4",
+                                    borderRadius: "4px",
+                                    padding: "8px",
+                                    lineHeight: "19px",
+                                    maxWidth: "950px",
+                                    minWidth: "280px",
+                                  }
+                                  : {}
+                              }
+                            >
+                              {detail?.additionalDetails?.owners?.length > 1 ? (
+                                <Row className="border-none" label={`${t("Owner")} - ${index + 1}`} />
+                              ) : null}
+                              {owner?.values.map((value) => (
+                                <Row
+                                  className="border-none"
+                                  label={t(value?.title)}
+                                  text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                  key={value?.title}
+                                />
+                              ))}
+                            </div>
+                          ))
+                          : null}
+
+                        {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
+                          {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                            {pdfLoading ? <Loader /> : <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={documentsData}
+                              columns={documentsColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                            />}                          
+                          {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                          
+                            {ecbcDocumentsData?.length>0 &&<div>{(pdfLoading || isFileLoading) ? <Loader /> : <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={ecbcDocumentsData}
+                              columns={documentsColumnsECBC}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                            />}</div>}
+                          {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                            
+                          </>)}                          
+
+                        {/* to get FieldInspection values */}
+                        {detail?.isFieldInspection &&
+                          data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 ? (
+                          <InspectionReport
+                            isCitizen={true}
+                            fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                          />
+                        ) : null}
+
+                        {/* to get NOC values */}
+                        {detail?.additionalDetails?.noc?.length > 0
+                          ? detail?.additionalDetails?.noc.map((nocob, ind) => (
+                            <div
+                              key={ind}
+                              style={{
+                                marginTop: "19px",
+                                background: "#FAFAFA",
+                                border: "1px solid #D6D5D4",
+                                borderRadius: "4px",
+                                padding: "8px",
+                                lineHeight: "19px",
+                                maxWidth: "960px",
+                                minWidth: "280px",
+                              }}
+                            >
+                              <StatusTable>
+                                <Row
+                                  className="border-none"
+                                  label={t(`${`BPA_${detail?.additionalDetails?.data?.nocType}_HEADER`}`)}
+                                  labelStyle={{ fontSize: "20px" }}
+                                ></Row>
+                                <Row
+                                  className="border-none"
+                                  label={t(`${detail?.values?.[0]?.title}`)}
+                                  textStyle={{ marginLeft: "10px" }}
+                                  text={getTranslatedValues(
+                                    detail?.values?.[0]?.value,
+                                    detail?.values?.[0]?.isNotTranslated,
+                                  )}
+                                />
+                                <Row
+                                  className="border-none"
+                                  label={t(`${detail?.values?.[1]?.title}`)}
+                                  textStyle={
+                                    detail?.values?.[1]?.value == "APPROVED" ||
+                                      detail?.values?.[1]?.value == "AUTO_APPROVED"
+                                      ? { marginLeft: "10px", color: "#00703C" }
+                                      : { marginLeft: "10px", color: "#D4351C" }
+                                  }
+                                  text={getTranslatedValues(
+                                    detail?.values?.[1]?.value,
+                                    detail?.values?.[1]?.isNotTranslated,
+                                  )}
+                                />
+                                {detail?.values?.[2]?.value ? (
+                                  <Row
+                                    className="border-none"
+                                    label={t(`${detail?.values?.[2]?.title}`)}
+                                    textStyle={{ marginLeft: "10px" }}
+                                    text={getTranslatedValues(
+                                      detail?.values?.[2]?.value,
+                                      detail?.values?.[2]?.isNotTranslated,
+                                    )}
+                                  />
+                                ) : null}
+                                {detail?.values?.[3]?.value ? (
+                                  <Row
+                                    className="border-none"
+                                    label={t(`${detail?.values?.[3]?.title}`)}
+                                    textStyle={{ marginLeft: "10px" }}
+                                    text={getTranslatedValues(
+                                      detail?.values?.[3]?.value,
+                                      detail?.values?.[3]?.isNotTranslated,
+                                    )}
+                                  />
+                                ) : null}
+                                {detail?.values?.[3]?.value ? (
+                                  <Row
+                                    className="border-none"
+                                    label={t(`${detail?.values?.[4]?.title}`)}
+                                    textStyle={{ marginLeft: "10px" }}
+                                    text={getTranslatedValues(
+                                      detail?.values?.[4]?.value,
+                                      detail?.values?.[4]?.isNotTranslated,
+                                    )}
+                                  />
+                                ) : null}
+                                <Row className="border-none" label={t(`${nocob?.title}`)}></Row>
+                              </StatusTable>
+                              <StatusTable>
+                                {nocob?.values ? (
+                                  <DocumentsPreview
+                                    documents={getOrderDocuments(nocob?.values, true)}
+                                    svgStyles={{}}
+                                    isSendBackFlow={false}
+                                    isHrLine={true}
+                                    titleStyles={{
+                                      fontSize: "18px",
+                                      lineHeight: "24px",
+                                      fontWeight: 700,
+                                      marginBottom: "10px",
+                                    }}
+                                  />
+                                ) : (
+                                  <div>
+                                    <CardText>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</CardText>
+                                  </div>
+                                )}
+                              </StatusTable>
+                            </div>
+                          ))
+                          : null}
+
+                        {/* to get permit values */}
+                        {!detail?.isTitleVisible && detail?.additionalDetails?.permit?.length > 0
+                          ? detail?.additionalDetails?.permit?.map((value) => (
+                            <CardText key={value?.title}>{value?.title}</CardText>
+                          ))
+                          : null}
+
+                        {/* to get Fee values */}
+                        {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                          <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
+                        )}
+                        {/*blocking reason*/}
+                        {detail?.additionalDetails?.inspectionReport &&
+                          detail?.isFeeDetails &&
+                          (workflowDetails?.data?.actionState?.nextActions?.[0]?.state ==
+                            "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
+                            workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
+                            workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
+                            <div
+                              style={{
+                                marginTop: "19px",
+                                background: "#FAFAFA",
+                                border: "1px solid #D6D5D4",
+                                borderRadius: "4px",
+                                padding: "8px",
+                                lineHeight: "19px",
+                                maxWidth: "950px",
+                                minWidth: "280px",
+                              }}
+                            >
+                              <Row
+                                className="border-none"
+                                label={t(`BLOCKING_REASON`)}
+                                labelStyle={{ fontSize: "15px" }}
+                                text={data?.applicationData.additionalDetails.blockingReason || "NA"}
+                              >
+                                {" "}
+                              </Row>
+                            </div>
                           )}
-                          {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""}
-                        </div>
-                      );
-                    })}
-                </StatusTable>
+                      </StatusTable>
+                      {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <div style={{ marginTop: "5px" }}>{(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
+                        className="customTable table-border-style"
+                        t={t}
+                        data={ownerDocumentsData}
+                        columns={documentsColumnsOwner}
+                        getCellProps={() => ({ style: {} })}
+                        disableSort={false}
+                        autoSort={true}
+                        manualPagination={false}
+                        isPaginationRequired={false}
+                      />}</div>}
+                    </div>
+                  </Card>
+                ) : null}              
               </div>
-              {detail?.belowComponent && <detail.belowComponent />}
-              {detail?.additionalDetails?.inspectionReport && (
-                <ScruntinyDetails
-                  scrutinyDetails={detail?.additionalDetails}
-                  // paymentsList={paymentsList}
-                  additionalDetails={data?.applicationData?.additionalDetails}
-                  applicationData={data?.applicationData}
-                />
-              )}
-              {detail?.additionalDetails?.owners && <PropertyOwners owners={detail?.additionalDetails?.owners} />}
-
-              {detail?.additionalDetails?.obpsDocuments && (
-                <div>
-                  {/* <BPADocuments
-                t={t}
-                applicationData={data?.applicationData}
-                docs={detail.additionalDetails.obpsDocuments}
-                bpaActionsDetails={workflowDetails}
-              /> */}
-                  <StatusTable>
-                    <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    {pdfLoading ? <Loader /> : <Table
-                      className="customTable table-border-style"
-                      t={t}
-                      data={documentsData}
-                      columns={documentsColumns}
-                      getCellProps={() => ({ style: {} })}
-                      disableSort={false}
-                      autoSort={true}
-                      manualPagination={false}
-                      isPaginationRequired={false}
-                    />}
-                  </StatusTable>
-                  <StatusTable>
-                    <CardHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    {(pdfLoading || isFileLoading) ? <Loader /> : <Table
-                      className="customTable table-border-style"
-                      t={t}
-                      data={ecbcDocumentsData}
-                      columns={documentsColumns}
-                      getCellProps={() => ({ style: {} })}
-                      disableSort={false}
-                      autoSort={true}
-                      manualPagination={false}
-                      isPaginationRequired={false}
-                    />}
-                  </StatusTable>
-                  <StatusTable>
-                    <CardHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
-                      className="customTable table-border-style"
-                      t={t}
-                      data={ownerDocumentsData}
-                      columns={documentsColumns}
-                      getCellProps={() => ({ style: {} })}
-                      disableSort={false}
-                      autoSort={true}
-                      manualPagination={false}
-                      isPaginationRequired={false}
-                    />}
-                  </StatusTable>
-                </div>
-              )}
-
-              {detail?.additionalDetails?.scruntinyDetails && <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} />}
-              {detail?.additionalDetails?.buildingExtractionDetails && <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} />}
-              {detail?.additionalDetails?.subOccupancyTableDetails && (
-                <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={data?.applicationData} />
-              )}
-              {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
-              {detail?.additionalDetails?.redirectUrl && (
-                <div style={{ fontSize: "16px", lineHeight: "24px", fontWeight: "400", padding: "10px 0px" }}>
-                  <Link to={detail?.additionalDetails?.redirectUrl?.url}>
-                    <span className="link" style={{ color: "#a82227" }}>
-                      {detail?.additionalDetails?.redirectUrl?.title}
-                    </span>
-                  </Link>
-                </div>
-              )}
-
-            </React.Fragment>
-          ))}
-
-
-        </Card>
+            )
+          })}
+        </div>
 
         <Card>
           {workflowDetails?.data?.timeline?.length > 0 && (
@@ -1221,7 +1614,7 @@ const BpaApplicationDetail = () => {
                     <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
                       {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
                     </CardSectionHeader>
-                    {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
+                    {/* {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
                       <CheckPoint
                         isCompleted={true}
                         label={t(`${timelineStatusPrefix}${workflowDetails?.data?.timeline[0]?.state}`)}
@@ -1261,10 +1654,11 @@ const BpaApplicationDetail = () => {
                               );
                             })}
                       </ConnectingCheckPoints>
-                    )}
-                    {workflowDetails?.data?.timeline?.length > 2 && (
+                    )} */}
+                    <BPAApplicationTimeline application={data?.applicationData} id={id} />
+                    {/* {workflowDetails?.data?.timeline?.length > 2 && (
                       <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
-                    )}
+                    )} */}
                   </div>
                 </Fragment>
               )}
@@ -1389,7 +1783,33 @@ const BpaApplicationDetail = () => {
           </ActionBar>
         )}
 
-        {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && <FormComposer
+        {
+          data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
+          <Card>
+            <div id="fieldInspection"></div>
+            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />
+          </Card>
+        }
+
+        {
+          data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages.length > 0 && <Card>
+            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+            <Table
+              className="customTable table-border-style"
+              t={t}
+              data={documentData}
+              columns={documentsColumnsSiteImage}
+              getCellProps={() => ({ style: {} })}
+              disableSort={false}
+              autoSort={true}
+              manualPagination={false}
+              isPaginationRequired={false}
+            />
+          </Card>
+        }
+
+        {/* {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !isLoading &&
+        <FormComposer
           heading={t("")}
           isDisabled={!canSubmit}
           config={configs.map((config) => {
@@ -1408,7 +1828,9 @@ const BpaApplicationDetail = () => {
           breaklineStyle={{ border: "0px" }}
           className={"employeeCard-override"}
           cardClassName={"employeeCard-override"}
-        />}
+          onSubmit={() => {console.log("")}}
+        />
+        } */}
       </div>
 
     </Fragment>

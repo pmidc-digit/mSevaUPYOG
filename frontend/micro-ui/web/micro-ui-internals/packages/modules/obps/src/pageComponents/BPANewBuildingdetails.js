@@ -5,6 +5,7 @@ import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, Actio
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 
 
@@ -90,6 +91,13 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [ecbcCertificateFile, setEcbcCertificateFile] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcCertificateFile ||null);
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
+
+useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });
+}, [])
 
 useEffect(()=>{
   if(UlbName === "" && currentStepData?.LocationDetails?.selectedCity?.city?.name){
@@ -725,35 +733,35 @@ if (anyYes && !ecbcCertificateFile) {
   }
 
   function setEcbcElectricalLoadHandler(option) {
-    console.log("[v0] ECBC Electrical Load selected:", option)
-    console.log("[v0] Option code:", option?.code)
+    console.log("  ECBC Electrical Load selected:", option)
+    console.log("  Option code:", option?.code)
     setEcbcElectricalLoad(option)
     setErrors((prev) => ({ ...prev, ecbcElectricalLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option)
+      console.log("  State after update:", option)
     }, 100)
   }
 
   function setEcbcDemandLoadHandler(option) {
-    console.log("[v0] ECBC Demand Load selected:", option)
-    console.log("[v0] Option code:", option?.code)
+    console.log("  ECBC Demand Load selected:", option)
+    console.log("  Option code:", option?.code)
     setEcbcDemandLoad(option)
     setErrors((prev) => ({ ...prev, ecbcDemandLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option)
+      console.log("  State after update:", option)
     }, 100)
   }
 
   function setEcbcAirConditionedHandler(option) {
-    console.log("[v0] ECBC Air Conditioned selected:", option)
-    console.log("[v0] Option code:", option?.code)
+    console.log("  ECBC Air Conditioned selected:", option)
+    console.log("  Option code:", option?.code)
     setEcbcAirConditioned(option)
     setErrors((prev) => ({ ...prev, ecbcAirConditioned: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option)
+      console.log("  State after update:", option)
     }, 100)
   }
 
@@ -1102,13 +1110,14 @@ if (anyYes && !ecbcCertificateFile) {
             </div>
             <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
             <div style={{marginBottom: "15px"}}>
-            <UploadFile
+            <CustomUploadFile
               id={"noc-doc"}
               onUpload={selectfile}
               onDelete={() => {
                 setUploadedFile(null);
                 setFile("");
               }}
+              uploadedFile={uploadedFile}
               message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.file}
             />
@@ -1231,13 +1240,14 @@ if (anyYes && !ecbcCertificateFile) {
 
         {greenbuilding?.code === "YES" && (
           <React.Fragment>
-            <UploadFile
+            <CustomUploadFile
               id={"green-building-doc"}
               onUpload={selectfiles}
               onDelete={() => {
                 setGreenUploadedFile(null);
                 setFiles("");
               }}
+              uploadedFile={greenuploadedFile}
               message={greenuploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.files}
             />
@@ -1364,7 +1374,7 @@ if (anyYes && !ecbcCertificateFile) {
           ecbcAirConditioned?.code === "YES") && (
           <div className="field">
             <CardLabel>{`${t("BPA_UPLOAD_ECBC_DOCUMENT")} *`}</CardLabel>
-            <UploadFile
+            <CustomUploadFile
               id="ecbc-certificate"
               accept=".pdf,.jpg,.png"
               onUpload={selectEcbcCertificateFile}
@@ -1372,6 +1382,7 @@ if (anyYes && !ecbcCertificateFile) {
                 setEcbcCertificateFile(null);
                 setEcbcCertificateFileObj(null);
               }}
+              uploadedFile={ecbcCertificateFile}
               // message={ecbcCertificateFileObj?.name || "Choose a file"}
               message={ecbcCertificateFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
             />
@@ -1386,16 +1397,16 @@ if (anyYes && !ecbcCertificateFile) {
     </FormStep>
 
     <ActionBar>
-              <SubmitBar
-                                            label="Back"
-                                            style={{
-                                              border: "1px solid",
-                                              background: "transparent",
-                                              color: "#2947a3",
-                                              marginRight: "5px",
-                                            }}
-                                            onSubmit={onGoBack}
-                                  />
+        <SubmitBar
+          label="Back"
+          style={{
+            border: "1px solid",
+            background: "transparent",
+            color: "#2947a3",
+            marginRight: "5px",
+          }}
+          onSubmit={onGoBack}
+        />
       <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading}/>
     </ActionBar>
   </div>

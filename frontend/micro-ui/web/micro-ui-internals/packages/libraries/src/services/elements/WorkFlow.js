@@ -291,6 +291,7 @@ export const WorkflowService = {
         const details = {
           timeline,
           nextActions : window.location.href?.includes("fsm") ? nextStep : nextActions,
+          newNextAction: nextActions,
           actionState,
           applicationBusinessService: workflow?.ProcessInstances?.[0]?.businessService,
           processInstances: applicationProcessInstance,

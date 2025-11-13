@@ -1,0 +1,169 @@
+import React from "react";
+import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { useLocation, useHistory } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import CLUImageView from "./CLUImgeView";
+import CLUDocumentTableView from "./CLUDocumentTableView";
+import CLUFeeEstimationDetails from "./CLUFeeEstimationDetails";
+
+function CLUSummary({ currentStepData: formData, t }) {
+  console.log("formData in Summary Page", formData);
+
+  const coordinates = useSelector(function (state) {
+    return state?.obps?.OBPSFormReducer?.coordinates || {};
+  });
+
+  console.log("coordinates in summary page", coordinates);
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e0e0e0",
+    padding: "0.5rem 0",
+    color: "#333",
+  };
+
+  const headingStyle = {
+    fontSize: "1.5rem",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "0.3rem",
+    color: "#2e4a66",
+    marginTop: "2rem",
+    marginBottom: "1rem",
+  };
+
+  const pageStyle = {
+    padding: "2rem",
+    backgroundColor: "#f9f9f9",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: "#333",
+  };
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+
+  const renderLabel = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div>{value || "NA"}</div>
+    </div>
+  );
+
+  let docs = formData?.documents?.documents?.documents;
+  console.log("documents here in summary", docs);
+
+  return (
+    <div style={pageStyle}>
+      <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
+      <div style={sectionStyle}>
+        <CLUImageView documents={formData?.documents?.documents?.documents} />
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
+      <div style={sectionStyle}>
+        {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
+        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
+        {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
+        {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), formData?.applicationDetails?.applicantMobileNumber)}
+        {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
+        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
+        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
+      </div>
+
+      {formData?.applicationDetails?.professionalName && (
+        <React.Fragment>
+          <h2 style={headingStyle}>{t("BPA_PROFESSIONAL_DETAILS")}</h2>
+          <div style={sectionStyle}>
+            {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
+            {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
+            {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
+            {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
+            {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
+          </div>
+        </React.Fragment>
+      )}
+
+      <h2 style={headingStyle}>{t("BPA_LOCALITY_INFO_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.localityAreaType?.name)}
+
+        {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
+          renderLabel(t("BPA_SCHEME_NAME_LABEL"), formData?.siteDetails?.localitySchemeName)}
+
+        {formData?.siteDetails?.localityAreaType?.code === "APPROVED_COLONY" &&
+          renderLabel(t("BPA_APPROVED_COLONY_NAME_LABEL"), formData?.siteDetails?.localityApprovedColonyName)}
+
+        {formData?.siteDetails?.localityAreaType?.code === "NON_SCHEME" &&
+          renderLabel(t("BPA_NON_SCHEME_TYPE_LABEL"), formData?.siteDetails?.localityNonSchemeType?.name)}
+
+        {renderLabel(t("BPA_NOTICE_ISSUED_LABEL"), formData?.siteDetails?.localityNoticeIssued?.code)}
+        {formData?.siteDetails?.localityNoticeIssued?.code === "YES" &&
+          renderLabel(t("BPA_NOTICE_NUMBER_LABEL"), formData?.siteDetails?.localityNoticeNumber)}
+
+        {renderLabel(t("BPA_SCHEME_COLONY_TYPE_LABEL"), formData?.siteDetails?.localityColonyType?.name)}
+        {renderLabel(t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL"), formData?.siteDetails?.localityTransferredSchemeType?.name)}
+
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h2>
+      <div style={sectionStyle}>
+        {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
+        {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
+        {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
+        {renderLabel(t("BPA_ULB_TYPE_LABEL"), formData?.siteDetails?.ulbType)}
+        {renderLabel(t("BPA_KHASRA_NO_LABEL"), formData?.siteDetails?.khasraNo)}
+        {renderLabel(t("BPA_HADBAST_NO_LABEL"), formData?.siteDetails?.hadbastNo)}
+        {renderLabel(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
+        {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
+        {renderLabel(t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), formData?.siteDetails?.netPlotAreaAfterWidening)}
+        {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.netTotalArea)}
+
+        {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), formData?.siteDetails?.roadWidthAtSite)}
+
+        {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), formData?.siteDetails?.wardNo)}
+        {renderLabel(t("BPA_DISTRICT_LABEL"), formData?.siteDetails?.district?.name)}
+        {renderLabel(t("BPA_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
+
+        {renderLabel(t("BPA_SITE_VASIKA_NO_LABEL"), formData?.siteDetails?.vasikaNumber)}
+        {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
+
+        {renderLabel(t("BPA_OWNERSHIP_IN_PCT_LABEL"), formData?.siteDetails?.ownershipInPct)}
+
+        {renderLabel(t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"), formData?.siteDetails?.proposedRoadWidthAfterWidening)}
+        {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_SPECIFICATION_DETAILS")}</h2>
+      <div style={sectionStyle}>{renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}</div>
+
+      <h2 style={headingStyle}>{t("BPA_SITE_COORDINATES_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
+        {renderLabel(t("COMMON_LONGITUDE1_LABEL"), coordinates?.Longitude1)}
+
+        {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
+        {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div style={sectionStyle}>
+        {formData?.documents?.documents?.documents?.length > 0 && <CLUDocumentTableView documents={formData?.documents?.documents?.documents} />}
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {formData && <CLUFeeEstimationDetails formData={formData}/>}
+      </div>
+
+    </div>
+  );
+}
+
+export default CLUSummary;

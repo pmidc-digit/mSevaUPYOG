@@ -51,8 +51,8 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
   // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
-  const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.timeStamp?.TimeStamp || "");
-  const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.timeStamp?.isArchitectDeclared || "");
+  const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.TimeStamp?.TimeStamp || "");
+  const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.TimeStamp?.isArchitectDeclared || "");
   const parseFormattedTimestamp = (str) => {
     // Example input: "06 November 2025 Thursday 05:16:41 PM IST"
     const [day, monthName, year, , time, period] = str?.split(" ");
@@ -84,7 +84,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   useEffect(() => {
     console.log("currentStepDataInArchitectConsent", currentStepData);
     if(currentStepData?.Timestamp?.TimeStamp){
-      setTimeout(currentStepData?.Timestamp?.TimeStamp)
+      setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp)
     }
     if(currentStepData?.Timestamp?.isArchitectDeclared){
       setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared)
@@ -131,7 +131,7 @@ const selfdeclarationform = `
     </div>
 
     <div style="margin-top:-52px;">
-      <p style="margin-bottom:-32px;"><strong>To:</strong></p>
+      <p style="margin-bottom:-32px;"><strong>To</strong></p>
       <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.districtName}</p>
@@ -276,7 +276,7 @@ const selfdeclarationform = `
       const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [paramsWithTimestamp] }, "architectconsent");
 
       if (result?.filestoreIds?.[0]) {
-        alert("File Uploaded Successfully");
+        alert(t("File Uploaded Successfully"));
         // sessionStorage.setItem("ArchitectConsentdocFilestoreid", result.filestoreIds[0]);
         onSelect({
           isArchitectDeclared: result?.filestoreIds?.[0],

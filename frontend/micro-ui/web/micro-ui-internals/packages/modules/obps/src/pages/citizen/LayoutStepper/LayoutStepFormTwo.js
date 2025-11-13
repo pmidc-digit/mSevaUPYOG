@@ -119,7 +119,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const userInfo = Digit.UserService.getUser()?.info;
   const authToken = Digit.UserService.getUser()?.access_token;
 
-  console.log("[v0] Form data for API:", formData);
+  console.log("  Form data for API:", formData);
 
   // <CHANGE> Build payload matching backend API structure
   const payload = {
@@ -150,19 +150,19 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     },
   };
 
-  console.log("[v0] Final API payload:", payload);
+  console.log("  Final API payload:", payload);
 
   try {
     // <CHANGE> Call the actual API using the service you created
     const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
 
-    console.log("[v0] API Response:", response);
+    console.log("  API Response:", response);
 
     if (response?.Layout?.[0]) {
       const applicationNumber = response.Layout[0].applicationNumber;
       const applicationId = response.Layout[0].id;
 
-      console.log("[v0] Application created successfully:", applicationNumber);
+      console.log("  Application created successfully:", applicationNumber);
 
       dispatch(UPDATE_OBPS_FORM("applicationNumber", applicationNumber));
       dispatch(UPDATE_OBPS_FORM("applicationId", applicationId));
@@ -177,7 +177,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       throw new Error("Invalid response from server");
     }
   } catch (error) {
-    console.error("[v0] API Error:", error);
+    console.error("  API Error:", error);
     
     // <CHANGE> Show error toast
     setIsErrorToast(true);

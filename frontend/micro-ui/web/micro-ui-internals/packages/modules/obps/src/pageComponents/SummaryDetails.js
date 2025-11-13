@@ -101,6 +101,13 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     let acceptFormat = ".pdf";
 
     useEffect(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth" // use "auto" for instant scroll
+        });
+    }, [])
+
+    useEffect(() => {
           if (!userSelected) {
             return;
           }
@@ -357,16 +364,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     // },[ecbcDocumentsData])
       const ecbcDocumentsData = useMemo(() => {
       const docs = getDocsFromFileUrls(fileUrls) || [];
-    
-      if (docs.length === 0) {
-        return [
-          {
-            id: 0,
-            title: t("CS_NA"),
-            fileUrl: null,
-          },
-        ];
-      }
+          
     
       return docs.map((doc, index) => ({
         id: index,
@@ -386,6 +384,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         if (!otpVerifiedTimestamp || otpVerifiedTimestamp === "") {
             console.log("setdeclarationhandler", e, isOTPVerified);
             setShowTermsPopup(true);
+            setAgree(true);
+        }else{
             setAgree(true);
         }
     };
@@ -907,7 +907,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardSubHeader>
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLOT_AND_SITE_DETAILS_TITLE")}</CardSubHeader>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
                     <StatusTable >
                         
@@ -969,13 +969,91 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.wardnumber || t("CS_NA")}
                             
                         />
-                    </StatusTable>
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_WARD_NUMBER_LABEL`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.zonenumber || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_KHASRA_NUMBER_LABEL`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.khasraNumber || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_ARCHITECT_ID`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.architectid || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NUMBER_OF_BATHS`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.bathnumber || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NUMBER_OF_KITCHENS`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.kitchenNumber || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_APPROX_INHABITANTS_FOR_ACCOMODATION`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.approxinhabitants || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_DISTANCE_FROM_SEWER`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.distancefromsewer || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_SOURCE_OF_WATER`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.sourceofwater || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NUMBER_OF_WATER_CLOSETS`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.watercloset || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_MATERIAL_TO-BE_USED_IN_WALLS`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.materialused || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_MATERIAL_TO-BE_USED_IN_FLOOR`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.materialusedinfloor || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_MATERIAL_TO-BE_USED_IN_ROOFS`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.materialusedinroofs || t("CS_NA")}
+                            
+                        />                        
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_ESTIMATED_COST_LABEL`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.estimatedCost || t("CS_NA")}
+                            
+                        />                        
+                    {/* </StatusTable>
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <StatusTable >                                                
+                    <StatusTable >                                                 */}
                         {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
 
@@ -983,9 +1061,15 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         /> */}
                         <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />
                         <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")} />
+                        <Row
+                            className="border-none"
+                            label={t("BPA_DISTRICT")}
+                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}
+                            
+                        /> 
                         <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.locality?.name || t("CS_NA")} />
-                        <Row className="border-none" label={t(`BPA_LAT`)} text={currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.latitude ? currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : t("CS_NA")} />
-                        <Row className="border-none" label={t(`BPA_LONG`)} text={currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.longitude ? currentStepData?.createdResponse?.landInfo?.address?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : t("CS_NA")} />
+                        <Row className="border-none" label={t(`BPA_LAT`)} text={currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.latitude ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : t("CS_NA")} />
+                        <Row className="border-none" label={t(`BPA_LONG`)} text={currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.longitude ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : t("CS_NA")} />
                         {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
                         {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
                     </StatusTable>
@@ -1059,13 +1143,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             label={t("BPA_KHATUNI_NUMBER")}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATUNI_NO || t("CS_NA")}
                             
-                        />
-                        <Row
-                            className="border-none"
-                            label={t("BPA_DISTRICT")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}
-                            
-                        />                        
+                        />                                   
                         <Row
                             className="border-none"
                             label={t("BPA_AREA_TYPE")}
@@ -1177,14 +1255,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             }
                             
                         ></Row>
-                    </StatusTable>
-
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                    <StatusTable >
-                        <Row className="border-none" label={t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad} />
-                        <Row className="border-none" label={t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad} />
-                        <Row className="border-none" label={t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned} />
-                    </StatusTable>
+                    </StatusTable>                    
                 </Card>
                 
 
@@ -1198,6 +1269,13 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}
                             
                         />
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_APPROVED_COLONY_NAME`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}                            
+                        />
+                        }
                         <Row
                             className="border-none"
                             label={t(`BPA_ULB_TYPE_LABEL`)}
@@ -1212,10 +1290,22 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         />
                         <Row
                             className="border-none"
+                            label={t(`BPA_MASTER_PLAN`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}
+                            
+                        />
+                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan==="YES"&&<Row
+                            className="border-none"
+                            label={t(`BPA_USE`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}
+                            
+                        />}
+                        {/* <Row
+                            className="border-none"
                             label={t(`BPA_DISTRICT_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.District || t("CS_NA")}
                             
-                        />
+                        /> */}
                         {/* <Row
                             className="border-none"
                             label={t(`BPA_BUILDING_STATUS_LABEL`)}
@@ -1259,25 +1349,50 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         <Row
                             className="border-none"
                             label={t(`BPA_PURCHASED_FAR_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.purchasedFAR || t("CS_NA")}
+                            text={currentStepData?.createdResponse?.additionalDetails?.purchasedFAR ? "YES" : "NO" || t("CS_NA")}
                             
                         />
+                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && <Row
+                            className="border-none"
+                            label={t(`BPA_PROVIDED_FAR`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.providedFAR || t("CS_NA")}
+                            
+                        />}
                         <Row
                             className="border-none"
                             label={t(`BPA_MASTER_PLAN_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}
                             
                         />
+                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan === "YES" && <Row
+                            className="border-none"
+                            label={t(`BPA_USE`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}
+                            
+                        />}
                         <Row
                             className="border-none"
                             label={t(`BPA_GREEN_BUILDING_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.greenbuilding || t("CS_NA")}
                             
                         />
+                        {currentStepData?.createdResponse?.additionalDetails?.greenbuilding==="YES"&&<Row
+                            className="border-none"
+                            label={t(`BPA_SELECTED_RATINGS`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.rating || t("CS_NA")}
+                            
+                        />}
+                    </StatusTable>
+
+                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <StatusTable >
+                        <Row className="border-none" label={t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad} />
+                        <Row className="border-none" label={t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad} />
+                        <Row className="border-none" label={t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned} />
                     </StatusTable>
                 </Card>
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+                {ecbcDocumentsData?.length > 0 && <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
                     <StatusTable>                        
@@ -1293,7 +1408,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             isPaginationRequired={false}
                         />}
                     </StatusTable>
-                </Card>
+                </Card>}
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>

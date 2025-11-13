@@ -72,7 +72,7 @@ export const OBPSService = {
       method: "POST",
     }),
 
-  
+
   // BPAREGSearch: (tenantId, details, params) => {
 
   //   const transformedTenantId = tenantId === "pb" ? "pb.punjab" : tenantId
@@ -102,8 +102,8 @@ export const OBPSService = {
       data: details,
     }),
 
-    
-  
+
+
   BPAREGCreate: (details, tenantId) =>
     Request({
       url: Urls.obps.bpaRegCreate,
@@ -148,6 +148,69 @@ export const OBPSService = {
       params: {},
       auth: window.location.href.includes("openlink") ? false : true,
     }),
+  CLUCreate: ({ tenantId, filters, details }) => {
+    return Request({
+      url: Urls.obps.cluCreate,
+      data: details,
+      useCache: true,
+      method: "POST",
+      params: {},
+      auth: true,
+      userService: true,
+    });
+  },
+  CLUUpdate: ({ tenantId, filters, details }) =>
+    Request({
+      url: Urls.obps.cluUpdate,
+      data: details,
+      useCache: true,
+      userService: true,
+      method: "POST",
+      params: { tenantId, ...filters },
+      auth: true,
+  }),
+  CLUSearch: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.obps.cluSearch,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+  }),
+  CLUCalculator: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.cluCalculator,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+   }),
+  LayoutCalculator: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.layoutCalculator,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+  LayoutCollectionSearch: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.layoutCollectionSearch,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+    
 
   BPAREGGetBill: (tenantId, filters = {}) =>
     Request({
@@ -211,7 +274,7 @@ export const OBPSService = {
     }),
   LicenseDetails: async (tenantId, params) => {
     const response = await OBPSService.BPAREGSearch(tenantId, {}, params);
-  
+
     if (!response?.Licenses?.length) {
       return;
     }
@@ -249,26 +312,26 @@ export const OBPSService = {
       },
       License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT")
         ? {
-            title: "BPA_LICENSE_DETAILS_LABEL",
-            asSectionHeader: true,
-            values: [
-              {
-                title: "BPA_LICENSE_TYPE",
-                value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
-              },
-              { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
-            ],
-          }
+          title: "BPA_LICENSE_DETAILS_LABEL",
+          asSectionHeader: true,
+          values: [
+            {
+              title: "BPA_LICENSE_TYPE",
+              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+            },
+            { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
+          ],
+        }
         : {
-            title: "BPA_LICENSE_DETAILS_LABEL",
-            asSectionHeader: true,
-            values: [
-              {
-                title: "BPA_LICENSE_TYPE",
-                value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
-              },
-            ],
-          },
+          title: "BPA_LICENSE_DETAILS_LABEL",
+          asSectionHeader: true,
+          values: [
+            {
+              title: "BPA_LICENSE_TYPE",
+              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+            },
+          ],
+        },
       {
         title: "BPA_LICENSEE_DETAILS_HEADER_OWNER_INFO",
         asSectionHeader: true,
@@ -525,9 +588,9 @@ export const OBPSService = {
           title: "BPA_APPROVED_REJECTED_ON_LABEL",
           value:
             nocDetails?.applicationStatus === "APPROVED" ||
-            nocDetails?.applicationStatus === "REJECTED" ||
-            nocDetails?.applicationStatus === "AUTO_APPROVED" ||
-            nocDetails?.applicationStatus === "AUTO_REJECTED"
+              nocDetails?.applicationStatus === "REJECTED" ||
+              nocDetails?.applicationStatus === "AUTO_APPROVED" ||
+              nocDetails?.applicationStatus === "AUTO_REJECTED"
               ? format(new Date(Number(nocDetails?.auditDetails?.lastModifiedTime)), "dd/MM/yyyy")
               : "NA",
           isNotTranslated: true,
@@ -623,9 +686,9 @@ export const OBPSService = {
           title: "BPA_PERMIT_VALIDITY",
           value: bpaResponse?.BPA?.[0]?.additionalDetails?.validityDate
             ? `${ConvertEpochToValidityDate(bpaResponse?.BPA?.[0]?.additionalDetails?.validityDate)} - ${format(
-                new Date(bpaResponse?.BPA?.[0]?.additionalDetails?.validityDate),
-                "dd/MM/yyyy"
-              )}`
+              new Date(bpaResponse?.BPA?.[0]?.additionalDetails?.validityDate),
+              "dd/MM/yyyy"
+            )}`
             : "NA",
         },
       ];
@@ -663,9 +726,9 @@ export const OBPSService = {
         title: BPA?.businessService !== "BPA_OC" ? "BPA_PERMIT_VALIDITY" : "BPA_OC_PERMIT_VALIDITY",
         value: BPA?.additionalDetails?.validityDate
           ? `${ConvertEpochToValidityDate(BPA?.additionalDetails?.validityDate)} - ${format(
-              new Date(BPA?.additionalDetails?.validityDate),
-              "dd/MM/yyyy"
-            )}`
+            new Date(BPA?.additionalDetails?.validityDate),
+            "dd/MM/yyyy"
+          )}`
           : "NA",
       });
     }
@@ -691,7 +754,7 @@ export const OBPSService = {
     };
 
     const plotDetails = {
-      title: "BPA_PLOT_DETAILS_TITLE",
+      title: "BPA_PLOT_AND_SITE_DETAILS_TITLE",
       asSectionHeader: true,
       isCommon: true,
       values: [
@@ -704,8 +767,61 @@ export const OBPSService = {
         { title: "BPA_PLOT_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.plotNo || "NA", isNotTranslated: true },
         { title: "BPA_KHATHA_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.khatuniNo || "NA", isNotTranslated: true },
         // { title: "BPA_HOLDING_NUMBER_LABEL", value: BPA?.additionalDetails?.holdingNo || "NA", isNotTranslated: true },
+        { title: "PROPERTY_ID", value: BPA?.additionalDetails?.propertyuid || "NA", isNotTranslated: true },
+        { title: "BPA_IS_CLUBBED_PLOT_LABEL", value: BPA?.additionalDetails?.isClubbedPlot ? "YES" : "NO", isNotTranslated: true },
         { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_WALL_LENGTH_LABEL", value: BPA?.additionalDetails?.boundaryWallLength || "NA", isNotTranslated: true },
+        { title: ("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },
+        { title: ("BPA_CITY_LABEL"), value: BPA?.landInfo?.address?.city },
+        { title: ("BPA_LOC_MOHALLA_LABEL"), value: BPA?.landInfo?.address?.locality?.name },
+        { title: ("BPA_LAT"), value: BPA?.landInfo?.address?.geoLocation?.latitude ? BPA?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : "NA" },
+        { title: ("BPA_LONG"), value: BPA?.landInfo?.address?.geoLocation?.longitude ? BPA?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : "NA" },
+        { title: "BPA_WARD_NUMBER_LABEL", value: BPA?.additionalDetails?.wardnumber || "NA", isNotTranslated: true },
+        { title: "BPA_ZONE_NUMBER_LABEL", value: BPA?.additionalDetails?.zonenumber || "NA", isNotTranslated: true },
+        { title: "BPA_KHASRA_NUMBER_LABEL", value: BPA?.additionalDetails?.khasraNumber || "NA", isNotTranslated: true },
+        { title: "BPA_ARCHITECT_ID", value: BPA?.additionalDetails?.architectid || "NA", isNotTranslated: true },
+        { title: "BPA_NUMBER_OF_BATHS", value: BPA?.additionalDetails?.bathnumber || "NA", isNotTranslated: true },
+        { title: "BPA_NUMBER_OF_KITCHENS", value: BPA?.additionalDetails?.kitchenNumber || "NA", isNotTranslated: true },
+        { title: "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION", value: BPA?.additionalDetails?.approxinhabitants || "NA", isNotTranslated: true },
+        { title: "BPA_DISTANCE_FROM_SEWER", value: BPA?.additionalDetails?.distancefromsewer || "NA", isNotTranslated: true },
+        { title: "BPA_SOURCE_OF_WATER", value: BPA?.additionalDetails?.sourceofwater || "NA", isNotTranslated: true },
+        { title: "BPA_NUMBER_OF_WATER_CLOSETS", value: BPA?.additionalDetails?.watercloset || "NA", isNotTranslated: true },
+        { title: "BPA_MATERIAL_TO-BE_USED_IN_WALLS", value: BPA?.additionalDetails?.materialused || "NA", isNotTranslated: true },
+        { title: "BPA_MATERIAL_TO-BE_USED_IN_FLOOR", value: BPA?.additionalDetails?.materialusedinfloor || "NA", isNotTranslated: true },
+        { title: "BPA_MATERIAL_TO-BE_USED_IN_ROOFS", value: BPA?.additionalDetails?.materialusedinroofs || "NA", isNotTranslated: true },
+        { title: "BPA_ESTIMATED_COST_LABEL", value: BPA?.additionalDetails?.estimatedCost || "NA", isNotTranslated: true },
+      ],
+    };
+    const additionalDetail = {
+      title: "BPA_ADDITIONAL_BUILDING_DETAILS",
+      asSectionHeader: true,
+      isCommon: true,
+      values: [
+        { title: "BPA_ULB_NAME", value: BPA?.additionalDetails?.UlbName || "NA", isNotTranslated: true },
+        { title: "BPA_ULB_TYPE", value: BPA?.additionalDetails?.Ulblisttype || "NA", isNotTranslated: true },
+        { title: "BPA_APPROVED_COLONY", value: BPA?.additionalDetails?.approvedColony || "NA", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.approvedColony === "YES"
+          ? [{ title: "BPA_APPROVED_COLONY_NAME", value: BPA?.additionalDetails?.nameofApprovedcolony || "NA", isNotTranslated: true }]
+          : []),
+        // { title: "BPA_NOC_NUMBER", value: BPA?.additionalDetails?.NocNumber || "NA", isNotTranslated: true },
+        { title: "BPA_MASTER_PLAN", value: BPA?.additionalDetails?.masterPlan || "NA", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.masterPlan === "YES"
+          ? [{ title: "BPA_USE", value: BPA?.additionalDetails?.use || "NA", isNotTranslated: true }]
+          : []),
+        { title: "BPA_PURCHASED_FAR", value: BPA?.additionalDetails?.purchasedFAR ? "YES" : "NO", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.purchasedFAR
+          ? [{ title: "BPA_PROVIDED_FAR", value: BPA?.additionalDetails?.providedFAR || "NA", isNotTranslated: true }]
+          : []),
+        { title: "BPA_GREEN_BUIDINGS", value: BPA?.additionalDetails?.greenbuilding || "NA", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.greenbuilding === "YES"
+          ? [{ title: "BPA_SELECTED_RATINGS", value: BPA?.additionalDetails?.rating || "NA", isNotTranslated: true }]
+          : []),
+        { title: "BPA_RESTRICTED_AREA", value: BPA?.additionalDetails?.restrictedArea || "NA", isNotTranslated: true },
+        { title: "BPA_PROPOSED_SITE_TYPE", value: BPA?.additionalDetails?.proposedSite || "NA", isNotTranslated: true },
+        { title: "ECBC - Proposed Connected Electrical Load is above 100 Kw", value: BPA?.additionalDetails?.ecbcElectricalLoad || "NA", isNotTranslated: true },
+        { title: "ECBC - Proposed Demand of Electrical Load is above 120 Kw", value: BPA?.additionalDetails?.ecbcDemandLoad || "NA", isNotTranslated: true },
+        { title: "ECBC - Proposed Air Conditioned Area above 500 sq.mt", value: BPA?.additionalDetails?.ecbcAirConditioned || "NA", isNotTranslated: true },
+        
       ],
     };
 
@@ -779,11 +895,7 @@ export const OBPSService = {
       asSectionHeader: true,
       isCommon: true,
       values: [
-        { title: ("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },
-        { title: ("BPA_CITY_LABEL"), value: BPA?.landInfo?.address?.city },
-        { title: ("BPA_LOC_MOHALLA_LABEL"), value: BPA?.landInfo?.address?.locality?.name },
-        { title: ("BPA_LAT"), value: BPA?.landInfo?.address?.geoLocation?.latitude? BPA?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : "NA"},
-        { title: ("BPA_LONG"), value: BPA?.landInfo?.address?.geoLocation?.longitude? BPA?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : "NA"},
+        
         // { title: ("BPA_DETAILS_SRT_NAME_LABEL"), value: BPA?.landInfo?.address?.street },
         // { title: ("ES_NEW_APPLICATION_LOCATION_LANDMARK"), value: BPA?.landInfo?.address?.landmark },
       ],
@@ -855,16 +967,16 @@ export const OBPSService = {
       // });
 
       mdmsRes?.BPA?.CheckList?.forEach((checklist) => {
-          if (
-            checklist?.RiskType === riskType &&
-            checklist?.applicationType === edcr?.applicationType && // also fixed typo here
-            checklist?.ServiceType === edcr?.applicationSubType &&
-            checklist?.WFState === "PENDINGAPPROVAL" &&
-            checklist?.conditions?.length > 0
-          ) {
-            approvalChecks.push(...checklist?.conditions);
-          }
-        });
+        if (
+          checklist?.RiskType === riskType &&
+          checklist?.applicationType === edcr?.applicationType && // also fixed typo here
+          checklist?.ServiceType === edcr?.applicationSubType &&
+          checklist?.WFState === "PENDINGAPPROVAL" &&
+          checklist?.conditions?.length > 0
+        ) {
+          approvalChecks.push(...checklist?.conditions);
+        }
+      });
 
 
       approvalChecksDetails = {
@@ -931,11 +1043,12 @@ export const OBPSService = {
         ownerDetails,
         basicDetails,
         plotDetails,
-        addressDetails,
+        // addressDetails,
         scrutinyDetails,
         buildingExtractionDetails,
         subOccupancyTableDetails,
-        demolitionAreaDetails,        
+        demolitionAreaDetails,
+        additionalDetail,
         documentDetails,
         fiReports,
         ...nocDetails,
@@ -1000,7 +1113,7 @@ export const OBPSService = {
       userService: auth === false ? auth : true,
       params: { tenantId, ...filters },
     }),
-  bpaCalculate: async (data) => 
+  bpaCalculate: async (data) =>
     Request({
       url: Urls.obps.bpaCalculator,
       useCache: false,

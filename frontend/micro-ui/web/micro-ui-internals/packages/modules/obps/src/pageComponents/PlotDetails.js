@@ -40,6 +40,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [materialused, setMaterialUsed] = useState("");
   const [materialusedinfloor, setMaterialUsedInFloor] = useState("");
   const [materialusedinroofs, setMaterialUsedInRoofs] = useState("");
+  const [estimatedCost, setEstimatedCost] = useState("");
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
@@ -105,6 +106,12 @@ console.log("sessionStorageData",data);
     </div>
   );
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });
+  }, [])
 
   
   useEffect(() => {
@@ -193,6 +200,7 @@ console.log("sessionStorageData",data);
     setMaterialUsed(details?.materialused || "");
     setMaterialUsedInFloor(details?.materialusedinfloor || "");
     setMaterialUsedInRoofs(details?.materialusedinroofs || "");
+    setEstimatedCost(details?.estimatedCost || "");
     // setPropertyUid(details?.propertyuid || "");
   }
 }, [currentStepData?.createdResponse]);
@@ -309,6 +317,12 @@ useEffect(() => {
       newErrors.materialusedinroofs = t("BPA_MATERIAL_USED_IN_ROOFS_REQUIRED");
     }
 
+    if (!estimatedCost.trim()) {
+      newErrors.estimatedCost = t("BPA_ESTIMATED_COST_IS_REQUIRED");
+    } else if (isNaN(estimatedCost)) {
+      newErrors.estimatedCost = t("BPA_ESTIMATED_COST_INVALID");
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -329,7 +343,8 @@ useEffect(() => {
       if (isSelfCertificationRequired === "undefined" || isSelfCertificationRequired === null) {
         isSelfCertificationRequired = "false"
       }
-    const stakeholderName =  JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_NAME")) || null;
+    // const stakeholderName =  JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_NAME")) || null;
+    const stakeholderName =  userInfo?.info?.name || null;
     const stakeholderRegistrationNumber= JSON.parse(
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
@@ -373,6 +388,7 @@ useEffect(() => {
       materialused,
       materialusedinfloor,
       materialusedinroofs,
+      estimatedCost,
       area: data?.planDetail?.planInformation?.plotArea?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
@@ -405,6 +421,7 @@ useEffect(() => {
       materialused,
       materialusedinfloor,
       materialusedinroofs,
+      estimatedCost,
       area: data?.planDetail?.planInformation?.plotArea?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
@@ -589,6 +606,7 @@ useEffect(() => {
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS")+"*", materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR")+"*", materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setEstimatedCost, "estimatedCost", "Please Provide Estimated Cost")}
 
           
           <ActionBar>

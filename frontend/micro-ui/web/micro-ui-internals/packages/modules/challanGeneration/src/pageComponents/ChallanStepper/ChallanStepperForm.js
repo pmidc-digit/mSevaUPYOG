@@ -83,8 +83,6 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
-
 const ChallanStepperForm = () => {
   const history = useHistory();
   const { t } = useTranslation();
@@ -94,6 +92,7 @@ const ChallanStepperForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const [loader, setLoader] = useState(false);
+  const [error, setError] = useState(null);
   const [documentsData, setDocumentsData] = useState({});
   const isCitizen = window.location.href.includes("citizen");
 
@@ -107,8 +106,7 @@ const ChallanStepperForm = () => {
   const { data: subCategoryData, isLoading: subCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "SubCategory" }]);
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
   const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
-
-  console.log("OffenceRates", OffenceRates);
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
 
   const {
     control,
@@ -117,13 +115,12 @@ const ChallanStepperForm = () => {
     reset,
     formState: { errors },
     getValues,
+    clearErrors,
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
     },
   });
-
-  // console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_ChallanApplication_STEP(updatedStepNumber));
@@ -145,10 +142,19 @@ const ChallanStepperForm = () => {
   // };
 
   const onSubmit = async (data) => {
-    setLoader(true);
-    console.log("dat==??a", data);
-    console.log("documentsData", documentsData?.documents);
+    let missingDocs = [];
 
+    docData?.Challan?.Documents?.forEach((doc) => {
+      if (doc.required) {
+        const hasFile = documentsData?.documents?.some((d) => d.documentType.includes(doc.code) && d.filestoreId);
+        if (!hasFile) missingDocs.push(t(doc.code));
+      }
+    });
+    if (missingDocs.length > 0) {
+      setError(t("CHALLAN_MESSAGE_CHALLAN_" + missingDocs[0].replace(/\s+/g, "_").toUpperCase()));
+      return;
+    }
+    setLoader(true);
     const Challan = {
       tenantId: tenantId,
       citizen: {
@@ -177,7 +183,6 @@ const ChallanStepperForm = () => {
     };
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
-      console.log("response", response);
       setLoader(false);
       const id = response?.challans?.[0]?.challanNo;
       history.push("/digit-ui/employee/challangeneration/response/" + `${id}`);
@@ -185,7 +190,6 @@ const ChallanStepperForm = () => {
       // if (isCitizen) history.push("/digit-ui/citizen/challangeneration/response/" + "123123");
       // else history.push("/digit-ui/employee/challangeneration/response/" + "123123");
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -200,11 +204,12 @@ const ChallanStepperForm = () => {
 
   const handleMobileChange = async (value) => {
     setLoader(true);
-    console.log("User stopped typing. Final mobile number:", value);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
-      console.log("userData", userData?.user[0]);
-      setValue("name", userData?.user[0]?.name);
+      if (userData?.user?.[0]?.name) {
+        setValue("name", userData.user[0].name); // ✅ populate name
+        clearErrors("name"); // ✅ remove validation error if any
+      }
       setLoader(false);
     } catch (error) {
       setLoader(false);
@@ -217,10 +222,7 @@ const ChallanStepperForm = () => {
   );
 
   const handleRates = (val) => {
-    console.log("val", val);
-    console.log("OffenceRates", OffenceRates?.Challan?.Rates);
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
-    console.log("filterRates", filterRates);
     setValue("amount", filterRates?.[0]?.amount);
   };
 
@@ -448,9 +450,12 @@ const ChallanStepperForm = () => {
               onSelect={handleDocumentsSelect}
               userType="CITIZEN"
               formData={{ documents: documentsData }}
-              setError={() => {}}
+              setError={setError}
+              error={error}
               clearErrors={() => {}}
               formState={{}}
+              data={docData}
+              isLoading={isLoading}
             />
           </div>
 

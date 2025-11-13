@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -15,11 +15,12 @@ const createUnitDetails = () => ({
     key: Date.now(),
 });
 
-const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
+const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props }) => {
     const { t } = useTranslation();
     const { pathname } = useLocation();
     const isEditScreen = pathname.includes("/modify-application/");
-    const [FieldReports, setFieldReports] = useState(formData?.FieldReports || [createUnitDetails()]);
+    const fieldInspectionFieldReports = JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"))
+    const [FieldReports, setFieldReports] = useState(fieldInspectionFieldReports ? [fieldInspectionFieldReports] : [createUnitDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
@@ -35,7 +36,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     if (window.location.href.includes("tl/renew-application-details")) isRenewal = true;
     const { data: tradeMdmsData, isLoading } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", "TradeUnits", "[?(@.type=='TL')]");
     const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["CheckList"]);
-    let type = "LOW"
+    let type = "LOW"    
 
     const addNewFieldReport = () => {
         const newUnit = createUnitDetails();
@@ -51,7 +52,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         const data = FieldReports.map((e) => {
             return e;
         });
-        onSelect(config?.key, data);
+        onSelect("FieldReports", data);
         sessionStorage.setItem("INSPECTION_DATA", JSON.stringify(data));
     }, [FieldReports]);
 
@@ -104,7 +105,9 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         type,
         questionList,
         setquestionList,
-        documentList
+        documentList,
+        props,
+        stateId
     };
 
     if (isEditScreen) {
@@ -114,11 +117,11 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     return (
         <div>
             <React.Fragment>
-                {FieldReports && FieldReports.map((unit, index) => (
-                    <InspectionReportForm key={unit.key} index={index} unit={unit} {...commonProps} />
-                ))}
+                {/* {FieldReports && FieldReports.map((unit, index) => ( */}
+                    <InspectionReportForm  index={0} unit={FieldReports[0]} {...commonProps} />
+                {/* ))} */}
             </React.Fragment>
-            <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} />
+            {/* <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} /> */}
         </div>
     );
 };
@@ -158,7 +161,9 @@ const InspectionReportForm = (_props) => {
         type,
         questionList,
         setquestionList,
-        documentList
+        documentList,
+        props,
+        stateId
     } = _props;
 
     const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
@@ -166,6 +171,90 @@ const InspectionReportForm = (_props) => {
     const { errors } = localFormState;
 
     const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
+    const siteImages = JSON.parse(sessionStorage.getItem("Field_Inspection_siteImages"))
+    const geoLocations = JSON.parse(sessionStorage.getItem("Field_Inspection_geoLocations"))
+    const documentData = siteImages?.map((value, index) => ({
+        title: `SITE_IMAGE_${index+1}`,
+        imageFileStoreId: value,
+        geoLocation: geoLocations[index] 
+    }))
+
+    console.log("formDataprops", siteImages, geoLocations, documentData)
+
+    function routeTo(filestoreId) {
+        getUrlForDocumentView(filestoreId)
+    }
+
+    const getUrlForDocumentView = async (filestoreId) => {
+        if (filestoreId?.length === 0) return;
+        try {
+            const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+            if (result?.data) {
+                const fileUrl = result.data[filestoreId];
+                if (fileUrl) {
+                    window.open(fileUrl, "_blank");
+                } else {
+                    if(props?.setError){
+                        props?.setError(t("CS_FILE_FETCH_ERROR"));
+                    }else{
+                        console.error(t("CS_FILE_FETCH_ERROR"))
+                    }
+                }
+            } else {
+                if (props?.setError) {
+                    props?.setError(t("CS_FILE_FETCH_ERROR"));
+                } else {
+                    console.error(t("CS_FILE_FETCH_ERROR"))
+                }
+            }
+        } catch (e) {
+            if (props?.setError) {
+                props?.setError(t("CS_FILE_FETCH_ERROR"));
+            } else {
+                console.error(t("CS_FILE_FETCH_ERROR"))
+            }
+        }
+    }
+
+    const routeToGeo = (geoLocation) => {
+           window.open(`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocation.latitude).toFixed(6)}&long=${Number(geoLocation.longitude).toFixed(6)}`, "_blank")
+    }
+
+    const documentsColumns = [
+        {
+          Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+          accessor: "title",
+          Cell: ({ value }) => t(value) || t("CS_NA"),
+        },
+        {
+          Header: t(" "),
+          accessor: "imageFileStoreId",
+          Cell: ({ value }) =>
+            {          
+              return value ? (
+              <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                label={t("View Image")}
+                onClick={() => routeTo(value)}
+              />
+            ) : (
+              t("CS_NA")
+            )},
+        },
+        {
+          Header: t(" "),
+          accessor: "geoLocation",
+          Cell: ({ value }) =>
+            {          
+              return value ? (
+              <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                label={t("View Location")}
+                onClick={() => routeToGeo(value)}
+              />
+            ) : (
+              t("CS_NA")
+            )},
+        },
+      ];
 
     useEffect(() => {
         trigger();
@@ -310,7 +399,18 @@ const InspectionReportForm = (_props) => {
                         </div>
                     ))}
                     <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
-                    <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} />
+                    {/* <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} /> */}
+                    <Table
+                        className="customTable table-border-style"
+                        t={t}
+                        data={documentData}
+                        columns={documentsColumns}
+                        getCellProps={() => ({ style: {} })}
+                        disableSort={false}
+                        autoSort={true}
+                        manualPagination={false}
+                        isPaginationRequired={false}
+                    />
                 </div>
             </div>
         </React.Fragment>

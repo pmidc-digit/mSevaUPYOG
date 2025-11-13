@@ -76,6 +76,7 @@ import CLUDocumentsRequired from "./pageComponents/CLUDocumentsRequired";
 import CLUApplicantDetails from "./pageComponents/CLUApplicantDetails";
 import CLUProfessionalDetails from "./pageComponents/CLUProfessionalDetails";
 import CLUSummary from "./pageComponents/CLUSummary";
+import CLUResponseCitizen from "./pages/citizen/Applications/CLUResponseCitizen";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
@@ -107,6 +108,8 @@ import LayoutApplicationDetails from "./pages/citizen/Applications/LayoutApplica
 import LayoutApplicationSummary from "./pages/citizen/Applications/LayoutApplicationSummary";
 import LayoutInbox from "./pages/employee/Inbox/LayoutInbox";
 import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
+import LayoutResponseEmployee from "./pages/employee/ApplicationOverview/LayoutResponseEmployee";
+import EditLayoutApplication from "./pageComponents/EditApplication/EditLayoutApplication";
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -247,6 +250,8 @@ const componentsToRegister = {
   CustomLandingPage,
   dummy,
   LayoutApplicationOverview,
+  LayoutResponseEmployee,
+  NewLayoutEditLayoutApplication: EditLayoutApplication,
   CLUStepperForm,
   CLUStepFormOne,
   CLUStepFormTwo,
@@ -258,7 +263,8 @@ const componentsToRegister = {
   CLUDocumentsRequired,
   CLUApplicantDetails,
   CLUProfessionalDetails,
-  CLUSummary
+  CLUSummary,
+  CLUResponseCitizen
 }
 
 export const initOBPSComponents = () => {

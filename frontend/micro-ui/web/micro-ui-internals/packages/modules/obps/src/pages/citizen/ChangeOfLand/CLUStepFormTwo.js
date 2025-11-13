@@ -56,58 +56,71 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     //Save data in redux
     dispatch(UPDATE_OBPS_FORM(config.key, data));
     
-    //If create api is already called then move to next step
-    // if (currentStepData?.apiData?.Noc?.[0]?.applicationNo) {
-    //   onGoNext();
-    // } else {
-    // //Call Create API and move to next Page
-    // callCreateAPI({ ...currentStepData, siteDetails:{...data} });
-    // }
-
-    onGoNext();
+   // If create api is already called then move to next step
+    if (currentStepData?.apiData?.Clu?.[0]?.applicationNo) {
+      onGoNext();
+    } else {
+    //Call Create API and move to next Page
+    callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+    }
+    
+  //  onGoNext();
   };
 
 
   const callCreateAPI= async (formData)=>{ 
         
-        // Prepare nocFormData
-        const nocFormData = {...formData};
+        // Prepare cluFormData
+      const cluFormData={...formData}
 
-        console.log("nocFormData ==>", nocFormData)
+      //  console.log("cluFormData ==>", cluFormData)
+
+      const ownerObj = {
+       mobileNumber: cluFormData?.applicationDetails?.applicantMobileNumber || "",
+       name: cluFormData?.applicationDetails?.applicantOwnerOrFirmName || "",
+       emailId: cluFormData?.applicationDetails?.applicantEmailId || "",
+       userName: cluFormData?.applicationDetails?.applicantMobileNumber || ""
+      };
     
         // Final payload
         const payload = {
-          Noc: {
+          Clu: {
               applicationType: "NEW",
               documents: [],
-              nocType: "NOC",
+              cluType : "CLU",
               status: "ACTIVE",
               tenantId,
+              owners:[ownerObj],
               workflow: {action: "INITIATE"},
-              nocDetails:{
-                additionalDetails: nocFormData,
+              cluDetails:{
+                additionalDetails: cluFormData,
                 tenantId
               }
             },
         }
 
         console.log("final Payload here==>", payload);
+
+        try{
         
-        // const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
+        const response = await Digit.OBPSService.CLUCreate({ tenantId, details: payload });
     
-        // if (response?.ResponseInfo?.status === "successful") {
-        //   dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
-        //   onGoNext();
-        //   return { isSuccess: true, response };
-        // } else {
-        //   return { isSuccess: false, response };
-        // }
+        if (response?.ResponseInfo?.status === "successful") {
+          console.log("success :create api executed successfully !!!");
+          dispatch(UPDATE_OBPS_FORM("apiData", response));
+          onGoNext();
+        } else {
 
-        setTimeout(()=>{
-          console.log("we are inside setTime out");
-        }, 1000);
+          console.error("error  : create api not executed properly !!!");
+          setShowToast({ key: "true", error:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL"});
+        }
+       }catch(error){
+          console.log("errors here in goNext - catch block", error);
+          setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
+      }
 
-        onGoNext();
+
+    //    onGoNext();
   }
 
 
@@ -146,7 +159,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
   );
 };

@@ -4,6 +4,7 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import CLUImageView from "./CLUImgeView";
 import CLUDocumentTableView from "./CLUDocumentTableView";
+import CLUFeeEstimationDetails from "./CLUFeeEstimationDetails";
 
 function CLUSummary({ currentStepData: formData, t }) {
   console.log("formData in Summary Page", formData);
@@ -155,6 +156,12 @@ function CLUSummary({ currentStepData: formData, t }) {
       <div style={sectionStyle}>
         {formData?.documents?.documents?.documents?.length > 0 && <CLUDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
+
+      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {formData && <CLUFeeEstimationDetails formData={formData}/>}
+      </div>
+
     </div>
   );
 }

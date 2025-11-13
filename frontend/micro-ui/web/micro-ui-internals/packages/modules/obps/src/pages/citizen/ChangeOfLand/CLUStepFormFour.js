@@ -1,8 +1,8 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
+import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
 import { UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
 
@@ -10,102 +10,156 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const [selectedCheckBox, setSelectedCheckBox] = useState(false);
+
+  function handleCheckBox(e) {
+    setSelectedCheckBox(e.target.checked);
+  }
+
+ // console.log("selectedCheckBox", selectedCheckBox);
 
   const currentStepData = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.formData || {};
   });
 
-  console.log("currentStepData in Parent Fourth Step", currentStepData);
-
-  const history = useHistory();
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-
-
-  const goNext = async(data)=> {
-    console.log("formData in parent SummaryPage", currentStepData);
-
-   // try{
-      const res = await onSubmit(currentStepData);
-      
-      console.log("we reached here finally !!!");
-      
-      // if (res?.isSuccess) {
-      //   if(window.location.href.includes("citizen")){
-      //     //modify below as per response from api
-      //     history.push("/digit-ui/citizen/noc/response/" + res?.response?.Noc?.uuid);
-      //   }
-
-      //   else{
-      //      //modify below as per response from api
-      //     history.push("/digit-ui/employee/noc/response/" + res?.response?.Noc?.uuid);
-      //   }
-        
-      // } else {
-      //   console.error("Submission failed, not moving to next step.", res?.response);
-      //   alert(`Submission Failed ${res?.response}`)
-      // }
-   // }catch(e){
-       //alert(`Error: ${error?.message}`);
-     
-   // }
-
-    
-   onGoNext();
-  }
-
-  const onSubmit= async (data)=>{
-    console.log("formData inside onSubmit", data);
-
-    const finalPayload = mapToNOCPayload(data);
-    console.log("finalPayload here==", finalPayload);
-
-    //remove below once completed
-    setTimeout(()=>{
-      console.log("we are here in setTimeOut")
-    },1000);
-
-    return ;
-    
-    // const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-    // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    // if (response?.ResponseInfo?.status === "successful") {
-    //       return { isSuccess: true, response };
-    // } else {
-    //       return { isSuccess: false, response };
-    // }
-  }
-
-  function mapToNOCPayload(nocFormData){
-    console.log("nocFormData", nocFormData);
-
-    const updatedApplication= {
-        applicationType: "NEW",
-        documents: [],
-        nocType: "NOC",
-        status: "ACTIVE",
-        tenantId,
-        workflow: {action: "INITIATE"},
-        nocDetails:{
-            //modify below from apiData key using redux
-            additionalDetails: {applicationDetails:{...nocFormData?.applicationDetails}, siteDetails:{...nocFormData?.siteDetails}},
-            tenantId
-        }
-    }
-    
-   const docsArray = nocFormData?.documents?.documents?.documents || [];
-     docsArray.forEach((doc) => {
-       updatedApplication.documents.push({
-       uuid: doc?.documentUid,
-       documentType: doc?.documentType,
-       documentAttachment: doc?.filestoreId
-    });
+  const coordinates = useSelector(function (state) {
+    return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
 
-    const payload={
-      Noc:{...updatedApplication}
+  const menuRef = useRef();
+  let user = Digit.UserService.getUser();
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+  const [displayMenu, setDisplayMenu] = useState(false);
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
+  const history = useHistory();
+
+  let tenantId;
+
+  if (window.location.href.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  else {
+    tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }
+
+  const goNext = async (action) => {
+    console.log("formData in parent SummaryPage", currentStepData);
+
+    onSubmit(currentStepData, action);
+  };
+
+  const onSubmit = async (data, selectedAction) => {
+    console.log("formData inside onSubmit", data);
+
+    if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
+      setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
+      return;
     }
 
-    console.log("payload in mapTONOCPayload", payload);
+    const finalPayload = mapToCLUPayload(data, selectedAction);
+    console.log("finalPayload here==>", finalPayload);
+
+    try {
+      const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
+
+      if (response?.ResponseInfo?.status === "successful") {
+        console.log("success: Update API ");
+        // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
+
+        if (window.location.href.includes("citizen")) {
+          if (selectedAction.action == "CANCEL") {
+            setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+            setTimeout(() => {
+              history.push(`/digit-ui/citizen/obps/home`);
+            }, 3000);
+          } else {
+            //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
+            console.log("We are calling citizen response page");
+            history.replace({
+              pathname: `/digit-ui/citizen/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
+              state: { data: response },
+            });
+          }
+        } else {
+          //need to check for employee side
+          console.log("we are calling employee response page");
+
+          if (selectedAction.action === "CANCEL") {
+            setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+            setTimeout(() => {
+              history.push(`/digit-ui/employee/obps/inbox`);
+            }, 3000);
+          } else {
+            //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
+            history.replace({
+              pathname: `/digit-ui/employee/obps/response/${response?.Noc?.[0]?.applicationNo}`,
+              state: { data: response },
+            });
+          }
+        }
+      } else {
+        console.error("Submission failed, not moving to next step.", res?.response);
+        setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+      }
+    } catch (error) {
+      console.log("errors here in goNext - catch block", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }
+  };
+
+  function mapToCLUPayload(cluFormData, selectedAction) {
+    console.log("cluFormData", cluFormData);
+
+    const updatedApplication = {
+      ...cluFormData?.apiData?.Clu?.[0],
+      workflow: {
+        action: selectedAction?.action || "",
+      },
+      cluDetails: {
+        ...cluFormData?.apiData?.Clu?.[0]?.cluDetails,
+        //update data with redux as we can not use old data for update api
+        additionalDetails: {
+          ...cluFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
+          applicationDetails: {
+            ...cluFormData?.applicationDetails,
+            // applicantGender: cluFormData?.applicationDetails?.applicantGender?.code || "",
+          },
+          siteDetails: {
+            ...cluFormData?.siteDetails,
+            // ulbName: cluFormData?.siteDetails?.ulbName?.name || "",
+            // roadType: cluFormData?.siteDetails?.roadType?.name || "",
+            // buildingStatus: cluFormData?.siteDetails?.buildingStatus?.name || "",
+            // isBasementAreaAvailable: cluFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
+            // district: cluFormData?.siteDetails?.district?.name || "",
+            // zone: cluFormData?.siteDetails?.zone?.name || "",
+
+            // specificationBuildingCategory: cluFormData?.siteDetails?.specificationBuildingCategory?.name || "",
+            // specificationNocType: cluFormData?.siteDetails?.specificationNocType?.name || "",
+            // specificationRestrictedArea: cluFormData?.siteDetails?.specificationRestrictedArea?.code || "",
+            // specificationIsSiteUnderMasterPlan: cluFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
+          },
+          coordinates: { ...coordinates },
+        },
+      },
+      documents: [],
+    };
+
+    const docsArray = cluFormData?.documents?.documents?.documents || [];
+    docsArray.forEach((doc) => {
+      updatedApplication.documents.push({
+        uuid: doc?.documentUid,
+        documentType: doc?.documentType,
+        documentAttachment: doc?.filestoreId,
+      });
+    });
+
+    const payload = {
+      Clu: { ...updatedApplication },
+    };
 
     return payload;
   }
@@ -114,17 +168,38 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     onBackClick(config.key, data);
   }
 
-  const onFormValueChange = (setValue = true, data) => {
-    //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
-    if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_OBPS_FORM(config.key, data));
-    }
-  };
-
   const closeToast = () => {
     setShowToast(false);
     setError("");
   };
+
+  console.log("currentStepData in StepFour", currentStepData);
+  const applicationNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo || "";
+  const businessServiceCode = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
+  console.log("applicationNo here==>", applicationNo);
+  console.log("businessServiceCode here==>", businessServiceCode);
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: applicationNo,
+    moduleCode: businessServiceCode,
+  });
+
+  console.log("workflow Details here==>", workflowDetails);
+
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
+  console.log("actions here", actions);
+
+  function onActionSelect(action) {
+    goNext(action);
+    //console.log("selectedAction here", action);
+  }
 
   const CLUSummary = Digit?.ComponentRegistryService?.getComponent("CLUSummary");
 
@@ -132,11 +207,29 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     <React.Fragment>
       <CLUSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
-       <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
-       </ActionBar>
+      <CheckBox
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
+          currentStepData?.applicationDetails?.applicantOwnerOrFirmName || "NA"
+        }). I along with with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        onChange={(e) => handleCheckBox(e)}
+        value={selectedCheckBox}
+        checked={selectedCheckBox}
+      />
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {actions && (
+        <ActionBar>
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+
+          {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+            <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+          ) : null}
+          {selectedCheckBox && <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />}
+        </ActionBar>
+      )}
+
+      {showToast && (
+        <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />
+      )}
     </React.Fragment>
   );
 };

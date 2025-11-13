@@ -277,14 +277,9 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       })
     }
     if(applicationData.status == "FIELDINSPECTION_INPROGRESS") {
-      let formdata = JSON.parse(sessionStorage.getItem("INSPECTION_DATA"));
-      formdata?.length > 0 && formdata.map((ob,ind) => {
-
-        ob.InspectionDate && ob.InspectionTime ?  submitAction({
+        submitAction({
           BPA:applicationData
-        }, nocData?.length > 0 ? nocData : false, {isStakeholder: false, bpa: true}) : closeModalNew()
-        console.log(" ob.InspectionDate && ob.InspectionTime", ob.InspectionDate , ob.InspectionTime)
-    } )
+        }, nocData?.length > 0 ? nocData : false, {isStakeholder: false, bpa: true})        
   }
   else 
   {

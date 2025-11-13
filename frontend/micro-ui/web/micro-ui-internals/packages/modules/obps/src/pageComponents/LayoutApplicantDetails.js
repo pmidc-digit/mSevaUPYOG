@@ -29,16 +29,35 @@ const LayoutApplicantDetails = (_props) => {
       menu.push({ i18nKey: `COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
     });
 
+  // useEffect(() => {
+  //   console.log("currentStepData1", currentStepData);
+  //   const formattedData = currentStepData?.applicationDetails;
+  //   if (formattedData) {
+  //     //console.log("coming here", formattedData);
+  //     Object.entries(formattedData).forEach(([key, value]) => {
+  //       setValue(key, value);
+  //     });
+  //   }
+  // }, [currentStepData, setValue]);
+
   useEffect(() => {
-    console.log("currentStepData1", currentStepData);
-    const formattedData = currentStepData?.applicationDetails;
-    if (formattedData) {
-      //console.log("coming here", formattedData);
-      Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
-      });
-    }
-  }, [currentStepData, setValue]);
+  // <CHANGE> Added comprehensive debug logs
+  console.log("[v0] LayoutApplicantDetails - Full currentStepData:", currentStepData);
+  console.log("[v0] applicationDetails direct:", currentStepData?.applicationDetails);
+  console.log("[v0] formData nested:", currentStepData?.formData?.applicationDetails);
+  
+  const formattedData = currentStepData?.applicationDetails;
+  
+  if (formattedData) {
+    console.log("[v0] Found formattedData, setting values...");
+    Object.entries(formattedData).forEach(([key, value]) => {
+      console.log(`[v0] Setting ${key}:`, value);
+      setValue(key, value);
+    });
+  } else {
+    console.log("[v0] No formattedData found!");
+  }
+}, [currentStepData, setValue]);
 
   return (
     <React.Fragment>

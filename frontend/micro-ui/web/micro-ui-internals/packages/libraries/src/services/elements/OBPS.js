@@ -188,6 +188,30 @@ export const OBPSService = {
       data: details,
       params:filters
    }),
+  LayoutCalculator: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.layoutCalculator,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+  LayoutCollectionSearch: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.layoutCollectionSearch,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+    
+
   BPAREGGetBill: (tenantId, filters = {}) =>
     Request({
       url: Urls.obps.bpaRegGetBill,

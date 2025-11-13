@@ -195,6 +195,8 @@ const Urls = {
     cluUpdate: "/clu-services/v1/clu/_update",
     cluSearch: "/clu-services/v1/clu/_search",
     cluCalculator: "/clu-calculator/v1/_calculate",
+    layoutCalculator:"/layout-calculator/v1/_calculate",
+    layoutCollectionSearch:"/collection-services/payments/layout/_search",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",

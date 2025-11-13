@@ -73,6 +73,8 @@ const EmployeeApp = ({ path }) => {
   const StakeholderInbox = Digit.ComponentRegistryService.getComponent("StakeholderInbox");
   const ApplicationDetail = Digit.ComponentRegistryService.getComponent("ObpsEmpApplicationDetail");
   const BpaApplicationDetail = Digit.ComponentRegistryService.getComponent("ObpsEmployeeBpaApplicationDetail");
+  const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
+  const LayoutResponseEmployee = Digit.ComponentRegistryService.getComponent("LayoutResponseEmployee");
   const isLocation = window.location.href.includes("bpa") || window.location.href.includes("stakeholder-inbox/stakeholder") || window.location.href.includes("application");
   const isFromNoc = window.location.href.includes("digit-ui/employee/obps/bpa/");
   const isRes = window.location.href.includes("obps/response") || window.location.href.includes("obps/stakeholder-response");
@@ -81,7 +83,9 @@ const EmployeeApp = ({ path }) => {
       {!isFromNoc && !isRes ? <div style={isLocation ? {marginLeft: "10px"} : {}}><OBPSBreadCrumbs location={location} /></div> : null}
       {isFromNoc ? <BackButton style={{ border: "none", margin: "0", padding: "0" }}>{t("CS_COMMON_BACK")}</BackButton>: null}
       <Switch>
+        <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
         <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
         <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />

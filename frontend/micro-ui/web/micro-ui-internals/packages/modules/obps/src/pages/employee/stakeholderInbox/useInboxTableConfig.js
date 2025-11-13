@@ -41,10 +41,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
                 accessor: (row) => row?.assignedOwner,
             },
-            {
-                Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-                accessor: row => GetStatusCell(row?.sla),
-            }
+            // {
+            //     Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
+            //     accessor: row => GetStatusCell(row?.sla),
+            // }
         ]
     })
 

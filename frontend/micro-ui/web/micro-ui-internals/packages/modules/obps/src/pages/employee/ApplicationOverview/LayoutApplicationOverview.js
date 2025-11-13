@@ -1,3 +1,5 @@
+
+
 import {
   Header,
   Row,
@@ -12,11 +14,16 @@ import {
   Toast,
   ConnectingCheckPoints,
   CheckPoint,
+  MultiLink,
 } from "@mseva/digit-ui-react-components"
 import React, { useEffect, useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams, useHistory } from "react-router-dom"
 import LayoutModal from "../../../pageComponents/LayoutModal"
+import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails"
+import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocumentTableView"
+import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument"
+import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData"
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint)
@@ -44,7 +51,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
           srcs={thumbnailsToShow.thumbs}
           onClick={(src, idx) => {
             const fullImage = thumbnailsToShow.fullImage?.[idx] || src
-            Digit.Utils.zoomImage(fullImage)
+            Digit.Utils.zoomImage(fullImage) // Digit is now declared
           }}
         />
       )}
@@ -52,8 +59,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {wfDocuments?.length > 0 && (
         <div>
           <div>
-            {/* <LayoutDocument value={{ workflowDocs: wfDocuments}} index={index}/> */}
-            <p>{t("LAYOUT_WORKFLOW_DOCUMENTS")}</p>
+            <NOCDocument value={{ workflowDocs: wfDocuments }} index={index} />
           </div>
         </div>
       )}
@@ -78,7 +84,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const [showToast, setShowToast] = useState(null)
   const [error, setError] = useState(null)
 
-  const [showErrorToast, setShowErrorToastt] = useState(null)
+  const [showErrorToast, setShowErrorToast] = useState(null)
   const [errorOne, setErrorOne] = useState(null)
   const [displayData, setDisplayData] = useState({})
   const [isDetailsLoading, setIsDetailsLoading] = useState(false)
@@ -86,6 +92,13 @@ const LayoutEmployeeApplicationOverview = () => {
   const [getEmployees, setEmployees] = useState([])
   const [getLoader, setLoader] = useState(false)
   const [getWorkflowService, setWorkflowService] = useState([])
+
+  const [showOptions, setShowOptions] = useState(false)
+
+  // States for payment summary data
+  const [calculationData, setCalculationData] = useState(null)
+  const [billData, setBillData] = useState(null)
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false)
 
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNumber: id }, tenantId, {
     cacheTime: 0,
@@ -96,7 +109,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "Layout_mcUp", // Layout business service
+    moduleCode: "Layout_mcUp",
   })
 
   console.log("workflowDetails here=>", workflowDetails)
@@ -120,24 +133,15 @@ const LayoutEmployeeApplicationOverview = () => {
     })()
   }, [tenantId])
 
-  const [displayMenu, setDisplayMenu] = useState(false)
-  const [selectedAction, setSelectedAction] = useState(null)
-  const [showModal, setShowModal] = useState(false)
-
-  const closeMenu = () => {
-    setDisplayMenu(false)
-  }
-
-  const closeToast = () => {
-    setShowToast(null)
-  }
-
-  const closeToastOne = () => {
-    setShowErrorToastt(null)
-  }
-
   let user = Digit.UserService.getUser()
   const menuRef = useRef()
+  const [displayMenu, setDisplayMenu] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [selectedAction, setSelectedAction] = useState(null)
+
+  const closeMenu = () => setDisplayMenu(false)
+  const closeToast = () => setShowToast(null)
+  const closeToastOne = () => setShowErrorToast(null)
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
 
@@ -171,6 +175,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
+    console.log(layoutObject, "layoutObject---in---useEffect")
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
@@ -189,8 +194,51 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   }, [applicationDetails?.Layout])
 
-    useEffect(() => {
-    console.log("[v0] useEffect triggered - id changed to:", id)
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "layout",
+      consumerCodes: id,
+      isEmployee: true,
+    },
+    { enabled: id ? true : false },
+  )
+
+  const { data: storeData } = Digit.Hooks.useStore.getInitData()
+  const { tenants } = storeData || {}
+
+  const handleDownloadPdf = async () => {
+    const Property = applicationDetails?.Layout?.[0]
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId)
+    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t)
+    Digit.Utils.pdf.generate(acknowledgementData)
+  }
+
+  async function getRecieptSearch({ tenantId, payments, ...params }) {
+    let response = { filestoreIds: [payments?.fileStoreId] }
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "layout-receipt")
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
+    window.open(fileStore[response?.filestoreIds[0]], "_blank")
+  }
+
+  const dowloadOptions = []
+  if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
+    dowloadOptions.push({
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: handleDownloadPdf,
+    })
+
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      })
+    }
+  }
+
+  useEffect(() => {
+    console.log(" useEffect triggered - id changed to:", id)
 
     if (workflowDetails) {
       workflowDetails.revalidate()
@@ -199,52 +247,26 @@ const LayoutEmployeeApplicationOverview = () => {
     if (data) {
       data.revalidate()
     }
-  }, [id]) // Added id to dependency array
-
-  function onActionSelect(action) {
-    console.log("selected action", action)
-    const appNo = applicationDetails?.Layout?.[0]?.applicationNumber
-
-    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action)
-    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState)
-    setEmployees(filterRoles?.[0]?.actions)
-
-    const payload = {
-      Licenses: [action],
-    }
-
-    if (action?.action == "EDIT") {
-      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`)
-    } else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
-    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
-      submitAction(payload)
-    } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/Layout_mcUp/${appNo}/${tenantId}?tenantId=${tenantId}`)
-    } else {
-      setShowModal(true)
-      setSelectedAction(action)
-    }
-  }
+  }, [id])
 
   const submitAction = async (data) => {
-    console.log("[v0] submitAction called with data:", data)
+    console.log(" submitAction called with data:", data)
 
     try {
       const filtData = data?.Licenses?.[0]
-      console.log("[v0] filtData:", filtData)
+      console.log(" filtData:", filtData)
 
       if (!filtData) {
-        console.error("[v0] ERROR: filtData is undefined")
+        console.error(" ERROR: filtData is undefined")
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
         return
       }
 
       const layoutObject = applicationDetails?.Layout?.[0]
-      console.log("[v0] layoutObject:", layoutObject)
+      console.log(" layoutObject:", layoutObject)
 
       if (!layoutObject) {
-        console.error("[v0] ERROR: layoutObject is undefined")
+        console.error(" ERROR: layoutObject is undefined")
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
         return
       }
@@ -263,16 +285,17 @@ const LayoutEmployeeApplicationOverview = () => {
         Layout: updatedApplicant,
       }
 
-      console.log("[v0] finalPayload:", JSON.stringify(finalPayload, null, 2))
+      console.log(" finalPayload:", JSON.stringify(finalPayload, null, 2))
 
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId)
-      console.log("[v0] API response:", response)
+      console.log(" API response:", response)
 
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
           setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
           workflowDetails.revalidate()
           setSelectedAction(null)
+          setShowModal(false)
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           console.log("We are calling employee response page")
           history.replace({
@@ -283,16 +306,17 @@ const LayoutEmployeeApplicationOverview = () => {
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
           workflowDetails.revalidate()
           setSelectedAction(null)
+          setShowModal(false)
         }
       } else {
-        console.error("[v0] API response not successful:", response)
+        console.error(" API response not successful:", response)
         setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })
         setSelectedAction(null)
       }
     } catch (err) {
-      console.error("[v0] ERROR in submitAction:", err)
-      console.error("[v0] Error message:", err?.message)
-      console.error("[v0] Error stack:", err?.stack)
+      console.error(" ERROR in submitAction:", err)
+      console.error(" Error message:", err?.message)
+      console.error(" Error stack:", err?.stack)
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
     }
   }
@@ -302,8 +326,34 @@ const LayoutEmployeeApplicationOverview = () => {
     setShowModal(false)
   }
 
+  function onActionSelect(action) {
+    console.log("selected action", action)
+    const appNo = applicationDetails?.Layout?.[0]?.applicationNo
+
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action)
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState)
+    setEmployees(filterRoles?.[0]?.actions)
+
+    const payload = {
+      Licenses: [action],
+    }
+
+    if (action?.action == "EDIT") {
+      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`)
+    } else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
+    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      submitAction(payload)
+    } else if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`)
+    } else {
+      setShowModal(true)
+      setSelectedAction(action)
+    }
+  }
+
   const getFloorLabel = (index) => {
-    if (index === 0) return t("LAYOUT_GROUND_FLOOR_AREA_LABEL")
+    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL")
 
     const floorNumber = index
     const lastDigit = floorNumber % 10
@@ -316,15 +366,23 @@ const LayoutEmployeeApplicationOverview = () => {
       else if (lastDigit === 3) suffix = "rd"
     }
 
-    return `${floorNumber}${suffix} ${t("LAYOUT_FLOOR_AREA_LABEL")}`
+    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`
   }
 
   console.log("displayData here", displayData)
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
+      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
+        {dowloadOptions && dowloadOptions.length > 0 && (
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions}
+          />
+        )}
       </div>
 
       <Card>
@@ -335,21 +393,20 @@ const LayoutEmployeeApplicationOverview = () => {
             style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
           >
             <StatusTable>
-              <Row label={t("LAYOUT_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("LAYOUT_FIRM_Application")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("LAYOUT_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
+              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
+              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
               <Row
-                label={t("LAYOUT_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
+                label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
                 text={detail?.applicantFatherHusbandName || "N/A"}
               />
-              <Row label={t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
-              <Row label={t("LAYOUT_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
+              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
+              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
               <Row
-                label={t("LAYOUT_APPLICANT_GENDER_LABEL")}
+                label={t("NOC_APPLICANT_GENDER_LABEL")}
                 text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"}
               />
-              <Row label={t("LAYOUT_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
-              <Row label={t("LAYOUT_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
+              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
+              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
             </StatusTable>
           </div>
         ))}
@@ -362,17 +419,11 @@ const LayoutEmployeeApplicationOverview = () => {
               <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  <Row label={t("LAYOUT_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
-                  <Row label={t("LAYOUT_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
-                  <Row
-                    label={t("LAYOUT_PROFESSIONAL_REGISTRATION_ID_LABEL")}
-                    text={detail?.professionalRegId || "N/A"}
-                  />
-                  <Row
-                    label={t("LAYOUT_PROFESSIONAL_MOBILE_NO_LABEL")}
-                    text={detail?.professionalMobileNumber || "N/A"}
-                  />
-                  <Row label={t("LAYOUT_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
             </Card>
@@ -387,34 +438,31 @@ const LayoutEmployeeApplicationOverview = () => {
             style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
           >
             <StatusTable>
-              <Row label={t("LAYOUT_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-              <Row label={t("LAYOUT_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
-              <Row label={t("LAYOUT_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
-              <Row label={t("LAYOUT_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
-              <Row label={t("LAYOUT_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
-              <Row label={t("LAYOUT_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
-              <Row label={t("LAYOUT_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
+              <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
+              <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
+              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
+              <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
+              <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
+              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
+              <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
               <Row
-                label={t("LAYOUT_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}
-                text={detail?.areaLeftForRoadWidening || "N/A"}
-              />
-              <Row
-                label={t("LAYOUT_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}
+                label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}
                 text={detail?.netPlotAreaAfterWidening || "N/A"}
               />
-              <Row label={t("LAYOUT_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
-              <Row label={t("LAYOUT_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
+              <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
+              <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row
-                label={t("LAYOUT_BUILDING_STATUS_LABEL")}
+                label={t("NOC_BUILDING_STATUS_LABEL")}
                 text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"}
               />
               <Row
-                label={t("LAYOUT_IS_BASEMENT_AREA_PRESENT_LABEL")}
+                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
                 text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
               />
 
               {detail?.buildingStatus == "Built Up" && (
-                <Row label={t("LAYOUT_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"} />
+                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"} />
               )}
 
               {detail?.buildingStatus == "Built Up" &&
@@ -423,16 +471,16 @@ const LayoutEmployeeApplicationOverview = () => {
                 ))}
 
               {detail?.buildingStatus == "Built Up" && (
-                <Row label={t("LAYOUT_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"} />
+                <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"} />
               )}
 
-              <Row label={t("LAYOUT_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("LAYOUT_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
-              <Row label={t("LAYOUT_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
-              <Row label={t("LAYOUT_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
-              <Row label={t("LAYOUT_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
-              <Row label={t("LAYOUT_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("LAYOUT_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+              <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
+              <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
+              <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
+              <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
+              <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
             </StatusTable>
           </div>
         ))}
@@ -446,21 +494,21 @@ const LayoutEmployeeApplicationOverview = () => {
             style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
           >
             <StatusTable>
-              <Row label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
+              <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
               <Row
-                label={t("LAYOUT_BUILDING_CATEGORY_LABEL")}
+                label={t("NOC_BUILDING_CATEGORY_LABEL")}
                 text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
               />
               <Row
-                label={t("LAYOUT_LAYOUT_TYPE_LABEL")}
+                label={t("LAYOUT_TYPE_LABEL")}
                 text={detail?.specificationLayoutType?.name || detail?.specificationLayoutType || "N/A"}
               />
               <Row
-                label={t("LAYOUT_RESTRICTED_AREA_LABEL")}
+                label={t("NOC_RESTRICTED_AREA_LABEL")}
                 text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
               />
               <Row
-                label={t("LAYOUT_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
+                label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
                 text={
                   detail?.specificationIsSiteUnderMasterPlan?.code ||
                   detail?.specificationIsSiteUnderMasterPlan ||
@@ -490,18 +538,25 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       <Card>
-        <CardSubHeader>{t("LAYOUT_TITLE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
         <StatusTable>
-          {displayData?.Documents?.length > 0 ? (
-            <div>
-              {displayData.Documents.map((doc, index) => (
-                <Row key={index} label={doc.documentType || `Document ${index + 1}`} text={doc.fileName || "N/A"} />
-              ))}
-            </div>
-          ) : (
-            <div>{t("LAYOUT_NO_DOCUMENTS_MSG")}</div>
-          )}
+          {displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}
         </StatusTable>
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+            }}
+          />
+        )}
       </Card>
 
       {workflowDetails?.data?.timeline && (
@@ -572,6 +627,7 @@ const LayoutEmployeeApplicationOverview = () => {
           error={showToast?.error}
           warning={showToast?.warning}
           label={t(showToast?.message)}
+          isDleteBtn={true}
           onClose={closeToast}
         />
       )}

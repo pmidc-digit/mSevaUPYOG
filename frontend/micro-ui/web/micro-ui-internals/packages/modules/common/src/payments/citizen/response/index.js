@@ -505,8 +505,14 @@ const WrapPaymentComponent = (props) => {
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
       let application = {
-        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
-      };
+hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map(app => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
+              return new Date(a.bookingDate) - new Date(b.bookingDate);
+            })
+          };
+        })      };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
       const generatePdfKeyForTL = "chb-permissionletter";
       if (!fileStoreId) {
@@ -1619,8 +1625,14 @@ const WrapPaymentZeroComponent = (props) => {
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
       let application = {
-        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
-      };
+hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map(app => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
+              return new Date(a.bookingDate) - new Date(b.bookingDate);
+            })
+          };
+        })      };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
       const generatePdfKeyForTL = "chb-permissionletter";
       if (!fileStoreId) {

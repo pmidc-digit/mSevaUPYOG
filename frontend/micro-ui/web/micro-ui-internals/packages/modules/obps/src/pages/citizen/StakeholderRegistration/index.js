@@ -155,7 +155,7 @@ const payload = {
 
 
 // const createApplication = async (selectedAction) => {
-//   console.log("[v0] createApplication called with action:", selectedAction)
+//   console.log("  createApplication called with action:", selectedAction)
   
 //   // Extract only serializable properties from workflow action
 //   let workflowAction = null
@@ -172,7 +172,7 @@ const payload = {
 //     }
 //   }
   
-//   console.log("[v0] Passing workflow action to acknowledgement:", workflowAction)
+//   console.log("  Passing workflow action to acknowledgement:", workflowAction)
   
 //   // Pass the workflow action to acknowledgement page via history state
 //   history.push({

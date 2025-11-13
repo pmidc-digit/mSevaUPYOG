@@ -87,10 +87,12 @@ const LayoutApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({})
 
-  const { isLoading, data } = useLayoutSearchApplication({ applicationNumber: id }, tenantId, { cacheTime: 0 })
+// const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
   const applicationDetails = data?.resData
 
-  console.log(applicationDetails, "DATALAYOUT")
+  console.log(applicationDetails,data, "DATALAYOUT")
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}

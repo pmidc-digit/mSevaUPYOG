@@ -100,7 +100,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const [billData, setBillData] = useState(null)
   const [isLoadingPayment, setIsLoadingPayment] = useState(false)
 
-  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNumber: id }, tenantId, {
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
   })
   const applicationDetails = data?.resData

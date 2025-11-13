@@ -28,7 +28,7 @@ const MyApplication = () => {
   const requestor = userInfo?.info?.mobileNumber;
 
   console.log(requestor, "PPPP");
-
+const userInfoforLayout = Digit.UserService.getUser()?.info || {};
   // layout application here 
 
 
@@ -55,27 +55,62 @@ const MyApplication = () => {
 
 
 
-    const searchLayoutApplications = async () => {
-    try {
-      setIsLayoutLoading(true)
-      const searchParams = {
-        mobileNumber: requestor,
+  //   const searchLayoutApplications = async () => {
+  //   try {
+  //     setIsLayoutLoading(true)
+  //     const searchParams = {
+  //       mobileNumber: requestor,
+  //     }
+
+  //     const response = await Digit.OBPSService.LayoutSearch(tenantId, searchParams)
+  //     console.log("  Layout search response citizen all application:", response)
+
+  //     if (response?.Layout) {
+  //       setLayoutData(response.Layout)
+  //     }
+  //   } catch (error) {
+  //     console.error("  Layout search error:", error)
+  //     setLayoutData([])
+  //   } finally {
+  //     setIsLayoutLoading(false)
+  //   }
+  // }
+
+  const searchListDefaultValues = {
+    sortBy: "createdTime",
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    offset: 0,
+    sortOrder: "DESC",
+    mobileNumber:""
+  };
+
+// <CHANGE> Fixed destructuring to match what the hook actually returns
+const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(
+  {
+    ...searchListDefaultValues,
+    mobileNumber: userInfoforLayout?.mobileNumber || ""
+  },
+  tenantId
+);
+
+// <CHANGE> Add debug logs to see what the hook returns
+console.log("[v0] Layout hook response:", { isLoadinglayout, datalayout, isError, error });
+console.log("[v0] Layout data structure:", datalayout);
+console.log("[v0] Layout search params:", {
+  ...searchListDefaultValues,
+  mobileNumber: userInfoforLayout?.mobileNumber || "",
+  tenantId
+});
+
+
+    console.log("layout data here==>", datalayout);
+
+
+    useEffect(() => {
+      if(datalayout){
+        datalayout.revalidate();
       }
-
-      const response = await Digit.OBPSService.LayoutSearch(tenantId, searchParams)
-      console.log("  Layout search response:", response)
-
-      if (response?.Layout) {
-        setLayoutData(response.Layout)
-      }
-    } catch (error) {
-      console.error("  Layout search error:", error)
-      setLayoutData([])
-    } finally {
-      setIsLayoutLoading(false)
-    }
-  }
-
+    }, []);
 
   console.log(bpaData, "BBBB");
   const getBPAREGFormData = (data) => {
@@ -166,14 +201,14 @@ const MyApplication = () => {
     };
   }, []);
 
-   useEffect(() => {
-    if (requestor) {
-      searchLayoutApplications()
-    }
-  }, [requestor])
+  //  useEffect(() => {
+  //   if (requestor) {
+  //     searchLayoutApplications()
+  //   }
+  // }, [requestor])
 
   useEffect(() => {
-    if (!isLoading && !isBpaSearchLoading && !isLayoutLoading) {
+    if (!isLoading && !isBpaSearchLoading && !isLoadinglayout) {
       let searchConvertedArray = [];
       let sortConvertedArray = [];
       if (data?.Licenses?.length) {
@@ -212,21 +247,31 @@ const MyApplication = () => {
         });
       }
 
-      if (layoutData?.length) {
-        layoutData.forEach((layout) => {
+    // <CHANGE> Accessing layout data from the correct property: datalayout.data instead of datalayout.Layout
+     // <CHANGE> Accessing the nested Applications object from layout data
+      if (datalayout?.data?.length) {
+        console.log("[v0] Processing layout data, count:", datalayout.data.length);
+        datalayout.data.forEach((layoutWrapper) => {
+          // <CHANGE> Extract the actual application from Applications property
+          const layout = layoutWrapper.Applications;
           layout.sortNumber = 0
           layout.modifiedTime = layout.auditDetails?.lastModifiedTime || null
           layout.type = "LAYOUT"
           searchConvertedArray.push(layout)
         })
       }
-
       // useEffect(() => {
       //   if (!isBpaSearchLoading) {
       //     console.log("Raw BPA Data ===>", bpaData);
       //     console.log("BPA Array ===>", bpaData?.BPA);
       //   }
       // }, [bpaData, isBpaSearchLoading]);
+
+      console.log("[v0] All hook data:", { 
+    datalayout, 
+    layoutArray: datalayout?.Layout,
+    rawLayout: datalayout 
+  });
 
       sortConvertedArray = [].slice.call(searchConvertedArray).sort(function (a, b) {
         return new Date(b.modifiedTime) - new Date(a.modifiedTime) || a.sortNumber - b.sortNumber;
@@ -236,9 +281,9 @@ const MyApplication = () => {
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, isLayoutLoading, bpaData, data, layoutData]);
+  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, isLoadinglayout, bpaData, data, layoutData]);
 
-  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isLayoutLoading) {
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isLoadinglayout) {
     return <Loader />;
   }
 
@@ -254,9 +299,9 @@ const MyApplication = () => {
       count = count + bpaDataLength;
     }
 
-     if (typeof layoutDataLength == "number") {
-      count = count + layoutDataLength
-    }
+    if (typeof layoutDataLength == "number") {
+        count = count + layoutDataLength;
+      }
 
     if (count > 0) return `(${count})`;
     else return "";
@@ -281,7 +326,7 @@ const MyApplication = () => {
   return (
     <Fragment>
   
-      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
+      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length, datalayout?.data?.length)}`}</Header>
       <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
         <span className="link">
@@ -289,7 +334,7 @@ const MyApplication = () => {
         </span>
       </div>
 
-
+{console.log(finalData, "VVV")}
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           return (
@@ -362,11 +407,11 @@ const MyApplication = () => {
             <Card key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
               <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={t("LAYOUT_APPLICATION")} />
-              <KeyNote keyValue={t("BPA_LAYOUT_TYPE_LABEL")} note={application?.layoutType || "LAYOUT"} />
+              <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
               <KeyNote
                 keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
-                noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
+                note={t(`${application?.applicationStatus || application?.status}`)}
+                noteStyle={application?.applicationStatus === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
               />
               <Link
                 to={{

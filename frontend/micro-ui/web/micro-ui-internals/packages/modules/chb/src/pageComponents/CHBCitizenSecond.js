@@ -117,7 +117,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         communityHallCode: getHallDetails?.[0]?.communityHallId || "",
         communityHallName: data?.siteId?.name,
         purpose: {
-          purpose: data?.purpose?.code,
+          purpose: data?.purpose,
         },
         amount: finalAmount,
         specialCategory: { category: data?.specialCategory?.code },
@@ -242,6 +242,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      // setValue("endDate", "");
+                      // reset({ endDate: "" });
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -585,6 +587,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     defaultValue={null}
                     render={(props) => (
                       <Dropdown
+                        t={t}
                         style={{ marginBottom: 0 }}
                         className="form-field"
                         select={props.onChange}

@@ -13,6 +13,7 @@ import {
   UPDATE_LayoutNewApplication_FORM,
   UPDATE_LayoutNewApplication_CoOrdinates,
 } from "../../redux/actions/LayoutNewApplicationActions"
+
 import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components"
 
 
@@ -72,12 +73,6 @@ const createEmployeeConfig = [
   },
 ]
 
-// const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
-//   return {
-//     ...item,
-//     currStepConfig: layoutStepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber),
-//   }
-// })
 
 const EditLayoutApplication = () => {
   const { id } = useParams()
@@ -114,21 +109,14 @@ const EditLayoutApplication = () => {
   }
   console.log("tenantId here", tenantId)
 
-  // const { isLoading, data } = Digit.Hooks.obps.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId)
-  // const applicationDetails = data?.data?.[0]?.resData
-  // console.log("applicationDetails here==>", data)
-
-  // const layoutObject = applicationDetails?.Layout?.[0] || {}
-  // const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails || {}
-  // const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails || {}
-  // const documents = layoutObject?.documents?.filter((doc) => doc?.documentUid || doc?.documentType) || []
-  // const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates || {}
-
 
   const { isLoading, data } = Digit.Hooks.obps.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId)
 
 // <CHANGE> Fixed data extraction paths to match actual API response structure
 const layoutObject = data?.data?.[0]?.Applications
+console.log(layoutObject, "LAYOUT OBJECTTTT");
+console.log(data, "LAYOUT data");
+console.log(data, "LAYOUT data");
 const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
 const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
 const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
@@ -210,173 +198,153 @@ console.log("[v0] Extracted data:", { layoutObject, applicantDetails, siteDetail
     }
   }, [fetchedLocalities, siteDetails?.zone])
 
-  // useEffect(() => {
-  //   // Only reset and populate form when data is loaded and not already populated
-  //   if (!isLoading && !isBuildingTypeLoading && layoutObject?.layoutDetails && !isUlbListLoading && !formData.apiData) {
-  //     dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM())
-
-  //     const formattedDocuments = {
-  //       documents: {
-  //         documents: documents?.map((doc) => ({
-  //           documentType: doc?.documentType || "",
-  //           uuid: doc?.uuid || "",
-  //           documentUid: doc?.documentUid || "",
-  //           documentAttachment: doc?.documentAttachment || "",
-  //           filestoreId: doc?.uuid || "",
-  //         })),
-  //       },
-  //     }
-
-  //     Object.entries(coordinates || {}).forEach(([key, value]) => {
-  //       dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value))
-  //     })
-
-  //     const updatedApplicantDetails = {
-  //       ...applicantDetails,
-  //       applicantGender: menu.find(
-  //         (obj) =>
-  //           obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender,
-  //       ),
-  //     }
-
-  //     const districtObj = cities.find(
-  //       (obj) => obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district,
-  //     )
-  //     setSelectedDistrict(districtObj)
-
-  //     const updatedSiteDetails = {
-  //       ...siteDetails,
-  //       ulbName: ulbListOptions?.find(
-  //         (obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName,
-  //       ),
-  //       roadType: roadType?.find(
-  //         (obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType,
-  //       ),
-  //       buildingStatus: buildingType?.find(
-  //         (obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus,
-  //       ),
-  //       isBasementAreaAvailable: options.find(
-  //         (obj) =>
-  //           obj.code === siteDetails?.isBasementAreaAvailable?.code ||
-  //           obj.code === siteDetails?.isBasementAreaAvailable,
-  //       ),
-
-  //       district: districtObj,
-
-  //       specificationBuildingCategory: buildingCategory?.find(
-  //         (obj) =>
-  //           obj.name === siteDetails?.specificationBuildingCategory?.name ||
-  //           obj.name === siteDetails?.specificationBuildingCategory,
-  //       ),
-  //       specificationLayoutType: layoutType?.find(
-  //         (obj) =>
-  //           obj.name === siteDetails?.specificationLayoutType?.name ||
-  //           obj.name === siteDetails?.specificationLayoutType,
-  //       ),
-  //       specificationRestrictedArea: options.find(
-  //         (obj) =>
-  //           obj.code === siteDetails?.specificationRestrictedArea?.code ||
-  //           obj.code === siteDetails?.specificationRestrictedArea,
-  //       ),
-  //       specificationIsSiteUnderMasterPlan: options.find(
-  //         (obj) =>
-  //           obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
-  //           obj.code === siteDetails?.specificationIsSiteUnderMasterPlan,
-  //       ),
-  //     }
-
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails))
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails))
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments))
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("apiData", applicantDetails))
-  //   }
-  // }, [isLoading, isBuildingTypeLoading, isUlbListLoading, layoutObject?.layoutDetails, formData.apiData])
 
 
-  useEffect(() => {
-  // <CHANGE> Added comprehensive checks for all required data
-  const hasDropdownData = menu.length > 0 && cities.length > 0 && ulbListOptions && buildingType && roadType && buildingCategory && layoutType
-  const hasApiData = !isLoading && !isBuildingTypeLoading && !isUlbListLoading && layoutObject?.layoutDetails
-  const shouldPopulateForm = hasApiData && hasDropdownData && !formData.apiData
+//   useEffect(() => {
+//   // <CHANGE> Added comprehensive checks for all required data
+//   const hasDropdownData = menu.length > 0 && cities.length > 0 && ulbListOptions && buildingType && roadType && buildingCategory && layoutType
+//   const hasApiData = !isLoading && !isBuildingTypeLoading && !isUlbListLoading && layoutObject?.layoutDetails
+//   const shouldPopulateForm = hasApiData && hasDropdownData && !formData.apiData
   
-  if (shouldPopulateForm) {
-    dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM())
-     const formattedDocuments = {
-        documents: {
-          documents: documents?.map((doc) => ({
-            documentType: doc?.documentType || "",
-            uuid: doc?.uuid || "",
-            documentUid: doc?.documentUid || "",
-            documentAttachment: doc?.documentAttachment || "",
-            filestoreId: doc?.uuid || "",
-          })),
-        },
-      }
+//   if (shouldPopulateForm) {
+//     dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM())
+//      const formattedDocuments = {
+//         documents: {
+//           documents: documents?.map((doc) => ({
+//             documentType: doc?.documentType || "",
+//             uuid: doc?.uuid || "",
+//             documentUid: doc?.documentUid || "",
+//             documentAttachment: doc?.documentAttachment || "",
+//             filestoreId: doc?.uuid || "",
+//           })),
+//         },
+//       }
 
-      Object.entries(coordinates || {}).forEach(([key, value]) => {
-        dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value))
-      })
+//       Object.entries(coordinates || {}).forEach(([key, value]) => {
+//         dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value))
+//       })
 
-      const updatedApplicantDetails = {
-        ...applicantDetails,
-        applicantGender: menu.find(
-          (obj) =>
-            obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender,
-        ),
-      }
+//       const updatedApplicantDetails = {
+//         ...applicantDetails,
+//         applicantGender: menu.find(
+//           (obj) =>
+//             obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender,
+//         ),
+//       }
 
-      const districtObj = cities.find(
-        (obj) => obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district,
-      )
-      setSelectedDistrict(districtObj)
+//       const districtObj = cities.find(
+//         (obj) => obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district,
+//       )
+//       setSelectedDistrict(districtObj)
 
-      const updatedSiteDetails = {
-        ...siteDetails,
-        ulbName: ulbListOptions?.find(
-          (obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName,
-        ),
-        roadType: roadType?.find(
-          (obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType,
-        ),
-        buildingStatus: buildingType?.find(
-          (obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus,
-        ),
-        isBasementAreaAvailable: options.find(
-          (obj) =>
-            obj.code === siteDetails?.isBasementAreaAvailable?.code ||
-            obj.code === siteDetails?.isBasementAreaAvailable,
-        ),
+//       const updatedSiteDetails = {
+//         ...siteDetails,
+//         ulbName: ulbListOptions?.find(
+//           (obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName,
+//         ),
+//         roadType: roadType?.find(
+//           (obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType,
+//         ),
+//         buildingStatus: buildingType?.find(
+//           (obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus,
+//         ),
+//         isBasementAreaAvailable: options.find(
+//           (obj) =>
+//             obj.code === siteDetails?.isBasementAreaAvailable?.code ||
+//             obj.code === siteDetails?.isBasementAreaAvailable,
+//         ),
 
-        district: districtObj,
+//         district: districtObj,
 
-        specificationBuildingCategory: buildingCategory?.find(
-          (obj) =>
-            obj.name === siteDetails?.specificationBuildingCategory?.name ||
-            obj.name === siteDetails?.specificationBuildingCategory,
-        ),
-        specificationLayoutType: layoutType?.find(
-          (obj) =>
-            obj.name === siteDetails?.specificationLayoutType?.name ||
-            obj.name === siteDetails?.specificationLayoutType,
-        ),
-        specificationRestrictedArea: options.find(
-          (obj) =>
-            obj.code === siteDetails?.specificationRestrictedArea?.code ||
-            obj.code === siteDetails?.specificationRestrictedArea,
-        ),
-        specificationIsSiteUnderMasterPlan: options.find(
-          (obj) =>
-            obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
-            obj.code === siteDetails?.specificationIsSiteUnderMasterPlan,
-        ),
-      }
+//         specificationBuildingCategory: buildingCategory?.find(
+//           (obj) =>
+//             obj.name === siteDetails?.specificationBuildingCategory?.name ||
+//             obj.name === siteDetails?.specificationBuildingCategory,
+//         ),
+//         specificationLayoutType: layoutType?.find(
+//           (obj) =>
+//             obj.name === siteDetails?.specificationLayoutType?.name ||
+//             obj.name === siteDetails?.specificationLayoutType,
+//         ),
+//         specificationRestrictedArea: options.find(
+//           (obj) =>
+//             obj.code === siteDetails?.specificationRestrictedArea?.code ||
+//             obj.code === siteDetails?.specificationRestrictedArea,
+//         ),
+//         specificationIsSiteUnderMasterPlan: options.find(
+//           (obj) =>
+//             obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
+//             obj.code === siteDetails?.specificationIsSiteUnderMasterPlan,
+//         ),
+//       }
 
-      dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails))
-      dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails))
-      dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments))
-      dispatch(UPDATE_LayoutNewApplication_FORM("apiData", applicantDetails))
+//       dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails))
+//       dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails))
+//       dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments))
+//       dispatch(UPDATE_LayoutNewApplication_FORM("apiData", applicantDetails))
+//   }
+// }, [isLoading, isBuildingTypeLoading, isUlbListLoading, layoutObject?.layoutDetails, formData.apiData, menu, cities, ulbListOptions, buildingType, roadType, buildingCategory, layoutType])
+
+
+
+useEffect(() => {
+  // <CHANGE> Reset form on load
+  dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
+  
+  const hasApiData = !isLoading && !isBuildingTypeLoading && !isUlbListLoading && layoutObject?.layoutDetails;
+  
+  if(hasApiData){
+    console.log("[v0] Extracted data:", { applicantDetails, siteDetails, documents, coordinates });
+    
+    // <CHANGE> Format documents
+    const formattedDocuments = {
+      documents: {
+        documents: documents?.map((doc) => ({
+          documentType: doc?.documentType || "",
+          uuid: doc?.uuid || "",
+          documentUid: doc?.documentUid || "",
+          documentAttachment: doc?.documentAttachment || "",
+          filestoreId: doc?.uuid || ""
+        })),
+      },
+    };
+
+    // <CHANGE> Dispatch coordinates
+    Object.entries(coordinates || {}).forEach(([key, value]) => {
+      dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value));
+    });
+
+    // <CHANGE> Match dropdowns for applicant details
+    const updatedApplicantDetails = {
+      ...applicantDetails,
+      applicantGender: menu?.find((obj) => (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
+    };
+
+    // <CHANGE> Set district for zone loading
+    const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
+    if (districtObj) setSelectedDistrict(districtObj);
+
+    // <CHANGE> Match all dropdowns for site details
+    const updatedSiteDetails = {
+      ...siteDetails,
+      ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
+      roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
+      buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
+      isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
+      district: districtObj,
+      specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
+      specificationLayoutType: layoutType?.find((obj) => (obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType)),
+      specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
+      specificationIsSiteUnderMasterPlan: options?.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan)),
+    };
+  
+    // <CHANGE> Dispatch all data to Redux store
+    dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
+    dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
+    dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments));
+    dispatch(UPDATE_LayoutNewApplication_FORM("apiData", layoutObject));
   }
-}, [isLoading, isBuildingTypeLoading, isUlbListLoading, layoutObject?.layoutDetails, formData.apiData, menu, cities, ulbListOptions, buildingType, roadType, buildingCategory, layoutType])
+}, [isLoading, layoutObject, isBuildingTypeLoading, isUlbListLoading]);
   const handleSubmit = (dataGet) => {}
 
 

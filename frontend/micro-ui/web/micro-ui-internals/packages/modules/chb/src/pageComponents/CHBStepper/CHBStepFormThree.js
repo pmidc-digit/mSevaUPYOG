@@ -9,7 +9,9 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
   const checkFormData = useSelector((state) => state.chb.CHBApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {

@@ -181,6 +181,7 @@ const ChallanStepperForm = () => {
         action: "SUBMIT",
       },
     };
+    console.log("challana", Challan);
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       setLoader(false);
@@ -403,6 +404,7 @@ const ChallanStepperForm = () => {
                     style={{ marginBottom: 0, width: "100%" }}
                     value={props.value}
                     error={errors?.name?.message}
+                    disable={true}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}

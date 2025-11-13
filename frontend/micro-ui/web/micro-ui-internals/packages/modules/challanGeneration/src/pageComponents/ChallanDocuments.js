@@ -1,6 +1,7 @@
 import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
+import EXIF from "exif-js";
 
 const ChallanDocuments = ({
   t,
@@ -16,7 +17,7 @@ const ChallanDocuments = ({
   error,
   setError,
 }) => {
-  const [documents, setDocuments] = useState(formData?.documents?.documents);
+  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   // const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -45,6 +46,10 @@ const ChallanDocuments = ({
     if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
+
+  useEffect(() => {
+    console.log("documents check again", documents);
+  }, [documents]);
 
   return (
     <div>
@@ -104,8 +109,76 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    setFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileType = file.type.toLowerCase();
+
+    // ✅ Case 1: Handle image files with EXIF
+    if (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png")) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          EXIF.getData(img, function () {
+            const lat = EXIF.getTag(this, "GPSLatitude");
+            const lon = EXIF.getTag(this, "GPSLongitude");
+            const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
+            const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
+
+            let latitude = null;
+            let longitude = null;
+
+            if (lat && lon) {
+              latitude = convertDMSToDD(lat, latRef);
+              longitude = convertDMSToDD(lon, lonRef);
+              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
+            } else {
+              console.warn("⚠️ No GPS data found in image.");
+            }
+
+            // ✅ Save file + coordinates
+            setFile(file);
+            updateDocument(selectedDocument, { latitude, longitude });
+          });
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    // ✅ Case 2: Handle PDFs or other file types
+    else {
+      console.log("📄 Non-image file uploaded, skipping EXIF read");
+      setFile(file);
+      updateDocument(selectedDocument, {}); // no lat/long
+    }
   }
+
+  // helper function to avoid repeating code
+  function updateDocument(selectedDocument, extraFields = {}) {
+    setDocuments((prev = []) => {
+      const updated = prev.map((item) => (item?.documentType === selectedDocument?.code ? { ...item, ...extraFields } : item));
+
+      if (!updated.some((i) => i?.documentType === selectedDocument?.code)) {
+        updated.push({
+          documentType: selectedDocument?.code,
+          filestoreId: null,
+          documentUid: null,
+          ...extraFields,
+        });
+      }
+
+      return updated;
+    });
+  }
+
+  function convertDMSToDD(dms, ref) {
+    const [degrees, minutes, seconds] = dms;
+    let dd = degrees + minutes / 60 + seconds / 3600;
+    if (ref === "S" || ref === "W") dd *= -1;
+    return dd;
+  }
+
   const { dropdownData } = doc;
 
   var dropDownData = dropdownData;
@@ -113,24 +186,42 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const [isHidden, setHidden] = useState(false);
   const [getLoading, setLoading] = useState(false);
 
+  // useEffect(() => {
+  //   if (selectedDocument?.code) {
+  //     setDocuments((prev) => {
+  //       const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+
+  //       if (uploadedFile?.length === 0 || uploadedFile === null) {
+  //         return filteredDocumentsByDocumentType;
+  //       }
+
+  //       const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+  //       return [
+  //         ...filteredDocumentsByFileStoreId,
+  //         {
+  //           documentType: selectedDocument?.code,
+  //           filestoreId: uploadedFile,
+  //           documentUid: uploadedFile,
+  //         },
+  //       ];
+  //     });
+  //   }
+  // }, [uploadedFile, selectedDocument]);
+
   useEffect(() => {
     if (selectedDocument?.code) {
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType;
-        }
-
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
-        return [
-          ...filteredDocumentsByFileStoreId,
-          {
-            documentType: selectedDocument?.code,
-            filestoreId: uploadedFile,
-            documentUid: uploadedFile,
-          },
-        ];
+        return prev.map((item) => {
+          if (item?.documentType === selectedDocument?.code) {
+            // ✅ Preserve existing fields (like latitude, longitude)
+            return {
+              ...item,
+              filestoreId: uploadedFile,
+              documentUid: uploadedFile,
+            };
+          }
+          return item;
+        });
       });
     }
   }, [uploadedFile, selectedDocument]);

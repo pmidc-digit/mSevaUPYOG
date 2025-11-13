@@ -9,9 +9,12 @@ import {
   LabelFieldPair,
   MultiUploadWrapper,
   CitizenInfoLabel,
+  ViewsIcon,
 } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { pdfDownloadLink } from "../utils";
+import { UPDATE_LayoutNewApplication_CoOrdinates } from "../redux/actions/LayoutNewApplicationActions";
 
 const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -19,7 +22,7 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
-
+  const [geocoordinates, setGeoCoordinates] = useState(null);
   const stateId = Digit.ULBService.getStateId();
 
 
@@ -30,11 +33,28 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
 
   console.log(" Application No from Redux:", applicationNo);
   console.log(" Layout Response from Redux:", layoutResponse);
-
+  const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["LayoutDocuments"]);
   console.log("data for documents here", data)
   //console.log("formData here =====", formData);
+
+  const coordinates = useSelector(function (state) {
+    return state?.layout?.LayoutApplicationFormReducer?.coordinates || {}; // Adjust path
+});
+
+useEffect(() => {
+  if(Object.keys(coordinates).length > 0){
+    setGeoCoordinates(coordinates);
+  }
+}, [coordinates]);
+
+
+// const currentStepData = useSelector((state) => state?.obps?.OBPSFormReducer?.formData) || {};
+// const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+// const filteredDocuments = isVacant 
+//   ? data?.BPA?.LayoutDocuments?.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") 
+//   : data?.BPA?.LayoutDocuments;
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -61,6 +81,35 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
   }, [documents, checkRequiredFields]);
 
 
+//   useEffect(() => {
+//   const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
+//   if (currentStatus === "VACANT") {
+//     setDocuments((prevDocs) =>
+//       prevDocs?.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING")
+//     );
+//   }
+// }, [currentStepData?.siteDetails?.buildingStatus?.code]);
+
+
+const documentObj = {
+  value: {
+    workflowDocs: documents?.map(doc => ({
+      documentType: doc.documentType,
+      filestoreId: doc.filestoreId,
+      documentUid: doc.documentUid,
+      documentAttachment: doc.documentAttachment
+    }))
+  }
+};
+
+const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.obps.useLayoutDocumentSearch(documentObj); // Adjust hook name
+
+const documentLinks = documents?.map(doc => ({
+  code: doc.documentType,
+  link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId)
+}));
+
+
   console.log(formData, "FORMDATA");
   return (
     <div>
@@ -78,6 +127,7 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
         )}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+     
           {data?.BPA?.LayoutDocuments?.map((document, index) => {
             return (
               <PTRSelectDocument
@@ -90,6 +140,10 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
                 documents={documents}
                 setCheckRequiredFields={setCheckRequiredFields}
                 handleSubmit={handleSubmit}
+                geocoordinates={geocoordinates}
+                setGeoCoordinates={setGeoCoordinates}
+                dispatch={dispatch}
+                previewLink={documentLinks?.find(link => link.code === document.code)?.link}
               />
             );
           })}
@@ -102,7 +156,7 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
+function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch, previewLink }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   // console.log("filetetetetet",filteredDocument, documents, doc);
 
@@ -136,6 +190,20 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
       if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
         if (location.latitude !== null && location.longitude !== null) {
+          // Replace sessionStorage.setItem with dispatch
+          dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude));
+          dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude));
+          setGeoCoordinates((prev) => ({
+            ...prev,
+            Latitude1: location.latitude,
+            Longitude1: location.longitude
+          }));
+
+          // Add edit mode check when clearing
+          if(window.location.pathname.includes("edit")){
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""));
+          }
           sessionStorage.setItem("Latitude1", location.latitude);
           sessionStorage.setItem("Longitude1", location.longitude);
         } else {
@@ -351,33 +419,37 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           />
         )}
 
-        {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
-        (sessionStorage.getItem("Latitude1") && sessionStorage.getItem("Longitude1") ? (
-          <div>
-            <p>Latitude: {sessionStorage.getItem("Latitude1")}</p>
-            <p>Longitude: {sessionStorage.getItem("Longitude1")}</p>
-            {/* {setIsNextButtonDisabled(false)}  */}
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: "red" }}>Please upload a Photo with Location details.</p>
-            {/* {setIsNextButtonDisabled(true)}  */}
-          </div>
-        ))}
+          {previewLink && (
+        <div
+            style={{ cursor: "pointer", padding:"10px", marginLeft:"25px"}}
+            onClick={(e) => {
+             e.preventDefault(); // Prevent any default behavior
+             window.open(previewLink, "_blank"); // Open in new tab
+            }}
+        >
+         <ViewsIcon/>
+        </div> 
+       )}
 
-        {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&
-        (sessionStorage.getItem("Latitude2") && sessionStorage.getItem("Longitude2") ? (
-          <div>
-            <p>Latitude: {sessionStorage.getItem("Latitude2")}</p>
-            <p>Longitude: {sessionStorage.getItem("Longitude2")}</p>
-            {/* {setIsNextButtonDisabled(false)}  */}
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: "red" }}>Please upload a Photo with Location details.</p>
-            {/* {setIsNextButtonDisabled(true)}  */}
-          </div>
-        ))}
+{doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
+  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
+    <CardLabel>
+      <div style={{paddingLeft:"30px"}}>
+        <p>Latitude: {geocoordinates.Latitude1}</p>
+        <p>Longitude: {geocoordinates.Longitude1}</p>
+      </div>
+    </CardLabel>
+}
+
+ {doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  &&
+        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
+           <CardLabel>
+              <div style={{paddingLeft:"30px"}}>
+               <p>Latitude: {geocoordinates.Latitude2}</p>
+               <p>Longitude: {geocoordinates.Longitude2}</p>
+               </div>
+           </CardLabel>  
+        }
 
 
       </LabelFieldPair>

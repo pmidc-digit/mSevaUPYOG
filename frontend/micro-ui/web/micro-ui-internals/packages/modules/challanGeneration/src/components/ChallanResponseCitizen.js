@@ -1,4 +1,4 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
+import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useState, Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";

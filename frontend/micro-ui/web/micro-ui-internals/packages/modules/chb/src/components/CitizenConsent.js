@@ -26,7 +26,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
 
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
-     const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
+  const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
   const [isFileUploaded, setIsFileUploaded] = useState(false);
 
 

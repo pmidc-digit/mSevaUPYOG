@@ -132,6 +132,7 @@ const Urls = {
     file_fetch: "/filestore/v1/files/url",
     create_new: "/challan-generation/challan/_create",
     search_new: "/challan-generation/challan/_search",
+    update_new: "/challan-generation/challan/_update",
   },
 
   rentAndLease: {

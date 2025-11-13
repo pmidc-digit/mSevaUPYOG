@@ -1,7 +1,8 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
-import React from "react";
+import { Banner, Card, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import { Loader } from "./Loader";
 
 const ChallanResponseCitizen = (props) => {
   const { state } = props.location;
@@ -9,43 +10,71 @@ const ChallanResponseCitizen = (props) => {
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
   const isCitizen = window.location.href.includes("citizen");
-  // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+  const [loader, setLoader] = useState(false);
+  const [getChallanData, setChallanData] = useState();
 
   const pathname = history?.location?.pathname || "";
   const ndcCode = pathname.split("/").pop(); // ✅ Extracts the last segment
+
+  const fetchChallans = async (filters) => {
+    setLoader(true);
+    try {
+      const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
+      console.log("search ", responseData);
+      setChallanData(responseData?.challans?.[0]);
+      setLoader(false);
+    } catch (error) {
+      console.log("error", error);
+      setLoader(false);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCode) {
+      const filters = {};
+      filters.challanNo = ndcCode;
+      fetchChallans(filters);
+    }
+  }, []);
 
   const onSubmit = () => {
     if (isCitizen) history.push(`/digit-ui/citizen`);
     else history.push(`/digit-ui/employee`);
   };
 
-  // const onGoToCHB = () => {
-  //   if (isCitizen) history.push(`/digit-ui/citizen/chb-home`);
-  //   else history.push(`/digit-ui/employee/challangeneration/inbox`);
-  // };
+  const payLater = async () => {
+    setLoader(true);
+    console.log("pay later", getChallanData);
 
-  // const handleMakePayment = async () => {
-  //   if (isCitizen) history.push(`/digit-ui/citizen/payment/collect/chb-services/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
-  //   else history.push(`/digit-ui/employee/payment/collect/chb-services/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
-  // };
+    const payload = {
+      Challan: {
+        ...getChallanData,
+        workflow: {
+          action: "PAY_LATER",
+        },
+      },
+    };
 
-  const handlePayment = () => {
-    // return;
-    history.push(`/digit-ui/employee/payment/collect/Challan_Generation/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
-    // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
+    try {
+      const response = await Digit.ChallanGenerationService.update(payload);
+      setLoader(false);
+      history.push(`/digit-ui/employee/challangeneration/inbox`);
+    } catch (error) {
+      setLoader(false);
+    }
   };
 
-  //  /digit-ui/employee/payment/collect/TL/PB-TL-2025-07-07-227598/pb.testing
+  const handlePayment = () => {
+    history.push(`/digit-ui/employee/payment/collect/Challan_Generation/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
+  };
 
   return (
     <div>
       <Card>
         <Banner
-          // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          // message={"Community Hall Booking Application Submitted Successfully"}
           message={t("CHALLAN_APPLICATION_CREATED")}
           applicationNumber={ndcCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHALLAN_NUMBER`)}
@@ -53,17 +82,13 @@ const ChallanResponseCitizen = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        {/* {nocData?.applicationStatus !== "REJECTED" ? (
-          <CardText>
-            {t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
-          </CardText>
-        ) : null} */}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          {/* <SubmitBar label={t("CORE_COMMON_GO_TO_CHB")} onSubmit={onGoToCHB} /> */}
+          <SubmitBar label={t("CHALLAN_PAY_LATER")} onSubmit={payLater} />
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
+      {loader && <Loader page={true} />}
     </div>
   );
 };

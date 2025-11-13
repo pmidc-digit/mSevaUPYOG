@@ -4,6 +4,7 @@ import Inbox from "./Inbox";
 import { Switch, useLocation, Link } from "react-router-dom";
 import { PrivateRoute } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import RALApplicationDetails from "./RALApplicationDetails"
 // import EmployeeChallan from "../../EmployeeChallan";
 // import CreateChallen from "../employee/CreateChallan";
 // import MCollectAcknowledgement from "../employee/EmployeeChallanAcknowledgement";
@@ -88,7 +89,9 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox parentRoute={path} businessService="PT" middlewareSearch={searchMW} initialStates={inboxInitialState} isInbox={false} />
             )}
           />
+          
           <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} />
+          <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
           <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}

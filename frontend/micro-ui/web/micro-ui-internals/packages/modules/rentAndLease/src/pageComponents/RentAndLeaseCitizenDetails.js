@@ -22,6 +22,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
   const apiDataCheck = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData?.responseData);
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log('apiDataCheck', apiDataCheck)
+
   const isCitizen = window.location.href.includes("citizen");
   const {
     control,
@@ -81,7 +83,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     return fallbackMessages[fieldName] || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" ,color: "red"};
+  const mandatoryStyle = { color: "red" };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -115,7 +118,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
   };
 
   const debouncedHandleMobileChange = React.useCallback(
-    debounce(handleMobileChange, 700),
+    debounce(handleMobileChange, 600),
     [] // add dependencies here if handleMobileChange depends on props/state
   );
 
@@ -125,7 +128,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         <CardSectionHeader className="card-section-header">{t("PTR_CITIZEN_DETAILS")}</CardSectionHeader>
         {/* Mobile Number */}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}  <span style={mandatoryStyle}>*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -165,7 +168,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
         {/* Applicant Name */}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span style={mandatoryStyle}>*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -197,7 +200,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
         {/* Email */}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={mandatoryStyle}>*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -228,7 +231,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
         {/* Address */}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("PT_COMMON_COL_ADDRESS")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("PT_COMMON_COL_ADDRESS")}`} <span style={mandatoryStyle}>*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -260,7 +263,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
         {/* Pincode */}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("CORE_COMMON_PINCODE")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("CORE_COMMON_PINCODE")}`} <span style={mandatoryStyle}>*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -304,3 +307,285 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 };
 
 export default RentAndLeaseCitizenDetails;
+
+// import React, { useEffect, useState } from "react";
+// import {
+//   TextInput,
+//   CardLabel,
+//   MobileNumber,
+//   TextArea,
+//   ActionBar,
+//   SubmitBar,
+//   CardLabelError,
+//   LabelFieldPair,
+//   CardSectionHeader,
+// } from "@mseva/digit-ui-react-components";
+// import { Controller, useForm, useFieldArray } from "react-hook-form";
+// import { Loader } from "../../../challanGeneration/src/components/Loader";
+
+// const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, validateStep }) => {
+//   const tenantId = Digit.ULBService.getCurrentTenantId();
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   console.log("currentStepData", currentStepData);
+
+//   const {
+//     control,
+//     handleSubmit,
+//     setValue,
+//     formState: { errors },
+//     trigger,
+//     reset,
+//   } = useForm({
+//     defaultValues: {
+//       applicants: [{ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" }],
+//     },
+//     mode: "onChange", // 👈 validates on every change
+//     reValidateMode: "onChange", // 👈 re-validates when value changes
+//   });
+
+//   const { fields, append, remove } = useFieldArray({
+//     control,
+//     name: "applicants",
+//   });
+
+//   const onSubmit = (data) => {
+//     if (validateStep) {
+//       const validationErrors = validateStep(data);
+//       if (Object.keys(validationErrors)?.length > 0) return;
+//     }
+//     goNext(data);
+//   };
+
+//   useEffect(() => {
+//     const applicantsData = currentStepData?.applicantDetails?.applicants || [];
+//     if (Array.isArray(applicantsData) && applicantsData?.length > 0) {
+//       reset({ applicants: applicantsData }); // 👈 use reset instead of setValue
+//     }
+//   }, [currentStepData, setValue, reset]);
+
+//   const getErrorMessage = (fieldName, index) => {
+//     const error = errors?.applicants?.[index]?.[fieldName];
+//     if (!error) return null;
+//     return error.message || t("PTR_FIELD_REQUIRED");
+//   };
+
+//   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
+//   const mandatoryStyle = { color: "red" };
+
+//   const debounce = (func, delay) => {
+//     let timer;
+//     return (...args) => {
+//       clearTimeout(timer);
+//       timer = setTimeout(() => func(...args), delay);
+//     };
+//   };
+
+//   const handleMobileChange = async (value, index) => {
+//     if (!value || value.length < 10) return;
+//     setIsLoading(true);
+//     try {
+//       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+//       const user = userData?.user?.[0] || {};
+//       setValue(`applicants.${index}.name`, user.name || "", { shouldValidate: true });
+//       setValue(`applicants.${index}.emailId`, user.emailId || "", { shouldValidate: true });
+//       setValue(`applicants.${index}.address`, user.permanentAddress || "", { shouldValidate: true });
+//     } catch (error) {
+//       console.error(error);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const debouncedHandleMobileChange = React.useCallback(debounce(handleMobileChange, 600), []);
+
+//   return (
+//     <form onSubmit={handleSubmit(onSubmit)}>
+//       <CardSectionHeader className="card-section-header">{t("PTR_CITIZEN_DETAILS")}</CardSectionHeader>
+
+//       {fields?.map((field, index) => (
+//         <div key={field?.id} style={{ border: "1px solid #ddd", padding: "12px", marginBottom: "16px" }}>
+//           <CardSectionHeader>
+//             {t("Applicant")} #{index + 1}
+//           </CardSectionHeader>
+
+//           {/* Mobile Number */}
+//           <LabelFieldPair>
+//             <CardLabel className="card-label-smaller">
+//               {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span style={mandatoryStyle}>*</span>
+//             </CardLabel>
+//             <div className="field">
+//               <Controller
+//                 control={control}
+//                 name={`applicants.${index}.mobileNumber`}
+//                 rules={{
+//                   required: t("PTR_MOBILE_REQUIRED"),
+//                   pattern: { value: /^[6-9][0-9]{9}$/, message: t("PTR_MOBILE_INVALID") },
+//                 }}
+//                 render={({ value, onChange, onBlur }) => (
+//                   <MobileNumber
+//                     value={value}
+//                     onChange={(e) => {
+//                       onChange(e);
+//                       debouncedHandleMobileChange(e, index);
+//                     }}
+//                     onBlur={(e) => {
+//                       onBlur(e);
+//                       trigger(`applicants.${index}.mobileNumber`);
+//                     }}
+//                     t={t}
+//                   />
+//                 )}
+//               />
+//             </div>
+//           </LabelFieldPair>
+//           {getErrorMessage("mobileNumber", index) && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber", index)}</CardLabelError>}
+
+//           {/* Name */}
+//           <LabelFieldPair>
+//             <CardLabel className="card-label-smaller">
+//               {t("ES_NEW_APPLICATION_APPLICANT_NAME")} <span style={mandatoryStyle}>*</span>
+//             </CardLabel>
+//             <div className="field">
+//               <Controller
+//                 control={control}
+//                 name={`applicants.${index}.name`}
+//                 rules={{ required: t("PTR_FIRST_NAME_REQUIRED") }}
+//                 render={({ value, onChange, onBlur }) => (
+//                   <TextInput
+//                     value={value}
+//                     onChange={(e) => onChange(e.target.value)}
+//                     onBlur={(e) => {
+//                       onBlur(e);
+//                       trigger(`applicants.${index}.name`);
+//                     }}
+//                     t={t}
+//                   />
+//                 )}
+//               />
+//             </div>
+//           </LabelFieldPair>
+//           {getErrorMessage("name", index) && <CardLabelError style={errorStyle}>{getErrorMessage("name", index)}</CardLabelError>}
+
+//           {/* Email */}
+//           <LabelFieldPair>
+//             <CardLabel className="card-label-smaller">
+//               {t("NOC_APPLICANT_EMAIL_LABEL")} <span style={mandatoryStyle}>*</span>
+//             </CardLabel>
+//             <div className="field">
+//               <Controller
+//                 control={control}
+//                 name={`applicants.${index}.emailId`}
+//                 rules={{ required: t("PTR_EMAIL_REQUIRED") }}
+//                 render={({ value, onChange, onBlur }) => (
+//                   <TextInput
+//                     value={value}
+//                     onChange={(e) => onChange(e.target.value)}
+//                     onBlur={(e) => {
+//                       onBlur(e);
+//                       trigger(`applicants.${index}.emailId`);
+//                     }}
+//                     t={t}
+//                   />
+//                 )}
+//               />
+//             </div>
+//           </LabelFieldPair>
+//           {getErrorMessage("emailId", index) && <CardLabelError style={errorStyle}>{getErrorMessage("emailId", index)}</CardLabelError>}
+
+//           {/* Address */}
+//           <LabelFieldPair>
+//             <CardLabel className="card-label-smaller">
+//               {t("PT_COMMON_COL_ADDRESS")} <span style={mandatoryStyle}>*</span>
+//             </CardLabel>
+//             <div className="field">
+//               <Controller
+//                 control={control}
+//                 name={`applicants.${index}.address`}
+//                 rules={{ required: t("PTR_ADDRESS_REQUIRED") }}
+//                 render={({ value, onChange, onBlur }) => (
+//                   <TextArea
+//                     value={value}
+//                     onChange={(e) => onChange(e.target.value)}
+//                     onBlur={(e) => {
+//                       onBlur(e);
+//                       trigger(`applicants.${index}.address`);
+//                     }}
+//                     t={t}
+//                   />
+//                 )}
+//               />
+//             </div>
+//           </LabelFieldPair>
+//           {getErrorMessage("address", index) && <CardLabelError style={errorStyle}>{getErrorMessage("address", index)}</CardLabelError>}
+
+//           {/* Pincode */}
+//           <LabelFieldPair>
+//             <CardLabel className="card-label-smaller">
+//               {t("CORE_COMMON_PINCODE")} <span style={mandatoryStyle}>*</span>
+//             </CardLabel>
+//             <div className="field">
+//               <Controller
+//                 control={control}
+//                 name={`applicants.${index}.pincode`}
+//                 rules={{
+//                   required: t("PTR_PINCODE_REQUIRED"),
+//                   pattern: {
+//                     value: /^[1-9][0-9]{5}$/,
+//                     message: t("PTR_PINCODE_INVALID"),
+//                   },
+//                 }}
+//                 render={({ value, onChange, onBlur }) => (
+//                   <TextInput
+//                     value={value}
+//                     maxlength={6}
+//                     onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+//                     onBlur={(e) => {
+//                       onBlur(e);
+//                       trigger(`applicants.${index}.pincode`);
+//                     }}
+//                     t={t}
+//                   />
+//                 )}
+//               />
+//             </div>
+//           </LabelFieldPair>
+//           {getErrorMessage("pincode", index) && <CardLabelError style={errorStyle}>{getErrorMessage("pincode", index)}</CardLabelError>}
+
+//           {/* Remove applicant */}
+//           {fields.length > 1 && (
+//             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+//               <SubmitBar
+//                 label={t("Remove")}
+//                 style={{ border: "1px solid #d33", background: "transparent", color: "#d33" }}
+//                 onSubmit={() => remove(index)}
+//               />
+//             </div>
+//           )}
+//         </div>
+//       ))}
+
+//       {/* Add applicant */}
+//       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+//         <SubmitBar
+//           label={t("Add applicant")}
+//           style={{ border: "1px solid #2947a3", background: "transparent", color: "#2947a3" }}
+//           onSubmit={() => append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
+//         />
+//       </div>
+
+//       <ActionBar>
+//         <SubmitBar
+//           label={t("Back")}
+//           style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "8px" }}
+//           onSubmit={onGoBack}
+//         />
+//         <SubmitBar label={t("Next")} submit="submit" />
+//       </ActionBar>
+
+//       {isLoading && <Loader page={true} />}
+//     </form>
+//   );
+// };
+
+// export default RentAndLeaseCitizenDetails;

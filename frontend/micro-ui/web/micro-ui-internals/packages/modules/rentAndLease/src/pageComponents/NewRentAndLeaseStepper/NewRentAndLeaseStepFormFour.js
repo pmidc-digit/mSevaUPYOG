@@ -214,8 +214,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         <SubmitBar
           label={t("CS_COMMON_BACK")}
           onSubmit={() => onGoBack(currentStepData)}
-          style={{ backgroundColor: "white", color: "black", border: "1px solid", marginRight: "10px" }}
-        />
+          style={{ backgroundColor: "white", color: "#2947a3", border: "1px solid", marginRight: "10px" }}
+        />        
 
         {displayMenu && actions && actions.length > 0 ? (
           <Menu localeKeyPrefix={t(`WF_CITIZEN_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />

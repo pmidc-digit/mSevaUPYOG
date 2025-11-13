@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
 import { useState } from "react";
 import _ from "lodash";
@@ -17,11 +17,12 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   //   return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   // });
 
-   const currentStepData = useSelector(function (state) {
-      return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData && state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
-        ? state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
-        : {};
-    });
+  const currentStepData = useSelector(function (state) {
+    return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData &&
+      state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
+      ? state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
+      : {};
+  });
   console.log("currentStepData", currentStepData);
 
   function goNext(finaldata) {
@@ -79,8 +80,7 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   return (
     <React.Fragment>
-      <div className="employeeCard">
-         <FormComposer
+      <FormComposer
         defaultValues={currentStepData}
         config={config.currStepConfig}
         onSubmit={goNext}
@@ -89,8 +89,7 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
-        {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
-      </div>
+      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

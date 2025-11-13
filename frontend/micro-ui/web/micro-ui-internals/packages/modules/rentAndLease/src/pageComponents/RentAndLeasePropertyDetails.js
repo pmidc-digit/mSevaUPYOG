@@ -153,6 +153,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     }
   }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType, setValue]);
 
+  const propertyNameOptions = mockProperties.map((p) => ({
+    name: p.title,
+    code: p.id, // use id as code
+    i18nKey: p.title, // or just p.title if no translation
+  }));
+
   const onSubmit = async (data) => {
     if (validateStep) {
       const validationErrors = validateStep(data);
@@ -166,6 +172,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
     // Store property details in Redux and move to next step
     const propertyDetails = {
+       propertyName: data.propertyName,
+      propertyId: data.propertyId,
       propertyType: data.propertyType,
       propertySpecific: data.propertySpecific,
       locationType: data.locationType,
@@ -189,31 +197,51 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
   useEffect(() => {
     if (apiDataCheck?.[0]?.propertyDetails) {
-      const propertyDetails = apiDataCheck[0].propertyDetails;
+      const propertyDetails = apiDataCheck[0]?.propertyDetails;
+      if (propertyDetails.propertyName) setValue("startDate", propertyDetails.propertyName);
+      if (propertyDetails.propertyId) setValue("endDate", propertyDetails.propertyId);
       if (propertyDetails.propertyType) setValue("propertyType", propertyDetails.propertyType);
       if (propertyDetails.propertySpecific) setValue("propertySpecific", propertyDetails.propertySpecific);
       if (propertyDetails.locationType) setValue("locationType", propertyDetails.locationType);
-      if (propertyDetails.selectedProperty) setValue("selectedProperty", propertyDetails.selectedProperty);
+      if (propertyDetails.selectedProperty) {
+        setValue("selectedProperty", propertyDetails.selectedProperty, {
+          shouldValidate: true, // 👈 force RHF to re‑run validation
+          shouldDirty: false,
+        });
+      }
+      if (propertyDetails.startDate) setValue("startDate", propertyDetails.startDate);
+      if (propertyDetails.endDate) setValue("endDate", propertyDetails.endDate);
     }
   }, [apiDataCheck, setValue]);
 
   useEffect(() => {
     if (currentStepData?.propertyDetails) {
-      const propertyDetails = currentStepData.propertyDetails;
+      const propertyDetails = currentStepData?.propertyDetails;
+      if (propertyDetails.propertyName) setValue("startDate", propertyDetails.propertyName);
+      if (propertyDetails.propertyId) setValue("endDate", propertyDetails.propertyId);
       if (propertyDetails.propertyType) setValue("propertyType", propertyDetails.propertyType);
       if (propertyDetails.propertySpecific) setValue("propertySpecific", propertyDetails.propertySpecific);
       if (propertyDetails.locationType) setValue("locationType", propertyDetails.locationType);
-      if (propertyDetails.selectedProperty) setValue("selectedProperty", propertyDetails.selectedProperty);
+      if (propertyDetails.selectedProperty) {
+        setValue("selectedProperty", propertyDetails.selectedProperty, {
+          shouldValidate: true, // 👈 force RHF to re‑run validation
+          shouldDirty: false,
+        });
+      }
+      if (propertyDetails.startDate) setValue("startDate", propertyDetails.startDate);
+      if (propertyDetails.endDate) setValue("endDate", propertyDetails.endDate);
     }
   }, [currentStepData, setValue]);
+
+  console.log("errors", errors);
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
-
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
+  const mandatoryStyle = { color: "red" };
   const propertyCardStyle = {
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
@@ -236,85 +264,56 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   };
 
   const todayISO = new Date().toISOString().split("T")[0];
+  console.log("currentStepData", currentStepData);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
-      {/* Start Date */}
+
+      {/* Property Name Dropdown */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("RAL_START_DATE")} *</CardLabel>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_NAME") || "Property Name"} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
         <Controller
           control={control}
-          name="startDate"
-          rules={{
-            required: t("PTR_FIELD_REQUIRED"),
-            validate: (value) => {
-              if (!value) return t("PTR_FIELD_REQUIRED");
-              const today = new Date(todayISO);
-              const chosen = new Date(value);
-              if (chosen < today) {
-                return t("PTR_START_DATE_NOT_IN_PAST");
-              }
-              return true;
-            },
-          }}
-          render={({ value, onChange, onBlur }) => (
-            <div className="form-field">
-              <TextInput
-                type="date"
-                min={todayISO}
-                value={value || ""}
-                onChange={(e) => onChange(e.target.value)}
-                onBlur={(e) => {
-                  onBlur(e);
-                  trigger("startDate");
-                }}
-                t={t}
-              />
-            </div>
+          name="propertyName"
+          rules={{ required: t("RENT_LEASE_PROPERTY_NAME_REQUIRED") || "Property Name is required" }}
+          render={(props) => (
+            <Dropdown className="form-field" select={props.onChange} selected={props.value} option={propertyNameOptions} optionKey="name" t={t} />
           )}
         />
       </LabelFieldPair>
-      {errors?.startDate && <CardLabelError style={errorStyle}>{errors?.startDate?.message}</CardLabelError>}
+      {errors.propertyName && <CardLabelError style={errorStyle}>{getErrorMessage("propertyName")}</CardLabelError>}
 
-      {/* End Date */}
+      {/* Property ID Search */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("RAL_END_DATE")}</CardLabel>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_ID") || "Property ID"} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
         <Controller
           control={control}
-          name="endDate"
-          rules={{
-            validate: (value) => {
-              if (!value) return true; // optional
-              const start = watch("startDate");
-              if (!start) return t("PTR_START_DATE_REQUIRED");
-              if (new Date(value) <= new Date(start)) {
-                return t("PTR_END_DATE_AFTER_START");
-              }
-              return true;
-            },
-          }}
+          name="propertyId"
+          rules={{ required: t("RENT_LEASE_PROPERTY_ID_REQUIRED") || "Property ID is required" }}
           render={({ value, onChange, onBlur }) => (
-            <div className="form-field">
             <TextInput
-              type="date"
-              min={watch("startDate") || todayISO}
+              type="text"
               value={value || ""}
               onChange={(e) => onChange(e.target.value)}
-              onBlur={(e) => {
-                onBlur(e);
-                trigger("endDate");
-              }}
+              onBlur={onBlur}
+              t={t}
+              style={{ width: "100%", maxWidth: "330px" }}
             />
-            </div>
           )}
         />
       </LabelFieldPair>
-      {errors?.endDate && <CardLabelError style={errorStyle}>{errors?.endDate?.message}</CardLabelError>}
+      {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("propertyId")}</CardLabelError>}
 
       {/* Property Type Dropdown */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("RENT_LEASE_PROPERTY_TYPE") || "Property Type"} *</CardLabel>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_TYPE") || "Property Type"} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
         <Controller
           control={control}
           name="propertyType"
@@ -328,7 +327,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
       {/* Property Specific Dropdown */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("RENT_LEASE_PROPERTY_SPECIFIC") || "Property Specific"} *</CardLabel>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_SPECIFIC") || "Property Specific"} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
         <Controller
           control={control}
           name="propertySpecific"
@@ -342,7 +343,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
       {/* Location Type Dropdown */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("RENT_LEASE_LOCATION_TYPE") || "Location Type"} *</CardLabel>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_LOCATION_TYPE") || "Location Type"} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
         <Controller
           control={control}
           name="locationType"
@@ -358,12 +361,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {selectedPropertyType && selectedPropertySpecific && selectedLocationType && (
         <div style={{ marginTop: "24px", marginBottom: "24px" }}>
           <CardLabel className="card-label-smaller" style={{ marginBottom: "12px" }}>
-            {t("RENT_LEASE_SELECT_PROPERTY") || "Select a Property"} *
+            {t("RENT_LEASE_SELECT_PROPERTY") || "Select a Property"} <span style={mandatoryStyle}>*</span>
           </CardLabel>
-          {filteredProperties.length > 0 ? (
+          {filteredProperties?.length > 0 || currentStepData?.propertyDetails?.selectedProperty ? (
             <div>
               {filteredProperties.map((property) => {
-                const isSelected = selectedProperty?.id === property.id;
+                const isSelected = selectedProperty?.id === property.id || currentStepData?.propertyDetails?.selectedProperty;
                 return (
                   <Card key={property.id} style={isSelected ? selectedCardStyle : propertyCardStyle} onClick={() => handlePropertySelect(property)}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -402,6 +405,82 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       />
       {errors.selectedProperty && <CardLabelError style={errorStyle}>{getErrorMessage("selectedProperty")}</CardLabelError>}
 
+      {/* Start Date */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("RAL_START_DATE")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="startDate"
+          rules={{
+            required: t("PTR_FIELD_REQUIRED"),
+            validate: (value) => {
+              if (!value) return t("PTR_FIELD_REQUIRED");
+              const today = new Date(todayISO);
+              const chosen = new Date(value);
+              if (chosen < today) {
+                return t("PTR_START_DATE_NOT_IN_PAST");
+              }
+              return true;
+            },
+          }}
+          render={({ value, onChange, onBlur }) => (
+            <div className="form-field">
+              <TextInput
+                type="date"
+                min={todayISO}
+                value={value || ""}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("startDate");
+                }}
+                t={t}
+              />
+            </div>
+          )}
+        />
+      </LabelFieldPair>
+      {errors?.startDate && <CardLabelError style={errorStyle}>{errors?.startDate?.message}</CardLabelError>}
+
+      {/* End Date */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("RAL_END_DATE")}
+          <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="endDate"
+          rules={{
+            validate: (value) => {
+              if (!value) return true; // optional
+              const start = watch("startDate");
+              if (!start) return t("PTR_START_DATE_REQUIRED");
+              if (new Date(value) <= new Date(start)) {
+                return t("PTR_END_DATE_AFTER_START");
+              }
+              return true;
+            },
+          }}
+          render={({ value, onChange, onBlur }) => (
+            <div className="form-field">
+              <TextInput
+                type="date"
+                min={watch("startDate") || todayISO}
+                value={value || ""}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("endDate");
+                }}
+              />
+            </div>
+          )}
+        />
+      </LabelFieldPair>
+      {errors?.endDate && <CardLabelError style={errorStyle}>{errors?.endDate?.message}</CardLabelError>}
       <ActionBar>
         <SubmitBar label={t("Next") || "Next"} submit="submit" />
       </ActionBar>

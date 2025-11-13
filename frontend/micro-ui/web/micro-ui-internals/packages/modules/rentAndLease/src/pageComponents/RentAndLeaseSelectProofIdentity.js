@@ -92,13 +92,12 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
     onSelect(config.key, documentStep);
   };
 
-   useEffect(() => {
-      if (toastError) {
-        const timer = setTimeout(() => setToastError(null), 2000);
-        return () => clearTimeout(timer);
-      }
-    }, [toastError]);
-
+  useEffect(() => {
+    if (toastError) {
+      const timer = setTimeout(() => setToastError(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastError]);
 
   const onSkip = () => onSelect();
 
@@ -152,7 +151,6 @@ function RentAndLeaseSelectDocument({
   const [loading, setLoading] = useState(false);
   const isCitizen = window.location.href.includes("citizen");
 
-
   function selectfile(e) {
     const selected = e.target.files && e.target.files[0];
     if (!selected) return;
@@ -205,17 +203,22 @@ function RentAndLeaseSelectDocument({
   };
 
   const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
+  const mandatoryStyle = { color: "red" };
 
   return (
     <div style={{ marginBottom: "24px" }}>
       {loading && <Loader />}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
+        {/* <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required && <span style={mandatoryStyle}>  *</span>)}</CardLabel> */}
+        <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+          {t(doc?.code.replaceAll(".", "_"))}
+          {doc?.required && <span style={mandatoryStyle}> *</span>}
+        </CardLabel>
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <div className="field" style={{width:"100%",maxWidth: !isCitizen && "500px"}}>
+        <div className="field" style={{ width: "100%", maxWidth: !isCitizen && "500px" }}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

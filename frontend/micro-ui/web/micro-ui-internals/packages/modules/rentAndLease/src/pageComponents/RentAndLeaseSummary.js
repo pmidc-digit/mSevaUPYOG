@@ -89,7 +89,6 @@ function RentAndLeaseSummary({ t }) {
           </div>
 
           {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), applicant?.name)}
-          {renderRow(t("PT_ACK_LOCALIZATION_FATHERS_NAME"), applicant?.fatherOrHusbandName)}
           {renderRow(t("CORE_COMMON_MOBILE_NUMBER"), applicant?.mobileNumber)}
           {renderRow(t("CORE_COMMON_EMAIL_ID"), applicant?.emailId)}
           {renderRow(t("ADDRESS"), applicant?.address)}
@@ -97,26 +96,31 @@ function RentAndLeaseSummary({ t }) {
         </div>
       </Card>
       <Card className="summary-section">
-        {renderRow(
-          t("RENT_LEASE_PROPERTY_TYPE") || "Property Type",
-          property?.propertyType?.name || property?.propertyType?.code || property?.propertyType || "NA"
-        )}
-        {renderRow(
-          t("RENT_LEASE_PROPERTY_SPECIFIC") || "Property Specific",
-          property?.propertySpecific?.name || property?.propertySpecific?.code || property?.propertySpecific || "NA"
-        )}
-        {renderRow(
-          t("RENT_LEASE_LOCATION_TYPE") || "Location Type",
-          property?.locationType?.name || property?.locationType?.code || property?.locationType || "NA"
-        )}
-        {property?.selectedProperty && (
-          <div>
-            {renderRow(t("RENT_LEASE_SELECTED_PROPERTY") || "Selected Property", property?.selectedProperty?.title || "NA")}
-            {renderRow(t("RENT_LEASE_PROPERTY_AREA") || "Area", property?.selectedProperty?.area || "NA")}
-            {renderRow(t("RENT_LEASE_PROPERTY_ADDRESS") || "Address", property?.selectedProperty?.address || "NA")}
-            {renderRow(t("RENT_LEASE_RENT_AMOUNT") || "Rent", property?.selectedProperty?.rent || "NA")}
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{t("Properties Details")}</h3>
           </div>
-        )}
+          {renderRow(
+            t("RENT_LEASE_PROPERTY_TYPE") || "Property Type",
+            property?.propertyType?.name || property?.propertyType?.code || property?.propertyType || "NA"
+          )}
+          {renderRow(
+            t("RENT_LEASE_PROPERTY_SPECIFIC") || "Property Specific",
+            property?.propertySpecific?.name || property?.propertySpecific?.code || property?.propertySpecific || "NA"
+          )}
+          {renderRow(
+            t("RENT_LEASE_LOCATION_TYPE") || "Location Type",
+            property?.locationType?.name || property?.locationType?.code || property?.locationType || "NA"
+          )}
+          {property?.selectedProperty && (
+            <div>
+              {renderRow(t("RENT_LEASE_SELECTED_PROPERTY") || "Selected Property", property?.selectedProperty?.title || "NA")}
+              {renderRow(t("RENT_LEASE_PROPERTY_AREA") || "Area", property?.selectedProperty?.area || "NA")}
+              {renderRow(t("RENT_LEASE_PROPERTY_ADDRESS") || "Address", property?.selectedProperty?.address || "NA")}
+              {renderRow(t("RENT_LEASE_RENT_AMOUNT") || "Rent", property?.selectedProperty?.rent || "NA")}
+            </div>
+          )}
+        </div>
       </Card>
 
       <Card className="summary-section">

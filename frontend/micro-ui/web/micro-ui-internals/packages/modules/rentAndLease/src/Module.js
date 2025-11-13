@@ -32,6 +32,7 @@ import RentAndLeaseSelectProofIdentity from "./pageComponents/RentAndLeaseSelect
 import RentAndLeaseSummary from "./pageComponents/RentAndLeaseSummary";
 import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
 import CustomDatePicker from "./pageComponents/CustomDatePicker";
+import RALApplicationDetails from "./pages/citizen/RALApplicationDetails"
 import { Loader as RentAndLeaseLoader } from "./components/Loader";
 
 export const RentAndLeaseReducers = getRootReducer;
@@ -95,6 +96,7 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
 };
 
 const componentsToRegister = {
+  RALApplicationDetails,
   ConsumerDetails,
   ServiceDetails,
   AddressDetails,

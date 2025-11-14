@@ -33,9 +33,9 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   const currentStepData = useSelector(function (state) {
-    return state.obps.OBPSFormReducer.formData;
+    return state.obps.LayoutNewApplicationFormReducer.formData;
   });
-  const applicationNo = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationNo);
+  const applicationNo = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData?.applicationNo);
 
 //   useEffect(() => {
 //   const formattedData = currentStepData?.siteDetails;
@@ -54,6 +54,38 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
 
   else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
+
+
+  // <CHANGE> Add this useEffect to populate form when editing (loading existing data from API)
+useEffect(() => {
+  // Check if we have API response data to populate
+  const apiResponse = currentStepData?.applicationDetails;
+
+  console.log(currentStepData, "RESSSSSSS");
+  
+  if (apiResponse?.layoutDetails?.additionalDetails) {
+    const additionalDetails = apiResponse.layoutDetails.additionalDetails;
+    
+    // Populate siteDetails if available
+    if (additionalDetails.siteDetails) {
+      const siteData = additionalDetails.siteDetails;
+      
+      // Set all form values from API response
+      Object.entries(siteData).forEach(([key, value]) => {
+        setValue(key, value);
+      });
+    }
+    
+    // Populate applicationDetails if available
+    if (additionalDetails.applicationDetails) {
+      const appData = additionalDetails.applicationDetails;
+      
+      Object.entries(appData).forEach(([key, value]) => {
+        setValue(key, value);
+      });
+    }
+  }
+}, [currentStepData?.apiResponse, setValue]);
 
   const onSubmit = async(data) => {
     trigger();

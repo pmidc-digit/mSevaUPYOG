@@ -62,7 +62,8 @@
 		<repository>
 			<id>repo.egovernments.org</id>
 			<name>eGov Public Repository Group</name>
-			<url>http://repo.egovernments.org/nexus/content/groups/public/</url>
+			<!--<url>http://repo.egovernments.org/nexus/content/groups/public/</url>-->
+			<url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/org/egov/</url>			
 			<snapshots>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
@@ -91,7 +92,8 @@
 		<pluginRepository>
 			<id>repo.egovernments.org</id>
 			<name>eGov Public Repository Group</name>
-			<url>http://repo.egovernments.org/nexus/content/groups/public/</url>
+			<!--<url>http://repo.egovernments.org/nexus/content/groups/public/</url>-->
+			<url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/org/egov/</url>	
 			<releases>
 				<enabled>true</enabled>
 			</releases>

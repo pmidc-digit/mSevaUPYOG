@@ -184,7 +184,8 @@
 		<google.zxing.version>3.3.0</google.zxing.version>
 		<javaxt.core.version>1.7.8</javaxt.core.version>
 		<recaptcha.version>0.0.8</recaptcha.version>
-		<jcaptcha.version>2.0-alpha-1</jcaptcha.version>
+		<!--<jcaptcha.version>2.0-alpha-1</jcaptcha.version>-->
+		<jcaptcha.version>1.0</jcaptcha.version>
 		<pdfbox.version>2.0.28</pdfbox.version>
 		<itextpdf.version>5.0.6</itextpdf.version>
 

@@ -94,7 +94,10 @@ public class ExitWidthExtract extends FeatureExtract {
 				Util.extractDimensionValue(pl, widths, dimension, layerNameExitWidthDoor);
 			
 			String doorHeight = Util.getMtextByLayerName(pl.getDoc(), layerNameExitWidthDoor);
-			door.setDoorHeight(BigDecimal.valueOf(Double.valueOf(doorHeight.replaceAll("DOOR_HT_M=", ""))));	
+			if(doorHeight!=null) {
+				door.setDoorHeight(BigDecimal.valueOf(Double.valueOf(doorHeight.replaceAll("DOOR_HT_M=", ""))));	
+			}
+			
 			for (BigDecimal minDis : widths) {
 //            	doorWidth=minDis;
 				door.setDoorWidth(minDis);

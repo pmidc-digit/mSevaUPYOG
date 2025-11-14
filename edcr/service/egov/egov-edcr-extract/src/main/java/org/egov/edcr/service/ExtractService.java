@@ -81,7 +81,14 @@ public class ExtractService {
 //	private static final BigDecimal LIMIT_ENGINEER = new BigDecimal("500");
 //	private static final BigDecimal LIMIT_TOWNPLANNER = new BigDecimal("500");
 //	private static final BigDecimal LIMIT_SUPERVISOR = new BigDecimal("250");
-//	private static final BigDecimal LIMIT_DESIGNER = new BigDecimal("250");
+	
+	public static final String COMPETENCY_CHECK_ERROR_MESSAGE =
+	        "Permissible limit exceeded!\n" +
+	        "The maximum permissible plot size for an %s is %s sq. meters, " +
+	        "but the uploaded file indicates %s sq. meters. " +
+	        "Please review and modify the entry as per the applicable limit.";
+	
+	public static final String UN_AUTHORISED_ERROR_MESSAGE = "%s is not permitted to scrutinize any plan.";
 
 	public Plan extract(File dxfFile, Amendment amd, Date scrutinyDate, List<PlanFeature> features, String tenantID) {
 
@@ -508,10 +515,13 @@ public class ExtractService {
 		                Boolean isScrutinizeAllow = roleData.get("isScrutinizeAllow") != null
 		                        ? Boolean.valueOf(roleData.get("isScrutinizeAllow").toString())
 		                        : Boolean.FALSE;
+		                String roleName = String.valueOf(roleData.get("name"));
 
 		                if (!isScrutinizeAllow) {
-		                    plan.getErrors().put("Not authorized to scrutinize",
-		                            "Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
+		                	String errorMessage = String.format(
+		                			UN_AUTHORISED_ERROR_MESSAGE, roleName); 
+		                	plan.getErrors().clear();
+		                    plan.getErrors().put("Not authorized to scrutinize", errorMessage);
 		                    continue;
 		                } else {
 		                    BigDecimal maxAllowedPlotArea = roleData.get("maxAllowedPlotArea") != null
@@ -519,9 +529,19 @@ public class ExtractService {
 		                            : BigDecimal.ZERO;
 
 		                    if (plotArea != null && plotArea.compareTo(maxAllowedPlotArea) > 0) {
-		                        plan.getErrors().put("Not authorized to scrutinize",
-		                                "Your role [" + roleCode + "] allows maximum plot area of " + maxAllowedPlotArea
-		                                        + " Sqm, but provided plot area is " + plotArea + " Sqm.");
+		                    	String errorMessage = String.format(
+		                    	        COMPETENCY_CHECK_ERROR_MESSAGE,
+		                    	        roleName,
+		                    	        maxAllowedPlotArea,
+		                    	        plotArea
+		                    	);
+//		                        plan.getErrors().put("Not authorized to scrutinize",
+//		                                "Your role [" + roleCode + "] allows maximum plot area of " + maxAllowedPlotArea
+//		                                        + " Sqm, but provided plot area is " + plotArea + " Sqm.");
+		                    	//clear all the errors from , only show un-authorised error message
+		                    	plan.getErrors().clear();
+		                    	plan.getErrors().put("Not authorized to scrutinize", errorMessage);
+		                    	
 		                    }
 		                }
 		            } else {

@@ -351,7 +351,7 @@ public class FireStair extends FeatureProcess {
                                 }
                             } else {
                                 String layerName = String.format(DxfFileConstants.LAYER_FIRESTAIR_FLIGHT, block.getNumber(),
-                                        floor.getNumber(), fireStair.getNumber());
+                                        floor.getNumber(), fireStair.getNumber(), flight.getNumber());
                                 errors.put("noofRise" + layerName,
                                         edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
                                                 new String[] { NO_OF_RISERS + layerName }, LocaleContextHolder.getLocale()));

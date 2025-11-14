@@ -569,7 +569,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                 data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
               }>
             </Row>
-            <Row
+            {data?.planDetail?.plot?.area >= 100 && <React.Fragment><Row
               className="border-none"
               label={t("BPA_ECS_REQUIRED")}
               text={ data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Required || "NA" }
@@ -579,6 +579,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
               label={t("BPA_ECS_PROVIDED")}
               text={ data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Provided || "NA" }
             ></Row>
+            </React.Fragment>}
           </StatusTable>
 
           {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}

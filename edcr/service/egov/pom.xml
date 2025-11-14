@@ -117,6 +117,28 @@
         <id>jcenter-backup</id>
         <url>https://jcenter.bintray.com/</url>
     </repository>
+    
+    <!-- Missing libraries final fix -->
+
+<!-- 1. Apache SVN legacy repo (commons-javaflow 20060411) -->
+<repository>
+    <id>apache-legacy-svn</id>
+    <url>https://svn.apache.org/repos/asf/commons/sandbox/javaflow/trunk/</url>
+    <layout>legacy</layout>
+</repository>
+
+<!-- 2. DynamicJasper 5.0.2 -->
+<repository>
+    <id>jaspersoft</id>
+    <url>https://jaspersoft.jfrog.io/artifactory/third-party-ce-artifacts/</url>
+</repository>
+
+<!-- 3. Java.net legacy repo for JAI -->
+<repository>
+    <id>java-net-legacy</id>
+    <url>https://download.java.net/maven/2/</url>
+</repository>
+
 
 </repositories>
 

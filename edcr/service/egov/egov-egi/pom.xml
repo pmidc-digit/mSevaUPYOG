@@ -42,12 +42,13 @@
 	<name>e-governments egi</name>
 	<artifactId>egov-egi</artifactId>
 
-	<repositories>	
+	<!--<repositories>
     <repository>
-        <id>jaspersoft</id>
-        <url>https://jaspersoft.artifactoryonline.com/jaspersoft/jaspersoft-repo/</url>
+        <id>central</id>
+        <url>https://repo1.maven.org/maven2/</url>
     </repository>
-	</repositories>
+</repositories>-->
+
 	
 	<dependencies>
 
@@ -192,6 +193,12 @@
 		<!-- REPORTS START -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.8.1</version>
+		</dependency>
+
+		<!--<dependency>
+			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
 		</dependency>
 		<dependency>
@@ -201,7 +208,7 @@
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-javaflow</artifactId>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>commons-javaflow</groupId>
 			<artifactId>commons-javaflow</artifactId>

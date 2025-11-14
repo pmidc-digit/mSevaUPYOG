@@ -73,10 +73,17 @@
 			<url>https://repo.softmotions.com/repository/softmotions-public/</url>
 		</repository>
 		
-		<!-- JasperReports old versions -->
+		<!-- Maven Central (Correct URL) -->
 		<repository>
 			<id>maven-central</id>
-			<url>https://repo.maven.apache.org/maven2/</url>
+			<name>Maven Central Repository</name>
+			<url>https://repo1.maven.org/maven2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 
 		
@@ -147,7 +154,7 @@
 		<apache-tiles-version>3.0.7</apache-tiles-version>
 		<embedded-redis-version>0.6</embedded-redis-version>
 		<quartz-version>2.3.0</quartz-version>
-		<jasper-report-version>6.8.1</jasper-report-version>
+		<jasper-report-version>6.4.1</jasper-report-version>
 		<json-simple-version>1.1.1</json-simple-version>
 		<jackson-version>2.9.2</jackson-version>
 		<orika-core.version>1.5.2</orika-core.version>
@@ -653,7 +660,7 @@
 			<!-- VIEWS RELATED END -->
 
 			<!-- REPORTS START -->
-			<dependency>
+			<!--<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports-fonts</artifactId>
 				<version>${jasper-report-version}</version>
@@ -667,7 +674,14 @@
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports-javaflow</artifactId>
 				<version>${jasper-report-version}</version>
+			</dependency>-->
+
+			<dependency>
+				<groupId>net.sf.jasperreports</groupId>
+				<artifactId>jasperreports</artifactId>
+				<version>6.8.1</version>
 			</dependency>
+
 			<dependency>
 				<groupId>org.apache.poi</groupId>
 				<artifactId>poi</artifactId>

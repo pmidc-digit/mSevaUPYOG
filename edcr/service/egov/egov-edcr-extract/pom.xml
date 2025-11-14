@@ -86,6 +86,11 @@
 			<name>In Project Repo</name>
 			<url>file://${project.basedir}/lib</url>
 		</repository> -->
+		<!-- JasperReports old versions -->
+    <repository>
+        <id>jaspersoft</id>
+        <url>https://jaspersoft.artifactoryonline.com/jaspersoft/jaspersoft-repo/</url>
+    </repository>
 	</repositories>
 
 	<pluginRepositories>

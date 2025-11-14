@@ -156,7 +156,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
     ulbType,
     tenantId: appData?.tenantId,
     // Use readable city dynamically
-    name: ` No Dues Certificate  \n ${t(tenantInfo?.i18nKey)}`,
+    name: ` No Dues Certificate `,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
     heading: `Local Government, Punjab`,

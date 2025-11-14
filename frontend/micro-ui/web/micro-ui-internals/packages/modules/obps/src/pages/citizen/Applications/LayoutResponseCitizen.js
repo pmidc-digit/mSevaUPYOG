@@ -28,7 +28,10 @@ const LayoutResponseCitizen = (props) => {
   }
 
   const onGoToLayout = () => {
-    history.push(`/digit-ui/citizen/obps/home`)
+    history.push(`/digit-ui/citizen/obps/my-applications`)
+  }
+  const onGoToNewLayoutApplication = () => {
+    history.push(`/digit-ui/citizen/obps/layout/apply`)
   }
 
   const handleDownloadPdf = async () => {
@@ -60,7 +63,8 @@ const LayoutResponseCitizen = (props) => {
         ) : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          <SubmitBar label={t("CORE_COMMON_GO_TO_LAYOUT")} onSubmit={onGoToLayout} />
+          <SubmitBar label={t("My Application")} onSubmit={onGoToLayout} />
+          <SubmitBar label={t(" New Application")} onSubmit={onGoToNewLayoutApplication} />
         </ActionBar>
       </Card>
     </div>

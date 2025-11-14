@@ -62,6 +62,10 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const updatedApplication = {
       ...baseApplication,
       ...hallInfo,
+      purpose: {
+        purpose: hallInfo?.purpose?.purpose?.code,
+      },
+      // purpose: hallInfo?.purpose?.purpose?.name,
       workflow: {
         ...baseApplication?.workflow,
         action: actionStatus,

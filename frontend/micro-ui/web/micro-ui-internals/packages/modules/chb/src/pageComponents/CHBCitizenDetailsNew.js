@@ -44,6 +44,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         return;
       }
 
+      console.log("baseApplication", baseApplication);
+
       // Construct owners array using "data"
       const applicantDetail = {
         tenantId: tenantId,
@@ -54,11 +56,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         type: user?.info?.type,
       };
 
-      // const additionalDetails = {
-      //   // disImage: isCitizenDeclared, // ✅ always include this
-      //   ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
-      //   ...(data?.discountAmount && { discountAmount: data.discountAmount }),
-      // };
       const additionalDetails = {
         ...baseApplication?.additionalDetails,
         disImage: isCitizenDeclared,
@@ -85,6 +82,9 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           applicantDetail,
           address,
           owners,
+          purpose: {
+            purpose: baseApplication?.purpose?.purpose?.code,
+          },
           additionalDetails,
         },
       };

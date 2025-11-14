@@ -76,6 +76,7 @@ import CLUDocumentsRequired from "./pageComponents/CLUDocumentsRequired";
 import CLUApplicantDetails from "./pageComponents/CLUApplicantDetails";
 import CLUProfessionalDetails from "./pageComponents/CLUProfessionalDetails";
 import CLUSummary from "./pageComponents/CLUSummary";
+import CLUResponseCitizen from "./pages/citizen/Applications/CLUResponseCitizen";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
@@ -262,7 +263,8 @@ const componentsToRegister = {
   CLUDocumentsRequired,
   CLUApplicantDetails,
   CLUProfessionalDetails,
-  CLUSummary
+  CLUSummary,
+  CLUResponseCitizen
 }
 
 export const initOBPSComponents = () => {

@@ -108,6 +108,8 @@ module.exports = function (app) {
     "/challan-generation",
     "/layout-services",
     "/adv-services",
+    "/clu-services",
+    "/clu-calculator",,
     "/layout-calculator"
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));

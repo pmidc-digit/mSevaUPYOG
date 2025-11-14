@@ -102,7 +102,11 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         {getChallanData?.map((bill, index) => {
           return (
             <Card key={index}>
-              <KeyNote keyValue={t("CHALLAN_AMOUNT")} note={bill?.amount ? bill?.amount?.[0]?.amount : 0} />
+              <KeyNote
+                keyValue={t("CHALLAN_AMOUNT")}
+                // note={bill?.amount ? bill?.amount?.[0]?.amount || bill?.challanAmount : 0}
+                note={Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0)}
+              />
               <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.applicationStatus)} />
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />

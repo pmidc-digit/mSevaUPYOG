@@ -15,6 +15,7 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
+  LinkButton,
 } from "@mseva/digit-ui-react-components"
 import React, { useEffect, useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -83,7 +84,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const state = tenantId?.split(".")[0]
   const [showToast, setShowToast] = useState(null)
   const [error, setError] = useState(null)
-
+const [viewTimeline, setViewTimeline] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(null)
   const [errorOne, setErrorOne] = useState(null)
   const [displayData, setDisplayData] = useState({})
@@ -371,17 +372,26 @@ const LayoutEmployeeApplicationOverview = () => {
 
   console.log("displayData here", displayData)
 
+
+      const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
         {dowloadOptions && dowloadOptions.length > 0 && (
+          <div>
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
             displayOptions={showOptions}
             options={dowloadOptions}
           />
+           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+          </div>
         )}
       </div>
 
@@ -560,7 +570,7 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       {workflowDetails?.data?.timeline && (
-        <Card>
+        <Card id="timeline">
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
             <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />

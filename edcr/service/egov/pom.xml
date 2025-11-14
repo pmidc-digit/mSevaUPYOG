@@ -41,53 +41,85 @@
 	</distributionManagement>
 
 	<repositories>
-		<repository>
-			<id>repo.egovernments.org</id>
-			<name>eGov Public Repository Group</name>
-			<!--<url>http://repo.egovernments.org/nexus/content/groups/public/</url>-->
-			<url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/org/egov/</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>JBoss Repository</id>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
-		</repository>
-		<repository>
-			<id>AsposeJavaAPI</id>
-			<name>Aspose Java API</name>
-			<url>https://releases.aspose.com/repo/</url>
-		</repository>
-		<repository>
-			<id>javaxt.com</id>
-			<url>https://www.javaxt.com/maven</url>
-		</repository>
 
-		<repository>
-			<id>softmotions-public</id>
-			<url>https://repo.softmotions.com/repository/softmotions-public/</url>
-		</repository>
-		
-		<!-- Maven Central (Correct URL) -->
-		<repository>
-			<id>maven-central</id>
-			<name>Maven Central Repository</name>
-			<url>https://repo1.maven.org/maven2/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
+    <!-- Existing eGov Repo -->
+    <repository>
+        <id>repo.egovernments.org</id>
+        <name>eGov Public Repository Group</name>
+        <url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/org/egov/</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+    </repository>
 
-		
-	</repositories>
+    <!-- JBoss Repo -->
+    <repository>
+        <id>JBoss Repository</id>
+        <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+    </repository>
+
+    <!-- Aspose Repo -->
+    <repository>
+        <id>AsposeJavaAPI</id>
+        <name>Aspose Java API</name>
+        <url>https://releases.aspose.com/repo/</url>
+    </repository>
+
+    <!-- JavaXT -->
+    <repository>
+        <id>javaxt.com</id>
+        <url>https://www.javaxt.com/maven</url>
+    </repository>
+
+    <!-- Softmotions -->
+    <repository>
+        <id>softmotions-public</id>
+        <url>https://repo.softmotions.com/repository/softmotions-public/</url>
+    </repository>
+
+    <!-- Maven Central -->
+    <repository>
+        <id>maven-central</id>
+        <name>Maven Central Repository</name>
+        <url>https://repo1.maven.org/maven2/</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+
+    <!-- OSGeo (GeoTools 2.5.4 old versions) -->
+    <repository>
+        <id>osgeo</id>
+        <url>https://download.osgeo.org/webdav/geotools/</url>
+    </repository>
+
+    <!-- GeoTools Releases -->
+    <repository>
+        <id>geotools-releases</id>
+        <url>https://repo.osgeo.org/repository/geotools-releases/</url>
+    </repository>
+
+    <!-- Apache Archive (for Javaflow 20060411) -->
+    <repository>
+        <id>apache-archive</id>
+        <url>https://archive.apache.org/dist/</url>
+    </repository>
+
+    <!-- JCenter Archive (DynamicJasper, JAI, JTS old versions) -->
+    <repository>
+        <id>jcenter-backup</id>
+        <url>https://jcenter.bintray.com/</url>
+    </repository>
+
+</repositories>
+
 
 	<pluginRepositories>
 		<pluginRepository>

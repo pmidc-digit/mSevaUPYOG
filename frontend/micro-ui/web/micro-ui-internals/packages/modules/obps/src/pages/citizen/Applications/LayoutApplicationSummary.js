@@ -84,13 +84,15 @@ const LayoutApplicationOverview = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")
-
+const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
 
-  const { isLoading, data } = useLayoutSearchApplication({ applicationNumber: id }, tenantId, { cacheTime: 0 })
+// const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
   const applicationDetails = data?.resData
 
-  console.log(applicationDetails, "DATALAYOUT")
+  console.log(applicationDetails,data, "DATALAYOUT")
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
@@ -346,6 +348,13 @@ const LayoutApplicationOverview = () => {
     )
   }
 
+
+    const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
+
   if (isLoading) {
     return <Loader />
   }
@@ -353,14 +362,19 @@ const LayoutApplicationOverview = () => {
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVERVIEW_HEADER")}</Header>
+        <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
         {dowloadOptions && dowloadOptions.length > 0 && (
+          <div>
+
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
             displayOptions={showOptions}
             options={dowloadOptions}
           />
+           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+
+           </div>
         )}
       </div>
 
@@ -529,7 +543,7 @@ const LayoutApplicationOverview = () => {
       </Card>
 
       {workflowDetails?.data?.timeline && (
-        <Card>
+        <Card id="timeline">
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
             <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />

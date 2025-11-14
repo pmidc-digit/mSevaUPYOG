@@ -58,6 +58,8 @@ const LayoutModal = ({
   const [financialYears, setFinancialYears] = useState([])
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null)
 
+  console.log(action, "CHECK11111122222");
+
   const checkRole = action?.state?.actions
 
   const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))]
@@ -136,16 +138,18 @@ const LayoutModal = ({
   }, [file])
 
   useEffect(() => {
-    if (action?.action === "SENDBACKTOCITIZEN") {
+    if (action?.action === "SENDBACKTOPROFESSIONAL") {
       const uuid = applicationDetails?.Layout?.[0]?.auditDetails?.createdBy || null
       setSelectedApprover({ uuid })
     }
   }, [action])
 
   function submit(data) {
-    const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER", "FORWARD"]
+    const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOPROFESSIONAL", "SENDBACKTOVERIFIER", "FORWARD"]
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action)
+
+    console.log(checkCommentsMandatory, "CHECK1111111111");
 
     if (action?.isTerminateState) {
       checkCommentsMandatory = true
@@ -153,10 +157,21 @@ const LayoutModal = ({
 
     const commentsText = data?.comments?.toString().trim()
 
-    if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
-      setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })
-      return
-    }
+    // if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
+    //   setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })
+    //   return
+    // }
+
+    // Do NOT require assignee when SEND BACK TO PROFESSIONAL
+if (
+  action?.action !== "APPROVE" &&
+  action?.action !== "SENDBACKTOPROFESSIONAL" &&
+  !selectedApprover?.uuid
+) {
+  setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })
+  return
+}
+
 
     if (checkCommentsMandatory && !commentsText) {
       setShowToast({ key: "true", warning: true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") })
@@ -168,7 +183,14 @@ const LayoutModal = ({
       ...applicationData,
       action: action?.action,
       comment: data?.comments,
-      assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+      // assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+      assignee:
+  action?.action === "SENDBACKTOPROFESSIONAL"
+    ? null
+    : selectedApprover?.uuid
+      ? [selectedApprover?.uuid]
+      : null,
+
       wfDocuments: uploadedFile
         ? [
             {
@@ -189,19 +211,25 @@ const LayoutModal = ({
 
   useEffect(() => {
     if (action) {
-      setConfig(
-        LayoutModalConfig({
-          t,
-          action,
-          approvers,
-          selectedApprover,
-          setSelectedApprover,
-          selectFile,
-          uploadedFile,
-          setUploadedFile,
-          businessService,
-        }),
-      )
+     let formConfig = LayoutModalConfig({
+  t,
+  action,
+  approvers,
+  selectedApprover,
+  setSelectedApprover,
+  selectFile,
+  uploadedFile,
+  setUploadedFile,
+  businessService,
+});
+
+// Hide assignee dropdown for SENDBACKTOPROFESSIONAL
+if (action?.action === "SENDBACKTOPROFESSIONAL") {
+  formConfig.form = formConfig.form.filter((f) => f.name !== "assignee");
+}
+
+setConfig(formConfig);
+
     }
   }, [action, approvers, financialYears, selectedFinancialYear, uploadedFile])
 

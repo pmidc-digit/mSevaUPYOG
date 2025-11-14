@@ -109,51 +109,49 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    alert("hello");
     const file = e.target.files[0];
     if (!file) return;
 
     const fileType = file.type.toLowerCase();
 
     // ✅ Case 1: Handle image files with EXIF
-    // if (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png")) {
-    const reader = new FileReader();
-    reader.onload = function () {
-      const img = new Image();
-      img.onload = function () {
-        EXIF.getData(img, function () {
-          const lat = EXIF.getTag(this, "GPSLatitude");
-          const lon = EXIF.getTag(this, "GPSLongitude");
-          const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
-          const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
+    if (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png")) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          EXIF.getData(img, function () {
+            const lat = EXIF.getTag(this, "GPSLatitude");
+            const lon = EXIF.getTag(this, "GPSLongitude");
+            const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
+            const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
 
-          let latitude = null;
-          let longitude = null;
+            let latitude = null;
+            let longitude = null;
 
-          if (lat && lon) {
-            latitude = convertDMSToDD(lat, latRef);
-            longitude = convertDMSToDD(lon, lonRef);
-            alert(latitude);
-            // console.log("📍 Latitude:", latitude, "Longitude:", longitude);
-          } else {
-            console.warn("⚠️ No GPS data found in image.");
-          }
+            if (lat && lon) {
+              latitude = convertDMSToDD(lat, latRef);
+              longitude = convertDMSToDD(lon, lonRef);
+              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
+            } else {
+              console.warn("⚠️ No GPS data found in image.");
+            }
 
-          // ✅ Save file + coordinates
-          setFile(file);
-          updateDocument(selectedDocument, { latitude, longitude });
-        });
+            // ✅ Save file + coordinates
+            setFile(file);
+            updateDocument(selectedDocument, { latitude, longitude });
+          });
+        };
+        img.src = reader.result;
       };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-    // }
+      reader.readAsDataURL(file);
+    }
     // ✅ Case 2: Handle PDFs or other file types
-    // else {
-    //   console.log("📄 Non-image file uploaded, skipping EXIF read");
-    //   setFile(file);
-    //   updateDocument(selectedDocument, {}); // no lat/long
-    // }
+    else {
+      console.log("📄 Non-image file uploaded, skipping EXIF read");
+      setFile(file);
+      updateDocument(selectedDocument, {}); // no lat/long
+    }
   }
 
   // helper function to avoid repeating code

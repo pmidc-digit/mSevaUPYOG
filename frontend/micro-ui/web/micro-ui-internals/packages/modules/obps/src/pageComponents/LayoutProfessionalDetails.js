@@ -62,7 +62,7 @@ const LayoutProfessionalDetails = (_props) => {
         const formattedDate = `${year}-${month}-${day}` // Changed to YYYY-MM-DD
         setFormattedDate(formattedDate)
         setValue("professionalRegistrationValidity", formattedDate)
-        console.log("[v0] Formatted date:", formattedDate) // Debug log
+        console.log("  Formatted date:", formattedDate) // Debug log
       }
 
       // You can also map other fields if needed
@@ -95,10 +95,10 @@ const LayoutProfessionalDetails = (_props) => {
   }, [currentStepData, setValue])
 
 useEffect(() => {
-  console.log("[v0] ProfessionalDetails - currentStepData:", currentStepData);
+  console.log("  ProfessionalDetails - currentStepData:", currentStepData);
   const formattedData = currentStepData?.applicationDetails;
   if (formattedData) {
-    console.log("[v0] Setting professional details:", formattedData);
+    console.log("  Setting professional details:", formattedData);
     Object.entries(formattedData).forEach(([key, value]) => {
       setValue(key, value);
     });

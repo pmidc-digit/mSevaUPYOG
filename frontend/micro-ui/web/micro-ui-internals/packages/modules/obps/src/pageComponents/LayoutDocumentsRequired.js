@@ -17,44 +17,40 @@ import { pdfDownloadLink } from "../utils";
 import { UPDATE_LayoutNewApplication_CoOrdinates } from "../redux/actions/LayoutNewApplicationActions";
 
 const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const tenantId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents);
+  console.log("documents in childStep three", documents);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const [geocoordinates, setGeoCoordinates] = useState(null);
+
   const stateId = Digit.ULBService.getStateId();
-
-
-  const applicationNo = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationNo);
-  const layoutResponse = useSelector((state) => state.obps.OBPSFormReducer.formData?.layoutResponse);
-  const applicationDetails = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationDetails);
-  const siteDetails = useSelector((state) => state.obps.OBPSFormReducer.formData?.siteDetails);
-
-  console.log(" Application No from Redux:", applicationNo);
-  console.log(" Layout Response from Redux:", layoutResponse);
   const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["LayoutDocuments"]);
-  console.log("data for documents here", data)
-  //console.log("formData here =====", formData);
+  console.log("data for documents here", data);
 
   const coordinates = useSelector(function (state) {
-    return state?.layout?.LayoutApplicationFormReducer?.coordinates || {}; // Adjust path
-});
+    return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
+  });
 
-useEffect(() => {
-  if(Object.keys(coordinates).length > 0){
-    setGeoCoordinates(coordinates);
-  }
-}, [coordinates]);
+  useEffect(() => {
+    if(Object.keys(coordinates).length > 0){
+      setGeoCoordinates(coordinates);
+    }
+  }, [coordinates]);
 
+  console.log("coordinates (from redux)", coordinates);
+  console.log("geocoordinates", geocoordinates);
 
-// const currentStepData = useSelector((state) => state?.obps?.OBPSFormReducer?.formData) || {};
-// const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
-// const filteredDocuments = isVacant 
-//   ? data?.BPA?.LayoutDocuments?.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") 
-//   : data?.BPA?.LayoutDocuments;
+  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {};
+  const applicationNo = currentStepData?.apiData?.Layout?.[0]?.applicationNo || "";
+  const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+
+  const filteredDocuments = isVacant 
+    ? (data?.BPA?.LayoutDocuments || []).filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") 
+    : (data?.BPA?.LayoutDocuments || []);
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -62,16 +58,17 @@ useEffect(() => {
     documentStep = { ...document, documents: documents };
     onSelect(config.key, documentStep);
   };
+
   const onSkip = () => onSelect();
   function onAdd() {}
 
   useEffect(() => {
     let count = 0;
-    data?.PetService?.Documents?.map((doc) => {
+    (data?.BPA?.LayoutDocuments || []).map((doc) => {
       doc.hasDropdown = true;
 
       let isRequired = false;
-      documents?.map((data) => {
+      (documents || []).map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
       if (!isRequired && doc.required) count = count + 1;
@@ -80,42 +77,37 @@ useEffect(() => {
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
+  useEffect(() => {
+    const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
 
-//   useEffect(() => {
-//   const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
-//   if (currentStatus === "VACANT") {
-//     setDocuments((prevDocs) =>
-//       prevDocs?.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING")
-//     );
-//   }
-// }, [currentStepData?.siteDetails?.buildingStatus?.code]);
+    if (currentStatus === "VACANT") {
+      setDocuments((prevDocs) =>
+        (prevDocs || []).filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING")
+      );
+    }
+  }, [currentStepData?.siteDetails?.buildingStatus?.code]);
 
+  const documentObj = {
+    value: {
+      workflowDocs: (documents || []).map(doc => ({
+        documentType: doc.documentType,
+        filestoreId: doc.filestoreId,
+        documentUid: doc.documentUid,
+        documentAttachment: doc.documentAttachment
+      }))
+    }
+  };
 
-const documentObj = {
-  value: {
-    workflowDocs: documents?.map(doc => ({
-      documentType: doc.documentType,
-      filestoreId: doc.filestoreId,
-      documentUid: doc.documentUid,
-      documentAttachment: doc.documentAttachment
-    }))
-  }
-};
+  const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.obps.useLayoutDocumentSearch(documentObj);
 
-const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.obps.useLayoutDocumentSearch(documentObj); // Adjust hook name
+  const documentLinks = (documents || []).map(doc => ({
+    code: doc.documentType,
+    link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId)
+  }));
 
-const documentLinks = documents?.map(doc => ({
-  code: doc.documentType,
-  link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId)
-}));
-
-
-  console.log(formData, "FORMDATA");
   return (
     <div>
-     
-      {/* <Timeline currentStep={4} /> */}
-        { 
+           { 
           applicationNo ? (
           <CitizenInfoLabel
             info={t("CS_FILE_APPLICATION_INFO_LABEL")}
@@ -127,8 +119,7 @@ const documentLinks = documents?.map(doc => ({
         )}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-     
-          {data?.BPA?.LayoutDocuments?.map((document, index) => {
+          {filteredDocuments?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -156,11 +147,10 @@ const documentLinks = documents?.map(doc => ({
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch, previewLink }) {
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
+function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates, dispatch, previewLink }) {
+  const filteredDocument = (documents || []).filter((item) => item?.documentType?.includes(doc?.code))[0];
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
@@ -175,60 +165,59 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    //console.log("e here==>", e);
-    //console.log("e.target.files[0] here==>", e.target.files[0]);
-    
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    // setFile(e.target.files[0]);
     console.log("selectedFile here", selectedFile);
 
-   if (selectedFile && selectedFile.type === "image/jpeg") {
-    extractGeoLocation(selectedFile).then((location) => {
-      console.log("Latitude:", location.latitude);
-      console.log("Longitude:", location.longitude);
+    if (selectedFile && selectedFile.type === "image/jpeg") {
+      extractGeoLocation(selectedFile).then((location) => {
+        console.log("Latitude:", location.latitude);
+        console.log("Longitude:", location.longitude);
 
-      if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-        if (location.latitude !== null && location.longitude !== null) {
-          // Replace sessionStorage.setItem with dispatch
-          dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude));
-          dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude));
-          setGeoCoordinates((prev) => ({
-            ...prev,
-            Latitude1: location.latitude,
-            Longitude1: location.longitude
-          }));
-
-          // Add edit mode check when clearing
-          if(window.location.pathname.includes("edit")){
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""));
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""));
+        if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+          if (location.latitude !== null && location.longitude !== null) {
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude));
+            setGeoCoordinates((prev) => {
+              return {
+                ...prev,
+                Latitude1: location.latitude,
+                Longitude1: location.longitude
+              }
+            })
+          } else {
+            if(window.location.pathname.includes("edit")){
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""));
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""));
+            }
+            alert("Please upload a photo with location details.");
           }
-          sessionStorage.setItem("Latitude1", location.latitude);
-          sessionStorage.setItem("Longitude1", location.longitude);
-        } else {
-          sessionStorage.removeItem("Latitude1");
-          sessionStorage.removeItem("Longitude1");
-          alert("Please upload a photo with location details.");
         }
-      }
 
-      if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
-        if (location.latitude !== null && location.longitude !== null) {
-          sessionStorage.setItem("Latitude2", location.latitude);
-          sessionStorage.setItem("Longitude2", location.longitude);
-        } else {
-          sessionStorage.removeItem("Latitude2");
-          sessionStorage.removeItem("Longitude2");
-          alert("Please upload a photo with location details.");
+        if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
+          if (location.latitude !== null && location.longitude !== null) {
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", location.latitude));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", location.longitude));
+            setGeoCoordinates((prev) => {
+              return {
+                ...prev,
+                Latitude2: location.latitude,
+                Longitude2: location.longitude
+              }
+            })
+          } else {
+            if(window.location.pathname.includes("edit")){
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", ""));
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", ""));
+            }
+            alert("Please upload a photo with location details.");
+          }
         }
-      }
-    });
+      });
+    }
   }
 
-  }
   const { dropdownData } = doc;
-
   var dropDownData = dropdownData;
 
   const [isHidden, setHidden] = useState(false);
@@ -236,15 +225,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (selectedDocument?.code) {
-     // console.log("selectedDocument here", selectedDocument);
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+        const filteredDocumentsByDocumentType = (prev || []).filter((item) => item?.documentType !== selectedDocument?.code);
 
         if (uploadedFile?.length === 0 || uploadedFile === null) {
           return filteredDocumentsByDocumentType;
         }
 
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType.filter((item) => item?.fileStoreId !== uploadedFile) || [];
         return [
           ...filteredDocumentsByFileStoreId,
           {
@@ -259,7 +247,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [uploadedFile, selectedDocument]);
 
   useEffect(() => {
-    if (documents?.length > 0) {
+    if ((documents || []).length > 0) {
       console.log("documents here", documents);
       handleSubmit();
     }
@@ -283,7 +271,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   useEffect(() => {
     if (!doc?.hasDropdown) {
       setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") });
-      // setHidden(true);
     }
   }, []);
 
@@ -295,11 +282,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         if (file.size >= 5242880) {
           setLoading(false);
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-          // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage("BPA", file, Digit.ULBService.getStateId());
             setLoading(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
@@ -327,41 +313,30 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }
 
   function extractGeoLocation(file) {
-      //console.log("file", file);
-  
-      return new Promise((resolve) => {
-        try {
-          // if (file && file.type === "image/jpeg" && file.size > 1000) {
-          EXIF.getData(file, function () {
-           // console.log("comign here as well");
-  
-            const lat = EXIF.getTag(this, "GPSLatitude");
-            const lon = EXIF.getTag(this, "GPSLongitude");
-  
-            console.log("lat====", lat);
-            if (lat && lon) {
-              // Convert GPS coordinates to decimal format
-              const latDecimal = convertToDecimal(lat).toFixed(2);
-              const lonDecimal = convertToDecimal(lon).toFixed(2);
-              resolve({ latitude: latDecimal, longitude: lonDecimal });
-            } else {
-              resolve({ latitude: null, longitude: null });
-              if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-                {
-                  alert("Please Upload a Photo with Location Details");
-                }
-              } else {
-                null;
-              }
+    return new Promise((resolve) => {
+      try {
+        EXIF.getData(file, function () {
+          const lat = EXIF.getTag(this, "GPSLatitude");
+          const lon = EXIF.getTag(this, "GPSLongitude");
+
+          console.log("lat====", lat);
+          if (lat && lon) {
+            const latDecimal = convertToDecimal(lat).toFixed(6);
+            const lonDecimal = convertToDecimal(lon).toFixed(6);
+            resolve({ latitude: latDecimal, longitude: lonDecimal });
+          } else {
+            resolve({ latitude: null, longitude: null });
+            if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+              alert("Please Upload a Photo with Location Details");
             }
-          });
-          // }
-        } catch (error) {
-          console.log("EXIF parsing failed:", error);
-          resolve({ latitude: null, longitude: null });
-        }
-      });
-    }
+          }
+        });
+      } catch (error) {
+        console.log("EXIF parsing failed:", error);
+        resolve({ latitude: null, longitude: null });
+      }
+    });
+  }
 
   return (
     <div style={{ marginBottom: "24px" }}>
@@ -373,7 +348,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             className="form-field"
             selected={selectedDocument}
             style={{ width: "100%" }}
-            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+            option={(dropDownData || []).map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handlePTRSelectDocument}
             optionKey="i18nKey"
             t={t}
@@ -388,7 +363,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         </LabelFieldPair>
       ) : null}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller"></CardLabel>
+
         {(doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") ? (
           <UploadFile
             onUpload={selectfile}
@@ -413,44 +388,43 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
+            accept=".pdf, .jpeg, .jpg, .png"
             buttonType="button"
             error={!uploadedFile}
           />
         )}
 
-          {previewLink && (
-        <div
+        {previewLink && (
+          <div
             style={{ cursor: "pointer", padding:"10px", marginLeft:"25px"}}
             onClick={(e) => {
-             e.preventDefault(); // Prevent any default behavior
-             window.open(previewLink, "_blank"); // Open in new tab
+             e.preventDefault();
+             window.open(previewLink, "_blank");
             }}
-        >
-         <ViewsIcon/>
-        </div> 
-       )}
+          >
+            <ViewsIcon/>
+          </div> 
+        )}
 
-{doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
-  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
-    <CardLabel>
-      <div style={{paddingLeft:"30px"}}>
-        <p>Latitude: {geocoordinates.Latitude1}</p>
-        <p>Longitude: {geocoordinates.Longitude1}</p>
-      </div>
-    </CardLabel>
-}
-
- {doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  &&
-        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
-           <CardLabel>
-              <div style={{paddingLeft:"30px"}}>
-               <p>Latitude: {geocoordinates.Latitude2}</p>
-               <p>Longitude: {geocoordinates.Longitude2}</p>
-               </div>
-           </CardLabel>  
+        {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
+          (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
+          <CardLabel>
+            <div style={{paddingLeft:"30px"}}>
+              <p>Latitude: {geocoordinates.Latitude1}</p>
+              <p>Longitude: {geocoordinates.Longitude1}</p>
+            </div>
+          </CardLabel>
         }
 
+        {doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  &&
+          (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
+          <CardLabel>
+            <div style={{paddingLeft:"30px"}}>
+              <p>Latitude: {geocoordinates.Latitude2}</p>
+              <p>Longitude: {geocoordinates.Longitude2}</p>
+            </div>
+          </CardLabel>  
+        }
 
       </LabelFieldPair>
     </div>

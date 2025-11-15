@@ -94,9 +94,9 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
 );
 
 // <CHANGE> Add debug logs to see what the hook returns
-console.log("[v0] Layout hook response:", { isLoadinglayout, datalayout, isError, error });
-console.log("[v0] Layout data structure:", datalayout);
-console.log("[v0] Layout search params:", {
+console.log("  Layout hook response:", { isLoadinglayout, datalayout, isError, error });
+console.log("  Layout data structure:", datalayout);
+console.log("  Layout search params:", {
   ...searchListDefaultValues,
   mobileNumber: userInfoforLayout?.mobileNumber || "",
   tenantId
@@ -250,7 +250,7 @@ console.log("[v0] Layout search params:", {
     // <CHANGE> Accessing layout data from the correct property: datalayout.data instead of datalayout.Layout
      // <CHANGE> Accessing the nested Applications object from layout data
       if (datalayout?.data?.length) {
-        console.log("[v0] Processing layout data, count:", datalayout.data.length);
+        console.log("  Processing layout data, count:", datalayout.data.length);
         datalayout.data.forEach((layoutWrapper) => {
           // <CHANGE> Extract the actual application from Applications property
           const layout = layoutWrapper.Applications;
@@ -267,7 +267,7 @@ console.log("[v0] Layout search params:", {
       //   }
       // }, [bpaData, isBpaSearchLoading]);
 
-      console.log("[v0] All hook data:", { 
+      console.log("  All hook data:", { 
     datalayout, 
     layoutArray: datalayout?.Layout,
     rawLayout: datalayout 

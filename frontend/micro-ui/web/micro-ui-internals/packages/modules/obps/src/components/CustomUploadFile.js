@@ -69,7 +69,7 @@ const getCitizenStyles = (value) => {
   } else if (value == "OBPS") {
     citizenStyles = {
       containerStyles: {
-        display: "flex", 
+        display: "flex",
         justifyContent: "flex-start", 
         alignItems: "center", 
         flexWrap: "wrap",
@@ -148,6 +148,7 @@ const CustomUploadFile = (props) => {
     else setHasFile(false);
   };
   const stateCode = Digit.ULBService.getStateId();
+  const isMobile = window?.Digit?.Utils?.browser?.isMobile();
 
   // for common aligmnent issues added common styles
   extraStyles = getCitizenStyles("OBPS");
@@ -191,7 +192,11 @@ const CustomUploadFile = (props) => {
   useEffect(() => handleChange(), [props.message]);
 
     function routeTo(filestoreId) {
+      if (props?.customOpen) {
+        props?.customOpen(filestoreId);
+      } else {
         getUrlForDocumentView(filestoreId)
+      }
     }
 
     const getUrlForDocumentView = async (filestoreId) => {
@@ -200,8 +205,8 @@ const CustomUploadFile = (props) => {
             const result = await Digit.UploadServices.Filefetch([filestoreId], stateCode);
             if (result?.data) {
                 const fileUrl = result.data[filestoreId];
-                if (fileUrl) {
-                    window.open(fileUrl, "_blank");
+                if (fileUrl) {                  
+                  window.open(fileUrl, "_blank");                              
                 } else {
                     if(props?.setError){
                         props?.setError(t("CS_FILE_FETCH_ERROR"));
@@ -227,7 +232,6 @@ const CustomUploadFile = (props) => {
 
   const showHint = props?.showHint || false;
 
-  console.log("customFileUpload",props)
 
   return (
     <Fragment>
@@ -264,7 +268,12 @@ const CustomUploadFile = (props) => {
           {(!props.uploadedFile || props.error) ? 
           (<h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>)
           : (
-            <div className="tag-container" style={extraStyles ? extraStyles?.tagContainerStyles : null}>
+            <div style={!isMobile ? extraStyles?.tagContainerStyles : {
+              width: "80%",
+              display: "flex",
+              marginBottom: "10px",
+              justifyContent: "center",
+            }}>
               <SubmitBar onSubmit={() => {routeTo(props.uploadedFile)}} label={t("CS_VIEW_DOCUMENT")} />
             </div>
           )}

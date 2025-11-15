@@ -180,8 +180,9 @@ export const ChallanData = (tenantId, consumerCode) => {
 
   const officer = officerRaw
     ? {
-        code: officerRaw.code,
-        id: officerRaw.id,
+        code: officerRaw?.code,
+        id: officerRaw?.id,
+        name: officerRaw?.user?.name,
         department: officerAssignment?.department,
       }
     : null;

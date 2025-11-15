@@ -578,9 +578,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
                 {/* Discount Reason */}
                 <div style={{ marginBottom: "20px" }}>
-                  <CardLabel>
-                    {t("CHB_DISCOUNT_REASON")} <span style={{ color: "red" }}>*</span>
-                  </CardLabel>
+                  <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
                     control={control}
                     name={"reason"}

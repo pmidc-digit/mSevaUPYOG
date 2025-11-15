@@ -74,7 +74,7 @@ const ChallanApplicationDetails = () => {
   const { tenants } = storeData || {};
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
-const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
+  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
 
   // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
@@ -129,7 +129,7 @@ const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
       businessService: "Challan_Generation",
@@ -140,7 +140,7 @@ const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRec
   );
   const dowloadOptions = [];
 
-  async function printChallanNotice ({tenantId, payments, ...params}){
+  async function printChallanNotice({ tenantId, payments, ...params }) {
     if (chbPermissionLoading) return;
     setChbPermissionLoading(true);
     try {
@@ -153,11 +153,7 @@ const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRec
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { challan: { ...application,...payments } },
-          "challan-notice"
-        );
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -165,11 +161,10 @@ const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRec
     } finally {
       setChbPermissionLoading(false);
     }
-  };
+  }
 
-  
   async function printChallanReceipt({ tenantId, payments, ...params }) {
-    console.log('payments', payments)
+    console.log("payments", payments);
     if (printing) return;
     setPrinting(true);
     try {
@@ -184,7 +179,7 @@ const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRec
       if (!fileStoreId) {
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...payments, challan: application  }]},
+          { Payments: [{ ...payments, challan: application }] },
           "challangeneration-receipt"
         );
         fileStoreId = response?.filestoreIds[0];
@@ -194,12 +189,11 @@ const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRec
     } finally {
       setPrinting(false);
     }
-  };
+  }
   dowloadOptions.push({
     label: t("Challan_Notice"),
     onClick: () => printChallanNotice({ tenantId, payments: reciept_data?.Payments[0] }),
   });
-
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -213,21 +207,21 @@ const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRec
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CHALLAN_DETAILS")}</Header>
-        {dowloadOptions && dowloadOptions.length > 0 && (
-                              <MultiLink
-                                className="multilinkWrapper"
-                                onHeadClick={() => setShowOptions(!showOptions)}
-                                displayOptions={showOptions}
-                                options={dowloadOptions}
-                              />
-                            )}
+          {dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )}
         </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_DETAILS")}</CardSubHeader>

@@ -172,7 +172,7 @@ const InspectionReportForm = (_props) => {
 
     const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
     const siteImages = JSON.parse(sessionStorage.getItem("Field_Inspection_siteImages"))
-    const geoLocations = JSON.parse(sessionStorage.getItem("Field_Inspection_geoLocations"))
+    // const geoLocations = JSON.parse(sessionStorage.getItem("Field_Inspection_geoLocations"))
     const documentData = siteImages?.map((value, index) => ({
         title: `SITE_IMAGE_${index+1}`,
         imageFileStoreId: value,

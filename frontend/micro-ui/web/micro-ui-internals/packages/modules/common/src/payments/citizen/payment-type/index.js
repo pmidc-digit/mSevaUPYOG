@@ -61,7 +61,9 @@ export const SelectPaymentType = (props) => {
   const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "testing", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
+  console.log("menuList", menuList);
+
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
@@ -379,15 +381,15 @@ export const SelectPaymentType = (props) => {
             </CardSectionHeader>
           </div>
           <CardLabel>{t("PAYMENT_CS_SELECT_METHOD")}</CardLabel>
-          {menuList?.[moduleName]?.PaymentGateway?.length && (
+          {menuList?.PAYMENT?.PaymentGateway?.length && (
             <Controller
               name="paymentType"
-              defaultValue={menuList?.[moduleName]?.PaymentGateway?.[0]?.gateway}
+              defaultValue={menuList?.PAYMENT?.PaymentGateway?.[0]?.gateway}
               control={control}
               render={(props) => (
                 <RadioButtons
                   selectedOption={props.value}
-                  options={menuList?.testing?.PaymentGateway?.map((item) => item?.gateway)}
+                  options={menuList?.PAYMENT?.PaymentGateway?.map((item) => item?.gateway)}
                   onSelect={props.onChange}
                 />
               )}

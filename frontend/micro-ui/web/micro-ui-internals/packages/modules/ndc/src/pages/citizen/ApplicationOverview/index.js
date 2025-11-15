@@ -107,23 +107,18 @@ const CitizenApplicationOverview = () => {
     moduleCode: "ndc-services",
   });
 
-
-
-
   useEffect(() => {
-  if (workflowDetails) {
-    console.log('workflowDetails here', workflowDetails)
-    const approveInstance = workflowDetails?.data?.processInstances?.find(
-      (pi) => pi?.action === "APPROVE"
-    );
+    if (workflowDetails) {
+      console.log("workflowDetails here", workflowDetails);
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
 
-    const name = approveInstance?.assigner?.name || "NA";
+      const name = approveInstance?.assigner?.name || "NA";
 
-    setApprover(name);
-  }
-}, [workflowDetails]);
+      setApprover(name);
+    }
+  }, [workflowDetails]);
 
-console.log('approver for ndc', approver)
+  console.log("approver for ndc", approver);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -151,6 +146,7 @@ console.log('approver for ndc', approver)
 
   useEffect(() => {
     const ndcObject = applicationDetails?.Applications?.[0];
+    console.log("ndcObject", ndcObject);
     if (ndcObject) {
       const applicantData = {
         name: ndcObject?.owners?.[0]?.name,
@@ -192,9 +188,9 @@ console.log('approver for ndc', approver)
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-    console.log('tenantInfo', tenantInfo)
+    console.log("tenantInfo", tenantInfo);
     const ulbType = tenantInfo?.city?.ulbType;
-    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress,tenantInfo, t,approver,ulbType);
+    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
 
     console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generateNDC(acknowledgementData);
@@ -223,18 +219,18 @@ console.log('approver for ndc', approver)
 
   let address, formattedAddress;
 
-if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
-  address = propertyDetailsFetch.Properties[0].address;
-  formattedAddress = [
-    address?.doorNo,
-    address?.buildingName,   // colony/building
-    address?.street,
-    address?.locality?.name, // locality name
-    address?.city
-  ]
-    .filter(Boolean)
-    .join(", ");
-}
+  if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
+    address = propertyDetailsFetch.Properties[0].address;
+    formattedAddress = [
+      address?.doorNo,
+      address?.buildingName, // colony/building
+      address?.street,
+      address?.locality?.name, // locality name
+      address?.city,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
@@ -301,7 +297,13 @@ if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
                     paddingLeft: isRed ? "10px" : "0",
                   }}
                 >
-                  <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
+                  <Row
+                    rowContainerStyle={{
+                      backgroundColor: isRed ? "red" : "none",
+                    }}
+                    label={t("NDC_DUE_AMOUNT")}
+                    text={detail.dueAmount?.toString() || "0"}
+                  />
                 </div>
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (

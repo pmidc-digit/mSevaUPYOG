@@ -8,8 +8,8 @@
         <mirror>
             <id>nexus</id>
             <mirrorOf>central</mirrorOf>
-            <!--<url>http://repo.egovernments.org/nexus/content/groups/public/</url>   -->
-            <url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/org/egov/</url>                 
+           <url>http://repo.egovernments.org/nexus/content/groups/public/</url>  
+            <!-- <url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/org/egov/</url>  -->                
         </mirror>
     </mirrors>
 

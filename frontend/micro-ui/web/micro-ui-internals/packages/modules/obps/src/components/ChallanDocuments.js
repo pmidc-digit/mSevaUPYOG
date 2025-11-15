@@ -313,7 +313,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field" style={{ width: "100%" }}>
-          <UploadFile
+          <CustomUploadFile
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
@@ -325,7 +325,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
-            // uploadedFile={uploadedFile}
+            uploadedFile={uploadedFile}
             customOpen={customOpen}
           />
         </div>

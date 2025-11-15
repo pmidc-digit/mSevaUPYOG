@@ -66,6 +66,12 @@
 			<id>javaxt.com</id>
 			<url>https://www.javaxt.com/maven</url>
 		</repository>
+		
+		<repository>
+			<id>softmotions-public</id>
+			<url>https://repo.softmotions.com/repository/softmotions-public/</url>
+		</repository>
+		
 	</repositories>
 
 	<pluginRepositories>

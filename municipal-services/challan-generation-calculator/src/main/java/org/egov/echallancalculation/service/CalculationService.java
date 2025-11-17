@@ -69,21 +69,46 @@ public class CalculationService {
 	          
 	          List<TaxHeadEstimate> estimates = new LinkedList<>();
 	          
-	          // Calculate amount based on challanAmount and MDMS rate
+	          // Calculate amount based on challanAmount (user-entered), amount array (MDMS values), and MDMS rate (fetched)
+	          // Demand will be generated with the highest value among these three sources
 	          BigDecimal finalAmount = BigDecimal.ZERO;
 	          String taxHeadCode = "CH.CHALLAN_FINE"; // Default tax head code
 	          
 	          // Get user-entered challan amount
-	          BigDecimal userAmount = BigDecimal.ZERO;
+	          BigDecimal challanAmount = BigDecimal.ZERO;
 	          if (challan.getChallanAmount() != null && !challan.getChallanAmount().isEmpty()) {
 	              try {
-	                  userAmount = new BigDecimal(challan.getChallanAmount());
+	                  challanAmount = new BigDecimal(challan.getChallanAmount());
 	              } catch (NumberFormatException e) {
 	                  log.warn("Invalid challanAmount format: {}", challan.getChallanAmount());
 	              }
 	          }
 	          
-	          // Get MDMS rate if subcategory is available
+	          // Get maximum amount from amount array (contains MDMS values)
+	          BigDecimal amountArrayMax = BigDecimal.ZERO;
+	          String amountArrayTaxHeadCode = null;
+	          List<Amount> amountList = challan.getAmount();
+	          if (amountList != null && !amountList.isEmpty()) {
+	              for (Amount amountItem : amountList) {
+	                  if (amountItem.getAmount() != null) {
+	                      int comparison = amountItem.getAmount().compareTo(amountArrayMax);
+	                      if (comparison > 0) {
+	                          // Found a new maximum, update both amount and taxHeadCode
+	                          amountArrayMax = amountItem.getAmount();
+	                          if (amountItem.getTaxHeadCode() != null && !amountItem.getTaxHeadCode().isEmpty()) {
+	                              amountArrayTaxHeadCode = amountItem.getTaxHeadCode();
+	                          }
+	                      } else if (comparison == 0 && amountArrayTaxHeadCode == null) {
+	                          // Same maximum value, use taxHeadCode if we don't have one yet
+	                          if (amountItem.getTaxHeadCode() != null && !amountItem.getTaxHeadCode().isEmpty()) {
+	                              amountArrayTaxHeadCode = amountItem.getTaxHeadCode();
+	                          }
+	                      }
+	                  }
+	              }
+	          }
+	          
+	          // Get MDMS rate by fetching from MDMS service (if subcategory is available)
 	          BigDecimal mdmsRate = BigDecimal.ZERO;
 	          String subCategoryId = null;
 	          
@@ -96,25 +121,52 @@ public class CalculationService {
 	          
 	          if (subCategoryId != null) {
 	              mdmsRate = utils.getRateFromMDMS(requestInfo, challan.getTenantId(), subCategoryId);
-	              taxHeadCode = utils.getTaxHeadCodeFromMDMS(requestInfo, challan.getTenantId(), "CH.CHALLAN_FINE");
+	              String mdmsTaxHeadCode = utils.getTaxHeadCodeFromMDMS(requestInfo, challan.getTenantId(), "CH.CHALLAN_FINE");
+	              if (mdmsTaxHeadCode != null && !mdmsTaxHeadCode.isEmpty()) {
+	                  taxHeadCode = mdmsTaxHeadCode;
+	              }
 	          }
 	          
-	          // Use the higher amount between user-entered amount and MDMS rate
-	          if (userAmount.compareTo(BigDecimal.ZERO) > 0 || mdmsRate.compareTo(BigDecimal.ZERO) > 0) {
-	              finalAmount = userAmount.max(mdmsRate);
+	          // Compare all three values and use the highest
+	          // Sources: 1) challanAmount (user-entered), 2) amountArrayMax (MDMS from array), 3) mdmsRate (MDMS fetched)
+	          // Priority: challanAmount > amountArrayMax > mdmsRate (if values are equal, prefer in this order)
+	          BigDecimal maxAmount = challanAmount.max(amountArrayMax).max(mdmsRate);
+	          
+	          // Determine which source has the highest value to set appropriate taxHeadCode
+	          if (maxAmount.compareTo(BigDecimal.ZERO) > 0) {
+	              // Check which value is the maximum, with priority order
+	              if (challanAmount.compareTo(maxAmount) >= 0 && challanAmount.compareTo(BigDecimal.ZERO) > 0) {
+	                  // challanAmount is the highest (or equal to max)
+	                  finalAmount = challanAmount;
+	                  // Use MDMS taxHeadCode or default
+	              } else if (amountArrayMax.compareTo(maxAmount) >= 0 && amountArrayMax.compareTo(BigDecimal.ZERO) > 0) {
+	                  // amount array has the highest value (or equal to max, and challanAmount is not higher)
+	                  finalAmount = amountArrayMax;
+	                  if (amountArrayTaxHeadCode != null && !amountArrayTaxHeadCode.isEmpty()) {
+	                      taxHeadCode = amountArrayTaxHeadCode;
+	                  }
+	              } else if (mdmsRate.compareTo(maxAmount) >= 0 && mdmsRate.compareTo(BigDecimal.ZERO) > 0) {
+	                  // MDMS rate is the highest (or equal to max, and others are not higher)
+	                  finalAmount = mdmsRate;
+	              } else {
+	                  // Use the max amount (shouldn't reach here, but safety check)
+	                  finalAmount = maxAmount;
+	              }
 	              
 	              TaxHeadEstimate estimate = new TaxHeadEstimate();
 	              estimate.setEstimateAmount(finalAmount);
 	              estimate.setTaxHeadCode(taxHeadCode);
 	              estimates.add(estimate);
+	              
+	              log.info("Demand calculation - challanAmount: {}, amountArrayMax: {}, mdmsRate: {}, finalAmount: {}", 
+	                      challanAmount, amountArrayMax, mdmsRate, finalAmount);
 	          } else {
-	              // Fallback to existing amount list if no challanAmount or subcategory
-	              List<Amount> amount = challan.getAmount();
-	              if (amount != null) {
-	                  for(Amount amount1 : amount) {
+	              // Fallback: if all are zero, use amount list as-is (preserve original behavior)
+	              if (amountList != null && !amountList.isEmpty()) {
+	                  for(Amount amountItem : amountList) {
 	                      TaxHeadEstimate estimate = new TaxHeadEstimate();
-	                      estimate.setEstimateAmount(amount1.getAmount());
-	                      estimate.setTaxHeadCode(amount1.getTaxHeadCode());
+	                      estimate.setEstimateAmount(amountItem.getAmount());
+	                      estimate.setTaxHeadCode(amountItem.getTaxHeadCode() != null ? amountItem.getTaxHeadCode() : taxHeadCode);
 	                      estimates.add(estimate);
 	                  }
 	              }

@@ -55,6 +55,15 @@ public class SearchCriteria {
 	@JsonProperty("receiptNumber")
 	private String receiptNumber;
 	
+	@JsonProperty("offenceTypeName")
+	private String offenceTypeName;
+	
+	@JsonProperty("offenceCategoryName")
+	private String offenceCategoryName;
+	
+	@JsonProperty("offenceSubCategoryName")
+	private String offenceSubCategoryName;
+	
 	public boolean isEmpty() {
         return (this.tenantId == null && this.ids == null  && this.mobileNumber == null 
         );

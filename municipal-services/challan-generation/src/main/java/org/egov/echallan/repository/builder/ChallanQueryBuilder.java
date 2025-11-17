@@ -46,7 +46,7 @@ public class ChallanQueryBuilder {
             +"eg_challanAddress chaladdr ON chaladdr.challanid = echallan.id";
 
       private final String paginationWrapper = "SELECT * FROM " +
-              "(SELECT *, DENSE_RANK() OVER (ORDER BY challan_lastModifiedTime DESC , challan_id) offset_ FROM " +
+              "(SELECT *, DENSE_RANK() OVER (ORDER BY challan_createdTime DESC , challan_id) offset_ FROM " +
               "({})" +
               " result) result_offset " +
               "WHERE offset_ > ? AND offset_ <= ?";
@@ -75,62 +75,85 @@ public class ChallanQueryBuilder {
 
         addBusinessServiceClause(criteria,preparedStmtList,builder);
 
+        // Tenant ID - always add if present
+        if (criteria.getTenantId() != null) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.tenantid=? ");
+            preparedStmtList.add(criteria.getTenantId());
+        }
 
-        if(criteria.getAccountId()!=null){
-            addClauseIfRequired(preparedStmtList,builder);
+        // IDs search
+        List<String> ids = criteria.getIds();
+        if (!CollectionUtils.isEmpty(ids)) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.id IN (").append(createQuery(ids)).append(")");
+            addToPreparedStatement(preparedStmtList, ids);
+        }
+
+        // Account ID search - optional, doesn't restrict other searches
+        if(criteria.getAccountId() != null && !criteria.getAccountId().trim().isEmpty()) {
+            addClauseIfRequired(preparedStmtList, builder);
             builder.append(" echallan.accountid = ? ");
             preparedStmtList.add(criteria.getAccountId());
-
-            List<String> ownerIds = criteria.getUserIds();
-            if(!CollectionUtils.isEmpty(ownerIds)) {
-                builder.append(" OR (echallan.accountid IN (").append(createQuery(ownerIds)).append(")");
-                addToPreparedStatement(preparedStmtList,ownerIds);
-                addBusinessServiceClause(criteria,preparedStmtList,builder);
-            }
         }
-        else {
 
-            if (criteria.getTenantId() != null) {
-                addClauseIfRequired(preparedStmtList, builder);
-                builder.append(" echallan.tenantid=? ");
-                preparedStmtList.add(criteria.getTenantId());
-            }
-            List<String> ids = criteria.getIds();
-            if (!CollectionUtils.isEmpty(ids)) {
-                addClauseIfRequired(preparedStmtList, builder);
-                builder.append(" echallan.id IN (").append(createQuery(ids)).append(")");
-                addToPreparedStatement(preparedStmtList, ids);
-            }
-
-            List<String> ownerIds = criteria.getUserIds();
-            if (!CollectionUtils.isEmpty(ownerIds)) {
-                addClauseIfRequired(preparedStmtList, builder);
+        // User IDs search (for mobile number search) - optional, doesn't restrict other searches
+        List<String> ownerIds = criteria.getUserIds();
+        if (!CollectionUtils.isEmpty(ownerIds)) {
+            addClauseIfRequired(preparedStmtList, builder);
+            if(criteria.getAccountId() != null && !criteria.getAccountId().trim().isEmpty()) {
+                // Both accountId and ownerIds present - use OR condition
+                builder.append(" OR echallan.accountid IN (").append(createQuery(ownerIds)).append(")");
+            } else {
+                // Only ownerIds present
                 builder.append(" echallan.accountid IN (").append(createQuery(ownerIds)).append(")");
-                addToPreparedStatement(preparedStmtList, ownerIds);
-                //addClauseIfRequired(preparedStmtList, builder);
             }
+            addToPreparedStatement(preparedStmtList, ownerIds);
+        }
 
-            if (criteria.getChallanNo() != null) {
-                List<String> challanNos = Arrays.asList(criteria.getChallanNo().split(","));
-                addClauseIfRequired(preparedStmtList, builder);
-                builder.append(" echallan.challanno IN (").append(createQuery(challanNos)).append(")");
-                addToPreparedStatement(preparedStmtList, challanNos);
-            }
-            if (criteria.getStatus() != null) {
-                List<String> status = Arrays.asList(criteria.getStatus().split(","));
-                addClauseIfRequired(preparedStmtList, builder);
-                builder.append(" echallan.applicationstatus IN (").append(createQuery(status)).append(")");
-                addToPreparedStatement(preparedStmtList, status);
-            }
+        // Challan No search - should work with all other criteria
+        if (criteria.getChallanNo() != null && !criteria.getChallanNo().trim().isEmpty()) {
+            List<String> challanNos = Arrays.asList(criteria.getChallanNo().split(","));
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.challanno IN (").append(createQuery(challanNos)).append(")");
+            addToPreparedStatement(preparedStmtList, challanNos);
+        }
 
-            if (criteria.getReceiptNumber() != null) {
-                List<String> receiptNumbers = Arrays.asList(criteria.getReceiptNumber().split(","));
-                addClauseIfRequired(preparedStmtList, builder);
-                builder.append(" echallan.receiptnumber IN (").append(createQuery(receiptNumbers)).append(")");
-                addToPreparedStatement(preparedStmtList, receiptNumbers);
-            }
+        // Status search
+        if (criteria.getStatus() != null && !criteria.getStatus().trim().isEmpty()) {
+            List<String> status = Arrays.asList(criteria.getStatus().split(","));
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.applicationstatus IN (").append(createQuery(status)).append(")");
+            addToPreparedStatement(preparedStmtList, status);
+        }
 
+        // Receipt Number search
+        if (criteria.getReceiptNumber() != null && !criteria.getReceiptNumber().trim().isEmpty()) {
+            List<String> receiptNumbers = Arrays.asList(criteria.getReceiptNumber().split(","));
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.receiptnumber IN (").append(createQuery(receiptNumbers)).append(")");
+            addToPreparedStatement(preparedStmtList, receiptNumbers);
+        }
 
+        // Offence Type Name search
+        if (criteria.getOffenceTypeName() != null && !criteria.getOffenceTypeName().trim().isEmpty()) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.offence_type_name ILIKE ? ");
+            preparedStmtList.add("%" + criteria.getOffenceTypeName().trim() + "%");
+        }
+
+        // Offence Category Name search
+        if (criteria.getOffenceCategoryName() != null && !criteria.getOffenceCategoryName().trim().isEmpty()) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.offence_category_name ILIKE ? ");
+            preparedStmtList.add("%" + criteria.getOffenceCategoryName().trim() + "%");
+        }
+
+        // Offence SubCategory Name search
+        if (criteria.getOffenceSubCategoryName() != null && !criteria.getOffenceSubCategoryName().trim().isEmpty()) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" echallan.offence_subcategory_name ILIKE ? ");
+            preparedStmtList.add("%" + criteria.getOffenceSubCategoryName().trim() + "%");
         }
 
         if(isCountQuery)

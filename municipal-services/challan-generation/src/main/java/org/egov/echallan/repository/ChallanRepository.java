@@ -183,17 +183,31 @@ public class ChallanRepository {
 
 	public Map<String,Integer> fetchDynamicData(String tenantId) {
 		
+		Map<String, Integer> dynamicData = new HashMap<String,Integer>();
+		
+		// Return default values if tenantId is null
+		if (tenantId == null || tenantId.trim().isEmpty()) {
+			dynamicData.put("totalCollection", 0);
+			dynamicData.put("totalServices", 0);
+			return dynamicData;
+		}
+		
 		List<Object> preparedStmtListTotalCollection = new ArrayList<>();
 		String query = queryBuilder.getTotalCollectionQuery(tenantId, preparedStmtListTotalCollection);
 		
-		int totalCollection = jdbcTemplate.queryForObject(query,preparedStmtListTotalCollection.toArray(),Integer.class);
+		Integer totalCollection = jdbcTemplate.queryForObject(query,preparedStmtListTotalCollection.toArray(),Integer.class);
+		if (totalCollection == null) {
+			totalCollection = 0;
+		}
 		
 		List<Object> preparedStmtListTotalServices = new ArrayList<>();
 		query = queryBuilder.getTotalServicesQuery(tenantId, preparedStmtListTotalServices);
 		
-		int totalServices = jdbcTemplate.queryForObject(query,preparedStmtListTotalServices.toArray(),Integer.class);
+		Integer totalServices = jdbcTemplate.queryForObject(query,preparedStmtListTotalServices.toArray(),Integer.class);
+		if (totalServices == null) {
+			totalServices = 0;
+		}
 		
-		Map<String, Integer> dynamicData = new HashMap<String,Integer>();
 		dynamicData.put("totalCollection", totalCollection);
 		dynamicData.put("totalServices", totalServices);
 		

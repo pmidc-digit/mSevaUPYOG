@@ -12,7 +12,6 @@ import org.egov.echallan.config.ChallanConfiguration;
 import org.egov.echallan.enums.ChallanStatusEnum;
 import org.egov.echallan.model.Amount;
 import org.egov.echallan.model.Challan;
-import org.egov.echallan.model.Challan.StatusEnum;
 import org.egov.echallan.model.ChallanRequest;
 import org.egov.echallan.model.SearchCriteria;
 import org.egov.echallan.repository.ChallanRepository;
@@ -169,6 +168,9 @@ public class ChallanService {
 					challan.getChallanNo(), e.getMessage());
 			}
 		}
+		
+		// Extract latitude and longitude from documents and store in additionalDetail
+		extractAndStoreLocationFromDocuments(challan);
 		
 		// Set initial challan status
 		challan.setChallanStatus(ChallanStatusEnum.CHALLAN_CREATED.toString());
@@ -386,7 +388,8 @@ public class ChallanService {
 			 }
 		 }
 
-
+		 // Extract latitude and longitude from documents and store in additionalDetail
+		 extractAndStoreLocationFromDocuments(challan);
 
 		 // If workflow action present, transition and set status from WF response
 
@@ -445,6 +448,63 @@ public class ChallanService {
 	
 	public int getChallanValidity() {
 		return Integer.valueOf(config.getChallanValidity());
+	}
+
+	/**
+	 * Extracts latitude and longitude from documents and stores them in additionalDetail
+	 * 
+	 * @param challan The challan object containing documents
+	 */
+	private void extractAndStoreLocationFromDocuments(Challan challan) {
+		if (challan.getUploadedDocumentDetails() == null || challan.getUploadedDocumentDetails().isEmpty()) {
+			return;
+		}
+		
+		try {
+			// Find first document with latitude and longitude
+			Double latitude = null;
+			Double longitude = null;
+			
+			for (org.egov.echallan.model.DocumentDetail document : challan.getUploadedDocumentDetails()) {
+				if (document.getLatitude() != null && document.getLongitude() != null) {
+					latitude = document.getLatitude();
+					longitude = document.getLongitude();
+					break; // Use first document with location data
+				}
+			}
+			
+			// If location found, store in additionalDetail
+			if (latitude != null && longitude != null) {
+				// Ensure additionalDetail is not null
+				if (challan.getAdditionalDetail() == null) {
+					challan.setAdditionalDetail(new HashMap<>());
+				}
+				
+				// Convert additionalDetail to Map if it's not already
+				@SuppressWarnings("unchecked")
+				Map<String, Object> additionalDetailMap;
+				ObjectMapper mapper = new ObjectMapper();
+				if (challan.getAdditionalDetail() instanceof Map) {
+					additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+				} else {
+					// If it's JsonNode or other type, convert to Map
+					@SuppressWarnings("unchecked")
+					Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+					additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+				}
+				
+				// Store latitude and longitude in additionalDetail
+				additionalDetailMap.put("latitude", latitude);
+				additionalDetailMap.put("longitude", longitude);
+				challan.setAdditionalDetail(additionalDetailMap);
+				
+				log.info("Stored latitude: {} and longitude: {} in additionalDetail for challan {}", 
+					latitude, longitude, challan.getChallanNo());
+			}
+		} catch (Exception e) {
+			log.warn("Failed to extract and store location from documents for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage());
+		}
 	}
 
 	

@@ -52,6 +52,12 @@ public class ChallanGenerationController {
 	 public ResponseEntity<ChallanResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
 	                                                       @Valid @ModelAttribute SearchCriteria criteria) {
 		 String tenantId = criteria.getTenantId();
+		 // Use tenantId from RequestInfo if criteria tenantId is null
+		 if (tenantId == null && requestInfoWrapper.getRequestInfo() != null 
+		     && requestInfoWrapper.getRequestInfo().getUserInfo() != null) {
+			 tenantId = requestInfoWrapper.getRequestInfo().getUserInfo().getTenantId();
+		 }
+		 
 	     List<Challan> challans = challanService.search(criteria, requestInfoWrapper.getRequestInfo());
 	    	 
 	     

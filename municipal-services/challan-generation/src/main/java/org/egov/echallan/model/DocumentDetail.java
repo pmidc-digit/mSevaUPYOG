@@ -32,6 +32,10 @@ public class DocumentDetail {
 	@NotBlank(groups = CreateApplicationGroup.class)
 	private String fileStoreId;
 
+	private Double latitude;
+
+	private Double longitude;
+
 	private AuditDetails auditDetails;
 
 }

@@ -90,6 +90,7 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                             }
                         }
                     }
+                    
                 }
                 }
                 catch (IOException e){
@@ -177,12 +178,77 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                         .fileStoreId(rs.getString("filestore_id"))
                         .auditDetails(auditdetails)
                         .build();
+                
+                // Populate latitude and longitude from additionalDetail if available
+                populateLocationFromAdditionalDetail(challan, details);
+                
                 existingDocs.add(details);
                 challan.setUploadedDocumentDetails(existingDocs);
+            } else {
+                // If document already exists, also populate location if not already set
+                DocumentDetail existingDoc = existingDocs.stream()
+                    .filter(doc -> documentDetailId.equals(doc.getDocumentDetailId()))
+                    .findFirst()
+                    .orElse(null);
+                if(existingDoc != null) {
+                    populateLocationFromAdditionalDetail(challan, existingDoc);
+                }
             }
         }
     }
 
-
+    /**
+     * Populates latitude and longitude in document from challan's additionalDetail
+     * 
+     * @param challan The challan object containing additionalDetail
+     * @param document The document to populate with location data
+     */
+    private void populateLocationFromAdditionalDetail(Challan challan, DocumentDetail document) {
+        if (challan.getAdditionalDetail() == null || document == null) {
+            return;
+        }
+        
+        try {
+            // Check if additionalDetail is JsonNode
+            if (challan.getAdditionalDetail() instanceof JsonNode) {
+                JsonNode additionalDetail = (JsonNode) challan.getAdditionalDetail();
+                
+                if (additionalDetail.has("latitude") && additionalDetail.has("longitude")) {
+                    // Only populate if document doesn't already have latitude/longitude
+                    if (document.getLatitude() == null) {
+                        Double latitude = additionalDetail.get("latitude").asDouble();
+                        document.setLatitude(latitude);
+                    }
+                    if (document.getLongitude() == null) {
+                        Double longitude = additionalDetail.get("longitude").asDouble();
+                        document.setLongitude(longitude);
+                    }
+                }
+            } else if (challan.getAdditionalDetail() instanceof Map) {
+                // Handle Map type additionalDetail
+                @SuppressWarnings("unchecked")
+                Map<String, Object> additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+                
+                if (additionalDetailMap.containsKey("latitude") && additionalDetailMap.containsKey("longitude")) {
+                    // Only populate if document doesn't already have latitude/longitude
+                    if (document.getLatitude() == null && additionalDetailMap.get("latitude") != null) {
+                        Object latObj = additionalDetailMap.get("latitude");
+                        if (latObj instanceof Number) {
+                            document.setLatitude(((Number) latObj).doubleValue());
+                        }
+                    }
+                    if (document.getLongitude() == null && additionalDetailMap.get("longitude") != null) {
+                        Object lngObj = additionalDetailMap.get("longitude");
+                        if (lngObj instanceof Number) {
+                            document.setLongitude(((Number) lngObj).doubleValue());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to populate location from additionalDetail for document {}: {}", 
+                document.getDocumentDetailId(), e.getMessage());
+        }
+    }
 
 }

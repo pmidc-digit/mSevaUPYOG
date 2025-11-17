@@ -30,7 +30,7 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
   };
 
   const propsForOldConnectionNumberNpropertyId = {
-    pattern: "[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}|[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}",
+    pattern: "^[A-Za-z0-9-]+$",
     title: t("ERR_DEFAULT_INPUT_FIELD_MSG"),
   };
   let validation = {}
@@ -71,7 +71,11 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
       </SearchField>
       <SearchField >
         <label>{t("WS_PROPERTY_ID_LABEL")}</label>
-        <TextInput name="propertyId" inputRef={register({})} {...propsForOldConnectionNumberNpropertyId} />
+        <TextInput 
+          name="propertyId" 
+          inputRef={register({})} 
+          {...propsForOldConnectionNumberNpropertyId} 
+        />
       </SearchField>
       <SearchField>
         <label>{t("WS_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")}</label>
@@ -110,7 +114,7 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
                   inputRef={register({})} 
                   {...(validation = {
                     isRequired: false,
-                    pattern: "^[A-Za-z\s]+$",
+                    pattern: "^[A-Za-z\\s\\.]+$",
                     type: "text",
                     title: t("ERR_INVALID_OWNER_NMAE"),
                   })}
@@ -118,7 +122,7 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
       </SearchField>
       <SearchField className="submit">
         <SubmitBar label={t("WS_SEARCH_CONNECTION_SEARCH_BUTTON")} submit />
-        <p
+        {/* <p
           onClick={() => {
             reset({
               searchType:"CONNECTION",
@@ -138,7 +142,41 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
           }}
         >
           {t("WS_SEARCH_CONNECTION_RESET_BUTTON")}
-        </p>
+        </p> */}
+        <button
+    type="button"
+    onClick={() => {
+      reset({
+        searchType:"CONNECTION",
+        mobileNumber: "",
+        offset: 0,
+        limit: 10,
+        sortBy: "commencementDate",
+        sortOrder: "DESC",
+        propertyId: "",
+        connectionNumber: "",
+        oldConnectionNumber: "",
+        ownerName:"",
+        cityValue:"",
+        locality:"",
+      });
+    }}
+    style={{
+      marginRight: "5px",
+      backgroundColor: "#2947A3",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      padding: "8px 15px",
+      fontSize: "16px",
+      fontWeight: "400",
+      cursor: "pointer",
+      textTransform: "uppercase",
+      letterSpacing: "1px"
+    }}
+  >
+    {t("WS_SEARCH_CONNECTION_RESET_BUTTON")}
+  </button>
       </SearchField>
     </>
   );

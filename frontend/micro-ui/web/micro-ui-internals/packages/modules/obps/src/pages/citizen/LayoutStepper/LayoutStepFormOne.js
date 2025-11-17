@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
-import { UPDATE_OBPS_FORM } from "../../../redux/actions/OBPSActions";
+import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -16,9 +16,6 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const currentStepData = useSelector(function (state) {
     return state.obps.LayoutNewApplicationFormReducer.formData;
   });
-
-    const applicationNo = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData?.applicationNo);
-  
 
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo type here", userInfo?.info?.type);
@@ -35,37 +32,6 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const commonProps = { Controller, control, setValue, errors, trigger, errorStyle};
 
-
-  useEffect(() => {
-    // Check if we have API response data to populate
-    const apiResponse = currentStepData?.applicationDetails;
-  
-    console.log(currentStepData, "RESSSSSSS");
-    
-    if (apiResponse?.layoutDetails?.additionalDetails) {
-      const additionalDetails = apiResponse.layoutDetails.additionalDetails;
-      
-      // Populate siteDetails if available
-      if (additionalDetails.siteDetails) {
-        const siteData = additionalDetails.siteDetails;
-        
-        // Set all form values from API response
-        Object.entries(siteData).forEach(([key, value]) => {
-          setValue(key, value);
-        });
-      }
-      
-      // Populate applicationDetails if available
-      if (additionalDetails.applicationDetails) {
-        const appData = additionalDetails.applicationDetails;
-        
-        Object.entries(appData).forEach(([key, value]) => {
-          setValue(key, value);
-        });
-      }
-    }
-  }, [currentStepData?.apiResponse, setValue]);
-  
   const onSubmit = (data) => {
     //console.log("data in first step", data);
     trigger();
@@ -78,7 +44,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function goNext(data) {
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
+    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
     onGoNext();
   }
 

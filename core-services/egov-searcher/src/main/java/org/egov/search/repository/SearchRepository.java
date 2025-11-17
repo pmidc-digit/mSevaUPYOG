@@ -59,60 +59,61 @@ public class SearchRepository {
 	}
 	
 	public Object fetchWithCustomMapper(SearchRequest searchRequest, Definition searchDefinition) {
-        Map<String, Object> preparedStatementValues = new HashMap<>();
-		
-        String query = searchUtils.buildQuery(searchRequest, searchDefinition.getSearchParams(), searchDefinition.getQuery(), preparedStatementValues);
-		try {
-			log.info("Final Query: " + query);
-			//log.debug("preparedStatementValues: " + preparedStatementValues);
-			List<PropertyBasedBill> result = null;
-			List<Bill> result1 = null;
+	    Map<String, Object> preparedStatementValues = new HashMap<>();
+	    String query = searchUtils.buildQuery(searchRequest, searchDefinition.getSearchParams(),
+	                                          searchDefinition.getQuery(), preparedStatementValues);
 
-			 Map<String, Object> searchCriteria = (Map<String, Object>) searchRequest.getSearchCriteria();
+	    try {
+	        log.info("Final Query: {}", query);
 
-			    // Validate searchCriteria and get the URL
-			    String url = null;
-			    if (searchCriteria != null) {
-			        url = (String) searchCriteria.get("url");
-			    }
+	        List<PropertyBasedBill> propertyBillResults = null;
+	        List<Bill> billResults = null;
 
-			    // Check if URL contains 'integrated'
-			    if (url != null && url.contains("integrated")) {
-			        log.info("URL contains 'integrated': " + url);
-			        // Add logic specific to integrated billing URLs
-			        result = namedParameterJdbcTemplate.query(query, preparedStatementValues, integratedRowMapper);
-			    } else {
-			        log.info("URL does not contain 'integrated': " + url);
-			        result1 = namedParameterJdbcTemplate.query(query, preparedStatementValues, rowMapper);
-			    }
-			
-			Map<String, String> business = (Map<String, String>) searchRequest.getSearchCriteria();
-	        
-	   
-			if (result != null && !result.isEmpty()) {
-			    return result;
-			}
+	        // Extract and validate search criteria
+	        Map<String, Object> searchCriteria = (Map<String, Object>) searchRequest.getSearchCriteria();
+	        String url = searchCriteria != null ? (String) searchCriteria.get("url") : null;
 
-	     else {
-	         String businesService = business.get("businesService");
-	         if (businesService != null &&
-	        		    (businesService.equalsIgnoreCase("SW") || businesService.equalsIgnoreCase("WS")) &&
-	        		    !result1.isEmpty()) {
+	        // Query selection logic
+	        if (url != null && url.contains("integrated")) {
+	            log.info("URL contains 'integrated': {}", url);
+	            propertyBillResults = namedParameterJdbcTemplate.query(query, preparedStatementValues, integratedRowMapper);
+	        } else {
+	            log.info("URL does not contain 'integrated': {}", url);
+	            billResults = namedParameterJdbcTemplate.query(query, preparedStatementValues, rowMapper);
+	        }
 
-	        		    for (Bill bill : result1) {
-	        		        if (bill.getBillDetails() != null) {
-	        		            Collections.sort(bill.getBillDetails(),
-	        		                (b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod()));
-	        		        }
-	        		    }
-	        		}
+	        // Return results based on mapper used
+	        if (propertyBillResults != null && !propertyBillResults.isEmpty()) {
+	            return propertyBillResults;
+	        }
 
-	        		return result1;
-	     		}
-	     } catch (CustomException e) {
-			throw e;
-		}
+	        // Sort billDetails if required
+	        if (billResults != null && !billResults.isEmpty()) {
+	            String businessService = (String) searchCriteria.get("businesService");
+
+	            if ("SW".equalsIgnoreCase(businessService) || "WS".equalsIgnoreCase(businessService)) {
+	                for (Bill bill : billResults) {
+	                    if (bill.getBillDetails() != null) {
+	                        bill.getBillDetails().sort(
+	                            (b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod())
+	                        );
+	                    }
+	                }
+	            }
+
+	            return billResults;
+	        }
+
+	        return Collections.emptyList();
+
+	    } catch (CustomException e) {
+	        throw e;
+	    } catch (Exception e) {
+	        log.error("Error while fetching data with custom mapper", e);
+	        throw new CustomException("FETCH_ERROR", "An unexpected error occurred during query execution");
+	    }
 	}
+
 // 	public Integer  getUniqueCitizenCount() {
 	     
 // 		try {

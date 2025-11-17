@@ -8,7 +8,6 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
   // const { limit, offset } = filters;
   const user = Digit.UserService.getUser();
   // const status = filters?.filterForm?.applicationStatus;
-  console.log("filters", filters);
   // const selectedStatuses = getFilter?.applicationStatus?.map((s) => s?.code) || [];
 
   const _filters = {
@@ -51,14 +50,16 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
         const tableData = data?.items?.map((application) => {
           const dataRes = application?.businessObject;
           const dataForm = application?.ProcessInstance;
+          const finalAmount = Math.max(dataRes?.amount?.[0]?.amount || 0, dataRes?.challanAmount || 0);
           return {
             applicationId: dataRes?.challanNo,
             date: parseInt(dataRes?.auditDetails?.createdTime),
             businessService: dataForm?.businessService,
             status: `${dataRes.applicationStatus}`,
             offenceTypeName: dataRes?.offenceTypeName,
-            amount: dataRes?.challanAmount,
+            amount: finalAmount,
             offenderName: dataRes?.citizen?.name,
+            challanStatus: dataRes?.challanStatus,
           };
         });
 

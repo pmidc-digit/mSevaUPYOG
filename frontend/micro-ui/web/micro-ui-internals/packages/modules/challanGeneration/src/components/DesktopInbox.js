@@ -2,6 +2,7 @@ import { Card, Loader } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
 import { getActionButton } from "../utils";
 import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
@@ -73,6 +74,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
       },
       mobileCell: (original) => GetMobCell(original?.["offenceName"]),
     },
+
     // {
     //   Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
     //   Cell: ({ row }) => {
@@ -91,11 +93,20 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
     {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
       Cell: ({ row }) => {
-        const wf = row.original?.applicationStatus;
-        return GetCell(t(`${row.original?.applicationStatus}`));
+        const wf = row.original?.challanStatus;
+        return GetCell(t(`${row.original?.challanStatus}`));
       },
       mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
     },
+    {
+      Header: t("WF_INBOX_HEADER_CREATED_DATE"),
+      Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
+      // Cell: ({ row }) => {
+      //   return GetCell(t(`${row.original?.date}`));
+      //   Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
+      // },
+    },
+
     // {
     //   Header: t("WS_COMMON_TABLE_COL_ACTION"),
     //   Cell: ({ row }) => {

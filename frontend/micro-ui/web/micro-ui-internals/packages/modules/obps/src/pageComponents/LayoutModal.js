@@ -26,11 +26,10 @@ const CloseBtn = (props) => {
 }
 
 const LayoutModal = ({
-  t,
+t,
   action,
   tenantId,
   state,
-  getEmployees,
   id,
   closeModal,
   submitAction,
@@ -41,12 +40,12 @@ const LayoutModal = ({
   moduleCode,
   workflowDetails,
   showToast,
-  setShowToast,
   closeToast,
   errors,
   showErrorToast,
   errorOne,
   closeToastOne,
+  getEmployees,
 }) => {
   const [config, setConfig] = useState({})
   const [defaultValues, setDefaultValues] = useState({})
@@ -59,21 +58,25 @@ const LayoutModal = ({
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null)
 
   console.log(action, "CHECK11111122222");
+  console.log(getEmployees, "eeee11111122222");
 
-  const checkRole = action?.state?.actions
+  const checkRole = action?.state?.actions;
 
-  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))]
+  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
 
-  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))]
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
+       //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
     },
-    { enabled: !action?.isTerminateState },
-  )
+    { enabled: !action?.isTerminateState }
+  );
+  console.log(approverData, "Ooooooooo");
+  
 
   const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.pt.useMDMS(
     tenantId,

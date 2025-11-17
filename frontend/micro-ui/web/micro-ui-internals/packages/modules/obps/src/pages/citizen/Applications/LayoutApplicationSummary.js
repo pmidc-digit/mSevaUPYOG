@@ -363,6 +363,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
+         <LinkButton  label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
         {dowloadOptions && dowloadOptions.length > 0 && (
           <div>
 
@@ -372,11 +373,11 @@ const [viewTimeline, setViewTimeline] = useState(false);
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
 
            </div>
         )}
       </div>
+       
 
       <Card>
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>

@@ -1755,12 +1755,12 @@ export const WSSearch = {
         //     }
         //   }
         // },
-        {
-          title: "WS_VIEW_PROPERTY_DETAIL",
-          to: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"}`,
-          value: "",
-          isLink: true,
-        },
+        // {
+        //   title: "WS_VIEW_PROPERTY_DETAIL",
+        //   to: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"}`,
+        //   value: "",
+        //   isLink: true,
+        // },
       ],
     };
    const ownerDetails = {

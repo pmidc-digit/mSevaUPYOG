@@ -228,6 +228,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
     if (!passportPhoto) return null
 
     return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
       <img
         src={`${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${passportPhoto.fileStoreId}`}
         alt="Owner Photograph"
@@ -243,6 +244,8 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
           e.target.style.display = "none"
         }}
       />
+      <CardLabel style={boldLabelStyle}>{formData?.LicneseDetails?.name}</CardLabel>
+      </div>
     )
   })()}
 </div>
@@ -442,7 +445,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
 
       {/* Fee Estimate */}
       <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_EST")}</h2>
+        <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
         {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
           renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`),
         )}

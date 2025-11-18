@@ -246,6 +246,7 @@ let License = LicenseData?.Licenses?.[0];
             if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
 
             return (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
               <img
                 src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
                 alt="Owner Photograph"
@@ -261,6 +262,8 @@ let License = LicenseData?.Licenses?.[0];
                   e.target.style.display = "none"
                 }}
               />
+              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              </div>
             )
           })()}
         </div>

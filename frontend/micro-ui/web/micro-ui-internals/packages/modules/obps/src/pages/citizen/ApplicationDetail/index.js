@@ -173,6 +173,12 @@ let License = LicenseData?.Licenses?.[0];
     </div>
   )
 
+      const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+  return date.toLocaleDateString("en-IN"); 
+};
+
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
@@ -202,6 +208,8 @@ let License = LicenseData?.Licenses?.[0];
       <div style={pageStyle}>
         {/* Header */}
      
+
+
         <div
           style={{
             display: "flex",
@@ -246,6 +254,7 @@ let License = LicenseData?.Licenses?.[0];
             if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
 
             return (
+              <div style={{display: "flex", flexDirection:"column" , alignItems: "center", marginBottom: "1rem"}}>
               <img
                 src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
                 alt="Owner Photograph"
@@ -261,6 +270,8 @@ let License = LicenseData?.Licenses?.[0];
                   e.target.style.display = "none"
                 }}
               />
+              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              </div>
             )
           })()}
         </div>
@@ -279,6 +290,11 @@ let License = LicenseData?.Licenses?.[0];
             renderLabel(
               t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
               License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
+            )}
+             {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
+            renderLabel(
+              t("BPA_CERTIFICATE_EXPIRY_DATE"),
+              formatDate(License?.validTo),
             )}
         </div>
 
@@ -427,6 +443,26 @@ let License = LicenseData?.Licenses?.[0];
             </div>
           </div>
         )}
+
+
+        {/* <div style={sectionStyle}>
+          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+          {renderLabel(t("Total Fee"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
+          {renderLabel(t("Status"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ? t("PAID") : t("PENDING"))}
+        </div> */}
+
+         <div style={sectionStyle}>
+          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+          {recieptDataLoading ? (
+            <Loader />
+          ) : (
+            <>
+              {renderLabel(t("Total Amount"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
+              {renderLabel(t("Status"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ? t("PAID") : t("PENDING"))}
+            </>
+          )}
+        </div>
+
 
         {/* Timeline */}
         <div id="timeline" style={sectionStyle}>

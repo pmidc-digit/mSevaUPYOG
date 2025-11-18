@@ -521,7 +521,7 @@ const showActionRestoration = ["RESTORATION_BUTTON"]
           demandData={demandDetails || []}
           mutate={mutate}
           businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService}
-          moduleCode="WS"
+          moduleCode={(serviceType === "WATER" || serviceType === "WS") ? "WS" : "SW"}
           showToast={showToast}
           setShowToast={setShowToast}
           closeToast={closeToast}

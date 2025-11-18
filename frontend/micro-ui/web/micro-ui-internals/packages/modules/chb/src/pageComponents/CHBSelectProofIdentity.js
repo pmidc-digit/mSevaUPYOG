@@ -11,6 +11,8 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
   const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
+  console.log("data=====", data);
+
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
@@ -139,8 +141,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     if (action === "update") {
       const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
       const docType = dropDownData
-        .filter((e) => e.code === originalDoc?.documentType)
-        .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
+        ?.filter((e) => e.code === originalDoc?.documentType)
+        ?.map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
       if (!docType) setHidden(true);
       else {
         setSelectedDocument(docType);
@@ -199,7 +201,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             className="form-field"
             selected={selectedDocument}
             style={{ width: "100%" }}
-            option={doc?.dropdownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+            option={doc?.dropdownData?.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handlePTRSelectDocument}
             optionKey="i18nKey"
             t={t}
@@ -208,7 +210,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       ) : null}
       {!doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"}
+          </CardLabel>
         </LabelFieldPair>
       ) : null}
       <LabelFieldPair style={{ display: "inline" }}>

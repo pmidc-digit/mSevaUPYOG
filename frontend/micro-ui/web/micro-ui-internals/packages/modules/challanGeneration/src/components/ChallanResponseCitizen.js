@@ -1,4 +1,4 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Banner, Card, CardText, ActionBar, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -14,6 +14,9 @@ const ChallanResponseCitizen = (props) => {
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
+  const [getLable, setLable] = useState(false);
+  const [error, setError] = useState(null);
+  const [showToast, setShowToast] = useState(null);
 
   // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const tenantId = window.location.href.includes("citizen")
@@ -37,6 +40,10 @@ const ChallanResponseCitizen = (props) => {
       console.log("error", error);
       setLoader(false);
     }
+  };
+
+  const closeToast = () => {
+    setShowToast(null);
   };
 
   useEffect(() => {
@@ -68,7 +75,20 @@ const ChallanResponseCitizen = (props) => {
     try {
       const response = await Digit.ChallanGenerationService.update(payload);
       setLoader(false);
-      history.push(`/digit-ui/employee/challangeneration/inbox`);
+
+      // ✅ Show success first
+      // setShowToast({ key: "success", message: "Successfully updated the status" });
+      setLable("Challan set to pay later.");
+      setError(false);
+      setShowToast(true);
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/challangeneration/inbox");
+        window.location.reload();
+      }, 2000);
+
+      // history.push(`/digit-ui/employee/challangeneration/inbox`);
     } catch (error) {
       setLoader(false);
     }
@@ -151,6 +171,7 @@ const ChallanResponseCitizen = (props) => {
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
+      {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}
     </div>
   );
 };

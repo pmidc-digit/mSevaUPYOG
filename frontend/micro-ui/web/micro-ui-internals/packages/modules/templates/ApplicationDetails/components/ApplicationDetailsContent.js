@@ -76,7 +76,9 @@ function ApplicationDetailsContent({
     const fetchPaymentHistory = async () => {
       if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
         try {
-          const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
+          // Determine businessService from serviceType (handle both SEWERAGE and SEWARAGE typo)
+          const businessService = (applicationData?.serviceType === "SEWERAGE" || 
+                                   applicationData?.serviceType === "SEWARAGE") ? "SW" : "WS";
           
           const requestParams = {
           tenantId: applicationData?.tenantId || tenantId,
@@ -94,11 +96,12 @@ function ApplicationDetailsContent({
             setPayments(paymentData.Payments);
           }
         } catch (error) {
-          console.error("Payment fetch error:", error);
+          console.error("❌ Payment fetch error:", error);
         }
       }
     }
-  }, [applicationData?.connectionNo, applicationDetails?.colletionOfData]);
+      fetchPaymentHistory();
+  }, [applicationData?.connectionNo, applicationData?.serviceType, tenantId]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -466,36 +469,44 @@ const caption = {
     }
     // alert("edit property");
   };
-
   const AccessProperty = () => {
     alert("access property");
   };
-
-   useEffect(()=>{
-   try{
-   if(moduleCode === "WS") {
-     return; // Skip for WS module
-   }
-   
-   let filters={
-    consumerCodes:propertyId,
-   // tenantId: tenantId
-   }
-   const auth=true
-   if(moduleCode==="BPREG"){
-    Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-    })
-   }else{
-    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-    })
-   }
-  }
-   catch(error){
-   // Error handling for payment search
-   }
-   },[])
+  
+  useEffect(()=>{
+    const isWSModule = moduleCode === "WS" || moduleCode === "SW" || 
+                       window.location.href.includes("employee/ws") || 
+                       window.location.href.includes("/ws/");
+    
+    if(isWSModule) {
+      return;
+    }
+    
+    // Only proceed for PT and BPREG modules
+    if(!propertyId) {
+      return;
+    }
+    
+    try{      
+      let filters={
+        consumerCodes:propertyId,
+      }
+      const auth=true
+      
+      if(moduleCode==="BPREG"){
+        Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+          setPayments(response?.Payments)
+        })
+      }else if(moduleCode==="PT"){
+        Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+          setPayments(response?.Payments)
+        })
+      }
+    }
+    catch(error){
+      console.error("❌ Payment search error for PT/BPREG:", error);
+    }
+  },[moduleCode, propertyId, tenantId])
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
 
@@ -733,7 +744,7 @@ const caption = {
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
         <PaymentHistory payments={payments}/>
-        {moduleCode !== "WS" && <ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
+        {moduleCode !== "WS" && moduleCode !== "SW" && <ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

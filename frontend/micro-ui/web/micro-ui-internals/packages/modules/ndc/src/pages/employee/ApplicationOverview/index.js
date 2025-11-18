@@ -505,6 +505,9 @@ const ApplicationOverview = () => {
                     }}
                   >
                     <Row
+                      rowContainerStyle={{
+                        backgroundColor: isRed ? "red" : "none",
+                      }}
                       label={t("NDC_DUE_AMOUNT")}
                       // text={detail.dueAmount?.toString() || "0"}
                       text={(markedPending[detail.consumerCode] === false

@@ -83,6 +83,11 @@
 			<id>jspresso-mirror</id>
 			<url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
 		</repository>
+		<repository>
+			<id>openkm-mirror</id>
+			<url>https://maven.openkm.com/</url>
+		</repository>
+
 		<!-- Customized In Project Repository -->
 		<!-- <repository>
 			<id>in-project</id>

@@ -75,9 +75,13 @@
 			<id>JBoss Repository</id>
 			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 		</repository>
-		<repository>
+		<!--<repository>
 			<id>JSPRESSO</id>
 			<url>http://repository.jspresso.org/maven2/</url>
+		</repository>-->
+		<repository>
+			<id>jspresso-mirror</id>
+			<url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
 		</repository>
 		<!-- Customized In Project Repository -->
 		<!-- <repository>

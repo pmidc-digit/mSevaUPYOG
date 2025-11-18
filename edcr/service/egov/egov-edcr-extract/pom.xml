@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ~ eGov SmartCity eGovernance suite aims to improve the internal efficiency,transparency, 
+<!-- ~ eGov SmartCity eGovernance suite aims to improve the internal
+efficiency,transparency, 
 	~ accountability and the service delivery of the government organizations. 
 	~ ~ Copyright (C) 2017 eGovernments Foundation ~ ~ The updated version of 
-	eGov suite of products as by eGovernments Foundation ~ is available at http://www.egovernments.org 
+	eGov suite of products as by eGovernments Foundation ~ is available at
+http://www.egovernments.org 
 	~ ~ This program is free software: you can redistribute it and/or modify 
 	~ it under the terms of the GNU General Public License as published by ~ 
 	the Free Software Foundation, either version 3 of the License, or ~ any later 
 	version. ~ ~ This program is distributed in the hope that it will be useful, 
-	~ but WITHOUT ANY WARRANTY; without even the implied warranty of ~ MERCHANTABILITY 
+	~ but WITHOUT ANY WARRANTY; without even the implied warranty of ~
+MERCHANTABILITY 
 	or FITNESS FOR A PARTICULAR PURPOSE. See the ~ GNU General Public License 
 	for more details. ~ ~ You should have received a copy of the GNU General 
-	Public License ~ along with this program. If not, see http://www.gnu.org/licenses/ 
+	Public License ~ along with this program. If not, see
+http://www.gnu.org/licenses/ 
 	or ~ http://www.gnu.org/licenses/gpl.html . ~ ~ In addition to the terms 
 	of the GPL license to be adhered to in using this ~ program, the following 
 	additional terms are to be complied with: ~ ~ 1) All versions of this program, 
@@ -18,15 +22,18 @@
 	interfaces, including but not limited to citizen facing interfaces, ~ Urban 
 	Local Bodies interfaces, dashboards, mobile applications, of the program 
 	and any ~ derived works should carry eGovernments Foundation logo on the 
-	top right corner. ~ ~ For the logo, please refer http://egovernments.org/html/logo/egov_logo.png. 
-	~ For any further queries on attribution, including queries on brand guidelines, 
+	top right corner. ~ ~ For the logo, please refer
+http://egovernments.org/html/logo/egov_logo.png. 
+	~ For any further queries on attribution, including queries on brand
+guidelines, 
 	~ please contact contact@egovernments.org ~ ~ 2) Any misrepresentation of 
 	the origin of the material is prohibited. It ~ is required that all modified 
 	versions of this material be marked in ~ reasonable ways as different from 
 	the original version. ~ ~ 3) This license does not grant any rights to any 
 	user of the program ~ with regards to rights under trademark law for use 
 	of the trade names ~ or trademarks of eGovernments Foundation. ~ ~ In case 
-	of any queries, you can reach eGovernments Foundation at contact@egovernments.org. 
+	of any queries, you can reach eGovernments Foundation at
+contact@egovernments.org. 
 	~ -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="http://maven.apache.org/POM/4.0.0"
@@ -37,9 +44,9 @@
 		<artifactId>egov-erp</artifactId>
 		<version>2.1.1-SNAPSHOT</version>
 	</parent>
-	
+
 	<name>e-governments edcr extract</name>
-	
+
 	<artifactId>egov-edcr-extract</artifactId>
 
 	<organization>
@@ -50,15 +57,32 @@
 		<repository>
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Releases Repository</name>
-			<url>http://repo.egovernments.org/nexus/content/repositories/releases/</url>
+			<url>
+				http://repo.egovernments.org/nexus/content/repositories/releases/</url>
 		</repository>
 		<snapshotRepository>
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Snapshots Repository</name>
-			<url>http://repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+			<url>
+				http://repo.egovernments.org/nexus/content/repositories/snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<repositories>
+		<!-- Highest priority: Local project lib directory -->
+		<repository>
+			<id>in-project</id>
+			<name>In Project Repo</name>
+			<url>file://${project.basedir}/lib/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<!-- Digit Nexus -->
 		<repository>
 			<id>repo.egovernments.org</id>
 			<name>eGov Public Repository Group</name>
@@ -71,37 +95,18 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
+
+		<!-- JBoss -->
 		<repository>
 			<id>JBoss Repository</id>
 			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 		</repository>
-		<!--<repository>
-			<id>JSPRESSO</id>
-			<url>http://repository.jspresso.org/maven2/</url>
-		</repository>-->
+
+		<!-- Jaspersoft -->
 		<repository>
 			<id>jspresso-mirror</id>
-			<url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
-		</repository>
-		<!-- Only for org.kabeja -->
-		<repository>
-			<id>central</id>
-			<name>Maven Central</name>
-			<url>https://repo1.maven.org/maven2/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-
-		<!-- Customized In Project Repository -->
-		<repository>
-			<id>in-project</id>
-			<name>In Project Repo</name>
-			<url>file://${project.basedir}/lib</url>
+			<url>
+				https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
 		</repository>
 	</repositories>
 
@@ -178,21 +183,21 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
-		 <dependency>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-slf4j-impl</artifactId>
-                        <version>2.17.1</version>
-                 </dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.17.1</version>
+		</dependency>
 		<!--            <dependency>-->
 		<!--                <groupId>org.apache.logging.log4j</groupId>-->
 		<!--                <artifactId>log4j-1.2-api</artifactId>-->
 		<!--                <version>2.17.1</version>-->
 		<!--            </dependency>-->
-                 <dependency>
-                      <groupId>org.apache.logging.log4j</groupId>
-                      <artifactId>log4j-to-slf4j</artifactId>
-                      <version>2.17.1</version>
-               </dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+			<version>2.17.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -227,9 +232,9 @@
 			<artifactId>poi</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
-        </dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+		</dependency>
 
 	</dependencies>
 	<build>

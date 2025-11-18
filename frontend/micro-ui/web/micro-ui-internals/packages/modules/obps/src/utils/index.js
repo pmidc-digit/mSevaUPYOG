@@ -873,13 +873,15 @@ export const printPdf = (blob) => {
   }
 };
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, mode = "download", pdfKey = "bpa-receipt") => {
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, mode = "download", pdfKey = "bpa-receipt") => {
+  console.log('license needed', licenseType)
+  const updatedPayments = payments.map(p => ({ ...p, licenseType }));
   let response = null;
   console.log("payments", payments);
   if (payments[0]?.fileStoreId) {
     response = { filestoreIds: [payments[0]?.fileStoreId] };
   } else {
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments }, "bpa-receipt");
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: updatedPayments }, "bpa-receipt");
     //response = await Digit.OBPSService.receipt_download(bussinessService, consumerCode, tenantId, { pdfKey: pdfKey });
   }
   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });

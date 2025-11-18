@@ -10,7 +10,7 @@ import { PDFSvg } from "@mseva/digit-ui-react-components";
 
 const DownloadCertificateButton = ({ applicationNumber }) => {
   const { t } = useTranslation();
-  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const tenantId = localStorage?.getItem("CITIZEN.CITY");
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber, tenantId }, {});
@@ -235,6 +235,8 @@ let License = LicenseData?.Licenses?.[0];
               ) : (
                 reciept_data?.Payments?.length > 0 && (
                   <MultiLink
+                    style={{ position: "static" }}
+                    optionsStyle={{ position: "static" }}
                     onHeadClick={() => setShowOptions(!showOptions)}
                     displayOptions={showOptions}
                     options={dowloadOptions}

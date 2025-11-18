@@ -117,10 +117,10 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     //       filtData.action !== "REJECT" &&
     //       filtData.action !== "SENDBACK"
     //     )
-    if (!applicationData?.assignee && action?.action != "SENDBACKTOCITIZEN" && action?.action != "SEND_BACK_TO_CITIZEN") {
-      alert("Please select Approver");
-      return;
-    }
+    // if (!applicationData?.assignee && action?.action != "SENDBACKTOCITIZEN" && action?.action != "SEND_BACK_TO_CITIZEN") {
+    //   alert("Please select Approver");
+    //   return;
+    // }
 
     submitAction({
       Licenses: [applicationData],

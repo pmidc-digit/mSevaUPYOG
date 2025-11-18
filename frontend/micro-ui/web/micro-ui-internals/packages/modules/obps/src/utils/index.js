@@ -873,9 +873,37 @@ export const printPdf = (blob) => {
   }
 };
 
+export const amountToWords =(num) =>{
+  if (num == null || num === "") return "Zero Rupees";
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+                "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
+                "Seventeen","Eighteen","Nineteen"],
+        tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"],
+        units = ["","Thousand","Lakh","Crore"];
+
+  const chunk = n => n < 20 ? ones[n] :
+                 n < 100 ? tens[Math.floor(n/10)] + (n%10? " " + ones[n%10]:"") :
+                 ones[Math.floor(n/100)] + " Hundred" + (n%100? " " + chunk(n%100):"");
+
+  const toWords = n => {
+    if (!n) return "";
+    let parts = [n%1000], res = "", i=0;
+    n = Math.floor(n/1000);
+    while(n){ parts.push(n%100); n=Math.floor(n/100); }
+    for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";
+    return res.trim();
+  };
+
+  let [r,p] = num.toString().split(".").map(x=>+x||0);
+  return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
+}
+
 export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, mode = "download", pdfKey = "bpa-receipt") => {
   console.log('license needed', licenseType)
-  const updatedPayments = payments.map(p => ({ ...p, licenseType }));
+  const fee = payments?.[0]?.totalAmountPaid;
+
+  const amountinwords = amountToWords(fee)
+  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords }));
   let response = null;
   console.log("payments", payments);
   if (payments[0]?.fileStoreId) {

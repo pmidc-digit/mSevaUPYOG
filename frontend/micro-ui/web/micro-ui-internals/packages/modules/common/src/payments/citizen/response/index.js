@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { transformBookingResponseToBookingData } from "../../index";
 import { ChallanData } from "../../index";
-
+import { amountToWords } from "../../index";
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
   if (localStorage.getItem("BillPaymentEnabled") !== "true") {
@@ -48,6 +48,8 @@ const WrapPaymentComponent = (props) => {
     {},
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
+
+    const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
 
     let challanEmpData = ChallanData(tenantId, consumerCode);
   
@@ -159,6 +161,7 @@ const WrapPaymentComponent = (props) => {
     );
   }
   const paymentData = data?.payments?.Payments[0];
+  console.log('paymentData here here', paymentData)
   const amount = reciept_data?.paymentDetails?.[0]?.totalAmountPaid;
   const transactionDate = paymentData?.transactionDate;
   const printCertificate = async () => {
@@ -220,7 +223,25 @@ const WrapPaymentComponent = (props) => {
     setPrinting(true);
     let paymentArray = [];
     const tenantId = paymentData?.tenantId;
+
+let licenseSection,licenseType;
+
+if(applicationDetails){
+  licenseSection = applicationDetails?.applicationDetails?.find(
+    (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
+);
+
+  licenseType = t(licenseSection?.values?.find(
+    (val) => val.title === "BPA_LICENSE_TYPE"
+  )?.value);
+}
+
+
+console.log("licenseType:", licenseType);
     const state = Digit.ULBService.getStateId();
+    const fee = paymentData?.totalAmountPaid;
+    console.log('fee here here', fee)
+      const amountinwords = amountToWords(fee)
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
       let assessmentYear = "",
@@ -285,6 +306,8 @@ const WrapPaymentComponent = (props) => {
                 designation: designation,
                 ulbType: ulbType,
               },
+              licenseType,
+              amountinwords
             };
           } else {
             updatedpayments = {
@@ -294,6 +317,8 @@ const WrapPaymentComponent = (props) => {
                 designation: designation,
                 ulbType: ulbType,
               },
+              licenseType,
+              amountinwords
             };
           }
 
@@ -1273,6 +1298,8 @@ const WrapPaymentZeroComponent = (props) => {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
+
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -1419,6 +1446,16 @@ const WrapPaymentZeroComponent = (props) => {
     if (printing) return;
     setPrinting(true);
     let paymentArray = [];
+    let licenseSection,licenseType;
+    if(applicationDetails){
+        licenseSection = applicationDetails?.applicationDetails?.find(
+          (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
+        );
+
+        licenseType = t(licenseSection?.values?.find(
+          (val) => val.title === "BPA_LICENSE_TYPE"
+        )?.value);
+        }
     const tenantId = paymentData?.tenantId;
     const state = Digit.ULBService.getStateId();
     let response = { filestoreIds: [payments?.Payments[0]?.fileStoreId] };
@@ -1474,6 +1511,7 @@ const WrapPaymentZeroComponent = (props) => {
               designation: designation,
               ulbType: ulbType,
             },
+            licenseType
           };
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);

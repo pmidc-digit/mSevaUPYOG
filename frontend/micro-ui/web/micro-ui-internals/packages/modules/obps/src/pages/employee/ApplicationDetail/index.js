@@ -19,9 +19,9 @@ const licenseSection = applicationDetails?.applicationDetails?.find(
   (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
 );
 
-const licenseType = licenseSection?.values?.find(
+const licenseType = t(licenseSection?.values?.find(
   (val) => val.title === "BPA_LICENSE_TYPE"
-)?.value;
+)?.value);
 
 console.log("licenseType:", licenseType);
 

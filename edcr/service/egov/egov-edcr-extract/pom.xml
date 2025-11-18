@@ -98,11 +98,11 @@
 		</repository>
 
 		<!-- Customized In Project Repository -->
-		<!-- <repository>
+		<repository>
 			<id>in-project</id>
 			<name>In Project Repo</name>
 			<url>file://${project.basedir}/lib</url>
-		</repository> -->
+		</repository>
 	</repositories>
 
 	<pluginRepositories>

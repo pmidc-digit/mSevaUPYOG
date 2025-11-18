@@ -85,10 +85,12 @@
 		</repository>
 		<!-- Only for org.kabeja -->
 		<repository>
-			<id>central-kabeja</id>
-			<url>https://repo.maven.apache.org/maven2/</url>
+			<id>central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2/</url>
 			<releases>
 				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>

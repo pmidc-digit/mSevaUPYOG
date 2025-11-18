@@ -175,13 +175,18 @@ const ChallanStepperForm = () => {
           amount: data?.amount,
         },
       ],
+      additionalDetail: {
+        latitude: documentsData?.documents?.[1]?.latitude,
+        longitude: documentsData?.documents?.[1]?.longitude,
+      },
       address: {},
       documents: documentsData?.documents,
       workflow: {
         action: "SUBMIT",
       },
     };
-    console.log("challana", Challan);
+    // console.log("challana", Challan);
+    // return;
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       setLoader(false);
@@ -274,8 +279,14 @@ const ChallanStepperForm = () => {
                     value={props.value}
                     maxlength={10}
                     onChange={(e) => {
-                      props.onChange(e); // ✅ updates react-hook-form
-                      debouncedHandleMobileChange(e);
+                      console.log("eee", e);
+                      props.onChange(e);
+                      setValue("name", "");
+                      // ✅ updates react-hook-form
+                      if (e.length === 10) {
+                        handleMobileChange(e); // 🔥 only then fire API
+                      }
+                      // debouncedHandleMobileChange(e);
                     }}
                     onBlur={props.onBlur}
                     t={t}
@@ -424,17 +435,25 @@ const ChallanStepperForm = () => {
                 control={control}
                 name="challanAmount"
                 render={(props) => (
-                  <TextInput
+                  <input
+                    className="employee-card-input focus-visible"
                     type="number"
                     style={{ marginBottom: 0, width: "100%" }}
                     value={props.value}
                     error={errors?.name?.message}
+                    onWheel={(e) => e.target.blur()}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    // onWheel={(e) => e.preventDefault()}
                     t={t}
                   />
                 )}

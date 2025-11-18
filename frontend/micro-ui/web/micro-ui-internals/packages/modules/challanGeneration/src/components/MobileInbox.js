@@ -75,53 +75,54 @@ const MobileInbox = ({
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
       mobileCell: (original) => GetMobCell(original?.applicationStatus),
     },
-    {
-      Header: t("UC_TABLE_COL_ACTION"),
-      mobileCell: (original) => {
-        const amount = original?.totalAmount;
-        let action = "ACTIVE";
-        if (amount > 0) action = "COLLECT";
-        if (action == "COLLECT") {
-          return (
-            <div>
-              <span className="link">
-                <Link
-                  to={{
-                    pathname: `/digit-ui/employee/payment/collect/${original?.["businessService"]}/${original?.["challanNo"]}/tenantId=${original?.["tenantId"]}?workflow=mcollect`,
-                  }}
-                >
-                  {t(`UC_${action}`)}
-                </Link>
-              </span>
-            </div>
-          );
-        } else if (original?.applicationStatus == "PAID") {
-          return (
-            <div>
-              <span className="link">
-                <Link>
-                  <a
-                    href="javascript:void(0)"
-                    style={{
-                      color: "#FE7A51",
-                      cursor: "pointer",
-                    }}
-                    onClick={(value) => {
-                      printReciept(original?.["businessService"], original?.["challanNo"]);
-                    }}
-                  >
-                    {" "}
-                    {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
-                  </a>
-                </Link>
-              </span>
-            </div>
-          );
-        } else {
-          return GetMobCell(t(`${"CS_NA"}`));
-        }
-      },
-    },
+
+    // {
+    //   Header: t("UC_TABLE_COL_ACTION"),
+    //   mobileCell: (original) => {
+    //     const amount = original?.totalAmount;
+    //     let action = "ACTIVE";
+    //     if (amount > 0) action = "COLLECT";
+    //     if (action == "COLLECT") {
+    //       return (
+    //         <div>
+    //           <span className="link">
+    //             <Link
+    //               to={{
+    //                 pathname: `/digit-ui/employee/payment/collect/${original?.["businessService"]}/${original?.["challanNo"]}/tenantId=${original?.["tenantId"]}?workflow=mcollect`,
+    //               }}
+    //             >
+    //               {t(`UC_${action}`)}
+    //             </Link>
+    //           </span>
+    //         </div>
+    //       );
+    //     } else if (original?.applicationStatus == "PAID") {
+    //       return (
+    //         <div>
+    //           <span className="link">
+    //             <Link>
+    //               <a
+    //                 href="javascript:void(0)"
+    //                 style={{
+    //                   color: "#FE7A51",
+    //                   cursor: "pointer",
+    //                 }}
+    //                 onClick={(value) => {
+    //                   printReciept(original?.["businessService"], original?.["challanNo"]);
+    //                 }}
+    //               >
+    //                 {" "}
+    //                 {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
+    //               </a>
+    //             </Link>
+    //           </span>
+    //         </div>
+    //       );
+    //     } else {
+    //       return GetMobCell(t(`${"CS_NA"}`));
+    //     }
+    //   },
+    // },
   ];
 
   const serviceRequestIdKey = (original) => original?.[t("UC_CHALLAN_NUMBER")]?.props?.children;

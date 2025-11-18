@@ -19,7 +19,8 @@ import {
   InfoBannerIcon,
   ActionBar,
   Dropdown,
-  InfoIcon
+  InfoIcon,
+  LinkButton
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
@@ -89,9 +90,17 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     mutate: sewerageUpdateMutation,
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
-
   const closeToastOfError = () => { setError(null); };
-
+const getDisconnectionTitle = () => {
+  const serviceType = applicationData?.applicationData?.serviceType;
+  if (serviceType === "WATER") {
+    return t("WS_WATER_DISCONNECTION");
+  } else if (serviceType === "SEWARAGE") {
+    return t("WS_SEWERAGE_DISCONNECTION");
+  } else {
+    return t("WS_WATER_AND_SEWERAGE_DISCONNECTION");
+  }
+};
   useEffect(() => {
     const oldData = {...disconnectionData};
     oldData['documents'] = documents;
@@ -104,6 +113,17 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     disconnectionTypes?.forEach(data => data.i18nKey = `WS_DISCONNECTIONTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`);
 
     setDisconnectionTypeList(disconnectionTypes);
+    
+    // Auto-set Permanent type for employee view if not already set
+    if (userType === 'employee' && disconnectionTypes.length > 0 && !disconnectionData?.type?.value) {
+      const permanentType = disconnectionTypes.find(type => type.code === "Permanent");
+      if (permanentType) {
+        setDisconnectionData(prev => ({
+          ...prev,
+          type: { value: permanentType, code: "type" }
+        }));
+      }
+    }
   }, [mdmsData]);
   useEffect(() => {
     const disconnectionReasons = disconnectionReason?.["ws-services-masters"]?.DisconnectionReason || []; 
@@ -278,13 +298,13 @@ if(userType === 'citizen') {
           t={t}       
         >
           
-          <div style={{padding:"0px 10px 10px 10px"}}>
+          <div className="DS-citizen-form-container">
           <CardHeader>{ isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader>
           <StatusTable>
             <Row key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")} label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`} text={applicationData?.connectionNo} className="border-none" />
           </StatusTable> 
           
-          <CardLabel className="card-label-smaller" style={{display: "inline"}}>{t("WS_DISCONNECTION_TYPE") + "*"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t("WS_DISCONNECTION_TYPE")} <span>*</span></CardLabel>
           <RadioButtons
                 t={t}
                 options={disconnectionTypeList}
@@ -294,17 +314,12 @@ if(userType === 'citizen') {
                 isMandatory={false}
                 onSelect={(val) => filedChange({code: "type",value: val})}
                 labelKey="WS_DISCONNECTION_TYPE"
-                inputStyle={isMobile ? {marginLeft:"unset"} : {}}
             />
-            <CardLabel className="card-label-smaller" style={{display: "inline"}}>
-            {t("WS_DISCONNECTION_PROPOSED_DATE") + "*"}
-            <div className={`tooltip`} style={{position: "absolute"}}>
+            <CardLabel className="card-label-smaller">
+            {t("WS_DISCONNECTION_PROPOSED_DATE")} <span>*</span>
+            <div className="tooltip">
             <InfoIcon/>
-            <span className="tooltiptext" style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                    width: Digit.Utils.browser.isMobile() ? "150px" : "unset"
-                  }}>
+            <span className="tooltiptext">
                    {t("SHOULD_BE_DATE") + " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
                   </span>
             </div>
@@ -319,15 +334,11 @@ if(userType === 'citizen') {
           </div>
           {disconnectionData.type?.value?.code === "Temporary"?
           <div>
-          <CardLabel className="card-label-smaller" style={{display: "inline"}}>
-            {t("WS_DISCONNECTION_PROPOSED_END_DATE") + "*"}
-            <div className={`tooltip`} style={{position: "absolute"}}>
+          <CardLabel className="card-label-smaller">
+            {t("WS_DISCONNECTION_PROPOSED_END_DATE")} <span>*</span>
+            <div className="tooltip">
             <InfoIcon/>
-            <span className="tooltiptext" style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                    width: Digit.Utils.browser.isMobile() ? "150px" : "unset"
-                  }}>
+            <span className="tooltiptext">
                    {t("SHOULD_BE_DATE") + " "  + " " + t("DAYS_OF_PROPOSED_DATE")}
                   </span>
             </div>
@@ -343,7 +354,7 @@ if(userType === 'citizen') {
           </div>
           :""}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller" style={{display: "inline"}}>{t("WS_DISCONNECTION_REASON")+ "*"}</CardLabel>              
+              <CardLabel className="card-label-smaller">{t("WS_DISCONNECTION_REASON")}<span>*</span></CardLabel>              
                 <Dropdown
                   option={disconnectionReasonList}
                   isMandatory={false}
@@ -386,122 +397,145 @@ console.log("disconnectionData",disconnectionData)
                 ? true 
                 : false}
              />
-             {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
+            {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
           </div>
         </FormStep>
-        <CitizenInfoLabel style={{ margin: "0px" }} textStyle={{ color: "#0B0C0C" }} text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
+        <CitizenInfoLabel className="DS-citizen-info-label" text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
       </div>
     );
   }
-console.log("disconnectionData.type?.value?.code",disconnectionData.type?.value?.code)
   return (
-    <div style={{ margin: "16px" }}>
-    <Header styles={{fontSize: "32px", marginLeft: "18px"}}>{t("WS_WATER_AND_SEWERAGE_DISCONNECTION")}</Header>
+    <div className="DS-disconnection-page-container">
+    <Header className="DS-header">
+      {/* {t("WS_WATER_AND_SEWERAGE_DISCONNECTION")} */}
+       {getDisconnectionTitle()}
+      </Header>
     <FormStep
           config={config}
           onSelect={handleEmployeeSubmit}
           onSkip={onSkip}
           t={t}       
+          cardStyle={{
+            padding: 0,
+            margin: 0,
+            boxShadow: "none",
+            backgroundColor: "transparent",
+            border: "none",
+            borderRadius: 0
+          }}
     >
-      <div style={{padding:"10px",paddingTop:"20px",marginTop:"10px"}}>
-      <CardSectionHeader>{t("CS_TITLE_APPLICATION_DETAILS")}</CardSectionHeader>
-      <StatusTable>
-        <Row key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")} label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`} text={applicationData?.applicationData?.connectionNo} className="border-none" />
-      </StatusTable>        
-      <CardSectionHeader>
-        {t("WS_DISCONNECTION_TYPE")+ "*"}
-            <div className={`tooltip`} style={{marginLeft: "8px"}}>
-            <InfoIcon/>
-            <span className="tooltiptext" style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                    width:  Digit.Utils.browser.isMobile() && window.location.href.includes("/employee") ? "200px" : "",
-                  }}>
-                    {`${t(`WS_DISCONNECTION_PERMANENT_TOOLTIP`)}`}
-                    <br/><br/>
-                    {`${t(`WS_DISCONNECTION_TEMPORARY_TOOLTIP`)}`}
-                  </span>
+      <div className="DS-disconnectionFormUI">
+        {/* Application Details Section */}
+        <h2>{t("CS_TITLE_APPLICATION_DETAILS")}</h2>
+        
+        {/* Consumer Number - Inline */}
+        <div className="DS-consumer-number-row">
+          <label>{t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}</label>
+          <p>{applicationData?.applicationData?.connectionNo}</p>
+        </div>
+        
+        {/* Disconnection Type - Inline */}
+        <div className="DS-disconnection-type-row">
+          <div className="DS-label-wrapper">
+            <label>
+              {t("WS_DISCONNECTION_TYPE")}<span> *</span>
+            </label>
+            <div className={`tooltip`}>
+              <InfoIcon/>
+              <span className="tooltiptext" style={{
+                whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
+                fontSize: "medium",
+                width:  Digit.Utils.browser.isMobile() && window.location.href.includes("/employee") ? "200px" : "",
+              }}>
+                {`${t(`WS_DISCONNECTION_PERMANENT_TOOLTIP`)}`}
+              </span>
             </div>
-      </CardSectionHeader>
-        <RadioButtons
-                t={t}
-                options={disconnectionTypeList}
-                optionsKey="i18nKey"
-                value={disconnectionData.type?.value?.code}
-                selectedOption={disconnectionData.type?.value}
-                isMandatory={false}
-                onSelect={(val) => filedChange({code: "type",value: val})}
-                labelKey="WS_DISCONNECTION_TYPE"
-                style={{display: "flex", gap: "0px 3rem"}}
-                inputStyle={isMobile ? {marginLeft:"unset"} : {}}
+          </div>
+          <p>
+            {t("WS_DISCONNECTIONTYPE_PERMANENT")}
+          </p>
+        </div>
+          
+        {/* Proposed Disconnection Date */}
+        <div className="DS-date-field">
+          <div className="DS-label-row">
+            <label>
+              {t("WS_DISCONNECTION_PROPOSED_DATE")} <span> *</span>
+            </label>
+            <div className={`tooltip`}>
+              <InfoIcon/>
+              <span className="tooltiptext" style={{
+                whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
+                fontSize: "medium",
+              }}>
+                {t("SHOULD_BE_DATE")+ " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
+              </span>
+            </div>
+          </div>
+          <div className="DS-field-wrapper">
+            <DatePicker
+              date={disconnectionData?.date}
+              onChange={(date) => {
+                setDisconnectionData({ ...disconnectionData, date: date });
+              }}
             />
-          
-          <LabelFieldPair>
-          <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
-            {t("WS_DISCONNECTION_PROPOSED_DATE")+ "*"} 
-            <div className={`tooltip`} style={{position: "absolute", marginLeft: "4px"}}>
-            <InfoIcon/>
-            <span className="tooltiptext" style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                  }}>
-                    {t("SHOULD_BE_DATE")+ " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
-                  </span>
-            </div>
-          </CardLabel>
-          <div className="field">
-          <DatePicker
-            date={disconnectionData?.date}
-            onChange={(date) => {
-              setDisconnectionData({ ...disconnectionData, date: date });
-            }}
-          ></DatePicker>
           </div>
-          
-          </LabelFieldPair>
-          {disconnectionData.type?.value?.code === "Temporary"?
-          <LabelFieldPair>
-          
-          <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
-            {t("WS_DISCONNECTION_PROPOSED_END_DATE")+ "*"} 
-            <div className={`tooltip`} style={{position: "absolute", marginLeft: "4px"}}>
-            <InfoIcon/>
-            <span className="tooltiptext" style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                  }}>
-                    {t("SHOULD_BE_DATE")+ " " + " " + t("DAYS_OF_APPLICATION_END_DATE")}
-                  </span>
+        </div>
+        
+        {/* Temporary Disconnection End Date */}
+        {disconnectionData.type?.value?.code === "Temporary" && (
+          <div className="DS-date-field">
+            <div className="DS-label-row">
+              <label>
+                {t("WS_DISCONNECTION_PROPOSED_END_DATE")} <span> *</span>
+              </label>
+              <div className={`tooltip`}>
+                <InfoIcon/>
+                <span className="tooltiptext" style={{
+                  whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
+                  fontSize: "medium",
+                }}>
+                  {t("SHOULD_BE_DATE")+ " " + " " + t("DAYS_OF_APPLICATION_END_DATE")}
+                </span>
+              </div>
             </div>
-          </CardLabel>
-          <div className="field">
-          <DatePicker
-            date={disconnectionData?.endDate}
-            onChange={(date) => {
-              setDisconnectionData({ ...disconnectionData, endDate: date });
-            }}
-          ></DatePicker>
+            <div className="DS-field-wrapper">
+              <DatePicker
+                date={disconnectionData?.endDate}
+                onChange={(date) => {
+                  setDisconnectionData({ ...disconnectionData, endDate: date });
+                }}
+              />
+            </div>
           </div>
-          </LabelFieldPair>
-           :""}
-          <LabelFieldPair>
-              <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">{t("WS_DISCONNECTION_REASON") + "*"}</CardLabel>              
-              <div className="field">
-                <Dropdown
-                  option={disconnectionReasonList}
-                  isMandatory={false}
-                  optionKey="i18nKey"
-                  t={t}
-                  name={"reason"}
-                  value={disconnectionData.reason?.value?.code}
-                  selectedOption={disconnectionData.reason?.value}
-                  select={(e) => filedChange({code:"reason" , value:e})}
-                  labelKey="WS_DISCONNECTION_REASON"
-                />  
-                </div>            
-          </LabelFieldPair>
-          <CardSectionHeader style={{ marginBottom: "8px"}}>{t("WS_DISCONNECTION_DOCUMENTS")+ "*" }</CardSectionHeader>
-          {wsDocs?.DisconnectionDocuments?.map((document, index) => { 
+        )}
+        
+        {/* Reason for Disconnection */}
+        <div className="DS-reason-field">
+          <label>
+            {t("WS_DISCONNECTION_REASON")}<span> *</span>
+          </label>
+          <div className="DS-field-wrapper">
+            <Dropdown
+              option={disconnectionReasonList}
+              isMandatory={false}
+              optionKey="i18nKey"
+              t={t}
+              name={"reason"}
+              value={disconnectionData.reason?.value?.code}
+              selectedOption={disconnectionData.reason?.value}
+              select={(e) => filedChange({code:"reason" , value:e})}
+              labelKey="WS_DISCONNECTION_REASON"
+            />
+          </div>
+        </div>
+        
+        {/* Disconnection Documents Section */}
+        <h2>
+          {t("WS_DISCONNECTION_DOCUMENTS")}<span> *</span>
+        </h2>
+        
+        {wsDocs?.DisconnectionDocuments?.map((document, index) => { 
                   return (
                     <SelectDocument
                       key={index}
@@ -520,18 +554,34 @@ console.log("disconnectionData.type?.value?.code",disconnectionData.type?.value?
 
 
     </FormStep>
-    <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-          {
-            <SubmitBar
-              label={t("ACTION_TEST_SUBMIT")}
-              onSubmit={() => onSubmit(disconnectionData)}
-              style={{ margin: "10px 10px 0px 0px" }}
-              // disabled={
-              //   wsDocsLoading || documents.length < 2 || disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === ""
-              //   ? true 
-              //   : false}
-            />}
-     </ActionBar>
+    <div className="DS-disconnection-action-bar">
+      {/* Left side - Back button */}
+      <button
+        onClick={() => history.goBack()}
+        className="DS-back-button"
+      >
+        {t("CS_COMMON_BACK")}
+      </button>
+      
+      {/* Right side - Cancel and Submit buttons */}
+      <div className="DS-action-buttons">
+        <button
+          onClick={() => {
+            Digit.SessionStorage.del("WS_DISCONNECTION");
+            window.location.href = "https://mseva.lgpunjab.gov.in/employee/inbox";
+          }}
+          className="DS-cancel-button"
+        >
+          {t("CS_COMMON_CANCEL")}
+        </button>
+        <button
+          onClick={() => onSubmit(disconnectionData)}
+          className="DS-submit-button"
+        >
+          {t("ACTION_TEST_SUBMIT")}
+        </button>
+      </div>
+    </div>
     </div>
   );
 
@@ -610,36 +660,37 @@ function SelectDocument({
   }, [file]);
 
   return (
-      <div style={{ marginBottom: "24px" }}>
-          <LabelFieldPair>
-          <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display : "inline" }} className="card-label-smaller">{t(doc?.i18nKey) + "*"}</CardLabel>
-          <div className="field">
-          <Dropdown
-              t={t}
-              isMandatory={false}
-              option={doc?.dropdownData}
-              selected={selectedDocument}
-              optionKey="i18nKey"
-              select={handleSelectDocument}
-          />
-
-          <UploadFile
-              id={`noc-doc-1-${key}`}
-              extraStyleName={"propertyCreate"}
-              accept= "image/*, .pdf, .png, .jpeg, .jpg"
-              onUpload={selectfile}
-              onDelete={() => {
-                  setUploadedFile(null);
-                  setCheckRequiredFields(true);
-              }}
-              message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-              error={error}
-          />
-          </div>
-          </LabelFieldPair>
-        
-         
+    <div className="DS-document-field">
+      <label>
+        {t(doc?.i18nKey)}<span> *</span>
+      </label>
+      
+      <div className="DS-dropdown-wrapper">
+        <Dropdown
+          t={t}
+          isMandatory={false}
+          option={doc?.dropdownData}
+          selected={selectedDocument}
+          optionKey="i18nKey"
+          select={handleSelectDocument}
+        />
       </div>
+
+      <div className="DS-upload-wrapper">
+        <UploadFile
+          id={`noc-doc-1-${key}`}
+          extraStyleName={"propertyCreate"}
+          accept= "image/*, .pdf, .png, .jpeg, .jpg"
+          onUpload={selectfile}
+          onDelete={() => {
+            setUploadedFile(null);
+            setCheckRequiredFields(true);
+          }}
+          message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+          error={error}
+        />
+      </div>
+    </div>
   );
 
 }

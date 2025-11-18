@@ -28,29 +28,20 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
 
   const updatedQualificationTypes = useMemo(() => {
     if( isQualificationLoading || qualificationError) return [];
-    return qualificationTypes?.map((qualification) => {
-      let license = null;
-
-    if (qualification.name == "B-Arch") {
-      license = "ARCHITECT"
-    } else if (qualification.name == "BE/B-Tech") {
-      license = "ENGINEER"
-    } else if (qualification.name == "Diploma in Civil Engineering/Architect") {
-      license = "SUPERVISOR"
-    } else if (qualification.name == "Town and Country Planning") {
-      license = "TOWNPLANNER"
-    }
-
-    return license
-    });
+    return qualificationTypes?.filter((qualification) => {
+      if(qualification.role == "ARCHITECT+TOWNPLANNER" || qualification.role == "ENGINEER+TOWNPLANNER"){
+        return false
+      }
+      return true;
+    })?.map((qualification) => qualification.role);
   }, [qualificationTypes, isQualificationLoading]);
 
   const updatedStakeholderServiceTypes = useMemo(() => {
     if (stakeholderServiceTypesLoading) return [];
     return stakeholderServiceTypes?.filter((type) => updatedQualificationTypes?.includes(type.identifier))
-  });
+  },[updatedQualificationTypes, stakeholderServiceTypesLoading]);
   
-  console.log("updatedStakeholderServiceTypes", updatedStakeholderServiceTypes, stakeholderServiceTypes);
+  console.log("updatedStakeholderServiceTypes", updatedStakeholderServiceTypes, stakeholderServiceTypes, updatedQualificationTypes, qualificationTypes);
 
 
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: null});

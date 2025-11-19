@@ -704,6 +704,25 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       if (!owner?.dob) {
         newErrors[`dob_${index}`] = t("Date of birth is required");
         isValid = false;
+      } else {
+        const dobDate = new Date(owner.dob);
+        const today = new Date();
+
+        let age = today.getFullYear() - dobDate.getFullYear();
+        const m = today.getMonth() - dobDate.getMonth();
+
+        // Adjust age if birthday hasn't occurred yet this year
+        if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+          age--;
+        }
+
+        if (age < 18) {
+          newErrors[`dob_${index}`] = t("Age must be at least 18 years");
+          isValid = false;
+        } else if (age > 150) {
+          newErrors[`dob_${index}`] = t("Age cannot be more than 120 years");
+          isValid = false;
+        }
       }
       if (!owner?.permanentAddress) {
         newErrors[`address_${index}`] = t("Owner address is required");
@@ -754,7 +773,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
               fatherOrHusbandName: item?.fatherOrHusbandName || userData?.fatherOrHusbandName || "",
               createdDate: convertDateTimeToEpoch(userData?.createdDate),
               lastModifiedDate: convertDateTimeToEpoch(userData?.lastModifiedDate),
-              pwdExpiryDate: convertDateTimeToEpoch(userData?.pwdExpiryDate)
+              pwdExpiryDate: convertDateTimeToEpoch(userData?.pwdExpiryDate),
+              permanentAddress: item?.permanentAddress || userData?.permanentAddress || "",
+              additionalDetails: {
+                documentFile: item?.additionalDetails?.documentFile || null,
+                ownerPhoto: item?.additionalDetails?.ownerPhoto || null
+              },
+              authorizationLetter: item?.authorizationLetter || null,
             }
           } else {
             return {
@@ -789,6 +814,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           gender: owner?.gender?.code,
           dob: owner?.dob ? Digit.Utils.pt.convertDateToEpoch(owner?.dob) : null,
           fatherOrHusbandName: owner?.fatherOrHusbandName ||"",
+          permanentAddress: owner?.permanentAddress || "",
+          additionalDetails: {
+            documentFile: owner?.additionalDetails?.documentFile || null,
+            ownerPhoto: owner?.additionalDetails?.ownerPhoto || null
+          },
+          authorizationLetter: owner?.authorizationLetter || null,
           photo:null
         })
       })

@@ -428,7 +428,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
     
         // Append index if more than 1 owner (ownerIdx is 0-based so +1)
-        const title = ownersCount > 1 ? `${t(baseTitle)}_${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
+        const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
     
         return {
           id: index,

@@ -781,8 +781,14 @@ if (anyYes && !ecbcCertificateFile) {
     setErrors((prev) => ({ ...prev, file: "" }))
   }
 
-  function onClick(e) {
-    console.log("inside_NOC_search")
+  async function onClick(e) {
+    if(!NocNumber || NocNumber === ""){
+      alert(t("NOC NUMBER IS REQUIRED BEFORE SEARCH"));
+      return;
+    }
+
+    const response = await Digit.OBPSService.NOCSearch("pb.testing", { applicationNo: NocNumber });
+    console.log("NOC Search Response:", response);
   }
 
   function selectfiles(e) {

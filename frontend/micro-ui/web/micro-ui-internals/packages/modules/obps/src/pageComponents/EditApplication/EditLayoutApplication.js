@@ -1,4 +1,3 @@
-
 import React,{ useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useTranslation } from "react-i18next"
@@ -73,6 +72,10 @@ const createEmployeeConfig = [
   },
 ]
 
+const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
+  return { ...item, currStepConfig: layoutStepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+});
+
 
 const EditLayoutApplication = () => {
   const { id } = useParams()
@@ -82,23 +85,8 @@ const EditLayoutApplication = () => {
   const [showToast, setShowToast] = useState(null)
 
   const formState = useSelector((state) => state.obps.LayoutNewApplicationFormReducer)
-  const formData = formState.formData || formState;
-  console.log(formData, "FORMMMMMMM");
+  const formData = formState.formData;
   const step = formState.step
-
-
-  const updatedCreateEmployeeconfig = React.useMemo(() => {
-    return createEmployeeConfig.map((item) => {
-      return {
-        ...item,
-        currStepConfig: layoutStepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber),
-        // <CHANGE> Now formData is accessible here
-        currentStepData: formData?.[item.key] || {}
-      }
-    })
-  }, [formData])
-
-  
 
   //Makesure to pass tenantId correctly
   let tenantId
@@ -107,25 +95,14 @@ const EditLayoutApplication = () => {
   } else {
     tenantId = window.localStorage.getItem("CITIZEN.CITY")
   }
-  console.log("tenantId here", tenantId)
-
 
   const { isLoading, data } = Digit.Hooks.obps.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId)
 
-// <CHANGE> Fixed data extraction paths to match actual API response structure
-const layoutObject = data?.data?.[0]?.Applications
-console.log(layoutObject, "LAYOUT OBJECTTTT");
-console.log(data, "LAYOUT data");
-console.log(data, "LAYOUT data");
-const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
-const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
-const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
-const documents = layoutObject?.documents || [];
-
-
-console.log("[v0] Extracted data:", { layoutObject, applicantDetails, siteDetails, documents })
-
-
+  const layoutObject = data?.data?.[0]?.Applications
+  const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
+  const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
+  const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
+  const documents = layoutObject?.documents || [];
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_LayoutNewApplication_STEP(updatedStepNumber))
@@ -141,15 +118,12 @@ console.log("[v0] Extracted data:", { layoutObject, applicantDetails, siteDetail
   } = Digit.Hooks.obps.useLayoutBuildingCategory(stateId)
   const { data: layoutType, isLoading: isLayoutTypeLoading } = Digit.Hooks.obps.useLayoutType(stateId)
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants()
-  const [cities, setCitiesOptions] = useState([])
-
-  const { data: tenantsData } = Digit.Hooks.obps.useTenants()
-
-  useEffect(() => {
-    if (tenantsData) {
-      setCitiesOptions(tenantsData)
-    }
-  }, [tenantsData])
+  const [cities, setcitiesopetions] = useState(Digit.Hooks.obps.useTenants());
+  
+  const options = [
+    {code: "YES", i18nKey: "YES"}, 
+    {code: "NO", i18nKey: "NO"},
+  ];
 
   const ulbListOptions = ulbList?.map((city) => ({
     ...city,
@@ -177,11 +151,6 @@ console.log("[v0] Extracted data:", { layoutObject, applicantDetails, siteDetail
     t,
   )
 
-  const options = [
-    { code: "yes", value: "Yes" },
-    { code: "no", value: "No" },
-  ]
-
   useEffect(() => {
     if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
       const zoneName = siteDetails?.zone?.name || siteDetails?.zone
@@ -198,170 +167,72 @@ console.log("[v0] Extracted data:", { layoutObject, applicantDetails, siteDetail
     }
   }, [fetchedLocalities, siteDetails?.zone])
 
-
-
-//   useEffect(() => {
-//   // <CHANGE> Added comprehensive checks for all required data
-//   const hasDropdownData = menu.length > 0 && cities.length > 0 && ulbListOptions && buildingType && roadType && buildingCategory && layoutType
-//   const hasApiData = !isLoading && !isBuildingTypeLoading && !isUlbListLoading && layoutObject?.layoutDetails
-//   const shouldPopulateForm = hasApiData && hasDropdownData && !formData.apiData
-  
-//   if (shouldPopulateForm) {
-//     dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM())
-//      const formattedDocuments = {
-//         documents: {
-//           documents: documents?.map((doc) => ({
-//             documentType: doc?.documentType || "",
-//             uuid: doc?.uuid || "",
-//             documentUid: doc?.documentUid || "",
-//             documentAttachment: doc?.documentAttachment || "",
-//             filestoreId: doc?.uuid || "",
-//           })),
-//         },
-//       }
-
-//       Object.entries(coordinates || {}).forEach(([key, value]) => {
-//         dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value))
-//       })
-
-//       const updatedApplicantDetails = {
-//         ...applicantDetails,
-//         applicantGender: menu.find(
-//           (obj) =>
-//             obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender,
-//         ),
-//       }
-
-//       const districtObj = cities.find(
-//         (obj) => obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district,
-//       )
-//       setSelectedDistrict(districtObj)
-
-//       const updatedSiteDetails = {
-//         ...siteDetails,
-//         ulbName: ulbListOptions?.find(
-//           (obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName,
-//         ),
-//         roadType: roadType?.find(
-//           (obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType,
-//         ),
-//         buildingStatus: buildingType?.find(
-//           (obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus,
-//         ),
-//         isBasementAreaAvailable: options.find(
-//           (obj) =>
-//             obj.code === siteDetails?.isBasementAreaAvailable?.code ||
-//             obj.code === siteDetails?.isBasementAreaAvailable,
-//         ),
-
-//         district: districtObj,
-
-//         specificationBuildingCategory: buildingCategory?.find(
-//           (obj) =>
-//             obj.name === siteDetails?.specificationBuildingCategory?.name ||
-//             obj.name === siteDetails?.specificationBuildingCategory,
-//         ),
-//         specificationLayoutType: layoutType?.find(
-//           (obj) =>
-//             obj.name === siteDetails?.specificationLayoutType?.name ||
-//             obj.name === siteDetails?.specificationLayoutType,
-//         ),
-//         specificationRestrictedArea: options.find(
-//           (obj) =>
-//             obj.code === siteDetails?.specificationRestrictedArea?.code ||
-//             obj.code === siteDetails?.specificationRestrictedArea,
-//         ),
-//         specificationIsSiteUnderMasterPlan: options.find(
-//           (obj) =>
-//             obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
-//             obj.code === siteDetails?.specificationIsSiteUnderMasterPlan,
-//         ),
-//       }
-
-//       dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails))
-//       dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails))
-//       dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments))
-//       dispatch(UPDATE_LayoutNewApplication_FORM("apiData", applicantDetails))
-//   }
-// }, [isLoading, isBuildingTypeLoading, isUlbListLoading, layoutObject?.layoutDetails, formData.apiData, menu, cities, ulbListOptions, buildingType, roadType, buildingCategory, layoutType])
-
-
-
-useEffect(() => {
-  // <CHANGE> Reset form on load
-  dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
-  
-  const hasApiData = !isLoading && !isBuildingTypeLoading && !isUlbListLoading && layoutObject?.layoutDetails;
-  
-  if(hasApiData){
-    console.log("[v0] Extracted data:", { applicantDetails, siteDetails, documents, coordinates });
+  useEffect(() => {
+    dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
     
-    // <CHANGE> Format documents
-    const formattedDocuments = {
-      documents: {
-        documents: documents?.map((doc) => ({
-          documentType: doc?.documentType || "",
-          uuid: doc?.uuid || "",
-          documentUid: doc?.documentUid || "",
-          documentAttachment: doc?.documentAttachment || "",
-          filestoreId: doc?.uuid || ""
-        })),
-      },
-    };
+    const hasApiData = !isLoading && !isBuildingTypeLoading && !isUlbListLoading && layoutObject?.layoutDetails;
+    
+    if(hasApiData){
+      const formattedDocuments = {
+        documents: {
+          documents: documents?.map((doc) => ({
+            documentType: doc?.documentType || "",
+            uuid: doc?.uuid || "",
+            documentUid: doc?.documentUid || "",
+            documentAttachment: doc?.documentAttachment || "",
+            filestoreId: doc?.uuid || ""
+          })),
+        },
+      };
 
-    // <CHANGE> Dispatch coordinates
-    Object.entries(coordinates || {}).forEach(([key, value]) => {
-      dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value));
-    });
+      Object.entries(coordinates || {}).forEach(([key, value]) => {
+        dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value));
+      });
 
-    // <CHANGE> Match dropdowns for applicant details
-    const updatedApplicantDetails = {
-      ...applicantDetails,
-      applicantGender: menu?.find((obj) => (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
-    };
+      const updatedApplicantDetails = {
+        ...applicantDetails,
+        applicantGender: menu?.find((obj) => (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
+      };
 
-    // <CHANGE> Set district for zone loading
-    const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
-    if (districtObj) setSelectedDistrict(districtObj);
+      const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
+      if (districtObj) setSelectedDistrict(districtObj);
 
-    // <CHANGE> Match all dropdowns for site details
-    const updatedSiteDetails = {
-      ...siteDetails,
-      ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
-      roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
-      buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
-      isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
-      district: districtObj,
-      specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
-      specificationLayoutType: layoutType?.find((obj) => (obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType)),
-      specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
-      specificationIsSiteUnderMasterPlan: options?.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan)),
-    };
-  
-    // <CHANGE> Dispatch all data to Redux store
-    dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
-    dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
-    dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments));
-    dispatch(UPDATE_LayoutNewApplication_FORM("apiData", layoutObject));
-  }
-}, [isLoading, layoutObject, isBuildingTypeLoading, isUlbListLoading]);
+      const updatedSiteDetails = {
+        ...siteDetails,
+        ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
+        roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
+        buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
+        isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
+        district: districtObj,
+        specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
+        specificationLayoutType: layoutType?.find((obj) => (obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType)),
+        specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
+        specificationIsSiteUnderMasterPlan: options?.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan)),
+      };
+    
+      dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
+      dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
+      dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments));
+      dispatch(UPDATE_LayoutNewApplication_FORM("apiData", layoutObject));
+    }
+  }, [isLoading, layoutObject, isBuildingTypeLoading, isUlbListLoading]);
+
   const handleSubmit = (dataGet) => {}
 
-
-    if (isLoading || !formData) {
-      return (
-        <div>
-          <Loader />
-        </div>
-      )
-    }
+  if (isLoading || !formData?.applicationDetails) {
+    return (
+      <div>
+        <Loader />
+      </div>
+    )
+  }
 
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("BPA_LAYOUT_REGISTRATION_APPLICATION")}
       </CardHeader>
-      <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} formData={formData} />
+      <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast
           error={showToast.key}

@@ -331,9 +331,16 @@ const [viewTimeline, setViewTimeline] = useState(false);
     console.log("selected action", action)
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
 
+    console.log(applicationDetails, "applicationDetails---in---onActionSelect");
+
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action)
+    console.log(filterNexState, "filterNexState---in---onActionSelect");
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState)
+    console.log(filterRoles, "filterRoles---in---onActionSelect");
+    console.log(getWorkflowService, "getWorkflowService---in---onActionSelect");
     setEmployees(filterRoles?.[0]?.actions)
+
+
 
     const payload = {
       Licenses: [action],
@@ -378,10 +385,12 @@ const [viewTimeline, setViewTimeline] = useState(false);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
+  
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
+          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
         {dowloadOptions && dowloadOptions.length > 0 && (
           <div>
           <MultiLink
@@ -390,18 +399,33 @@ const [viewTimeline, setViewTimeline] = useState(false);
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+         
           </div>
         )}
       </div>
 
+        <Card>
+       
+         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
+            <StatusTable>
+               <Row label={t("Application Number")} text={applicationDetails?.Layout?.[0]?.applicationNo || "N/A"} />
+            </StatusTable>
+  
+      </Card>
+
+
       <Card>
-        <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
+
+        {console.log(displayData, "Yyyyyyyyyyyyy")}
+
+       
         {displayData?.applicantDetails?.map((detail, index) => (
           <div
             key={index}
             style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
           >
+
+        
             <StatusTable>
               <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
@@ -594,7 +618,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_LAYOUT`}
+              localeKeyPrefix={`WF_EMPLOYEE_${"LAYOUT"}`}
               options={actions}
               optionKey={"action"}
               t={t}

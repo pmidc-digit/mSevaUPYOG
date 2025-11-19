@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 
 import Stepper from "../../../../../../react-components/src/customComponents/Stepper"
 import {layoutStepperConfig} from "../../../config/layoutStepperConfig";
-import { SET_OBPS_STEP, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
+import { SET_LayoutNewApplication_STEP, RESET_LAYOUT_NEW_APPLICATION_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 //Config for steps
@@ -76,7 +76,7 @@ const LayoutStepperForm = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.obps.OBPSFormReducer);
+  const formState = useSelector((state) => state.obps.LayoutNewApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -84,11 +84,11 @@ const LayoutStepperForm = () => {
   // console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
-    dispatch(SET_OBPS_STEP(updatedStepNumber));
+    dispatch(SET_LayoutNewApplication_STEP(updatedStepNumber));
   };
 
   useEffect(() => {
-    dispatch(RESET_OBPS_FORM());
+    dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
   }, []);
 
   // console.log("formData",formData);
@@ -107,8 +107,8 @@ const LayoutStepperForm = () => {
 
   // console.log("formState: ",formState);
 
-  console.log("[v0] LayoutStepperForm - formData:", formData);
-console.log("[v0] LayoutStepperForm - step:", step);
+  console.log("  LayoutStepperForm - formData:", formData);
+console.log("  LayoutStepperForm - step:", step);
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

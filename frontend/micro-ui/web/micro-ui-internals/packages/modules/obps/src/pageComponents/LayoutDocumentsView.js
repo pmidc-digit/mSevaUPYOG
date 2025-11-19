@@ -102,7 +102,7 @@ function LayoutDocumentsView({ value = {} }) {
                       }}
                     >
                       <PDFSvg width={20} height={20} />
-                      <span>{t("VIEW_PDF")}</span>
+                      <span>{t("View Pdf")}</span>
                     </a>
                   </td>
                 </tr>

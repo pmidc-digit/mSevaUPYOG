@@ -363,6 +363,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
+         <LinkButton  label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
         {dowloadOptions && dowloadOptions.length > 0 && (
           <div>
 
@@ -372,11 +373,11 @@ const [viewTimeline, setViewTimeline] = useState(false);
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
 
            </div>
         )}
       </div>
+       
 
       <Card>
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
@@ -517,6 +518,23 @@ const [viewTimeline, setViewTimeline] = useState(false);
           </div>
         ))}
       </Card>
+
+            <Card>
+              <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
+              {displayData?.coordinates?.map((detail, index) => (
+                <div
+                  key={index}
+                  style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+                >
+                  <StatusTable>
+                    <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+                    <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+                    <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+                    <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+                  </StatusTable>
+                </div>
+              ))}
+            </Card>
 
 
 

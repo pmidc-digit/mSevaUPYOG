@@ -229,7 +229,7 @@ public class DemandService {
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId())
                     .consumerCode(calculation.getApplicationNumber())
-                    .consumerType("LAYOUT_APPLICATION_FEE")
+                    .consumerType("CLU_APPLICATION_FEE")
                     .businessService(CLUConstants.LAYOUT_BUSINESS_SERVICE)
                     .payer(owner)
                     .minimumAmountPayable(nocConfiguration.getMinimumPayableAmount())

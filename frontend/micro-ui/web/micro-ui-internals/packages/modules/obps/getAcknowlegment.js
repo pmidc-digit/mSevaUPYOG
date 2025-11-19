@@ -98,7 +98,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("BPA_APPLICANT_ULB_LIST"),
-        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb?.map(ulb => t(ulb?.ulbname))?.join(', ') ?? "N/A",
+        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb || "N/A",
       },
     ],
   });

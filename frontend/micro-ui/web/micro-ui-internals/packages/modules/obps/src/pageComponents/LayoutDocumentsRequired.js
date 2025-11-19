@@ -119,7 +119,7 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
         )}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {filteredDocuments?.map((document, index) => {
+          {data?.BPA?.LayoutDocuments?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -341,27 +341,12 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   return (
     <div style={{ marginBottom: "24px" }}>
       {getLoading && <Loader />}
-      {doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={(dropDownData || []).map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null}
-      {!doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} 
-            <span>{doc?.required ? " *" : ""}</span>
-          </CardLabel>
-        </LabelFieldPair>
-      ) : null}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t(doc?.code.replaceAll(".", "_"))}
+          {doc?.required && <span style={{ color: 'red' }}> *</span>}
+        </CardLabel>
+      </LabelFieldPair>
       <LabelFieldPair>
 
         {(doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") ? (

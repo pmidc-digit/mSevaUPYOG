@@ -408,7 +408,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
        
          <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
             <StatusTable>
-               <Row label={t("Applicxation Number")} text={applicationDetails?.Layout?.[0]?.applicationNo || "N/A"} />
+               <Row label={t("Application Number")} text={applicationDetails?.Layout?.[0]?.applicationNo || "N/A"} />
             </StatusTable>
   
       </Card>

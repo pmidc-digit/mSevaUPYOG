@@ -1,5 +1,6 @@
 import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
 import React from "react";
+import DropdownWithDesignation from "../components/DropDownWithDesignation";
 
 export const configBPAREGApproverApplication = ({
     t,
@@ -15,7 +16,7 @@ export const configBPAREGApproverApplication = ({
     error
 }) => {
     let checkCondtions = true;
-    if (action?.action == "SENDBACKTOCITIZEN") checkCondtions = false;
+    if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "SEND_BACK_TO_CITIZEN") checkCondtions = false;
     if (action.isTerminateState) checkCondtions = false;
 
     return {
@@ -40,13 +41,14 @@ export const configBPAREGApproverApplication = ({
                             //     select={setSelectedApprover}
                             //     selected={selectedApprover}
                             // />
-                            <Dropdown
+                            <DropdownWithDesignation
                                 option={approvers}
                                 autoComplete="off"
-                                optionKey="displayName" 
+                                optionKey="name" 
                                 id="fieldInspector"
                                 select={setSelectedApprover}
                                 selected={selectedApprover}
+                                t={t}
                             />
                         ),
                     },

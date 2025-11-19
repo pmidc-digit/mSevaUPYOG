@@ -777,7 +777,7 @@ const caption = {
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
         <PaymentHistory payments={payments}/>
-        {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" &&  moduleCode !== "BPAStakeholder" &&<ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
+        {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" &&  moduleCode !== "BPAStakeholder" &&  moduleCode !== "BPAREG" &&<ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

@@ -458,10 +458,10 @@ let License = LicenseData?.Licenses?.[0];
           {recieptDataLoading ? (
             <Loader />
           ) : (
-            <>
+            <div>
               {renderLabel(t("Total Amount"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
               {renderLabel(t("Status"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ? t("PAID") : t("PENDING"))}
-            </>
+            </div>
           )}
         </div>
 

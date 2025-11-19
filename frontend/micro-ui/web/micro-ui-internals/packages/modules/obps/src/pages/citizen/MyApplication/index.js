@@ -410,7 +410,7 @@ console.log("  Layout search params:", {
               <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
               <KeyNote
                 keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`${application?.applicationStatus || application?.status}`)}
+                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
                 noteStyle={application?.applicationStatus === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
               />
               <Link

@@ -52,6 +52,8 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("LAYOUT.INBOX")
 
+  console.log(InboxObjectInSessionStorage, "INBOX SESSION");
+
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null)
     setSearchFormValue("applicationNo", null)
@@ -97,6 +99,8 @@ const LayoutInbox = ({ parentRoute }) => {
   })
 
   console.log("  Inbox hook data:", inboxData)
+
+  
 
   useEffect(() => {
     if (inboxData) {

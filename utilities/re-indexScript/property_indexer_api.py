@@ -33,7 +33,7 @@ class PropertyIndexerAPI:
         self.elasticsearch_url = config.get('elasticsearch_url', 'http://elasticsearch-data-v1.es-cluster.svc.cluster.local:9200/')
         
         # Index configuration
-        self.index_name = "property-services-temp"
+        self.index_name = "property-services-temp1"
         self.bulk_file = "bulk_properties_api.jsonl"
         
         # Request info template
@@ -550,39 +550,54 @@ class PropertyIndexerAPI:
         logger.error("Chunk upload failed after all retries")
         return False
 
-    def run_indexing(self, tenant_ids: List[str], from_date:int,to_date:int, enable_enrichment: bool = True, batch_size: int = 1000,elasticsearch_chunk_size:int =2000,process_batch_size:int=1000, total_limit: int = None):
-        """Main method to run the property indexing process"""
-        logger.info("Starting property indexing process using Plain Search API...")
-        start_time = time.time()
-        
+    def process_single_tenant(self, tenant_id: str, from_date: int, to_date: int, enable_enrichment: bool,
+                             batch_size: int, elasticsearch_chunk_size: int, process_batch_size: int,
+                             total_limit: int = None) -> Dict[str, Any]:
+        """Process a single tenant: fetch, enrich, and push to Elasticsearch"""
+        tenant_start_time = time.time()
+
+        logger.info(f"\n{'='*80}")
+        logger.info(f"Processing Tenant: {tenant_id}")
+        logger.info(f"{'='*80}")
+
         try:
-            # Step 1: Fetch properties using Plain Search API
-            logger.info("Step 1: Fetching properties using Plain Search API...")
-            properties = self.fetch_all_properties_via_api(tenant_ids,from_date, to_date, batch_size, total_limit)
-            
+            # Step 1: Fetch properties for this tenant
+            logger.info(f"[{tenant_id}] Step 1: Fetching properties...")
+            properties = self.fetch_all_properties_via_api([tenant_id], from_date, to_date, batch_size, total_limit)
+
             if not properties:
-                logger.warning("No properties found to index")
-                return
-            
+                logger.warning(f"[{tenant_id}] No properties found - skipping")
+                return {
+                    'tenant_id': tenant_id,
+                    'properties_fetched': 0,
+                    'properties_processed': 0,
+                    'properties_pushed': 0,
+                    'status': 'skipped',
+                    'time_taken': 0
+                }
+
+            logger.info(f"[{tenant_id}] Fetched {len(properties)} properties")
+
             # Step 2: Transform and enrich properties
-            logger.info("Step 2: Transforming and enriching property data...")
+            logger.info(f"[{tenant_id}] Step 2: Enriching and transforming property data...")
             documents = []
-            
+
             # Process properties in batches for better memory management
-            process_batch_size = process_batch_size   # Process 50 at a time for better efficiency
             for batch_start in range(0, len(properties), process_batch_size):
                 batch_end = min(batch_start + process_batch_size, len(properties))
                 batch_properties = properties[batch_start:batch_end]
-                
-                logger.info(f"Processing batch {batch_start//process_batch_size + 1}/{(len(properties) + process_batch_size - 1)//process_batch_size} "
-                           f"({batch_start + 1}-{batch_end}/{len(properties)} properties)...")
-                
-                
-                # Run enrichment in parallel for 10 properties at a time
-                if enable_enrichment:
 
+                logger.info(f"[{tenant_id}] Processing batch {batch_start//process_batch_size + 1}/"
+                           f"{(len(properties) + process_batch_size - 1)//process_batch_size} "
+                           f"({batch_start + 1}-{batch_end}/{len(properties)} properties)...")
+
+                # Run enrichment in parallel
+                if enable_enrichment:
                     with ThreadPoolExecutor(max_workers=5) as executor:
-                        future_to_property = {executor.submit(self.enrich_property_parallel, property_data): property_data for property_data in batch_properties}
+                        future_to_property = {
+                            executor.submit(self.enrich_property_parallel, property_data): property_data
+                            for property_data in batch_properties
+                        }
                         for future in as_completed(future_to_property):
                             property_data = future_to_property[future]
                             try:
@@ -591,52 +606,148 @@ class PropertyIndexerAPI:
                                 document = self.transform_property_to_index_format(property_data)
                                 documents.append(document)
                             except Exception as e:
-                                logger.error(f"Error processing property {property_data.get('propertyId', 'unknown')}: {e}")
+                                logger.error(f"[{tenant_id}] Error processing property "
+                                           f"{property_data.get('propertyId', 'unknown')}: {e}")
                                 continue
+                else:
+                    # Without enrichment, just transform
+                    for property_data in batch_properties:
+                        try:
+                            document = self.transform_property_to_index_format(property_data)
+                            documents.append(document)
+                        except Exception as e:
+                            logger.error(f"[{tenant_id}] Error transforming property "
+                                       f"{property_data.get('propertyId', 'unknown')}: {e}")
+                            continue
 
+            logger.info(f"[{tenant_id}] Successfully processed {len(documents)} properties")
 
-                # # Process batch with optional parallel enrichment
-                # for property_data in batch_properties:
-                #     try:
-                #         if enable_enrichment:
-                #             # Get enrichment data
-                #             enrichment = self.enrich_property_parallel(property_data)
-                #             # Add enrichment data to property
-                #             property_data['_enrichment'] = enrichment
-                        
-                #         document = self.transform_property_to_index_format(property_data)
-                #         documents.append(document)
-                        
-                #     except Exception as e:
-                #         logger.error(f"Error processing property {property_data.get('propertyId', 'unknown')}: {e}")
-                #         continue
-            
-            logger.info(f"Successfully processed {len(documents)} properties for indexing")
-            
             # Step 3: Write to bulk file
-            logger.info("Step 3: Writing bulk index file...")
-            self.write_bulk_file(documents, self.bulk_file)
-            
+            tenant_bulk_file = f"bulk_properties_{tenant_id.replace('.', '_')}.jsonl"
+            logger.info(f"[{tenant_id}] Step 3: Writing to bulk file: {tenant_bulk_file}")
+            self.write_bulk_file(documents, tenant_bulk_file)
+
             # Step 4: Upload to Elasticsearch
-            logger.info("Step 4: Uploading to Elasticsearch...")
-            self.upload_to_elasticsearch(self.bulk_file, chunk_size=elasticsearch_chunk_size)
-            
-            # Summary
+            logger.info(f"[{tenant_id}] Step 4: Uploading to Elasticsearch...")
+            self.upload_to_elasticsearch(tenant_bulk_file, chunk_size=elasticsearch_chunk_size)
+
+            # Clean up tenant-specific bulk file
+            import os
+            try:
+                os.remove(tenant_bulk_file)
+                logger.info(f"[{tenant_id}] Cleaned up temporary bulk file")
+            except Exception as e:
+                logger.warning(f"[{tenant_id}] Could not remove bulk file: {e}")
+
+            # Summary for this tenant
+            tenant_end_time = time.time()
+            tenant_elapsed = tenant_end_time - tenant_start_time
+
+            logger.info(f"[{tenant_id}] ✓ Tenant processing completed")
+            logger.info(f"[{tenant_id}]   Properties fetched: {len(properties)}")
+            logger.info(f"[{tenant_id}]   Properties processed: {len(documents)}")
+            logger.info(f"[{tenant_id}]   Time taken: {tenant_elapsed:.2f} seconds ({tenant_elapsed/60:.1f} minutes)")
+
+            return {
+                'tenant_id': tenant_id,
+                'properties_fetched': len(properties),
+                'properties_processed': len(documents),
+                'properties_pushed': len(documents),
+                'status': 'success',
+                'time_taken': tenant_elapsed
+            }
+
+        except Exception as e:
+            logger.error(f"[{tenant_id}] ✗ Error processing tenant: {e}")
+            logger.exception(e)
+            return {
+                'tenant_id': tenant_id,
+                'properties_fetched': 0,
+                'properties_processed': 0,
+                'properties_pushed': 0,
+                'status': 'failed',
+                'error': str(e),
+                'time_taken': time.time() - tenant_start_time
+            }
+
+    def run_indexing(self, tenant_ids: List[str], from_date:int,to_date:int, enable_enrichment: bool = True, batch_size: int = 1000,elasticsearch_chunk_size:int =2000,process_batch_size:int=1000, total_limit: int = None):
+        """Main method to run the property indexing process - processes each tenant independently"""
+        logger.info("Starting property indexing process using Plain Search API...")
+        logger.info("Processing mode: TENANT-BY-TENANT (fetch -> enrich -> push per tenant)")
+        start_time = time.time()
+
+        tenant_results = []
+        total_properties_processed = 0
+
+        try:
+            for idx, tenant_id in enumerate(tenant_ids, 1):
+                logger.info(f"\n{'#'*80}")
+                logger.info(f"Processing Tenant {idx}/{len(tenant_ids)}: {tenant_id}")
+                logger.info(f"{'#'*80}")
+
+                # Process this tenant completely
+                result = self.process_single_tenant(
+                    tenant_id=tenant_id,
+                    from_date=from_date,
+                    to_date=to_date,
+                    enable_enrichment=enable_enrichment,
+                    batch_size=batch_size,
+                    elasticsearch_chunk_size=elasticsearch_chunk_size,
+                    process_batch_size=process_batch_size,
+                    total_limit=total_limit
+                )
+
+                tenant_results.append(result)
+                total_properties_processed += result.get('properties_processed', 0)
+
+            # Final Summary
             end_time = time.time()
             elapsed_time = end_time - start_time
-            
-            logger.info("=" * 60)
-            logger.info("PROPERTY INDEXING COMPLETED")
-            logger.info(f"Properties processed: {len(documents)}")
+
+            logger.info("\n" + "=" * 80)
+            logger.info("PROPERTY INDEXING COMPLETED - SUMMARY")
+            logger.info("=" * 80)
+            logger.info(f"Total tenants processed: {len(tenant_ids)}")
+            logger.info(f"Total properties indexed: {total_properties_processed}")
             logger.info(f"Data source: Plain Search API")
             logger.info(f"Enrichment enabled: {enable_enrichment}")
-            logger.info(f"Bulk file: {self.bulk_file}")
             logger.info(f"Elasticsearch index: {self.index_name}")
-            logger.info(f"Time taken: {elapsed_time:.2f} seconds ({elapsed_time/60:.1f} minutes)")
-            logger.info("=" * 60)
-            
+            logger.info(f"Total time taken: {elapsed_time:.2f} seconds ({elapsed_time/60:.1f} minutes)")
+            logger.info("\nTenant-wise Summary:")
+            logger.info("-" * 80)
+
+            successful_tenants = 0
+            failed_tenants = 0
+            skipped_tenants = 0
+
+            for result in tenant_results:
+                status_icon = "✓" if result['status'] == 'success' else "✗" if result['status'] == 'failed' else "⊘"
+                status_str = result['status'].upper()
+
+                if result['status'] == 'success':
+                    successful_tenants += 1
+                elif result['status'] == 'failed':
+                    failed_tenants += 1
+                else:
+                    skipped_tenants += 1
+
+                logger.info(f"{status_icon} {result['tenant_id']:30s} | Status: {status_str:10s} | "
+                           f"Properties: {result['properties_processed']:6d} | "
+                           f"Time: {result['time_taken']:6.1f}s")
+
+            logger.info("-" * 80)
+            logger.info(f"Successful: {successful_tenants} | Failed: {failed_tenants} | Skipped: {skipped_tenants}")
+            logger.info("=" * 80)
+
+        except KeyboardInterrupt:
+            logger.warning("\n" + "=" * 80)
+            logger.warning("PROCESS INTERRUPTED BY USER")
+            logger.warning(f"Processed {len(tenant_results)} out of {len(tenant_ids)} tenants")
+            logger.warning("=" * 80)
+            raise
         except Exception as e:
             logger.exception(f"Error during indexing process: {e}")
+            raise
 
 
 def main():
@@ -683,63 +794,7 @@ def main():
         'pb.begowal',
         'pb.bhadson',
         'pb.bhawanigarh',
-        'pb.bhogpur',
-        'pb.bhuchomandi',
-        'pb.cheema',
-        'pb.dasuya',
-        'pb.dharamkot',
-        'pb.dhariwal',
-        'pb.dhilwan',
-        'pb.dhuri',
-        'pb.faridkot',
-        'pb.ferozepur',
-        'pb.garhdiwala',
-        'pb.goniana',
-        'pb.goraya',
-        'pb.gurdaspur',
-        'pb.hariana',
-        'pb.hoshiarpur',
-        'pb.jagraon',
-        'pb.jaitu',
-        'pb.khanna',
-        'pb.kharar',
-        'pb.kotfatta',
-        'pb.kurali',
-        'pb.lalru',
-        'pb.lehragaga',
-        'pb.longowal',
-        'pb.maloud',
-        'pb.malout',
-        'pb.mandigobindgarh',
-        'pb.maur',
-        'pb.mohali',
-        'pb.moonak',
-        'pb.morinda',
-        'pb.mullanpur',
-        'pb.nabha',
-        'pb.nangal',
-        'pb.nawanshahr',
-        'pb.nihalsinghwala',
-        'pb.nurmahal',
-        'pb.patiala',
-        'pb.payal',
-        'pb.phagwara',
-        'pb.phillaur',
-        'pb.quadian',
-        'pb.rajasansi',
-        'pb.rajpura',
-        'pb.raman',
-        'pb.rayya',
-        'pb.ropar',
-        'pb.samana',
-        'pb.sanaur',
-        'pb.sangrur',
-        'pb.sardulgarh',
-        'pb.sirhind',
-        'pb.talwandibhai',
-        'pb.testing',
-        'pb.urmartanda'
-        'pb.zira'
+        'pb.bhogpur'
     ]
     
     # Processing options - optimized batches for stable processing

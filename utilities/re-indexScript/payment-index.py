@@ -449,38 +449,57 @@ class PropertyIndexerAPI:
 
 
 
-    def run_indexing(self, tenant_ids: List[str],fromDate: Optional[int] = None,toDate: Optional[int] = None,businessServices: Optional[Set[str]] = None,enable_enrichment: bool = True, batch_size: int = 1000, total_limit: int = None, elastricsearch_chunk_size: int = 500, process_batch_size: int = 100):
-        """Main method to run the property indexing process"""
-        logger.info("Starting payment indexing process using Plain Search API...")
-        start_time = time.time()
-        
+    def process_single_tenant(self, tenant_id: str, fromDate: Optional[int], toDate: Optional[int],
+                             businessServices: Optional[Set[str]], enable_enrichment: bool,
+                             batch_size: int, elasticsearch_chunk_size: int, process_batch_size: int,
+                             total_limit: int = None) -> Dict[str, Any]:
+        """Process a single tenant: fetch, enrich, and push to Elasticsearch"""
+        tenant_start_time = time.time()
+
+        logger.info(f"\n{'='*80}")
+        logger.info(f"Processing Tenant: {tenant_id}")
+        logger.info(f"{'='*80}")
+
         try:
-            # Step 1: Fetch all payment data
-            logger.info("Step 1: Fetching payment using Plain Search API...")
-            properties = self.fetch_all_payments_via_api(tenant_ids,fromDate,toDate,businessServices, batch_size, total_limit)
-            
+            # Step 1: Fetch payments for this tenant
+            logger.info(f"[{tenant_id}] Step 1: Fetching payments...")
+            properties = self.fetch_all_payments_via_api(
+                [tenant_id], fromDate, toDate, businessServices, batch_size, total_limit
+            )
+
             if not properties:
-                logger.warning("No payment found to index")
-                return
-            
-            # Step 2: Transform and enrich in parallel
-            logger.info("Step 2: Transforming and enriching payment data...")
+                logger.warning(f"[{tenant_id}] No payments found - skipping")
+                return {
+                    'tenant_id': tenant_id,
+                    'payments_fetched': 0,
+                    'payments_processed': 0,
+                    'payments_pushed': 0,
+                    'status': 'skipped',
+                    'time_taken': 0
+                }
+
+            logger.info(f"[{tenant_id}] Fetched {len(properties)} payments")
+
+            # Step 2: Transform and enrich payments
+            logger.info(f"[{tenant_id}] Step 2: Enriching and transforming payment data...")
             documents = []
-            
-            # Process payment in batches for better memory management
-            process_batch_size = process_batch_size   # Process 50 at a time for better efficiency
+
+            # Process payments in batches for better memory management
             for batch_start in range(0, len(properties), process_batch_size):
                 batch_end = min(batch_start + process_batch_size, len(properties))
                 batch_properties = properties[batch_start:batch_end]
-                
-                logger.info(f"Processing batch {batch_start//process_batch_size + 1}/{(len(properties) + process_batch_size - 1)//process_batch_size} "
-                           f"({batch_start + 1}-{batch_end}/{len(properties)} payment)...")
-                
-                # Run enrichment in parallel for 10 properties at a time
-                if enable_enrichment:
 
+                logger.info(f"[{tenant_id}] Processing batch {batch_start//process_batch_size + 1}/"
+                           f"{(len(properties) + process_batch_size - 1)//process_batch_size} "
+                           f"({batch_start + 1}-{batch_end}/{len(properties)} payments)...")
+
+                # Run enrichment in parallel
+                if enable_enrichment:
                     with ThreadPoolExecutor(max_workers=10) as executor:
-                        future_to_property = {executor.submit(self.enrich_property_parallel, property_data): property_data for property_data in batch_properties}
+                        future_to_property = {
+                            executor.submit(self.enrich_property_parallel, property_data): property_data
+                            for property_data in batch_properties
+                        }
                         for future in as_completed(future_to_property):
                             property_data = future_to_property[future]
                             try:
@@ -489,39 +508,157 @@ class PropertyIndexerAPI:
                                 document = self.transform_payment_to_index_format(property_data)
                                 documents.append(document)
                             except Exception as e:
-                                logger.error(f"Error processing property {property_data.get('propertyId', 'unknown')}: {e}")
+                                logger.error(f"[{tenant_id}] Error processing payment "
+                                           f"{property_data.get('transactionNumber', 'unknown')}: {e}")
                                 continue
-            
-            logger.info(f"Successfully processed {len(documents)} properties for indexing")
-            
-            # Step 3: Write to bulk file
-            logger.info("Step 3: Writing bulk index file...")
-            self.write_bulk_file(documents, self.bulk_file)
-            
-            # Step 4: Upload to Elasticsearch
-            logger.info("Step 4: Uploading to Elasticsearch...")
-            self.upload_to_elasticsearch(self.bulk_file, chunk_size=elastricsearch_chunk_size)
+                else:
+                    # Without enrichment, just transform
+                    for property_data in batch_properties:
+                        try:
+                            document = self.transform_payment_to_index_format(property_data)
+                            documents.append(document)
+                        except Exception as e:
+                            logger.error(f"[{tenant_id}] Error transforming payment "
+                                       f"{property_data.get('transactionNumber', 'unknown')}: {e}")
+                            continue
 
-            # Step 5: Trigger dashboard-ingest API
-            logger.info("Step 5: Triggering dashboard-ingest API...")
-            self.trigger_dashboard_ingest()
-            
-            # Summary
+            logger.info(f"[{tenant_id}] Successfully processed {len(documents)} payments")
+
+            # Step 3: Write to bulk file
+            tenant_bulk_file = f"bulk_payments_{tenant_id.replace('.', '_')}.jsonl"
+            logger.info(f"[{tenant_id}] Step 3: Writing to bulk file: {tenant_bulk_file}")
+            self.write_bulk_file(documents, tenant_bulk_file)
+
+            # Step 4: Upload to Elasticsearch
+            logger.info(f"[{tenant_id}] Step 4: Uploading to Elasticsearch...")
+            self.upload_to_elasticsearch(tenant_bulk_file, chunk_size=elasticsearch_chunk_size)
+
+            # Clean up tenant-specific bulk file
+            import os
+            try:
+                os.remove(tenant_bulk_file)
+                logger.info(f"[{tenant_id}] Cleaned up temporary bulk file")
+            except Exception as e:
+                logger.warning(f"[{tenant_id}] Could not remove bulk file: {e}")
+
+            # Summary for this tenant
+            tenant_end_time = time.time()
+            tenant_elapsed = tenant_end_time - tenant_start_time
+
+            logger.info(f"[{tenant_id}] ✓ Tenant processing completed")
+            logger.info(f"[{tenant_id}]   Payments fetched: {len(properties)}")
+            logger.info(f"[{tenant_id}]   Payments processed: {len(documents)}")
+            logger.info(f"[{tenant_id}]   Time taken: {tenant_elapsed:.2f} seconds ({tenant_elapsed/60:.1f} minutes)")
+
+            return {
+                'tenant_id': tenant_id,
+                'payments_fetched': len(properties),
+                'payments_processed': len(documents),
+                'payments_pushed': len(documents),
+                'status': 'success',
+                'time_taken': tenant_elapsed
+            }
+
+        except Exception as e:
+            logger.error(f"[{tenant_id}] ✗ Error processing tenant: {e}")
+            logger.exception(e)
+            return {
+                'tenant_id': tenant_id,
+                'payments_fetched': 0,
+                'payments_processed': 0,
+                'payments_pushed': 0,
+                'status': 'failed',
+                'error': str(e),
+                'time_taken': time.time() - tenant_start_time
+            }
+
+    def run_indexing(self, tenant_ids: List[str],fromDate: Optional[int] = None,toDate: Optional[int] = None,businessServices: Optional[Set[str]] = None,enable_enrichment: bool = True, batch_size: int = 1000, total_limit: int = None, elastricsearch_chunk_size: int = 500, process_batch_size: int = 100, trigger_dashboard: bool = True):
+        """Main method to run the payment indexing process - processes each tenant independently"""
+        logger.info("Starting payment indexing process using Plain Search API...")
+        logger.info("Processing mode: TENANT-BY-TENANT (fetch -> enrich -> push per tenant)")
+        start_time = time.time()
+
+        tenant_results = []
+        total_payments_processed = 0
+
+        try:
+            for idx, tenant_id in enumerate(tenant_ids, 1):
+                logger.info(f"\n{'#'*80}")
+                logger.info(f"Processing Tenant {idx}/{len(tenant_ids)}: {tenant_id}")
+                logger.info(f"{'#'*80}")
+
+                # Process this tenant completely
+                result = self.process_single_tenant(
+                    tenant_id=tenant_id,
+                    fromDate=fromDate,
+                    toDate=toDate,
+                    businessServices=businessServices,
+                    enable_enrichment=enable_enrichment,
+                    batch_size=batch_size,
+                    elasticsearch_chunk_size=elastricsearch_chunk_size,
+                    process_batch_size=process_batch_size,
+                    total_limit=total_limit
+                )
+
+                tenant_results.append(result)
+                total_payments_processed += result.get('payments_processed', 0)
+
+            # Trigger dashboard ingest only once after all tenants are processed
+            if trigger_dashboard and total_payments_processed > 0:
+                logger.info("\n" + "=" * 80)
+                logger.info("TRIGGERING DASHBOARD INGEST (ONE-TIME AFTER ALL TENANTS)")
+                logger.info("=" * 80)
+                self.trigger_dashboard_ingest()
+
+            # Final Summary
             end_time = time.time()
             elapsed_time = end_time - start_time
-            
-            logger.info("=" * 60)
-            logger.info("PROPERTY INDEXING COMPLETED")
-            logger.info(f"Properties processed: {len(documents)}")
+
+            logger.info("\n" + "=" * 80)
+            logger.info("PAYMENT INDEXING COMPLETED - SUMMARY")
+            logger.info("=" * 80)
+            logger.info(f"Total tenants processed: {len(tenant_ids)}")
+            logger.info(f"Total payments indexed: {total_payments_processed}")
             logger.info(f"Data source: Plain Search API")
             logger.info(f"Enrichment enabled: {enable_enrichment}")
-            logger.info(f"Bulk file: {self.bulk_file}")
+            logger.info(f"Dashboard ingest triggered: {trigger_dashboard and total_payments_processed > 0}")
             logger.info(f"Elasticsearch index: {self.index_name}")
-            logger.info(f"Time taken: {elapsed_time:.2f} seconds ({elapsed_time/60:.1f} minutes)")
-            logger.info("=" * 60)
-            
+            logger.info(f"Total time taken: {elapsed_time:.2f} seconds ({elapsed_time/60:.1f} minutes)")
+            logger.info("\nTenant-wise Summary:")
+            logger.info("-" * 80)
+
+            successful_tenants = 0
+            failed_tenants = 0
+            skipped_tenants = 0
+
+            for result in tenant_results:
+                status_icon = "✓" if result['status'] == 'success' else "✗" if result['status'] == 'failed' else "⊘"
+                status_str = result['status'].upper()
+
+                if result['status'] == 'success':
+                    successful_tenants += 1
+                elif result['status'] == 'failed':
+                    failed_tenants += 1
+                else:
+                    skipped_tenants += 1
+
+                logger.info(f"{status_icon} {result['tenant_id']:30s} | Status: {status_str:10s} | "
+                           f"Payments: {result['payments_processed']:6d} | "
+                           f"Time: {result['time_taken']:6.1f}s")
+
+            logger.info("-" * 80)
+            logger.info(f"Successful: {successful_tenants} | Failed: {failed_tenants} | Skipped: {skipped_tenants}")
+            logger.info("=" * 80)
+
+        except KeyboardInterrupt:
+            logger.warning("\n" + "=" * 80)
+            logger.warning("PROCESS INTERRUPTED BY USER")
+            logger.warning(f"Processed {len(tenant_results)} out of {len(tenant_ids)} tenants")
+            logger.warning("=" * 80)
+            raise
         except Exception as e:
             logger.exception(f"Error during indexing process: {e}")
+            raise
 
 
 def main():
@@ -601,7 +738,8 @@ def main():
             toDate=TO_DATE,
             elastricsearch_chunk_size=ELASTICSEARCH_CHUNK_SIZE,
             process_batch_size=PROCESS_BATCH_SIZE,
-            businessServices=BUSINESS_SERVICES
+            businessServices=BUSINESS_SERVICES,
+            trigger_dashboard=True  # Trigger dashboard ingest once after all tenants
         )
     except KeyboardInterrupt:
         logger.info("\n" + "=" * 80)

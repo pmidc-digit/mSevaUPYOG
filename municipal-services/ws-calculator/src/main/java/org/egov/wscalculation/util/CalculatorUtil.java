@@ -155,6 +155,32 @@ public class CalculatorUtil {
 
 		Collections.sort(response.getWaterConnection(), Comparator.comparing(wc -> wc.getAuditDetails().getLastModifiedTime()));
 		
+		//PI-19943 //
+		
+//	 previous Collections.sort() was sorting water connections in ascending order, meaning the oldest connection came first and the newest came 
+//		last. Because of this, code was sometimes picking the old connection instead of the latest one. By changing the sorting to descending order, the latest 
+//		modified connection will always come first
+		
+		
+		// Filter active connections
+				List<WaterConnection> activeConnections = response.getWaterConnection().stream()
+				        .filter(wc -> wc.getStatus() != null
+				                && wc.getStatus().name().equalsIgnoreCase("ACTIVE"))
+				        .toList();
+
+				// If active connections exist → sort them by latestModifiedTime DESC and pick first
+				if (!activeConnections.isEmpty()) {
+				    activeConnections = activeConnections.stream()
+				            .sorted(Comparator.comparing(
+				                    wc -> wc.getAuditDetails().getLastModifiedTime(),
+				                    Comparator.reverseOrder()
+				            ))
+				            .toList();
+
+				    // Pick the most recently modified active connection
+				    return List.of(activeConnections.get(0));
+				}
+		
 		return response.getWaterConnection();
 	}
 

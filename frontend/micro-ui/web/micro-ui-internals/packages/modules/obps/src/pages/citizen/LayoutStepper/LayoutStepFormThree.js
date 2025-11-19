@@ -16,7 +16,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   
-  const applicationNumberFromRedux = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData?.applicationNo);
+  const applicationNumberFromRedux = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData?.layoutResponse?.Layout?.[0]?.applicationNo);
   const applicationIdFromRedux = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData?.applicationId);
   
   const getApplicationNoFromURL = () => {

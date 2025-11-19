@@ -176,7 +176,7 @@ export const amountToWords =(num) =>{
 
   const toWords = n => {
     if (!n) return "";
-    let parts = [n%1000], res = "", i=0;
+    let parts = [n%1000], res = "";
     n = Math.floor(n/1000);
     while(n){ parts.push(n%100); n=Math.floor(n/100); }
     for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";

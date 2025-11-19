@@ -3,9 +3,8 @@ import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { transformBookingResponseToBookingData } from "../../index";
-import { ChallanData } from "../../index";
-import { amountToWords } from "../../index";
+import { transformBookingResponseToBookingData ,ChallanData ,amountToWords} from "../../index";
+
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
   if (localStorage.getItem("BillPaymentEnabled") !== "true") {
@@ -39,6 +38,7 @@ const WrapPaymentComponent = (props) => {
 
   const [allowFetchBill, setallowFetchBill] = useState(false);
   const { businessService: business_service, consumerCode, tenantId, receiptNumber } = useParams();
+  console.log('business_service here in citizen payment', business_service)
   console.log('tenantId here', tenantId)
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
@@ -49,7 +49,9 @@ const WrapPaymentComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
+  console.log('bpaData rn here', bpaData)
     const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
+    console.log('applicationDetails rn here', applicationDetails)
 
     let challanEmpData = ChallanData(tenantId, consumerCode);
   
@@ -60,12 +62,18 @@ const WrapPaymentComponent = (props) => {
   });
 
   const cities = Digit.Hooks.useTenants();
-  let ulbType = "";
-  const loginCity = JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.permanentCity;
+  console.log('cities', cities)
+  let ulbType,districtCode,ulbCode = "";
+  const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.districtName;
+  console.log('loginCity', loginCity)
   if (cities.data !== undefined) {
-    const selectedTenantData = cities.data.find((item) => item?.city?.districtTenantCode === loginCity);
+    const selectedTenantData = cities.data.find((item) => item?.city?.name === loginCity);
+    console.log('selectedTenantData', selectedTenantData)
     ulbType = selectedTenantData?.city?.ulbGrade;
+    ulbCode= selectedTenantData?.city?.code;
+    districtCode = selectedTenantData?.city?.districtCode;
   }
+  console.log('ulbCode & districtCode', ulbCode, districtCode)
 
   // const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
 
@@ -101,12 +109,14 @@ const WrapPaymentComponent = (props) => {
   );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
-    select: (data) => data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
+    select: (data) => business_service === "BPA.NC_SAN_FEE"
+        ? "bpa-receiptsecond" : data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
-
+//if businessservice= san fee make bpa-receiptsecond as the generatedpdfkey
+//if businessservice = app fee make bpa-obps-receipt as generatedpdfkey
   const payments = data?.payments;
 
   useEffect(() => {
@@ -218,32 +228,35 @@ const WrapPaymentComponent = (props) => {
   // };
 
   const printReciept = async () => {
+    console.log('function is payment receipt')
     let generatePdfKeyForWs = "ws-onetime-receipt";
     if (printing) return;
     setPrinting(true);
     let paymentArray = [];
     const tenantId = paymentData?.tenantId;
 
-let licenseSection,licenseType;
+    let licenseSection, licenseType, usage, fileNo;
 
-if(applicationDetails){
-  licenseSection = applicationDetails?.applicationDetails?.find(
-    (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
-);
+    if (applicationDetails) {
+      licenseSection = applicationDetails?.applicationDetails?.find((section) => section?.title === "BPA_LICENSE_DETAILS_LABEL");
 
-  licenseType = t(licenseSection?.values?.find(
-    (val) => val.title === "BPA_LICENSE_TYPE"
-  )?.value);
-}
+      licenseType = t(licenseSection?.values?.find((val) => val?.title === "BPA_LICENSE_TYPE")?.value);
+    }
 
+    if(bpaData){
+      fileNo = `PB/${districtCode}/${ulbCode}/${+bpaData?.[0]?.approvalNo?.slice(-6) + 500000}`;
+      console.log('newCode', fileNo)
+      usage = bpaData?.[0]?.additionalDetails?.usage
+      console.log('usage', usage)
+    }
 
-console.log("licenseType:", licenseType);
+    console.log("licenseType:", licenseType);
     const state = Digit.ULBService.getStateId();
     const fee = paymentData?.totalAmountPaid;
     console.log('fee here here', fee)
-      const amountinwords = amountToWords(fee)
+    const amountinwords = amountToWords(fee)
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
-    if (!paymentData?.fileStoreId) {
+    if (!paymentData?.fileStoreId) { //if not filestoreid
       let assessmentYear = "",
         assessmentYearForReceipt = "";
       let count = 0;
@@ -316,9 +329,13 @@ console.log("licenseType:", licenseType);
                 ...paymentData.additionalDetails,
                 designation: designation,
                 ulbType: ulbType,
+                ulbCode,
+                districtCode
               },
               licenseType,
-              amountinwords
+              amountinwords,
+              usage,
+              fileNo
             };
           }
 

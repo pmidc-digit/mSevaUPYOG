@@ -20,15 +20,8 @@ import org.egov.gccalculation.repository.rowmapper.MeterReadingRowMapper;
 import org.egov.gccalculation.repository.rowmapper.GarbageConnectionRowMapper;
 import org.egov.gccalculation.repository.rowmapper.GarbageDemandRowMapper;
 import org.egov.gccalculation.repository.rowmapper.GarbageRowMapper;
-import org.egov.gccalculation.web.models.BillSearch;
-import org.egov.gccalculation.web.models.BillSearchs;
-import org.egov.gccalculation.web.models.CancelDemandReq;
-import org.egov.gccalculation.web.models.Canceldemandsearch;
-import org.egov.gccalculation.web.models.MeterConnectionRequest;
-import org.egov.gccalculation.web.models.MeterReading;
-import org.egov.gccalculation.web.models.MeterReadingSearchCriteria;
-import org.egov.gccalculation.web.models.WaterConnection;
-import org.egov.gccalculation.web.models.WaterDetails;
+import org.egov.gccalculation.web.models.*;
+import org.egov.gccalculation.web.models.GarbageConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -206,7 +199,7 @@ public class GCCalculationDaoImpl implements GCCalculationDao {
 			return connectionNos;
 		log.info("Query: " + query);
 
-		List<WaterDetails> waterDetails=jdbcTemplate.query(query,preparedStatement.toArray(),demandSchedulerRowMapper);
+		List<GarbageDetails> waterDetails=jdbcTemplate.query(query,preparedStatement.toArray(),demandSchedulerRowMapper);
 		connectionNos = (ArrayList<String>) waterDetails.stream().map(waterdetail->waterdetail.getConnectionNo()).collect(Collectors.toList());
 		return connectionNos;
 	}
@@ -214,8 +207,8 @@ public class GCCalculationDaoImpl implements GCCalculationDao {
 	
 
 	@Override
-	public List<WaterConnection> getConnectionsNoList(String tenantId, String connectionType, Integer batchOffset,
-			Integer batchsize, Long fromDate, Long toDate) {
+	public List<GarbageConnection> getConnectionsNoList(String tenantId, String connectionType, Integer batchOffset,
+														Integer batchsize, Long fromDate, Long toDate) {
 		List<Object> preparedStatement = new ArrayList<>();
 		String query = queryBuilder.getConnectionNumberList(tenantId, connectionType, preparedStatement, batchOffset,
 				batchsize, fromDate, toDate);
@@ -225,8 +218,8 @@ public class GCCalculationDaoImpl implements GCCalculationDao {
 	
 
 	@Override
-	public List<WaterConnection> getConnectionsNoListForDemand(String tenantId, String connectionType, Long fromDate,
-			Long toDate) {
+	public List<GarbageConnection> getConnectionsNoListForDemand(String tenantId, String connectionType, Long fromDate,
+																 Long toDate) {
 		List<Object> preparedStatement = new ArrayList<>();
 		String query = queryBuilder.getConnectionNumberListForDemand(tenantId, connectionType, preparedStatement,
 				fromDate, toDate);
@@ -235,8 +228,8 @@ public class GCCalculationDaoImpl implements GCCalculationDao {
 	}
 
 	@Override
-	public List<WaterConnection> getConnection(String tenantId, String consumerCode, String connectionType,
-			Long fromDate, Long toDate) {
+	public List<GarbageConnection> getConnection(String tenantId, String consumerCode, String connectionType,
+												 Long fromDate, Long toDate) {
 		List<Object> preparedStatement = new ArrayList<>();
 		String query = queryBuilder.getConnectionNumber(tenantId, consumerCode, connectionType, preparedStatement,
 				fromDate, toDate);
@@ -343,8 +336,8 @@ public class GCCalculationDaoImpl implements GCCalculationDao {
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	@Override
-	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
-			Long taxPeriodTo, String cone) {
+	public List<GarbageDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+																	Long taxPeriodTo, String cone) {
 		
 			List<Object> preparedStatement = new ArrayList<>();
 			String query = queryBuilder.getConnectionNumberList(tenantId, connectionType,

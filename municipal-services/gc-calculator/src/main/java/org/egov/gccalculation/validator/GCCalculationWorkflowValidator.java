@@ -7,7 +7,7 @@ import org.egov.gccalculation.constants.MRConstants;
 import org.egov.gccalculation.util.CalculatorUtil;
 import org.egov.gccalculation.web.models.Property;
 import org.egov.gccalculation.web.models.Status;
-import org.egov.gccalculation.web.models.WaterConnection;
+import org.egov.gccalculation.web.models.GarbageConnection;
 import org.egov.gccalculation.web.models.workflow.ProcessInstance;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,8 +29,8 @@ public class GCCalculationWorkflowValidator {
 
 	 public Boolean applicationValidation(RequestInfo requestInfo,String tenantId,String connectionNo, Boolean genratedemand){
 	    Map<String,String> errorMap = new HashMap<>();
-		 List<WaterConnection> waterConnectionList = util.getWaterConnection(requestInfo,connectionNo,tenantId);
-		 WaterConnection waterConnection = null;
+		 List<GarbageConnection> waterConnectionList = util.getWaterConnection(requestInfo,connectionNo,tenantId);
+		 GarbageConnection waterConnection = null;
 		 if(waterConnectionList != null){
 			 int size = waterConnectionList.size();
 			 waterConnection = waterConnectionList.get(size-1);

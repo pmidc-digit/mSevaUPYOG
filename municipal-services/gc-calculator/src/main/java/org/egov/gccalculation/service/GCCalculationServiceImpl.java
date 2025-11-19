@@ -1,8 +1,6 @@
 package org.egov.gccalculation.service;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -207,7 +205,7 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 		List<TaxHeadEstimate> estimates = estimatesAndBillingSlabs.get("estimates");
 		@SuppressWarnings("unchecked")
 		List<String> billingSlabIds = estimatesAndBillingSlabs.get("billingSlabIds");
-		WaterConnection waterConnection = criteria.getWaterConnection();
+		GarbageConnection waterConnection = criteria.getWaterConnection();
 
 		@SuppressWarnings("unchecked")
 		List<TaxHeadMaster> ll = ((List<TaxHeadMaster>) masterMap.get(GCCalculationConstant.TAXHEADMASTER_MASTER_KEY));
@@ -237,9 +235,9 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 					.equalsIgnoreCase(GCCalculationConstant.PENDING_APPROVAL_FOR_DISCONNECTION)) {
 
 				Map<String, Object> finalMap = new HashMap<>();
-				List<WaterConnection> waterConnectionList = calculatorUtil.getWaterConnection(requestInfo,
+				List<GarbageConnection> waterConnectionList = calculatorUtil.getWaterConnection(requestInfo,
 						criteria.getConnectionNo(), requestInfo.getUserInfo().getTenantId());
-				for (WaterConnection connection : waterConnectionList) {
+				for (GarbageConnection connection : waterConnectionList) {
 					if (connection.getApplicationType().equalsIgnoreCase(NEW_WATER_CONNECTION)) {
 						List<Demand> demandsList = demandService.searchDemandForDisconnectionRequest(
 								requestInfo.getUserInfo().getTenantId(),
@@ -503,9 +501,9 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 				Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
 				Object tenantObj = mdmsRes.get("tenant");
 				Map<String, Object> tenant = (Map<String, Object>) tenantObj;
-				Object waterSewerageObj = tenant.get("waterSewerage");
-				List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
-				for (Object obj : waterSewerageList) {
+				Object garbageObj = tenant.get("garbage");
+				List<Object> garbageList = (List<Object>) garbageObj;
+				for (Object obj : garbageList) {
 					if (obj instanceof Map) {
 						Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
 						Object codeObj = waterSewerageMap.get("code");
@@ -539,8 +537,8 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 		});
 	}
 
-	public List<WaterConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo,
-			BulkBillCriteria bulkBillCriteria) {
+	public List<GarbageConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo,
+																   BulkBillCriteria bulkBillCriteria) {
 		return demandService.getConnectionPendingForDemand(requestInfo, bulkBillCriteria.getTenantId());
 	}
 

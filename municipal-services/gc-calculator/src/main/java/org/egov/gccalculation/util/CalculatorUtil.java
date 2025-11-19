@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.gccalculation.constants.GCCalculationConstant;
+import org.egov.gccalculation.web.models.*;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
@@ -13,14 +14,7 @@ import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
 import org.egov.gccalculation.config.GCCalculationConfiguration;
 import org.egov.gccalculation.repository.ServiceRequestRepository;
-import org.egov.gccalculation.web.models.Property;
-import org.egov.gccalculation.web.models.PropertyResponse;
-import org.egov.gccalculation.web.models.RequestInfoWrapper;
-import org.egov.gccalculation.web.models.SearchCriteria;
-import org.egov.gccalculation.web.models.SingleDemand;
-import org.egov.gccalculation.web.models.TaxPeriod;
-import org.egov.gccalculation.web.models.WaterConnection;
-import org.egov.gccalculation.web.models.WaterConnectionResponse;
+import org.egov.gccalculation.web.models.GarbageConnection;
 import org.egov.gccalculation.web.models.workflow.ProcessInstance;
 import org.egov.gccalculation.web.models.workflow.ProcessInstanceResponse;
 import org.json.JSONObject;
@@ -132,18 +126,18 @@ public class CalculatorUtil {
 	 *            Connection No
 	 * @param tenantId
 	 *            Tenant Id
-	 * @return WaterConnection based on parameters
+	 * @return GarbageConnection based on parameters
 	 */
-	public List<WaterConnection> getWaterConnection(RequestInfo requestInfo, String connectionNo, String tenantId) {
+	public List<GarbageConnection> getWaterConnection(RequestInfo requestInfo, String connectionNo, String tenantId) {
 		Object result = serviceRequestRepository.fetchResult(getWaterSearchURL(tenantId, connectionNo),
 				RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 
-		WaterConnectionResponse response;
+		GarbageConnectionResponse response;
 		try {
-			log.info("WaterConnectionResponse result: " + mapper.writeValueAsString(result));
-			response = mapper.convertValue(result, WaterConnectionResponse.class);
+			log.info("GarbageConnectionResponse result: " + mapper.writeValueAsString(result));
+			response = mapper.convertValue(result, GarbageConnectionResponse.class);
 
-			log.info("WaterConnectionResponse: " + mapper.writeValueAsString(response));
+			log.info("GarbageConnectionResponse: " + mapper.writeValueAsString(response));
 		} catch (Exception e) {
 			throw new CustomException("PARSING_ERROR", "Error while parsing response of Water Connection Search");
 		}
@@ -156,10 +150,10 @@ public class CalculatorUtil {
 		return response.getWaterConnection();
 	}
 
-	public  WaterConnection getWaterConnectionObject(List<WaterConnection> waterConnectionList){
+	public GarbageConnection getWaterConnectionObject(List<GarbageConnection> waterConnectionList){
 		int size = waterConnectionList.size();
 		if(size>1){
-			WaterConnection waterConnection = null;
+			GarbageConnection waterConnection = null;
 			if(waterConnectionList.get(size-1).getApplicationType().equalsIgnoreCase("MODIFY_WATER_CONNECTION") && waterConnectionList.get(size-1).getDateEffectiveFrom() > System.currentTimeMillis()){
 				waterConnection =  waterConnectionList.get(size-2);
 			}
@@ -198,14 +192,14 @@ public class CalculatorUtil {
 	 *            Tenant Id
 	 * @return water connection
 	 */
-	public WaterConnection getWaterConnectionOnApplicationNO(RequestInfo requestInfo, SearchCriteria searchCriteria,
-			String tenantId) {
+	public GarbageConnection getWaterConnectionOnApplicationNO(RequestInfo requestInfo, SearchCriteria searchCriteria,
+															   String tenantId) {
 		Object result = serviceRequestRepository.fetchResult(getWaterSearchURL(searchCriteria),
 				RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 
 		try {
-			WaterConnectionResponse response;
-			response = mapper.convertValue(result, WaterConnectionResponse.class);
+			GarbageConnectionResponse response;
+			response = mapper.convertValue(result, GarbageConnectionResponse.class);
 			if (CollectionUtils.isEmpty(response.getWaterConnection()))
 				return null;
 			return response.getWaterConnection().get(0);

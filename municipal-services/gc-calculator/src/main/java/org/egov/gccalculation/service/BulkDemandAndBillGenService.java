@@ -110,7 +110,7 @@ public class BulkDemandAndBillGenService {
 		String tenantId = calculations.get(0).getTenantId();
 		Set<String> propertyIds = new HashSet<String>();
 		for (Calculation calculation: calculations){
-			WaterConnection connection = calculation.getWaterConnection();
+			GarbageConnection connection = calculation.getWaterConnection();
 			propertyIds.add(connection.getPropertyId());
 		}
 		List<Property> properties = wsCalculationUtil.propertySearch(requestInfo, propertyIds, tenantId, limit);
@@ -131,7 +131,7 @@ public class BulkDemandAndBillGenService {
 		
 		for (Calculation calculation : calculations) {
 
-			WaterConnection connection = calculation.getWaterConnection();
+			GarbageConnection connection = calculation.getWaterConnection();
 			String consumerCode = connection.getConnectionNo();
 			String propertyId = connection.getPropertyId();
 			User owner = propertyIdMap.get(propertyId).getOwners().get(0).toCommonUser();
@@ -158,7 +158,7 @@ public class BulkDemandAndBillGenService {
 
 			demands.add(Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)
 					.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
-					.taxPeriodTo(toDate).consumerType("waterConnection").businessService(businessService)
+					.taxPeriodTo(toDate).consumerType("garbageConnection").businessService(businessService)
 					.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate).build());
 		}
 		return demands;

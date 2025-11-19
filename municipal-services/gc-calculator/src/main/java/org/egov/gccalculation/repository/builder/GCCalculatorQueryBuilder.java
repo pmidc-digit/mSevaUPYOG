@@ -37,7 +37,7 @@ public class GCCalculatorQueryBuilder {
 
 	private final static String getMeterReadingId = "select mr.id from eg_ws_meterreading mr";
 
-	private final static String tenantIdWaterConnectionSearchQuery = "select DISTINCT tenantid from eg_ws_connection";
+	private final static String tenantIdWaterConnectionSearchQuery = "select DISTINCT tenantid from eg_gc_connection";
 
 	private final static String connectionNoWaterConnectionSearchQuery = "SELECT conn.connectionNo as conn_no FROM eg_gc_service wc INNER JOIN eg_gc_connection conn ON wc.connection_id = conn.id";
 

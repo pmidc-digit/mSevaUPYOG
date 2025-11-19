@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.gccalculation.web.models.AuditDetails;
 import org.egov.gccalculation.web.models.Connection;
+import org.egov.gccalculation.web.models.GarbageConnection;
 import org.egov.gccalculation.web.models.MeterConnectionRequest;
-import org.egov.gccalculation.web.models.WaterConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -57,7 +57,7 @@ public class EnrichmentService {
             return AuditDetails.builder().lastModifiedBy(by).lastModifiedTime(time).build();
     }
 
-	public List<WaterConnection> filterConnections(List<WaterConnection> connectionList) {
+	public List<GarbageConnection> filterConnections(List<GarbageConnection> connectionList) {
 		HashMap<String, Connection> connectionHashMap = new HashMap<>();
 		connectionList.forEach(connection -> {
 			if (!StringUtils.isEmpty(connection.getConnectionNo())) {

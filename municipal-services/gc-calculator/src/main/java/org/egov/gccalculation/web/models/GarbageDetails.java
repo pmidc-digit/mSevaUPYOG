@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
-public class WaterDetails {
+public class GarbageDetails {
 
 	@JsonProperty("connectionNo")
 	private String connectionNo = null;

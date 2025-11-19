@@ -28,7 +28,7 @@ import lombok.ToString;
 public class CalculationCriteria {
 
 	@JsonProperty("garbageConnection")
-	private WaterConnection waterConnection;
+	private GarbageConnection waterConnection;
 
 	@JsonProperty("connectionNo")
 	private String connectionNo;

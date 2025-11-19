@@ -74,7 +74,7 @@ public class GCCalculationConstant {
 	
 	
 
-	public static final String WS_DEMAND_MODULE = "waterSewerage";
+	public static final String WS_DEMAND_MODULE = "garbage";
 	public static final String WS_TENANT_SEARCH = "tenant";
 
 
@@ -133,7 +133,7 @@ public class GCCalculationConstant {
 
 	public static final String WC_PENANLTY_MASTER = "Penalty";
 
-	public static final String WC_WATER_CESS_MASTER = "WaterCess";
+	public static final String WC_WATER_CESS_MASTER = "GarbageCess";
 
 	public static final String WC_INTEREST_MASTER = "Interest";
 
@@ -213,7 +213,7 @@ public class GCCalculationConstant {
 	
 	public static final String  USREVENTS_EVENT_NAME = "GARBAGE BILL GENERATION";
 	
-	public static final String  USREVENTS_EVENT_POSTEDBY = "SYSTEM-WS";
+	public static final String  USREVENTS_EVENT_POSTEDBY = "SYSTEM-GC";
 	
 	public static final String  Billing_Period_Master = "Billing_Period_Master";
 	

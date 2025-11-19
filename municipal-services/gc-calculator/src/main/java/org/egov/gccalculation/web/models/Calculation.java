@@ -57,7 +57,7 @@ public class Calculation {
 	private List<String> billingSlabIds;
 	
 	@JsonProperty("waterConnection")
-	private WaterConnection waterConnection = null;
+	private GarbageConnection waterConnection = null;
 	
 	@JsonProperty("connectionNo")
 	private String connectionNo;

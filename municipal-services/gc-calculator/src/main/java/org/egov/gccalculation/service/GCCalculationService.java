@@ -3,11 +3,8 @@ package org.egov.gccalculation.service;
 import java.util.List;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.gccalculation.web.models.BulkBillCriteria;
-import org.egov.gccalculation.web.models.Calculation;
-import org.egov.gccalculation.web.models.CalculationReq;
-import org.egov.gccalculation.web.models.SingleDemand;
-import org.egov.gccalculation.web.models.WaterConnection;
+import org.egov.gccalculation.web.models.*;
+import org.egov.gccalculation.web.models.GarbageConnection;
 
 public interface GCCalculationService {
 
@@ -25,6 +22,6 @@ public interface GCCalculationService {
 	
 	String generateDemandForConsumerCodeBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
 	
-	List<WaterConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
+	List<GarbageConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
 
 }

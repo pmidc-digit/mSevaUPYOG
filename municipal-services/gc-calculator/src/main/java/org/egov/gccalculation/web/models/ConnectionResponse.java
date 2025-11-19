@@ -61,6 +61,6 @@ public class ConnectionResponse {
 	private ResponseInfo responseInfo;
 
 	@JsonProperty("connection")
-	private List<WaterConnection> connection = new ArrayList<>();
+	private List<GarbageConnection> connection = new ArrayList<>();
 
 }

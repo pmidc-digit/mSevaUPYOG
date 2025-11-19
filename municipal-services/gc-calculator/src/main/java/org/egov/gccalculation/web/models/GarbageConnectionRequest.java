@@ -29,14 +29,14 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter
 @Builder
-public class WaterConnectionRequest {
+public class GarbageConnectionRequest {
 	@JsonProperty("RequestInfo")
 	private RequestInfo requestInfo = null;
 
 	@JsonProperty("GarbageConnection")
-	private WaterConnection waterConnection = null;
+	private GarbageConnection waterConnection = null;
 
-	public WaterConnectionRequest requestInfo(RequestInfo requestInfo) {
+	public GarbageConnectionRequest requestInfo(RequestInfo requestInfo) {
 		this.requestInfo = requestInfo;
 		return this;
 	}
@@ -57,7 +57,7 @@ public class WaterConnectionRequest {
 		this.requestInfo = requestInfo;
 	}
 
-	public WaterConnectionRequest waterConnection(WaterConnection waterConnection) {
+	public GarbageConnectionRequest waterConnection(GarbageConnection waterConnection) {
 		this.waterConnection = waterConnection;
 		return this;
 	}
@@ -70,11 +70,11 @@ public class WaterConnectionRequest {
 	@ApiModelProperty(value = "")
 
 	@Valid
-	public WaterConnection getWaterConnection() {
+	public GarbageConnection getWaterConnection() {
 		return waterConnection;
 	}
 
-	public void setWaterConnection(WaterConnection waterConnection) {
+	public void setWaterConnection(GarbageConnection waterConnection) {
 		this.waterConnection = waterConnection;
 	}
 
@@ -86,7 +86,7 @@ public class WaterConnectionRequest {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		WaterConnectionRequest waterConnectionRequest = (WaterConnectionRequest) o;
+		GarbageConnectionRequest waterConnectionRequest = (GarbageConnectionRequest) o;
 		return Objects.equals(this.requestInfo, waterConnectionRequest.requestInfo)
 				&& Objects.equals(this.waterConnection, waterConnectionRequest.waterConnection);
 	}
@@ -99,7 +99,7 @@ public class WaterConnectionRequest {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("class WaterConnectionRequest {\n");
+		sb.append("class GarbageConnectionRequest {\n");
 
 		sb.append("    requestInfo: ").append(toIndentedString(requestInfo)).append("\n");
 		sb.append("    waterConnection: ").append(toIndentedString(waterConnection)).append("\n");

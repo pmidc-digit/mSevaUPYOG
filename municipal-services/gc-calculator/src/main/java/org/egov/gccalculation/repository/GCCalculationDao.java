@@ -10,8 +10,8 @@ import org.egov.gccalculation.web.models.Canceldemandsearch;
 import org.egov.gccalculation.web.models.MeterConnectionRequest;
 import org.egov.gccalculation.web.models.MeterReading;
 import org.egov.gccalculation.web.models.MeterReadingSearchCriteria;
-import org.egov.gccalculation.web.models.WaterConnection;
-import org.egov.gccalculation.web.models.WaterDetails;
+import org.egov.gccalculation.web.models.GarbageConnection;
+import org.egov.gccalculation.web.models.GarbageDetails;
 
 public interface GCCalculationDao {
 
@@ -30,9 +30,9 @@ public interface GCCalculationDao {
 	
 	int isMeterReadingConnectionExist(List<String> ids);
 	
-	List<WaterConnection> getConnectionsNoList(String tenantId, String connectionType, Integer batchOffset, Integer batchsize, Long fromDate, Long toDate);
+	List<GarbageConnection> getConnectionsNoList(String tenantId, String connectionType, Integer batchOffset, Integer batchsize, Long fromDate, Long toDate);
 	
-	List<WaterConnection> getConnectionsNoListForDemand(String tenantId, String connectionType, Long fromDate, Long toDate);
+	List<GarbageConnection> getConnectionsNoListForDemand(String tenantId, String connectionType, Long fromDate, Long toDate);
 
 	List<String> getTenantId();
 	
@@ -46,10 +46,10 @@ public interface GCCalculationDao {
 
 	long getConnectionCount(String tenantid, Long fromDate, Long toDate);
 	
-	List<WaterConnection> getConnection(String tenantId, String consumerCode,String connectionType,Long fromDate, Long toDate);
+	List<GarbageConnection> getConnection(String tenantId, String consumerCode, String connectionType, Long fromDate, Long toDate);
 	List<String> getLocalityList(String tenantId, String locality); 
-	List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
-			Long taxPeriodTo, String cone);
+	List<GarbageDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+															 Long taxPeriodTo, String cone);
 
 	List<String> fetchUsageCategory(String consumerCodes);
 	List<String> fetchSewConnection(String consumerCodes); 

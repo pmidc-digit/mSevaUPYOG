@@ -29,15 +29,15 @@ import javax.validation.Valid;
 @AllArgsConstructor
 @Setter
 @Builder
-public class WaterConnectionResponse {
+public class GarbageConnectionResponse {
 	@JsonProperty("ResponseInfo")
 	private ResponseInfo responseInfo = null;
 
 	@JsonProperty("GarbageConnection")
 	@Valid
-	private List<WaterConnection> waterConnection = null;
+	private List<GarbageConnection> waterConnection = null;
 
-	public WaterConnectionResponse responseInfo(ResponseInfo responseInfo) {
+	public GarbageConnectionResponse responseInfo(ResponseInfo responseInfo) {
 		this.responseInfo = responseInfo;
 		return this;
 	}
@@ -58,14 +58,14 @@ public class WaterConnectionResponse {
 		this.responseInfo = responseInfo;
 	}
 
-	public WaterConnectionResponse waterConnection(List<WaterConnection> waterConnection) {
+	public GarbageConnectionResponse waterConnection(List<GarbageConnection> waterConnection) {
 		this.waterConnection = waterConnection;
 		return this;
 	}
 
-	public WaterConnectionResponse addWaterConnectionItem(WaterConnection waterConnectionItem) {
+	public GarbageConnectionResponse addWaterConnectionItem(GarbageConnection waterConnectionItem) {
 		if (this.waterConnection == null) {
-			this.waterConnection = new ArrayList<WaterConnection>();
+			this.waterConnection = new ArrayList<GarbageConnection>();
 		}
 		this.waterConnection.add(waterConnectionItem);
 		return this;
@@ -78,11 +78,11 @@ public class WaterConnectionResponse {
 	 **/
 	@ApiModelProperty(value = "")
 	@Valid
-	public List<WaterConnection> getWaterConnection() {
+	public List<GarbageConnection> getWaterConnection() {
 		return waterConnection;
 	}
 
-	public void setWaterConnection(List<WaterConnection> waterConnection) {
+	public void setWaterConnection(List<GarbageConnection> waterConnection) {
 		this.waterConnection = waterConnection;
 	}
 
@@ -94,7 +94,7 @@ public class WaterConnectionResponse {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		WaterConnectionResponse waterConnectionResponse = (WaterConnectionResponse) o;
+		GarbageConnectionResponse waterConnectionResponse = (GarbageConnectionResponse) o;
 		return Objects.equals(this.responseInfo, waterConnectionResponse.responseInfo)
 				&& Objects.equals(this.waterConnection, waterConnectionResponse.waterConnection);
 	}
@@ -107,7 +107,7 @@ public class WaterConnectionResponse {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("class WaterConnectionResponse {\n");
+		sb.append("class GarbageConnectionResponse {\n");
 
 		sb.append("    responseInfo: ").append(toIndentedString(responseInfo)).append("\n");
 		sb.append("    waterConnection: ").append(toIndentedString(waterConnection)).append("\n");

@@ -23,19 +23,19 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class GarbageDemandRowMapper implements ResultSetExtractor<List<WaterConnection>> {
+public class GarbageDemandRowMapper implements ResultSetExtractor<List<GarbageConnection>> {
 
 	@Autowired
 	private ObjectMapper mapper;
 
 	@Override
-	public List<WaterConnection> extractData(ResultSet rs) throws SQLException, DataAccessException {
-		Map<String, WaterConnection> connectionListMap = new HashMap<>();
-		WaterConnection currentWaterConnection = new WaterConnection();
+	public List<GarbageConnection> extractData(ResultSet rs) throws SQLException, DataAccessException {
+		Map<String, GarbageConnection> connectionListMap = new HashMap<>();
+		GarbageConnection currentWaterConnection = new GarbageConnection();
 		while (rs.next()) {
 			String Id = rs.getString("connection_Id");
 			if (connectionListMap.getOrDefault(Id, null) == null) {
-				currentWaterConnection = new WaterConnection();
+				currentWaterConnection = new GarbageConnection();
 				currentWaterConnection.setTenantId(rs.getString("tenantid"));
 				currentWaterConnection.setConnectionCategory(rs.getString("connectionCategory"));
 				currentWaterConnection.setConnectionType(rs.getString("connectionType"));
@@ -103,14 +103,14 @@ public class GarbageDemandRowMapper implements ResultSetExtractor<List<WaterConn
 		return new ArrayList<>(connectionListMap.values());
 	}
 
-	private void addChildrenToProperty(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+	private void addChildrenToProperty(ResultSet rs, GarbageConnection waterConnection) throws SQLException {
 		//addDocumentToWaterConnection(rs, waterConnection);
 		//addPlumberInfoToWaterConnection(rs, waterConnection);
 		addHoldersDeatilsToWaterConnection(rs, waterConnection);
 		//addRoadCuttingInfotToWaterConnection(rs, waterConnection);
 	}
 
-	private void addDocumentToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+	private void addDocumentToWaterConnection(ResultSet rs, GarbageConnection waterConnection) throws SQLException {
 		String document_Id = rs.getString("doc_Id");
 		String isActive = rs.getString("doc_active");
 		boolean documentActive = false;
@@ -128,7 +128,7 @@ public class GarbageDemandRowMapper implements ResultSetExtractor<List<WaterConn
 		}
 	}
 
-	private void addRoadCuttingInfotToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+	private void addRoadCuttingInfotToWaterConnection(ResultSet rs, GarbageConnection waterConnection) throws SQLException {
 		String roadcutting_id = rs.getString("roadcutting_id");
 		String isActive = rs.getString("roadcutting_active");
 		boolean roadCuttingInfoActive = false;
@@ -145,7 +145,7 @@ public class GarbageDemandRowMapper implements ResultSetExtractor<List<WaterConn
 		}
 	}
 
-	private void addPlumberInfoToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+	private void addPlumberInfoToWaterConnection(ResultSet rs, GarbageConnection waterConnection) throws SQLException {
 		String plumber_id = rs.getString("plumber_id");
 		if (!StringUtils.isEmpty(plumber_id)) {
 			PlumberInfo plumber = new PlumberInfo();
@@ -161,7 +161,7 @@ public class GarbageDemandRowMapper implements ResultSetExtractor<List<WaterConn
 		}
 	}
 
-	private void addHoldersDeatilsToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+	private void addHoldersDeatilsToWaterConnection(ResultSet rs, GarbageConnection waterConnection) throws SQLException {
 		String uuid = rs.getString("userid");
 		List<OwnerInfo> connectionHolders = waterConnection.getConnectionHolders();
 		if (!CollectionUtils.isEmpty(connectionHolders)) {

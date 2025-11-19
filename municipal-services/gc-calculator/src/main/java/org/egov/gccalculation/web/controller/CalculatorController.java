@@ -124,7 +124,7 @@ public class CalculatorController {
 	
 	@PostMapping("/_getConnectionForDemand")
 	public ResponseEntity<ConnectionResponse> generateDemand(@Valid @RequestBody BulkBillReq bulkBillReq) {
-		List<WaterConnection> waterConnectionList=wSCalculationService.getConnnectionWithPendingDemand(bulkBillReq.getRequestInfo(), bulkBillReq.getBulkBillCriteria());
+		List<GarbageConnection> waterConnectionList=wSCalculationService.getConnnectionWithPendingDemand(bulkBillReq.getRequestInfo(), bulkBillReq.getBulkBillCriteria());
 		ConnectionResponse response = ConnectionResponse.builder().connection(waterConnectionList)
 				.responseInfo(
 				responseInfoFactory.createResponseInfoFromRequestInfo(bulkBillReq.getRequestInfo(), true))

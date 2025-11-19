@@ -160,10 +160,10 @@ public class GCCalculationUtil {
 	/**
 	 * 
 	 * @param waterConnectionRequest
-	 *            WaterConnectionRequest containing property
+	 *            GarbageConnectionRequest containing property
 	 * @return List of Property
 	 */
-	public List<Property> propertySearch(WaterConnectionRequest waterConnectionRequest) {
+	public List<Property> propertySearch(GarbageConnectionRequest waterConnectionRequest) {
 		PropertyCriteria propertyCriteria = new PropertyCriteria();
 		HashSet<String> propertyIds = new HashSet<>();
 		propertyIds.add(waterConnectionRequest.getWaterConnection().getPropertyId());
@@ -182,7 +182,7 @@ public class GCCalculationUtil {
 	/**
 	 * 
 	 * @param waterConnectionRequest
-	 *            WaterConnectionRequest containing property
+	 *            GarbageConnectionRequest containing property
 	 * @return List of Property
 	 */
 	public List<Property> propertySearch(RequestInfo requestInfo, Set<String> propertyIds, String tenantId, Long limit) {
@@ -206,9 +206,9 @@ public class GCCalculationUtil {
 	/**
 	 * 
 	 * @param waterConnectionRequest
-	 *            WaterConnectionRequest
+	 *            GarbageConnectionRequest
 	 */
-	public Property getProperty(WaterConnectionRequest waterConnectionRequest) {
+	public Property getProperty(GarbageConnectionRequest waterConnectionRequest) {
 		Optional<Property> propertyList = propertySearch(waterConnectionRequest).stream().findFirst();
 		if (!propertyList.isPresent()) {
 			throw new CustomException("INVALID_WATER_CONNECTION_PROPERTY",

@@ -80,11 +80,11 @@ public class PaymentNotificationService {
 			org.egov.common.contract.request.User userInfo = notificationUtil.getInternalMicroserviceUser(requestInfo.getUserInfo().getTenantId());
 			requestInfo.setUserInfo(userInfo);
 
-			List<WaterConnection> waterConnectionList = calculatorUtil.getWaterConnection(requestInfo,
+			List<GarbageConnection> waterConnectionList = calculatorUtil.getWaterConnection(requestInfo,
 					mappedRecord.get(consumerCode), mappedRecord.get(tenantId));
 			int size = waterConnectionList.size();
-			WaterConnection waterConnection = waterConnectionList.get(size - 1);
-			WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder()
+			GarbageConnection waterConnection = waterConnectionList.get(size - 1);
+			GarbageConnectionRequest waterConnectionRequest = GarbageConnectionRequest.builder()
 					.waterConnection(waterConnection).requestInfo(requestInfo).build();
 
 			Property property = wSCalculationUtil.getProperty(waterConnectionRequest);
@@ -133,12 +133,12 @@ public class PaymentNotificationService {
 	}
 	/**
 	 * @param mappedRecord           List of events
-	 * @param waterConnectionRequest WaterConnectionRequest
+	 * @param waterConnectionRequest GarbageConnectionRequest
 	 * @param topic                  Name of the Topic
 	 * @param property               Property Object
 	 * @return returns the EventRequest
 	 */
-	private EventRequest getEventRequest(HashMap<String, String> mappedRecord, WaterConnectionRequest waterConnectionRequest, String topic,
+	private EventRequest getEventRequest(HashMap<String, String> mappedRecord, GarbageConnectionRequest waterConnectionRequest, String topic,
 										 Property property) {
 
 		//If bill amount is 0 then do not send any notification
@@ -220,7 +220,7 @@ public class PaymentNotificationService {
 	 * @param property               Property object
 	 * @return Returns theList of MSM[[ ss]
 	 */
-	private List<SMSRequest> getSmsRequest(HashMap<String, String> mappedRecord, WaterConnectionRequest waterConnectionRequest, String topic,
+	private List<SMSRequest> getSmsRequest(HashMap<String, String> mappedRecord, GarbageConnectionRequest waterConnectionRequest, String topic,
 										   Property property) {
 
 		//If bill amount is 0 then do not send any notification

@@ -62,9 +62,9 @@ public class EstimationService {
 			Map<String, Object> masterData) {
 		String tenantId = request.getRequestInfo().getUserInfo().getTenantId();
 		if (criteria.getWaterConnection() == null && !StringUtils.isEmpty(criteria.getConnectionNo())) {
-			List<WaterConnection> waterConnectionList = calculatorUtil.getWaterConnection(request.getRequestInfo(),
+			List<GarbageConnection> waterConnectionList = calculatorUtil.getWaterConnection(request.getRequestInfo(),
 					criteria.getConnectionNo(), tenantId);
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionObject(waterConnectionList);
+			GarbageConnection waterConnection = calculatorUtil.getWaterConnectionObject(waterConnectionList);
 			criteria.setWaterConnection(waterConnection);
 		}
 		if (criteria.getWaterConnection() == null || StringUtils.isEmpty(criteria.getConnectionNo())) {
@@ -117,7 +117,7 @@ public class EstimationService {
 	 * @param requestInfoWrapper           - RequestInfo Wrapper object
 	 * @return - Returns list of TaxHeadEstimates
 	 */
-	private List<TaxHeadEstimate> getEstimatesForTax(BigDecimal waterCharge, WaterConnection connection,
+	private List<TaxHeadEstimate> getEstimatesForTax(BigDecimal waterCharge, GarbageConnection connection,
 			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper) {
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
@@ -182,8 +182,8 @@ public class EstimationService {
 	 */
 
 	@SuppressWarnings("unchecked")
-	public BigDecimal getWaterEstimationCharge(WaterConnection waterConnection, CalculationCriteria criteria,
-	        Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request) {
+	public BigDecimal getWaterEstimationCharge(GarbageConnection waterConnection, CalculationCriteria criteria,
+											   Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request) {
 
 	    BigDecimal waterCharge = BigDecimal.ZERO;
 	  
@@ -222,7 +222,7 @@ public class EstimationService {
 	        throw new CustomException("PARSING_ERROR", "Billing Slab can not be parsed!");
 	    }
 
-	    Property property = wSCalculationUtil.getProperty(WaterConnectionRequest.builder()
+	    Property property = wSCalculationUtil.getProperty(GarbageConnectionRequest.builder()
 	            .waterConnection(waterConnection)
 	            .requestInfo(request.getRequestInfo())
 	            .build());
@@ -311,7 +311,7 @@ public class EstimationService {
 
 
 	@SuppressWarnings("unchecked")
-	private List<BillingSlab> getSlabsFiltered(Property property, WaterConnection waterConnection,
+	private List<BillingSlab> getSlabsFiltered(Property property, GarbageConnection waterConnection,
 			List<BillingSlab> billingSlabs, String calculationAttribute) {
 
 		// get billing Slab
@@ -420,8 +420,8 @@ public class EstimationService {
 		return assessmentYear;
 	}
 
-	private Double getUnitOfMeasurement(Property property, WaterConnection waterConnection, String calculationAttribute,
-			CalculationCriteria criteria) {
+	private Double getUnitOfMeasurement(Property property, GarbageConnection waterConnection, String calculationAttribute,
+										CalculationCriteria criteria) {
 		Double totalUnit = 0.0;
 		if (waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
 			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
@@ -445,8 +445,8 @@ public class EstimationService {
 		return 0.0;
 	}
 
-	private Double getUnitOfMeasurement(WaterConnection waterConnection, String calculationAttribute,
-			CalculationCriteria criteria) {
+	private Double getUnitOfMeasurement(GarbageConnection waterConnection, String calculationAttribute,
+										CalculationCriteria criteria) {
 		Double totalUnit = 0.0;
 		if (waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
 			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
@@ -528,7 +528,7 @@ public class EstimationService {
 			SearchCriteria searchCriteria = new SearchCriteria();
 			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
 			searchCriteria.setTenantId(criteria.getTenantId());
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo,
+			GarbageConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo,
 					searchCriteria, requestInfo.getUserInfo().getTenantId());
 			criteria.setWaterConnection(waterConnection);
 		}
@@ -559,7 +559,7 @@ public class EstimationService {
 		if (feeSlab == null)
 			throw new CustomException("FEE_SLAB_NOT_FOUND", "fee slab master data not found!!");
 
-		Property property = wSCalculationUtil.getProperty(WaterConnectionRequest.builder()
+		Property property = wSCalculationUtil.getProperty(GarbageConnectionRequest.builder()
 				.waterConnection(criteria.getWaterConnection()).requestInfo(requestInfo).build());
 
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
@@ -876,7 +876,7 @@ public class EstimationService {
 	 * @param connection water connection object
 	 */
 	@SuppressWarnings({ "unchecked" })
-	private void addAdhocPenaltyAndRebate(List<TaxHeadEstimate> estimates, WaterConnection connection) {
+	private void addAdhocPenaltyAndRebate(List<TaxHeadEstimate> estimates, GarbageConnection connection) {
 		if (connection.getAdditionalDetails() != null) {
 			HashMap<String, Object> additionalDetails = mapper.convertValue(connection.getAdditionalDetails(),
 					HashMap.class);
@@ -939,7 +939,7 @@ public class EstimationService {
 			SearchCriteria searchCriteria = new SearchCriteria();
 			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
 			searchCriteria.setTenantId(criteria.getTenantId());
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo,
+			GarbageConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo,
 					searchCriteria, requestInfo.getUserInfo().getTenantId());
 			criteria.setWaterConnection(waterConnection);
 		}

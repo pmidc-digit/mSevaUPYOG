@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * WaterConnection
+ * GarbageConnection
  */
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-12-02T14:30:33.286+05:30[Asia/Kolkata]")
- public class WaterConnection extends Connection {
+ public class GarbageConnection extends Connection {
 
 	
 
@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiModelProperty;
 	private Integer noOfTaps = null;
 
 
-	public WaterConnection waterSource(String waterSource) {
+	public GarbageConnection waterSource(String waterSource) {
 		this.waterSource = waterSource;
 		return this;
 	}
@@ -61,7 +61,7 @@ import io.swagger.annotations.ApiModelProperty;
 		this.waterSource = waterSource;
 	}
 
-	public WaterConnection meterId(String meterId) {
+	public GarbageConnection meterId(String meterId) {
 		this.meterId = meterId;
 		return this;
 	}
@@ -82,7 +82,7 @@ import io.swagger.annotations.ApiModelProperty;
 		this.meterId = meterId;
 	}
 
-	public WaterConnection meterInstallationDate(Long meterInstallationDate) {
+	public GarbageConnection meterInstallationDate(Long meterInstallationDate) {
 		this.meterInstallationDate = meterInstallationDate;
 		return this;
 	}
@@ -102,7 +102,7 @@ import io.swagger.annotations.ApiModelProperty;
 		this.meterInstallationDate = meterInstallationDate;
 	}
 
-	public WaterConnection noOfTaps(Integer noOfTaps) {
+	public GarbageConnection noOfTaps(Integer noOfTaps) {
 		this.noOfTaps = noOfTaps;
 		return this;
 	}
@@ -137,7 +137,7 @@ import io.swagger.annotations.ApiModelProperty;
 		this.proposedTaps = proposedTaps;
 	}
 
-	public WaterConnection proposedProposedTaps(Integer proposedTaps) {
+	public GarbageConnection proposedProposedTaps(Integer proposedTaps) {
 		this.proposedTaps = proposedTaps;
 		return this;
 	}
@@ -157,12 +157,12 @@ import io.swagger.annotations.ApiModelProperty;
 		this.proposedPipeSize = proposedPipeSize;
 	}
 
-	public WaterConnection proposedPipeSize(Double proposedPipeSize) {
+	public GarbageConnection proposedPipeSize(Double proposedPipeSize) {
 		this.proposedPipeSize = proposedPipeSize;
 		return this;
 	}
 
-	public WaterConnection pipeSize(Double pipeSize) {
+	public GarbageConnection pipeSize(Double pipeSize) {
 		this.pipeSize = pipeSize;
 		return this;
 	}
@@ -190,7 +190,7 @@ import io.swagger.annotations.ApiModelProperty;
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		WaterConnection waterConnection = (WaterConnection) o;
+		GarbageConnection waterConnection = (GarbageConnection) o;
 		return Objects.equals(this.waterSource, waterConnection.waterSource)
 				&& Objects.equals(this.meterId, waterConnection.meterId)
 				&& Objects.equals(this.meterInstallationDate, waterConnection.meterInstallationDate) && super.equals(o);
@@ -204,7 +204,7 @@ import io.swagger.annotations.ApiModelProperty;
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("class WaterConnection {\n");
+		sb.append("class GarbageConnection {\n");
 		sb.append("    ").append(toIndentedString(super.toString())).append("\n");
 		sb.append("    waterSource: ").append(toIndentedString(waterSource)).append("\n");
 		sb.append("    meterId: ").append(toIndentedString(meterId)).append("\n");

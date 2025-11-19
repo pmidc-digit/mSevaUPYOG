@@ -113,21 +113,26 @@ public class CalculatorUtils {
 //		last. Because of this,  code was sometimes picking the old connection instead of the latest one. By changing the sorting to descending order, the latest 
 //		modified connection will always come first
 
-			    List<SewerageConnection> activeConnections = response.getSewerageConnections().stream()
-			            .filter(sc -> sc.getStatus() != null
-			                    && sc.getStatus().name().equalsIgnoreCase("ACTIVE"))
-			            .toList();
+		// Filter active connections
+		List<SewerageConnection> activeConnections = response.getSewerageConnections().stream()
+		        .filter(sc -> sc.getStatus() != null
+		                && sc.getStatus().name().equalsIgnoreCase("ACTIVE"))
+		        .toList();
 
-			    if (!activeConnections.isEmpty()) {
-			        activeConnections = activeConnections.stream()
-			                .sorted(Comparator.comparing(
-			                        sc -> sc.getAuditDetails().getLastModifiedTime(),
-			                        Comparator.reverseOrder()
-			                ))
-			                .toList();
+		// If active connections exist → sort by latestModifiedTime DESC and pick first
+		if (!activeConnections.isEmpty()) {
+		    activeConnections = activeConnections.stream()
+		            .sorted(Comparator.comparing(
+		                    sc -> sc.getAuditDetails() != null 
+		                            ? sc.getAuditDetails().getLastModifiedTime() 
+		                            : 0L,   
+		                    Comparator.reverseOrder()
+		            ))
+		            .toList();
 
-			        return List.of(activeConnections.get(0)); 
-			    }
+		    
+		    return List.of(activeConnections.get(0));
+		}
 
 		return response.getSewerageConnections();
 	}

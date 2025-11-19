@@ -163,23 +163,20 @@ public class CalculatorUtil {
 		
 		
 		// Filter active connections
-				List<WaterConnection> activeConnections = response.getWaterConnection().stream()
-				        .filter(wc -> wc.getStatus() != null
-				                && wc.getStatus().name().equalsIgnoreCase("ACTIVE"))
-				        .toList();
+		List<WaterConnection> activeConnections = response.getWaterConnection().stream()
+		        .filter(wc -> wc.getStatus() != null
+		                && wc.getStatus().name().equalsIgnoreCase("ACTIVE"))
+		        .collect(Collectors.toList());   
 
-				// If active connections exist → sort them by latestModifiedTime DESC and pick first
-				if (!activeConnections.isEmpty()) {
-				    activeConnections = activeConnections.stream()
-				            .sorted(Comparator.comparing(
-				                    wc -> wc.getAuditDetails().getLastModifiedTime(),
-				                    Comparator.reverseOrder()
-				            ))
-				            .toList();
+		// If active connections exist → sort them by latestModifiedTime DESC and pick first
+		if (!activeConnections.isEmpty()) {
+		    activeConnections = activeConnections.stream()
+		            .sorted((a, b) -> b.getAuditDetails().getLastModifiedTime()
+		                    .compareTo(a.getAuditDetails().getLastModifiedTime()))   
+		            .collect(Collectors.toList());   
 
-				    // Pick the most recently modified active connection
-				    return List.of(activeConnections.get(0));
-				}
+		    return Collections.singletonList(activeConnections.get(0));   
+		}
 		
 		return response.getWaterConnection();
 	}

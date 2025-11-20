@@ -48,10 +48,17 @@ public class CalculationService {
         Map<String,Calculation> applicationNumberToCalculation = new HashMap<>();
         calculations.forEach(calculation -> {
             applicationNumberToCalculation.put(calculation.getChallan().getChallanNo(),calculation);
+            // Populate challanNo in calculation before removing challan object
+            calculation.setChallanNo(calculation.getChallan().getChallanNo());
             calculation.setChallan(null);
         });
 
-            challan.setCalculation(applicationNumberToCalculation.get(challan.getChallanNo()));
+        Calculation calculation = applicationNumberToCalculation.get(challan.getChallanNo());
+        if(calculation != null) {
+            // Ensure challanNo is set
+            calculation.setChallanNo(challan.getChallanNo());
+            challan.setCalculation(calculation);
+        }
 
         return challan;
     }
@@ -63,7 +70,12 @@ public class CalculationService {
         uri.append(config.getCalculateEndpoint());
         List<CalulationCriteria> criterias = new LinkedList<>();
 
-         criterias.add(new CalulationCriteria(challan,challan.getChallanNo(),challan.getTenantId()));
+        CalulationCriteria criteria = CalulationCriteria.builder()
+                .challan(challan)
+                .challanNo(challan.getChallanNo())
+                .tenantId(challan.getTenantId())
+                .build();
+        criterias.add(criteria);
 
         CalculationReq request = CalculationReq.builder().calulationCriteria(criterias)
                 .requestInfo(requestInfo)
@@ -76,6 +88,84 @@ public class CalculationService {
         }
         catch (IllegalArgumentException e){
             throw new CustomException("PARSING ERROR","Failed to parse response of calculate");
+        } 
+        return response;
+    }
+
+    /**
+     * Updates existing demand with fee waiver applied
+     * Calculator will find demand using consumerCode (challanNo) if demandId is not provided
+     * 
+     * @param request ChallanRequest containing challan with fee waiver in additionalDetail
+     * @param demandId Optional demand ID (if null, calculator will find using consumerCode)
+     * @return Challan with updated calculation
+     */
+    public Challan updateCalculation(ChallanRequest request, String demandId){
+        RequestInfo requestInfo = request.getRequestInfo();
+        Challan challan = request.getChallan();
+
+        if(challan==null)
+            throw new CustomException("INVALID REQUEST","The request for calculation update cannot be empty or null");
+
+        CalculationRes response = updateCalculation(requestInfo, challan, demandId);
+        List<Calculation> calculations = response.getCalculations();
+        Map<String,Calculation> applicationNumberToCalculation = new HashMap<>();
+        calculations.forEach(calculation -> {
+            applicationNumberToCalculation.put(calculation.getChallan().getChallanNo(),calculation);
+            // Populate challanNo in calculation before removing challan object
+            calculation.setChallanNo(calculation.getChallan().getChallanNo());
+            calculation.setChallan(null);
+        });
+
+        // Store updated calculation in challan
+        Calculation calculation = applicationNumberToCalculation.get(challan.getChallanNo());
+        if(calculation != null) {
+            // Ensure challanNo is set
+            calculation.setChallanNo(challan.getChallanNo());
+            challan.setCalculation(calculation);
+        }
+
+        return challan;
+    }
+
+    /**
+     * Calls calculator service to update existing demand
+     * Calculator will find demand using consumerCode if demandId is not provided
+     * 
+     * @param requestInfo RequestInfo object
+     * @param challan Challan with fee waiver in additionalDetail
+     * @param demandId Optional demand ID (calculator can find using consumerCode)
+     * @return CalculationRes with updated calculation
+     */
+    private CalculationRes updateCalculation(RequestInfo requestInfo, Challan challan, String demandId){
+    	
+    	StringBuilder uri = new StringBuilder();
+        uri.append(config.getCalculatorHost());
+        uri.append(config.getUpdateCalculateEndpoint());
+        List<CalulationCriteria> criterias = new LinkedList<>();
+
+        // Create criteria - calculator will find demand using consumerCode (challanNo) if demandId is null
+        CalulationCriteria criteria = CalulationCriteria.builder()
+                .challan(challan)
+                .challanNo(challan.getChallanNo())
+                .tenantId(challan.getTenantId())
+                .demandId(demandId)  // Optional - calculator can find using consumerCode
+                .build();
+        
+        criterias.add(criteria);
+
+        CalculationReq updateRequest = CalculationReq.builder()
+                .calulationCriteria(criterias)
+                .requestInfo(requestInfo)
+                .build();
+
+        Object result = serviceRequestRepository.fetchResult(uri, updateRequest);
+        CalculationRes response = null;
+        try{
+            response = mapper.convertValue(result,CalculationRes.class);
+        }
+        catch (IllegalArgumentException e){
+            throw new CustomException("PARSING ERROR","Failed to parse response of update calculation");
         } 
         return response;
     }

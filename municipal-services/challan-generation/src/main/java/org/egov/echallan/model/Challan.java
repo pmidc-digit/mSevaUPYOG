@@ -173,4 +173,7 @@ public class Challan {
 
   @JsonProperty("challanAmount")
   private BigDecimal challanAmount = null;
+
+  @JsonProperty("feeWaiver")
+  private BigDecimal feeWaiver = null;
 }

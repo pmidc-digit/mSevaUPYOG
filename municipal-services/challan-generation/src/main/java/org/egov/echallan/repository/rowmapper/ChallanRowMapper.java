@@ -91,6 +91,33 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                         }
                     }
                     
+                    // Extract feeWaiver from additionalDetail JSONB if it exists
+                    if(additionalDetail != null && additionalDetail.has("feeWaiver")) {
+                        JsonNode feeWaiverNode = additionalDetail.get("feeWaiver");
+                        if(feeWaiverNode != null && !feeWaiverNode.isNull()) {
+                            try {
+                                BigDecimal feeWaiver = feeWaiverNode.decimalValue();
+                                currentChallan.setFeeWaiver(feeWaiver);
+                            } catch (Exception e) {
+                                log.warn("Failed to parse feeWaiver from additionalDetail for challan {}: {}", id, e.getMessage());
+                            }
+                        }
+                    }
+                    
+                    // Extract calculation object from additionalDetail JSONB if it exists
+                    if(additionalDetail != null && additionalDetail.has("calculation")) {
+                        JsonNode calculationNode = additionalDetail.get("calculation");
+                        if(calculationNode != null && !calculationNode.isNull()) {
+                            try {
+                                org.egov.echallan.web.models.calculation.Calculation calculation = 
+                                    mapper.convertValue(calculationNode, org.egov.echallan.web.models.calculation.Calculation.class);
+                                currentChallan.setCalculation(calculation);
+                            } catch (Exception e) {
+                                log.warn("Failed to parse calculation from additionalDetail for challan {}: {}", id, e.getMessage());
+                            }
+                        }
+                    }
+                    
                 }
                 }
                 catch (IOException e){

@@ -48,13 +48,16 @@ public class ChallanService {
     private CommonUtils utils;
     
     private ChallanConfiguration config;
+    
+    private org.egov.echallan.repository.ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired(required = false)
 	private WorkflowIntegrator workflowIntegrator;
     
     @Autowired
     public ChallanService(EnrichmentService enrichmentService, UserService userService,ChallanRepository repository,CalculationService calculationService,
-    		ChallanValidator validator, CommonUtils utils, ChallanConfiguration config) {
+    		ChallanValidator validator, CommonUtils utils, ChallanConfiguration config,
+    		org.egov.echallan.repository.ServiceRequestRepository serviceRequestRepository) {
         this.enrichmentService = enrichmentService;
         this.userService = userService;
         this.repository = repository;
@@ -62,6 +65,7 @@ public class ChallanService {
         this.validator = validator;
         this.utils = utils;
         this.config = config;
+        this.serviceRequestRepository = serviceRequestRepository;
     }
     
     
@@ -232,6 +236,8 @@ public class ChallanService {
 			
 			try {
 				calculationService.addCalculation(request);
+				// Store demandId in additionalDetail after calculation
+				storeDemandIdFromBill(request);
 				log.info("Calculation completed successfully for challan: {}", challan.getChallanNo());
 			} catch (Exception ex) {
 				log.error("Calculation service failed for challan {} with error: {}. Continuing with challan creation.", 
@@ -239,6 +245,9 @@ public class ChallanService {
 				// Don't fail challan creation if calculation fails
 			}
 		}
+		
+		// Move feeWaiver and calculation from root to additionalDetail before saving
+		moveFieldsToAdditionalDetail(challan);
 		
 		repository.save(request);
 		return request.getChallan();
@@ -399,24 +408,33 @@ public class ChallanService {
 					 && StringUtils.isNotBlank(
 					 request.getChallan().getWorkflow().getAction())) {
 
+				 String action = request.getChallan().getWorkflow().getAction();
 				 String nextStatus = workflowIntegrator.transition(request.getRequestInfo(),
 						 request.getChallan(),
-						 request.getChallan().getWorkflow().getAction());
-				 if(request.getChallan().getWorkflow().getAction().equalsIgnoreCase(ChallanConstants.SUBMIT)){
-
+						 action);
+				 
+				 // Handle SUBMIT action - create demand
+				 if(action.equalsIgnoreCase(ChallanConstants.SUBMIT)){
 					 calculationService.addCalculation(request);
-
+					 // Store demandId in additionalDetail after calculation
+					 storeDemandIdFromBill(request);
+				 }
+				 
+				 // Handle SETTLED action - update existing demand with fee waiver
+				 if(action.equalsIgnoreCase(ChallanConstants.ACTION_SETTLED)){
+					 handleSettledAction(request, searchResult);
 				 }
 
 				 if (StringUtils.isNotBlank(nextStatus)) {
 					 request.getChallan().setChallanStatus(nextStatus);
-
-
 				 }
 			 }
 		 } catch (Exception ex) {
-			 log.error("Workflow transition on update failed for booking {}", request.getChallan().getChallanNo(), ex);
+			 log.error("Workflow transition on update failed for challan {}", request.getChallan().getChallanNo(), ex);
 		 }
+
+		 // Move feeWaiver and calculation from root to additionalDetail before saving
+		 moveFieldsToAdditionalDetail(challan);
 
 		 repository.update(request);
 		 return request.getChallan();
@@ -503,6 +521,310 @@ public class ChallanService {
 			}
 		} catch (Exception e) {
 			log.warn("Failed to extract and store location from documents for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage());
+		}
+	}
+
+	/**
+	 * Handles the settled action by updating existing demand with fee waiver
+	 * Calculator will find demand using consumerCode and update it
+	 * 
+	 * @param request ChallanRequest with settled action
+	 * @param searchResult Existing challan from database
+	 */
+	private void handleSettledAction(ChallanRequest request, List<Challan> searchResult) {
+		if (searchResult == null || searchResult.isEmpty()) {
+			log.error("Cannot process settled action: Existing challan not found");
+			throw new CustomException("CHALLAN_NOT_FOUND", "Existing challan not found for settlement");
+		}
+		
+		Challan challan = request.getChallan();
+		Challan existingChallan = searchResult.get(0);
+		
+		try {
+			// 1. Extract fee waiver amount from request
+			BigDecimal feeWaiverAmount = extractFeeWaiverFromRequest(challan);
+			if (feeWaiverAmount == null || feeWaiverAmount.compareTo(BigDecimal.ZERO) <= 0) {
+				throw new CustomException("INVALID_FEE_WAIVER", "Fee waiver amount must be provided and greater than zero");
+			}
+			
+			// 2. Get demandId if available (optional - calculator can find demand using consumerCode)
+			String demandId = getDemandIdFromChallan(existingChallan, request.getRequestInfo());
+			
+			// 3. Store fee waiver in additionalDetail for calculator
+			storeFeeWaiverInAdditionalDetail(challan, feeWaiverAmount);
+			
+			// 4. Call calculator service to update existing demand
+			// Calculator will find demand using consumerCode (challanNo) and update it by subtracting fee waiver
+			log.info("Updating demand for challan {} with fee waiver: {} (demandId: {})", 
+				challan.getChallanNo(), feeWaiverAmount, demandId != null ? demandId : "will be found by consumerCode");
+			
+			calculationService.updateCalculation(request, demandId);
+			
+			log.info("Successfully updated demand for challan {} with fee waiver", 
+				challan.getChallanNo());
+				
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("Error processing settled action for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage(), e);
+			throw new CustomException("SETTLED_ACTION_ERROR", 
+				"Failed to process settled action: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Extracts fee waiver amount from challan - checks root field first, then additionalDetail
+	 * 
+	 * @param challan Challan object
+	 * @return Fee waiver amount or null if not found
+	 */
+	private BigDecimal extractFeeWaiverFromRequest(Challan challan) {
+		// First check root field
+		if (challan.getFeeWaiver() != null) {
+			return challan.getFeeWaiver();
+		}
+		
+		// Fallback to additionalDetail
+		if (challan.getAdditionalDetail() == null) {
+			return null;
+		}
+		
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> additionalDetailMap;
+			
+			if (challan.getAdditionalDetail() instanceof Map) {
+				additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+			} else {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+				additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+			}
+			
+			Object feeWaiverObj = additionalDetailMap.get("feeWaiver");
+			if (feeWaiverObj == null) {
+				return null;
+			}
+			
+			if (feeWaiverObj instanceof BigDecimal) {
+				return (BigDecimal) feeWaiverObj;
+			} else if (feeWaiverObj instanceof Number) {
+				return BigDecimal.valueOf(((Number) feeWaiverObj).doubleValue());
+			} else if (feeWaiverObj instanceof String) {
+				return new BigDecimal((String) feeWaiverObj);
+			}
+			
+		} catch (Exception e) {
+			log.warn("Failed to extract fee waiver from additionalDetail for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage());
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves demand ID from existing challan's additionalDetail or bill
+	 * 
+	 * @param challan Existing challan from database
+	 * @param requestInfo RequestInfo for bill service call
+	 * @return Demand ID or null if not found
+	 */
+	private String getDemandIdFromChallan(Challan challan, RequestInfo requestInfo) {
+		// First try to get from additionalDetail
+		if (challan.getAdditionalDetail() != null) {
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				Map<String, Object> additionalDetailMap;
+				
+				if (challan.getAdditionalDetail() instanceof Map) {
+					additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+				} else {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+					additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+				}
+				
+				Object demandIdObj = additionalDetailMap.get("demandId");
+				if (demandIdObj != null && StringUtils.isNotBlank(demandIdObj.toString())) {
+					return demandIdObj.toString();
+				}
+			} catch (Exception e) {
+				log.warn("Failed to extract demandId from additionalDetail for challan {}: {}", 
+					challan.getChallanNo(), e.getMessage());
+			}
+		}
+		
+		// Try to get from bill if not found in additionalDetail
+		if (requestInfo != null) {
+			try {
+				String demandId = getDemandIdFromBill(challan, requestInfo);
+				if (StringUtils.isNotBlank(demandId)) {
+					// Store it in additionalDetail for future use
+					storeDemandIdInAdditionalDetail(challan, demandId);
+					return demandId;
+				}
+			} catch (Exception e) {
+				log.warn("Failed to get demandId from bill for challan {}: {}", 
+					challan.getChallanNo(), e.getMessage());
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves demand ID from bill service
+	 * 
+	 * @param challan Challan object
+	 * @param requestInfo RequestInfo object
+	 * @return Demand ID or null if not found
+	 */
+	private String getDemandIdFromBill(Challan challan, RequestInfo requestInfo) {
+		try {
+			StringBuilder billUri = new StringBuilder();
+			billUri.append(config.getBillingHost());
+			billUri.append(config.getFetchBillEndpoint());
+			billUri.append("?tenantId=").append(challan.getTenantId());
+			billUri.append("&consumerCode=").append(challan.getChallanNo());
+			billUri.append("&businessService=").append(challan.getBusinessService());
+			
+			org.egov.echallan.model.RequestInfoWrapper requestInfoWrapper = 
+				new org.egov.echallan.model.RequestInfoWrapper(requestInfo);
+			
+			Object billResponse = serviceRequestRepository.fetchResult(billUri, requestInfoWrapper);
+			
+			if (billResponse != null) {
+				com.jayway.jsonpath.JsonPath jsonPath = com.jayway.jsonpath.JsonPath.compile("$.Bill[0].billDetails[0].demandId");
+				Object demandIdObj = jsonPath.read(billResponse);
+				if (demandIdObj != null) {
+					return demandIdObj.toString();
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Failed to fetch demandId from bill for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage());
+		}
+		return null;
+	}
+	
+	/**
+	 * Stores demandId in challan's additionalDetail
+	 * 
+	 * @param challan Challan object
+	 * @param demandId Demand ID to store
+	 */
+	private void storeDemandIdInAdditionalDetail(Challan challan, String demandId) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> additionalDetailMap;
+			
+			if (challan.getAdditionalDetail() instanceof Map) {
+				additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+			} else {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+				additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+			}
+			
+			additionalDetailMap.put("demandId", demandId);
+			challan.setAdditionalDetail(additionalDetailMap);
+		} catch (Exception e) {
+			log.warn("Failed to store demandId in additionalDetail for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage());
+		}
+	}
+	
+	/**
+	 * Stores demandId from bill after calculation is done
+	 * 
+	 * @param request ChallanRequest
+	 */
+	private void storeDemandIdFromBill(ChallanRequest request) {
+		try {
+			Challan challan = request.getChallan();
+			String demandId = getDemandIdFromBill(challan, request.getRequestInfo());
+			if (StringUtils.isNotBlank(demandId)) {
+				storeDemandIdInAdditionalDetail(challan, demandId);
+				log.info("Stored demandId {} for challan {}", demandId, challan.getChallanNo());
+			} else {
+				log.warn("Could not retrieve demandId from bill for challan {}", challan.getChallanNo());
+			}
+		} catch (Exception e) {
+			log.warn("Failed to store demandId from bill for challan {}: {}", 
+				request.getChallan().getChallanNo(), e.getMessage());
+		}
+	}
+	
+	/**
+	 * Stores fee waiver in additionalDetail for calculator service
+	 * 
+	 * @param challan Challan object
+	 * @param feeWaiverAmount Fee waiver amount
+	 */
+	private void storeFeeWaiverInAdditionalDetail(Challan challan, BigDecimal feeWaiverAmount) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> additionalDetailMap;
+			
+			if (challan.getAdditionalDetail() instanceof Map) {
+				additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+			} else {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+				additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+			}
+			
+			// Store fee waiver for calculator
+			additionalDetailMap.put("feeWaiver", feeWaiverAmount);
+			challan.setAdditionalDetail(additionalDetailMap);
+			
+		} catch (Exception e) {
+			log.warn("Failed to store fee waiver in additionalDetail for challan {}: {}", 
+				challan.getChallanNo(), e.getMessage());
+		}
+	}
+	
+	/**
+	 * Moves feeWaiver and calculation from root object to additionalDetail before saving to DB
+	 * This ensures these fields are stored in additionalDetail JSONB column
+	 * 
+	 * @param challan Challan object
+	 */
+	private void moveFieldsToAdditionalDetail(Challan challan) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> additionalDetailMap;
+			
+			// Ensure additionalDetail is a Map
+			if (challan.getAdditionalDetail() instanceof Map) {
+				additionalDetailMap = (Map<String, Object>) challan.getAdditionalDetail();
+			} else {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> convertedMap = mapper.convertValue(challan.getAdditionalDetail(), Map.class);
+				additionalDetailMap = convertedMap != null ? convertedMap : new HashMap<>();
+			}
+			
+			// Copy feeWaiver from root to additionalDetail if present (for DB storage)
+			// Keep in root for API response, but also store in additionalDetail for persistence
+			if (challan.getFeeWaiver() != null) {
+				additionalDetailMap.put("feeWaiver", challan.getFeeWaiver());
+			}
+			
+			// Copy calculation from root to additionalDetail if present (for DB storage)
+			// Keep in root for API response, but also store in additionalDetail for persistence
+			if (challan.getCalculation() != null) {
+				// Convert calculation object to Map for JSON storage
+				@SuppressWarnings("unchecked")
+				Map<String, Object> calculationMap = mapper.convertValue(challan.getCalculation(), Map.class);
+				additionalDetailMap.put("calculation", calculationMap);
+			}
+			
+			challan.setAdditionalDetail(additionalDetailMap);
+			
+		} catch (Exception e) {
+			log.warn("Failed to move fields to additionalDetail for challan {}: {}", 
 				challan.getChallanNo(), e.getMessage());
 		}
 	}

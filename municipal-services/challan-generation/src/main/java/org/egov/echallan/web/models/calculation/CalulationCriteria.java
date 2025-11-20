@@ -31,6 +31,10 @@ public class CalulationCriteria {
         @NotNull@Size(min=2,max=256) 
         private String tenantId = null;
 
+        // Field for update operations - identifies existing demand to update
+        @JsonProperty("demandId")
+        @Size(min=1,max=64)
+        private String demandId = null;
 
 }
 

@@ -99,21 +99,56 @@ public class NotificationUtil {
 	*/
 	private String getReplacedMsg(RequestInfo requestInfo,Challan challan, String message) {
 		if (challan.getApplicationStatus() != Challan.StatusEnum.CANCELLED) {
-			String billDetails = getBillDetails(requestInfo, challan);
-			Object obj = JsonPath.parse(billDetails).read(BILL_AMOUNT_JSONPATH);
-			BigDecimal amountToBePaid = new BigDecimal(obj.toString());
-			message = message.replace("<amount>", amountToBePaid.toString());
-			log.info("Replaced Amount");
+			try {
+				String billDetails = getBillDetails(requestInfo, challan);
+				if (billDetails != null && !billDetails.isEmpty()) {
+					Object obj = JsonPath.parse(billDetails).read(BILL_AMOUNT_JSONPATH);
+					if (obj != null) {
+						BigDecimal amountToBePaid = new BigDecimal(obj.toString());
+						message = message.replace("<amount>", amountToBePaid.toString());
+						log.info("Replaced Amount");
+					} else {
+						// Fallback to challan amount if bill amount not available
+						if (challan.getChallanAmount() != null) {
+							message = message.replace("<amount>", challan.getChallanAmount().toString());
+						}
+					}
+				} else {
+					// Fallback to challan amount if bill details not available
+					if (challan.getChallanAmount() != null) {
+						message = message.replace("<amount>", challan.getChallanAmount().toString());
+					}
+				}
+			} catch (Exception e) {
+				log.warn("Failed to get bill amount for challan {}, using challan amount: {}", 
+					challan.getChallanNo(), e.getMessage());
+				// Fallback to challan amount
+				if (challan.getChallanAmount() != null) {
+					message = message.replace("<amount>", challan.getChallanAmount().toString());
+				}
+			}
 		}
 
 		message = message.replace("{User}",challan.getCitizen().getName());
         message = message.replace("<challanno>", challan.getChallanNo());
-		if(message.contains("{ULB}"))
-			message = message.replace("{ULB}", capitalize(challan.getTenantId().split("\\.")[1]));
+		if(message.contains("{ULB}")) {
+			String[] tenantParts = challan.getTenantId().split("\\.");
+			if(tenantParts.length > 1) {
+				message = message.replace("{ULB}", capitalize(tenantParts[1]));
+			} else {
+				message = message.replace("{ULB}", capitalize(challan.getTenantId()));
+			}
+		}
 
-		String[] split_array = capitalize(challan.getBusinessService().split("\\.")[1]).split("_");
-		String service = String.join(" ", split_array);
-		
+		// Handle businessService - it may or may not contain a dot
+		String businessServiceStr = challan.getBusinessService();
+		String service = "";
+		if(businessServiceStr != null) {
+			String[] businessServiceParts = businessServiceStr.split("\\.");
+			String serviceName = businessServiceParts.length > 1 ? businessServiceParts[1] : businessServiceParts[0];
+			String[] split_array = capitalize(serviceName).split("_");
+			service = String.join(" ", split_array);
+		}
 
         String UIHost = config.getUiAppHost();
 		String paymentPath = config.getPayLinkSMS();
@@ -218,7 +253,13 @@ public class NotificationUtil {
 		String message = null;
 		try {
 			Object messageObj = JsonPath.parse(localizationMessage).read(path);
-			message = ((ArrayList<String>) messageObj).get(0);
+			if (messageObj != null && messageObj instanceof ArrayList) {
+				@SuppressWarnings("unchecked")
+				ArrayList<String> messageList = (ArrayList<String>) messageObj;
+				if (!messageList.isEmpty()) {
+					message = messageList.get(0);
+				}
+			}
 		} catch (Exception e) {
 			log.warn("Fetching from localization failed", e);
 		}

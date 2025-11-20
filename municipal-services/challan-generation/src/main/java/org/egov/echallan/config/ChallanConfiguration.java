@@ -104,6 +104,9 @@ public class ChallanConfiguration {
     @Value("${egov.challan.calculator.calculate.endpoint}")
     private String calculateEndpoint;
 
+    @Value("${egov.challan.calculator.update.endpoint}")
+    private String updateCalculateEndpoint;
+
     @Value("${egov.billingservice.host}")
     private String billingHost;
 
@@ -182,6 +185,9 @@ public class ChallanConfiguration {
 
     @Value("${notification.email.enabled}")
     private Boolean isEmailNotificationEnabled;
+    
+    @Value("${notification.enabled:true}")
+    private Boolean isNotificationEnabled;
     
     @Value("${kafka.topics.receipt.cancel.name}")
     private String receiptCancelTopic;

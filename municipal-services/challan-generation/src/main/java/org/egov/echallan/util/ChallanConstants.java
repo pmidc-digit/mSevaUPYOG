@@ -13,6 +13,7 @@ public class ChallanConstants {
     public static final String ACTION_PAY ="PAY";
 
     public static final String SUBMIT = "SUBMIT";
+    public static final String ACTION_SETTLED = "settled";
     public static final String KEY_ID = "id";
 
     public static final String KEY_FILESTOREID = "filestoreid";

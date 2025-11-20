@@ -39,6 +39,13 @@ public class ChallanConsumer {
   
             challanRequest = mapper.convertValue(record, ChallanRequest.class);
 
+        // Skip notifications if disabled (e.g., when localization messages are not configured)
+        if (config.getIsNotificationEnabled() != null && !config.getIsNotificationEnabled()) {
+        	log.info("Notifications are disabled. Skipping notification for challan: {}", 
+        		challanRequest.getChallan() != null ? challanRequest.getChallan().getChallanNo() : "unknown");
+        	return;
+        }
+        
         if(topic.equalsIgnoreCase(config.getSaveChallanTopic()))
         	notificationService.sendChallanNotification(challanRequest,true);
         else if(topic.equalsIgnoreCase(config.getUpdateChallanTopic()))

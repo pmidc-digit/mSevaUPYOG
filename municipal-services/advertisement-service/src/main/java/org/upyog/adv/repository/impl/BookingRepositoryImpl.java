@@ -116,7 +116,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 		List<String> bookingIds = new ArrayList<String>();
 		bookingIds.addAll(bookingMap.keySet());
 		log.info("Fetched booking details bookingIds : " + bookingIds);
-        String slotQuery = queryBuilder.getSlotDetailsQuery(bookingIds) + " AND status != 'REMOVED'";
+        String slotQuery = queryBuilder.getSlotDetailsQuery(bookingIds) + " AND status != 'REMOVED' ORDER BY booking_date, createdtime";
 	List<CartDetail> cartDetails = jdbcTemplate.query(slotQuery,
 				bookingIds.toArray(), cartDetailRowmapper);
 	if (cartDetails != null) cartDetails.stream().forEach(slotDetail -> {

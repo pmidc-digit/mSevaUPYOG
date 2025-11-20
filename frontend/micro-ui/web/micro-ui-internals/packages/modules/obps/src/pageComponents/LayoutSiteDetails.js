@@ -23,6 +23,7 @@ const LayoutSiteDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props
 
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
+  console.log(applicationNo, "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
 
   /**Start - Floor Area Calculation Logic */

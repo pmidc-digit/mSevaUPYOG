@@ -280,7 +280,9 @@ const ChallanStepperForm = () => {
                     maxlength={10}
                     onChange={(e) => {
                       console.log("eee", e);
-                      props.onChange(e); // ✅ updates react-hook-form
+                      props.onChange(e);
+                      setValue("name", "");
+                      // ✅ updates react-hook-form
                       if (e.length === 10) {
                         handleMobileChange(e); // 🔥 only then fire API
                       }

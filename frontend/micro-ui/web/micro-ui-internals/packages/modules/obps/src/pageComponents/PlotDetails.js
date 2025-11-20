@@ -476,7 +476,7 @@ useEffect(() => {
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
-          onSelect("LicenseData",approvedLicense);
+          onSelect("LicenseData",{...approvedLicense, landInfo});
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
@@ -499,8 +499,8 @@ useEffect(() => {
           accountId,
           documents: [],
           additionalDetails,
-          landInfo: currentStepData?.cpt?.details ? landInfo : null,
-          // landInfo: null,
+          // landInfo: currentStepData?.cpt?.details ? landInfo : null,
+          landInfo: null,
           workflow: {
             action: workflowAction,
             assignes: [accountId]
@@ -518,7 +518,7 @@ useEffect(() => {
           }
         }));
       setApiLoading(false);
-      onSelect("LicenseData",approvedLicense);
+      onSelect("LicenseData",{...approvedLicense, landInfo});
       }else{
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);

@@ -297,10 +297,10 @@ const [viewTimeline, setViewTimeline] = useState(false);
           workflowDetails.revalidate()
           setSelectedAction(null)
           setShowModal(false)
-        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
+        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT" || filtData?.action === "FORWARD_L1" || filtData?.action === "FORWARD_L2" || filtData?.action === "FORWARD_L3" || filtData?.action === "FORWARD_L4" || filtData?.action === "FORWARD_L5" || filtData?.action === "FORWARD_L6" || filtData?.action === "FORWARD_L7" ) {
           console.log("We are calling employee response page")
           history.replace({
-            pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNumber}`,
+            pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
           })
         } else {

@@ -241,6 +241,17 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
   // Usage:
   const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
 
+  const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
   return (
     <div style={pageStyle}>
       {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
@@ -300,7 +311,7 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("TOWNPLANNER") &&
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
            {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
-          renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formData?.LicneseType?.validTo)}
+          renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formatDate(formData?.LicneseType?.validTo))}
       </div>
 
       {/* Applicant Details */}

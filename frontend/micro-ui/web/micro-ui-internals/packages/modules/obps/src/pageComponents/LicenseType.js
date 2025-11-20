@@ -330,45 +330,86 @@ const [validTo, setValidTo] = useState(() => {
     // }
 
 
-function selectValidTo(input) {
-  // Allow only digits and '/' while typing
-  const cleaned = input.replace(/[^\d/]/g, "");
-  setValidTo(cleaned);
+   function selectValidTo(input) {
+    const cleaned = input.replace(/[^\d/]/g, "")
+    setValidTo(cleaned)
 
-  // Must be in DD/MM/YYYY format
-  const parts = cleaned.split("/");
-  if (parts.length !== 3) return;
+    const parts = cleaned.split("/")
+    if (parts.length !== 3) return
 
-  const [day, month, year] = parts;
-  const yearNum = Number(year);
+    const [day, month, year] = parts
+    const dayNum = Number(day)
+    const monthNum = Number(month)
+    const yearNum = Number(year)
 
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const maxYear = currentYear + 80;
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const currentYear = today.getFullYear()
+    const maxYear = currentYear + 80
 
-  // ---- Validation: Year must be exactly 4 digits ----
-  if (year && year.length > 4) {
-    setErrorMessage("Year must be 4 digits (YYYY)");
-    return;
-  }
-
-  // ---- Validation: Maximum year allowed ----
-  if (year.length === 4 && yearNum > maxYear) {
-    setErrorMessage(`Year cannot exceed more than 80 years from the current year.`);
-    return;
-  }
-
-  // ---- Validation: Date cannot be in past ----
-  if (day && month && year.length === 4) {
-    const date = new Date(`${year}-${month}-${day}`);
-    if (date < today) {
-      setErrorMessage("Expiry date cannot be in the past");
-      return;
+    if (year && year.length > 4) {
+      setErrorMessage("Year must be 4 digits (YYYY)")
+      return
     }
-  }
 
-  setErrorMessage("");
-}
+    if (year.length === 4) {
+      if (yearNum < currentYear) {
+        setErrorMessage("Expiry date cannot be in the past")
+        return
+      }
+      if (yearNum > maxYear) {
+        setErrorMessage(`Year cannot exceed ${maxYear} (80 years from now)`)
+        return
+      }
+    }
+
+    if (month && month.length === 2) {
+      if (monthNum < 1 || monthNum > 12) {
+        setErrorMessage("Month must be between 01 and 12")
+        return
+      }
+    }
+
+    if (day && day.length === 2 && month && month.length === 2) {
+      if (dayNum < 1 || dayNum > 31) {
+        setErrorMessage("Invalid day")
+        return
+      }
+
+      const daysInMonth = new Date(yearNum || currentYear, monthNum, 0).getDate()
+      if (dayNum > daysInMonth) {
+        setErrorMessage(`Invalid day for the selected month (max ${daysInMonth} days)`)
+        return
+      }
+    }
+
+    if (day && month && year.length === 4) {
+      const inputDate = new Date(`${year}-${month}-${day}`)
+      inputDate.setHours(0, 0, 0, 0)
+
+      if (
+        inputDate.getDate() !== dayNum ||
+        inputDate.getMonth() + 1 !== monthNum ||
+        inputDate.getFullYear() !== yearNum
+      ) {
+        setErrorMessage("Invalid date - this day does not exist in the selected month")
+        return
+      }
+
+      if (inputDate < today) {
+        setErrorMessage("Expiry date cannot be in the past")
+        return
+      }
+
+      const maxDate = new Date(maxYear, 11, 31)
+      if (inputDate > maxDate) {
+        setErrorMessage(`Date cannot exceed 80 years from current year`)
+        return
+      }
+    }
+
+    setErrorMessage("")
+  }
 
 
 
@@ -391,65 +432,61 @@ function selectValidTo(input) {
       return;
     }
 
+       if (LicenseType?.i18nKey.includes("ARCHITECT")) {
+      if (!validTo || validTo.split("/").length !== 3) {
+        setErrorMessage("Please enter a valid expiry date")
+        return
+      }
+
+      const [day, month, year] = validTo.split("/")
+      const inputDate = new Date(`${year}-${month}-${day}`)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const maxYear = today.getFullYear() + 80
+
+      if (inputDate < today) {
+        setErrorMessage("Expiry date cannot be in the past")
+        return
+      }
+
+      if (Number(year) > maxYear) {
+        setErrorMessage(`Year cannot exceed ${maxYear}`)
+        return
+      }
+    
+    }
     // Clear localStorage on successful form submission
     localStorage.removeItem("licenseForm_qualificationType");
     localStorage.removeItem("licenseForm_LicenseType");
     localStorage.removeItem("licenseForm_ArchitectNo");
     localStorage.removeItem("licenseForm_selfCertification");
 
-    if (!(formData?.result && formData?.result?.Licenses[0]?.id))
-      { console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType,  validTo });
+   if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
+      console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType, validTo })
       const validToEpoch = (() => {
-  if (!validTo) return null;
-  // ... existing code ...
-else {
-  // <CHANGE> Safely handle formData structure and ensure LicneseType exists
-  const data = formData?.formData || {};
-  
-  // Ensure LicneseType object exists
-  if (!data.LicneseType) {
-    data.LicneseType = {};
-  }
-  
-  console.log("onSelect going 2", data);
-  data.LicneseType.LicenseType = LicenseType;
-  data.LicneseType.ArchitectNo = ArchitectNo;
-  data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
-  data.LicneseType.qualificationType = qualificationType;
-  
-  // <CHANGE> Convert DD/MM/YYYY to epoch for consistency
-  const validToEpoch = (() => {
-    if (!validTo) return null;
-    const [day, month, year] = validTo.split("/");
-    return new Date(`${year}-${month}-${day}`).getTime();
-  })();
-  data.LicneseType.validTo = validToEpoch;
-  
-  formData.formData = data;
-  onSelect("", formData);
-}
-  const [day, month, year] = validTo.split("/");
-  return new Date(`${year}-${month}-${day}`).getTime();
-})();
-
-
-        onSelect(config.key, { LicenseType, ArchitectNo, selfCertification,validTo: validToEpoch, qualificationType: qualificationType });}
-    else {
-      const data = formData?.formData;
-      console.log("onSelect going 2", data);
-      data.LicneseType.LicenseType = LicenseType;
-      data.LicneseType.ArchitectNo = ArchitectNo;
-      data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
-      data.LicneseType.qualificationType = qualificationType;
-      data.LicneseType.validTo = validTo;
-      formData.formData = data;
-      onSelect("", formData);
+        if (!validTo) return null
+        const [day, month, year] = validTo.split("/")
+        return new Date(`${year}-${month}-${day}`).getTime()
+      })()
+      onSelect(config.key, {
+        LicenseType,
+        ArchitectNo,
+        selfCertification,
+        validTo: validToEpoch,
+        qualificationType: qualificationType,
+      })
+    } else {
+      const data = formData?.formData
+      console.log("onSelect going 2", data)
+      data.LicneseType.LicenseType = LicenseType
+      data.LicneseType.ArchitectNo = ArchitectNo
+      data.LicneseType.selfCertification = selfCertification ? selfCertification : false
+      data.LicneseType.qualificationType = qualificationType
+      data.LicneseType.validTo = validTo
+      formData.formData = data
+      onSelect("", formData)
     }
   }
-  // function selectSelfCertification(e) {
-  //   setSelfCertification(e.target.checked);
-  // }
-
   console.log("formData in LicenseType", formData);
   if(isQualificationLoading ) return <Loader /> ;
   return (
@@ -550,13 +587,36 @@ else {
                           })()
                         : ""
                     }
-                    onChange={(e) => {
-                      const isoValue = e.target.value; 
-                      const [year, month, day] = isoValue.split("-");
-                      const formatted = `${day}/${month}/${year}`;
-                      selectValidTo(formatted);
+                     onChange={(e) => {
+                      const isoValue = e.target.value
+                      if (!isoValue) {
+                        setValidTo("")
+                        setErrorMessage("")
+                        return
+                      }
+
+                      const [year, month, day] = isoValue.split("-")
+                      const inputDate = new Date(isoValue)
+
+                      if (
+                        inputDate.getDate() !== Number(day) ||
+                        inputDate.getMonth() + 1 !== Number(month) ||
+                        inputDate.getFullYear() !== Number(year)
+                      ) {
+                        setErrorMessage("Invalid date - this day does not exist in the selected month")
+                        setValidTo("")
+                        return
+                      }
+
+                      const formatted = `${day}/${month}/${year}`
+                      selectValidTo(formatted)
                     }}
                     min={new Date().toISOString().split("T")[0]}
+                    max={(() => {
+                      const maxDate = new Date()
+                      maxDate.setFullYear(maxDate.getFullYear() + 80)
+                      return maxDate.toISOString().split("T")[0]
+                    })()}
                   />
 
                 </div>

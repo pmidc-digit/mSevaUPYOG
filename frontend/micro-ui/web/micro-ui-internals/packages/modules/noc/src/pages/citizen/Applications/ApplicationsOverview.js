@@ -368,7 +368,7 @@ const CitizenApplicationOverview = () => {
         ))}
       </Card>
 
-      {displayData?.applicantDetails?.professionalName &&
+      {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
             <Card>

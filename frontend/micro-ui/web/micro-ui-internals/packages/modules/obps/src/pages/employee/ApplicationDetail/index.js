@@ -13,6 +13,18 @@ const ApplicationDetail = () => {
   const [showToast, setShowToast] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb"? "pb.punjab" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb"? "pb.punjab" : tenantId }, {});
+  console.log('applicationDetails of obps here', applicationDetails)
+
+const licenseSection = applicationDetails?.applicationDetails?.find(
+  (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
+);
+
+const licenseType = t(licenseSection?.values?.find(
+  (val) => val.title === "BPA_LICENSE_TYPE"
+)?.value);
+
+console.log("licenseType:", licenseType);
+
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [viewTimeline, setViewTimeline]=useState(false);
   const {
@@ -42,10 +54,10 @@ const ApplicationDetail = () => {
   };
   let dowloadOptions = [];
   console.log("applicationDetails",applicationDetails)
-  if (applicationDetails?.payments?.length > 0) {
+  if (applicationDetails?.payments?.length > 0 && licenseType) {
     dowloadOptions.push({
       label: t("TL_RECEIPT"),
-      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments),
+      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments,licenseType),
     })
   }
 

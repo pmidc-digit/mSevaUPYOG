@@ -99,6 +99,12 @@ let License = LicenseData?.Licenses?.[0];
     }
   }, [License]);
 
+
+const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`);
+
+
+console.log("licenseType:", licenseType);
+
   useEffect(() => {
     if (License) {
       if (reciept_data?.Payments?.length > 0) {
@@ -110,7 +116,7 @@ let License = LicenseData?.Licenses?.[0];
                 reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG",
                 License?.applicationNumber,
                 License?.tenantId,
-                reciept_data?.Payments
+                reciept_data?.Payments,licenseType
               ),
           },
         ]);

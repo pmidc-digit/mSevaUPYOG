@@ -56,7 +56,7 @@ function OBPSDocument({
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div style={{  }}>
       <React.Fragment>
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {documents.length > 0 ? (
@@ -67,19 +67,19 @@ function OBPSDocument({
                   <a
                     target="_blank"
                     href={documentLink}
-                    style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }}
+                    style={{  marginRight: "10px", height: "auto" }}
                     key={index}
                   >
                     {/* <div style={{ display: "flex", justifyContent: "center" }}>
                       <PDFSvg />
                     </div> */}
                     {isStakeHolder ? (
-                      <p style={{ marginTop: "8px", textAlign: "center", color: "#505A5F" }}>
+                      <p style={{  textAlign: "center", color: "#505A5F" }}>
                         {t(`BPAREG_HEADER_${stringReplaceAll(Code?.toUpperCase(), ".", "_")}`)}
                       </p>
                     ) : null}{" "}
                     {/* document?.fileName ? `${document?.fileName}` : `${t(`ES_COMMON_DOC_DOCUMENT`)} - ${index + 1}` */}
-                    {!isStakeHolder ? <p style={{ marginTop: "8px", textAlign: "center", color: "#505A5F" }}>{`${t(Code)}`}</p> : null}
+                    {!isStakeHolder ? <p style={{  textAlign: "center", color: "#505A5F" }}>{`${t(Code)}`}</p> : null}
                   </a>
                 );
               })}

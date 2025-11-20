@@ -116,7 +116,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
   return (
     <Card>
       <BannerPicker t={t} data={finalDataBind} isLoading={mutation.isLoading} />
-      <CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)} ${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>
+      {/* <CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)} ${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText> */}
       {/* {!isSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>} */}
 
       <div

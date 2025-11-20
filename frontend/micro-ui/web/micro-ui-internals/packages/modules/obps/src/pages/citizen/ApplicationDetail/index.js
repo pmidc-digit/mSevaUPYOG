@@ -56,6 +56,8 @@ const ApplicationDetails = () => {
     { tenantId, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
     {}
   );
+
+  console.log(reciept_data, "TOTAL AMOUNT");
     // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
 const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
 const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
@@ -89,6 +91,12 @@ let License = LicenseData?.Licenses?.[0];
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
+const qualificationType =
+  LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
+
+  console.log(qualificationType, "kkkkkkkk");
+
+const isArchitect = qualificationType === "B-Arch";
 
   
 // useBPAREGApplicationActions
@@ -173,10 +181,15 @@ let License = LicenseData?.Licenses?.[0];
     </div>
   )
 
-      const formatDate = (timestamp) => {
+const formatDate = (timestamp) => {
   if (!timestamp) return "";
   const date = new Date(Number(timestamp));
-  return date.toLocaleDateString("en-IN"); 
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
 };
 
   const documentsContainerStyle = {
@@ -322,6 +335,8 @@ let License = LicenseData?.Licenses?.[0];
         </div>
 
         {/* Documents */}
+
+ 
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
           <div style={sectionStyle}>
             <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
@@ -447,13 +462,9 @@ let License = LicenseData?.Licenses?.[0];
         )}
 
 
-        {/* <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
-          {renderLabel(t("Total Fee"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
-          {renderLabel(t("Status"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ? t("PAID") : t("PENDING"))}
-        </div> */}
 
-         <div style={sectionStyle}>
+
+         {/* <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
           {recieptDataLoading ? (
             <Loader />
@@ -461,6 +472,34 @@ let License = LicenseData?.Licenses?.[0];
             <div>
               {renderLabel(t("Total Amount"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
               {renderLabel(t("Status"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ? t("PAID") : t("PENDING"))}
+            </div>
+          )}
+        </div> */}
+
+
+        <div style={sectionStyle}>
+          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+
+          {recieptDataLoading ? (
+            <Loader />
+          ) : (
+            <div>
+              {/* Total Amount (Architect → 0, else actual) */}
+              {renderLabel(
+                t("Total Amount"),
+                isArchitect
+                  ? `₹ 0`
+                  : reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
+              )}
+
+              {/* Status */}
+              {renderLabel(
+                t("Status"),
+                reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid ===
+                  reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
+                  ? t("PAID")
+                  : t("PENDING")
+              )}
             </div>
           )}
         </div>

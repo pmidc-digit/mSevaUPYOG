@@ -315,19 +315,62 @@ const [validTo, setValidTo] = useState(() => {
     }
   }
 
-    function selectValidTo(input) {
-      const [day, month, year] = input.split("/");
-      const inputDate = new Date(`${year}-${month}-${day}`);
-      const today = new Date();
+    // function selectValidTo(input) {
+    //   const [day, month, year] = input.split("/");
+    //   const inputDate = new Date(`${year}-${month}-${day}`);
+    //   const today = new Date();
 
-      setValidTo(input);
+    //   setValidTo(input);
 
-      if (inputDate < today) {
-        setErrorMessage(t("BPA_VALID_TO_DATE_ERROR"));
-      } else {
-        setErrorMessage("");
-      }
+    //   if (inputDate < today) {
+    //     setErrorMessage(t("BPA_VALID_TO_DATE_ERROR"));
+    //   } else {
+    //     setErrorMessage("");
+    //   }
+    // }
+
+
+function selectValidTo(input) {
+  // Allow only digits and '/' while typing
+  const cleaned = input.replace(/[^\d/]/g, "");
+  setValidTo(cleaned);
+
+  // Must be in DD/MM/YYYY format
+  const parts = cleaned.split("/");
+  if (parts.length !== 3) return;
+
+  const [day, month, year] = parts;
+  const yearNum = Number(year);
+
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const maxYear = currentYear + 80;
+
+  // ---- Validation: Year must be exactly 4 digits ----
+  if (year && year.length > 4) {
+    setErrorMessage("Year must be 4 digits (YYYY)");
+    return;
+  }
+
+  // ---- Validation: Maximum year allowed ----
+  if (year.length === 4 && yearNum > maxYear) {
+    setErrorMessage(`Year cannot exceed more than 80 years from the current year.`);
+    return;
+  }
+
+  // ---- Validation: Date cannot be in past ----
+  if (day && month && year.length === 4) {
+    const date = new Date(`${year}-${month}-${day}`);
+    if (date < today) {
+      setErrorMessage("Expiry date cannot be in the past");
+      return;
     }
+  }
+
+  setErrorMessage("");
+}
+
+
 
 
   function goNext() {

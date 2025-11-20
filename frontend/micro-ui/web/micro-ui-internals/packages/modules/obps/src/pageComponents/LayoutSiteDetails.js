@@ -13,66 +13,85 @@ import {
   UploadFile
 } from "@mseva/digit-ui-react-components";
 
-const LayoutSiteDetails = (_props) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
+
+const LayoutSiteDetails = (_props) => {
+  const Digit = typeof window !== "undefined" ? window.Digit : {}
+  const tenantId = Digit?.ULBService?.getCurrentTenantId?.() || ""
+  const stateId = Digit?.ULBService?.getStateId?.() || ""
+
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props
+
+  const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
+  console.log(applicationNo, "applicationNo in layout site details");
+  const isEditMode = !!applicationNo;
 
   /**Start - Floor Area Calculation Logic */
-  const [totalArea, setTotalArea] = useState("0.00");
+  const [totalArea, setTotalArea] = useState("0.00")
 
-  const { fields: areaFields, append: addFloor, remove: removeFloor} = useFieldArray({
+  const {
+    fields: areaFields,
+    append: addFloor,
+    remove: removeFloor,
+  } = useFieldArray({
     control,
     name: "floorArea",
-  });
+  })
 
-const floorAreaValues = watch("floorArea");
-const basementAreaValues= watch("basementArea");
+  const floorAreaValues = watch("floorArea")
+  const basementAreaValues = watch("basementArea")
 
- useEffect(() => {
+  useEffect(() => {
     const sum = floorAreaValues?.reduce((acc, item) => {
-    const numericValue = parseFloat(item?.value);
-    return acc + (isNaN(numericValue) ? 0 : numericValue);
-  }, 0);
-  
-  const numericBasementArea=(isNaN(basementAreaValues) ? 0 : basementAreaValues);
-  const finalSum = (sum + parseFloat(numericBasementArea)).toFixed(2);
-  setTotalArea(finalSum);
+      const numericValue = Number.parseFloat(item?.value)
+      return acc + (isNaN(numericValue) ? 0 : numericValue)
+    }, 0)
 
-  // Update form value so it gets saved
-  setValue("totalFloorArea", finalSum);
+    const numericBasementArea = isNaN(basementAreaValues) ? 0 : basementAreaValues
+    const finalSum = (sum + Number.parseFloat(numericBasementArea)).toFixed(2)
+    setTotalArea(finalSum)
 
- }, [floorAreaValues, basementAreaValues]);
+    setValue("totalFloorArea", finalSum)
+  }, [floorAreaValues, basementAreaValues, setValue])
 
-  
   /**Start - ULB Name and Type caculation logic */
 
-  const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null);
+  const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null)
+  const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "")
+  const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null)
 
-  const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "");
-  const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
+  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId)
+  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId)
 
-  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
-  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
-
-  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
+  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants()
 
   const ulbListOptions = ulbList?.map((city) => ({
     ...city,
     displayName: t(city.i18nKey),
-  }));
+  }))
 
   useEffect(() => {
     if (ulbName) {
-      const ulbTypeFormatted = ulbName?.city?.ulbType;
-      setUlbType(ulbTypeFormatted);
-      setValue("ulbType", ulbTypeFormatted);
+      const ulbTypeFormatted = ulbName?.city?.ulbType
+      setUlbType(ulbTypeFormatted)
+      setValue("ulbType", ulbTypeFormatted)
     }
-  }, [ulbName, setValue]);
+  }, [ulbName, setValue])
 
-   /**Start - District and Zone caculation logic */
-  const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
+  useEffect(() => {
+    if (ulbName) {
+      const matchingDistrict = ulbListOptions?.find((city) => city.code === ulbName.code)
+      if (matchingDistrict) {
+        setSelectedCity(matchingDistrict)
+        setValue("district", matchingDistrict)
+      }
+    }
+  }, [ulbName, setValue])
+
+  /**Start - District and Zone caculation logic */
+  const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(
+    currentStepData?.siteDetails?.isBasementAreaAvailable || null,
+  )
 
   const options = [
     {
@@ -83,12 +102,12 @@ const basementAreaValues= watch("basementArea");
       code: "NO",
       i18nKey: "NO",
     },
-  ];
+  ]
 
-  const allCities = Digit.Hooks.obps.useTenants();
-  const [cities, setcitiesopetions] = useState(allCities);
-  const [selectedCity, setSelectedCity]=useState(currentStepData?.siteDetails?.district || null);
-  const [localities, setLocalities] = useState([]);
+  const allCities = Digit.Hooks.obps.useTenants()
+  const [cities, setcitiesopetions] = useState(allCities)
+  const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null)
+  const [localities, setLocalities] = useState([])
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
@@ -96,50 +115,70 @@ const basementAreaValues= watch("basementArea");
     {
       enabled: !!selectedCity,
     },
-    t
-  );
+    t,
+  )
 
   useEffect(() => {
-  if (fetchedLocalities?.length > 0) {
-    setLocalities(fetchedLocalities);
-  } 
-  }, [fetchedLocalities]);
+    if (fetchedLocalities?.length > 0) {
+      setLocalities(fetchedLocalities)
+    }
+  }, [fetchedLocalities])
 
   useEffect(() => {
-  setLocalities([]);
-  setValue("zone", null);
- }, [selectedCity]);
+    setLocalities([])
+    setValue("zone", null)
+  }, [selectedCity, setValue])
 
+  
+  const {
+    data: buildingCategory,
+    isLoading: isBuildingCategoryLoading,
+    error: buildingCategoryError,
+  } = Digit.Hooks.noc.useBuildingCategory(stateId)
+  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }])
+
+  const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || []
+
+  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(
+    currentStepData?.siteDetails?.buildingCategory || null,
+  )
 
   useEffect(() => {
-    //console.log("currentStepData3", currentStepData);
-    const formattedData = currentStepData?.siteDetails;
+    const formattedData = currentStepData?.siteDetails
     if (formattedData) {
-      // console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
-        if(key!== "floorArea")setValue(key, value);
-      });
+        if (key !== "floorArea") {
+          setValue(key, value)
+        }
+      })
 
-    // Handle floorArea
-    if (Array.isArray(formattedData.floorArea)) {
-      // Clear existing fields
-      for (let i = areaFields.length - 1; i >= 0; i--) {
-        removeFloor(i);
+      // Set state variables to ensure dropdowns are pre-filled
+      if (formattedData.buildingStatus) {
+        setBuildingStatus(formattedData.buildingStatus)
+      }
+      if (formattedData.buildingCategory) {
+        setSelectedBuildingCategory(formattedData.buildingCategory)
+      }
+      if (formattedData.ulbName) {
+        setUlbName(formattedData.ulbName)
+      }
+      if (formattedData.isBasementAreaAvailable) {
+        setIsBasementAreaAvailable(formattedData.isBasementAreaAvailable)
+      }
+      if (formattedData.district) {
+        setSelectedCity(formattedData.district)
       }
 
-      // Append each floorArea item with correct structure
-      formattedData.floorArea.forEach((item) => {
-        addFloor({ value: item.value || "" }); // Ensure value is passed correctly
-      });
+      if (Array.isArray(formattedData.floorArea) && formattedData.floorArea.length > 0) {
+        for (let i = areaFields.length - 1; i >= 0; i--) {
+          removeFloor(i)
+        }
+        formattedData.floorArea.forEach((item) => {
+          addFloor({ value: item.value || item || "" })
+        })
+      }
     }
-
-    }
-  }, [currentStepData, setValue, addFloor, removeFloor]);
-
-  const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
-  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
-
-  const schemeTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.schemeType || [];
+  }, [])
 
   return (
     <React.Fragment>
@@ -152,12 +191,9 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="plotNo"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -168,10 +204,10 @@ const basementAreaValues= watch("basementArea");
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -186,12 +222,9 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="proposedSiteAddress"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
                   maxLength: {
                     value: 200,
                     message: t("MAX_200_CHARACTERS_ALLOWED"),
@@ -201,17 +234,19 @@ const basementAreaValues= watch("basementArea");
                   <TextArea
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>
+            {errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}
+          </CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}*</CardLabel>
@@ -223,10 +258,9 @@ const basementAreaValues= watch("basementArea");
                 render={(props) => (
                   <Dropdown
                     className="form-field"
-                    // select={props.onChange}
                     select={(e) => {
-                      setUlbName(e);
-                      props.onChange(e);
+                      setUlbName(e)
+                      props.onChange(e)
                     }}
                     selected={props.value}
                     option={ulbListOptions}
@@ -244,15 +278,15 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="ulbType"
+                defaultValue=""
                 render={(props) => (
                   <TextInput
-                    // value={props.value}
                     value={ulbType || props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                     disable="true"
                   />
@@ -267,12 +301,9 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="khasraNo"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -282,10 +313,10 @@ const basementAreaValues= watch("basementArea");
                   <TextArea
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -300,12 +331,9 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="hadbastNo"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -315,10 +343,10 @@ const basementAreaValues= watch("basementArea");
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -337,7 +365,13 @@ const basementAreaValues= watch("basementArea");
                   required: t("REQUIRED_FIELD"),
                 }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" />
+                  <Dropdown
+                    className="form-field"
+                    select={props.onChange}
+                    selected={props.value}
+                    option={roadType}
+                    optionKey="name"
+                  />
                 )}
               />
             )}
@@ -350,12 +384,9 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaLeftForRoadWidening"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -365,10 +396,10 @@ const basementAreaValues= watch("basementArea");
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -383,14 +414,15 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="netPlotAreaAfterWidening"
+                defaultValue=""
                 render={(props) => (
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -404,12 +436,9 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="roadWidthAtSite"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -419,17 +448,19 @@ const basementAreaValues= watch("basementArea");
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>
+            {errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}
+          </CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}*</CardLabel>
@@ -442,295 +473,299 @@ const basementAreaValues= watch("basementArea");
                   <Dropdown
                     className="form-field"
                     select={(e) => {
-                      setBuildingStatus(e);
-                      props.onChange(e);
+                      setBuildingStatus(e)
+                      props.onChange(e)
                     }}
                     selected={props.value}
                     option={buildingType}
                     optionKey="name"
+                    disable={isEditMode}
                   />
                 )}
               />
             )}
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
-          
-          {buildingStatus?.code === "BUILTUP" && (
-             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_IS_BASEMENT_AREA_PRESENT_LABEL")}`} *</CardLabel>
-             <Controller
-              control={control}
-              name={"isBasementAreaAvailable"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setIsBasementAreaAvailable(e);
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                />
-              )}
-            />
-          </LabelFieldPair>
-          )}
-          <CardLabelError style={errorStyle}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
-
-          {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
-            <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_BASEMENT_AREA_LABEL")}`}*</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="basementArea"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
-                  // minLength: {
-                  //   value: 1,
-                  //   message: t("MIN_1_CHARACTER_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          
-            )
-          }
-          <CardLabelError style={errorStyle}>{errors?.basementArea ? errors.basementArea.message : ""}</CardLabelError>
-          
-          
-          {buildingStatus?.code === "BUILTUP" && areaFields.map((field, index) => (
-            <div style={{ display: "flex", gap: "10px", flexDirection:"column" }}>
-            <CardLabel className="card-label-smaller">{ index === 0 ? "Ground":`${index}`} Floor Area*</CardLabel>
-            <div key={field.id} className="field" style={{ display: "flex", gap: "10px" }}>
-             <Controller
-              control={control}
-              name={`floorArea.${index}.value`}
-              defaultValue={field.value} 
-              rules={{ 
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
-                  // minLength: {
-                  //   value: 1,
-                  //   message: t("MIN_1_CHARACTER_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-              }}
-              render={(props) => (
-                <React.Fragment>
-                <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    
-                />
-                
-                  {errors?.floorArea?.[index]?.value && (
-                   <CardLabelError className={errorStyle}>{errors.floorArea[index].value.message}</CardLabelError>
-                  )}
-
-                </React.Fragment>
-            )}
-            />
-              <button type="button" onClick={() => removeFloor(index)}>❌</button>
-            </div>
-            </div>
-           ))}
-
-           {buildingStatus?.code === "BUILTUP" && 
-            (
-             <button  type="button" onClick={() => addFloor({ value: "" })}>➕ Add Floor</button>
-            )
-           }
-          
-          {buildingStatus?.code === "BUILTUP" &&
-           (
-             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_FLOOR_AREA_LABEL")}`}</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name="totalFloorArea"
-                  defaultValue={totalArea}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                      }}
-                      disable="true"
-                    />
-                  )}
-                />
-              </div>
-          </LabelFieldPair>
-           )
-          }
-          
-          
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`}*</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="wardNo"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 2,
-                  //   message: t("MIN_2_CHARACTERS_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}*</CardLabel>
-              <Controller
-                control={control}
-                name={"district"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown 
-                  className="form-field" 
-                  select={(e)=>{
-                    setSelectedCity(e)
-                    props.onChange(e)
-                  }} 
-                  selected={props.value} 
-                  option={cities.sort((a, b) => a.name.localeCompare(b.name))} 
-                  optionKey="name" />
-                )}
-              />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}*</CardLabel>
-              <Controller
-                control={control}
-                name={"zone"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown 
-                  className="form-field" 
-                  select={props.onChange} 
-                  selected={props.value} 
-                  option={localities} 
-                  optionKey="i18nkey" />
-                )}
-              />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}*</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="villageName"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}*</CardLabel>
-              {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
-                <Controller
-                  control={control}
-                  name={"buildingCategory"}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory} optionKey="name" />
-                   )}
-                    />
-                  )}
-                   
+            {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
+              <Controller
+                control={control}
+                name={"buildingCategory"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      setSelectedBuildingCategory(e)
+                      props.onChange(e)
+                    }}
+                    selected={props.value}
+                    option={buildingCategory}
+                    optionKey="name"
+                    disable={isEditMode}
+                  />
+                )}
+              />
+            )}
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {errors?.buildingCategory?.message || ""}
-          </CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError>
+
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("residential") || !selectedBuildingCategory) && (
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL")}`}
+                  {selectedBuildingCategory?.name?.toLowerCase().includes("residential") && "*"}
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderResidentialUseInSqM"
+                    defaultValue=""
+                    rules={{
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") 
+                        ? t("REQUIRED_FIELD") 
+                        : false,
+                      validate: (value) => {
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD")
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderResidentialUseInSqM?.message || ""}</CardLabelError>
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL")}`}
+                  {selectedBuildingCategory?.name?.toLowerCase().includes("residential") && "*"}
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderResidentialUseInPct"
+                    defaultValue=""
+                    rules={{
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") 
+                        ? t("REQUIRED_FIELD") 
+                        : false,
+                      validate: (value) => {
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD")
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        const isValidFormat = regex.test(value)
+                        const isWithinRange = Number.parseFloat(value) <= 100
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                        return true
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderResidentialUseInPct?.message || ""}</CardLabelError>
+            </React.Fragment>
+          )}
+
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || !selectedBuildingCategory) && (
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL")}`}
+                  {selectedBuildingCategory?.name?.toLowerCase().includes("commercial") && "*"}
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderCommercialUseInSqM"
+                    defaultValue=""
+                    rules={{
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") 
+                        ? t("REQUIRED_FIELD") 
+                        : false,
+                      validate: (value) => {
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD")
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderCommercialUseInSqM?.message || ""}</CardLabelError>
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL")}`}
+                  {selectedBuildingCategory?.name?.toLowerCase().includes("commercial") && "*"}
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderCommercialUseInPct"
+                    defaultValue=""
+                    rules={{
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") 
+                        ? t("REQUIRED_FIELD") 
+                        : false,
+                      validate: (value) => {
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD")
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        const isValidFormat = regex.test(value)
+                        const isWithinRange = Number.parseFloat(value) <= 100
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                        return true
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderCommercialUseInPct?.message || ""}</CardLabelError>
+            </React.Fragment>
+          )}
+
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse") ||
+            selectedBuildingCategory?.name?.toLowerCase().includes("institutional") || 
+            !selectedBuildingCategory) && (
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
+                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && "*"}
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderInstutionalUseInSqM"
+                    defaultValue=""
+                    rules={{
+                      required: (selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse"))
+                        ? t("REQUIRED_FIELD") 
+                        : false,
+                      validate: (value) => {
+                        if (!value) return !(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+                                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) || t("REQUIRED_FIELD")
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderInstutionalUseInSqM?.message || ""}</CardLabelError>
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}
+                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && "*"}
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderInstutionalUseInPct"
+                    defaultValue=""
+                    rules={{
+                      required: (selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse"))
+                        ? t("REQUIRED_FIELD") 
+                        : false,
+                      validate: (value) => {
+                        if (!value) return !(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+                                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) || t("REQUIRED_FIELD")
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        const isValidFormat = regex.test(value)
+                        const isWithinRange = Number.parseFloat(value) <= 100
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                        return true
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderInstutionalUseInPct?.message || ""}</CardLabelError>
+            </React.Fragment>
+          )}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_TYPE_LABEL")}`}*</CardLabel>
@@ -746,6 +781,7 @@ const basementAreaValues= watch("basementArea");
                     selected={props.value}
                     option={schemeTypeOptions}
                     optionKey="name"
+                    disable={isEditMode}
                   />
                 )}
               />
@@ -753,29 +789,297 @@ const basementAreaValues= watch("basementArea");
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.schemeType?.message || ""}</CardLabelError>
 
+
+          {buildingStatus?.code === "BUILTUP" && (
+             <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("BPA_IS_BASEMENT_AREA_PRESENT_LABEL")}`} *</CardLabel>
+             <Controller
+              control={control}
+              name={"isBasementAreaAvailable"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={(e) => {
+                    setIsBasementAreaAvailable(e)
+                    props.onChange(e)
+                  }}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                />
+              )}
+            />
+          </LabelFieldPair>
+          )}
+          <CardLabelError style={errorStyle}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
+
+          {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("BPA_BASEMENT_AREA_LABEL")}`}*</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="basementArea"
+                  defaultValue=""
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                    pattern: {
+                      value: /^[0-9]*\.?[0-9]+$/,
+                      message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                    },
+                    maxLength: {
+                      value: 100,
+                      message: t("MAX_100_CHARACTERS_ALLOWED"),
+                    },
+                  }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value)
+                      }}
+                      onBlur={(e) => {
+                        props.onBlur(e)
+                      }}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+          )}
+          <CardLabelError style={errorStyle}>{errors?.basementArea ? errors.basementArea.message : ""}</CardLabelError>
+
+          {buildingStatus?.code === "BUILTUP" &&
+            areaFields.map((field, index) => (
+              <div key={field.id} style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
+                <CardLabel className="card-label-smaller">{index === 0 ? "Ground" : `${index}`} Floor Area*</CardLabel>
+                <div className="field" style={{ display: "flex", gap: "10px" }}>
+                  <Controller
+                    control={control}
+                    name={`floorArea.${index}.value`}
+                    defaultValue={field.value}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      pattern: {
+                        value: /^[0-9]*\.?[0-9]+$/,
+                        message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                      },
+                      maxLength: {
+                        value: 100,
+                        message: t("MAX_100_CHARACTERS_ALLOWED"),
+                      },
+                    }}
+                    render={(props) => (
+                      <React.Fragment>
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => {
+                            props.onChange(e.target.value)
+                          }}
+                          onBlur={(e) => {
+                            props.onBlur(e)
+                          }}
+                        />
+
+                        {errors?.floorArea?.[index]?.value && (
+                          <CardLabelError className={errorStyle}>
+                            {errors.floorArea[index].value.message}
+                          </CardLabelError>
+                        )}
+                      </React.Fragment>
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeFloor(index)}
+                    style={{
+                      padding: "4px 8px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ❌
+                  </button>
+                </div>
+              </div>
+            ))}
+
+          {buildingStatus?.code === "BUILTUP" && (
+            <button
+              type="button"
+              onClick={() => addFloor({ value: "" })}
+              style={{
+                padding: "8px 16px",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                background: "#fff",
+                cursor: "pointer",
+                marginTop: "8px",
+              }}
+            >
+              ➕ Add Floor
+            </button>
+          )}
+
+          {buildingStatus?.code === "BUILTUP" && (
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_FLOOR_AREA_LABEL")}`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="totalFloorArea"
+                  defaultValue={totalArea}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value)
+                      }}
+                      onBlur={(e) => {
+                        props.onBlur(e)
+                      }}
+                      disable="true"
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+          )}
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="wardNo"
+                defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value)
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e)
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}*</CardLabel>
+            <Controller
+              control={control}
+              name={"district"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={(e) => {
+                    setSelectedCity(e)
+                    props.onChange(e)
+                  }}
+                  selected={props.value}
+                  option={cities.sort((a, b) => a.name.localeCompare(b.name))}
+                  optionKey="name"
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}*</CardLabel>
+            <Controller
+              control={control}
+              name={"zone"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={localities}
+                  optionKey="i18nkey"
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="villageName"
+                defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value)
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e)
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
+
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL")}`}*</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="totalAreaUnderLayout"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                  if (!value) return false; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return false
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -785,28 +1089,31 @@ const basementAreaValues= watch("basementArea");
           <CardLabelError style={errorStyle}>{errors?.totalAreaUnderLayout?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL")}`}*
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="areaUnderRoadWidening"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                  if (!value) return false;
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return false
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -821,23 +1128,24 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="netSiteArea"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                  if (!value) return false; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return false
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -852,22 +1160,23 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderEWSInSqM"
+                defaultValue=""
                 rules={{
                   validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -882,26 +1191,27 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderEWSInPct"
-               rules={{
-                validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
+                defaultValue=""
+                rules={{
+                  validate: (value) => {
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    const isValidFormat = regex.test(value)
+                    const isWithinRange = Number.parseFloat(value) <= 100
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                    return true
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -916,23 +1226,24 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="balanceAreaInSqM"
+                defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                  if (!value) return false;
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return false
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -941,261 +1252,75 @@ const basementAreaValues= watch("basementArea");
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.balanceAreaInSqM?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderResidentialUseInSqM"
-                rules={{
-                  validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("community") || !selectedBuildingCategory) && (
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL")}`}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderCommunityCenterInSqM"
+                    defaultValue=""
+                    rules={{
+                      validate: (value) => {
+                        if (!value) return true
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                      },
                     }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderResidentialUseInSqM?.message || ""}</CardLabelError>
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderCommunityCenterInSqM?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderResidentialUseInPct"
-                rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL")}`}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderCommunityCenterInPct"
+                    defaultValue=""
+                    rules={{
+                      validate: (value) => {
+                        if (!value) return true
+                        const regex = /^\d+(\.\d{1,2})?$/
+                        const isValidFormat = regex.test(value)
+                        const isWithinRange = Number.parseFloat(value) <= 100
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                        return true
+                      },
                     }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e)
+                        }}
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderResidentialUseInPct?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderCommercialUseInSqM"
-                rules={{
-                  validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderCommercialUseInSqM?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderCommercialUseInPct"
-                rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderCommercialUseInPct?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderInstutionalUseInSqM"
-                rules={{
-                  validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderInstutionalUseInSqM?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderInstutionalUseInPct"
-                rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderInstutionalUseInPct?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderCommunityCenterInSqM"
-                rules={{
-                  validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderCommunityCenterInSqM?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderCommunityCenterInPct"
-                rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderCommunityCenterInPct?.message || ""}</CardLabelError>
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{errors?.areaUnderCommunityCenterInPct?.message || ""}</CardLabelError>
+            </React.Fragment>
+          )}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL")}`}</CardLabel>
@@ -1203,22 +1328,23 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderParkInSqM"
+                defaultValue=""
                 rules={{
                   validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1233,26 +1359,27 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderParkInPct"
+                defaultValue=""
                 rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
+                  validate: (value) => {
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    const isValidFormat = regex.test(value)
+                    const isWithinRange = Number.parseFloat(value) <= 100
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                    return true
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1267,22 +1394,23 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderRoadInSqM"
+                defaultValue=""
                 rules={{
                   validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1297,26 +1425,27 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderRoadInPct"
+                defaultValue=""
                 rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
+                  validate: (value) => {
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    const isValidFormat = regex.test(value)
+                    const isWithinRange = Number.parseFloat(value) <= 100
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                    return true
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1325,29 +1454,29 @@ const basementAreaValues= watch("basementArea");
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.areaUnderRoadInPct?.message || ""}</CardLabelError>
 
-
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="areaUnderParkingInSqM"
+                defaultValue=""
                 rules={{
                   validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1362,26 +1491,27 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderParkingInPct"
+                defaultValue=""
                 rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
+                  validate: (value) => {
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    const isValidFormat = regex.test(value)
+                    const isWithinRange = Number.parseFloat(value) <= 100
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                    return true
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1396,22 +1526,23 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderOtherAmenitiesInSqM"
+                defaultValue=""
                 rules={{
                   validate: (value) => {
-                  if (!value) return true; 
-                  const regex = /^\d+(\.\d{1,2})?$/;
-                  return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 },
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1426,26 +1557,27 @@ const basementAreaValues= watch("basementArea");
               <Controller
                 control={control}
                 name="areaUnderOtherAmenitiesInPct"
+                defaultValue=""
                 rules={{
-                 validate: (value) => {
-                 if (!value) return true; 
-                 const regex = /^\d+(\.\d{1,2})?$/;
-                 const isValidFormat = regex.test(value);
-                 const isWithinRange = parseFloat(value) <= 100;
-                 if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                 if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                 return true;
-                 },
+                  validate: (value) => {
+                    if (!value) return true
+                    const regex = /^\d+(\.\d{1,2})?$/
+                    const isValidFormat = regex.test(value)
+                    const isWithinRange = Number.parseFloat(value) <= 100
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
+                    return true
+                  },
                 }}
                 render={(props) => (
                   <TextInput
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e.target.value)
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e);
+                      props.onBlur(e)
                     }}
                   />
                 )}
@@ -1453,14 +1585,11 @@ const basementAreaValues= watch("basementArea");
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.areaUnderOtherAmenitiesInPct?.message || ""}</CardLabelError>
-
         </div>
         <BreakLine />
-
-   
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default LayoutSiteDetails;
+export default LayoutSiteDetails

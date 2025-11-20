@@ -14,87 +14,97 @@ import {
 } from "@mseva/digit-ui-react-components";
 
 const LayoutProfessionalDetails = (_props) => {
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("CITIZEN.CITY");
-  const stateId = Digit.ULBService.getStateId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY")
+  const stateId = Digit.ULBService.getStateId()
 
   // const userInfo = Digit.UserService.getUser();
   //console.log("userInfo here", userInfo);
 
-const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-const userInfoData = userInfos ? JSON.parse(userInfos) : {};
-const userInfo = userInfoData?.value;
-const requestor = userInfo?.info?.mobileNumber;
+  const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject")
+  const userInfoData = userInfos ? JSON.parse(userInfos) : {}
+  const userInfo = userInfoData?.value
+  const requestor = userInfo?.info?.mobileNumber
 
-// Extract roles safely
-const roles = userInfo?.info?.roles?.map((role) => role.code?.toUpperCase()) || [];
+  // Extract roles safely
+  const roles = userInfo?.info?.roles?.map((role) => role.code?.toUpperCase()) || []
 
-// Check if user is architect
-const isArchitect = roles.includes("BPA_ARCHITECT") || roles.includes("ARCHITECT");
+  // Check if user is architect
+  const isArchitect = roles.includes("BPA_ARCHITECT") || roles.includes("ARCHITECT")
 
-// Set tenant based on role
-const finalTenantId = isArchitect ? "pb.punjab" : tenantId;
+  // Set tenant based on role
+  const finalTenantId = isArchitect ? "pb.punjab" : tenantId
 
-const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(
-  finalTenantId,
-  {},
-  { mobileNumber: requestor },
-  { cacheTime: 0 }
-);
+  const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(
+    finalTenantId,
+    {},
+    { mobileNumber: requestor },
+    { cacheTime: 0 },
+  )
 
-const [formattedDate, setFormattedDate] = useState("");
+  const [formattedDate, setFormattedDate] = useState("")
 
-console.log(data, "DATAAA");
-
-useEffect(() => {
-  if (data && data.Bpa && data.Bpa.length > 0) {
-    const bpaData = data.Bpa[0]; // Get first record
-    
-    // Map validTo to professionalRegistrationValidity
-    if (bpaData.validTo) {
-      // Convert epoch timestamp to dd/mm/yyyy format
-      const date = new Date(bpaData.validTo);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const formattedDate = `${day}/${month}/${year}`;
-      setFormattedDate(formatted);
-      setValue("professionalRegistrationValidity", formattedDate);
-
-    }
-    
-    // You can also map other fields if needed
-    if (bpaData.address) {
-      setValue("professionalAddress", bpaData.address);
-    }
-  }
-}, [data, setValue]);
+  console.log(data, "DATAAA")
 
   useEffect(() => {
-    console.log("currentStepData2", currentStepData);
-    const formattedData = currentStepData?.applicationDetails;
+    if (data && data.Licenses) {
+      const bpaData = data.Licenses[0] // Get first record
+
+      console.log(bpaData, "BPA DATA")
+
+      if (bpaData.validTo) {
+        const date = new Date(bpaData.validTo)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const formattedDate = `${year}-${month}-${day}` // Changed to YYYY-MM-DD
+        setFormattedDate(formattedDate)
+        setValue("professionalRegistrationValidity", formattedDate)
+        console.log("  Formatted date:", formattedDate) // Debug log
+      }
+
+      // You can also map other fields if needed
+      if (bpaData.address) {
+        setValue("professionalAddress", bpaData.address)
+      }
+    }
+  }, [setValue, data])
+
+  useEffect(() => {
+    console.log("currentStepData2", currentStepData)
+    const formattedData = currentStepData?.applicationDetails
     if (formattedData) {
       // console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
-      });
+        setValue(key, value)
+      })
     }
-  }, [currentStepData, setValue]);
+  }, [currentStepData, setValue])
 
-  const { data: allCities, isLoading: isAllCitiesLoading } = Digit.Hooks.obps.useTenants();
-  const [cities, setCities] = useState(allCities);
+  const { data: allCities, isLoading: isAllCitiesLoading } = Digit.Hooks.obps.useTenants()
+  const [cities, setCities] = useState(allCities)
   // const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
 
-    useEffect(() => {
-    const formattedData = currentStepData?.applicationDetails;
+  useEffect(() => {
+    const formattedData = currentStepData?.applicationDetails
     if (formattedData) {
-      Object.entries(formattedData).forEach(([key, value]) => setValue(key, value));
+      Object.entries(formattedData).forEach(([key, value]) => setValue(key, value))
     }
-  }, [currentStepData, setValue]);
-  
-console.log("first page");
+  }, [currentStepData, setValue])
+
+useEffect(() => {
+  console.log("  ProfessionalDetails - currentStepData:", currentStepData);
+  const formattedData = currentStepData?.applicationDetails;
+  if (formattedData) {
+    console.log("  Setting professional details:", formattedData);
+    Object.entries(formattedData).forEach(([key, value]) => {
+      setValue(key, value);
+    });
+  }
+}, [currentStepData?.applicationDetails, setValue]);
+  console.log("first page")
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
@@ -121,10 +131,10 @@ console.log("first page");
               <TextInput
                 value={props.value}
                 onChange={(e) => {
-                  props.onChange(e.target.value);
+                  props.onChange(e.target.value)
                 }}
                 onBlur={(e) => {
-                  props.onBlur(e);
+                  props.onBlur(e)
                 }}
                 t={t}
                 disabled="true"
@@ -133,7 +143,9 @@ console.log("first page");
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
+      <CardLabelError style={errorStyle}>
+        {errors?.professionalName ? errors.professionalName.message : ""}
+      </CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}*</CardLabel>
@@ -153,10 +165,10 @@ console.log("first page");
               <TextInput
                 value={props.value}
                 onChange={(e) => {
-                  props.onChange(e.target.value);
+                  props.onChange(e.target.value)
                 }}
                 onBlur={(e) => {
-                  props.onBlur(e);
+                  props.onBlur(e)
                 }}
                 t={t}
                 disabled="true"
@@ -185,11 +197,14 @@ console.log("first page");
               <TextInput
                 value={props.value}
                 onChange={(e) => {
-                  props.onChange(e.target.value);
+                  props.onChange(e.target.value)
                 }}
                 onBlur={(e) => {
-                  props.onBlur(e);
+                  props.onBlur(e)
                 }}
+               
+              
+                disabled="true"
                 t={t}
               />
             )}
@@ -212,7 +227,9 @@ console.log("first page");
                 message: t("INVALID_MOBILE_NUMBER"),
               },
             }}
-            render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true"/>}
+            render={(props) => (
+              <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true" />
+            )}
           />
         </div>
       </LabelFieldPair>
@@ -239,10 +256,10 @@ console.log("first page");
               <TextArea
                 value={props.value}
                 onChange={(e) => {
-                  props.onChange(e.target.value);
+                  props.onChange(e.target.value)
                 }}
                 onBlur={(e) => {
-                  props.onBlur(e);
+                  props.onBlur(e)
                 }}
                 t={t}
               />
@@ -254,33 +271,34 @@ console.log("first page");
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REG_VALIDITY_LABEL")}`}*</CardLabel>
-            <div className="field">
-                <Controller
-                    control={control}
-                    name="professionalRegistrationValidity"
-                    defaultValue={formattedDate}
-                    rules={{ 
-                      required: t("REQUIRED_FIELD") ,
-                    }}
-                    render={(props) => (
-                      <TextInput
-                        type="date"
-                        value={props.value}
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          props.onBlur(e);
-                        }}
-                        min={new Date().toISOString().split("T")[0]}
-                      />
-                    )}
-                  />
-            </div>
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.professionalRegistrationValidity?.message || ""}</CardLabelError>
+        <div className="field">
+          <Controller
+            control={control}
+            name="professionalRegistrationValidity"
+            defaultValue={formattedDate}
+            rules={{
+              required: t("REQUIRED_FIELD"),
+            }}
+            render={(props) => (
+              <TextInput
+                type="date"
+                value={props.value}
+                onChange={(e) => {
+                  props.onChange(e.target.value)
+                }}
+                onBlur={(e) => {
+                  props.onBlur(e)
+                }}
+                 disabled="true"
+                min={new Date().toISOString().split("T")[0]}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{errors?.professionalRegistrationValidity?.message || ""}</CardLabelError>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default LayoutProfessionalDetails;
+export default LayoutProfessionalDetails

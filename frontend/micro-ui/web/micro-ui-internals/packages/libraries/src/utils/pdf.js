@@ -1223,7 +1223,7 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
                 alignment: "center",
               },
               {
-                text: "No Dues Certificate",
+                text: name ? name :"No Dues Certificate",
                 fontSize: 11,
                 alignment: "center",
               },

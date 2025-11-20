@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
-import { UPDATE_OBPS_FORM } from "../../../redux/actions/OBPSActions";
+import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -14,7 +14,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.obps.OBPSFormReducer.formData;
+    return state.obps.LayoutNewApplicationFormReducer.formData;
   });
 
   const userInfo = Digit.UserService.getUser();
@@ -44,7 +44,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function goNext(data) {
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
+    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
     onGoNext();
   }
 

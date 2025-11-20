@@ -65,7 +65,7 @@ const NewLogin = ({ stateCode }) => {
     const userRoles = user?.info?.roles?.map((roleData) => roleData?.code);
     // const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
     console.log("StateAtTimeOfLogin", state, selectedCity);    
-    const isUserBPA = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || (user?.info?.roles?.some(role => role?.code?.includes("BPA")) && user?.info?.roles?.find(role => role?.code?.includes("BPA"))?.tenantId === selectedCity?.code);
+    const isUserBPA = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === selectedCity?.code));
     return isUserBPA ? state?.from || DEFAULT_BPA_REDIRECT_URL : state?.from || DEFAULT_REDIRECT_URL;
   };
 

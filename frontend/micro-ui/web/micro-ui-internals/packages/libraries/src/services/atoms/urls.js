@@ -132,6 +132,7 @@ const Urls = {
     file_fetch: "/filestore/v1/files/url",
     create_new: "/challan-generation/challan/_create",
     search_new: "/challan-generation/challan/_search",
+    update_new: "/challan-generation/challan/_update",
   },
 
   rentAndLease: {
@@ -186,7 +187,7 @@ const Urls = {
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
     edcrreportdownload: "/bpa-services/v1/bpa/_permitorderedcr",
     getSearchDetails: "/inbox/v1/dss/_search",
-    payment_search: "/collection-services/payments/BPREG/_search",
+    payment_search: "/collection-services/payments/BPAREG/_search",
     bpaCalculator: "/bpa-calculator/_calculate",
     layoutCreate: "/layout-services/v1/layout/_create",
     layoutSearch: "/layout-services/v1/layout/_search",

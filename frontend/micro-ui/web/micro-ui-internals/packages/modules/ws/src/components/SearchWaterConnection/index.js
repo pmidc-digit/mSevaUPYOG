@@ -210,15 +210,16 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
       {
         Header: t("WS_COMMON_TABLE_COL_ACTION_LABEL"),
         disableSortBy: true,
-        Cell: ({ row }) => {
-          const amount = row.original?.due;
+        // Cell: ({ row }) => {
+        //   const amount = row.original?.due;
 
-          if (amount || amount == 0) {
-            return GetCell(getActionItem(row.original?.status, row));
-          } else {
-            return GetCell(t(`${"WS_NA"}`));
-          }
-        },
+        //   if (amount || amount == 0) {
+        //     return GetCell(getActionItem(row.original?.status, row));
+        //   } else {
+        //     return GetCell(t(`${"WS_NA"}`));
+        //   }
+        // },
+        Cell: () => GetCell(t("WS_NA")),
       },
     ],
     []

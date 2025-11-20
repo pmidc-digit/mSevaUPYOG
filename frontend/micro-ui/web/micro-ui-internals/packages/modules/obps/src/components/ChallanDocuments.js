@@ -1,7 +1,8 @@
 import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
-import { Loader } from "../components/Loader";
+import { Loader } from "./Loader";
 import EXIF from "exif-js";
+import CustomUploadFile from "./CustomUploadFile";
 
 const ChallanDocuments = ({
   t,
@@ -16,6 +17,7 @@ const ChallanDocuments = ({
   isLoading,
   error,
   setError,
+  customOpen
 }) => {
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   // const [error, setError] = useState(null);
@@ -56,7 +58,7 @@ const ChallanDocuments = ({
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.Challan?.Documents?.map((document, index) => {
+          {data?.FieldInspection?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -68,6 +70,7 @@ const ChallanDocuments = ({
                 documents={documents}
                 setCheckRequiredFields={setCheckRequiredFields}
                 handleSubmit={handleSubmit}
+                customOpen={customOpen}
               />
             );
           })}
@@ -80,7 +83,7 @@ const ChallanDocuments = ({
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
+function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, customOpen }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -134,7 +137,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
               longitude = convertDMSToDD(lon, lonRef);
               console.log("📍 Latitude:", latitude, "Longitude:", longitude);
             } else {
-              console.warn("⚠️ No GPS data found in image.");
+              alert("⚠️ No GPS data found in image.");
+              return;
             }
 
             // ✅ Save file + coordinates
@@ -259,24 +263,20 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       setError(null);
       if (file) {
         setLoading(true);
-        if (file.size >= 5242880) {
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-          // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
-        } else {
+        
           try {
-            setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
-            setLoading(false);
-            if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId);
-            } else {
-              setError(t("CS_FILE_UPLOAD_ERROR"));
-            }
+              setUploadedFile(null);
+              const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+              setLoading(false);
+              if (response?.data?.files?.length > 0) {
+                  setUploadedFile(response?.data?.files[0]?.fileStoreId);
+              } else {
+                  setError(t("CS_FILE_UPLOAD_ERROR"));
+              }
           } catch (err) {
-            setLoading(false);
-            setError(t("CS_FILE_UPLOAD_ERROR"));
+              setLoading(false);
+              setError(t("CS_FILE_UPLOAD_ERROR"));
           }
-        }
       }
     })();
   }, [file]);
@@ -313,7 +313,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field" style={{ width: "100%" }}>
-          <UploadFile
+          <CustomUploadFile
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
@@ -325,6 +325,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
+            uploadedFile={uploadedFile}
+            customOpen={customOpen}
           />
         </div>
       </LabelFieldPair>

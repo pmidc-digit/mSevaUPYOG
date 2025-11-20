@@ -280,6 +280,8 @@ export const OBPSService = {
     }
     const [License] = response?.Licenses;
 
+    console.log(License, "LIIIIII");
+
     const paymentRes = await Digit.PaymentService.recieptSearch(License?.tenantId, "BPAREG", {
       consumerCodes: License?.applicationNumber,
       isEmployee: true,
@@ -305,6 +307,15 @@ export const OBPSService = {
       fileDetails = await UploadServices.Filefetch(appDocumentFileStoreIds, Digit.ULBService.getStateId());
     }
 
+    const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+  return date.toLocaleDateString("en-IN"); 
+};
+
+
+
+
     const details = [
       {
         title: " ",
@@ -320,6 +331,7 @@ export const OBPSService = {
               value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
             },
             { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
+            { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
           ],
         }
         : {

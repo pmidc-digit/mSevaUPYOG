@@ -62,7 +62,7 @@ const LayoutFeeEstimationDetails = ({ formData }) => {
     const totalAmount =
       data?.Calculation?.[0]?.taxHeadEstimates?.reduce((acc, item) => acc + (item?.estimateAmount || 0), 0) || "N/A"
 
-    return [{ id: "1", title: t("LAYOUT_FEE_LABEL"), amount: totalAmount }]
+    return [{ id: "1", title: t("Fee"), amount: totalAmount }]
   }, [data, t])
 
   const applicationFeeColumns = [

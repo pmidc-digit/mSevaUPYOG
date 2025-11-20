@@ -1,199 +1,141 @@
+
+
+
+
+
 import React,{useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast, ActionBar, SubmitBar} from "@mseva/digit-ui-react-components";
-import { UPDATE_OBPS_FORM } from "../../../redux/actions/OBPSActions";
+import { Toast, ActionBar, SubmitBar, Loader} from "@mseva/digit-ui-react-components";
+import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 
+
 const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
 
-  const [showToast, setShowToast] = useState(false);
-  const [isErrorToast, setIsErrorToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-
-  
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors },
     trigger,
-    watch
-  } = useForm({ 
-     defaultValues: {
-       floorArea: [{ value: "" }] 
-  }
-});
+    watch,
+  } = useForm({
+    defaultValues: {
+      floorArea: [{ value: "" }],
+    },
+  });
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   const currentStepData = useSelector(function (state) {
-    return state.obps.OBPSFormReducer.formData;
+    return state.obps.LayoutNewApplicationFormReducer.formData;
   });
-  const applicationNo = useSelector((state) => state.obps.OBPSFormReducer.formData?.applicationNo);
 
-//   useEffect(() => {
-//   const formattedData = currentStepData?.siteDetails;
-//   if (formattedData?.floorArea) {
-//     setValue("floorArea", formattedData.floorArea);
-//   }
-// }, [currentStepData, setValue]);
+  console.log(currentStepData, "FFFFFFFFFFF");
 
-
-  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
-
-  // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch };
 
   let tenantId;
 
-  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
+  if (window.location.href.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  else {
+    tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }
 
-  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
-
-  const onSubmit = async(data) => {
+  const onSubmit = (data) => {
     trigger();
-    
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
 
-     if (applicationNo) {
-      console.log("Skipping Create API, already have applicationNo:", applicationNo);
+    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
+    
+    if (currentStepData?.apiData?.Layout?.[0]?.applicationNo) {
       onGoNext();
-      return;
+    } else {
+      callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
     }
-    
-    // Use updated data 
-    await callCreateAPI({ ...currentStepData, siteDetails:{...data} });
   };
-
-
-  // const callCreateAPI= async (formData)=>{ 
-        
-  //       // Prepare nocFormData
-  //       const nocFormData = {...formData};
-
-  //       console.log("nocFormData ==>", nocFormData)
-    
-  //       // Final payload
-  //       const payload = {
-  //         Noc: {
-  //             applicationType: "NEW",
-  //             documents: [],
-  //             nocType: "NOC",
-  //             status: "ACTIVE",
-  //             tenantId,
-  //             workflow: {action: "INITIATE"},
-  //             nocDetails:{
-  //               additionalDetails: nocFormData,
-  //               tenantId
-  //             }
-  //           },
-  //       }
-
-  //       console.log("final Payload here==>", payload);
-        
-  //       // const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
-    
-  //       // if (response?.ResponseInfo?.status === "successful") {
-  //       //   dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
-  //       //   onGoNext();
-  //       //   return { isSuccess: true, response };
-  //       // } else {
-  //       //   return { isSuccess: false, response };
-  //       // }
-
-  //       setTimeout(()=>{
-  //         console.log("we are inside setTime out");
-  //       }, 1000);
-
-  //       onGoNext();
-  // }
-
 
   const callCreateAPI = async (formData) => {
-  // <CHANGE> Get user info and auth token for RequestInfo
-  const userInfo = Digit.UserService.getUser()?.info;
-  const authToken = Digit.UserService.getUser()?.access_token;
+    const userInfo = Digit.UserService.getUser()?.info || {};
 
-  console.log("  Form data for API:", formData);
+    console.log("  Form data for CREATE API:", formData);
 
-  // <CHANGE> Build payload matching backend API structure
-  const payload = {
-    Layout: {
-      applicationType: "NEW",
-      documents: [],
-      layoutType: "LAYOUT",
-      status: "ACTIVE",
-      tenantId: tenantId,
-      owners: [
-        {
-          mobileNumber: userInfo?.mobileNumber || formData?.applicationDetails?.applicantMobileNumber,
-          name: userInfo?.name || formData?.applicationDetails?.applicantOwnerOrFirmName,
-          emailId: userInfo?.emailId || formData?.applicationDetails?.applicantEmailId,
-          userName: userInfo?.userName || userInfo?.mobileNumber
-        }
-      ],
-      workflow: {
-        action: "INITIATE"
-      },
-      layoutDetails: {
-        additionalDetails: {
-          applicationDetails: formData?.applicationDetails || {},
-          siteDetails: formData?.siteDetails || {}
+    const transformedSiteDetails = {
+      ...formData?.siteDetails,
+      ulbName: formData?.siteDetails?.ulbName?.name || "",
+      roadType: formData?.siteDetails?.roadType?.name || "",
+      buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
+      isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
+      district: formData?.siteDetails?.district?.name || "",
+      zone: formData?.siteDetails?.zone?.name || "",
+      specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
+      specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
+      specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
+      specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+    };
+
+    const transformedApplicationDetails = {
+      ...formData?.applicationDetails,
+      applicantGender: formData?.applicationDetails?.applicantGender?.code || ""
+    };
+
+    const ownerObj = {
+      mobileNumber: transformedApplicationDetails?.applicantMobileNumber || userInfo?.mobileNumber || "",
+      name: transformedApplicationDetails?.applicantOwnerOrFirmName || userInfo?.name || "",
+      emailId: transformedApplicationDetails?.applicantEmailId || userInfo?.emailId || "",
+      userName: transformedApplicationDetails?.applicantMobileNumber || userInfo?.userName || userInfo?.mobileNumber || ""
+    };
+
+    const payload = {
+      Layout: {
+        applicationType: "NEW",
+        documents: [],
+        layoutType: "LAYOUT",
+        status: "ACTIVE",
+        tenantId: tenantId,
+        owners: [ownerObj],
+        workflow: {
+          action: "INITIATE",
         },
-        tenantId: tenantId
+        layoutDetails: {
+          additionalDetails: {
+            applicationDetails: transformedApplicationDetails,
+            siteDetails: transformedSiteDetails,
+          },
+          tenantId: tenantId,
+        },
+      },
+    };
+
+    console.log("  Final CREATE payload:", payload);
+
+    try {
+      const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
+
+      console.log("  CREATE API Response:", response);
+
+      if (response?.ResponseInfo?.status === "successful") {
+        console.log("  Success: create api executed successfully!");
+        dispatch(UPDATE_LayoutNewApplication_FORM("apiData", response));
+        onGoNext();
+      } else {
+        console.error("  Error: create api not executed properly!");
+        setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
-    },
+    } catch (error) {
+      console.error("  CREATE API Error:", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }
   };
 
-  console.log("  Final API payload:", payload);
-
-  try {
-    // <CHANGE> Call the actual API using the service you created
-    const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
-
-    console.log("  API Response:", response);
-
-    if (response?.Layout?.[0]) {
-      const applicationNumber = response.Layout[0].applicationNumber;
-      const applicationId = response.Layout[0].id;
-
-      console.log("  Application created successfully:", applicationNumber);
-
-      dispatch(UPDATE_OBPS_FORM("applicationNumber", applicationNumber));
-      dispatch(UPDATE_OBPS_FORM("applicationId", applicationId));
-      dispatch(UPDATE_OBPS_FORM("apiResponse", response.Layout[0]));
-
-      setTimeout(() => {
-        onGoNext();
-      }, 1500);
-
-      return { isSuccess: true, response };
-    } else {
-      throw new Error("Invalid response from server");
-    }
-  } catch (error) {
-    console.error("  API Error:", error);
-    
-    // <CHANGE> Show error toast
-    setIsErrorToast(true);
-    setToastMessage(error?.response?.data?.Errors?.[0]?.message || t("FAILED_TO_CREATE_APPLICATION"));
-    setShowToast(true);
-
-    return { isSuccess: false, error };
-  }
-};
-
-
-
-
-
   function goNext(data) {
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
+    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
     onGoNext();
   }
 
@@ -202,8 +144,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 
   const closeToast = () => {
-    setShowToast(false);
-    setError("");
+    setShowToast(null);
   };
 
   const LayoutLocalityInfo = Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo");
@@ -226,7 +167,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
   );
 };

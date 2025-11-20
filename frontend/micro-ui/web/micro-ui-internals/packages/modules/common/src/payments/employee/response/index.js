@@ -272,11 +272,14 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
     setPrinting(true);
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+      let application = {
+        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
+      };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
         let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments }, "chbservice-receipt");
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }]  }, "chbservice-receipt");
         const updatedApplication = {
           ...applicationDetails?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],

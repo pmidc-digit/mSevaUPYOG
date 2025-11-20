@@ -42,20 +42,20 @@ const LayoutApplicantDetails = (_props) => {
 
   useEffect(() => {
   // <CHANGE> Added comprehensive debug logs
-  console.log("[v0] LayoutApplicantDetails - Full currentStepData:", currentStepData);
-  console.log("[v0] applicationDetails direct:", currentStepData?.applicationDetails);
-  console.log("[v0] formData nested:", currentStepData?.formData?.applicationDetails);
+  console.log("  LayoutApplicantDetails - Full currentStepData:", currentStepData);
+  console.log("  applicationDetails direct:", currentStepData?.applicationDetails);
+  console.log("  formData nested:", currentStepData?.formData?.applicationDetails);
   
   const formattedData = currentStepData?.applicationDetails;
   
   if (formattedData) {
-    console.log("[v0] Found formattedData, setting values...");
+    console.log("  Found formattedData, setting values...");
     Object.entries(formattedData).forEach(([key, value]) => {
-      console.log(`[v0] Setting ${key}:`, value);
+      console.log(`  Setting ${key}:`, value);
       setValue(key, value);
     });
   } else {
-    console.log("[v0] No formattedData found!");
+    console.log("  No formattedData found!");
   }
 }, [currentStepData, setValue]);
 

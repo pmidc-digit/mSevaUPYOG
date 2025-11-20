@@ -32,8 +32,9 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
   const { t } = useTranslation();
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   // const firstTimeRef = useRef(true);
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS("pb", "NDC", [{ name: "Reasons" }]);
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "NDC", [{ name: "Reasons" }]);
   const ndcReasonOptions = useMemo(() => {
     const MenuListOfReasons = [];
     if (menuList?.NDC?.Reasons?.length > 0) {

@@ -406,6 +406,7 @@ import useLayoutRoadType from "./obps/useLayoutRoadType";
 import useLayoutType from "./obps/useLayoutType";
 import {useLayoutSearchApplication} from "./obps/useSearchApplication";
 import {useLayoutCitizenSearchApplication} from "./obps/useLayoutCitizenSearchApplication";
+import useLayoutDocumentSearch from "./obps/useLayoutDocumentSearch";
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
@@ -633,6 +634,7 @@ const obps = {
   useLayoutBuildingCategory,  
   useLayoutRoadType, 
   useLayoutCitizenSearchApplication,
+  useLayoutDocumentSearch,
   useCLUFeeCalculator
 
 };

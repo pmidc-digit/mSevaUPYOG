@@ -37,7 +37,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   );
   const [gender, setGender] = useState(
     formData?.LicneseDetails?.gender ||
-      (!isOpenLinkFlow && userDetails
+      (!isOpenLinkFlow && userDetails?.user?.[0]?.gender
         ? { i18nKey: `COMMON_GENDER_${userDetails?.user?.[0]?.gender}`, code: userDetails?.user?.[0]?.gender, value: userDetails?.user?.[0]?.gender }
         : "") ||
       formData?.formData?.LicneseDetails?.gender

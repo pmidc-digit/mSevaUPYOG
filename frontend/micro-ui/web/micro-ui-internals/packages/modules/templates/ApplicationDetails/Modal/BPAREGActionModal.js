@@ -4,7 +4,11 @@ import { configBPAREGApproverApplication } from "../config";
 import * as predefinedConfig from "../config";
 
 const Heading = (props) => {
-  return <h1 style={{marginLeft:"22px"}} className="heading-m BPAheading-m">{props.label}</h1>;
+  return (
+    <h1 style={{ marginLeft: "22px" }} className="heading-m BPAheading-m">
+      {props.label}
+    </h1>
+  );
 };
 
 const Close = () => (
@@ -32,7 +36,6 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     { enabled: !action?.isTerminateState }
   );
 
-
   console.log(approverData, "DEKHO");
 
   const [config, setConfig] = useState({});
@@ -46,16 +49,16 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   useEffect(() => {
     // setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
-  
-// <CHANGE> Create a displayName that combines name and designation
-setApprovers(approverData?.Employees?.map((employee) => ({ 
-  uuid: employee?.uuid, 
-  name: employee?.user?.name,
-  designation: employee?.assignments?.[0]?.designation || "N/A",
-  displayName: `${employee?.user?.name} (${t(employee?.assignments?.[0]?.designation) || "N/A"})` // <CHANGE> Add this line
-})));
-  
-  
+
+    // <CHANGE> Create a displayName that combines name and designation
+    setApprovers(
+      approverData?.Employees?.map((employee) => ({
+        uuid: employee?.uuid,
+        name: employee?.user?.name,
+        designation: employee?.assignments?.[0]?.designation || "N/A",
+        displayName: `${employee?.user?.name} (${t(employee?.assignments?.[0]?.designation) || "N/A"})`, // <CHANGE> Add this line
+      }))
+    );
   }, [approverData]);
 
   function selectFile(e) {
@@ -66,11 +69,11 @@ setApprovers(approverData?.Employees?.map((employee) => ({
     (async () => {
       setError(null);
       if (file) {
-        const allowedFileTypesRegex = /(.*?)(jpg|jpeg|png|image|pdf)$/i
+        const allowedFileTypesRegex = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
         if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
         } else if (file?.type && !allowedFileTypesRegex.test(file?.type)) {
-          setError(t(`NOT_SUPPORTED_FILE_TYPE`))
+          setError(t(`NOT_SUPPORTED_FILE_TYPE`));
         } else {
           try {
             const response = await Digit.UploadServices.Filestorage("OBPS", file, Digit.ULBService.getStateId() || tenantId?.split(".")[0]);
@@ -96,14 +99,29 @@ setApprovers(approverData?.Employees?.map((employee) => ({
       assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
       wfDocuments: uploadedFile
         ? [
-          {
-            documentType: action?.action + " DOC",
-            fileName: file?.name,
-            fileStoreId: uploadedFile,
-          },
-        ]
+            {
+              documentType: action?.action + " DOC",
+              fileName: file?.name,
+              fileStoreId: uploadedFile,
+            },
+          ]
         : null,
     };
+    console.log("action", action);
+    console.log("applicationData", applicationData);
+
+    // (
+    //       !filtData?.assignee &&
+    //       filtData.action !== "SENDBACKTOCITIZEN" &&
+    //       filtData.action !== "APPROVE" &&
+    //       filtData.action !== "REJECT" &&
+    //       filtData.action !== "SENDBACK"
+    //     )
+    // if (!applicationData?.assignee && action?.action != "SENDBACKTOCITIZEN" && action?.action != "SEND_BACK_TO_CITIZEN") {
+    //   alert("Please select Approver");
+    //   return;
+    // }
+
     submitAction({
       Licenses: [applicationData],
     }, false, {isStakeholder: true, bpa: false});
@@ -122,7 +140,7 @@ setApprovers(approverData?.Employees?.map((employee) => ({
           uploadedFile,
           setUploadedFile,
           businessService,
-          error
+          error,
         })
       );
     }
@@ -135,19 +153,19 @@ setApprovers(approverData?.Employees?.map((employee) => ({
       actionCancelLabel={t(config.label.cancel)}
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={t(config.label.submit)}
-      actionSaveOnSubmit={() => { }}
+      actionSaveOnSubmit={() => {}}
       formId="modal-action"
       isOBPSFlow={true}
-      popupStyles={mobileView?{width:"720px"}:{}}
-      style={!mobileView?{height: "45px", width:"107px",paddingLeft:"0px",paddingRight:"0px"}:{height:"45px",width:"44%"}}
-      popupModuleMianStyles={mobileView?{paddingLeft:"5px"}: {}}
+      popupStyles={mobileView ? { width: "720px" } : {}}
+      style={!mobileView ? { height: "45px", width: "107px", paddingLeft: "0px", paddingRight: "0px" } : { height: "45px", width: "44%" }}
+      popupModuleMianStyles={mobileView ? { paddingLeft: "5px" } : {}}
     >
       {PTALoading ? (
         <Loader />
       ) : (
         <FormComposer
           config={config.form}
-          cardStyle={{marginLeft:"0px",marginRight:"0px", marginTop:"-25px"}}
+          cardStyle={{ marginLeft: "0px", marginRight: "0px", marginTop: "-25px" }}
           className="BPAemployeeCard"
           noBoxShadow
           inline

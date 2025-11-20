@@ -85,7 +85,7 @@ export const ChallanGenerationService = {
 
   update: (details, tenantId) =>
     Request({
-      url: Urls.challangeneration.update,
+      url: Urls.challangeneration.update_new,
       data: details,
       useCache: true,
       method: "POST",

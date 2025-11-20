@@ -92,6 +92,7 @@ useEffect(() => {
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
+              defaultValue={""}
               render={(props) => (
                 <TextInput
                   className="form-field"

@@ -32,10 +32,14 @@ function NDCDocument({ value = {} }) {
       <React.Fragment>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
           {documents?.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
+            console.log("document", document);
+            console.log("data", data);
+            let documentLink = pdfDownloadLink(data.pdfFiles, document?.uuid);
             return (
               <a
-                target="_"
+                // target="_"
+                target="_blank"
+                rel="noopener noreferrer"
                 href={documentLink}
                 key={index}
                 style={{

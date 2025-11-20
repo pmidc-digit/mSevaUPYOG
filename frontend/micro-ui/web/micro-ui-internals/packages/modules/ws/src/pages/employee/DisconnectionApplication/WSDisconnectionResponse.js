@@ -12,6 +12,32 @@ const WSDisconnectionResponse = (props) => {
   let filters = func.getQueryStringParams(location.search);
 
   const disconnectionData = Digit.SessionStorage.get("WS_DISCONNECTION");
+  const [countdown, setCountdown] = useState(3); // State for countdown
+
+  // Auto-redirect after 3 seconds
+  useEffect(() => {
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Redirect timer
+    const redirectTimer = setTimeout(() => {
+      window.location.href = "https://mseva.lgpunjab.gov.in/employee/inbox";
+    }, 3000); // 3 seconds
+
+    // Cleanup on unmount
+    return () => {
+      clearTimeout(redirectTimer);
+      clearInterval(countdownInterval);
+    };
+  }, []);
 
   const handleDownloadPdf = () => {
     const disconnectionRes = disconnectionData?.DisconnectionResponse
@@ -36,6 +62,20 @@ const WSDisconnectionResponse = (props) => {
           headerStyles={{ fontSize: "32px" }}
           infoOneStyles={{ paddingTop: "20px" }}
         />
+        
+        {/* Countdown message */}
+        {countdown > 0 && (
+          <CardText style={{ 
+            padding: "10px", 
+            textAlign: "center", 
+            color: "#505A5F", 
+            fontSize: "16px",
+            fontWeight: "500"
+          }}>
+            Redirecting to inbox in {countdown} {countdown === 1 ? 'second' : 'seconds'}...
+          </CardText>
+        )}
+
         {/* <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}>{t("WS_MESSAGE_SUB_DESCRIPTION_LABEL!!")}</CardText> */}
         <div style={{ display: "flex" }}>
          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginBottom: "10px", padding: "0px 8px" }} onClick={handleDownloadPdf}>

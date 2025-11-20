@@ -33,8 +33,8 @@ const Inbox = ({
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+    ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" }
+    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" };
 
   const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
 
@@ -106,8 +106,6 @@ const Inbox = ({
     filters: { ...searchParams, ...paginationParams },
   });
 
-  console.log("data==", data);
-
   // useEffect(() => {
   //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
   //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
@@ -156,6 +154,8 @@ const Inbox = ({
     businessService: item?.businessService,
     totalAmount: item?.amount || 0,
     offenceName: item?.offenceTypeName,
+    challanStatus: item?.challanStatus,
+    date: item?.date,
     // dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
     // tenantId: item?.tenantId,
     // receiptNumber: item?.receiptNumber,

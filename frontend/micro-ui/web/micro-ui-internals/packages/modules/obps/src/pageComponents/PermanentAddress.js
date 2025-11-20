@@ -45,7 +45,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict || {}
   );
 
-  const [isAddressSame, setIsAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || false);
+  const [isAddressSame, setIsAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.isAddressSame || false);
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(null);
   // merging the CorrospondenceAddress to this page
@@ -280,6 +280,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 qualificationType: formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
+                isAddressSame: isAddressSame,
 
                 // Ulb: selectedUlbTypes,
                 // Ulb: isArchitect ? [] : selectedUlbTypes,

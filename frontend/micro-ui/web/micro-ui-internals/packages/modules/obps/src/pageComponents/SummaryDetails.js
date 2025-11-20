@@ -428,7 +428,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
     
         // Append index if more than 1 owner (ownerIdx is 0-based so +1)
-        const title = ownersCount > 1 ? `${t(baseTitle)}_${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
+        const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
     
         return {
           id: index,
@@ -1274,6 +1274,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             className="border-none"
                             label={t(`BPA_APPROVED_COLONY_NAME`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_NUMBER`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.NocNumber || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_APPLICANT_NAME`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.applicantOwnerOrFirmName || t("CS_NA")}                            
                         />
                         }
                         <Row

@@ -1,5 +1,5 @@
 import { Card, CardLabel, LabelFieldPair, SubmitBar, Loader, ActionBar, BackButton, Menu } from "@mseva/digit-ui-react-components";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../../../components/Timeline";
@@ -34,6 +34,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
 
   const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
   const { result, formData, documents } = safeValue;
+  const isArchitect = formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect");
 
   console.log(formData, "FORM DATA IN CHECK PAGE");
   console.log(safeValue, "SAFE VAKLUE IN CHECK PAGE");
@@ -53,8 +54,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   console.log(requestor, "PPPP");
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const bparegData = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 }).data;
-  const isBPAREGLoading = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 }).isLoading;
+  const {data: bparegData, isLoading: isBPAREGLoading} = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });  
 
   const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
   const moduleCode = tradeType ? tradeType.split(".")[0] : null;
@@ -66,6 +66,20 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const tradeTypeVal = finalDoc?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
 
   const mainType = tradeTypeVal?.split(".")[0];
+
+  useEffect(() => {
+    if(!isBPAREGLoading && bparegData){
+      const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
+      const updatedFinalData = {
+        ...sessionData,
+        value: {
+          ...sessionData?.value,
+          result: bparegData,
+        },
+      };
+      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(updatedFinalData));
+    }
+  },[bparegData, isBPAREGLoading])
 
   console.log("Dynamic moduleCode:", moduleCode);
   console.log("finalDoc===????", finalDoc);
@@ -268,8 +282,6 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
         {renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}
       </div>
 
-      {/* Application Details */}
-      <div style={sectionStyle}>{renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}</div>
 
       {/* License Type */}
       <div style={sectionStyle}>

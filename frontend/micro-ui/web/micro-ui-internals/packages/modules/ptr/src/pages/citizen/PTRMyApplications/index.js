@@ -101,7 +101,7 @@ export const PTRMyApplications = () => {
           applicationsList?.length > 0 &&
           currentItems.map((application, index) => (
             <div key={index}>
-              <PetApplication application={application} tenantId={user?.permanentCity} buttonLabel={getLabelValue(application)} />
+              <PetApplication application={application} tenantId={user?.tenantId} buttonLabel={getLabelValue(application)} />
             </div>
           ))
         )}

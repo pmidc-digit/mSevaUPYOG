@@ -217,12 +217,13 @@ public class CLUService {
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
+				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
 				
 				if (nocRequest.getLayout().getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_APPROVE)) {
 					getCalculation(nocRequest);
 				}
 				
-				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
+
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
 						nocRequest.getRequestInfo(), businessServicedata);

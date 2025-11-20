@@ -39,6 +39,7 @@ import {
   getOrderDocuments,
   getDocsFromFileUrls,
   scrutinyDetailsData,
+  amountToWords
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -95,11 +96,51 @@ const BpaApplicationDetail = () => {
   const value = "";
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"])
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id })
+  console.log('data for obps inbox', data)
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
+  const cities = Digit.Hooks.useTenants();
+
+  
   // const { data: datafromAPI, isLoadingScrutiny, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, data?.applicationData?.edcrNumber, {
   //   enabled: data?.applicationData?.edcrNumber && tenantId ? true : false,
   // });
+
+console.log('cities', cities)
+let ulbType,districtCode,ulbCode, subjectLine = "";
+const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.districtName;
+console.log('loginCity', loginCity)
+if (cities.data !== undefined) {
+    const selectedTenantData = cities.data.find((item) => item?.city?.name === loginCity);
+    console.log('selectedTenantData', selectedTenantData)
+    ulbType = selectedTenantData?.city?.ulbGrade;
+    ulbCode= selectedTenantData?.city?.code;
+    districtCode = selectedTenantData?.city?.districtCode;
+
+    subjectLine = ulbType === "Municipal Corporation" ? "Sanction u/s 262(1) of PMC Act,1976" : "Sanction u/s 193 of PM Act,1911"
+}
+  console.log('ulbCode & districtCode & ulbType & subjectLine', ulbCode, districtCode,ulbType , subjectLine)
+
+let buildingCategorysection,usage, fileno;
+if (data){
+      buildingCategorysection = data?.applicationDetails?.find(
+      (section) => section.title === "BPA_BASIC_DETAILS_TITLE"
+    );
+
+    usage = t(buildingCategorysection?.values?.find(
+      (val) => val.title === "BPA_BASIC_DETAILS_OCCUPANCY_LABEL"
+    )?.value);
+    if(cities.data !== undefined){
+        fileno = `PB/${districtCode}/${ulbCode}/${+data?.applicationData?.approvalNo?.slice(-6) + 500000}`;
+
+    }
+
+}
+
+  
+console.log("building category here: & fileNo", usage,fileno);
+
+
 
   let improvedDoc = [];
   data?.applicationData?.documents?.map((appDoc) => {
@@ -589,21 +630,38 @@ useEffect(() => {
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
     let response = null
+    console.log('payments here here', payments)
+    const fee = payments?.totalAmountPaid;
+    console.log('fee', fee)
+
+  const amountinwords = amountToWords(fee)
+  console.log('amountinwords', amountinwords)
     if (payments?.fileStoreId) {
       response = { filestoreIds: [payments?.fileStoreId] }
-    } else {
-      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments }] }, "bpa-receipt")
+    } else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
+      const fileNo = fileno
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo  }] }, "bpa-receiptsecond")
+      console.log("Final Payments array:", [{ ...payments, usage }]);
     }
+    else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords  }] }, "bpa-obps-receipt")
+      console.log("Final Payments array:", [{ ...payments, usage }]);
+    }
+    else{
+        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords  }] }, "bpa-receipt") //to do: bpa-obps-receipt
+        console.log("Final Payments array:", [{ ...payments, usage }]);
+    }
+
     const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
 
-  async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
+  async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
     const currentDate = new Date()
     data.applicationData.additionalDetails.runDate = convertDateToEpoch(
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate(),
     )
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }] }
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno}
 
     let count = 0
 
@@ -1362,7 +1420,7 @@ useEffect(() => {
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+          getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
       })
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
@@ -1375,7 +1433,7 @@ useEffect(() => {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
       })
     }
   } else {

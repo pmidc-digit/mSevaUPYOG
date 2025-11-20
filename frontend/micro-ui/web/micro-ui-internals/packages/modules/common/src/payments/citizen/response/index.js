@@ -110,7 +110,10 @@ const WrapPaymentComponent = (props) => {
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) => business_service === "BPA.NC_SAN_FEE"
-        ? "bpa-receiptsecond" : data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
+        ? "bpa-receiptsecond"
+        : business_service === "BPA.NC_APP_FEE"
+        ? "bpa-obps-receipt"
+        :  data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,

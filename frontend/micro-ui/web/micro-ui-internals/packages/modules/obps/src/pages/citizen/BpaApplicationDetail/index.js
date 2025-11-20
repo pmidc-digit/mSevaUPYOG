@@ -121,13 +121,13 @@ if (cities.data !== undefined) {
 }
   console.log('ulbCode & districtCode & ulbType & subjectLine', ulbCode, districtCode,ulbType , subjectLine)
 
-let buildingCategorysection,buildingCategory, fileno;
+let buildingCategorysection,usage, fileno;
 if (data){
       buildingCategorysection = data?.applicationDetails?.find(
       (section) => section.title === "BPA_BASIC_DETAILS_TITLE"
     );
 
-    buildingCategory = t(buildingCategorysection?.values?.find(
+    usage = t(buildingCategorysection?.values?.find(
       (val) => val.title === "BPA_BASIC_DETAILS_OCCUPANCY_LABEL"
     )?.value);
     if(cities.data !== undefined){
@@ -138,7 +138,7 @@ if (data){
 }
 
   
-console.log("building category here: & fileNo", buildingCategory,fileno);
+console.log("building category here: & fileNo", usage,fileno);
 
 
 
@@ -639,12 +639,17 @@ useEffect(() => {
     if (payments?.fileStoreId) {
       response = { filestoreIds: [payments?.fileStoreId] }
     } else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
-      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,buildingCategory,amountinwords  }] }, "bpa-receiptsecond")
-      console.log("Final Payments array:", [{ ...payments, buildingCategory }]);
+      const fileNo = fileno
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo  }] }, "bpa-receiptsecond")
+      console.log("Final Payments array:", [{ ...payments, usage }]);
+    }
+    else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords  }] }, "bpa-obps-receipt")
+      console.log("Final Payments array:", [{ ...payments, usage }]);
     }
     else{
-        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,buildingCategory,amountinwords  }] }, "bpa-receipt") //to do: bpa-obps-receipt
-        console.log("Final Payments array:", [{ ...payments, buildingCategory }]);
+        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords  }] }, "bpa-receipt") //to do: bpa-obps-receipt
+        console.log("Final Payments array:", [{ ...payments, usage }]);
     }
 
     const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })

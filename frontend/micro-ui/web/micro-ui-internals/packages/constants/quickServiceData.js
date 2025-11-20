@@ -254,5 +254,17 @@ export const quickServiceModules = {
       subHeading: "",
       roles: [],
     },
+    {
+      moduleCode: "CLU",
+      moduleName: "Change of Land Use",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/obps/clu/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
+    },
   ],
 };

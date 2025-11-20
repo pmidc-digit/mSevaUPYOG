@@ -87,6 +87,7 @@ const enabledModules = [
   "ChallanGeneration",
   "RentAndLease",
   "BPAStakeholder",
+  "CLU",
 ];
 
 const initTokens = (stateCode) => {

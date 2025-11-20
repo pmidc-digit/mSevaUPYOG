@@ -409,6 +409,7 @@ import {useLayoutCitizenSearchApplication} from "./obps/useLayoutCitizenSearchAp
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
+import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile  } from "./obps/useCLUSearchApplication";
 
 const pgr = {
   useComplaintDetails,
@@ -633,7 +634,10 @@ const obps = {
   useLayoutBuildingCategory,  
   useLayoutRoadType, 
   useLayoutCitizenSearchApplication,
-  useCLUFeeCalculator
+  useCLUFeeCalculator,
+  useCLUSearchApplication,
+  useCLUCitizenSearchApplication,
+  useCLUSearchApplicationByIdOrMobile
 
 };
 

@@ -76,7 +76,13 @@ import CLUDocumentsRequired from "./pageComponents/CLUDocumentsRequired";
 import CLUApplicantDetails from "./pageComponents/CLUApplicantDetails";
 import CLUProfessionalDetails from "./pageComponents/CLUProfessionalDetails";
 import CLUSummary from "./pageComponents/CLUSummary";
-import CLUResponseCitizen from "./pages/citizen/Applications/CLUResponseCitizen";
+import CLUResponse from "./pageComponents/CLUResponse";
+import CLUMyApplications from "./pages/citizen/Applications/CLUMyApplications";
+import CLUEditApplication from "./pageComponents/EditApplication/EditCLUApplication";
+import CLUApplicationDetails from "./pages/citizen/Applications/CLUApplicationDetails";
+import CLUSearchApplication from "./pages/citizen/CLUSearchApplication/index";
+import CLUInbox from "./pages/employee/Inbox/CLUInbox";
+import CLUEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/CLUApplicationOverview";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
@@ -264,7 +270,13 @@ const componentsToRegister = {
   CLUApplicantDetails,
   CLUProfessionalDetails,
   CLUSummary,
-  CLUResponseCitizen
+  CLUResponse,
+  CLUMyApplications,
+  CLUEditApplication,
+  CLUApplicationDetails,
+  CLUSearchApplication,
+  CLUInbox,
+  CLUEmployeeApplicationDetails
 }
 
 export const initOBPSComponents = () => {

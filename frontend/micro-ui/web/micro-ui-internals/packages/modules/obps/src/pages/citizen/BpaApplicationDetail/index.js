@@ -1356,7 +1356,7 @@ useEffect(() => {
     })
   }
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0) {
+  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0 && data?.applicationData?.status === "APPROVED") {
     !data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,

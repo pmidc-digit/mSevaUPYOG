@@ -720,7 +720,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           newErrors[`dob_${index}`] = t("Age must be at least 18 years");
           isValid = false;
         } else if (age > 150) {
-          newErrors[`dob_${index}`] = t("Age cannot be more than 120 years");
+          newErrors[`dob_${index}`] = t("Please enter a valid date of birth");
           isValid = false;
         }
       }

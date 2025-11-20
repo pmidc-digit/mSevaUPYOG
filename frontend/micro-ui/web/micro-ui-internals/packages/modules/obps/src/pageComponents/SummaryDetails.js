@@ -1276,6 +1276,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}                            
                         />
                         }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_NUMBER`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.NocNumber || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_APPLICANT_NAME`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.applicantOwnerOrFirmName || t("CS_NA")}                            
+                        />
+                        }
                         <Row
                             className="border-none"
                             label={t(`BPA_ULB_TYPE_LABEL`)}

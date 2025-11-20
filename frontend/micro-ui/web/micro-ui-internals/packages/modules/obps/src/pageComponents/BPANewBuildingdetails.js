@@ -6,6 +6,7 @@ import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { LoaderNew } from "../components/LoaderNew";
 
 
 
@@ -68,6 +69,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [proposedSite, setproposedSite] = useState(currentStepData?.createdResponse?.additionalDetails?.proposedSite || "")
   const [nameofApprovedcolony, setnameofApprovedcolony] = useState(currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || "")
   const [NocNumber, setNocNumber] = useState(currentStepData?.createdResponse?.additionalDetails?.NocNumber || "")
+  const [applicantOwnerOrFirmName, setApplicantOwnerOrFirmName] = useState(currentStepData?.createdResponse?.additionalDetails?.applicantOwnerOrFirmName || "")
   const [schemesselection, setschemesselection] = useState(currentStepData?.createdResponse?.additionalDetails?.schemesselection || "")
   const [schemeName, setschemeName] = useState(currentStepData?.createdResponse?.additionalDetails?.schemeName || "")
   const [transferredscheme, settransferredscheme] = useState("Pre-Approved Standard Designs" || "")
@@ -91,6 +93,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [ecbcCertificateFile, setEcbcCertificateFile] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcCertificateFile ||null);
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
+const [loader, setLoader] = useState(false);
 
 useEffect(() => {
     window.scrollTo({
@@ -114,6 +117,7 @@ useEffect(()=>{
 
   const validateFields = () => {
     const newErrors = {}
+    const nameRegex = /^[A-Za-z ]+$/;
 
     if (!UlbName) newErrors.UlbName = t("ULB Name is required")
     if (!District) newErrors.District = t("District is required")
@@ -137,6 +141,10 @@ useEffect(()=>{
 
     if (approvedColony?.code === "NO" && !NocNumber && !uploadedFile) {
       newErrors.NocNumber = t("NOC Number or NOC Document is required")
+    }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName.trim() === ""){
+      newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Required")
+    }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName && !nameRegex.test(applicantOwnerOrFirmName.trim())){
+      newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Invalid")
     }
 
     if (greenbuilding?.code === "YES") {
@@ -283,18 +291,22 @@ if (anyYes && !ecbcCertificateFile) {
         } else if (file.size >= 2000000) {
           setErrors((prev) => ({ ...prev, file: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
+          setLoader(true);
           try {
             const response = await Digit.UploadServices.Filestorage(
               "property-upload",
               file,
               Digit.ULBService.getStateId(),
             )
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
               setErrors((prev) => ({ ...prev, file: t("PT_FILE_UPLOAD_ERROR") }))
             }
-          } catch (err) {}
+          } catch (err) {
+            setLoader(false);
+          }
         }
       }
     })()
@@ -308,18 +320,22 @@ if (anyYes && !ecbcCertificateFile) {
         } else if (files.size >= 2000000) {
           setErrors((prev) => ({ ...prev, files: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
-          try {
+          setLoader(true);
+          try {            
             const response = await Digit.UploadServices.Filestorage(
               "property-upload",
               files,
               Digit.ULBService.getStateId(),
             )
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setGreenUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
               setErrors((prev) => ({ ...prev, files: t("PT_FILE_UPLOAD_ERROR") }))
             }
-          } catch (err) {}
+          } catch (err) {
+            setLoader(false);
+          }
         }
       }
     })()
@@ -333,18 +349,22 @@ if (anyYes && !ecbcCertificateFile) {
         } else if (ecbcElectricalLoadFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
+          setLoader(true);
           try {
             const response = await Digit.UploadServices.Filestorage(
               "property-upload",
               ecbcElectricalLoadFileObj,
               Digit.ULBService.getStateId(),
             )
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setEcbcElectricalLoadFile(response?.data?.files[0]?.fileStoreId)
             } else {
               setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
-          } catch (err) {}
+          } catch (err) {
+            setLoader(false);
+          }
         }
       }
     })()
@@ -358,18 +378,22 @@ if (anyYes && !ecbcCertificateFile) {
         } else if (ecbcDemandLoadFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
+          setLoader(true);
           try {
             const response = await Digit.UploadServices.Filestorage(
               "property-upload",
               ecbcDemandLoadFileObj,
               Digit.ULBService.getStateId(),
             )
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setEcbcDemandLoadFile(response?.data?.files[0]?.fileStoreId)
             } else {
               setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
-          } catch (err) {}
+          } catch (err) {
+            setLoader(false);
+          }
         }
       }
     })()
@@ -383,18 +407,22 @@ if (anyYes && !ecbcCertificateFile) {
         } else if (ecbcAirConditionedFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
+          setLoader(true);
           try {
             const response = await Digit.UploadServices.Filestorage(
               "property-upload",
               ecbcAirConditionedFileObj,
               Digit.ULBService.getStateId(),
             )
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setEcbcAirConditionedFile(response?.data?.files[0]?.fileStoreId)
             } else {
               setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
-          } catch (err) {}
+          } catch (err) {
+            setLoader(false);
+          }
         }
       }
     })()
@@ -775,6 +803,11 @@ if (anyYes && !ecbcCertificateFile) {
     setErrors((prev) => ({ ...prev, NocNumber: "" }))
   }
 
+  function setapplicantOwnerOrFirmName(e) {
+    setApplicantOwnerOrFirmName(e.target.value)
+    setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
+  }
+
   function selectfile(e) {
     // setUploadedFile(e.target.files[0])
     setFile(e.target.files[0])
@@ -787,8 +820,30 @@ if (anyYes && !ecbcCertificateFile) {
       return;
     }
 
-    const response = await Digit.OBPSService.NOCSearch("pb.testing", { applicationNo: NocNumber });
-    console.log("NOC Search Response:", response);
+    setLoader(true);
+    try{
+      const response = await Digit.OBPSService.NOCSearch(tenantId, { applicationNo: NocNumber });
+      setLoader(false);
+      console.log("NOC Search Response:", response);
+      if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus === "APPROVED"){
+        const nocObject = response?.Noc?.[0];
+        if(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName){
+          setApplicantOwnerOrFirmName(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName)
+        }
+        return;
+      }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
+        alert(t("NOC NOT APPROVED"));
+        return;
+      }
+      else{
+        alert(t("NOC NOT FOUND OR NOT APPROVED"));
+        return;
+      }
+    }catch(err){
+      setLoader(false);
+      alert(t("NOC NOT FOUND"));
+      return;
+    }    
   }
 
   function selectfiles(e) {
@@ -868,6 +923,7 @@ if (anyYes && !ecbcCertificateFile) {
       schemeName, // plain text
       transferredscheme, // plain text
       NocNumber, // plain text
+      applicantOwnerOrFirmName,
       uploadedFile, // file object
       greenuploadedFile, // file object
       ecbcElectricalLoad: ecbcElectricalLoad?.code,
@@ -1114,6 +1170,23 @@ if (anyYes && !ecbcCertificateFile) {
                 <SearchIcon />
               </div>
             </div>
+            <CardLabel>{`${t("BPA_NOC_APPLICANT_NAME")} *`}</CardLabel>
+            <TextInput
+                t={t}
+                type={"text"}
+                name="applicantOwnerOrFirmName"
+                placeholder="Applicant/Owner/Firm Name"
+                value={applicantOwnerOrFirmName}
+                onChange={setapplicantOwnerOrFirmName}
+                ValidationRequired={false}
+                {...(validation = {
+                  pattern: "^[a-zA-Z]*$",
+                  type: "text",
+                  title: t("TL_NAME_ERROR_MESSAGE"),
+                })}
+            />
+            {errors.applicantOwnerOrFirmName && <ErrorMessage error={errors.applicantOwnerOrFirmName} />}              
+            
             <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
             <div style={{marginBottom: "15px"}}>
             <CustomUploadFile
@@ -1401,6 +1474,7 @@ if (anyYes && !ecbcCertificateFile) {
         )}
       </div>
     </FormStep>
+    {(loader) && <LoaderNew page={true} />}
 
     <ActionBar>
         <SubmitBar

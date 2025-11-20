@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
@@ -69,7 +69,10 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [proposedSite, setproposedSite] = useState(currentStepData?.createdResponse?.additionalDetails?.proposedSite || "")
   const [nameofApprovedcolony, setnameofApprovedcolony] = useState(currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || "")
   const [NocNumber, setNocNumber] = useState(currentStepData?.createdResponse?.additionalDetails?.NocNumber || "")
-  const [applicantOwnerOrFirmName, setApplicantOwnerOrFirmName] = useState(currentStepData?.createdResponse?.additionalDetails?.applicantOwnerOrFirmName || "")
+  const [applicantOwnerOrFirmName, setApplicantOwnerOrFirmName] = useState(currentStepData?.createdResponse?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || "")
+  const [nocULBType, setNocULBType] = useState(currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbType || "")
+  const [nocULBName, setNocULBName] = useState(currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbName || "")
+  const [nocApprovedOn, setNocApprovedOn] = useState(currentStepData?.createdResponse?.additionalDetails?.nocObject?.approvedOn || "")
   const [schemesselection, setschemesselection] = useState(currentStepData?.createdResponse?.additionalDetails?.schemesselection || "")
   const [schemeName, setschemeName] = useState(currentStepData?.createdResponse?.additionalDetails?.schemeName || "")
   const [transferredscheme, settransferredscheme] = useState("Pre-Approved Standard Designs" || "")
@@ -147,6 +150,29 @@ useEffect(()=>{
       newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Invalid")
     }
 
+    if(approvedColony?.code === "NO" && NocNumber && nocULBName.trim() === ""){
+      newErrors.nocULBName = t("ULB Name is Required")
+    }else if(approvedColony?.code === "NO" && NocNumber && nocULBName && !nameRegex.test(nocULBName.trim())){
+      newErrors.nocULBName = t("ULB Name is Invalid")
+    }
+
+    if(approvedColony?.code === "NO" && NocNumber && nocULBType.trim() === ""){
+      newErrors.nocULBType = t("ULB Type is Required")
+    }else if(approvedColony?.code === "NO" && NocNumber && nocULBType && !nameRegex.test(nocULBType.trim())){
+      newErrors.nocULBType = t("ULB Type is Invalid")
+    }
+    
+    if(approvedColony?.code === "NO" && NocNumber && nocApprovedOn.trim() === ""){
+      newErrors.nocApprovedOn = t("Issue Date is Required")
+    }
+    else if(approvedColony?.code === "NO" && NocNumber && nocApprovedOn){
+      if(new Date(nocApprovedOn) > new Date()){
+        newErrors.nocApprovedOn = t("Issue Date is Invalid")
+      }else if(new Date(nocApprovedOn) < new Date("1900-01-01")){
+        newErrors.nocApprovedOn = t("Issue Date is Invalid")
+      }
+    }
+
     if (greenbuilding?.code === "YES") {
       if (!greenuploadedFile) newErrors.greenuploadedFile = t("Green Building Document is required")
       if (!rating) newErrors.rating = t("Rating is required")
@@ -189,82 +215,6 @@ if (anyYes && !ecbcCertificateFile) {
 };
 
 
-  // const saveToSessionStorage = () => {
-  //   try {
-  //     const currentData = getSessionData()
-  //     const updatedData = {
-  //       ...currentData,
-  //       buildingDetails: {
-  //         approvedColony,
-  //         masterPlan,
-  //         UlbName,
-  //         buildingStatus,
-  //         purchasedFAR,
-  //         greenbuilding,
-  //         restrictedArea,
-  //         District,
-  //         proposedSite,
-  //         nameofApprovedcolony,
-  //         NocNumber,
-  //         schemesselection,
-  //         schemeName,
-  //         transferredscheme,
-  //         rating,
-  //         use,
-  //         Ulblisttype,
-  //         uploadedFile,
-  //         greenuploadedFile,
-  //         ecbcElectricalLoad,
-  //         ecbcDemandLoad,
-  //         ecbcAirConditioned,
-  //         ecbcElectricalLoadFile,
-  //         ecbcDemandLoadFile,
-  //         ecbcAirConditionedFile,
-  //         lastUpdated: Date.now(),
-  //       },
-  //     }
-
-  //     const sessionStorageData = {
-  //       value: updatedData,
-  //       ttl: 86400,
-  //       expiry: Date.now() + 86400 * 1000,
-  //     }
-
-  //     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionStorageData))
-  //   } catch (error) {
-  //     console.error("Error saving to session storage:", error)
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   saveToSessionStorage()
-  // }, [
-  //   approvedColony,
-  //   masterPlan,
-  //   UlbName,
-  //   buildingStatus,
-  //   purchasedFAR,
-  //   greenbuilding,
-  //   restrictedArea,
-  //   District,
-  //   proposedSite,
-  //   nameofApprovedcolony,
-  //   NocNumber,
-  //   schemesselection,
-  //   schemeName,
-  //   transferredscheme,
-  //   rating,
-  //   use,
-  //   Ulblisttype,
-  //   uploadedFile,
-  //   greenuploadedFile,
-  //   ecbcElectricalLoad,
-  //   ecbcDemandLoad,
-  //   ecbcAirConditioned,
-  //   ecbcElectricalLoadFile,
-  //   ecbcDemandLoadFile,
-  //   ecbcAirConditionedFile,
-  // ])
 
   const [files, setFiles] = useState()
   const [file, setFile] = useState()
@@ -694,7 +644,7 @@ if (anyYes && !ecbcCertificateFile) {
       }
     }, [rating, currentStepData?.createdResponse?.additionalDetails?.rating, commonrating]);
 
-
+console.log("appDate", nocApprovedOn);
 
   const selectmasterDrop = []
 
@@ -807,6 +757,20 @@ if (anyYes && !ecbcCertificateFile) {
     setApplicantOwnerOrFirmName(e.target.value)
     setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
   }
+  function setnocULBName(e) {
+    setNocULBName(e.target.value)
+    setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
+  }
+  function setnocULBType(e) {
+    setNocULBType(e.target.value)
+    setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
+  }
+
+  function handleApproveDateChange(date) {
+    console.log("Selected date:", date);
+    setNocApprovedOn(date);
+    setErrors((prev) => ({ ...prev, nocApprovedOn: "" }))
+  }
 
   function selectfile(e) {
     // setUploadedFile(e.target.files[0])
@@ -829,6 +793,23 @@ if (anyYes && !ecbcCertificateFile) {
         const nocObject = response?.Noc?.[0];
         if(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName){
           setApplicantOwnerOrFirmName(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName)
+        }
+        if(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName){
+          setNocULBName(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName)
+        }
+        if(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbType){
+          setNocULBType(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbType)
+        }
+        if(nocObject?.nocDetails?.additionalDetails?.approvedOn){
+          const [d1, m1, y1] = nocObject?.nocDetails?.additionalDetails?.approvedOn?.split("-");
+          const jsDate1 = new Date(`${y1}-${m1}-${d1}`);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          jsDate1.setHours(0, 0, 0, 0);
+          console.log("FetchedDate",nocObject?.nocDetails?.additionalDetails?.approvedOn, jsDate1);
+          if (jsDate1 <= today) {
+            setNocApprovedOn(`${y1}-${m1}-${d1}`)
+          }          
         }
         return;
       }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
@@ -923,7 +904,12 @@ if (anyYes && !ecbcCertificateFile) {
       schemeName, // plain text
       transferredscheme, // plain text
       NocNumber, // plain text
-      applicantOwnerOrFirmName,
+      nocObject: {
+        applicantOwnerOrFirmName,
+        ulbType: nocULBType,
+        ulbName: nocULBName,
+        approvedOn: nocApprovedOn,
+      },      
       uploadedFile, // file object
       greenuploadedFile, // file object
       ecbcElectricalLoad: ecbcElectricalLoad?.code,
@@ -1186,6 +1172,50 @@ if (anyYes && !ecbcCertificateFile) {
                 })}
             />
             {errors.applicantOwnerOrFirmName && <ErrorMessage error={errors.applicantOwnerOrFirmName} />}              
+            <CardLabel>{`${t("BPA_NOC_ULB_NAME")} *`}</CardLabel>
+            <TextInput
+                t={t}
+                type={"text"}
+                name="nocULBName"
+                placeholder="Name Of ULB"
+                value={nocULBName}
+                onChange={setnocULBName}
+                ValidationRequired={false}
+                {...(validation = {
+                  pattern: "^[a-zA-Z]*$",
+                  type: "text",
+                  title: t("TL_NAME_ERROR_MESSAGE"),
+                })}
+            />
+            {errors.nocULBName && <ErrorMessage error={errors.nocULBName} />}              
+            <CardLabel>{`${t("BPA_NOC_ULB_TYPE")} *`}</CardLabel>
+            <TextInput
+                t={t}
+                type={"text"}
+                name="nocULBType"
+                placeholder="Type Of ULB"
+                value={nocULBType}
+                onChange={setnocULBType}
+                ValidationRequired={false}
+                {...(validation = {
+                  pattern: "^[a-zA-Z]*$",
+                  type: "text",
+                  title: t("TL_NAME_ERROR_MESSAGE"),
+                })}
+            />
+            {errors.nocULBType && <ErrorMessage error={errors.nocULBType} />}
+
+              <div>
+                <CardLabel>{t("BPA_NOC_APPROVED_ON")}</CardLabel> 
+                <DatePicker
+                  date={nocApprovedOn}
+                  onChange={handleApproveDateChange}
+                  min="1900-01-01"
+                  max={new Date().toISOString().split("T")[0]}
+                  isRequired={true}
+                />
+                {errors.nocApprovedOn && <ErrorMessage error={errors.nocApprovedOn} />}
+              </div>         
             
             <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
             <div style={{marginBottom: "15px"}}>

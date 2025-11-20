@@ -804,6 +804,8 @@ export const OBPSService = {
         { title: "BPA_ESTIMATED_COST_LABEL", value: BPA?.additionalDetails?.estimatedCost || "NA", isNotTranslated: true },
       ],
     };
+    const [y1, m1, d1] = BPA?.additionalDetails?.nocObject?.approvedOn?.split("-") || [];
+    const nocApprovedDate = `${d1}/${m1}/${y1}`;
     const additionalDetail = {
       title: "BPA_ADDITIONAL_BUILDING_DETAILS",
       asSectionHeader: true,
@@ -814,6 +816,15 @@ export const OBPSService = {
         { title: "BPA_APPROVED_COLONY", value: BPA?.additionalDetails?.approvedColony || "NA", isNotTranslated: true },
         ...(BPA?.additionalDetails?.approvedColony === "YES"
           ? [{ title: "BPA_APPROVED_COLONY_NAME", value: BPA?.additionalDetails?.nameofApprovedcolony || "NA", isNotTranslated: true }]
+          : []),
+        ...(BPA?.additionalDetails?.approvedColony === "NO"
+          ? [
+            { title: "BPA_NOC_NUMBER", value: BPA?.additionalDetails?.NocNumber || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_APPLICANT_NAME", value: BPA?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_ULB_NAME", value: BPA?.additionalDetails?.nocObject?.ulbName || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_ULB_TYPE", value: BPA?.additionalDetails?.nocObject?.ulbType || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_APPROVED_ON", value: nocApprovedDate || "NA", isNotTranslated: true },
+          ]
           : []),
         // { title: "BPA_NOC_NUMBER", value: BPA?.additionalDetails?.NocNumber || "NA", isNotTranslated: true },
         { title: "BPA_MASTER_PLAN", value: BPA?.additionalDetails?.masterPlan || "NA", isNotTranslated: true },

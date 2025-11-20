@@ -289,12 +289,121 @@ public class CalculationService {
 		StringBuilder url = new StringBuilder();
 		url.append(config.getBillingHost()).append(config.getCancelBillEndpoint());
 		try {
-			Object response = restTemplate.postForObject(url.toString(), request, Map.class);
+			restTemplate.postForObject(url.toString(), request, Map.class);
 		}catch(Exception e) {
 			log.error("Exception while fetching user: ", e);
 		}
 	}
 
-	
+	/**
+	 * Update calculation with fee waiver
+	 * Validates demandId, applies fee waiver by adding negative demand detail, and updates demand
+	 * @param request CalculationReq with demandId and fee waiver information
+	 * @return List of updated calculations
+	 */
+	public List<Calculation> updateCalculation(CalculationReq request) {
+		// Validate demandId is present
+		for(CalulationCriteria criteria : request.getCalulationCriteria()) {
+			if(criteria.getDemandId() == null || criteria.getDemandId().isEmpty()) {
+				throw new org.egov.tracer.model.CustomException("INVALID_REQUEST", 
+					"demandId is required for update calculation");
+			}
+		}
+		
+		// Update demand with fee waiver - this will add negative demand detail
+		List<Calculation> calculations = new LinkedList<>();
+		for(CalulationCriteria criteria : request.getCalulationCriteria()) {
+			Challan challan = criteria.getChallan();
+			if (criteria.getChallan() == null && criteria.getChallanNo() != null) {
+				challan = utils.getChallan(request.getRequestInfo(), criteria.getChallanNo(), criteria.getTenantId());
+				criteria.setChallan(challan);
+			}
+			
+			String businessService = challan.getBusinessService();
+			// Update demand and get updated demand with new amounts
+			org.egov.echallancalculation.web.models.demand.Demand updatedDemand = 
+				demandService.updateDemandWithFeeWaiver(
+					request.getRequestInfo(), 
+					challan,
+					businessService,
+					criteria.getDemandId()
+				);
+			
+			// Create tax head estimates from updated demand details
+			List<TaxHeadEstimate> taxHeadEstimates = createTaxHeadEstimatesFromDemand(
+				updatedDemand, 
+				businessService
+			);
+			
+			// Create calculation response with updated amounts
+			Calculation calculation = new Calculation();
+			calculation.setChallan(challan);
+			calculation.setTenantId(criteria.getTenantId());
+			calculation.setTaxHeadEstimates(taxHeadEstimates);
+			calculations.add(calculation);
+		}
+		
+		return calculations;
+	}
+
+	/**
+	 * Create tax head estimates from updated demand details
+	 * Groups demand details by tax head code and sums the amounts
+	 * @param demand The updated demand object
+	 * @param businessService The business service
+	 * @return List of tax head estimates with updated amounts
+	 */
+	private List<TaxHeadEstimate> createTaxHeadEstimatesFromDemand(
+			org.egov.echallancalculation.web.models.demand.Demand demand, 
+			String businessService) {
+		List<TaxHeadEstimate> estimates = new LinkedList<>();
+		
+		if(demand.getDemandDetails() == null || demand.getDemandDetails().isEmpty()) {
+			return estimates;
+		}
+		
+		// Group demand details by tax head code and sum amounts
+		Map<String, BigDecimal> taxHeadAmountMap = new HashMap<>();
+		
+		String roundOffTaxHead = businessService + "_ROUNDOFF";
+		
+		for(org.egov.echallancalculation.web.models.demand.DemandDetail detail : demand.getDemandDetails()) {
+			if(detail.getTaxHeadMasterCode() != null && detail.getTaxAmount() != null) {
+				// Skip round-off tax head in main estimates (it's added separately)
+				if(!detail.getTaxHeadMasterCode().equalsIgnoreCase(roundOffTaxHead)) {
+					String taxHeadCode = detail.getTaxHeadMasterCode();
+					BigDecimal currentAmount = taxHeadAmountMap.getOrDefault(taxHeadCode, BigDecimal.ZERO);
+					taxHeadAmountMap.put(taxHeadCode, currentAmount.add(detail.getTaxAmount()));
+				}
+			}
+		}
+		
+		// Create tax head estimates from grouped amounts
+		for(Map.Entry<String, BigDecimal> entry : taxHeadAmountMap.entrySet()) {
+			// Only include tax heads with non-zero amounts
+			if(entry.getValue().compareTo(BigDecimal.ZERO) != 0) {
+				TaxHeadEstimate estimate = new TaxHeadEstimate();
+				estimate.setTaxHeadCode(entry.getKey());
+				estimate.setEstimateAmount(entry.getValue());
+				estimates.add(estimate);
+			}
+		}
+		
+		// Add round-off separately if exists
+		for(org.egov.echallancalculation.web.models.demand.DemandDetail detail : demand.getDemandDetails()) {
+			if(detail.getTaxHeadMasterCode() != null && 
+			   detail.getTaxHeadMasterCode().equalsIgnoreCase(roundOffTaxHead) &&
+			   detail.getTaxAmount() != null &&
+			   detail.getTaxAmount().compareTo(BigDecimal.ZERO) != 0) {
+				TaxHeadEstimate roundOffEstimate = new TaxHeadEstimate();
+				roundOffEstimate.setTaxHeadCode(detail.getTaxHeadMasterCode());
+				roundOffEstimate.setEstimateAmount(detail.getTaxAmount());
+				estimates.add(roundOffEstimate);
+			}
+		}
+		
+		return estimates;
+	}
+
 	
 }

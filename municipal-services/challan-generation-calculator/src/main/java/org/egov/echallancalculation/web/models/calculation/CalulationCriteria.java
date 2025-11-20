@@ -30,6 +30,9 @@ public class CalulationCriteria {
         @NotNull@Size(min=2,max=256) 
         private String tenantId = null;
 
+        @JsonProperty("demandId")
+        @Size(min=1,max=64)
+        private String demandId = null;  // Optional: Required for update operations with fee waiver
 
 }
 

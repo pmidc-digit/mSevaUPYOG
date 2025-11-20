@@ -34,5 +34,15 @@ public class ChallanCalController {
 		return new ResponseEntity<CalculationRes>(calculationRes, HttpStatus.OK);
 	}
 
+	@PostMapping("/_update")
+	public ResponseEntity<CalculationRes> updateCalculation(@Valid @RequestBody CalculationReq calculationReq) {
+
+		List<Calculation> calculations = null;
+		calculations = calculationService.updateCalculation(calculationReq);
+
+		CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
+		return new ResponseEntity<CalculationRes>(calculationRes, HttpStatus.OK);
+	}
+
 
 }

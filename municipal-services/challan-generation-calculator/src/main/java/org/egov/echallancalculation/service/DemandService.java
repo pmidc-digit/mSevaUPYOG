@@ -202,6 +202,253 @@ public class DemandService {
          return demandRepository.updateDemand(requestInfo,demands);
     }
 
+    /**
+     * Updates demand for fee waiver scenario by adding negative demand detail
+     * Gets original amount from demand record and adds negative detail for fee waiver
+     * @param requestInfo The RequestInfo
+     * @param challan The challan object with fee waiver in additionalDetail
+     * @param businessService The business service
+     * @param expectedDemandId The demandId to validate and update
+     * @return Updated demand
+     */
+    public Demand updateDemandWithFeeWaiver(RequestInfo requestInfo, 
+                                             Challan challan, 
+                                             String businessService,
+                                             String expectedDemandId){
+        // Search by consumerCode (existing method)
+        List<Demand> searchResult = searchDemand(
+            challan.getTenantId(),
+            Collections.singleton(challan.getChallanNo()),
+            requestInfo,
+            businessService
+        );
+
+        if(CollectionUtils.isEmpty(searchResult))
+            throw new CustomException("DEMAND_NOT_FOUND", 
+                "No demand exists for challanNo: " + challan.getChallanNo());
+        
+        // Find demand with matching demandId
+        Demand demand = searchResult.stream()
+            .filter(d -> expectedDemandId.equals(d.getId()))
+            .findFirst()
+            .orElse(null);
+            
+        if(demand == null)
+            throw new CustomException("DEMAND_CHALLAN_MISMATCH", 
+                "Demand with ID " + expectedDemandId + " does not belong to challan " + 
+                challan.getChallanNo());
+        
+        // Validate demand state
+        validateDemandForUpdate(demand);
+        
+        // Calculate original amount from existing demand details (excluding round-off)
+        BigDecimal originalAmount = calculateOriginalAmountFromDemand(demand, businessService);
+        
+        // Extract fee waiver from challan
+        BigDecimal feeWaiver = extractFeeWaiverFromChallan(challan);
+        
+        // Validate fee waiver
+        if(feeWaiver.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException("INVALID_FEE_WAIVER", 
+                "Fee waiver amount must be greater than zero");
+        }
+        
+        if(feeWaiver.compareTo(originalAmount) > 0) {
+            throw new CustomException("INVALID_FEE_WAIVER", 
+                "Fee waiver amount (" + feeWaiver + ") cannot exceed original demand amount (" + originalAmount + ")");
+        }
+        
+        // Get tax head code from existing demand details (prefer CH.CHALLAN_FINE or first non-roundoff tax head)
+        String taxHeadCode = getTaxHeadCodeForFeeWaiver(demand, businessService);
+        
+        // Add negative demand detail for fee waiver
+        List<DemandDetail> demandDetails = new LinkedList<>(demand.getDemandDetails());
+        DemandDetail feeWaiverDetail = DemandDetail.builder()
+            .taxAmount(feeWaiver.negate()) // Negative amount for waiver
+            .taxHeadMasterCode(taxHeadCode)
+            .tenantId(challan.getTenantId())
+            .collectionAmount(BigDecimal.ZERO)
+            .build();
+        demandDetails.add(feeWaiverDetail);
+        
+        // Recalculate round-off after adding fee waiver
+        addRoundOffTaxHead(challan.getTenantId(), demandDetails, businessService);
+        
+        demand.setDemandDetails(demandDetails);
+        
+        // Calculate total amount for minimumAmountPayable
+        BigDecimal totalAmount = calculateTotalAmount(demandDetails);
+        demand.setMinimumAmountPayable(totalAmount);
+        
+        List<Demand> demands = Collections.singletonList(demand);
+        List<Demand> updatedDemands = demandRepository.updateDemand(requestInfo, demands);
+        return updatedDemands.get(0);
+    }
+
+    /**
+     * Calculate original amount from demand details (excluding round-off)
+     * @param demand The demand object
+     * @param businessService The business service
+     * @return Original amount before fee waiver
+     */
+    private BigDecimal calculateOriginalAmountFromDemand(Demand demand, String businessService) {
+        BigDecimal originalAmount = BigDecimal.ZERO;
+        
+        if(CollectionUtils.isEmpty(demand.getDemandDetails())) {
+            throw new CustomException("INVALID_DEMAND", 
+                "Demand has no demand details: " + demand.getId());
+        }
+        
+        // Sum all tax amounts excluding round-off
+        for(DemandDetail detail : demand.getDemandDetails()) {
+            if(detail.getTaxAmount() != null && 
+               !detail.getTaxHeadMasterCode().equalsIgnoreCase(businessService + MDMS_ROUNDOFF_TAXHEAD)) {
+                originalAmount = originalAmount.add(detail.getTaxAmount());
+            }
+        }
+        
+        if(originalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException("INVALID_DEMAND", 
+                "Original demand amount must be greater than zero: " + demand.getId());
+        }
+        
+        return originalAmount;
+    }
+
+    /**
+     * Get tax head code for fee waiver from existing demand details
+     * Prefers CH.CHALLAN_FINE, otherwise uses first non-roundoff tax head
+     * @param demand The demand object
+     * @param businessService The business service
+     * @return Tax head code to use for fee waiver
+     */
+    private String getTaxHeadCodeForFeeWaiver(Demand demand, String businessService) {
+        if(CollectionUtils.isEmpty(demand.getDemandDetails())) {
+            return "CH.CHALLAN_FINE"; // Default fallback
+        }
+        
+        // Prefer CH.CHALLAN_FINE if exists
+        for(DemandDetail detail : demand.getDemandDetails()) {
+            if(detail.getTaxHeadMasterCode() != null && 
+               detail.getTaxHeadMasterCode().equalsIgnoreCase("CH.CHALLAN_FINE") &&
+               !detail.getTaxHeadMasterCode().equalsIgnoreCase(businessService + MDMS_ROUNDOFF_TAXHEAD)) {
+                return detail.getTaxHeadMasterCode();
+            }
+        }
+        
+        // Otherwise use first non-roundoff tax head
+        for(DemandDetail detail : demand.getDemandDetails()) {
+            if(detail.getTaxHeadMasterCode() != null && 
+               !detail.getTaxHeadMasterCode().equalsIgnoreCase(businessService + MDMS_ROUNDOFF_TAXHEAD)) {
+                return detail.getTaxHeadMasterCode();
+            }
+        }
+        
+        return "CH.CHALLAN_FINE"; // Default fallback
+    }
+
+    /**
+     * Extract fee waiver amount from challan
+     * First checks at root level, then falls back to additionalDetail
+     * @param challan The challan object
+     * @return Fee waiver amount
+     */
+    private BigDecimal extractFeeWaiverFromChallan(Challan challan) {
+        try {
+            // First, try to get feeWaiver from root level of challan
+            // Convert challan to Map to access fields that may not be in the model
+            @SuppressWarnings("unchecked")
+            Map<String, Object> challanMap = mapper.convertValue(challan, Map.class);
+            
+            if(challanMap != null && challanMap.containsKey("feeWaiver")) {
+                Object feeWaiverObj = challanMap.get("feeWaiver");
+                if(feeWaiverObj != null) {
+                    return convertToBigDecimal(feeWaiverObj, "feeWaiver");
+                }
+            }
+            
+            // If not found at root level, check in additionalDetail
+            if(challan.getAdditionalDetail() != null) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> additionalDetail = mapper.convertValue(
+                    challan.getAdditionalDetail(), 
+                    Map.class
+                );
+                
+                if(additionalDetail != null && additionalDetail.containsKey("feeWaiver")) {
+                    Object feeWaiverObj = additionalDetail.get("feeWaiver");
+                    if(feeWaiverObj != null) {
+                        return convertToBigDecimal(feeWaiverObj, "feeWaiver");
+                    }
+                }
+            }
+            
+            // If feeWaiver not found in either location
+            throw new CustomException("INVALID_REQUEST", 
+                "feeWaiver is required. Please provide feeWaiver at root level of Challan or in additionalDetail");
+                
+        } catch(Exception e) {
+            if(e instanceof CustomException) {
+                throw e;
+            }
+            throw new CustomException("INVALID_FEE_WAIVER", 
+                "Failed to extract feeWaiver from challan: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Convert object to BigDecimal
+     * @param value The value to convert
+     * @param fieldName The field name for error messages
+     * @return BigDecimal value
+     */
+    private BigDecimal convertToBigDecimal(Object value, String fieldName) {
+        if(value instanceof Number) {
+            return BigDecimal.valueOf(((Number) value).doubleValue());
+        } else if(value instanceof String) {
+            try {
+                return new BigDecimal((String) value);
+            } catch(NumberFormatException e) {
+                throw new CustomException("INVALID_FEE_WAIVER", 
+                    fieldName + " must be a valid number. Received: " + value);
+            }
+        } else {
+            throw new CustomException("INVALID_FEE_WAIVER", 
+                fieldName + " must be a number. Received type: " + value.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Validates that demand can be updated
+     * @param demand The demand to validate
+     */
+    private void validateDemandForUpdate(Demand demand) {
+        if(demand.getStatus() == StatusEnum.CANCELLED)
+            throw new CustomException("INVALID_DEMAND_STATE", 
+                "Cannot update cancelled demand: " + demand.getId());
+        
+        // Check if demand is fully paid
+        BigDecimal totalTaxAmount = BigDecimal.ZERO;
+        BigDecimal totalCollectionAmount = BigDecimal.ZERO;
+        
+        if(!CollectionUtils.isEmpty(demand.getDemandDetails())) {
+            for(DemandDetail detail : demand.getDemandDetails()) {
+                if(detail.getTaxAmount() != null) {
+                    totalTaxAmount = totalTaxAmount.add(detail.getTaxAmount());
+                }
+                if(detail.getCollectionAmount() != null) {
+                    totalCollectionAmount = totalCollectionAmount.add(detail.getCollectionAmount());
+                }
+            }
+        }
+        
+        // If collection amount equals or exceeds tax amount, demand is fully paid
+        if(totalCollectionAmount.compareTo(totalTaxAmount) >= 0 && totalTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
+            throw new CustomException("INVALID_DEMAND_STATE", 
+                "Cannot update fully paid demand: " + demand.getId());
+        }
+    }
+
 
     /**
      * Searches demand for the given consumerCode and tenantIDd

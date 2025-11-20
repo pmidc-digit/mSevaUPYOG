@@ -140,6 +140,9 @@ public class GCCalculationConfiguration {
     	@Value("${egov.user.host}")
     	private String userHost;
 
+	   @Value("${egov.user.create.path}")
+	   private String userCreateEndPoint;
+
     	@Value("${egov.user.context.path}")
     	private String userContextPath;
 

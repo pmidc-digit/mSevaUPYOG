@@ -2,6 +2,8 @@ package org.egov.gccalculation.service;
 
 import java.math.BigDecimal;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -13,6 +15,8 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
 import org.egov.gccalculation.constants.GCCalculationConstant;
+import org.egov.gccalculation.web.models.users.UserDetailResponse;
+import org.egov.gccalculation.web.models.users.UserSearchRequest;
 import org.egov.tracer.model.CustomException;
 import org.egov.gccalculation.config.GCCalculationConfiguration;
 import org.egov.gccalculation.producer.GCCalculationProducer;
@@ -634,6 +638,79 @@ public class DemandService {
 		}
 		requestInfo.setUserInfo(userInfoCopy);
 		return user;
+	}
+
+	public OwnerInfo searchSystemUser() {
+		UserSearchRequest userSearchRequest = new UserSearchRequest();
+		userSearchRequest.setUserType("SYSTEM");
+		userSearchRequest.setUserName("SYSTEM");
+		// default to state-level tenant 'pb' as example; adjust if you want to make it configurable
+		userSearchRequest.setTenantId("pb");
+
+		StringBuilder uri = new StringBuilder(configs.getUserHost()).append(configs.getUserSearchEndpoint());
+
+		// Use existing userCall flow
+		try {
+			UserDetailResponse resp = userCall(userSearchRequest, uri);
+			if (resp == null || CollectionUtils.isEmpty(resp.getUser())) {
+				throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+			}
+			// Return the first matched user
+			OwnerInfo owner = resp.getUser().get(0);
+			return owner;
+		} catch (Exception ex) {
+			throw new CustomException("USER_SEARCH_FAILED", "Failed to search system user: " + ex.getMessage());
+		}
+	}
+
+
+	public UserDetailResponse userCall(Object userRequest, StringBuilder uri) {
+		String dobFormat = null;
+		if (uri.toString().contains(configs.getUserSearchEndpoint()))
+			dobFormat = "yyyy-MM-dd";
+		else if (uri.toString().contains(configs.getUserCreateEndPoint()))
+			dobFormat = "dd/MM/yyyy";
+		try {
+			LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository.fetchResult(uri, userRequest);
+			if (!CollectionUtils.isEmpty(responseMap)) {
+				parseResponse(responseMap, dobFormat);
+				return mapper.convertValue(responseMap, UserDetailResponse.class);
+			} else {
+				return new UserDetailResponse();
+			}
+		}
+		// Which Exception to throw?
+		catch (IllegalArgumentException e) {
+			throw new CustomException("IllegalArgumentException", "ObjectMapper not able to convertValue in userCall");
+		}
+	}
+
+	private void parseResponse(LinkedHashMap<String, Object> responeMap, String dobFormat) {
+		List<LinkedHashMap<String, Object>> users = (List<LinkedHashMap<String, Object>>) responeMap.get("user");
+		String format1 = "dd-MM-yyyy HH:mm:ss";
+		if (null != users) {
+			users.forEach(map -> {
+				map.put("createdDate", dateTolong((String) map.get("createdDate"), format1));
+				if ((String) map.get("lastModifiedDate") != null)
+					map.put("lastModifiedDate", dateTolong((String) map.get("lastModifiedDate"), format1));
+				if ((String) map.get("dob") != null)
+					map.put("dob", dateTolong((String) map.get("dob"), dobFormat));
+				if ((String) map.get("pwdExpiryDate") != null)
+					map.put("pwdExpiryDate", dateTolong((String) map.get("pwdExpiryDate"), format1));
+			});
+		}
+	}
+
+
+	private Long dateTolong(String date, String format) {
+		SimpleDateFormat f = new SimpleDateFormat(format);
+		Date d = null;
+		try {
+			d = f.parse(date);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return d.getTime();
 	}
 
 	private Demand createDemandForNonMeteredInBulk(RequestInfo requestInfo, Calculation calculation,

@@ -475,6 +475,9 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 		}
 	}
 
+
+
+
 	/**
 	 * Generate Demand Based on Time (Monthly, Quarterly, Yearly)
 	 */

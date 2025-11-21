@@ -65,18 +65,7 @@ console.log("licenseType:", licenseType);
     <div className={"employee-main-application-details"}>
         <div  className={"employee-application-details"}>
         <Header>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-        <div>
-        {applicationDetails?.payments?.length > 0 && 
-        <MultiLink
-          className="multilinkWrapper"
-          onHeadClick={() => setShowOptions(!showOptions)}
-          displayOptions={showOptions}
-          options={dowloadOptions}
-          downloadBtnClassName={"employee-download-btn-className"}
-          optionsClassName={"employee-options-btn-className"}
-        />}
-        </div>
+        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>        
         {workflowDetails?.data?.timeline?.length>0 && (
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         )}

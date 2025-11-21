@@ -175,7 +175,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [ownershipCategory, setOwnershipCategory] = useState(() => {
     // const stored = sessionStorage.getItem("ownershipCategory")
     // return stored ? JSON.parse(stored) : formData?.owners?.ownershipCategory
-    return currentStepData?.createdResponse?.landInfo?.ownershipCategory || null
+    if(currentStepData?.createdResponse?.landInfo?.ownershipCategory){
+      return currentStepData?.createdResponse?.landInfo?.ownershipCategory || null
+    }else if(currentStepData?.PlotDetails?.landInfo?.ownershipCategory){
+      return currentStepData?.PlotDetails?.landInfo?.ownershipCategory || null
+    }else{
+      return null
+    }
   })
 
   const [name, setName] = useState(() => {
@@ -213,13 +219,25 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   })
 
   const [fields, setFeilds] = useState(() => {
-    const owners = currentStepData?.createdResponse?.landInfo?.owners?.map((item) => {
-      // console.log("DateofBirth", item, Digit.Utils.date.getDate(item?.dateOfBirth))
-      return {
-        ...item,
-        dob: Digit.Utils.date.getDate(item?.dob)
-      }
-    });
+    console.log("DateofBirth", currentStepData?.createdResponse?.landInfo?.owners)
+    let owners = [];
+    if (currentStepData?.createdResponse?.landInfo?.owners?.length > 0) {
+      owners = currentStepData?.createdResponse?.landInfo?.owners?.map((item) => {
+        return {
+          ...item,
+          dob: Digit.Utils.date.getDate(item?.dob),
+          isPrimaryOwner: item?.isPrimaryOwner === "true" ? true : false,
+        }
+      });
+    } else if (currentStepData?.PlotDetails?.landInfo?.owners?.length > 0) {
+      owners = currentStepData?.PlotDetails?.landInfo?.owners?.map((item) => {
+        return {
+          ...item,
+          dob: Digit.Utils.date.getDate(item?.dob),
+          isPrimaryOwner: item?.isPrimaryOwner === "true" ? true : false,
+        }
+      });
+    }
     if(owners?.length > 0){
       return [...owners]
     }
@@ -256,6 +274,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             }
           }
         });
+        console.log("GenderUpdatedFields", updatedFields);
         setFeilds(updatedFields);
       }
     }
@@ -266,28 +285,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
     });      
-    try {
-      const raw = sessionStorage.getItem("Digit.BUILDING_PERMIT")
-      if (!raw) return
-      const parsed = JSON.parse(raw)
-      const applicantName = parsed?.value?.data?.applicantName ?? parsed?.data?.applicantName ?? parsed?.applicantName
-
-      if (!applicantName || typeof applicantName !== "string") return
-
-      // update single-name state
-      setName(applicantName)
-
-      // update first owner's name in fields so the input shows it directly
-      setFeilds((prev) => {
-        const base =
-          Array.isArray(prev) && prev.length
-            ? [...prev]
-            : [{ name: "", gender: "", mobileNumber: null, isPrimaryOwner: true }]
-        base[0] = { ...base[0], name: applicantName }
-        return base
-      })
-    } catch (err) {
-      console.log("  Failed reading applicantName from sessionStorage:", err)
+    if(fields?.length === 1){
+      setFeilds((prev) => [{...prev[0], isPrimaryOwner: true}]);
+    }
+    else{
+      if(!fields.some((ob) => ob.isPrimaryOwner)){
+        setFeilds((prev) => [...prev.map((ob, index) => index === 0 ? {...ob, isPrimaryOwner: true} : ob)]);
+      }
     }
   }, [])
 
@@ -342,7 +346,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   useEffect(() => {
     const values = cloneDeep(fields)
-    if (ownershipCategory && !ismultiple && values?.length > 1) setFeilds([{ ...values[0], isPrimaryOwner: true }])
+    if (ownershipCategory && ownershipCategory?.code?.includes("SINGLEOWNER") && values?.length > 1) setFeilds([{ ...values[0], isPrimaryOwner: true }])
   }, [ownershipCategory])
 
   const { isLoading, data: ownerShipCategories } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", [
@@ -444,7 +448,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       permanentAddress: units[i].permanentAddress,
       additionalDetails: units[i].additionalDetails,
       authorizationLetter: units[i].authorizationLetter,
-      isPrimaryOwner: units[i].isPrimaryOwner
+      isPrimaryOwner: units[i].isPrimaryOwner,
+      ownerId: units[i]?.ownerId || null
     } 
     setMobileNumber(e.target.value)
     setFeilds(units)
@@ -541,6 +546,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       // const found = usersResponse?.user?.[0]?.roles?.filter(
       //   (el) => el.code === "BPA_ARCHITECT" || el.code === "BPA_SUPERVISOR",
       // )?.[0]
+      if (ownerNo === user?.info?.mobileNumber) {
+          setCanmovenext(false)
+          //setownerRoleCheck(found);
+          setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION` })
+          return
+      }
       if (usersResponse?.user?.length === 0) {
         setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" })
         return
@@ -579,12 +590,6 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           setCanmovenext(true)
         else setCanmovenext(false)
 
-        if (ownerNo === user?.info?.mobileNumber) {
-          setCanmovenext(false)
-          //setownerRoleCheck(found);
-          setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION` })
-          return
-        }
       }
     }
   }
@@ -605,31 +610,33 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     userresponse = await Promise.all(userresponse)
     const foundMobileNo = []
     let found = false
-    userresponse &&
-      userresponse?.length > 0 &&
-      userresponse.map((ob) => {
-        found = ob?.user?.[0]?.roles?.filter((el) => el.code === "BPA_ARCHITECT" || el.code === "BPA_SUPERVISOR")?.[0]
-        if (
-          fields.find(
-            (fi) =>
-              !(!found) &&
-              ((fi?.name === ob?.user?.[0]?.name && fi?.mobileNumber === ob?.user?.[0]?.mobileNumber) ||
-                (fi?.mobileNumber === ob?.user?.[0]?.mobileNumber && found)),
-          )
-        ) {
-          flag = true
-          foundMobileNo.push(ob?.user?.[0]?.mobileNumber)
-        }
-      })
+    // userresponse &&
+    //   userresponse?.length > 0 &&
+    //   userresponse.map((ob) => {
+    //     found = ob?.user?.[0]?.roles?.filter((el) => el.code === "BPA_ARCHITECT" || el.code === "BPA_SUPERVISOR")?.[0]
+    //     if (
+    //       fields.find(
+    //         (fi) =>
+    //           !(!found) &&
+    //           ((fi?.name === ob?.user?.[0]?.name && fi?.mobileNumber === ob?.user?.[0]?.mobileNumber) ||
+    //             (fi?.mobileNumber === ob?.user?.[0]?.mobileNumber && found)),
+    //       )
+    //     ) {
+    //       flag = true
+    //       foundMobileNo.push(ob?.user?.[0]?.mobileNumber)
+    //     }
+    //   })
 
-    if (foundMobileNo?.length > 0)
-      setShowToast({
-        key: "true",
-        error: true,
-        message: `${t("BPA_OWNER_VALIDATION")} ${foundMobileNo?.join(", ")}`,
-      })
-    if (flag == true) return false
-    else return true
+      
+
+    // if (foundMobileNo?.length > 0)
+    //   setShowToast({
+    //     key: "true",
+    //     error: true,
+    //     message: `${t("BPA_OWNER_VALIDATION")} ${foundMobileNo?.join(", ")}`,
+    //   })
+    // if (flag == true) return false
+    return userresponse
   }
 
   console.log(formData, "FormDATA")
@@ -647,13 +654,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
     // Single owner rule
     if (ownershipCategory?.code === "INDIVIDUAL.SINGLEOWNER" && owners.length !== 1) {
-      newErrors["ownersCount"] = "Exactly one owner is required for Single Owner";
+      newErrors["ownershipCategory"] = "Exactly one owner is required for Single Owner";
       isValid = false;
     }
 
     // Multiple owner rule
     if (ownershipCategory?.code !== "INDIVIDUAL.SINGLEOWNER" && owners.length <= 1) {
-      newErrors["ownersCount"] = "More than one owner is required";
+      newErrors["ownershipCategory"] = "More than one owner is required";
       isValid = false;
     }
 
@@ -661,6 +668,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     owners.forEach((owner, index) => {
       if (!owner?.mobileNumber) {
         newErrors[`mobileNumber_${index}`] = t("Mobile number is required");
+        isValid = false;
+      }
+      if (owner?.mobileNumber === user?.info?.mobileNumber) {
+        newErrors[`mobileNumber_${index}`] = t("Owner and Professional Can not be same");
         isValid = false;
       }
       if (!owner?.name) {
@@ -693,6 +704,25 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       if (!owner?.dob) {
         newErrors[`dob_${index}`] = t("Date of birth is required");
         isValid = false;
+      } else {
+        const dobDate = new Date(owner.dob);
+        const today = new Date();
+
+        let age = today.getFullYear() - dobDate.getFullYear();
+        const m = today.getMonth() - dobDate.getMonth();
+
+        // Adjust age if birthday hasn't occurred yet this year
+        if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+          age--;
+        }
+
+        if (age < 18) {
+          newErrors[`dob_${index}`] = t("Age must be at least 18 years");
+          isValid = false;
+        } else if (age > 150) {
+          newErrors[`dob_${index}`] = t("Please enter a valid date of birth");
+          isValid = false;
+        }
       }
       if (!owner?.permanentAddress) {
         newErrors[`address_${index}`] = t("Owner address is required");
@@ -715,11 +745,48 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       return;
     }
     setApiLoading(true);
-    const moveforward = await getUserData()
+    const userresponse = await getUserData()
 
-    if (!moveforward) {
-      setApiLoading(false);
-      return
+    // if (!moveforward) {
+    //   setApiLoading(false);
+    //   return
+    // }
+    console.log("userresponse", userresponse);
+
+    let newFields = [...fields];
+    if (userresponse?.length > 0) {      
+      newFields = newFields?.map((item, index) => {
+          if (userresponse?.[index]?.responseInfo?.status === "200") {
+            console.log("userIndexedValue", userresponse?.[index]?.user?.[0], item)
+            const userData = userresponse?.[index]?.user?.[0];
+            return {
+              ...item,
+              ...userData,
+              active: true,
+              name: item?.name,
+              emailId: item?.emailId,
+              aadharNumber: item?.aadharNumber,
+              mobileNumber: item?.mobileNumber,
+              isPrimaryOwner: item?.isPrimaryOwner || (fields?.length === 1) ? true : false,
+              gender: item?.gender,
+              dob: item?.dob,
+              fatherOrHusbandName: item?.fatherOrHusbandName || userData?.fatherOrHusbandName || "",
+              createdDate: convertDateTimeToEpoch(userData?.createdDate),
+              lastModifiedDate: convertDateTimeToEpoch(userData?.lastModifiedDate),
+              pwdExpiryDate: convertDateTimeToEpoch(userData?.pwdExpiryDate),
+              permanentAddress: item?.permanentAddress || userData?.permanentAddress || "",
+              additionalDetails: {
+                documentFile: item?.additionalDetails?.documentFile || null,
+                ownerPhoto: item?.additionalDetails?.ownerPhoto || null
+              },
+              authorizationLetter: item?.authorizationLetter || null,
+            }
+          } else {
+            return {
+              ...item
+            }
+          }
+        })      
     }
 
     // if (ismultiple === true && fields.length === 1) {
@@ -732,8 +799,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
       setIsDisable(true)
 
+      console.log("ownersData 1", newFields)
+
       const conversionOwners = []
-      fields?.map((owner) => {
+      newFields?.map((owner) => {
         conversionOwners.push({
           ...owner,
           active: true,
@@ -744,7 +813,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           isPrimaryOwner: owner?.isPrimaryOwner || (fields?.length === 1) ? true : false,
           gender: owner?.gender?.code,
           dob: owner?.dob ? Digit.Utils.pt.convertDateToEpoch(owner?.dob) : null,
-          fatherOrHusbandName: owner?.fatherOrHusbandName ||"NAME",
+          fatherOrHusbandName: owner?.fatherOrHusbandName ||"",
+          permanentAddress: owner?.permanentAddress || "",
+          additionalDetails: {
+            documentFile: owner?.additionalDetails?.documentFile || null,
+            ownerPhoto: owner?.additionalDetails?.ownerPhoto || null
+          },
+          authorizationLetter: owner?.authorizationLetter || null,
           photo:null
         })
       })
@@ -755,9 +830,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       const accountId = userInfo?.info?.uuid
       const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
 
-          try{
-        setApiLoading(true);
-        const result = await Digit.OBPSService.update({ BPA: {
+    try {
+      setApiLoading(true);
+      const result = await Digit.OBPSService.update({
+        BPA: {
           ...currentStepData?.createdResponse,
           landInfo: {
             ...currentStepData?.createdResponse?.landInfo,
@@ -768,20 +844,21 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             action: workflowAction,
             assignes: [accountId]
           }
-        } }, tenantId)
-        if(result?.ResponseInfo?.status === "successful"){
-          setApiLoading(false);
-          onSelect("");
-        }else{
-          alert(t("BPA_CREATE_APPLICATION_FAILED"));
-          setApiLoading(false);
         }
-        console.log("APIResponse", result);
-      }catch(e){
-        console.log("error", e);
+      }, tenantId)
+      if (result?.ResponseInfo?.status === "successful") {
+        setApiLoading(false);
+        onSelect("");
+      } else {
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
+      console.log("APIResponse", result);
+    } catch (e) {
+      console.log("error", e);
+      setShowToast({ key: "true", error: true, message: t("BPA_CREATE_APPLICATION_FAILED") });
+      setApiLoading(false);
+    }
   }
 
   const onSkip = () => onSelect()
@@ -917,23 +994,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                 labelKey="PT_OWNERSHIP"
                 isDependent={true}
               />
+              <ErrorMessage message={errors[`ownershipCategory`]} />
             </div>
             {fields.map((field, index) => {
               return (
                 <div key={`${field}-${index}`}>
-                  <div
-                    style={{
-                      border: "solid",
-                      borderRadius: "5px",
-                      padding: "10px",
-                      paddingTop: "20px",
-                      marginTop: "10px",
-                      borderColor: "#f3f3f3",
-                      background: "#FAFAFA",
-                    }}
-                  >
-                    <CardLabel style={{ marginBottom: "-15px" }}>{`${t("CORE_COMMON_MOBILE_NUMBER")} *`}</CardLabel>
-                    {ismultiple && (
+                  {ismultiple && (
                       <LinkButton
                         label={
                           <DeleteIcon
@@ -945,6 +1011,18 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         onClick={(e) => handleRemove(index)}
                       />
                     )}
+                  <div
+                    style={{
+                      border: "solid",
+                      borderRadius: "5px",
+                      padding: "10px",
+                      paddingTop: "20px",
+                      marginTop: "10px",
+                      borderColor: "#f3f3f3",
+                      background: "#FAFAFA",
+                    }}
+                  >
+                    <CardLabel style={{ marginBottom: "-15px" }}>{`${t("CORE_COMMON_MOBILE_NUMBER")} *`}</CardLabel>                    
                     <div style={{ marginTop: "30px" }}>
                       <div className="field-container">
                         <div
@@ -985,9 +1063,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         >
                           {" "}
                           <SearchIcon />{" "}
-                        </div>
-                        <ErrorMessage message={errors[`mobileNumber_${index}`]} />
+                        </div>                        
                       </div>
+                      <ErrorMessage message={errors[`mobileNumber_${index}`]} />
                     </div>
                     <CardLabel>{`${t("CORE_COMMON_NAME")} *`}</CardLabel>
                     <TextInput

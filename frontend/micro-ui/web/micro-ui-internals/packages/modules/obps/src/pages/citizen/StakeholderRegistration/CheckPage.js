@@ -1,5 +1,5 @@
 import { Card, CardLabel, LabelFieldPair, SubmitBar, Loader, ActionBar, BackButton, Menu } from "@mseva/digit-ui-react-components";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../../../components/Timeline";
@@ -7,6 +7,7 @@ import OBPSDocument from "../../../pageComponents/OBPSDocuments";
 import { pad } from "lodash";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 import { useParams } from "react-router-dom";
+import BPADocuments from "../../../pageComponents/BPADocuments";
 
 const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const { t } = useTranslation();
@@ -18,9 +19,13 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const menuRef = useRef();
+  // console.log(value, );
 
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  console.log(tenantId, "YYYYYYYYY");
   const tenant = Digit.ULBService.getStateId();
+
+  console.log(tenant, "TENANT");
 
   const isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -29,6 +34,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
 
   const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
   const { result, formData, documents } = safeValue;
+  const isArchitect = formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect");
 
   console.log(formData, "FORM DATA IN CHECK PAGE");
   console.log(safeValue, "SAFE VAKLUE IN CHECK PAGE");
@@ -48,8 +54,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   console.log(requestor, "PPPP");
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const bparegData = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 }).data;
-  const isBPAREGLoading = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 }).isLoading;
+  const {data: bparegData, isLoading: isBPAREGLoading} = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });  
 
   const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
   const moduleCode = tradeType ? tradeType.split(".")[0] : null;
@@ -61,6 +66,20 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const tradeTypeVal = finalDoc?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
 
   const mainType = tradeTypeVal?.split(".")[0];
+
+  useEffect(() => {
+    if(!isBPAREGLoading && bparegData){
+      const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
+      const updatedFinalData = {
+        ...sessionData,
+        value: {
+          ...sessionData?.value,
+          result: bparegData,
+        },
+      };
+      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(updatedFinalData));
+    }
+  },[bparegData, isBPAREGLoading])
 
   console.log("Dynamic moduleCode:", moduleCode);
   console.log("finalDoc===????", finalDoc);
@@ -75,15 +94,35 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   });
 
   const consumerCode = result?.Licenses[0].applicationNumber;
+
+  console.log(consumerCode, "CONNNN");
   const fetchBillParams = { consumerCode };
 
   const { data: paymentDetails, isLoading } = Digit.Hooks.obps.useBPAREGgetbill(
-    { businessService: "BPAREG", ...fetchBillParams, tenantId: tenant || tenantId.split(".")[0] },
+    // { businessService: "BPAREG", ...fetchBillParams, tenantId: tenant || tenantId.split(".")[0] },
+    { businessService: "BPAREG", ...fetchBillParams, tenantId: checkTenant },
+    {
+      enabled: consumerCode ? true : false,
+      retry: false,
+    }
+  );  
+
+  console.log(paymentDetails, "PPPPPPPPP");
+
+
+   const { data: reciept_data, isLoading: recieptDataLoading } =
+  Digit.Hooks.useRecieptSearch(
+    {
+      businessService: "BPAREG",
+      ...{consumerCodes: consumerCode},
+      tenantId: mainType === "ARCHITECT" ? "pb.punjab" : (tenantId)
+    },
     {
       enabled: consumerCode ? true : false,
       retry: false,
     }
   );
+console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -124,6 +163,8 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
       onSubmit(action);
     }
   }
+
+
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -200,6 +241,17 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   // Usage:
   const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
 
+  const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
   return (
     <div style={pageStyle}>
       {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
@@ -241,8 +293,6 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
         {renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}
       </div>
 
-      {/* Application Details */}
-      <div style={sectionStyle}>{renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}</div>
 
       {/* License Type */}
       <div style={sectionStyle}>
@@ -260,6 +310,8 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
           renderLabel(t("BPA_COUNCIL_NUMBER"), formData?.LicneseType?.ArchitectNo)}
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("TOWNPLANNER") &&
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
+           {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
+          renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formatDate(formData?.LicneseType?.validTo))}
       </div>
 
       {/* Applicant Details */}
@@ -313,6 +365,8 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
       </div> */}
 
       {/* Documents - TABLE VIEW */}
+
+  
 
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
@@ -434,18 +488,65 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
         )}
       </div>
 
-      {/* Fee Estimate */}
+
+ 
       <div style={sectionStyle}>
+
         <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
-        {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
-          renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
-        )}
-        {renderLabel(
-          t("BPA_COMMON_TOTAL_AMT"),
-          value?.result?.Licenses?.[0]?.status === "CITIZEN_ACTION_REQUIRED"
-            ? t("PAID")
-            : `₹ ${paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount || 0}`
-        )}
+
+          {mainType === "ARCHITECT" ? (
+            <div>
+              
+              {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
+                renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
+              )}
+
+              {renderLabel(t("BPA_COMMON_TOTAL_AMT"), `₹ 0`)}
+
+              {renderLabel(
+                t("BPA_STATUS_LABEL"),
+                isCitizenEditable === true ? t("Paid") : t("Pending")
+              )}
+            </div>
+          ) : (
+            <div>
+              {recieptDataLoading ? (
+                <Loader message={"Loading Fee..."} />
+              ) : (
+                <React.Fragment>
+                  {/* Map tax heads */}
+                  {reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails?.map(
+                    (bill, index) =>
+                      renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
+                  )}
+
+                  {/* Total Amount */}
+                  {renderLabel(
+                    t("BPA_COMMON_TOTAL_AMT"),
+                    `₹ ${
+                      reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.amount ||
+                      0
+                    }`
+                  )}
+
+                  {/* Paid or Pending */}
+                  {renderLabel(
+                    t("BPA_STATUS_LABEL"),
+                    (reciept_data?.Payments?.[0]?.totalAmountPaid || 0) -
+                      (reciept_data?.Payments?.[0]?.totalDue || 0) ===
+                    0
+                      ? t("Paid")
+                      : t("Pending")
+                  )}
+                </React.Fragment>
+              )}
+            </div>
+
+
+          )}
+
+
+
       </div>
 
       {console.log("actions", actions)}

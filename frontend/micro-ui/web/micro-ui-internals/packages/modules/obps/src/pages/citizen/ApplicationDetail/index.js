@@ -49,6 +49,8 @@ const ApplicationDetails = () => {
   const stateCode = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
    const [displayMenu, setDisplayMenu] = useState(false);
+   const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   // const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   // let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
@@ -57,6 +59,8 @@ const ApplicationDetails = () => {
     {}
   );
 
+  const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
+  console.log('ulbType', ulbType)
   console.log(reciept_data, "TOTAL AMOUNT");
     // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
 const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
@@ -124,7 +128,8 @@ console.log("licenseType:", licenseType);
                 reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG",
                 License?.applicationNumber,
                 License?.tenantId,
-                reciept_data?.Payments,licenseType
+                reciept_data?.Payments,licenseType,
+                ulbType
               ),
           },
         ]);

@@ -122,6 +122,8 @@ public class AdditionalFeature extends FeatureProcess {
     private static final int PLOTAREA_1000 = 1000;
     private static final int PLOTAREA_3000 = 3000;
     
+    private static final BigDecimal MUMTY_HEIGHT = BigDecimal.valueOf(3);
+    
     String RWH_DECLARATION_ERROR = DxfFileConstants.RWH_DECLARED
             + " in PLAN_INFO layer must be declared as YES for plot area greater than 100 sqm.";
 
@@ -510,39 +512,53 @@ public class AdditionalFeature extends FeatureProcess {
             String requiredBuildingHeight = StringUtils.EMPTY;
             //BigDecimal buildingHeight = block.getBuilding().getBuildingHeight();
             // modify the building height check from total building height to building height exclude mumty
+            // Get building height excluding mumty
             BigDecimal buildingHeight = block.getBuilding().getBuildingHeightExcludingMP();
-
-            if(buildingHeight != null) {
+            if (buildingHeight != null) {
                 buildingHeight = buildingHeight.setScale(2, RoundingMode.HALF_UP);
             }
 
-            // Determine if building has stilt floor using checkStiltFloor method
-            boolean hasStiltFloor = checkStiltFloor(block.getBuilding().getFloors());
-            
-            // NEW/CHANGED - extra validation irrespective of roadWidth/typeOfArea
-            if (buildingHeight != null) {
-                BigDecimal maxHeight;
-                if (hasStiltFloor) {
-                    maxHeight = BigDecimal.valueOf(17.5); // with stilt
-                    isAccepted = buildingHeight.compareTo(HEIGHT_WITH_STILT) <= 0;
-                	requiredBuildingHeight = "<= " + HEIGHT_WITH_STILT;
-                } else {
-                    maxHeight = BigDecimal.valueOf(21); // without stilt
-                    isAccepted = buildingHeight.compareTo(HEIGHT_WITHOUT_STILT) <= 0;
-                	requiredBuildingHeight = "<= " + HEIGHT_WITHOUT_STILT;
-                }
+            // Get total building height
+            BigDecimal totalBuildingHeight = block.getBuilding().getBuildingHeight();
+            if (totalBuildingHeight != null) {
+                totalBuildingHeight = totalBuildingHeight.setScale(2, RoundingMode.HALF_UP);
+            }           
+            // Validate basic height fields            
+            if (totalBuildingHeight == null || totalBuildingHeight.compareTo(BigDecimal.ZERO) <= 0 ||
+                buildingHeight == null || buildingHeight.compareTo(BigDecimal.ZERO) <= 0) {
 
-//                if (buildingHeight.compareTo(maxHeight) > 0) {
-//                    errors.put("BUILDING_HEIGHT_ERROR",
-//                            "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
-//                    pl.addErrors(errors);
-//                    isAccepted = false;
-//                    requiredBuildingHeight = "<= " + maxHeight.toString();
-//                }
-            }else {
-            	errors.put("BUILDING_HEIGHT_ERROR","Building height not defined in plan");
+                errors.put("BUILDING_HEIGHT_ERROR", "Building height not defined in plan");
+                pl.addErrors(errors);
+                return;
+            }
+            // Validate mumty height > allowed 3m           
+            BigDecimal mumtyHeight = totalBuildingHeight.subtract(buildingHeight);
+
+            if (mumtyHeight.compareTo(MUMTY_HEIGHT) > 0) {
+                errors.put("MUMTY_HEIGHT_ERROR", "Mumty height greater than 3m is not allowed");
+                pl.addErrors(errors);                
+            }
+            // Validate max allowed height (stilt vs non-stilt)            
+            boolean hasStiltFloor = checkStiltFloor(block.getBuilding().getFloors());
+
+            BigDecimal maxHeight;
+            if (hasStiltFloor) {
+                maxHeight = HEIGHT_WITH_STILT;          // Typically 17.5
+                isAccepted = buildingHeight.compareTo(HEIGHT_WITH_STILT) <= 0;
+                requiredBuildingHeight = "<= " + HEIGHT_WITH_STILT;
+            } else {
+                maxHeight = HEIGHT_WITHOUT_STILT;       // Typically 21
+                isAccepted = buildingHeight.compareTo(HEIGHT_WITHOUT_STILT) <= 0;
+                requiredBuildingHeight = "<= " + HEIGHT_WITHOUT_STILT;
+            }
+
+            // If height exceeds allowed max
+            if (!isAccepted) {
+                errors.put("BUILDING_HEIGHT_ERROR",
+                        "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
                 pl.addErrors(errors);
             }
+
             // END NEW/CHANGED
             
 //            if (typeOfArea.equalsIgnoreCase(OLD)) {

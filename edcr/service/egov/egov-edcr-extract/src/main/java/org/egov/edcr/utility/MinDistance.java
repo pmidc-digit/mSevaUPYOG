@@ -120,6 +120,10 @@ public class MinDistance {
 
         if (!plotBoundary.isClosed() || !buildFoorPrint.isClosed() || !yardPolyline.isClosed())
             return BigDecimal.ZERO.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS);
+        
+        if (!checkYardNotOverlappingBuilding(yardPolyline, buildFoorPrint, name, pl, layerNames)) {
+            return BigDecimal.ZERO.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS);
+        }
 
         Iterator yardVertexIterator = yardPolyline.getVertexIterator();
         PrintUtil.print(yardPolyline, name);
@@ -529,4 +533,56 @@ public class MinDistance {
         return lines;
     }
 
+    private boolean checkYardNotOverlappingBuilding(
+            DXFLWPolyline yardPolyline,
+            DXFLWPolyline buildingFootprint,
+            String yardName,
+            PlanDetail pl,
+            LayerNames layerNames) {
+
+        // 1) Check if any Yard vertex lies strictly inside footprint
+        Iterator yardItr = yardPolyline.getVertexIterator();
+        while (yardItr.hasNext()) {
+            DXFVertex v = (DXFVertex) yardItr.next();
+            Point p = v.getPoint();
+
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, p)) {
+                pl.getErrors().put("Set back calculation Error - " + yardName,
+                        "Point (" + p.getX() + ", " + p.getY() + ") of " + yardName +
+                                " lies INSIDE the Building Footprint (" +
+                                layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT") + ")");
+                return false;
+            }
+        }
+
+        // 2) Check segment intersections (yard edges must NOT cut footprint edges)
+        List<DXFLine> yardLines = getLinesOfPolyline(yardPolyline);
+        List<DXFLine> footprintLines = getLinesOfPolyline(buildingFootprint);
+
+        for (DXFLine yl : yardLines) {
+            for (DXFLine fl : footprintLines) {
+
+                try {
+                    if (Util.doLineSegmentsIntersect(
+                            yl.getStartPoint(), yl.getEndPoint(),
+                            fl.getStartPoint(), fl.getEndPoint())) {
+
+                        if (!Util.pointsEquals(yl.getStartPoint(), fl.getStartPoint()) &&
+                            !Util.pointsEquals(yl.getStartPoint(), fl.getEndPoint()) &&
+                            !Util.pointsEquals(yl.getEndPoint(), fl.getStartPoint()) &&
+                            !Util.pointsEquals(yl.getEndPoint(), fl.getEndPoint())) {                     	
+                            pl.getErrors().put("Set back calculation error for boundary" + yardName,
+                                    "Points of " + yardName + " not properly on " + layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY"));
+                            return false;
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        return true; // No errors found
+    }
+    
 }

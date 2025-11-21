@@ -1766,4 +1766,113 @@ public class Util {
             return name;
         }
     }
+    
+    public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p) {
+
+        List<Point> pts = new ArrayList<>();
+
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+
+        int n = pts.size();
+        boolean inside = false;
+
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = pts.get(i).getX();
+            double yi = pts.get(i).getY();
+            double xj = pts.get(j).getX();
+            double yj = pts.get(j).getY();
+
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (yj - yi) + xi);
+
+            if (intersect)
+                inside = !inside;
+        }
+
+        // strictly inside → not on boundary
+        if (inside && !isPointOnPolygonBoundary(poly, p)) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p) {
+
+        Iterator it = poly.getVertexIterator();
+        Point prev = null;
+
+        if (it.hasNext()) {
+            prev = ((DXFVertex) it.next()).getPoint();
+        }
+
+        while (it.hasNext()) {
+            Point curr = ((DXFVertex) it.next()).getPoint();
+            if (isPointOnLine(prev, curr, p)) return true;
+            prev = curr;
+        }
+
+        // close last-to-first segment
+        Point first = ((DXFVertex) poly.getVertex(0)).getPoint();
+        if (isPointOnLine(prev, first, p)) return true;
+
+        return false;
+    }
+
+    public static boolean isPointOnLine(Point a, Point b, Point p) {
+        double cross = (p.getY() - a.getY()) * (b.getX() - a.getX())
+                - (p.getX() - a.getX()) * (b.getY() - a.getY());
+
+        if (Math.abs(cross) > 1e-6) return false;
+
+        double dot = (p.getX() - a.getX()) * (b.getX() - a.getX()) +
+                (p.getY() - a.getY()) * (b.getY() - a.getY());
+
+        if (dot < 0) return false;
+
+        double lenSq = (b.getX() - a.getX()) * (b.getX() - a.getX())
+                + (b.getY() - a.getY()) * (b.getY() - a.getY());
+
+        return dot <= lenSq;
+    }
+
+    public static boolean doLineSegmentsIntersect(Point p1, Point p2, Point q1, Point q2) {
+        // Check orientations
+        int o1 = orientation(p1, p2, q1);
+        int o2 = orientation(p1, p2, q2);
+        int o3 = orientation(q1, q2, p1);
+        int o4 = orientation(q1, q2, p2);
+
+        // General case
+        if (o1 != o2 && o3 != o4)
+            return true;
+
+        // Special Cases
+        if (o1 == 0 && onSegment(p1, q1, p2)) return true;
+        if (o2 == 0 && onSegment(p1, q2, p2)) return true;
+        if (o3 == 0 && onSegment(q1, p1, q2)) return true;
+        if (o4 == 0 && onSegment(q1, p2, q2)) return true;
+
+        return false;
+    }
+
+    private static int orientation(Point a, Point b, Point c) {
+        double val = (b.getY() - a.getY()) * (c.getX() - b.getX()) -
+                     (b.getX() - a.getX()) * (c.getY() - b.getY());
+
+        if (Math.abs(val) < 1e-10) return 0;  // Collinear
+        return (val > 0) ? 1 : 2;            // Clockwise or Counterclockwise
+    }
+
+    private static boolean onSegment(Point a, Point b, Point c) {
+        return b.getX() <= Math.max(a.getY(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
+               b.getY() <= Math.max(a.getY(), c.getY()) && b.getY() >= Math.min(a.getY(), c.getY());
+    }
+
+    
 }

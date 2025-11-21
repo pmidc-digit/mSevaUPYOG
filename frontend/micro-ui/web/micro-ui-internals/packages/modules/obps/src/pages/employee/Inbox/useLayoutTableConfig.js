@@ -21,32 +21,39 @@ const useLayoutTableConfig = ({
 
   const tableColumnConfig = useMemo(() => {
     return [
-      {
-        Header: t("LAYOUT_APPLICATION_NUMBER"),
-        accessor: "applicationId",
-        disableSortBy: true,
-        Cell: ({ row }) => {
-          console.log("row-route", row);
-          return (
-            <div>
-              <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original["applicationId"]}`}>
-                <span className="link">{row.original["applicationId"]}</span>
-              </Link>
-            </div>
-          )
-        },
-      },
-      {
-        Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
-        accessor: "date",
-        Cell: ({ row }) =>
-          row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : "",
-      },
-      {
-        Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-        accessor: (row) => t(row?.status),
-        disableSortBy: true,
-      },
+           {
+                 Header: t("BPA_APPLICATION_NUMBER_LABEL"),
+                 accessor: "applicationNo",
+                 disableSortBy: true,
+                 Cell: ({ row }) => {
+                 return (
+                     <div>
+                        <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original["applicationId"]}`}>
+                          <span className="link">{row.original["applicationId"]}</span>
+                        </Link>
+                      </div>
+                 );
+                 },
+             },
+            
+    
+             {
+                 Header: t("EVENTS_STATUS_LABEL"),
+                 accessor: row => row?.status ? t(`WF_LAYOUT_${row?.status}`) : t(`WF_LAYOUT_${row?.status}`),
+                 disableSortBy: true,
+             },
+             {
+                 Header: t("WF_INBOX_HEADER_OWNER_NAME"),
+                 accessor: (row) => t(row?.owner
+),
+                 disableSortBy: true,
+             },
+             {
+                 Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
+                 accessor: (row) => (t(row?.applicationType)
+),
+                 disableSortBy: true,
+             },
     ]
   }, [])
 

@@ -20,7 +20,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(
-    formData?.documents?.documents || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || []
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ||formData?.documents?.documents ||  []
   );
   console.log("check formData", formData);
   const [error, setError] = useState(null);
@@ -52,12 +52,14 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     filtredBpaDocs?.[0]?.docTypes?.forEach((doc) => {
       documentsList.push(doc);
     });
-    //console.log("documentsList here", documentsList);
+    console.log("documentsList here", documentsList);
     setBpaTaxDocuments(documentsList);
   }, [!isLoading]);
 
   const handleSubmit = async () => {
-    let document = formData.documents;
+    let document = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ? {
+      document: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments
+    } : formData.documents;
     let documentStep;
     let regularDocs = [];
     bpaTaxDocuments &&
@@ -218,14 +220,15 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
   // }, [uploadedFile, file]);
 
   useEffect(() => {
+    // GET existing doc entry (if any)
+    const existing = documents?.find((d) => d.documentType === doc.code);
+    console.log("existing doc", existing, documents);
     if (!uploadedFile) {
       // DELETE CASE
       setDocuments((prev) => prev.filter((item) => item.documentType !== doc.code));
       return;
     }
 
-    // GET existing doc entry (if any)
-    const existing = documents?.find((d) => d.documentType === doc.code);
 
     // 🚫 No need to update if fileStoreId is the same → prevents re-running effect
     if (existing && existing.fileStoreId === uploadedFile) return;
@@ -237,11 +240,13 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
       return [
         ...filtered,
         {
+          id: existing?.id || null,
           documentType: doc.code,
           fileStoreId: uploadedFile,
-          documentUid: uploadedFile,
-          fileName: file?.name || existing?.fileName || "",
-          info: doc?.info || existing?.info || "",
+          documentUid: null,
+          // fileName: file?.name || existing?.fileName || "",
+          // info: doc?.info || existing?.info || "",
+          active: existing?.active || true,
         },
       ];
     });
@@ -259,7 +264,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
         } else {
           setLoader(true);
           try {
-            setUploadedFile(null);
+            // setUploadedFile(null);
             const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
             setLoader(false);
             if (response?.data?.files?.length > 0) {

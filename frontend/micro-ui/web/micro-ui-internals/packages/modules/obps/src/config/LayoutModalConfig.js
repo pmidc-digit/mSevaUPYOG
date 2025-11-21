@@ -26,7 +26,7 @@ export const LayoutModalConfig = ({
 
   return {
     label: {
-      heading: `WF_${action?.action}_APPLICATION`,
+      heading: `WF_EMPLOYEE_LAYOUT_${action?.action}`,
       submit: `WF_EMPLOYEE_LAYOUT_${action?.action}`,
       cancel: "WF_EMPLOYEE_LAYOUT_CANCEL",
     },

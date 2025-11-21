@@ -428,7 +428,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
     
         // Append index if more than 1 owner (ownerIdx is 0-based so +1)
-        const title = ownersCount > 1 ? `${t(baseTitle)}_${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
+        const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
     
         return {
           id: index,
@@ -806,6 +806,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     setFile(e.target.files[0]);
   }
 
+  const [y1, m1, d1] = currentStepData?.createdResponse?.additionalDetails?.nocObject?.approvedOn?.split("-") || [];
+  const nocApprovedDate = `${d1}/${m1}/${y1}`;
+
 
     if (apiLoading || isFileLoading) return (<Loader />);
 
@@ -1059,7 +1062,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
                             onClick={() => { }}
                         /> */}
-                        <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />
+                        {currentStepData?.createdResponse?.landInfo?.address?.pincode && <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />}
                         <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")} />
                         <Row
                             className="border-none"
@@ -1276,6 +1279,41 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}                            
                         />
                         }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_NUMBER`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.NocNumber || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_APPLICANT_NAME`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_ULB_NAME`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbName || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_ULB_TYPE`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbType || t("CS_NA")}                            
+                        />
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
+                        <Row
+                            className="border-none"
+                            label={t(`BPA_NOC_APPROVED_ON`)}
+                            text={nocApprovedDate || t("CS_NA")}                            
+                        />
+                        }                        
                         <Row
                             className="border-none"
                             label={t(`BPA_ULB_TYPE_LABEL`)}

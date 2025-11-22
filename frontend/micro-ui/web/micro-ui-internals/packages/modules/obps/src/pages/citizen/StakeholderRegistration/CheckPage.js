@@ -59,7 +59,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
   const moduleCode = tradeType ? tradeType.split(".")[0] : null;
   const applicationNo = bparegData?.Licenses?.[0]?.applicationNumber;
-
+console.log(bparegData, "ggggggg");
   const getDocs = JSON.parse(sessionStorage.getItem("FinalDataDoc"));
   const finalDoc = getDocs?.result?.Licenses?.[0];
 
@@ -311,7 +311,18 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("TOWNPLANNER") &&
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
            {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
-          renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formatDate(formData?.LicneseType?.validTo))}
+         renderLabel(
+    t("BPA_CERTIFICATE_EXPIRY_DATE"), 
+    (() => {
+      const validTo = formData?.LicneseType?.validTo;
+      if (!validTo) return "";
+      
+      // Check if it's a number (epoch timestamp) or a numeric string
+      const isEpoch = !isNaN(Number(validTo)) && Number(validTo) > 1000000000;
+      
+      // If it's epoch, format it; otherwise, return as-is
+      return isEpoch ? formatDate(validTo) : validTo;
+    })())}
       </div>
 
       {/* Applicant Details */}
@@ -509,38 +520,38 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
               )}
             </div>
           ) : (
-            <div>
-              {recieptDataLoading ? (
-                <Loader message={"Loading Fee..."} />
-              ) : (
-                <React.Fragment>
-                  {/* Map tax heads */}
-                  {reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails?.map(
-                    (bill, index) =>
-                      renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
-                  )}
+           
+  <div>
+    {recieptDataLoading ? (
+      <Loader message={"Loading Fee..."} />
+    ) : (
+      <React.Fragment>
+        {/* <CHANGE> Conditionally use reciept_data or paymentDetails based on isCitizenEditable */}
+        {(isCitizenEditable === true 
+          ? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails
+          : paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails
+        )?.map((bill, index) =>
+          renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
+        )}
 
-                  {/* Total Amount */}
-                  {renderLabel(
-                    t("BPA_COMMON_TOTAL_AMT"),
-                    `₹ ${
-                      reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.amount ||
-                      0
-                    }`
-                  )}
+        {/* <CHANGE> Conditionally get totalAmount from reciept_data or paymentDetails */}
+        {renderLabel(
+          t("BPA_COMMON_TOTAL_AMT"),
+          `₹ ${
+            isCitizenEditable === true
+              ? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.totalAmount || 0
+              : paymentDetails?.billResponse?.Bill?.[0]?.totalAmount || 0
+          }`
+        )}
 
-                  {/* Paid or Pending */}
-                  {renderLabel(
-                    t("BPA_STATUS_LABEL"),
-                    (reciept_data?.Payments?.[0]?.totalAmountPaid || 0) -
-                      (reciept_data?.Payments?.[0]?.totalDue || 0) ===
-                    0
-                      ? t("Paid")
-                      : t("Pending")
-                  )}
-                </React.Fragment>
-              )}
-            </div>
+        {renderLabel(
+          t("BPA_STATUS_LABEL"),
+          isCitizenEditable === true ? t("Paid") : t("Pending")
+        )}
+      </React.Fragment>
+    )}
+  </div>
+
 
 
           )}

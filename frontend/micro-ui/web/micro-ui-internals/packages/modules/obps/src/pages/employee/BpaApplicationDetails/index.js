@@ -374,7 +374,7 @@ const BpaApplicationDetail = () => {
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
-      requestData.additionalDetails.permitData = "The plot has been officially regularized under No." + requestData?.additionalDetails?.NocNumber + "  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of " + state + ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+      requestData.additionalDetails.permitData = "The plot has been officially regularized under No." + requestData?.additionalDetails?.NocNumber + "  dated "+ requestData?.additionalDetails?.nocObject?.approvedOn +" , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + " . This regularization falls within the jurisdiction of " + state + ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     }
     else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData = "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony

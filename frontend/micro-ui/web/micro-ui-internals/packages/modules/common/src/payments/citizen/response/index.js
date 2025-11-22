@@ -323,7 +323,8 @@ const WrapPaymentComponent = (props) => {
                 ulbType: ulbType,
               },
               licenseType,
-              amountinwords
+              amountinwords,
+              ulbType
             };
           } else {
             updatedpayments = {
@@ -1335,7 +1336,7 @@ const WrapPaymentZeroComponent = (props) => {
   //         billIds: transactionData?.billId
   //     },
   // );
-
+console.log('bpaData , data for zero', bpaData)
   const cities = Digit.Hooks.useTenants();
   let ulbType = "";
   const loginCity = JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.permanentCity;
@@ -1476,6 +1477,9 @@ const WrapPaymentZeroComponent = (props) => {
           (val) => val.title === "BPA_LICENSE_TYPE"
         )?.value);
         }
+        const fee = paymentData?.totalAmountPaid;
+    console.log('fee here here for zero fee', fee)
+    const amountinwords = amountToWords(fee)
     const tenantId = paymentData?.tenantId;
     const state = Digit.ULBService.getStateId();
     let response = { filestoreIds: [payments?.Payments[0]?.fileStoreId] };
@@ -1516,7 +1520,7 @@ const WrapPaymentZeroComponent = (props) => {
         let details;
 
         if (payments.Payments[0].paymentDetails[0].businessService == "BPAREG") {
-          details = { ...payments.Payments[0].additionalDetails, stakeholderType: "Application" };
+          details = { ...payments.Payments[0].additionalDetails, stakeholderType: "Application" ,amountinwords, ulbType };
         }
         payments.Payments[0].additionalDetails = details;
         paymentArray[0] = payments.Payments[0];
@@ -1531,7 +1535,10 @@ const WrapPaymentZeroComponent = (props) => {
               designation: designation,
               ulbType: ulbType,
             },
-            licenseType
+            licenseType,
+            amountinwords,
+            ulbType,
+
           };
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);

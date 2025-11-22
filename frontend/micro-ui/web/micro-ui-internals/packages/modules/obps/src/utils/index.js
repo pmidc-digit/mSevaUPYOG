@@ -891,12 +891,12 @@ export const amountToWords =(num) =>{
   return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
 }
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, mode = "download", pdfKey = "bpa-receipt") => {
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, ulbType, mode = "download", pdfKey = "bpa-receipt") => {
   console.log('license needed', licenseType)
   const fee = payments?.[0]?.totalAmountPaid;
 
   const amountinwords = amountToWords(fee)
-  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords }));
+  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords,ulbType }));
   let response = null;
   console.log("payments", payments);
   if (payments[0]?.fileStoreId) {

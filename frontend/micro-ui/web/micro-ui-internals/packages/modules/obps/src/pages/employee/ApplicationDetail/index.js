@@ -11,10 +11,13 @@ const ApplicationDetail = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = tenantId?.split('.')[0]
   const [showToast, setShowToast] = useState(null);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   const [showOptions, setShowOptions] = useState(false);
   const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb"? "pb.punjab" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb"? "pb.punjab" : tenantId }, {});
   console.log('applicationDetails of obps here', applicationDetails)
-
+ const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
+  console.log('ulbType', ulbType)
 const licenseSection = applicationDetails?.applicationDetails?.find(
   (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
 );
@@ -57,7 +60,7 @@ console.log("licenseType:", licenseType);
   if (applicationDetails?.payments?.length > 0 && licenseType) {
     dowloadOptions.push({
       label: t("TL_RECEIPT"),
-      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments,licenseType),
+      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments,licenseType, ulbType),
     })
   }
 

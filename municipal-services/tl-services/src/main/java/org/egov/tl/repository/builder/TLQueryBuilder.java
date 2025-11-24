@@ -115,7 +115,7 @@ public class TLQueryBuilder {
         
         else {
 
-            if (criteria.getTenantId() != null) {
+            if (criteria.getTenantId() != null && !criteria.getOnlyLatestApplication()) {
                 addClauseIfRequired(preparedStmtList, builder);
                 builder.append(" tl.tenantid=? ");
                 preparedStmtList.add(criteria.getTenantId());

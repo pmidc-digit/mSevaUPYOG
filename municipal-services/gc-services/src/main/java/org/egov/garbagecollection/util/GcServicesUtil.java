@@ -332,7 +332,7 @@ public class GcServicesUtil {
 	public boolean isModifyConnectionRequest(GarbageConnectionRequest garbageConnectionRequest) {
 //		return !StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionNo());
 		return !StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionNo())
-			    && "MODIFY_WATER_CONNECTION".equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getApplicationType());
+			    && "MODIFY_GARBAGE_CONNECTION".equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getApplicationType());
 	}
 	
 	public Boolean isBillUnpaid(String connectionNo, String tenantId, RequestInfo request) {

@@ -227,7 +227,7 @@ public class WorkflowService {
 		url.append("?tenantId=");
 		url.append(tenantId);
 		if(businessServiceValue!=null) {
-			url.append("&businessServices=");
+			url.append("&businessService=");
 			url.append(businessServiceValue);
 		}
 		url.append("&businessIds=");

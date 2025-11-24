@@ -1,3 +1,4 @@
+import React  from "react";
 import { Loader as DigitLoader } from "@mseva/digit-ui-react-components";
 
 export const Loader = ({ page = false }) => {

@@ -112,7 +112,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                 }}
               >
                 {
-                  <Link to={`/digit-ui/citizen/challangeneration/application/${bill?.challanNo}/${bill?.tenantId}`}>
+                  <Link to={`/digit-ui/citizen/rentandlease/property/${bill?.challanNo}/${bill?.tenantId}`}>
                     <SubmitBar
                       label={t("CS_VIEW_DETAILS")}
                       //  label={CS_VIEW_DETAILS}

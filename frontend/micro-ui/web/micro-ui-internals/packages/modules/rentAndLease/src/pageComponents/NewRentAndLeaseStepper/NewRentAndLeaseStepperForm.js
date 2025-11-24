@@ -190,8 +190,8 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {/* {t("RENT_AND_LEASE_APPLICATION")} */}
-        New Property Rent & Lease Allotment Application
+        {t("RENT_AND_LEASE_APPLICATION")}
+        
       </CardHeader>
       <Stepper stepsList={updatedCreateApplicationConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {/* {isLoading && <Loader page={true} />} */}

@@ -7,8 +7,15 @@ import RentAndLeaseDocument from "./RentAndLeaseDocument";
 function RentAndLeaseSummary({ t }) {
   const dispatch = useDispatch();
   const formData = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {});
-  const applicant = formData?.applicantDetails || {};
+  console.log('formData', formData)
+  const applicantDetails = Array.isArray(formData?.applicantDetails?.applicants)
+  ? formData.applicantDetails?.applicants
+  : formData?.applicantDetails?.applicants
+  ? [formData.applicantDetails?.applicants]
+  : [];
+
   const property = formData?.propertyDetails || {};
+  console.log('property', property)
   const docs = formData?.documents?.documents?.documents || [];
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -83,10 +90,20 @@ function RentAndLeaseSummary({ t }) {
   return (
     <div className="application-summary">
       <Card className="summary-section" style={{ padding: "2px" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("ES_TITILE_APPLICANT_DETAILS")}</h3>
-          </div>
+  <div style={sectionStyle}>
+    <div style={headerRow}>
+      <h3 style={headingStyle}>{t("ES_TITILE_APPLICANT_DETAILS")}</h3>
+    </div>
+
+    {applicantDetails.length > 0 ? (
+      applicantDetails.map((applicant, index) => (
+        <div key={index} style={{ marginBottom: "1rem" }}>
+          {/* Optional sub-heading if multiple */}
+          {applicantDetails.length > 1 && (
+            <h4 style={{ color: "#555", margin: "0 0 0.5rem 0" }}>
+              {t("Applicant")} {index + 1}
+            </h4>
+          )}
 
           {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), applicant?.name)}
           {renderRow(t("CORE_COMMON_MOBILE_NUMBER"), applicant?.mobileNumber)}
@@ -94,7 +111,13 @@ function RentAndLeaseSummary({ t }) {
           {renderRow(t("ADDRESS"), applicant?.address)}
           {renderRow(t("CORE_COMMON_PINCODE"), applicant?.pincode)}
         </div>
-      </Card>
+      ))
+    ) : (
+      <div>{t("CS_NA")}</div>
+    )}
+  </div>
+</Card>
+
       <Card className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>

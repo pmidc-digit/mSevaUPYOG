@@ -13,7 +13,7 @@ const App = () => {
   const SearchChallanComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchChallanComponent");
   const SearchResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchResultsComponent");
   const MyChallanResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectMyChallanResultsComponent");
-  const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
+  // const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
 
   console.log("RentAndLease Citizen App", path);
   return (
@@ -23,9 +23,9 @@ const App = () => {
           <BackButton style={{ top: "55px" }}>Back</BackButton>
           <PrivateRoute path={`${path}/search`} component={SearchChallanComponent} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
-          <PrivateRoute path={`${path}/My-Challans`} component={MyChallanResultsComponent} />
-          <PrivateRoute path={`${path}/new-application`} component={NewRentAndLeaseStepperForm} />
-           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ApplicationDetails} />
+          {/* <PrivateRoute path={`${path}/new-application`} component={NewRentAndLeaseStepperForm} /> */}
+          <PrivateRoute path={`${path}/My-Properties`} component={MyChallanResultsComponent} />
+           <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={ApplicationDetails} />
         </AppContainer>
       </Switch>
     </span>

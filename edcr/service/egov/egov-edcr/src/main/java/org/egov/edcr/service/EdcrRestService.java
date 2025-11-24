@@ -203,9 +203,10 @@ public class EdcrRestService {
         if (isNotBlank(edcrRequest.getApplicantName()))
             edcrApplication.setApplicantName(edcrRequest.getApplicantName());
         else
-            edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);
+            edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);        
         if(edcrRequest.getApplicantName()!=null) {
         	//edcrApplication.setArchitectInformation(edcrRequest.getApplicantName());
+        	LOG.info("###Professional's name fro edcr report ####"+ edcrRequest.getRequestInfo().getUserInfo().getName());
         	edcrApplication.setArchitectInformation(edcrRequest.getRequestInfo().getUserInfo().getName());
         }else {
         	edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);

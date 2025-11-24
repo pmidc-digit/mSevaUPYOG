@@ -572,7 +572,7 @@ public class MinDistance {
                             !Util.pointsEquals(yl.getEndPoint(), fl.getStartPoint()) &&
                             !Util.pointsEquals(yl.getEndPoint(), fl.getEndPoint())) {                     	
                             pl.getErrors().put("Set back calculation error for boundary" + yardName,
-                                    "Points of " + yardName + " not properly on " + layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY"));
+                                    "Points of " + yardName + " not properly on " + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
                             return false;
                         }
                     }

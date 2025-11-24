@@ -2,7 +2,6 @@ import {
   Header,
   Row,
   StatusTable,
-  Loader,
   Card,
   CardSubHeader,
   ActionBar,
@@ -20,10 +19,10 @@ import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import LayoutModal from "../../../pageComponents/LayoutModal";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
-import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocumentTableView";
 import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
+import { Loader } from "../../../config/Loader";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -94,6 +93,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
 
   const [showOptions, setShowOptions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // States for payment summary data
   const [calculationData, setCalculationData] = useState(null);
@@ -106,13 +106,14 @@ const LayoutEmployeeApplicationOverview = () => {
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
-  const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId,
-    id: id,
-    moduleCode: "Layout_mcUp",
-  });
+const workflowDetails = Digit.Hooks.useWorkflowDetails({
+  tenantId: tenantId,
+  id: id,
+  moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
+});
 
   console.log("workflowDetails here=>", workflowDetails);
+  console.log("next employee ======>", data,applicationDetails,applicationDetails?.businessService);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -122,18 +123,31 @@ const LayoutEmployeeApplicationOverview = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-  useEffect(() => {
-    let WorkflowService = null;
+useEffect(() => {
+  let WorkflowService = null;
+  const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
+  
+  console.log("  Business service:", businessService);
+  console.log("  Tenant ID:", tenantId);
+  
+  if (businessService && tenantId) {
     (async () => {
       setLoader(true);
-      WorkflowService = await Digit.WorkflowService.init(tenantId, "Layout_mcUp");
-         setLoader(false);
-      console.log("WorkflowService----", WorkflowService?.BusinessServices?.[0]?.states);
-   
-      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      try {
+        WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
+        const states = WorkflowService?.BusinessServices?.[0]?.states || [];
+        console.log("  Setting workflowService state with", states.length, "states");
+        setWorkflowService(states);
+      } catch (error) {
+        console.error("  Error fetching workflow service:", error);
+      } finally {
+        setLoader(false);
+      }
     })();
-  }, [tenantId]);
-
+  } else {
+    console.log("  Skipping workflow load - missing business service or tenant");
+  }
+}, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -240,6 +254,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
   const submitAction = async (data) => {
     console.log(" submitAction called with data:", data);
+    setIsSubmitting(true);
 
     try {
       const filtData = data?.Licenses?.[0];
@@ -248,6 +263,7 @@ const LayoutEmployeeApplicationOverview = () => {
       if (!filtData) {
         console.error(" ERROR: filtData is undefined");
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+        setIsSubmitting(false);
         return;
       }
 
@@ -257,6 +273,7 @@ const LayoutEmployeeApplicationOverview = () => {
       if (!layoutObject) {
         console.error(" ERROR: layoutObject is undefined");
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+        setIsSubmitting(false);
         return;
       }
 
@@ -287,6 +304,7 @@ const LayoutEmployeeApplicationOverview = () => {
           setShowModal(false);
         } else if (
           filtData?.action === "APPLY" ||
+          filtData?.action === "APPROVE" ||
           filtData?.action === "RESUBMIT" ||
           filtData?.action === "DRAFT" ||
           filtData?.action === "FORWARD_L1" ||
@@ -317,8 +335,12 @@ const LayoutEmployeeApplicationOverview = () => {
       console.error(" ERROR in submitAction:", err);
       console.error(" Error message:", err?.message);
       console.error(" Error stack:", err?.stack);
-      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }
+      setShowToast({ key: "true", error: true, message: err?.response?.data?.Errors?.[0]?.message });
+      
+    }finally {
+    // <CHANGE> Stop loading when submit completes (success or error)
+    setIsSubmitting(false);
+  }
   };
 
   const closeModal = () => {
@@ -326,40 +348,79 @@ const LayoutEmployeeApplicationOverview = () => {
     setShowModal(false);
   };
 
-  function onActionSelect(action) {
-    const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
+  // function onActionSelect(action) {
+  //   const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-    console.log("check action === ", action);
+  //   console.log("check action === ", action);
 
-    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+  //   const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
 
-     console.log("check filterNexState=== ", filterNexState[0]?.nextState );
+  //    console.log("check filterNexState=== ", filterNexState[0]?.nextState );
 
-    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+  //   const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("check getWorkflowService === ", getWorkflowService);
+  //   console.log("check getWorkflowService === ", getWorkflowService);
 
-    console.log(filterRoles, "filterRoles");
+  //   console.log(filterRoles, "filterRoles");
 
-    setEmployees(filterRoles?.[0]?.actions);
+  //   setEmployees(filterRoles?.[0]?.actions);
 
-    const payload = {
-      Licenses: [action],
-    };
+  //   const payload = {
+  //     Licenses: [action],
+  //   };
 
-    if (action?.action == "EDIT") {
-      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
-    } else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
-      submitAction(payload);
-    } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {
-      setShowModal(true);
-      setSelectedAction(action);
-    }
+  //   if (action?.action == "EDIT") {
+  //     history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
+  //   } else if (action?.action == "DRAFT") {
+  //     setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+  //   } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+  //     submitAction(payload);
+  //   } else if (action?.action == "PAY") {
+  //     history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
+  //   } else {
+  //     setShowModal(true);
+  //     setSelectedAction(action);
+  //   }
+  // }
+
+
+function onActionSelect(action) {
+  const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
+
+  console.log("check action === ", action);
+
+  const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+  console.log("check filterNexState=== ", filterNexState[0]?.nextState );
+
+  const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+
+  console.log("check getWorkflowService === ", getWorkflowService);
+  console.log(filterRoles, "filterRoles");
+  
+  // <CHANGE> Added detailed logging and fallback to empty array
+  const nextStateRoles = filterRoles?.[0]?.actions || [];
+  console.log("  Next state roles to filter employees:", nextStateRoles);
+  setEmployees(nextStateRoles);
+
+  const payload = {
+    Licenses: [action],
+  };
+
+  if (action?.action == "EDIT") {
+    history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
+  } else if (action?.action == "DRAFT") {
+    setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+  } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+    submitAction(payload);
+  } else if (action?.action == "PAY") {
+    history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
+  } else {
+    // <CHANGE> Log before opening modal to verify employees are set
+    console.log("  Opening modal with filtered employees:", nextStateRoles);
+    setShowModal(true);
+    setSelectedAction(action);
   }
+}
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -653,6 +714,7 @@ const LayoutEmployeeApplicationOverview = () => {
             showErrorToast={showErrorToast}
             errorOne={errorOne}
             closeToastOne={closeToastOne}
+            isSubmitting={isSubmitting}
           />
           <p>{t("LAYOUT_MODAL_PLACEHOLDER")}</p>
         </div>
@@ -662,7 +724,8 @@ const LayoutEmployeeApplicationOverview = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {/* {(isLoading || getLoader) && <Loader page={true} />} */}
+       {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
     </div>
   );
 };

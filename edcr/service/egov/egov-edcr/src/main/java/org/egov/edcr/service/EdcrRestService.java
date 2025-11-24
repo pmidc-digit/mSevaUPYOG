@@ -205,7 +205,8 @@ public class EdcrRestService {
         else
             edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);
         if(edcrRequest.getApplicantName()!=null) {
-        	edcrApplication.setArchitectInformation(edcrRequest.getApplicantName());
+        	//edcrApplication.setArchitectInformation(edcrRequest.getApplicantName());
+        	edcrApplication.setArchitectInformation(edcrRequest.getRequestInfo().getUserInfo().getName());
         }else {
         	edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
         }

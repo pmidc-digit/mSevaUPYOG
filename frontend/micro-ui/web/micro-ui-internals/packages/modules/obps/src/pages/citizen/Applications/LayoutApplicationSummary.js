@@ -28,6 +28,7 @@ import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledg
 import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocumentTableView";
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
+import LayoutDocumentView from "./LayoutDocumentView";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -355,6 +356,12 @@ const [viewTimeline, setViewTimeline] = useState(false);
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
+  const RenderRow = ({ label, value }) => {
+  if (!value) return null;
+  return <Row label={label} text={value} />;
+};
+
+
   if (isLoading) {
     return <Loader />
   }
@@ -379,186 +386,173 @@ const [viewTimeline, setViewTimeline] = useState(false);
       </div>
        
 
-      <Card>
-        <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
-        {displayData?.applicantDetails?.map((detail, index) => (
-          <div
-            key={index}
-            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-          >
+ {/* -------------------- APPLICANT DETAILS -------------------- */}
+    <Card>
+      <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
+      {displayData?.applicantDetails?.map((detail, index) => (
+        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <StatusTable>
+
+            <RenderRow label={t("NOC_FIRM_OWNER_NAME_LABEL")} value={detail?.applicantOwnerOrFirmName} />
+            <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={detail?.applicantEmailId} />
+            <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={detail?.applicantFatherHusbandName} />
+            <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={detail?.applicantMobileNumber} />
+            <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={detail?.applicantDateOfBirth} />
+            <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={detail?.applicantGender?.code || detail?.applicantGender} />
+            <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={detail?.applicantAddress} />
+            <RenderRow label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} value={detail?.applicantPropertyId} />
+
+          </StatusTable>
+        </div>
+      ))}
+    </Card>
+
+    {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
+    {displayData?.applicantDetails?.[0]?.professionalName &&
+      displayData?.applicantDetails?.map((detail, index) => (
+        <Card key={index}>
+          <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
+          <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
-              <Row
-                label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
-                text={detail?.applicantFatherHusbandName || "N/A"}
-              />
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row
-                label={t("NOC_APPLICANT_GENDER_LABEL")}
-                text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"}
-              />
-              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
-              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
+
+              <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
+              <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
+              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
+              <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
+              <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
+              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_DATE")} value={detail?.professionalRegistrationValidity} />
+
             </StatusTable>
           </div>
-        ))}
-      </Card>
+        </Card>
+      ))}
 
-    
+    {/* -------------------- SITE DETAILS -------------------- */}
+    <Card>
+      <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
+      {displayData?.siteDetails?.map((detail, index) => (
+        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <StatusTable>
 
-      {displayData?.applicantDetails?.professionalName &&
-        displayData?.applicantDetails?.map((detail, index) => (
-          
-          <React.Fragment key={index}>
-            <Card>
-              <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-              <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <RenderRow label={t("NOC_PLOT_NO_LABEL")} value={detail?.plotNo} />
+            <RenderRow label={t("NOC_PROPOSED_SITE_ADDRESS")} value={detail?.proposedSiteAddress} />
+            <RenderRow label={t("NOC_ULB_NAME_LABEL")} value={detail?.ulbName?.name || detail?.ulbName} />
+            <RenderRow label={t("NOC_ULB_TYPE_LABEL")} value={detail?.ulbType} />
+            <RenderRow label={t("NOC_KHASRA_NO_LABEL")} value={detail?.khasraNo} />
+            <RenderRow label={t("NOC_HADBAST_NO_LABEL")} value={detail?.hadbastNo} />
+            <RenderRow label={t("NOC_ROAD_TYPE_LABEL")} value={detail?.roadType?.name || detail?.roadType} />
+            <RenderRow label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} value={detail?.areaLeftForRoadWidening} />
+            <RenderRow label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} value={detail?.netPlotAreaAfterWidening} />
+            <RenderRow label={t("NOC_NET_TOTAL_AREA_LABEL")} value={detail?.netTotalArea} />
+            <RenderRow label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} value={detail?.roadWidthAtSite} />
+
+            {/* Building Status */}
+            <RenderRow label={t("NOC_BUILDING_STATUS_LABEL")} value={detail?.buildingStatus?.name || detail?.buildingStatus} />
+
+            {/* Basement Availability */}
+            <RenderRow label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} value={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable} />
+
+            {/* Basement Area */}
+            {detail?.buildingStatus === "Built Up" && (
+              <RenderRow label={t("NOC_BASEMENT_AREA_LABEL")} value={detail?.basementArea} />
+            )}
+
+            {/* Floor Areas */}
+            {detail?.buildingStatus === "Built Up" &&
+              detail?.floorArea?.map((floor, idx) => (
+                <RenderRow key={idx} label={getFloorLabel(idx)} value={floor?.value} />
+              ))}
+
+            {/* Total Floor Area */}
+            {detail?.buildingStatus === "Built Up" && (
+              <RenderRow label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} value={detail?.totalFloorArea} />
+            )}
+
+            <RenderRow label={t("NOC_DISTRICT_LABEL")} value={detail?.district?.name || detail?.district} />
+            <RenderRow label={t("NOC_ZONE_LABEL")} value={detail?.zone?.name || detail?.zone} />
+            <RenderRow label={t("NOC_SITE_WARD_NO_LABEL")} value={detail?.wardNo} />
+            <RenderRow label={t("NOC_SITE_VILLAGE_NAME_LABEL")} value={detail?.villageName} />
+            <RenderRow label={t("NOC_SITE_COLONY_NAME_LABEL")} value={detail?.colonyName} />
+            <RenderRow label={t("NOC_SITE_VASIKA_NO_LABEL")} value={detail?.vasikaNumber} />
+            <RenderRow label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} value={detail?.khewatAndKhatuniNo} />
+
+          </StatusTable>
+        </div>
+      ))}
+    </Card>
+
+    {/* -------------------- SPECIFICATIONS -------------------- */}
+    <Card>
+      <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+      {displayData?.siteDetails?.map((detail, index) => (
+        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <StatusTable>
+
+            <RenderRow label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
+            <RenderRow label={t("NOC_BUILDING_CATEGORY_LABEL")} value={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory} />
+            <RenderRow label={t("LAYOUT_TYPE_LABEL")} value={detail?.specificationLayoutType?.name || detail?.specificationLayoutType} />
+            <RenderRow label={t("NOC_RESTRICTED_AREA_LABEL")} value={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea} />
+            <RenderRow label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan} />
+
+          </StatusTable>
+        </div>
+      ))}
+    </Card>
+
+        {/* 1️⃣ SITE COORDINATES CARD */}
+        {displayData?.coordinates && displayData.coordinates.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
+
+            {displayData.coordinates.map((detail, index) => (
+              <div
+                key={index}
+                style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+              >
                 <StatusTable>
-                  <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_DATE")} text={detail?.professionalRegistrationValidity || "N/A"} />
+                  <RenderRow label={t("COMMON_LATITUDE1_LABEL")} value={detail?.Latitude1} />
+                  <RenderRow label={t("COMMON_LONGITUDE1_LABEL")} value={detail?.Longitude1} />
+                  <RenderRow label={t("COMMON_LATITUDE2_LABEL")} value={detail?.Latitude2} />
+                  <RenderRow label={t("COMMON_LONGITUDE2_LABEL")} value={detail?.Longitude2} />
+                  <RenderRow label={t("COMMON_LATITUDE3_LABEL")} value={detail?.Latitude3} />
+                  <RenderRow label={t("COMMON_LONGITUDE3_LABEL")} value={detail?.Longitude3} />
+                  <RenderRow label={t("COMMON_LATITUDE4_LABEL")} value={detail?.Latitude4} />
+                  <RenderRow label={t("COMMON_LONGITUDE4_LABEL")} value={detail?.Longitude4} />
                 </StatusTable>
               </div>
-            </Card>
-          </React.Fragment>
-        ))}
-
-      <Card>
-        <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
-        {displayData?.siteDetails?.map((detail, index) => (
-          <div
-            key={index}
-            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-          >
-            <StatusTable>
-              <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-              <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
-              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
-              <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
-              <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
-              <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
-              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
-              <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
-              <Row
-                label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}
-                text={detail?.netPlotAreaAfterWidening || "N/A"}
-              />
-              <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
-              <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
-              <Row
-                label={t("NOC_BUILDING_STATUS_LABEL")}
-                text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"}
-              />
-
-              <Row
-                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
-                text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
-              />
-
-              {detail?.buildingStatus == "Built Up" && (
-                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"} />
-              )}
-
-              {detail?.buildingStatus == "Built Up" &&
-                detail?.floorArea?.map((floor, index) => (
-                  <Row key={index} label={getFloorLabel(index)} text={floor.value || "N/A"} />
-                ))}
-
-              {detail?.buildingStatus == "Built Up" && (
-                <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"} />
-              )}
-
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
-              <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
-              <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
-              <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
-              <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card>
-
-      <Card>
-        <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
-        {displayData?.siteDetails?.map((detail, index) => (
-          <div
-            key={index}
-            style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-          >
-            <StatusTable>
-              <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
-              <Row
-                label={t("NOC_BUILDING_CATEGORY_LABEL")}
-                text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
-              />
-              <Row
-                label={t("LAYOUT_TYPE_LABEL")}
-                text={detail?.specificationLayoutType?.name || detail?.specificationLayoutType || "N/A"}
-              />
-              <Row
-                label={t("NOC_RESTRICTED_AREA_LABEL")}
-                text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
-              />
-              <Row
-                label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
-                text={
-                  detail?.specificationIsSiteUnderMasterPlan?.code ||
-                  detail?.specificationIsSiteUnderMasterPlan ||
-                  "N/A"
-                }
-              />
-            </StatusTable>
-          </div>
-        ))}
-      </Card>
-
-            <Card>
-              <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
-              {displayData?.coordinates?.map((detail, index) => (
-                <div
-                  key={index}
-                  style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-                >
-                  <StatusTable>
-                    <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-                    <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-                    <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-                    <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-                  </StatusTable>
-                </div>
-              ))}
-            </Card>
-
-
-
-      <Card>
-        <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
-        <StatusTable>
-          {displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}
-        </StatusTable>
-      </Card>
-
-      <Card>
-        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-        {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-            }}
-          />
+            ))}
+          </Card>
         )}
-      </Card>
+
+        {/* 2️⃣ DOCUMENTS CARD */}
+        {displayData?.Documents && displayData.Documents.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
+            <StatusTable>
+              <LayoutDocumentView documents={displayData.Documents} />
+            </StatusTable>
+          </Card>
+        )}
+
+        {/* 3️⃣ FEE DETAILS CARD */}
+        {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
+          <Card>
+            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+
+            <LayoutFeeEstimationDetails
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: {
+                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+                },
+                siteDetails: {
+                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+                },
+              }}
+            />
+          </Card>
+        )}
+
 
       {workflowDetails?.data?.timeline && (
         <Card id="timeline">

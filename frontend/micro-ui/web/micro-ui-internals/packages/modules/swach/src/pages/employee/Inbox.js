@@ -25,88 +25,27 @@ const Inbox = ({ initialStates = {} }) => {
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
 
-  const transformInboxData = (data) => {
-    return {
-      table: data?.items?.map((complaint) => {
-        const createdTime = complaint?.ProcessInstance?.auditDetails?.createdTime;
-        const currentTime = Date.now();
-        const timeLeftInMs = currentTime - createdTime;
-        const timeLeftInHours = timeLeftInMs / (1000 * 60 * 60);
-        const roundedHours = timeLeftInHours?.toFixed(1);
-        const slaInMilliseconds = complaint?.ProcessInstance?.stateSla;
-        const totalHours = slaInMilliseconds / (1000 * 60 * 60);
-        const roundedtotalHours = parseFloat(totalHours?.toFixed(1));
-
-        return {
-          serviceRequestId: complaint.ProcessInstance?.businessId,
-          complaintSubType: complaint?.businessObject?.service?.serviceCode,
-          priorityLevel: complaint.ProcessInstance?.priority,
-          locality: complaint?.businessObject?.service?.address?.locality?.code,
-          status: (() => {
-            const stateValue = complaint?.ProcessInstance?.state?.state;
-            if (stateValue === "PENDINGFORREASSIGNMENT") {
-              return "PENDINGFORREASSIGNMENT";
-            }
-            if (stateValue === "REJECTED") {
-              return "REJECTED";
-            }
-            return complaint?.ProcessInstance?.state?.applicationStatus;
-          })(),
-          taskOwner: complaint.ProcessInstance?.assigner?.name || "-",
-          taskEmployee: complaint.ProcessInstance?.assignes?.[0]?.name || "-",
-          sla: roundedtotalHours,
-          slaElapsed: roundedHours,
-          tenantId: complaint.ProcessInstance?.tenantId,
-          createdDate: new Date(complaint.ProcessInstance?.auditDetails?.createdTime)?.toLocaleString("en-IN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-        };
-      }) || [],
-      totalCount: data?.totalCount,
-      nearingSlaCount: data?.nearingSlaCount,
-    };
-  };
-
-  const fetchInboxData = async (inboxFilters) => {
-    const requestBody = {
-      inbox: inboxFilters,
-      RequestInfo: {
-        apiId: "Rainmaker",
-        authToken: Digit.UserService.getUser()?.access_token,
-        userInfo: Digit.UserService.getUser()?.info,
-        msgId: `${new Date().getTime()}|${Digit.StoreData.getCurrentLanguage()}`,
-        plainAccessRequest: {}
-      }
-    };
-
-    const inboxResponse = await fetch("/inbox/v1/_search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    return await inboxResponse.json();
-  };
-
   useEffect(() => {
     (async () => {
       setIsLoading(true);
       try {
-        debugger;
         const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
+        const serviceCode = searchParams?.filters?.pgrQuery?.serviceCode;
+        const locality = searchParams?.filters?.pgrQuery?.locality;
         const filteredTenentId = searchParams?.filters?.swachfilters?.tenants;
-        console.log("filteredTenentId", filteredTenentId);
         const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
         
-        let response = await Digit.SwachService.count(filteredTenentId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+        if (!filteredTenentId) {
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch count
+        let response = await Digit.SwachService.count(filteredTenentId, {
+          ...(applicationStatus?.length > 0 ? { applicationStatus } : {}),
+          ...(serviceCode ? { serviceCode } : {}),
+          ...(locality ? { locality } : {})
+        });
         if (response?.count) {
           setTotalRecords(response.count);
         }
@@ -116,36 +55,19 @@ const Inbox = ({ initialStates = {} }) => {
           ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
           : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
 
-        // Build inbox filters
-        const USER_UUID = Digit.UserService.getUser()?.info?.uuid;
-        const inboxFilters = {
+        // Call the inbox service
+        const transformedData = await Digit.SwachService.InboxServiceApicall({
           tenantId: filteredTenentId,
-          processSearchCriteria: {
-            moduleName: "swach-reform",
-            businessService: ["SBMR"],
-            ...(applicationStatus ? { status: applicationStatus.split(',') } : {}),
-            ...(assigneeCode ? { assignee: assigneeCode === "ASSIGNED_TO_ME" ? USER_UUID : assigneeCode } : {}),
-          },
-          moduleSearchCriteria: {
-            ...(searchParams?.search?.mobileNumber ? { mobileNumber: searchParams.search.mobileNumber } : {}),
-            ...(searchParams?.search?.serviceRequestId ? { serviceRequestId: searchParams.search.serviceRequestId } : {}),
-            ...(searchParams?.filters?.pgrQuery?.serviceCode?.length > 0 ? { serviceCode: searchParams.filters.pgrQuery.serviceCode } : {}),
-            ...(searchParams?.filters?.pgrQuery?.locality?.length > 0 ? { locality: searchParams.filters.pgrQuery.locality } : {}),
-            ...(paginationParams.sortBy ? { sortBy: paginationParams.sortBy } : {}),
-            ...(paginationParams.sortOrder ? { sortOrder: paginationParams.sortOrder } : {}),
-          },
-          limit: paginationParams.limit,
-          offset: paginationParams.offset,
-        };
+          filters: {
+            ...searchParams,
+            sortBy: paginationParams.sortBy,
+            sortOrder: paginationParams.sortOrder,
+            limit: paginationParams.limit,
+            offset: paginationParams.offset,
+          }
+        });
 
-        // Call inbox API
-        const inboxData = await fetchInboxData(inboxFilters);
-        console.log("Inbox API Response:", inboxData);
-        
-        // Transform the data to table format
-        const transformedData = transformInboxData(inboxData);
         console.log("Transformed Data:", transformedData);
-        
         setComplaints(transformedData);
       } catch (e) {
         console.error("Error fetching inbox:", e);
@@ -175,7 +97,7 @@ const Inbox = ({ initialStates = {} }) => {
       // }
       // }
     })();
-  }, [searchParams, pageOffset, pageSize, tenantIdCheck, sessionEmpTenant, sortParams, isMobile]);
+  }, [searchParams, pageOffset, pageSize, sortParams, isMobile]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);

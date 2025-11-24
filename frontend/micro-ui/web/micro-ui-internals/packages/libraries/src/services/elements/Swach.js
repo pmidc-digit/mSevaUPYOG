@@ -1,5 +1,6 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
+import InboxServiceApicall from "../molecules/SWACH/inboxApiCall";
 
 export const SwachService = {
   search: (tenantId, filters = {}) => {
@@ -85,4 +86,5 @@ export const SwachService = {
      userService: false,
      params: { tenantId, ...filters },
    }),
+   InboxServiceApicall:InboxServiceApicall
 };

@@ -209,6 +209,9 @@ public class TradeLicenseService {
              licenses = getLicensesWithOwnerInfo(criteria,requestInfo);
          }
 
+         if(criteria.getOnlyLatestApplication() && !CollectionUtils.isEmpty(licenses))
+        	 licenses = Arrays.asList(licenses.get(0));
+         
          return licenses;       
     }
     
@@ -292,6 +295,9 @@ public class TradeLicenseService {
 
 
     	int licenseCount = repository.getLicenseCount(criteria);
+    	
+    	if(criteria.getOnlyLatestApplication() && licenseCount > 0)
+    		licenseCount = 1;
     	
     	return licenseCount;
     }

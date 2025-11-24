@@ -67,6 +67,8 @@ export const ChallanGenerationLinks = ({ matchPath, userType }) => {
     },
   ];
 
+  console.log("matchPath", matchPath);
+
   return <CitizenHomeCard header={t("ACTION_TEST_MCOLLECT")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };
 

@@ -34,6 +34,7 @@ import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
+import { GCModule, GCLinks, GCComponents, GCReducers } from "@mseva/digit-ui-module-gc";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
@@ -87,7 +88,8 @@ const enabledModules = [
   "ChallanGeneration",
   "RentAndLease",
   "BPAStakeholder",
-  "Layout"
+  "Layout",
+  "GarbageCollection",
 ];
 
 const initTokens = (stateCode) => {
@@ -158,6 +160,9 @@ const initDigitUI = () => {
     ...PGRAIComponents,
     NOCModule,
     NOCLinks,
+    GCModule,
+    GCLinks,
+    ...GCComponents,
   });
   initFSMComponents();
   initPGRComponents();
@@ -189,6 +194,7 @@ const initDigitUI = () => {
     tl: TLReducers(initData),
     ndc: NDCReducers(initData),
     ptr: PTRReducers(initData),
+    gc: GCReducers(initData),
     ads: ADSReducers(initData),
     chb: CHBReducers(initData),
     noc: NOCReducers(initData),

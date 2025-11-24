@@ -54,6 +54,13 @@ import {
   PTRReducers,
 } from "@mseva/digit-ui-module-ptr";
 import {
+  GCModule,
+  GCLinks,
+  GCComponents,
+  GCReducers,
+} from "@mseva/digit-ui-module-gc";
+
+import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
@@ -135,6 +142,7 @@ const enabledModules = [
   "NDC",
   "BPAStakeholder",
   "Layout",
+  "GarbageCollection",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -172,6 +180,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PGRAIModule,
   PGRAILinks,
   ...PGRAIComponents,
+  GCModule,
+  GCLinks,
+  ...GCComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -203,6 +214,7 @@ const moduleReducers = (initData) => ({
   swach: SWACHReducers(initData),
   ndc: NDCReducers(initData),
   ptr: PTRReducers(initData),
+  gc: GCReducers(initData),
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),
   noc: NOCReducers(initData),

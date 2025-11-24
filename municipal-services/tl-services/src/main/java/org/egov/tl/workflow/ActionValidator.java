@@ -73,8 +73,8 @@ public class ActionValidator {
                     break;
 
                 case businessService_BPA:
-                    if (!TRIGGER_NOWORKFLOW.equalsIgnoreCase(license.getAction())) {
-                        errorMap.put("INVALID ACTION", "Action should be NOWORKFLOW during create");
+                    if (!(TRIGGER_NOWORKFLOW.equalsIgnoreCase(license.getAction()) || ACTION_APPLY.equalsIgnoreCase(license.getAction()))) {
+                        errorMap.put("INVALID ACTION", "Action should be NOWORKFLOW or APPLY during create");
                     }
                     break;
             }

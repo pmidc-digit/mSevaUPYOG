@@ -413,14 +413,14 @@ public class TradeUtil {
      * @param businessService The businessService configuration
      * @return Map of is to isStateUpdatable
      */
-    public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<TradeLicense> searchresult) {
+    public Map<String, Boolean> getIdToIsStateUpdatableMap(Map<String, BusinessService> businessServiceMap, List<TradeLicense> searchresult) {
         Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
         searchresult.forEach(result -> {
             String nameofBusinessService = result.getBusinessService();
             if (StringUtils.equals(nameofBusinessService,businessService_BPA) && (result.getStatus().equalsIgnoreCase(STATUS_INITIATED))) {
                 idToIsStateUpdatableMap.put(result.getId(), true);
             } else
-                idToIsStateUpdatableMap.put(result.getId(), workflowService.isStateUpdatable(result.getStatus(), businessService));
+                idToIsStateUpdatableMap.put(result.getId(), workflowService.isStateUpdatable(result.getStatus(), businessServiceMap.get(result.getTenantId())));
         });
         return idToIsStateUpdatableMap;
     }

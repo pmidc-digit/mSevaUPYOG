@@ -48,7 +48,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
             <SearchForm {...props}>
                 <MobilePopUpCloseButton />
                 <div className="MobilePopupHeadingWrapper">
-                <h2>{t("ACTION_TEST_SEARCH_NOC_APPLICATION")}:</h2>
+                <h2>{t("ACTION_TEST_SEARCH_CLU_APPLICATION")}:</h2>
                 </div>
                 <SearchFormFieldsComponent onSubmit={onSubmit} handleSubmit={handleSubmit} isMobileView={true} {...{ closeMobilePopupModal }} />
             </SearchForm>
@@ -107,7 +107,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
                 data: propsMobileInboxCards,
                 isTwoDynamicPrefix: false,
                 linkPrefix: `/digit-ui/citizen/obps/clu/application-overview/`,
-                serviceRequestIdKey: t("BPA_APPLICATION_NUMBER"),
+                serviceRequestIdKey: t("BPA_APPLICATION_NUMBER_LABEL"),
             }}
             />
         )}

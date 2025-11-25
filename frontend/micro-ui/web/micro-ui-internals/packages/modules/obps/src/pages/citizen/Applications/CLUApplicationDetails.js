@@ -252,7 +252,7 @@ const CLUApplicationDetails = () => {
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/citizen/payment/collect/${businessServiceCode}/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/citizen/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       setSelectedAction(action);
     }

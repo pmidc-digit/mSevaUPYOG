@@ -24,7 +24,7 @@ const SearchFormFieldsComponent = (props) => {
   return (
     <>
       <SearchField>
-        <label>{t("BPA_APPLICATION_NUMBER")}</label>
+        <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
       

@@ -14,7 +14,6 @@ const useCLUTableConfig = ({
   onSortingByData,
 }) => {
 
-  console.log("parent route", parentRoute);
   const { t } = useTranslation()
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>
@@ -22,14 +21,14 @@ const useCLUTableConfig = ({
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("BPA_APPLICATION_NUMBER"),
+        Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationId",
         disableSortBy: true,
         Cell: ({ row }) => {
           console.log("row-route", row);
           return (
             <div>
-              <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original["applicationId"]}`}>
+              <Link to={`${parentRoute}/clu/application-overview/${row.original["applicationId"]}`}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>

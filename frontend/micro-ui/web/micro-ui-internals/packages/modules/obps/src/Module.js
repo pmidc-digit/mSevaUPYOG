@@ -81,7 +81,7 @@ import CLUMyApplications from "./pages/citizen/Applications/CLUMyApplications";
 import CLUEditApplication from "./pageComponents/EditApplication/EditCLUApplication";
 import CLUApplicationDetails from "./pages/citizen/Applications/CLUApplicationDetails";
 import CLUSearchApplication from "./pages/citizen/CLUSearchApplication/index";
-import CLUInbox from "./pages/employee/Inbox/CLUInbox";
+import CLUInbox from "./pages/employee/cluInbox/CLUInbox"
 import CLUEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/CLUApplicationOverview";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";

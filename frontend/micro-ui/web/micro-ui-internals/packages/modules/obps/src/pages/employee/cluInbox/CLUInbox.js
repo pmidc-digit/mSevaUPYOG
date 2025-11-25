@@ -36,20 +36,20 @@ const CLUInbox = ({ parentRoute }) => {
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, searchForm: payload.data })
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, searchForm: payload.data })
         return { ...state, searchForm: payload.data }
       case "mutateFilterForm":
-        Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, filterForm: payload.data })
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, filterForm: payload.data })
         return { ...state, filterForm: payload.data }
       case "mutateTableForm":
-        Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, tableForm: payload.data })
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, tableForm: payload.data })
         return { ...state, tableForm: payload.data }
       default:
         break
     }
   }
 
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("LAYOUT.INBOX")
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("CLU.INBOX")
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null)
@@ -90,12 +90,12 @@ const CLUInbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([])
   const [totalCountData, setTotalCountData] = useState(0)
 
-  const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
+  const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useCLUInbox({
     tenantId,
     filters: { ...formState },
   })
 
-  console.log("  Inbox hook data:", inboxData)
+  console.log("inboxData ==>", inboxData)
 
   useEffect(() => {
     if (inboxData) {
@@ -203,11 +203,11 @@ const CLUInbox = ({ parentRoute }) => {
 
   const PropsForInboxLinks = {
     logoIcon: <CaseIcon />,
-    headerText: "ACTION_TEST_LAYOUT",
+    headerText: "ACTION_TEST_CLU_HOME",
     links: [
       // {
-      //   text: t("LAYOUT_NEW_APPLICATION"),
-      //   link: "/digit-ui/employee/obps/layout/new-application",
+      //   text: t("CLU_NEW_APPLICATION"),
+      //   link: "/digit-ui/employee/obps/clu/new-application",
       // },
     ],
   }

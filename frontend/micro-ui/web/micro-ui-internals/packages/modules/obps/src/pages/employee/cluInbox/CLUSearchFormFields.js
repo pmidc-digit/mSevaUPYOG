@@ -20,11 +20,11 @@ const CLUSearchFormFields = ({ registerRef, searchFormState, searchFieldComponen
               style={window.location.href.includes("/citizen") ? gridStyles() : { textAlign: "start" }}
             >
               <SearchField>
-                <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
+                <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
                 <TextInput name="applicationNo" inputRef={registerRef({})} />
               </SearchField>
               <SearchField>
-                <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>
+                <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
                 <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
               <div className="search-action-wrapper" style={{ width: "100%" }}>
@@ -39,11 +39,11 @@ const CLUSearchFormFields = ({ registerRef, searchFormState, searchFieldComponen
   return (
     <React.Fragment>
       <SearchField>
-        <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
+        <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={registerRef({})} />
       </SearchField>
       <SearchField>
-        <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>
+        <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
         <TextInput name="mobileNumber" inputRef={registerRef({})} />
       </SearchField>
     </React.Fragment>

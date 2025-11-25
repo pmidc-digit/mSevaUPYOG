@@ -26,7 +26,7 @@ public class DocumentRepository {
 	@Autowired
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-	private static final String WS_APP_DOC_INSERT_QUERY = "Insert into eg_ws_applicationdocument(id, tenantid,documenttype ,filestoreid,wsid,active ,documentuid ,createdby,lastmodifiedby,createdtime ,lastmodifiedtime) values(:id, :tenantid,:documenttype ,:filestoreid,:wsid,:active ,:documentuid ,:createdby,:lastmodifiedby,:createdtime ,:lastmodifiedtime);";
+	private static final String WS_APP_DOC_INSERT_QUERY = "Insert into eg_ws_applicationdocument(id, tenantid,documenttype ,filestoreid,wsid,active ,applicationid ,createdby,lastmodifiedby,createdtime ,lastmodifiedtime) values(:id, :tenantid,:documenttype ,:filestoreid,:wsid,:active ,:applicationid ,:createdby,:lastmodifiedby,:createdtime ,:lastmodifiedtime);";
 
 	private static final String WS_CONNECTION_UUID_QUERY = "select id,connectionno from eg_gc_connection where connectionno in(:connectionNo) and tenantid=:tenantId";
 
@@ -38,7 +38,7 @@ public class DocumentRepository {
 			documentBatchValues.add(new MapSqlParameterSource("id", UUID.randomUUID().toString())
 					.addValue("documenttype", document.getDocumentType())
 					.addValue("filestoreid", document.getFileStoreId()).addValue("gcid", document.getConnectionUid())
-					.addValue("active", document.getStatus().toString()).addValue("documentuid", null)
+					.addValue("active", document.getStatus().toString()).addValue("applicationid", null)
 					.addValue("createdby", document.getUserUid()).addValue("lastmodifiedby", document.getUserUid())
 					.addValue("createdtime", new Date().getTime()).addValue("lastmodifiedtime", new Date().getTime())
 					.addValue("tenantid", document.getTenantId()).getValues());

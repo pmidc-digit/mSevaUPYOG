@@ -348,7 +348,7 @@ public class EnrichmentService {
 			connection.getDocuments().forEach(document -> {
 				if (document.getId() == null) {
 					document.setId(UUID.randomUUID().toString());
-					document.setDocumentUid(UUID.randomUUID().toString());
+					document.setApplicationId(garbageConnectionRequest.getGarbageConnection().getId());
 					document.setStatus(Status.ACTIVE);
 				}
 				document.setAuditDetails(auditDetails);

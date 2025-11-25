@@ -105,3 +105,7 @@ CREATE SEQUENCE SEQ_GC_APP_ID
     CREATE SEQUENCE DC_SEQ_GC_APP_ID
         START WITH 1
         INCREMENT BY 1
+
+
+ALTER TABLE public.eg_gc_applicationdocument
+RENAME COLUMN documentuid TO applicationid;

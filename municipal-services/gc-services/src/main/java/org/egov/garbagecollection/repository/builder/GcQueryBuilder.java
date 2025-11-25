@@ -46,7 +46,7 @@ public class GcQueryBuilder {
 			+ " conn.action, conn.adhocpenalty, conn.adhocrebate, conn.adhocpenaltyreason, conn.applicationType, conn.channel, conn.dateEffectiveFrom,"
 			+ " conn.adhocpenaltycomment, conn.adhocrebatereason, conn.adhocrebatecomment, conn.createdBy as gc_createdBy, conn.lastModifiedBy as gc_lastModifiedBy,"
 			+ " conn.createdTime as gc_createdTime, conn.lastModifiedTime as gc_lastModifiedTime,conn.additionaldetails,connectionholder.tenantid as holdertenantid, "
-			+ " conn.locality, conn.isoldapplication,conn.disconnectionreason, conn.isDisconnectionTemporary, gc.disconnectionExecutionDate, document.id as doc_Id, document.documenttype, document.filestoreid, document.active as doc_active ,connectionholder.userid as userid,connectionholder.relationship as holderrelationship, connectionholder.status as holderstatus, connectionholder.connectionid as holderapplicationId"
+			+ " conn.locality, conn.isoldapplication,conn.disconnectionreason, conn.isDisconnectionTemporary, gc.disconnectionExecutionDate, document.id as doc_Id, document.gcid as gc_Id, document.documenttype, document.filestoreid, document.active as doc_active ,connectionholder.userid as userid,connectionholder.relationship as holderrelationship, connectionholder.status as holderstatus, connectionholder.connectionid as holderapplicationId"
 			+ " FROM eg_gc_connection conn "
 			+  INNER_JOIN_STRING 
 			+" eg_gc_service gc ON gc.connection_id = conn.id"

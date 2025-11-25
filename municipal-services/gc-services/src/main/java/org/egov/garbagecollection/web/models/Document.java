@@ -16,7 +16,7 @@ import org.hibernate.validator.constraints.SafeHtml;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@EqualsAndHashCode(of= {"fileStoreId","documentUid","id"})
+@EqualsAndHashCode(of= {"fileStoreId","applicationId","id"})
 public class Document {
 
   @SafeHtml
@@ -34,8 +34,8 @@ public class Document {
   private String fileStoreId ;
 
   @SafeHtml
-  @JsonProperty("documentUid")
-  private String documentUid ;
+  @JsonProperty("applicationId")
+  private String applicationId;
 
   @JsonProperty("auditDetails")
   private AuditDetails auditDetails;

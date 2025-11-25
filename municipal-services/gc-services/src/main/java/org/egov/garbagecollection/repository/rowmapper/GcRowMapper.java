@@ -128,7 +128,7 @@ public class GcRowMapper implements ResultSetExtractor<List<GarbageConnection>> 
 			applicationDocument.setId(document_Id);
 			applicationDocument.setDocumentType(rs.getString("documenttype"));
 			applicationDocument.setFileStoreId(rs.getString("filestoreid"));
-			applicationDocument.setDocumentUid(rs.getString("doc_Id"));
+			applicationDocument.setApplicationId(rs.getString("gc_Id"));
 			applicationDocument.setStatus(Status.fromValue(isActive));
 			garbageConnection.addDocumentsItem(applicationDocument);
 		}

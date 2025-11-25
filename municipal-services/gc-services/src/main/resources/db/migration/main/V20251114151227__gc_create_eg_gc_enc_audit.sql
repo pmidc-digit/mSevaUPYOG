@@ -8,3 +8,4 @@ CREATE TABLE IF NOT EXISTS eg_gc_enc_audit (
   encryptiontime bigint NOT NULL,
   CONSTRAINT pk_eg_gc_enc_audit_id PRIMARY KEY (id)
 );
+

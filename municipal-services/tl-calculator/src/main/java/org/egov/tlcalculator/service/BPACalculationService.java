@@ -138,6 +138,7 @@ public class BPACalculationService {
         BillingSlabSearchCriteria searchCriteria = new BillingSlabSearchCriteria();
         searchCriteria.setTenantId(license.getTenantId());
         searchCriteria.setTradeType(tradetype);
+        searchCriteria.setApplicationType(license.getApplicationType() != null ? license.getApplicationType().toString() : "");
         BillingSlab billingSlab = bpaBillingSlabService.search(searchCriteria, requestInfo);
         if (billingSlab == null) {
 

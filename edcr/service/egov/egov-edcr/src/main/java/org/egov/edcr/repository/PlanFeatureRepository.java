@@ -213,8 +213,8 @@ public class PlanFeatureRepository {
         features.add(pf);
         
        
-        pf = new PlanFeature(StoreRoom.class);
-        features.add(pf);
+//        pf = new PlanFeature(StoreRoom.class);
+//        features.add(pf);
 
         pf = new PlanFeature(Kitchen.class);
         features.add(pf);

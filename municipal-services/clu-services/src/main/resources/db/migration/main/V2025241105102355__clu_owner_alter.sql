@@ -3,8 +3,10 @@ ALTER TABLE public.eg_clu_owner
 ADD COLUMN uuid VARCHAR(256);
 
 
-ALTER TABLE public.eg_clu_owner
-ALTER COLUMN uuid SET NOT NULL;
+UPDATE public.eg_clu_owner lo
+SET uuid = u.uuid
+FROM public.eg_user u
+WHERE u.id::text = lo.id;
 
 
 ALTER TABLE public.eg_clu_owner

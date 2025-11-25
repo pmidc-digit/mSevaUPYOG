@@ -65,6 +65,8 @@ import org.kabeja.math.MathUtils;
 import org.kabeja.xml.SAXSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,6 +101,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     @Override
     public PlanDetail extract(PlanDetail planDetail) {
+    	LOG.info("inside extract()");
 
         Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
         boolean mdmsDxfToPdfEnabled = false;
@@ -279,6 +282,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     @Override
     public PlanDetail validate(PlanDetail planDetail) {
+    	LOG.info("inside validate()");
 
         List<EdcrPdfDetail> layerNameList = planDetail.getEdcrPdfDetails();
         // get a particular layer from the document and enable the layer
@@ -304,7 +308,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     private void sanitize2(String fileName, DXFDocument dxfDocument, EdcrPdfDetail edcrPdfDetail, PlanDetail pl) {
         // StringBuffer standardViolations = new StringBuffer();
-
+    	LOG.info("inside sanitize2()");
         boolean addMeasurement = false;
         if (edcrPdfDetail.getLayers() != null)
             Outer: for (String layer : edcrPdfDetail.getLayers()) {
@@ -411,7 +415,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     private void sanitize(String fileName, DXFDocument dxfDocument, EdcrPdfDetail edcrPdfDetail, PlanDetail pl) {
         // StringBuffer standardViolations = new StringBuffer();
-
+    	LOG.info("inside sanitize()");
         boolean addMeasurement = false;
         if (edcrPdfDetail.getLayers() != null)
             Outer: for (String layer : edcrPdfDetail.getLayers()) {
@@ -572,7 +576,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void enablePrintableLayers(EdcrPdfDetail edcrPdfDetail, DXFDocument dxfDocument) {
-
+    	LOG.info("inside enablePrintableLayers()");
         if (edcrPdfDetail.getLayers() != null)
             for (String layer : edcrPdfDetail.getLayers()) {
                 // Enable layer for Print
@@ -585,6 +589,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void disablePrintableLayers(EdcrPdfDetail edcrPdfDetail, DXFDocument dxfDocument) {
+    	LOG.info("inside disablePrintableLayers()");
         if (edcrPdfDetail.getLayers() != null)
             for (String layer : edcrPdfDetail.getLayers()) {
                 // Enable layer for Print
@@ -597,7 +602,8 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void addPolygonMeasurement(DXFLayer dxfLayer, DXFEntity e, EdcrPdfDetail detail, PlanDetail pl) {
-        DXFPolyline pline = (DXFPolyline) e;
+    	LOG.info("inside addPolygonMeasurement()");
+    	DXFPolyline pline = (DXFPolyline) e;
         Iterator vertexIterator = pline.getVertexIterator();
         DXFVertex point1 = null;
         DXFVertex first = null;
@@ -746,6 +752,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     private void printNext(DXFLayer dxfLayer, EdcrPdfDetail detail, DXFPolyline pline, DXFVertex first,
             DXFVertex point2) {
+    	LOG.info("inside printNext()");
         String content;
         if (pline.isClosed()) {
             BigDecimal length = BigDecimal.valueOf(MathUtils.distance(first.getPoint(), point2.getPoint()))
@@ -780,8 +787,10 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
         }
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     private File convertDxfToPdf(DXFDocument dxfDocument, String fileName, String layerName,
             EdcrPdfDetail edcrPdfDetail) {
+    	LOG.info("inside convertDxfToPdf()");
 
         File fileOut = new File(layerName + ".pdf");
 
@@ -828,9 +837,12 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
         return null;
     }
+    		
+    
+
 
     private List<String> checkNegetiveWidth(DXFLayer dxfLayer, EdcrPdfDetail pdfDetail) {
-
+    	LOG.info("inside checkNegetiveWidth()");
         StringBuilder errorBuffer = new StringBuilder();
 
         List<String> blks = new ArrayList<>();
@@ -889,13 +901,14 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private boolean isDuplicatePresent(List<String> layerList) {
+    	LOG.info("inside isDuplicatePresent()");
         Set<String> duplicateLayerList = layerList.stream().filter(i -> Collections.frequency(layerList, i) > 1)
                 .collect(Collectors.toSet());
         return duplicateLayerList.isEmpty() ? false : true;
     }
 
     private void sanitizeTexts(EdcrPdfDetail pdfDetail, DXFDocument doc, DXFLayer dxfLayer) {
-
+    	LOG.info("inside sanitizeTexts()");
         List texts = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_TEXT);
         StringBuilder message = new StringBuilder();
         if (texts != null && texts.size() > 0) {
@@ -943,7 +956,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void sanitizeMtext(EdcrPdfDetail pdfDetail, DXFDocument doc, DXFLayer dxfLayer) {
-
+    	LOG.info("inside sanitizeMtext()");
         List mtexts = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_MTEXT);
         StringBuilder message = new StringBuilder();
         if (mtexts != null && mtexts.size() > 0) {
@@ -1002,7 +1015,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void sanitizeDimension(EdcrPdfDetail pdfDetail, DXFDocument doc, DXFLayer dxfLayer) {
-
+    	LOG.info("inside sanitizeDimension()");
         List dimensions = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_DIMENSION);
         StringBuilder message = new StringBuilder();
         if (dimensions != null && dimensions.size() > 0) {
@@ -1069,7 +1082,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private List<EdcrPdfDetail> getPdfLayerNames(PlanDetail planDetail, String appConfigValue) {
-
+    	LOG.info("inside getPdfLayerNames()");
         boolean evaluate = false;
         List<EdcrPdfDetail> pdfLayers = new ArrayList<>();
         EdcrPdfDetail pdfdetail = new EdcrPdfDetail();
@@ -1242,6 +1255,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private List<EdcrPdfDetail> getPdfLayerNames(PlanDetail planDetail, DxfToPdfLayerConfig config) {
+    	LOG.info("inside getPdfLayerNames()");
         List<EdcrPdfDetail> pdfLayers = new ArrayList<>();
         boolean evaluate = false;
         EdcrPdfDetail pdfdetail = new EdcrPdfDetail();
@@ -1377,6 +1391,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private String constructIntoSingleLineConfig(DxfToPdfLayerConfig config) {
+    	LOG.info("inside constructIntoSingleLineConfig()");
         StringBuilder layerRegEx = new StringBuilder();
         Iterator<PlanPdfLayerConfig> itr = config.getPlanPdfLayerConfigs().iterator();
         while (itr.hasNext()) {
@@ -1395,6 +1410,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void getLayerColorConfigs(PlanDetail planDetail, EdcrPdfDetail pdfdetail, String s) {
+    	LOG.info("inside getLayerColorConfigs()");
         if (s.indexOf(":") != -1) {
 
             String[] layerAndConf = s.split(":");
@@ -1448,6 +1464,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void getLayerColorConfigs(PlanDetail planDetail, EdcrPdfDetail pdfdetail, PlanPdfLayerConfig planLayer) {
+    	LOG.info("inside getLayerColorConfigs()");
 
         List<String> layerNamesLike = Util.getLayerNamesLike(planDetail.getDxfDocument(), planLayer.getLayerName());
 

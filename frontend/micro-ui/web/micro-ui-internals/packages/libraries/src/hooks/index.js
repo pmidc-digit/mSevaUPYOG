@@ -410,6 +410,8 @@ import useLayoutDocumentSearch from "./obps/useLayoutDocumentSearch";
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
+import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile  } from "./obps/useCLUSearchApplication";
+import useCLUInbox from "./obps/useCLUInbox";
 
 const pgr = {
   useComplaintDetails,
@@ -635,8 +637,11 @@ const obps = {
   useLayoutRoadType, 
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
-  useCLUFeeCalculator
-
+  useCLUFeeCalculator,
+  useCLUSearchApplication,
+  useCLUCitizenSearchApplication,
+  useCLUSearchApplicationByIdOrMobile,
+  useCLUInbox
 };
 
 const events = {

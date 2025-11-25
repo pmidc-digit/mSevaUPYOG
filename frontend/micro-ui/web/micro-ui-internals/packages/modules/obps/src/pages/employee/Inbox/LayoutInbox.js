@@ -6,6 +6,7 @@ import LayoutSearchFormFields from "./LayoutSearchFormFields"
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import useLayoutTableConfig from "./useLayoutTableConfig";
 import { Link } from "react-router-dom";
+import { businessServiceListLayout } from "../../../utils";
 
 
 
@@ -25,6 +26,7 @@ const LayoutInbox = ({ parentRoute }) => {
     applicationStatus: [],
     businessService: "Layout_mcUp",
     assignee: "ASSIGNED_TO_ALL",
+    businessServiceArray: businessServiceListLayout(true) || [],
   }
 
   const tableOrderFormDefaultValues = {
@@ -52,6 +54,8 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("LAYOUT.INBOX")
 
+  console.log(InboxObjectInSessionStorage, "INBOX SESSION");
+
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null)
     setSearchFormValue("applicationNo", null)
@@ -61,6 +65,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const onFilterFormReset = (setFilterFormValue) => {
     setFilterFormValue("moduleName", "layout-services")
     setFilterFormValue("applicationStatus", "")
+    setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL")
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues })
   }
@@ -97,6 +102,8 @@ const LayoutInbox = ({ parentRoute }) => {
   })
 
   console.log("  Inbox hook data:", inboxData)
+
+  
 
   useEffect(() => {
     if (inboxData) {
@@ -136,6 +143,14 @@ const LayoutInbox = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } })
   }
 
+    const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(
+    tenantId,
+    "revenue",
+    {},
+    t
+  );
+
+
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, searchFieldComponents }) => (
       <LayoutSearchFormFields {...{ registerRef, searchFormState, searchFieldComponents }} />
@@ -154,10 +169,12 @@ const LayoutInbox = ({ parentRoute }) => {
           setFilterFormValue,
           filterFormState: formState?.filterForm,
           getFilterFormValue,
+          localitiesForEmployeesCurrentTenant,
+          loadingLocalitiesForEmployeesCurrentTenant,
         }}
       />
     ),
-    [statusData, isInboxLoading],
+    [statusData, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant],
   )
 
   const onSearchFormSubmit = (data) => {
@@ -212,6 +229,8 @@ const LayoutInbox = ({ parentRoute }) => {
       },
     ],
   }
+
+  
 
   return (
     <>

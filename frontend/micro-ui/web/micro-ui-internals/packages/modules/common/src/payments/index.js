@@ -162,6 +162,30 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
   return { bookingData };
 };
 
+export const amountToWords =(num) =>{
+  if (num == null || num === "") return "Zero Rupees";
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+                "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
+                "Seventeen","Eighteen","Nineteen"],
+        tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"],
+        units = ["","Thousand","Lakh","Crore"];
+
+  const chunk = n => n < 20 ? ones[n] :
+                 n < 100 ? tens[Math.floor(n/10)] + (n%10? " " + ones[n%10]:"") :
+                 ones[Math.floor(n/100)] + " Hundred" + (n%100? " " + chunk(n%100):"");
+
+  const toWords = n => {
+    if (!n) return "";
+    let parts = [n%1000], res = "";
+    n = Math.floor(n/1000);
+    while(n){ parts.push(n%100); n=Math.floor(n/100); }
+    for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";
+    return res.trim();
+  };
+
+  let [r,p] = num.toString().split(".").map(x=>+x||0);
+  return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
+}
 export const ChallanData = (tenantId, consumerCode) => {
   const wfData = Digit.Hooks.useWorkflowDetails({
     tenantId,

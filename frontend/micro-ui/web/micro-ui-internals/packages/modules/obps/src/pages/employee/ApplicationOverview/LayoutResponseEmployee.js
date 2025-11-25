@@ -1,9 +1,10 @@
 
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Banner, Card, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components"
 import { useTranslation } from "react-i18next"
 import { useHistory, useLocation } from "react-router-dom"
+import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData"
 // import { getLayoutAcknowledgementData } from "./get-layoutacknowledgement-data"
 
 
@@ -32,18 +33,18 @@ const LayoutResponseEmployee = (props) => {
     history.push(`/digit-ui/employee/obps/layout/inbox`)
   }
 
-//   const handleDownloadPdf = async () => {
-//     const Property = layoutData
-//     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId)
-//     const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t)
-//     Digit.Utils.pdf.generateBPAREG(acknowledgementData)
-//   }
+  const handleDownloadPdf = async () => {
+    const Property = layoutData
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId)
+    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t)
+    Digit.Utils.pdf.generateBPAREG(acknowledgementData)
+  }
 
   return (
     <div>
       <Card>
         <Banner
-          message={t(`LAYOUT_APPLICATION_${layoutData?.workflow?.action}_SUCCESS_HEADER`)}
+          message={t(`LAYOUT_APPLICATION_FORWARD_SUCCESS_HEADER`)}
           applicationNumber={applicationNo}
           info={layoutData?.applicationStatus === "REJECTED" ? "" : t("LAYOUT_APPLICATION_NUMBER")}
           successful={layoutData?.applicationStatus === "REJECTED" ? false : true}
@@ -58,7 +59,7 @@ const LayoutResponseEmployee = (props) => {
         ) : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          <SubmitBar label={t("CORE_COMMON_GO_TO_LAYOUT")} onSubmit={onGoToLayout} />
+          <SubmitBar label={t("Go To Inbox")} onSubmit={onGoToLayout} />
         </ActionBar>
       </Card>
     </div>

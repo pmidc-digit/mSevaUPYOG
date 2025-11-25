@@ -29,7 +29,7 @@ export const configBPAREGApproverApplication = ({
             {
                 body: [
                     {
-                        label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
+                        label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
                         placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
                         type: "dropdown",
                         populators: !checkCondtions ? null : (
@@ -53,7 +53,7 @@ export const configBPAREGApproverApplication = ({
                         ),
                     },
                     {
-                        label: t("WF_COMMON_COMMENTS"),
+                        label: `${t("WF_COMMON_COMMENTS")}*`,
                         type: "textarea",
                         populators: {
                             name: "comments",

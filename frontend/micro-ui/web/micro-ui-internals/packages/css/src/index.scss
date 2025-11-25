@@ -248,11 +248,6 @@
   margin: 0px 8px;
 }
 
-.form-pt-dropdown-only {
-  .options-card {
-    position: unset;
-  }
-}
 .application-table-container {
   @apply mt-lg ml-lg flex-1;
 }
@@ -782,7 +777,7 @@ input[type="number"] {
 }
 .inboxButton {
   border: none;
-  color: white;
+  color: #4c5656;
   text-align: center;
   text-decoration: none;
   display: inline-block;

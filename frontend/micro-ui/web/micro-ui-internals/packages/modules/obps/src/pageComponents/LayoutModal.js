@@ -1,9 +1,10 @@
 
 
 
-import { Loader, Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components"
+import { Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components"
 import React,{ useState, useEffect } from "react"
 import { LayoutModalConfig } from "../config/LayoutModalConfig"
+import { Loader } from "../config/Loader"
 
 
 const Heading = (props) => {
@@ -46,6 +47,8 @@ t,
   errorOne,
   closeToastOne,
   getEmployees,
+  setShowToast,
+  isSubmitting
 }) => {
   const [config, setConfig] = useState({})
   const [defaultValues, setDefaultValues] = useState({})
@@ -255,6 +258,8 @@ setConfig(formConfig);
         defaultValues={defaultValues}
         formId="modal-action"
       />
+      {PTALoading && <Loader page={true} />}
+      {isSubmitting && <Loader page={true} />}
       {showToast && (
         <Toast
           error={showToast?.error}
@@ -265,6 +270,9 @@ setConfig(formConfig);
         />
       )}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
+        {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} />}
+
+             
     </Modal>
   ) : (
     <Loader />

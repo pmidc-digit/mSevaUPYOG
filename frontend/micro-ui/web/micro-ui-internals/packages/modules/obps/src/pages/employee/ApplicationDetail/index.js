@@ -11,8 +11,23 @@ const ApplicationDetail = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = tenantId?.split('.')[0]
   const [showToast, setShowToast] = useState(null);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   const [showOptions, setShowOptions] = useState(false);
   const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb"? "pb.punjab" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb"? "pb.punjab" : tenantId }, {});
+  console.log('applicationDetails of obps here', applicationDetails)
+ const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
+  console.log('ulbType', ulbType)
+const licenseSection = applicationDetails?.applicationDetails?.find(
+  (section) => section.title === "BPA_LICENSE_DETAILS_LABEL"
+);
+
+const licenseType = t(licenseSection?.values?.find(
+  (val) => val.title === "BPA_LICENSE_TYPE"
+)?.value);
+
+console.log("licenseType:", licenseType);
+
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [viewTimeline, setViewTimeline]=useState(false);
   const {
@@ -42,10 +57,10 @@ const ApplicationDetail = () => {
   };
   let dowloadOptions = [];
   console.log("applicationDetails",applicationDetails)
-  if (applicationDetails?.payments?.length > 0) {
+  if (applicationDetails?.payments?.length > 0 && licenseType) {
     dowloadOptions.push({
       label: t("TL_RECEIPT"),
-      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments),
+      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb.punjab",applicationDetails?.payments,licenseType, ulbType),
     })
   }
 
@@ -53,18 +68,7 @@ const ApplicationDetail = () => {
     <div className={"employee-main-application-details"}>
         <div  className={"employee-application-details"}>
         <Header>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-        <div>
-        {applicationDetails?.payments?.length > 0 && 
-        <MultiLink
-          className="multilinkWrapper"
-          onHeadClick={() => setShowOptions(!showOptions)}
-          displayOptions={showOptions}
-          options={dowloadOptions}
-          downloadBtnClassName={"employee-download-btn-className"}
-          optionsClassName={"employee-options-btn-className"}
-        />}
-        </div>
+        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>        
         {workflowDetails?.data?.timeline?.length>0 && (
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         )}

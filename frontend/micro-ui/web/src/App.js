@@ -134,7 +134,8 @@ const enabledModules = [
   "RentAndLease",
   "NDC",
   "BPAStakeholder",
-  "CLU"
+  "CLU",
+  "Layout",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,

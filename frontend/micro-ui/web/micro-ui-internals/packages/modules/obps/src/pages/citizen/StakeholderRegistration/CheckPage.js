@@ -1,14 +1,5 @@
-import {
-  Card,
-  CardLabel,
-  LabelFieldPair,
-  SubmitBar,
-  Loader, 
-  ActionBar,
-  BackButton,
-  Menu
-} from "@mseva/digit-ui-react-components";
-import React, { useRef, useState } from "react";
+import { Card, CardLabel, LabelFieldPair, SubmitBar, Loader, ActionBar, BackButton, Menu } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../../../components/Timeline";
@@ -16,122 +7,164 @@ import OBPSDocument from "../../../pageComponents/OBPSDocuments";
 import { pad } from "lodash";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 import { useParams } from "react-router-dom";
-
+import BPADocuments from "../../../pageComponents/BPADocuments";
 
 const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
-  const { t } = useTranslation()
-  const { id } = useParams()
-  const { pathname: url } = useLocation()
-  const history = useHistory()
-  const match = useRouteMatch()
-  const user = Digit.UserService.getUser()
+  const { t } = useTranslation();
+  const { id } = useParams();
+  const { pathname: url } = useLocation();
+  const history = useHistory();
+  const match = useRouteMatch();
+  const user = Digit.UserService.getUser();
 
-  const [displayMenu, setDisplayMenu] = useState(false)
-  const menuRef = useRef()
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const menuRef = useRef();
+  // console.log(value, );
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
-  const tenant = Digit.ULBService.getStateId()
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  console.log(tenantId, "YYYYYYYYY");
+  const tenant = Digit.ULBService.getStateId();
 
-  const isopenlink = window.location.href.includes("/openlink/")
-  const isMobile = window.Digit.Utils.browser.isMobile()
-  const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false
-  const storedData = Digit.SessionStorage.get("Digit.BUILDING_PERMIT")
+  console.log(tenant, "TENANT");
 
-  const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {}
-  const { result, formData, documents } = safeValue
+  const isopenlink = window.location.href.includes("/openlink/");
+  const isMobile = window.Digit.Utils.browser.isMobile();
+  const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
+  const storedData = Digit.SessionStorage.get("Digit.BUILDING_PERMIT");
 
-  console.log(formData, "FORM DATA IN CHECK PAGE")
-  console.log(safeValue, "SAFE VAKLUE IN CHECK PAGE")
+  const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
+  const { result, formData, documents } = safeValue;
+  const isArchitect = formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect");
 
-  console.log(safeValue, "SAFE VAKLUE")
+  console.log(formData, "FORM DATA IN CHECK PAGE");
+  console.log(safeValue, "SAFE VAKLUE IN CHECK PAGE");
 
-  const status = value?.result?.Licenses?.[0]?.status
-  console.log(value, "EDIT FORMDATA CHECK")
-  const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED"
-  console.log(isCitizenEditable, "EDIT CHECK")
+  console.log(safeValue, "SAFE VAKLUE");
 
-  const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject")
-  const userInfoData = userInfos ? JSON.parse(userInfos) : {}
-  const userInfo = userInfoData?.value
-  const requestor = userInfo?.info?.mobileNumber
+  const status = value?.result?.Licenses?.[0]?.status;
+  console.log(value, "EDIT FORMDATA CHECK");
+  const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
+  console.log(isCitizenEditable, "EDIT CHECK");
 
-  console.log(requestor, "PPPP")
+  const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+  const userInfoData = userInfos ? JSON.parse(userInfos) : {};
+  const userInfo = userInfoData?.value;
+  const requestor = userInfo?.info?.mobileNumber;
 
-  const userRoles = user?.info?.roles?.map((e) => e.code)
-  const bparegData = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 }).data
-  const isBPAREGLoading = Digit.Hooks.obps.useBPAREGSearch(
-    tenantId,
-    {},
-    { mobileNumber: requestor },
-    { cacheTime: 0 },
-  ).isLoading
+  console.log(requestor, "PPPP");
 
-  const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType
-  const moduleCode = tradeType ? tradeType.split(".")[0] : null
-  const applicationNo = bparegData?.Licenses?.[0]?.applicationNumber
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+  const {data: bparegData, isLoading: isBPAREGLoading} = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });  
 
-  console.log("Dynamic moduleCode:", moduleCode)
+  const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
+  const moduleCode = tradeType ? tradeType.split(".")[0] : null;
+  const applicationNo = bparegData?.Licenses?.[0]?.applicationNumber;
+console.log(bparegData, "ggggggg");
+  const getDocs = JSON.parse(sessionStorage.getItem("FinalDataDoc"));
+  const finalDoc = getDocs?.result?.Licenses?.[0];
 
+  const tradeTypeVal = finalDoc?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
+
+  const mainType = tradeTypeVal?.split(".")[0];
+
+  useEffect(() => {
+    if(!isBPAREGLoading && bparegData){
+      const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
+      const updatedFinalData = {
+        ...sessionData,
+        value: {
+          ...sessionData?.value,
+          result: bparegData,
+        },
+      };
+      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(updatedFinalData));
+    }
+  },[bparegData, isBPAREGLoading])
+
+  console.log("Dynamic moduleCode:", moduleCode);
+  console.log("finalDoc===????", finalDoc);
+  console.log("mainType????", mainType);
+
+  const checkTenant = mainType == "ARCHITECT" ? "pb.punjab" : tenantId;
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId,
-    id: applicationNo || id,
-    moduleCode: moduleCode || "ENGINEER",
-  })
+    tenantId: checkTenant,
+    id: finalDoc?.applicationNumber || id,
+    moduleCode: mainType || "ENGINEER",
+  });
 
-  const consumerCode = result?.Licenses[0].applicationNumber
-  const fetchBillParams = { consumerCode }
+  const consumerCode = result?.Licenses[0].applicationNumber;
+
+  console.log(consumerCode, "CONNNN");
+  const fetchBillParams = { consumerCode };
 
   const { data: paymentDetails, isLoading } = Digit.Hooks.obps.useBPAREGgetbill(
-    { businessService: "BPAREG", ...fetchBillParams, tenantId: tenant || tenantId.split(".")[0] },
+    // { businessService: "BPAREG", ...fetchBillParams, tenantId: tenant || tenantId.split(".")[0] },
+    { businessService: "BPAREG", ...fetchBillParams, tenantId: checkTenant },
     {
       enabled: consumerCode ? true : false,
       retry: false,
+    }
+  );  
+
+  console.log(paymentDetails, "PPPPPPPPP");
+
+
+   const { data: reciept_data, isLoading: recieptDataLoading } =
+  Digit.Hooks.useRecieptSearch(
+    {
+      businessService: "BPAREG",
+      ...{consumerCodes: consumerCode},
+      tenantId: mainType === "ARCHITECT" ? "pb.punjab" : (tenantId)
     },
-  )
+    {
+      enabled: consumerCode ? true : false,
+      retry: false,
+    }
+  );
+console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
   const closeMenu = () => {
-    setDisplayMenu(false)
-  }
+    setDisplayMenu(false);
+  };
 
-  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   // if (isBPAREGLoading ) {
   //   console.log("Waiting for moduleCode to load...")
   //   return <Loader />
   // }
 
-  console.log("workflowDetails here=>", workflowDetails)
+  console.log("workflowDetails here=>", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
-    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions]
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-    workflowDetails.data.initialActionState =
-      workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {}
-    workflowDetails.data.actionState = { ...workflowDetails.data }
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
   const actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
-    })
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
 
-    console.log(actions, "ACTION");
+  console.log(actions, "ACTION");
 
   function onActionSelect(action) {
-
-
-    setDisplayMenu(false)
-      sessionStorage.setItem("selectedWorkflowAction", action.action);
+    setDisplayMenu(false);
+    sessionStorage.setItem("selectedWorkflowAction", action.action);
     if (onSubmit) {
-      console.log("Calling onSubmit with full action object:", action)
-      onSubmit(action)
+      console.log("Calling onSubmit with full action object:", action);
+      onSubmit(action);
     }
   }
+
+
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -140,7 +173,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#333",
     paddingBottom: "5rem",
-  }
+  };
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -148,7 +181,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
     borderRadius: "8px",
     marginBottom: "2rem",
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  }
+  };
 
   const headingStyle = {
     fontSize: "1.5rem",
@@ -157,7 +190,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
     color: "#2e4a66",
     marginTop: "2rem",
     marginBottom: "1rem",
-  }
+  };
 
   const labelFieldPairStyle = {
     display: "flex",
@@ -165,13 +198,13 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
     borderBottom: "1px dashed #e0e0e0",
     padding: "0.5rem 0",
     color: "#333",
-  }
+  };
 
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
     gap: "1rem",
-  }
+  };
 
   const documentCardStyle = {
     flex: isCitizenUrl ? "1 1 18%" : "1 1 22%",
@@ -184,50 +217,56 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
     boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
     justifyContent: "center",
     display: "flex",
-  }
+  };
 
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
       <div>{value || t("CS_NA")}</div>
     </div>
-  )
-
+  );
 
   const getFormattedULBName = (ulbCode = "") => {
-  if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+    if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
 
-  const parts = ulbCode.split(".");
-  if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+    const parts = ulbCode.split(".");
+    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
 
-  const namePart = parts[1];
-  return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    const namePart = parts[1];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  };
+
+  // Usage:
+  const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
+
+  const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
 };
-
-// Usage:
-const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
-
 
   return (
     <div style={pageStyle}>
-
       {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
       {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />}
-      
 
-   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-  <h2 style={headingStyle}>{t("BPA_STEPPER_SUMMARY_HEADER")}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={headingStyle}>{t("BPA_STEPPER_SUMMARY_HEADER")}</h2>
 
-  {(() => {
-    const passportPhoto = documents?.documents?.find(
-      (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO"
-    )
+        {(() => {
+          const passportPhoto = documents?.documents?.find((doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO");
 
-    if (!passportPhoto) return null
+          if (!passportPhoto) return null;
 
     return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
       <img
         src={`${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${passportPhoto.fileStoreId}`}
         alt="Owner Photograph"
@@ -243,6 +282,8 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
           e.target.style.display = "none"
         }}
       />
+      <CardLabel style={boldLabelStyle}>{formData?.LicneseDetails?.name}</CardLabel>
+      </div>
     )
   })()}
 </div>
@@ -253,7 +294,6 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
       </div>
 
 
-
       {/* License Type */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_LICENSE_TYPE")}</h2>
@@ -262,18 +302,29 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
           t(
             typeof formData?.LicneseType?.qualificationType === "string"
               ? formData?.LicneseType?.qualificationType
-              : formData?.LicneseType?.qualificationType?.name,
-          ),
+              : formData?.LicneseType?.qualificationType?.name
+          )
         )}
         {renderLabel(t("BPA_LICENSE_TYPE"), t(formData?.LicneseType?.LicenseType?.i18nKey))}
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
           renderLabel(t("BPA_COUNCIL_NUMBER"), formData?.LicneseType?.ArchitectNo)}
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("TOWNPLANNER") &&
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
+           {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
+         renderLabel(
+    t("BPA_CERTIFICATE_EXPIRY_DATE"), 
+    (() => {
+      const validTo = formData?.LicneseType?.validTo;
+      if (!validTo) return "";
+      
+      // Check if it's a number (epoch timestamp) or a numeric string
+      const isEpoch = !isNaN(Number(validTo)) && Number(validTo) > 1000000000;
+      
+      // If it's epoch, format it; otherwise, return as-is
+      return isEpoch ? formatDate(validTo) : validTo;
+    })())}
       </div>
 
-
-    
       {/* Applicant Details */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>
@@ -292,10 +343,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
 
         {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT")
           ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
-          : renderLabel(
-              t("BPA_SELECTED_ULB"),
-              ulbName ? ulbName : t("BPA_ULB_NOT_AVAILABLE"),
-            )}
+          : renderLabel(t("BPA_SELECTED_ULB"), ulbName ? ulbName : t("BPA_ULB_NOT_AVAILABLE"))}
       </div>
 
       {/* Communication Address */}
@@ -327,91 +375,102 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
         )}
       </div> */}
 
-
       {/* Documents - TABLE VIEW */}
+
+  
 
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
         {documents?.documents?.length > 0 ? (
           <div style={{ overflowX: "auto" }}>
-            <table style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              marginTop: "1rem"
-            }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                marginTop: "1rem",
+              }}
+            >
               <thead>
-                <tr style={{
-                  backgroundColor: "#f5f5f5",
-                  borderBottom: "2px solid #ddd"
-                }}>
-                  <th style={{
-                    padding: "0.75rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                    color: "#2e4a66",
-                    width: "100px"
-                  }}>
+                <tr
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  <th
+                    style={{
+                      padding: "0.75rem",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      color: "#2e4a66",
+                      width: "100px",
+                    }}
+                  >
                     {t("BPA_SL_NO")}
                   </th>
-                  <th style={{
-                    padding: "0.75rem",
-                    textAlign: "left",
-                    fontWeight: "600",
-                    color: "#2e4a66"
-                  }}>
+                  <th
+                    style={{
+                      padding: "0.75rem",
+                      textAlign: "left",
+                      fontWeight: "600",
+                      color: "#2e4a66",
+                    }}
+                  >
                     {t("BPA_DOCUMENT_TYPE")}
                   </th>
-                  <th style={{
-                    padding: "0.75rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                    color: "#2e4a66",
-                    width: "150px"
-                  }}>
+                  <th
+                    style={{
+                      padding: "0.75rem",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      color: "#2e4a66",
+                      width: "150px",
+                    }}
+                  >
                     {t("BPA_ACTION")}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {documents?.documents.map((doc, index) => (
-                  <tr key={index} style={{
-                    borderBottom: "1px solid #e0e0e0"
-                  }}>
-                    <td style={{
-                      padding: "0.75rem",
-                      textAlign: "center",
-                      color: "#333",
-                      fontWeight: "500"
-                    }}>
+                  <tr
+                    key={index}
+                    style={{
+                      borderBottom: "1px solid #e0e0e0",
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: "0.75rem",
+                        textAlign: "center",
+                        color: "#333",
+                        fontWeight: "500",
+                      }}
+                    >
                       {index + 1}
                     </td>
                     <td style={{ padding: "0.75rem" }}>
                       {/* <CHANGE> Display OBPSDocument to show proper document name like "Identity Proof" */}
                       <div style={{ pointerEvents: "none" }}>
-                        <OBPSDocument
-                          value={safeValue}
-                          Code={doc?.documentType}
-                          index={index}
-                          isNOC={false}
-                          svgStyles={{}}
-                          isStakeHolder={true}
-                        />
+                        <OBPSDocument value={safeValue} Code={doc?.documentType} index={index} isNOC={false} svgStyles={{}} isStakeHolder={true} />
                       </div>
                     </td>
-                    <td style={{
-                      padding: "0.75rem",
-                      textAlign: "center"
-                    }}>
+                    <td
+                      style={{
+                        padding: "0.75rem",
+                        textAlign: "center",
+                      }}
+                    >
                       <button
                         onClick={() => {
                           // <CHANGE> Trigger the OBPSDocument preview functionality
-                          const row = document.querySelectorAll('tbody tr')[index];
+                          const row = document.querySelectorAll("tbody tr")[index];
                           const docElement = row?.querySelector('[data-testid], a, [role="button"]');
                           if (docElement) {
-                            const clickEvent = new MouseEvent('click', {
+                            const clickEvent = new MouseEvent("click", {
                               bubbles: true,
                               cancelable: true,
-                              view: window
+                              view: window,
                             });
                             docElement.dispatchEvent(clickEvent);
                           }
@@ -424,7 +483,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
                           borderRadius: "4px",
                           cursor: "pointer",
                           fontSize: "0.875rem",
-                          fontWeight: "500"
+                          fontWeight: "500",
                         }}
                       >
                         {t("BPA_VIEW")}
@@ -440,30 +499,73 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
         )}
       </div>
 
-      {/* Fee Estimate */}
+
+ 
       <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_EST")}</h2>
-        {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
-          renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`),
+
+        <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
+
+          {mainType === "ARCHITECT" ? (
+            <div>
+              
+              {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
+                renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
+              )}
+
+              {renderLabel(t("BPA_COMMON_TOTAL_AMT"), `₹ 0`)}
+
+              {renderLabel(
+                t("BPA_STATUS_LABEL"),
+                isCitizenEditable === true ? t("Paid") : t("Pending")
+              )}
+            </div>
+          ) : (
+           
+  <div>
+    {recieptDataLoading ? (
+      <Loader message={"Loading Fee..."} />
+    ) : (
+      <React.Fragment>
+        {/* <CHANGE> Conditionally use reciept_data or paymentDetails based on isCitizenEditable */}
+        {(isCitizenEditable === true 
+          ? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails
+          : paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails
+        )?.map((bill, index) =>
+          renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
         )}
+
+        {/* <CHANGE> Conditionally get totalAmount from reciept_data or paymentDetails */}
         {renderLabel(
           t("BPA_COMMON_TOTAL_AMT"),
-          value?.result?.Licenses?.[0]?.status === "CITIZEN_ACTION_REQUIRED"
-            ? t("PAID")
-            : `₹ ${paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount || 0}`,
+          `₹ ${
+            isCitizenEditable === true
+              ? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.totalAmount || 0
+              : paymentDetails?.billResponse?.Bill?.[0]?.totalAmount || 0
+          }`
         )}
+
+        {renderLabel(
+          t("BPA_STATUS_LABEL"),
+          isCitizenEditable === true ? t("Paid") : t("Pending")
+        )}
+      </React.Fragment>
+    )}
+  </div>
+
+
+
+          )}
+
+
+
       </div>
+
+      {console.log("actions", actions)}
 
       {actions && actions.length > 0 ? (
         <ActionBar>
           {displayMenu ? (
-            <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_BPAREG`}
-              options={actions}
-              optionKey={"action"}
-              t={t}
-              onSelect={onActionSelect}
-            />
+            <Menu localeKeyPrefix={`WF_EMPLOYEE_BPAREG`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
@@ -471,7 +573,9 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
         <ActionBar>
           <SubmitBar
             label={t("CS_COMMON_SUBMIT")}
-            onSubmit={onSubmit}
+            onSubmit={() => {
+              onSubmit();
+            }}
             disabled={
               value?.result?.Licenses?.[0]?.status !== "CITIZEN_ACTION_REQUIRED" &&
               (typeof paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount !== "number" ||
@@ -481,7 +585,7 @@ const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
         </ActionBar>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default CheckPage
+export default CheckPage;

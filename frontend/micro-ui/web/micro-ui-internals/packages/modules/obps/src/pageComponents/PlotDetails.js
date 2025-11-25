@@ -476,7 +476,7 @@ useEffect(() => {
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
-          onSelect("LicenseData",approvedLicense);
+          onSelect("LicenseData",{...approvedLicense, landInfo});
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
@@ -499,8 +499,8 @@ useEffect(() => {
           accountId,
           documents: [],
           additionalDetails,
-          landInfo: currentStepData?.cpt?.details ? landInfo : null,
-          // landInfo: null,
+          // landInfo: currentStepData?.cpt?.details ? landInfo : null,
+          landInfo: null,
           workflow: {
             action: workflowAction,
             assignes: [accountId]
@@ -518,7 +518,7 @@ useEffect(() => {
           }
         }));
       setApiLoading(false);
-      onSelect("LicenseData",approvedLicense);
+      onSelect("LicenseData",{...approvedLicense, landInfo});
       }else{
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
@@ -565,7 +565,7 @@ useEffect(() => {
             <Row
               className="border-none"
               label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
-              text={data?.planDetail?.planInformation?.plotArea ? `${data?.planDetail?.planInformation?.plotArea} ${t(`BPA_SQ_MTRS_LABEL`)}` : "NA"}
+              text={data?.planDetail?.plot?.area ? `${data?.planDetail?.plot?.area} ${t(`BPA_SQ_MTRS_LABEL`)}` : "NA"}
             />
             <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
             <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />

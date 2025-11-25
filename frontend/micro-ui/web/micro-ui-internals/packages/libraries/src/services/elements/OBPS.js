@@ -280,6 +280,8 @@ export const OBPSService = {
     }
     const [License] = response?.Licenses;
 
+    console.log(License, "LIIIIII");
+
     const paymentRes = await Digit.PaymentService.recieptSearch(License?.tenantId, "BPAREG", {
       consumerCodes: License?.applicationNumber,
       isEmployee: true,
@@ -305,6 +307,21 @@ export const OBPSService = {
       fileDetails = await UploadServices.Filefetch(appDocumentFileStoreIds, Digit.ULBService.getStateId());
     }
 
+const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+
+
+
+
     const details = [
       {
         title: " ",
@@ -320,6 +337,7 @@ export const OBPSService = {
               value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
             },
             { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
+            { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
           ],
         }
         : {
@@ -792,6 +810,8 @@ export const OBPSService = {
         { title: "BPA_ESTIMATED_COST_LABEL", value: BPA?.additionalDetails?.estimatedCost || "NA", isNotTranslated: true },
       ],
     };
+    const [y1, m1, d1] = BPA?.additionalDetails?.nocObject?.approvedOn?.split("-") || [];
+    const nocApprovedDate = `${d1}/${m1}/${y1}`;
     const additionalDetail = {
       title: "BPA_ADDITIONAL_BUILDING_DETAILS",
       asSectionHeader: true,
@@ -802,6 +822,15 @@ export const OBPSService = {
         { title: "BPA_APPROVED_COLONY", value: BPA?.additionalDetails?.approvedColony || "NA", isNotTranslated: true },
         ...(BPA?.additionalDetails?.approvedColony === "YES"
           ? [{ title: "BPA_APPROVED_COLONY_NAME", value: BPA?.additionalDetails?.nameofApprovedcolony || "NA", isNotTranslated: true }]
+          : []),
+        ...(BPA?.additionalDetails?.approvedColony === "NO"
+          ? [
+            { title: "BPA_NOC_NUMBER", value: BPA?.additionalDetails?.NocNumber || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_APPLICANT_NAME", value: BPA?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_ULB_NAME", value: BPA?.additionalDetails?.nocObject?.ulbName || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_ULB_TYPE", value: BPA?.additionalDetails?.nocObject?.ulbType || "NA", isNotTranslated: true },
+            { title: "BPA_NOC_APPROVED_ON", value: nocApprovedDate || "NA", isNotTranslated: true },
+          ]
           : []),
         // { title: "BPA_NOC_NUMBER", value: BPA?.additionalDetails?.NocNumber || "NA", isNotTranslated: true },
         { title: "BPA_MASTER_PLAN", value: BPA?.additionalDetails?.masterPlan || "NA", isNotTranslated: true },

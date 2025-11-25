@@ -10,7 +10,7 @@ import { PDFSvg } from "@mseva/digit-ui-react-components";
 
 const DownloadCertificateButton = ({ applicationNumber }) => {
   const { t } = useTranslation();
-  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const tenantId = localStorage?.getItem("CITIZEN.CITY");
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber, tenantId }, {});
@@ -49,6 +49,8 @@ const ApplicationDetails = () => {
   const stateCode = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
    const [displayMenu, setDisplayMenu] = useState(false);
+   const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   // const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   // let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
@@ -56,6 +58,10 @@ const ApplicationDetails = () => {
     { tenantId, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
     {}
   );
+
+  const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
+  console.log('ulbType', ulbType)
+  console.log(reciept_data, "TOTAL AMOUNT");
     // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
 const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
 const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
@@ -89,6 +95,12 @@ let License = LicenseData?.Licenses?.[0];
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
+const qualificationType =
+  LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
+
+  console.log(qualificationType, "kkkkkkkk");
+
+const isArchitect = qualificationType === "B-Arch";
 
   
 // useBPAREGApplicationActions
@@ -98,6 +110,12 @@ let License = LicenseData?.Licenses?.[0];
       Digit.UploadServices.Filefetch(fileStoresIds, tenantId.split(".")[0]).then((res) => setDocuments(res?.data));
     }
   }, [License]);
+
+
+const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`);
+
+
+console.log("licenseType:", licenseType);
 
   useEffect(() => {
     if (License) {
@@ -110,7 +128,8 @@ let License = LicenseData?.Licenses?.[0];
                 reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG",
                 License?.applicationNumber,
                 License?.tenantId,
-                reciept_data?.Payments
+                reciept_data?.Payments,licenseType,
+                ulbType
               ),
           },
         ]);
@@ -173,6 +192,17 @@ let License = LicenseData?.Licenses?.[0];
     </div>
   )
 
+const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
@@ -202,6 +232,8 @@ let License = LicenseData?.Licenses?.[0];
       <div style={pageStyle}>
         {/* Header */}
      
+
+
         <div
           style={{
             display: "flex",
@@ -227,6 +259,8 @@ let License = LicenseData?.Licenses?.[0];
               ) : (
                 reciept_data?.Payments?.length > 0 && (
                   <MultiLink
+                    style={{ position: "static" }}
+                    optionsStyle={{ position: "static" }}
                     onHeadClick={() => setShowOptions(!showOptions)}
                     displayOptions={showOptions}
                     options={dowloadOptions}
@@ -246,6 +280,7 @@ let License = LicenseData?.Licenses?.[0];
             if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
 
             return (
+              <div style={{display: "flex", flexDirection:"column" , alignItems: "center", marginBottom: "1rem"}}>
               <img
                 src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
                 alt="Owner Photograph"
@@ -261,6 +296,8 @@ let License = LicenseData?.Licenses?.[0];
                   e.target.style.display = "none"
                 }}
               />
+              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              </div>
             )
           })()}
         </div>
@@ -279,6 +316,11 @@ let License = LicenseData?.Licenses?.[0];
             renderLabel(
               t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
               License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
+            )}
+             {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
+            renderLabel(
+              t("BPA_CERTIFICATE_EXPIRY_DATE"),
+              formatDate(License?.validTo),
             )}
         </div>
 
@@ -304,6 +346,8 @@ let License = LicenseData?.Licenses?.[0];
         </div>
 
         {/* Documents */}
+
+ 
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
           <div style={sectionStyle}>
             <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
@@ -427,6 +471,50 @@ let License = LicenseData?.Licenses?.[0];
             </div>
           </div>
         )}
+
+
+
+
+         {/* <div style={sectionStyle}>
+          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+          {recieptDataLoading ? (
+            <Loader />
+          ) : (
+            <div>
+              {renderLabel(t("Total Amount"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
+              {renderLabel(t("Status"), reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ? t("PAID") : t("PENDING"))}
+            </div>
+          )}
+        </div> */}
+
+
+        <div style={sectionStyle}>
+          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+
+          {recieptDataLoading ? (
+            <Loader />
+          ) : (
+            <div>
+              {/* Total Amount (Architect → 0, else actual) */}
+              {renderLabel(
+                t("Total Amount"),
+                isArchitect
+                  ? `₹ 0`
+                  : reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
+              )}
+
+              {/* Status */}
+              {renderLabel(
+                t("Status"),
+                reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid ===
+                  reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
+                  ? t("PAID")
+                  : t("PENDING")
+              )}
+            </div>
+          )}
+        </div>
+
 
         {/* Timeline */}
         <div id="timeline" style={sectionStyle}>

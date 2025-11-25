@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const PetApplication = ({ application, tenantId, buttonLabel }) => {
   const { t } = useTranslation();
 
-  const { data, isLoading } = Digit.Hooks.useCustomMDMS("pb", "PetService", [{ name: "ApplicationType" }]);
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PetService", [{ name: "ApplicationType" }]);
 
   const checkRenewTime = data?.PetService?.ApplicationType?.filter((item) => item.code == "RENEWAPPLICATION");
 

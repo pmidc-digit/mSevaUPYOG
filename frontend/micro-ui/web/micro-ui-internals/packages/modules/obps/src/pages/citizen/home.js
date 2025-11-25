@@ -25,7 +25,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const user = Digit.UserService?.getUser()
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const isUserLoggedIn = user?.access_token
-  const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || (user?.info?.roles?.some(role => role?.code?.includes("BPA")) && user?.info?.roles?.find(role => role?.code?.includes("BPA"))?.tenantId === tenantId);
+  const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT" ) || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId));
 
   const closeToast = () => {
     window.location.replace("/digit-ui/citizen/all-services");

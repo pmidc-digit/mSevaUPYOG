@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import OBPSDocumentsEmp from "./OBPSDocumentsEmp";
 import { CustomImageUploadHandler } from "../components/CustomImageUploadHandler";
 import CustomLocationSearch from "../components/CustomLocationSearch";
+import SelectNDCDocuments from "../components/ChallanDocuments";
 
 
 const createUnitDetails = () => ({
@@ -31,23 +32,51 @@ const CustomGeoLocationButton = ({geoLocation}) =>{
     )
 }
 
-export const SiteInspection = ({ siteImages, setSiteImages, geoLocations, setGeoLocations }) => {
+export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
     const { t } = useTranslation();
     const { pathname } = useLocation();
     const isEditScreen = pathname.includes("/modify-application/");
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
+    const [error, setError] = useState(null);
+    const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "FieldInspection", [{ name: "Documents" }]);
     
 
-    const handleUpload = (ids) => {
+    const handleUpload = (key, ids) => {
         setSiteImages(ids)
     }
+
+    const geoLocations = useMemo(() => {
+        if (siteImages?.documents && siteImages?.documents.length > 0) {
+            return siteImages?.documents?.map((img) => {
+                return {
+                    latitude: img?.latitude || "",
+                    longitude: img?.longitude || "",
+                }
+            })}
+    }, [siteImages]);
 
     return (
         <div>
             <React.Fragment>
                 <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INPECTION_IMAGES")}</CardSectionHeader>                               
-                <CustomImageUploadHandler tenantId={stateId} uploadedImages={siteImages || null} onPhotoChange={(ids) => {handleUpload(ids)}} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />                
+                {/* <CustomImageUploadHandler tenantId={stateId} uploadedImages={siteImages || null} onPhotoChange={(ids) => {handleUpload(ids)}} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />                 */}
+                <div style={{ marginTop: "20px" }}>
+                    <SelectNDCDocuments
+                        t={t}
+                        config={{ key: "documents" }}
+                        onSelect={handleUpload}
+                        userType="CITIZEN"
+                        formData={{ documents: siteImages }}
+                        setError={setError}
+                        error={error}
+                        clearErrors={() => { }}
+                        formState={{}}
+                        data={docData}
+                        isLoading={isLoading}
+                        customOpen={customOpen}
+                    />
+                </div>
 
                 {geoLocations?.length > 0 &&
                 <React.Fragment>

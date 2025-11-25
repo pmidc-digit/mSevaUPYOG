@@ -1,4 +1,5 @@
 import cloneDeep from "lodash/cloneDeep";
+import { useParams } from "react-router-dom";
 
 export const getPattern = (type) => {
   switch (type) {
@@ -162,11 +163,9 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
     );
   } else {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
-    history.push(
-      `/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`
-    );
+    history.push(`/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`);
   }
-};  
+};
 
 // export const getDocumentforBPA = (docs, PrevStateDocs) => {
 //   let document = [];
@@ -548,15 +547,19 @@ export const getapplicationdocstakeholder = (initial) => {
 
 export const convertToStakeholderObject = (data) => {
   console.log("dataconvertToStakeholderObject", data);
+  const { action } = useParams();
   let formData = {
     Licenses: [
       {
         ...data?.result?.Licenses[0],
-        action: "APPLY",
+        action: action || "APPLY",
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
           additionalDetail: {
-            qualificationType: typeof data?.formData?.LicneseType?.qualificationType === "string" ? data?.formData?.LicneseType?.qualificationType : data?.formData?.LicneseType?.qualificationType?.name,
+            qualificationType:
+              typeof data?.formData?.LicneseType?.qualificationType === "string"
+                ? data?.formData?.LicneseType?.qualificationType
+                : data?.formData?.LicneseType?.qualificationType?.name,
             counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo,
             isSelfCertificationRequired: data?.formData?.LicneseType?.selfCertification,
             Ulb: data?.formData?.LicneseDetails?.Ulb,
@@ -646,12 +649,10 @@ export const convertEpochToDateDMY = (dateEpoch) => {
   return `${day}/${month}/${year}`;
 };
 
-
 export const pdfDocumentName = (documentLink = "", index = 0) => {
   let documentName = decodeURIComponent(documentLink.split("?")[0].split("/").pop().slice(13)) || `Document - ${index + 1}`;
   return documentName;
 };
-
 
 export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocdata, t) => {
   const getBlockIds = (unit) => {
@@ -813,16 +814,11 @@ export const convertEpochToDate = (dateEpoch) => {
 //   return billBusinessService;
 // };
 
-
 // export const getBusinessServices = (businessService, status) => {
 //   // let billBusinessService = "BPA.NC_APP_FEE";
-  
+
 //   return "BPA.NC_APP_FEE";
 // };
-
-
-
-
 
 export const getBusinessServices = (businessService, status) => {
   console.log("businessServiceIngetBusinessServices", businessService, status);
@@ -836,9 +832,6 @@ export const getBusinessServices = (businessService, status) => {
   }
   return billBusinessService;
 };
-
-
-
 
 export const downloadPdf = (blob, fileName) => {
   if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {
@@ -873,13 +866,43 @@ export const printPdf = (blob) => {
   }
 };
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, mode = "download", pdfKey = "bpa-receipt") => {
+export const amountToWords =(num) =>{
+  if (num == null || num === "") return "Zero Rupees";
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+                "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
+                "Seventeen","Eighteen","Nineteen"],
+        tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"],
+        units = ["","Thousand","Lakh","Crore"];
+
+  const chunk = n => n < 20 ? ones[n] :
+                 n < 100 ? tens[Math.floor(n/10)] + (n%10? " " + ones[n%10]:"") :
+                 ones[Math.floor(n/100)] + " Hundred" + (n%100? " " + chunk(n%100):"");
+
+  const toWords = n => {
+    if (!n) return "";
+    let parts = [n%1000], res = "";
+    n = Math.floor(n/1000);
+    while(n){ parts.push(n%100); n=Math.floor(n/100); }
+    for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";
+    return res.trim();
+  };
+
+  let [r,p] = num.toString().split(".").map(x=>+x||0);
+  return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
+}
+
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, ulbType, mode = "download", pdfKey = "bpa-receipt") => {
+  console.log('license needed', licenseType)
+  const fee = payments?.[0]?.totalAmountPaid;
+
+  const amountinwords = amountToWords(fee)
+  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords,ulbType }));
   let response = null;
   console.log("payments", payments);
   if (payments[0]?.fileStoreId) {
     response = { filestoreIds: [payments[0]?.fileStoreId] };
   } else {
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments }, "bpa-receipt");
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: updatedPayments }, "bpa-receipt");
     //response = await Digit.OBPSService.receipt_download(bussinessService, consumerCode, tenantId, { pdfKey: pdfKey });
   }
   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
@@ -950,7 +973,10 @@ export const scrutinyDetailsData = async (edcrNumber, tenantId) => {
     return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
   } else if (
     bpaDetails?.BPA?.length > 0 &&
-    (bpaDetails?.BPA?.[0]?.status == "INITIATED" || bpaDetails?.BPA?.[0]?.status == "REJECTED" || bpaDetails?.BPA?.[0]?.status == "PERMIT REVOCATION" || bpaDetails?.BPA?.[0]?.status == "BLOCKED")
+    (bpaDetails?.BPA?.[0]?.status == "INITIATED" ||
+      bpaDetails?.BPA?.[0]?.status == "REJECTED" ||
+      bpaDetails?.BPA?.[0]?.status == "PERMIT REVOCATION" ||
+      bpaDetails?.BPA?.[0]?.status == "BLOCKED")
   ) {
     return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
   } else {
@@ -1017,7 +1043,7 @@ export const getOrderDocuments = (appUploadedDocumnets, isNoc = false) => {
       });
     });
   }
-  console.log("DOCUMENTS===",finalDocs)
+  console.log("DOCUMENTS===", finalDocs);
   return finalDocs;
 };
 
@@ -1027,16 +1053,45 @@ export const getDocsFromFileUrls = (fileUrls = {}) => {
   return Object.entries(fileUrls)
     .filter(([_, url]) => url && url !== "NA") // skip null/undefined/empty/NA
     .map(([key, url]) => ({
-      id: key,                        // use key as id
-      documentType: key.toUpperCase(),// e.g. ECBCCERTIFICATEFILE
-      fileStoreId: null,              // not available here
-      documentUid: null,              // not available
+      id: key, // use key as id
+      documentType: key.toUpperCase(), // e.g. ECBCCERTIFICATEFILE
+      fileStoreId: null, // not available here
+      documentUid: null, // not available
       additionalDetails: null,
       auditDetails: null,
-      module: "OBPS",                 // or make this dynamic
+      module: "OBPS", // or make this dynamic
       fileURL: url,
       url: url,
       fileResponse: url,
-      title: key.toUpperCase()
+      title: key.toUpperCase(),
     }));
 };
+
+export const businessServiceListLayout = (isCode= false) => {
+    let isSearchScreen = window.location.href.includes("/search");
+    const availableBusinessServices = [{
+        code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+        active: true,
+        roles: ["FIRE_NOC_APPROVER"],
+        i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+    }, {
+        code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+        active: true,
+        roles: ["AIRPORT_AUTHORITY_APPROVER"],
+        i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
+    }];
+
+    const newAvailableBusinessServices = [];
+    const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+    availableBusinessServices.map(({ roles }, index) => {
+        roles.map((role) => {
+            loggedInUserRoles.map((el) => {
+                if (el.code === role) {
+                    isCode ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code) : newAvailableBusinessServices.push(availableBusinessServices?.[index])
+                }
+            })
+        })
+    });
+
+    return newAvailableBusinessServices;
+}

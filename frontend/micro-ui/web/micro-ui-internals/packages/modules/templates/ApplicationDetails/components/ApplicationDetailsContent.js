@@ -12,6 +12,7 @@ import {
   LinkButton,
   ActionBar,
   SubmitBar,
+  Table
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -69,14 +70,41 @@ function ApplicationDetailsContent({
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
 
+  function routeTo(jumpTo) {
+    window.open(jumpTo, "_blank");
+  }
 
-  console.log(workflowDetails, "TIMELINE");
+  const documentsColumns = [
+    {
+      Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
+      accessor: "url",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+
+
+  console.log("TIMELINE", applicationDetails);
   // ISSUE 9 FIX: Fetch payment history for WS applications
    useEffect(() => {
     const fetchPaymentHistory = async () => {
       if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
         try {
-          const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
+          // Determine businessService from serviceType (handle both SEWERAGE and SEWARAGE typo)
+          const businessService = (applicationData?.serviceType === "SEWERAGE" || 
+                                   applicationData?.serviceType === "SEWARAGE") ? "SW" : "WS";
           
           const requestParams = {
           tenantId: applicationData?.tenantId || tenantId,
@@ -94,11 +122,12 @@ function ApplicationDetailsContent({
             setPayments(paymentData.Payments);
           }
         } catch (error) {
-          console.error("Payment fetch error:", error);
+          console.error("❌ Payment fetch error:", error);
         }
       }
     }
-  }, [applicationData?.connectionNo, applicationDetails?.colletionOfData]);
+      fetchPaymentHistory();
+  }, [applicationData?.connectionNo, applicationData?.serviceType, tenantId]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -466,36 +495,44 @@ const caption = {
     }
     // alert("edit property");
   };
-
   const AccessProperty = () => {
     alert("access property");
   };
-
-   useEffect(()=>{
-   try{
-   if(moduleCode === "WS") {
-     return; // Skip for WS module
-   }
-   
-   let filters={
-    consumerCodes:propertyId,
-   // tenantId: tenantId
-   }
-   const auth=true
-   if(moduleCode==="BPREG"){
-    Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-    })
-   }else{
-    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-    })
-   }
-  }
-   catch(error){
-   // Error handling for payment search
-   }
-   },[])
+  
+  useEffect(()=>{
+    const isWSModule = moduleCode === "WS" || moduleCode === "SW" || 
+                       window.location.href.includes("employee/ws") || 
+                       window.location.href.includes("/ws/");
+    
+    if(isWSModule) {
+      return;
+    }
+    
+    // Only proceed for PT and BPREG modules
+    if(!propertyId) {
+      return;
+    }
+    
+    try{      
+      let filters={
+        consumerCodes:propertyId,
+      }
+      const auth=true
+      
+      if(moduleCode==="BPAREG"){
+        Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+          setPayments(response?.Payments)
+        })
+      }else if(moduleCode==="PT"){
+        Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+          setPayments(response?.Payments)
+        })
+      }
+    }
+    catch(error){
+      console.error("❌ Payment search error for PT/BPREG:", error);
+    }
+  },[moduleCode, propertyId, tenantId])
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
 
@@ -614,9 +651,7 @@ const caption = {
                       />
                     );
                   }
-                  return (
-                    <div>
-                      {window.location.href.includes("modify") ? (
+                  return window.location.href.includes("modify") ? (
                         <Row
                           className="border-none"
                           key={`${value.title}`}
@@ -641,10 +676,8 @@ const caption = {
                           labelStyle={{ wordBreak: "break-all" }}
                           textStyle={{ wordBreak: "break-all" }}
                         />
-                      )}
-                      {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""}
-                    </div>
-                  );
+                      )
+                      // {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""}                  
                 })}
             </StatusTable>
           </div>
@@ -711,7 +744,18 @@ const caption = {
           {detail?.additionalDetails?.subOccupancyTableDetails && (
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
-          {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
+          {/* {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />} */}
+          {detail?.additionalDetails?.documentsWithUrl && <Table
+            className="customTable table-border-style"
+            t={t}
+            data={detail?.additionalDetails?.documentsWithUrl[0]?.values || []}
+            columns={documentsColumns}
+            getCellProps={() => ({ style: {} })}
+            disableSort={false}
+            autoSort={true}
+            manualPagination={false}
+            isPaginationRequired={false}
+          />}
           {/* {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} />} */}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
@@ -733,7 +777,7 @@ const caption = {
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
         <PaymentHistory payments={payments}/>
-        {moduleCode !== "WS" && <ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
+        {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" &&  moduleCode !== "BPAStakeholder" &&  moduleCode !== "BPAREG" &&<ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

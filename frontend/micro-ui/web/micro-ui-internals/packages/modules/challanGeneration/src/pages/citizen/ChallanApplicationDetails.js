@@ -141,7 +141,7 @@ const ChallanApplicationDetails = () => {
   );
   const dowloadOptions = [];
 
-  async function printChallanNotice ({tenantId, payments, ...params}){
+  async function printChallanNotice({ tenantId, payments, ...params }) {
     if (chbPermissionLoading) return;
     setChbPermissionLoading(true);
     try {
@@ -154,11 +154,7 @@ const ChallanApplicationDetails = () => {
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { challan: { ...application,...payments } },
-          "challan-notice"
-        );
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -166,11 +162,10 @@ const ChallanApplicationDetails = () => {
     } finally {
       setChbPermissionLoading(false);
     }
-  };
+  }
 
-  
   async function printChallanReceipt({ tenantId, payments, ...params }) {
-    console.log('payments', payments)
+    console.log("payments", payments);
     if (printing) return;
     setPrinting(true);
     try {
@@ -185,7 +180,7 @@ const ChallanApplicationDetails = () => {
       if (!fileStoreId) {
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...payments, challan: application  }]},
+          { Payments: [{ ...payments, challan: application }] },
           "challangeneration-receipt"
         );
         fileStoreId = response?.filestoreIds[0];
@@ -195,12 +190,11 @@ const ChallanApplicationDetails = () => {
     } finally {
       setPrinting(false);
     }
-  };
+  }
   dowloadOptions.push({
     label: t("Challan_Notice"),
     onClick: () => printChallanNotice({ tenantId, payments: reciept_data?.Payments[0] }),
   });
-
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -215,20 +209,20 @@ const ChallanApplicationDetails = () => {
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CHALLAN_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
-                      <MultiLink
-                        className="multilinkWrapper"
-                        onHeadClick={() => setShowOptions(!showOptions)}
-                        displayOptions={showOptions}
-                        options={dowloadOptions}
-                      />
-                    )}
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )}
         </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_DETAILS")}</CardSubHeader>

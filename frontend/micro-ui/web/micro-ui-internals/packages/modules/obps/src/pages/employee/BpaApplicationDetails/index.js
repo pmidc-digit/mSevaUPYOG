@@ -21,7 +21,8 @@ import {
   Toast,
   Table,
   CardHeader,
-  Menu
+  Menu,
+  Modal
 } from "@mseva/digit-ui-react-components";
 import React, { useState, Fragment, useEffect, useMemo, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
@@ -44,6 +45,22 @@ import FeeEstimation from "../../../pageComponents/FeeEstimation";
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto";
 import BPAApplicationTimeline from "../../citizen/BpaApplicationDetail/BPAApplicationTimeline";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
+
+const Close = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => {
+  return (
+    <div className="icon-bg-secondary" onClick={props.onClick}>
+      <Close />
+    </div>
+  );
+};
 
 const BpaApplicationDetail = () => {
 
@@ -61,7 +78,7 @@ const BpaApplicationDetail = () => {
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
   const [error, setError] = useState(null);
   const stateId = Digit.ULBService.getStateId();
-  const isMobile = window.Digit.Utils.browser.isMobile();
+  const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["DocTypeMapping"]);
   const [viewTimeline, setViewTimeline] = useState(false);
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(tenantId, []);
@@ -81,6 +98,8 @@ const BpaApplicationDetail = () => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
   let { id: applicationNumber } = useParams();
   const [isEnableLoader, setIsEnableLoader] = useState(false);
 
@@ -88,8 +107,10 @@ const BpaApplicationDetail = () => {
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
   const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
-  const [siteImages, setSiteImages] = useState(data?.applicationData?.additionalDetails?.siteImages || [])
-  const [geoLocations, setGeoLocations] = useState(data?.applicationData?.additionalDetails?.geoLocations || [])
+  const [siteImages, setSiteImages] = useState(data?.applicationData?.additionalDetails?.siteImages ? {
+    documents: data?.applicationData?.additionalDetails?.siteImages
+  } : {})
+  // const [geoLocations, setGeoLocations] = useState(data?.applicationData?.additionalDetails?.geoLocations || [])
   const { isLoadingg, data: blockReason } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["BlockReason"]);
 
   console.log("fileUrls", fileUrls)
@@ -118,6 +139,16 @@ const BpaApplicationDetail = () => {
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
   console.log("DATA DATA", data);
   const [appData, setAppData] = useState(data);
+
+  const geoLocations = useMemo(() => {
+          if (siteImages?.documents && siteImages?.documents.length > 0) {
+              return siteImages?.documents?.map((img) => {
+                  return {
+                      latitude: img?.latitude || "",
+                      longitude: img?.longitude || "",
+                  }
+              })}
+  }, [siteImages]);
 
 
 
@@ -162,17 +193,19 @@ const BpaApplicationDetail = () => {
       setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
 
       if(data?.applicationData?.additionalDetails?.siteImages?.length > 0){
-        setSiteImages(data?.applicationData?.additionalDetails?.siteImages)
+        setSiteImages(data?.applicationData?.additionalDetails?.siteImages ? {
+          documents: data?.applicationData?.additionalDetails?.siteImages
+        } : {})
         sessionStorage.setItem("Field_Inspection_siteImages",JSON.stringify(data?.applicationData?.additionalDetails?.siteImages))
       }else{
         sessionStorage.setItem("Field_Inspection_siteImages","null")
       }
-      if(data?.applicationData?.additionalDetails?.geoLocations?.length > 0){
-        setGeoLocations(data?.applicationData?.additionalDetails?.geoLocations)
-        sessionStorage.setItem("Field_Inspection_geoLocations",JSON.stringify(data?.applicationData?.additionalDetails?.geoLocations))
-      }else{
-        sessionStorage.setItem("Field_Inspection_geoLocations","null")
-      }
+      // if(data?.applicationData?.additionalDetails?.geoLocations?.length > 0){
+      //   setGeoLocations(data?.applicationData?.additionalDetails?.geoLocations)
+      //   sessionStorage.setItem("Field_Inspection_geoLocations",JSON.stringify(data?.applicationData?.additionalDetails?.geoLocations))
+      // }else{
+      //   sessionStorage.setItem("Field_Inspection_geoLocations","null")
+      // }
       if(data?.applicationData?.additionalDetails?.FieldReports){
         
         sessionStorage.setItem("Field_Inspection_FieldReports",JSON.stringify(data?.applicationData?.additionalDetails?.FieldReports))
@@ -341,7 +374,7 @@ const BpaApplicationDetail = () => {
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
-      requestData.additionalDetails.permitData = "The plot has been officially regularized under No." + requestData?.additionalDetails?.NocNumber + "  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of " + state + ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+      requestData.additionalDetails.permitData = "The plot has been officially regularized under No." + requestData?.additionalDetails?.NocNumber + "  dated "+ requestData?.additionalDetails?.nocObject?.approvedOn +" , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + " . This regularization falls within the jurisdiction of " + state + ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     }
     else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData = "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
@@ -373,13 +406,20 @@ const BpaApplicationDetail = () => {
   }
 
   function routeTo(jumpTo) {
-    window.open(jumpTo, "_blank");
+    // window.open(jumpTo, "_blank"); 
+    if (!isMobile) {
+      window.open(jumpTo, "_blank");
+    } else {
+      setShowImageModal(true);
+      setImageUrl(jumpTo);
+    }
   }
 
   const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
     id: index,
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
     fileUrl: doc.values?.[0]?.fileURL || null,
+    fileStoreId: doc?.fileStoreId || null,
   }));
   const documentsColumnsOwner = [
       {
@@ -516,7 +556,7 @@ const BpaApplicationDetail = () => {
       const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
 
       // Append index if more than 1 owner (ownerIdx is 0-based so +1)
-      const title = ownersCount > 1 ? `${t(baseTitle)}_${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
+      const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
 
       return {
         id: index,
@@ -891,9 +931,14 @@ const BpaApplicationDetail = () => {
     setShowModal(false);
   };
 
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    setImageUrl(null);
+  }
+
   function onActionSelect(action) {
     console.log("SelectedAction", action)
-    if(action?.action === "SEND_FOR_INSPECTION_REPORT" && siteImages?.length === 0){
+    if(action?.action === "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4 || siteImages?.documents?.some(img => !img?.filestoreId)) ){      
       alert(t("Please_Add_Site_Images_With_Geo_Location"))
       return
     }
@@ -917,46 +962,51 @@ const BpaApplicationDetail = () => {
     setDisplayMenu(false);
   }
 
-  const documentData = useMemo(() => siteImages?.map((value, index) => ({
-        title: `SITE_IMAGE_${index+1}`,
-        imageFileStoreId: value,
-        geoLocation: geoLocations[index] 
-    })), [siteImages,geoLocations])
+  const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+        title: value?.documentType,
+        fileStoreId: value?.filestoreId,        
+    })), [siteImages])
 
   function routeToImage(filestoreId) {
-          getUrlForDocumentView(filestoreId)
-      }
+    getUrlForDocumentView(filestoreId)
+  }
   
-      const getUrlForDocumentView = async (filestoreId) => {
-          if (filestoreId?.length === 0) return;
-          try {
-              const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
-              if (result?.data) {
-                  const fileUrl = result.data[filestoreId];
-                  if (fileUrl) {
-                      window.open(fileUrl, "_blank");
-                  } else {
-                      if(props?.setError){
-                          props?.setError(t("CS_FILE_FETCH_ERROR"));
-                      }else{
-                          console.error(t("CS_FILE_FETCH_ERROR"))
-                      }
-                  }
-              } else {
-                  if (props?.setError) {
-                      props?.setError(t("CS_FILE_FETCH_ERROR"));
-                  } else {
-                      console.error(t("CS_FILE_FETCH_ERROR"))
-                  }
-              }
-          } catch (e) {
-              if (props?.setError) {
-                  props?.setError(t("CS_FILE_FETCH_ERROR"));
-              } else {
-                  console.error(t("CS_FILE_FETCH_ERROR"))
-              }
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+      if (result?.data) {
+        const fileUrl = result.data[filestoreId];
+        if (fileUrl) {
+          // window.open(fileUrl, "_blank");
+          if(!isMobile){
+            window.open(fileUrl, "_blank");
+          }else{
+            setShowImageModal(true);
+            setImageUrl(fileUrl);            
+          }         
+        } else {
+          if (props?.setError) {
+            props?.setError(t("CS_FILE_FETCH_ERROR"));
+          } else {
+            console.error(t("CS_FILE_FETCH_ERROR"))
           }
+        }
+      } else {
+        if (props?.setError) {
+          props?.setError(t("CS_FILE_FETCH_ERROR"));
+        } else {
+          console.error(t("CS_FILE_FETCH_ERROR"))
+        }
       }
+    } catch (e) {
+      if (props?.setError) {
+        props?.setError(t("CS_FILE_FETCH_ERROR"));
+      } else {
+        console.error(t("CS_FILE_FETCH_ERROR"))
+      }
+    }
+  }
   
       const routeToGeo = (geoLocation) => {
              window.open(`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocation.latitude).toFixed(6)}&long=${Number(geoLocation.longitude).toFixed(6)}`, "_blank")
@@ -970,32 +1020,18 @@ const BpaApplicationDetail = () => {
           },
           {
             Header: t(" "),
-            accessor: "imageFileStoreId",
+            accessor: "fileStoreId",
             Cell: ({ value }) =>
               {          
                 return value ? (
                 <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
-                  label={t("View Image")}
+                  label={t("View")}
                   onClick={() => routeToImage(value)}
                 />
               ) : (
                 t("CS_NA")
               )},
-          },
-          {
-            Header: t(" "),
-            accessor: "geoLocation",
-            Cell: ({ value }) =>
-              {          
-                return value ? (
-                <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
-                  label={t("View Location")}
-                  onClick={() => routeToGeo(value)}
-                />
-              ) : (
-                t("CS_NA")
-              )},
-          },
+          }
         ];
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
@@ -1054,8 +1090,8 @@ const BpaApplicationDetail = () => {
                 BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
                 BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
               },
-              siteImages: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? siteImages : data?.BPA?.additionalDetails?.siteImages,
-              geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
+              siteImages: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? siteImages?.documents : data?.BPA?.additionalDetails?.siteImages,
+              // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
               // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
             }
           }
@@ -1787,12 +1823,12 @@ const BpaApplicationDetail = () => {
           data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
           <Card>
             <div id="fieldInspection"></div>
-            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />
+            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage}/>
           </Card>
         }
 
         {
-          data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages.length > 0 && <Card>
+          data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
             <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
             <Table
               className="customTable table-border-style"
@@ -1805,8 +1841,29 @@ const BpaApplicationDetail = () => {
               manualPagination={false}
               isPaginationRequired={false}
             />
+            {geoLocations?.length > 0 &&
+                <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CustomLocationSearch position={geoLocations}/>
+                </React.Fragment>
+            }
           </Card>
         }
+
+        {showImageModal && <Modal
+          headerBarEnd={<CloseBtn onClick={closeImageModal} />}
+        >
+          {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
+          {imageUrl?.toLowerCase().endsWith(".pdf") ? (
+            <a style={{color: "blue"}} href={imageUrl} target="_blank" rel="noopener noreferrer">{t("CS_VIEW_DOCUMENT")}</a>
+          ) : (
+            <img
+              src={imageUrl}
+              alt="Preview"
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            />
+          )}
+          </Modal>}
 
         {/* {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !isLoading &&
         <FormComposer

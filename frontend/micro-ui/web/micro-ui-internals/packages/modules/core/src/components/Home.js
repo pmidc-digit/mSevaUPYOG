@@ -86,6 +86,8 @@ const iconSelector = (code) => {
       return <OBPSIcon className="fill-path-primary-main" />;
     case "BPAStakeholder":
       return <OBPSIcon className="fill-path-primary-main" />;
+    case "Layout":
+      return <OBPSIcon className="fill-path-primary-main" />;
     case "Bills":
       return <BillsIcon className="fill-path-primary-main" />;
     case "PTR":

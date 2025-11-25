@@ -72,11 +72,11 @@ const PaymentHistory = ({payments}) => {
                                     </td>
                                     <td style={{ border: '1px solid #ddd', padding: '8px' }}>
                                         <span style={{ 
-                                            color: payment.paymentStatus === 'NEW' || payment.paymentStatus === 'SUCCESSFUL' ? 'green' : 
+                                            color: payment.paymentStatus === 'NEW' || payment.paymentStatus === 'SUCCESSFUL' || payment.paymentStatus === 'DEPOSITED' ? 'green' : 
                                                    payment.paymentStatus === 'FAILED' ? 'red' : 'orange',
                                             fontWeight: 'bold'
                                         }}>
-                                            {payment.paymentStatus || 'N/A'}
+                                            {payment.paymentStatus === "DEPOSITED" ? <p>Deposited</p> : payment.paymentStatus || 'N/A'}
                                         </span>
                                     </td>
                                 </tr>

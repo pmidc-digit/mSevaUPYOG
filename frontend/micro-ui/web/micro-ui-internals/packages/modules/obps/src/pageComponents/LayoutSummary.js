@@ -1,9 +1,11 @@
 import React from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
 import LayoutDocumentsView from "./LayoutDocumentsView";
+import LayoutImageView from "./LayoutImageView";
+
 
 function LayoutSummary({ currentStepData: formData, t }) {
   const { pathname: url } = useLocation()
@@ -12,6 +14,10 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   console.log("formData in Summary Page", formData)
 
+
+    const coordinates = useSelector(function (state) {
+        return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
+    });
   const sectionStyle = {
     backgroundColor: "#ffffff",
     padding: "1rem 1.5rem",
@@ -46,19 +52,42 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" }
 
-  const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div>{value || "NA"}</div>
-    </div>
-  )
+  const renderLabel = (label, value) => {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
+      return null;
+    }
+    
+    return (
+      <div style={labelFieldPairStyle}>
+        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+        <div>{value}</div>
+      </div>
+    );
+  }
+
+  // const getFloorLabel = (index) => {
+  //   if (index === 0) return t("BPA_GROUND_FLOOR_AREA_LABEL")
+  //   const suffixes = ["st", "nd", "rd"]
+  //   const suffix = suffixes[((index - 1) % 10) - 1] || "th"
+  //   return `${index}${suffix} ${t("BPA_FLOOR_AREA_LABEL")}`
+  // }
 
   const getFloorLabel = (index) => {
-    if (index === 0) return t("BPA_GROUND_FLOOR_AREA_LABEL")
-    const suffixes = ["st", "nd", "rd"]
-    const suffix = suffixes[((index - 1) % 10) - 1] || "th"
-    return `${index}${suffix} ${t("BPA_FLOOR_AREA_LABEL")}` // e.g., "1st Floor"
+  if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+
+  const floorNumber = index;
+  const lastDigit = floorNumber % 10;
+  const lastTwoDigits = floorNumber % 100;
+
+  let suffix = "th";
+  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+    if (lastDigit === 1) suffix = "st";
+    else if (lastDigit === 2) suffix = "nd";
+    else if (lastDigit === 3) suffix = "rd";
   }
+
+  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
 
   const userInfo = Digit.UserService.getUser()
   const currentUser = userInfo?.info?.type
@@ -68,6 +97,10 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   return (
     <div style={pageStyle}>
+      <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
+    <div style={sectionStyle}>
+      <LayoutImageView documents={formData?.documents?.documents?.documents}/>
+    </div>
       <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
       <div style={sectionStyle}>
         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
@@ -91,6 +124,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
+            {renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formData?.applicationDetails?.professionalRegistrationValidity)}
           </div>
         </React.Fragment>
       )}
@@ -201,6 +235,15 @@ function LayoutSummary({ currentStepData: formData, t }) {
           renderLabel(t("BPA_CLU_APPROVED_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
       </div>
 
+       <h2 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
+        {renderLabel(t("COMMON_LONGITUDE1_LABEL"),coordinates?.Longitude1)}
+        
+        {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
+        {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
+      </div>
+
       <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
         {Array.isArray(formData?.documents?.documents?.documents) &&
@@ -215,3 +258,4 @@ function LayoutSummary({ currentStepData: formData, t }) {
 }
 
 export default LayoutSummary
+

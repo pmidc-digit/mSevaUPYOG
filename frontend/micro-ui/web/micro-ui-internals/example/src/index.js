@@ -88,6 +88,7 @@ const enabledModules = [
   "RentAndLease",
   "BPAStakeholder",
   "CLU",
+  "Layout"
 ];
 
 const initTokens = (stateCode) => {

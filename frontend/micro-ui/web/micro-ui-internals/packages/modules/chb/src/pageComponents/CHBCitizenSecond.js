@@ -74,7 +74,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
     const additionalDetails = {
       // disImage: isCitizenDeclared, // ✅ always include this
-      ...(data?.reason?.reasonName && { reason: data.reason.reasonName }),
+      ...(data?.reason && { reason: data.reason }),
       ...(data?.discountAmount && { discountAmount: data.discountAmount }),
     };
 
@@ -117,7 +117,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         communityHallCode: getHallDetails?.[0]?.communityHallId || "",
         communityHallName: data?.siteId?.name,
         purpose: {
-          purpose: data?.purpose?.code,
+          purpose: data?.purpose,
         },
         amount: finalAmount,
         specialCategory: { category: data?.specialCategory?.code },
@@ -242,6 +242,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      // setValue("endDate", "");
+                      // reset({ endDate: "" });
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -575,16 +577,34 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
 
                 {/* Discount Reason */}
-                <div style={{ marginBottom: "20px" }}>
-                  <CardLabel>
-                    {t("CHB_DISCOUNT_REASON")} <span style={{ color: "red" }}>*</span>
-                  </CardLabel>
+                <div style={{ marginBottom: "20px", width: "50%" }}>
+                  <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
+                    control={control}
+                    name="reason"
+                    render={(props) => (
+                      <TextInput
+                        type="text"
+                        style={{ marginBottom: 0, width: "100%" }}
+                        value={props.value}
+                        error={errors?.name?.message}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {/* <Controller
                     control={control}
                     name={"reason"}
                     defaultValue={null}
                     render={(props) => (
                       <Dropdown
+                        t={t}
                         style={{ marginBottom: 0 }}
                         className="form-field"
                         select={props.onChange}
@@ -593,7 +613,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         optionKey="reasonName"
                       />
                     )}
-                  />
+                  /> */}
                 </div>
               </React.Fragment>
             )}

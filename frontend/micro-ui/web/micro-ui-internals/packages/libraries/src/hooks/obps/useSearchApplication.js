@@ -1,23 +1,32 @@
 import { useQuery, useQueryClient } from "react-query"
 
 
-const useLayoutSearch = (params, tenantId, applicationNo, config) => {
-  return async () => {
-    console.log(" useLayoutSearch called with:", { params, tenantId, applicationNo })
+// const useLayoutSearch = (params, tenantId, applicationNo, config) => {
+//   return async () => {
+//     console.log(" useLayoutSearch called with:", { params, tenantId, applicationNo })
 
-    const searchParams = {
-      applicationNumber: params?.applicationNumber || applicationNo,
-      ...params,
-    }
+//     const searchParams = {
+//       applicationNumber: params?.applicationNumber || applicationNo,
+//       ...params,
+//     }
 
     
 
-    console.log(" Calling LayoutSearch with:", { tenantId, searchParams })
-    const data = await Digit.OBPSService.LayoutSearch(tenantId, applicationNo)
-    console.log(" LayoutSearch API response:", data)
-    return { data }
-  }
-}
+//     console.log(" Calling LayoutSearch with:", { tenantId, searchParams })
+//     const data = await Digit.OBPSService.LayoutSearch(tenantId, applicationNo)
+//     console.log(" LayoutSearch API response:", data)
+//     return { data }
+//   }
+// }
+
+
+const useLayoutSearch = (params, tenantId, config) => {
+  return async () => {
+    const data = await Digit.OBPSService.LayoutSearch(tenantId, {}, params);
+    console.log(data, "900000000000");
+    return { data };
+  };
+};
 
 
 
@@ -51,28 +60,45 @@ export const useLayoutCitizenSearchApplication = (params, tenantId, applicationN
   return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_APPLICATIONS_LIST", params, applicationNo]) }
 }
 
-export const useLayoutSearchApplication = (params, tenantId, applicationNo, config = {}, t) => {
-  const client = useQueryClient()
-  console.log(" useLayoutSearchApplication called with:", { params, tenantId, applicationNo, config })
+// export const useLayoutSearchApplication = (params, tenantId, applicationNo, config = {}, t) => {
+//   const client = useQueryClient()
+//   console.log(" useLayoutSearchApplication called with:", { params, tenantId, applicationNo, config })
 
-  const result = useQuery(
-    ["LAYOUT_SEARCH_APPLICATION", params, applicationNo],
-    useLayoutSearch(params, tenantId, applicationNo, config),
-    {
-      staleTime: Number.POSITIVE_INFINITY,
-      select: (data) => {
-        console.log(" select function received data:", data)
-        return {
-          resData: data?.data,
-          revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params, applicationNo]),
-        }
-      },
+//   const result = useQuery(
+//     ["LAYOUT_SEARCH_APPLICATION", params, applicationNo],
+//     useLayoutSearch(params, tenantId, applicationNo, config),
+//     {
+//       staleTime: Number.POSITIVE_INFINITY,
+//       select: (data) => {
+//         console.log(" select function received data:", data)
+//         return {
+//           resData: data?.data,
+//           revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params, applicationNo]),
+//         }
+//       },
+//     },
+//   )
+
+//   console.log(" useLayoutSearchApplication result:", result)
+//   return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params, applicationNo]) }
+// }
+
+export const useLayoutSearchApplication = (params, tenantId, config = {}, t) => {
+  const client = useQueryClient();
+  const result = useQuery(["LAYOUT_SEARCH_APPLICATION", params], useLayoutSearch(params, tenantId, config), {
+    staleTime: Infinity,
+    select: (data) => {
+      return{
+        resData: data?.data,
+        revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params])
+      }
     },
-  )
+  });
 
-  console.log(" useLayoutSearchApplication result:", result)
-  return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params, applicationNo]) }
-}
+  return { ...result, revalidate: () => client.invalidateQueries(["NOC_SEARCH_APPLICATION", params]) };
+};
+
+
 
 export const useLayoutSearchApplicationByIdOrMobile = (params, tenantId, applicationNo, config = {}, t) => {
   const client = useQueryClient()

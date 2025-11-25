@@ -10,88 +10,91 @@ import {
   SubmitBar,
   CardSectionHeader,
   CardLabelError,
-  UploadFile
+  UploadFile,
 } from "@mseva/digit-ui-react-components";
 
-
-
 const LayoutSiteDetails = (_props) => {
-  const Digit = typeof window !== "undefined" ? window.Digit : {}
-  const tenantId = Digit?.ULBService?.getCurrentTenantId?.() || ""
-  const stateId = Digit?.ULBService?.getStateId?.() || ""
+  let tenantId;
+    if(window.location.pathname.includes("employee")){
+    tenantId = window.localStorage.getItem("Employee.tenant-id");
+    }else{
+    tenantId = window.localStorage.getItem("CITIZEN.CITY");
+    }
+  //console.log("tenantId here", tenantId);
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props
+  const stateId = Digit.ULBService.getStateId();
+
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
 
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
   console.log(applicationNo, "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
+  const [netArea, setNetArea] = useState("0.00");
+  const NetPlotArea = watch("netPlotAreaAfterWidening");
+  const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening");
 
   /**Start - Floor Area Calculation Logic */
-  const [totalArea, setTotalArea] = useState("0.00")
+  const [totalArea, setTotalArea] = useState("0.00");
 
-  const {
-    fields: areaFields,
-    append: addFloor,
-    remove: removeFloor,
-  } = useFieldArray({
+  const { fields: areaFields, append: addFloor, remove: removeFloor } = useFieldArray({
     control,
     name: "floorArea",
-  })
+  });
 
-  const floorAreaValues = watch("floorArea")
-  const basementAreaValues = watch("basementArea")
+  const floorAreaValues = watch("floorArea");
+  const basementAreaValues = watch("basementArea");
 
   useEffect(() => {
     const sum = floorAreaValues?.reduce((acc, item) => {
-      const numericValue = Number.parseFloat(item?.value)
-      return acc + (isNaN(numericValue) ? 0 : numericValue)
-    }, 0)
+      const numericValue = Number.parseFloat(item?.value);
+      return acc + (isNaN(numericValue) ? 0 : numericValue);
+    }, 0);
 
-    const numericBasementArea = isNaN(basementAreaValues) ? 0 : basementAreaValues
-    const finalSum = (sum + Number.parseFloat(numericBasementArea)).toFixed(2)
-    setTotalArea(finalSum)
+    const numericBasementArea = isNaN(basementAreaValues) ? 0 : basementAreaValues;
+    const finalSum = (sum + Number.parseFloat(numericBasementArea)).toFixed(2);
+    setTotalArea(finalSum);
 
-    setValue("totalFloorArea", finalSum)
-  }, [floorAreaValues, basementAreaValues, setValue])
+    setValue("totalFloorArea", finalSum);
+  }, [floorAreaValues, basementAreaValues, setValue]);
 
   /**Start - ULB Name and Type caculation logic */
 
-  const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null)
-  const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "")
-  const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null)
+  const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null);
+  const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "");
+  const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
 
-  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId)
-  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId)
+  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
+  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
-  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants()
+  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
   const ulbListOptions = ulbList?.map((city) => ({
     ...city,
     displayName: t(city.i18nKey),
-  }))
+  }));
+
+  useEffect(() => {
+    const a = parseFloat(NetPlotArea);
+    const b = parseFloat(AreaLeftForRoadWidening);
+
+    const sum = ((isNaN(a) ? 0 : a) + (isNaN(b) ? 0 : b)).toFixed(2);
+
+    setNetArea(sum);
+    setValue("netTotalArea", sum);
+  }, [NetPlotArea, AreaLeftForRoadWidening]);
 
   useEffect(() => {
     if (ulbName) {
-      const ulbTypeFormatted = ulbName?.city?.ulbType
-      setUlbType(ulbTypeFormatted)
-      setValue("ulbType", ulbTypeFormatted)
+      const ulbTypeFormatted = ulbName?.city?.ulbType;
+      setUlbType(ulbTypeFormatted);
+      setValue("ulbType", ulbTypeFormatted);
     }
-  }, [ulbName, setValue])
+  }, [ulbName, setValue]);
 
-  useEffect(() => {
-    if (ulbName) {
-      const matchingDistrict = ulbListOptions?.find((city) => city.code === ulbName.code)
-      if (matchingDistrict) {
-        setSelectedCity(matchingDistrict)
-        setValue("district", matchingDistrict)
-      }
-    }
-  }, [ulbName, setValue])
+  // <CHANGE> Set default district based on tenantId like NOC form
 
   /**Start - District and Zone caculation logic */
-  const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(
-    currentStepData?.siteDetails?.isBasementAreaAvailable || null,
-  )
+  const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
 
   const options = [
     {
@@ -102,12 +105,12 @@ const LayoutSiteDetails = (_props) => {
       code: "NO",
       i18nKey: "NO",
     },
-  ]
+  ];
 
-  const allCities = Digit.Hooks.obps.useTenants()
-  const [cities, setcitiesopetions] = useState(allCities)
-  const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null)
-  const [localities, setLocalities] = useState([])
+  const allCities = Digit.Hooks.obps.useTenants();
+  const [cities, setcitiesopetions] = useState(allCities);
+  const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
+  const [localities, setLocalities] = useState([]);
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
@@ -115,70 +118,75 @@ const LayoutSiteDetails = (_props) => {
     {
       enabled: !!selectedCity,
     },
-    t,
-  )
+    t
+  );
 
   useEffect(() => {
     if (fetchedLocalities?.length > 0) {
-      setLocalities(fetchedLocalities)
+      setLocalities(fetchedLocalities);
     }
-  }, [fetchedLocalities])
+  }, [fetchedLocalities]);
 
   useEffect(() => {
-    setLocalities([])
-    setValue("zone", null)
-  }, [selectedCity, setValue])
+    setLocalities([]);
+    setValue("zone", null);
+  }, [selectedCity, setValue]);
 
-  
-  const {
-    data: buildingCategory,
-    isLoading: isBuildingCategoryLoading,
-    error: buildingCategoryError,
-  } = Digit.Hooks.noc.useBuildingCategory(stateId)
-  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }])
+  // <CHANGE> Auto-select district based on login tenantId (not ULB)
+ useEffect(() => {
+  if (tenantId && allCities?.length > 0) {
+    const defaultCity = allCities.find((city) => city.code === tenantId);
+    console.log(defaultCity, 'DDDDD');
+    if (defaultCity) {
+      setSelectedCity(defaultCity);
+      setValue("district", defaultCity); // sets default in react-hook-form
+    }
+  }
+}, [tenantId, allCities]);
 
-  const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || []
+  const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
+  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
 
-  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(
-    currentStepData?.siteDetails?.buildingCategory || null,
-  )
+  const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || [];
+
+  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.buildingCategory || null);
 
   useEffect(() => {
-    const formattedData = currentStepData?.siteDetails
+    const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
         if (key !== "floorArea") {
-          setValue(key, value)
+          setValue(key, value);
         }
-      })
+      });
 
       // Set state variables to ensure dropdowns are pre-filled
       if (formattedData.buildingStatus) {
-        setBuildingStatus(formattedData.buildingStatus)
+        setBuildingStatus(formattedData.buildingStatus);
       }
       if (formattedData.buildingCategory) {
-        setSelectedBuildingCategory(formattedData.buildingCategory)
+        setSelectedBuildingCategory(formattedData.buildingCategory);
       }
       if (formattedData.ulbName) {
-        setUlbName(formattedData.ulbName)
+        setUlbName(formattedData.ulbName);
       }
       if (formattedData.isBasementAreaAvailable) {
-        setIsBasementAreaAvailable(formattedData.isBasementAreaAvailable)
+        setIsBasementAreaAvailable(formattedData.isBasementAreaAvailable);
       }
       if (formattedData.district) {
-        setSelectedCity(formattedData.district)
+        setSelectedCity(formattedData.district);
       }
 
       if (Array.isArray(formattedData.floorArea) && formattedData.floorArea.length > 0) {
         for (let i = areaFields.length - 1; i >= 0; i--) {
-          removeFloor(i)
+          removeFloor(i);
         }
         formattedData.floorArea.forEach((item) => {
-          addFloor({ value: item.value || item || "" })
-        })
+          addFloor({ value: item.value || item || "" });
+        });
       }
     }
-  }, [])
+  }, []);
 
   return (
     <React.Fragment>
@@ -204,10 +212,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -234,19 +242,17 @@ const LayoutSiteDetails = (_props) => {
                   <TextArea
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}
-          </CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}*</CardLabel>
@@ -259,8 +265,8 @@ const LayoutSiteDetails = (_props) => {
                   <Dropdown
                     className="form-field"
                     select={(e) => {
-                      setUlbName(e)
-                      props.onChange(e)
+                      setUlbName(e);
+                      props.onChange(e);
                     }}
                     selected={props.value}
                     option={ulbListOptions}
@@ -283,10 +289,10 @@ const LayoutSiteDetails = (_props) => {
                   <TextInput
                     value={ulbType || props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                     disable="true"
                   />
@@ -313,10 +319,10 @@ const LayoutSiteDetails = (_props) => {
                   <TextArea
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -343,10 +349,10 @@ const LayoutSiteDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -365,19 +371,16 @@ const LayoutSiteDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                 }}
                 render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={props.onChange}
-                    selected={props.value}
-                    option={roadType}
-                    optionKey="name"
-                  />
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" />
                 )}
               />
             )}
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
 
+          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
+
+          {/* <CHANGE> Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}*</CardLabel>
             <div className="field">
@@ -387,6 +390,10 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -396,10 +403,10 @@ const LayoutSiteDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -408,27 +415,80 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
+          {/* <CHANGE> Add Net Plot Area After Widening field (B) */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}*</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="netPlotAreaAfterWidening"
                 defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
+
+          {/* <CHANGE> Add Net Total Area field (A+B) - disabled/readonly */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL")}`}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="netTotalArea"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                defaultValue={netArea}
+                render={(props) => (
+                  <TextInput
+                    value={netArea} // <CHANGE> Use netArea state directly like NOC
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled="true" // <CHANGE> Use disabled instead of disable
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
+
+          {/* <CHANGE> Remove old areaLeftForRoadWidening, netPlotAreaAfterWidening fields if they exist elsewhere */}
+
+          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`}*</CardLabel>
@@ -448,19 +508,17 @@ const LayoutSiteDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}
-          </CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}*</CardLabel>
@@ -473,8 +531,8 @@ const LayoutSiteDetails = (_props) => {
                   <Dropdown
                     className="form-field"
                     select={(e) => {
-                      setBuildingStatus(e)
-                      props.onChange(e)
+                      setBuildingStatus(e);
+                      props.onChange(e);
                     }}
                     selected={props.value}
                     option={buildingType}
@@ -498,8 +556,8 @@ const LayoutSiteDetails = (_props) => {
                   <Dropdown
                     className="form-field"
                     select={(e) => {
-                      setSelectedBuildingCategory(e)
-                      props.onChange(e)
+                      setSelectedBuildingCategory(e);
+                      props.onChange(e);
                     }}
                     selected={props.value}
                     option={buildingCategory}
@@ -525,13 +583,11 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderResidentialUseInSqM"
                     defaultValue=""
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") 
-                        ? t("REQUIRED_FIELD") 
-                        : false,
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD")
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                       },
                     }}
                     render={(props) => (
@@ -539,10 +595,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -562,17 +618,15 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderResidentialUseInPct"
                     defaultValue=""
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") 
-                        ? t("REQUIRED_FIELD") 
-                        : false,
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD")
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        const isValidFormat = regex.test(value)
-                        const isWithinRange = Number.parseFloat(value) <= 100
-                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                        return true
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        const isValidFormat = regex.test(value);
+                        const isWithinRange = Number.parseFloat(value) <= 100;
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                        return true;
                       },
                     }}
                     render={(props) => (
@@ -580,10 +634,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -607,13 +661,11 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderCommercialUseInSqM"
                     defaultValue=""
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") 
-                        ? t("REQUIRED_FIELD") 
-                        : false,
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD")
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                       },
                     }}
                     render={(props) => (
@@ -621,10 +673,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -644,17 +696,15 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderCommercialUseInPct"
                     defaultValue=""
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") 
-                        ? t("REQUIRED_FIELD") 
-                        : false,
+                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD")
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        const isValidFormat = regex.test(value)
-                        const isWithinRange = Number.parseFloat(value) <= 100
-                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                        return true
+                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        const isValidFormat = regex.test(value);
+                        const isWithinRange = Number.parseFloat(value) <= 100;
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                        return true;
                       },
                     }}
                     render={(props) => (
@@ -662,10 +712,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -676,16 +726,17 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
             selectedBuildingCategory?.name?.toLowerCase().includes("warehouse") ||
-            selectedBuildingCategory?.name?.toLowerCase().includes("institutional") || 
+            selectedBuildingCategory?.name?.toLowerCase().includes("institutional") ||
             !selectedBuildingCategory) && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
-                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
-                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && "*"}
+                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) &&
+                    "*"}
                 </CardLabel>
                 <div className="field">
                   <Controller
@@ -693,15 +744,21 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderInstutionalUseInSqM"
                     defaultValue=""
                     rules={{
-                      required: (selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
-                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse"))
-                        ? t("REQUIRED_FIELD") 
-                        : false,
+                      required:
+                        selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                        selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                          ? t("REQUIRED_FIELD")
+                          : false,
                       validate: (value) => {
-                        if (!value) return !(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
-                                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) || t("REQUIRED_FIELD")
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!value)
+                          return (
+                            !(
+                              selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                              selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                            ) || t("REQUIRED_FIELD")
+                          );
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                       },
                     }}
                     render={(props) => (
@@ -709,10 +766,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -724,8 +781,9 @@ const LayoutSiteDetails = (_props) => {
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}
-                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
-                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && "*"}
+                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) &&
+                    "*"}
                 </CardLabel>
                 <div className="field">
                   <Controller
@@ -733,19 +791,25 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderInstutionalUseInPct"
                     defaultValue=""
                     rules={{
-                      required: (selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
-                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse"))
-                        ? t("REQUIRED_FIELD") 
-                        : false,
+                      required:
+                        selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                        selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                          ? t("REQUIRED_FIELD")
+                          : false,
                       validate: (value) => {
-                        if (!value) return !(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") || 
-                                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) || t("REQUIRED_FIELD")
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        const isValidFormat = regex.test(value)
-                        const isWithinRange = Number.parseFloat(value) <= 100
-                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                        return true
+                        if (!value)
+                          return (
+                            !(
+                              selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                              selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                            ) || t("REQUIRED_FIELD")
+                          );
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        const isValidFormat = regex.test(value);
+                        const isWithinRange = Number.parseFloat(value) <= 100;
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                        return true;
                       },
                     }}
                     render={(props) => (
@@ -753,10 +817,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -789,30 +853,29 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.schemeType?.message || ""}</CardLabelError>
 
-
           {buildingStatus?.code === "BUILTUP" && (
-             <LabelFieldPair>
+            <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_IS_BASEMENT_AREA_PRESENT_LABEL")}`} *</CardLabel>
-             <Controller
-              control={control}
-              name={"isBasementAreaAvailable"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setIsBasementAreaAvailable(e)
-                    props.onChange(e)
-                  }}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                />
-              )}
-            />
-          </LabelFieldPair>
+              <Controller
+                control={control}
+                name={"isBasementAreaAvailable"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      setIsBasementAreaAvailable(e);
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={options}
+                    optionKey="i18nKey"
+                  />
+                )}
+              />
+            </LabelFieldPair>
           )}
           <CardLabelError style={errorStyle}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
 
@@ -839,10 +902,10 @@ const LayoutSiteDetails = (_props) => {
                     <TextInput
                       value={props.value}
                       onChange={(e) => {
-                        props.onChange(e.target.value)
+                        props.onChange(e.target.value);
                       }}
                       onBlur={(e) => {
-                        props.onBlur(e)
+                        props.onBlur(e);
                       }}
                     />
                   )}
@@ -877,17 +940,15 @@ const LayoutSiteDetails = (_props) => {
                         <TextInput
                           value={props.value}
                           onChange={(e) => {
-                            props.onChange(e.target.value)
+                            props.onChange(e.target.value);
                           }}
                           onBlur={(e) => {
-                            props.onBlur(e)
+                            props.onBlur(e);
                           }}
                         />
 
                         {errors?.floorArea?.[index]?.value && (
-                          <CardLabelError className={errorStyle}>
-                            {errors.floorArea[index].value.message}
-                          </CardLabelError>
+                          <CardLabelError className={errorStyle}>{errors.floorArea[index].value.message}</CardLabelError>
                         )}
                       </React.Fragment>
                     )}
@@ -938,10 +999,10 @@ const LayoutSiteDetails = (_props) => {
                     <TextInput
                       value={props.value}
                       onChange={(e) => {
-                        props.onChange(e.target.value)
+                        props.onChange(e.target.value);
                       }}
                       onBlur={(e) => {
-                        props.onBlur(e)
+                        props.onBlur(e);
                       }}
                       disable="true"
                     />
@@ -969,10 +1030,10 @@ const LayoutSiteDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -984,24 +1045,27 @@ const LayoutSiteDetails = (_props) => {
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}*</CardLabel>
             <Controller
-              control={control}
-              name={"district"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setSelectedCity(e)
-                    props.onChange(e)
-                  }}
-                  selected={props.value}
-                  option={cities.sort((a, b) => a.name.localeCompare(b.name))}
-                  optionKey="name"
-                />
-              )}
-            />
+                           control={control}
+                           name={"district"}
+                           rules={{
+                             required: t("REQUIRED_FIELD"),
+                           }}
+                           render={(props) => (
+                             <Dropdown 
+                             className="form-field" 
+                             select={(e)=>{
+                               setSelectedCity(e)
+                               props.onChange(e)
+                             }} 
+                             selected={props.value} 
+                             option={cities.sort((a, b) => a.name.localeCompare(b.name))} 
+                             optionKey="name" 
+                             disable="true"
+                             t={t}
+                             />
+                             
+                           )}
+                         />
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
 
@@ -1014,13 +1078,7 @@ const LayoutSiteDetails = (_props) => {
                 required: t("REQUIRED_FIELD"),
               }}
               render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={localities}
-                  optionKey="i18nkey"
-                />
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="i18nkey" />
               )}
             />
           </LabelFieldPair>
@@ -1044,10 +1102,10 @@ const LayoutSiteDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1066,9 +1124,9 @@ const LayoutSiteDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    if (!value) return false
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return false;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1076,10 +1134,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1089,9 +1147,7 @@ const LayoutSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.totalAreaUnderLayout?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {`${t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL")}`}*
-            </CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL")}`}*</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -1100,9 +1156,9 @@ const LayoutSiteDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    if (!value) return false
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return false;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1110,10 +1166,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1132,9 +1188,9 @@ const LayoutSiteDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    if (!value) return false
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return false;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1142,10 +1198,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1163,9 +1219,9 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1173,10 +1229,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1194,13 +1250,13 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    const isValidFormat = regex.test(value)
-                    const isWithinRange = Number.parseFloat(value) <= 100
-                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                    return true
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = Number.parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
                   },
                 }}
                 render={(props) => (
@@ -1208,10 +1264,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1230,9 +1286,9 @@ const LayoutSiteDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    if (!value) return false
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return false;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1240,10 +1296,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1263,9 +1319,9 @@ const LayoutSiteDetails = (_props) => {
                     defaultValue=""
                     rules={{
                       validate: (value) => {
-                        if (!value) return true
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                        if (!value) return true;
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                       },
                     }}
                     render={(props) => (
@@ -1273,10 +1329,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -1294,13 +1350,13 @@ const LayoutSiteDetails = (_props) => {
                     defaultValue=""
                     rules={{
                       validate: (value) => {
-                        if (!value) return true
-                        const regex = /^\d+(\.\d{1,2})?$/
-                        const isValidFormat = regex.test(value)
-                        const isWithinRange = Number.parseFloat(value) <= 100
-                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                        return true
+                        if (!value) return true;
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        const isValidFormat = regex.test(value);
+                        const isWithinRange = Number.parseFloat(value) <= 100;
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                        return true;
                       },
                     }}
                     render={(props) => (
@@ -1308,10 +1364,10 @@ const LayoutSiteDetails = (_props) => {
                         className="form-field"
                         value={props.value}
                         onChange={(e) => {
-                          props.onChange(e.target.value)
+                          props.onChange(e.target.value);
                         }}
                         onBlur={(e) => {
-                          props.onBlur(e)
+                          props.onBlur(e);
                         }}
                       />
                     )}
@@ -1331,9 +1387,9 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1341,10 +1397,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1362,13 +1418,13 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    const isValidFormat = regex.test(value)
-                    const isWithinRange = Number.parseFloat(value) <= 100
-                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                    return true
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = Number.parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
                   },
                 }}
                 render={(props) => (
@@ -1376,10 +1432,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1397,9 +1453,9 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1407,10 +1463,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1428,13 +1484,13 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    const isValidFormat = regex.test(value)
-                    const isWithinRange = Number.parseFloat(value) <= 100
-                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                    return true
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = Number.parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
                   },
                 }}
                 render={(props) => (
@@ -1442,10 +1498,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1463,9 +1519,9 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1473,10 +1529,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1494,13 +1550,13 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    const isValidFormat = regex.test(value)
-                    const isWithinRange = Number.parseFloat(value) <= 100
-                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                    return true
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = Number.parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
                   },
                 }}
                 render={(props) => (
@@ -1508,10 +1564,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1529,9 +1585,9 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -1539,10 +1595,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1560,13 +1616,13 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   validate: (value) => {
-                    if (!value) return true
-                    const regex = /^\d+(\.\d{1,2})?$/
-                    const isValidFormat = regex.test(value)
-                    const isWithinRange = Number.parseFloat(value) <= 100
-                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED")
-                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100")
-                    return true
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = Number.parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
                   },
                 }}
                 render={(props) => (
@@ -1574,10 +1630,10 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                   />
                 )}
@@ -1589,7 +1645,7 @@ const LayoutSiteDetails = (_props) => {
         <BreakLine />
       </div>
     </React.Fragment>
-  )
-}
+  );
+};
 
-export default LayoutSiteDetails
+export default LayoutSiteDetails;

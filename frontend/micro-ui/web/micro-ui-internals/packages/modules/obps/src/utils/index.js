@@ -891,12 +891,12 @@ export const amountToWords =(num) =>{
   return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
 }
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, mode = "download", pdfKey = "bpa-receipt") => {
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, ulbType, mode = "download", pdfKey = "bpa-receipt") => {
   console.log('license needed', licenseType)
   const fee = payments?.[0]?.totalAmountPaid;
 
   const amountinwords = amountToWords(fee)
-  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords }));
+  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords,ulbType }));
   let response = null;
   console.log("payments", payments);
   if (payments[0]?.fileStoreId) {
@@ -1066,3 +1066,32 @@ export const getDocsFromFileUrls = (fileUrls = {}) => {
       title: key.toUpperCase(),
     }));
 };
+
+export const businessServiceListLayout = (isCode= false) => {
+    let isSearchScreen = window.location.href.includes("/search");
+    const availableBusinessServices = [{
+        code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+        active: true,
+        roles: ["FIRE_NOC_APPROVER"],
+        i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+    }, {
+        code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+        active: true,
+        roles: ["AIRPORT_AUTHORITY_APPROVER"],
+        i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
+    }];
+
+    const newAvailableBusinessServices = [];
+    const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+    availableBusinessServices.map(({ roles }, index) => {
+        roles.map((role) => {
+            loggedInUserRoles.map((el) => {
+                if (el.code === role) {
+                    isCode ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code) : newAvailableBusinessServices.push(availableBusinessServices?.[index])
+                }
+            })
+        })
+    });
+
+    return newAvailableBusinessServices;
+}

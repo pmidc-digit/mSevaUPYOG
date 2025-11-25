@@ -141,6 +141,7 @@ const enabledModules = [
   "RentAndLease",
   "NDC",
   "BPAStakeholder",
+  "CLU",
   "Layout",
   "GarbageCollection",
 ];

@@ -413,6 +413,8 @@ import useGCInbox from "./gc/useInbox";
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
+import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile } from "./obps/useCLUSearchApplication";
+import useCLUInbox from "./obps/useCLUInbox";
 
 const pgr = {
   useComplaintDetails,
@@ -639,6 +641,10 @@ const obps = {
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
   useCLUFeeCalculator,
+  useCLUSearchApplication,
+  useCLUCitizenSearchApplication,
+  useCLUSearchApplicationByIdOrMobile,
+  useCLUInbox,
 };
 
 const events = {

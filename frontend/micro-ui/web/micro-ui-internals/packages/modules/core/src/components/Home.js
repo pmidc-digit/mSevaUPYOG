@@ -98,6 +98,8 @@ const iconSelector = (code) => {
       return <PTRIcon className="fill-path-primary-main" />;
     case "GarbageCollection":
       return <PTRIcon className="fill-path-primary-main" />;
+    case "CLU":
+      return <OBPSIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;
   }

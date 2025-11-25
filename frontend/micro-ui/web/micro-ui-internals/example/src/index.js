@@ -90,6 +90,7 @@ const enabledModules = [
   "BPAStakeholder",
   "Layout",
   "GarbageCollection",
+  "CLU",
 ];
 
 const initTokens = (stateCode) => {

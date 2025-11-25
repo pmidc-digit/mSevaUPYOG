@@ -662,7 +662,7 @@ useEffect(() => {
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate(),
     )
     const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno}
-
+    console.log('requestData', requestData)
     let count = 0
 
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
@@ -680,9 +680,9 @@ useEffect(() => {
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
       requestData.additionalDetails.permitData =
-        "The plot has been officially regularized under No." +
+        "The plot has been officially regularized under No. " +
         requestData?.additionalDetails?.NocNumber +
-        "  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of " +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn +  " , registered in the name of "+  requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
         state +
         ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {

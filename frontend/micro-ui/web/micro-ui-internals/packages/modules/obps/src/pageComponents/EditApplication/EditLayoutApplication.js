@@ -111,6 +111,8 @@ const EditLayoutApplication = () => {
   const stateId = Digit.ULBService.getStateId()
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId)
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId)
+  const { data: areaType, isLoading: isareaTypeLoading } = Digit.Hooks.obps.useLayoutAreaType(stateId)
+  
   const {
     data: buildingCategory,
     isLoading: isBuildingCategoryLoading,
@@ -119,6 +121,8 @@ const EditLayoutApplication = () => {
   const { data: layoutType, isLoading: isLayoutTypeLoading } = Digit.Hooks.obps.useLayoutType(stateId)
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants()
   const [cities, setcitiesopetions] = useState(Digit.Hooks.obps.useTenants());
+
+  console.log("Edit mode data render =====>",buildingType,roadType, areaType,  buildingCategory,layoutType,ulbList   );
   
   const options = [
     {code: "YES", i18nKey: "YES"}, 

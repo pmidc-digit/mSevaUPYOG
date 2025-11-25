@@ -2,18 +2,24 @@ import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-re
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
-import { stringReplaceAll} from "../../../utils";
-import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
+import { stringReplaceAll} from "../utils";
+import { getCLUAcknowledgementData } from "../utils/getCLUAcknowledgementData";
 
 
-const CLUResponseCitizen = (props) => {
+const CLUResponse = (props) => {
   const location=useLocation();
   const {pathname, state } = location;
   const { t } = useTranslation();
   const history = useHistory();
   const cluData = state?.data?.Clu?.[0];
   console.log("cluData here", cluData);
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  let tenantId;
+
+  if(window.location.pathname.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
+  else{
+     tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -21,17 +27,27 @@ const CLUResponseCitizen = (props) => {
   const cluCode = pathname.split("/").pop(); // ✅ Extracts the last segment
 
   const onSubmit = () => {
-    history.push(`/digit-ui/citizen`);
+    if(window.location.pathname.includes("citizen")){
+      history.push(`/digit-ui/citizen`);
+    }
+    else{
+       history.push(`/digit-ui/employee`);
+    }
   };
 
   const onGoToHome = () => {
+   if(window.location.pathname.includes("citizen")){
     history.push(`/digit-ui/citizen/obps/home`);
+  }
+   else{
+      history.push(`/digit-ui/employee/obps/clu/inbox`);
+   }
   };
 
-  const handlePayment = () => {
-    //need to change payment path as per CLU
-    history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${cluCode}/${tenantId}?tenantId=${tenantId}`);
-  };
+  // const handlePayment = () => {
+  //   //need to change payment path as per CLU
+  //   history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${cluCode}/${tenantId}?tenantId=${tenantId}`);
+  // };
 
 
   const handleDownloadPdf = async () => {
@@ -49,9 +65,9 @@ const CLUResponseCitizen = (props) => {
     <div>
       <Card>
         <Banner
-          message={t(`NOC_APPLICATION_${cluData?.workflow?.action}_SUCCESS_HEADER`)}
+          message={t(`BPA_APPLICATION_${cluData?.workflow?.action}_SUCCESS_HEADER`)}
           applicationNumber={cluCode}
-          info={cluData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(cluData?.cluType, ".", "_")}_APPLICATION_NUMBER`)}
+          info={cluData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(cluData?.cluType, ".", "_")}_APPLICATION_NUMBER_LABEL`)}
           successful={cluData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
@@ -70,4 +86,4 @@ const CLUResponseCitizen = (props) => {
     </div>
   );
 };
-export default CLUResponseCitizen;
+export default CLUResponse;

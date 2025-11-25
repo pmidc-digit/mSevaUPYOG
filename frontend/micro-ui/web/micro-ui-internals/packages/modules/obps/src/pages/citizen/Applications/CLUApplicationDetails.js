@@ -22,12 +22,11 @@ import {
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import NOCDocument from "../../../pageComponents/NOCDocument";
-import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
-import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
-import NOCModal from "../../../pageComponents/NOCModal";
-import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
-import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
+
+import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
+import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
+import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
+import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -60,13 +59,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
       {wfDocuments?.length > 0 && (
         <div>
-          {/* {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NOCDocument value={doc?.id || ""} index={index} />
-            </div>
-          ))} */}
           <div>
-            <NOCDocument value={{ workflowDocs: wfDocuments }} index={index} />
+            <CLUDocumentView value={{ workflowDocs: wfDocuments }} index={index} />
           </div>
         </div>
       )}
@@ -82,7 +76,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
-const CitizenApplicationOverview = () => {
+const CLUApplicationDetails = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const history = useHistory();
@@ -90,7 +84,7 @@ const CitizenApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -98,25 +92,25 @@ const CitizenApplicationOverview = () => {
 
   let user = Digit.UserService.getUser();
 
-  if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
-    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-    const userInfo = userInfos ? JSON.parse(userInfos) : {};
-    user = userInfo?.value;
-  }
+  //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+  //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+  //     const userInfo = userInfos ? JSON.parse(userInfos) : {};
+  //     user = userInfo?.value;
+  //   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   useEffect(() => {
-    const nocObject = applicationDetails?.Noc?.[0];
+    const cluObject = applicationDetails?.Clu?.[0];
 
-    if (nocObject) {
-      const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails;
+    if (cluObject) {
+      const applicantDetails = cluObject?.cluDetails?.additionalDetails?.applicationDetails;
 
-      const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails;
+      const siteDetails = cluObject?.cluDetails?.additionalDetails?.siteDetails;
 
-      const coordinates = nocObject?.nocDetails?.additionalDetails?.coordinates;
+      const coordinates = cluObject?.cluDetails?.additionalDetails?.coordinates;
 
-      const Documents = nocObject?.documents || [];
+      const Documents = cluObject?.documents || [];
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -127,7 +121,7 @@ const CitizenApplicationOverview = () => {
 
       setDisplayData(finalDisplayData);
     }
-  }, [applicationDetails?.Noc]);
+  }, [applicationDetails?.Clu]);
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -141,11 +135,11 @@ const CitizenApplicationOverview = () => {
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Noc?.[0];
+    const Property = applicationDetails?.Clu?.[0];
     //console.log("tenants", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
+    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, t);
 
     Digit.Utils.pdf.generate(acknowledgementData);
   };
@@ -158,19 +152,20 @@ const CitizenApplicationOverview = () => {
   }
 
   const downloadSanctionLetter = async () => {
-    const application = applicationDetails?.Noc?.[0];
+    const application = applicationDetails?.Clu?.[0];
     try {
       if (!application) {
-        throw new Error("Noc Application data is missing");
+        throw new Error("CLU Application data is missing");
       }
-      await getNOCSanctionLetter(application, t, amountPaid);
+      //we will add sanctionLetter also
+      //await getNOCSanctionLetter(application, t, amountPaid);
     } catch (error) {
       console.error("Sanction Letter download error:", error);
     }
   };
 
   const dowloadOptions = [];
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
+  if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
       label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
       onClick: downloadSanctionLetter,
@@ -187,26 +182,6 @@ const CitizenApplicationOverview = () => {
       });
     }
   }
-
-  //console.log("acknowledgementData", acknowledgementData);
-  //Digit.Utils.pdf.generate(acknowledgementData);
-
-  const getFloorLabel = (index) => {
-    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
-
-    const floorNumber = index;
-    const lastDigit = floorNumber % 10;
-    const lastTwoDigits = floorNumber % 100;
-
-    let suffix = "th";
-    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-      if (lastDigit === 1) suffix = "st";
-      else if (lastDigit === 2) suffix = "nd";
-      else if (lastDigit === 3) suffix = "rd";
-    }
-
-    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
-  };
 
   //here workflow details
   const [showToast, setShowToast] = useState(null);
@@ -225,12 +200,13 @@ const CitizenApplicationOverview = () => {
   };
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+  
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "obpas_noc", // businessService
-    // role: "EMPLOYEE",
+    moduleCode: businessServiceCode, 
   });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
@@ -263,29 +239,27 @@ const CitizenApplicationOverview = () => {
 
   function onActionSelect(action) {
     console.log("selected action", action);
-    const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
+    const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
 
     const payload = {
       Licenses: [action],
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/noc/edit-application/${appNo}`);
+      history.push(`/digit-ui/citizen/obps/clu/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/citizen/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       setSelectedAction(action);
     }
   }
 
   const submitAction = async (data) => {
-    // setSelectedAction(null);
-    const payloadData = applicationDetails?.Noc?.[0] || {};
-
+    const payloadData = applicationDetails?.Clu?.[0] || {};
     // console.log("data ==>", data);
 
     const updatedApplicant = {
@@ -304,11 +278,11 @@ const CitizenApplicationOverview = () => {
     };
 
     const finalPayload = {
-      Noc: { ...updatedApplicant },
+      Clu: { ...updatedApplicant },
     };
 
     try {
-      const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
+      const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
@@ -319,7 +293,7 @@ const CitizenApplicationOverview = () => {
           //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
           console.log("We are calling citizen response page");
           history.replace({
-            pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            pathname: `/digit-ui/citizen/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
             state: { data: response },
           });
         }
@@ -339,7 +313,7 @@ const CitizenApplicationOverview = () => {
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+        <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
@@ -351,18 +325,17 @@ const CitizenApplicationOverview = () => {
       </div>
 
       <Card>
-        <CardSubHeader>{t("NOC_APPLICANT_DETAILS")}</CardSubHeader>
+        <CardSubHeader>{t("BPA_APPLICANT_DETAILS")}</CardSubHeader>
         {displayData?.applicantDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
-              <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
-              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
-              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
+              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
+              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
+              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
+              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
+              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
+              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
+              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
             </StatusTable>
           </div>
         ))}
@@ -372,14 +345,14 @@ const CitizenApplicationOverview = () => {
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
             <Card>
-              <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
+              <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
             </Card>
@@ -387,68 +360,74 @@ const CitizenApplicationOverview = () => {
         ))}
 
       <Card>
-        <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
+        <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-              <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
-              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
-              <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
-              <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
-              <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
-              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
-              <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
-              <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={detail?.netPlotAreaAfterWidening || "N/A"} />
-              <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
-              <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
-              <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
+              <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
-              <Row
-                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
-                text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
-              />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
+              )}
+              {detail?.localityAreaType?.code === "APPROVED_COLONY" && (
+                <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={detail?.localityApprovedColonyName || "N/A"} />
+              )}
+              {detail?.localityAreaType?.code === "NON_SCHEME" && (
+                <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={detail?.localityNonSchemeType?.name || "N/A"} />
+              )}
 
-              {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"} />}
+              <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={detail?.localityNoticeIssued?.code || "N/A"} />
 
-              {detail?.buildingStatus == "Built Up" &&
-                detail?.floorArea?.map((floor, index) => <Row label={getFloorLabel(index)} text={floor.value || "N/A"} />)}
+              {detail?.localityNoticeIssued?.code === "YES" && (
+                <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
+              )}
 
-              {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"} />}
-
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
-              <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
-              <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
-
-              <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
-              <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
+              <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
+              <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
             </StatusTable>
           </div>
         ))}
       </Card>
 
       <Card>
-        <CardSubHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSubHeader>
+        <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
-              <Row
-                label={t("NOC_BUILDING_CATEGORY_LABEL")}
-                text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
-              />
+              <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
+              <Row label={t("BPA_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
+              <Row label={t("BPA_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
+              <Row label={t("BPA_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("BPA_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
+              <Row label={t("BPA_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
+              <Row label={t("BPA_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
+              <Row label={t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
+              <Row label={t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={detail?.netPlotAreaAfterWidening || "N/A"} />
+              <Row label={t("BPA_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
 
-              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
-              <Row
-                label={t("NOC_RESTRICTED_AREA_LABEL")}
-                text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
-              />
-              <Row
-                label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
-                text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"}
-              />
+              <Row label={t("BPA_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
+
+              <Row label={t("BPA_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
+              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+
+              <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
+              <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
+
+              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
+              <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={detail?.proposedRoadWidthAfterWidening || "N/A"} />
+              <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={detail?.buildingCategory?.name || "N/A"} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
+        {displayData?.siteDetails?.map((detail, index) => (
+          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <StatusTable>
+              <Row label={t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
             </StatusTable>
           </div>
         ))}
@@ -469,33 +448,23 @@ const CitizenApplicationOverview = () => {
         ))}
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <div style={{ display: "flex", gap: "16px" }}>
-          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
-            <NOCDocument value={{ workflowDocs: displayData?.Documents }} />
-          ) : (
-            <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
-          )}
-        </div>
-      </Card> */}
 
       <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}</StatusTable>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{displayData?.Documents?.length > 0 && <CLUDocumentTableView documents={displayData.Documents} />}</StatusTable>
       </Card>
 
       <Card>
-       <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
-          {applicationDetails?.Noc?.[0]?.nocDetails &&  (
-              <NOCFeeEstimationDetails 
-                  formData={{
-                    apiData:{...applicationDetails},
-                    applicationDetails:{...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails},
-                    siteDetails: {...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails} 
-                  }}
-              />
-            )}
+        <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Clu?.[0]?.cluDetails && (
+          <CLUFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
+            }}
+          />
+        )}
       </Card>
 
       {workflowDetails?.data?.timeline && (
@@ -509,7 +478,7 @@ const CitizenApplicationOverview = () => {
                 <CheckPoint
                   keyValue={index}
                   isCompleted={index === 0}
-                  label={t("NOC_STATUS_" + checkpoint.status)}
+                  label={t("BPA_STATUS_" + checkpoint.status)}
                   customChild={getTimelineCaptions(checkpoint, index, arr, t)}
                 />
               ))}
@@ -522,7 +491,7 @@ const CitizenApplicationOverview = () => {
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`}
+              localeKeyPrefix={`WF_EMPLOYEE_BPA`}
               options={actions}
               optionKey={"action"}
               t={t}
@@ -541,4 +510,4 @@ const CitizenApplicationOverview = () => {
   );
 };
 
-export default CitizenApplicationOverview;
+export default CLUApplicationDetails;

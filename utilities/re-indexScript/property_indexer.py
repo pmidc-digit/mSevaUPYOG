@@ -34,11 +34,11 @@ class PropertyIndexer:
         
         # Database connection
         self.db_config = {
-            'host': config.get('db_host', '10.44.237.25'),
+            'host': config.get('db_host', '<db_url>'),
             'port': config.get('db_port', 5432),
-            'database': config.get('db_name', 'egov_prod_db'),
-            'user': config.get('db_user', 'egovuser_uat'),
-            'password': config.get('db_password', 'ynER45@@klPae')
+            'database': config.get('db_name', '<db_name>'),
+            'user': config.get('db_user', '<db_username>'),
+            'password': config.get('db_password', '<db_password>')
         }
         
         # Index configuration

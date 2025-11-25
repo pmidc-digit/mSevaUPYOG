@@ -33,7 +33,7 @@ class PropertyIndexerAPI:
         self.elasticsearch_url = config.get('elasticsearch_url', 'http://elasticsearch-data-v1.es-cluster.svc.cluster.local:9200/')
         
         # Index configuration
-        self.index_name = "property-services-temp1"
+        self.index_name = "property-services-temp2"
         self.bulk_file = "bulk_properties_api.jsonl"
         
         # Request info template
@@ -400,7 +400,7 @@ class PropertyIndexerAPI:
         # Create the indexed document structure
         indexed_document = {
             "_index": self.index_name,
-            "_id": f"{property_id}{tenant_id}",
+            "_id": f"{acknowledgement_number}{tenant_id}",
             "_source": {
                 "Data": {
                     # Direct field mappings from config

@@ -7,6 +7,8 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
   const [formErrors, setFormErrors] = useState({});
   const [toastError, setToastError] = useState(null);
 
+  console.log('config', config)
+
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
     allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],

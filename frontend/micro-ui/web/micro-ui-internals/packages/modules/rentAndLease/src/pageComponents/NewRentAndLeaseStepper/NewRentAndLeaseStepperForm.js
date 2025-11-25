@@ -3,18 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
-import { citizenConfig,employeeConfig } from "../../config/Create/citizenStepperConfig";
-import {
-  SET_RENTANDLEASE_NEW_APPLICATION_STEP,
-  RESET_RENTANDLEASE_NEW_APPLICATION_FORM,
-  UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM,
-} from "../../redux/action/RentAndLeaseNewApplicationActions";
+import { citizenConfig, employeeConfig } from "../../config/Create/citizenStepperConfig";
+import { SET_RENTANDLEASE_NEW_APPLICATION_STEP, RESET_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
-import { Loader } from "../../components/Loader";
+import { Loader } from "../../../../challanGeneration/src/components/Loader";
 
 //Config for steps
 const createApplicationConfig = [
-   {
+  {
     head: "PROPERTY DETAILS",
     // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
     stepLabel: "Property Details",
@@ -41,7 +37,7 @@ const createApplicationConfig = [
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
- 
+
   {
     head: "DOCUMENT DETAILS",
     stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
@@ -70,9 +66,8 @@ const createApplicationConfig = [
   },
 ];
 
-
 const createEmployeeConfig = [
-   {
+  {
     head: "PROPERTY DETAILS",
     // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
     stepLabel: "Property Details",
@@ -99,7 +94,7 @@ const createEmployeeConfig = [
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
- 
+
   {
     head: "DOCUMENT DETAILS",
     stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
@@ -133,6 +128,7 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
+  const [loading, setLoading] = useState(false);
   const formState = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer || { formData: {}, step: 1 });
   const formData = formState?.formData || {};
   const step = formState?.step || 1;
@@ -155,20 +151,47 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   //   }
   // }, [applicationData, id, dispatch]);
 
+  const config = userType === "employee" ? createEmployeeConfig : createApplicationConfig;
+  // const updatedCreateApplicationConfig = config.map((item) => {
+  //   return {
+  //     ...item,
+  //     currStepConfig: (userType === "employee" ? employeeConfig : citizenConfig).filter(
+  //       (newConfigItem) => newConfigItem.stepNumber === item.stepNumber
+  //     ),
+  //       // 👇 add your handlers here
+  // extraProps: { triggerToast, triggerLoader }
+  //   };
+  // });
 
-   const config = userType === "employee" ? createEmployeeConfig : createApplicationConfig;
+  const triggerToast = (labelKey, isError = false) => {
+    setShowToast({ label: labelKey, key: isError });
+  };
+
+  const triggerLoader = (status) => {
+    setLoading(status);
+  };
+
   const updatedCreateApplicationConfig = config.map((item) => {
+    const baseStepConfig = (userType === "employee" ? employeeConfig : citizenConfig).filter(
+      (newConfigItem) => newConfigItem.stepNumber === item.stepNumber
+    );
+
+    // inject handlers into each config object
+    const enrichedStepConfig = baseStepConfig.map((stepConf) => ({
+      ...stepConf,
+      triggerToast,
+      triggerLoader,
+    }));
+
     return {
       ...item,
-      currStepConfig: (userType === "employee" ? employeeConfig : citizenConfig).filter(
-        (newConfigItem) => newConfigItem.stepNumber === item.stepNumber
-      ),
+      currStepConfig: enrichedStepConfig,
     };
   });
 
-// const updatedCreateApplicationConfig = createApplicationConfig.map((item) => {
-//   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
-// });
+  // const updatedCreateApplicationConfig = createApplicationConfig.map((item) => {
+  //   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+  // });
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_RENTANDLEASE_NEW_APPLICATION_STEP(updatedStepNumber));
@@ -187,14 +210,22 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
     return () => unlisten();
   }, [history, dispatch]);
 
+  // Auto close toast after 2 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("RENT_AND_LEASE_APPLICATION")}
-        
       </CardHeader>
       <Stepper stepsList={updatedCreateApplicationConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
-      {/* {isLoading && <Loader page={true} />} */}
+      {/* Loader controlled by child via triggerLoader */}
+      {loading && <Loader page={true} />}
       {showToast && (
         <Toast
           error={showToast.key}
@@ -203,6 +234,7 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
             setShowToast(null);
           }}
           isDleteBtn={"true"}
+          extraProps={{ triggerToast, triggerLoader }}
         />
       )}
     </div>
@@ -210,4 +242,3 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
 };
 
 export default NewRentAndLeaseStepperForm;
-

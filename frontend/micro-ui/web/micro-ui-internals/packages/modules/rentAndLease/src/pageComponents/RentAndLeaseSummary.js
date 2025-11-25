@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { SET_RENTANDLEASE_NEW_APPLICATION_STEP } from "../redux/action/RentAndLeaseNewApplicationActions";
 import RentAndLeaseDocument from "./RentAndLeaseDocument";
 
-function RentAndLeaseSummary({ t }) {
+function RentAndLeaseSummary({ t,config }) {
   const dispatch = useDispatch();
   const formData = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {});
   console.log('formData', formData)
@@ -13,6 +13,8 @@ function RentAndLeaseSummary({ t }) {
   : formData?.applicantDetails?.applicants
   ? [formData.applicantDetails?.applicants]
   : [];
+
+
 
   const property = formData?.propertyDetails || {};
   console.log('property', property)

@@ -1235,7 +1235,7 @@
 
 // export default RentAndLeasePropertyDetails;
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   CardLabel,
@@ -1254,20 +1254,16 @@ import {
   //  useSelector
 } from "react-redux";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../redux/action/RentAndLeaseNewApplicationActions";
-import { Loader } from "../components/Loader";
 
-const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
+const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, validateStep, triggerLoader }) => {
   const dispatch = useDispatch();
-  const [loader, setLoader] = useState(false);
   // const apiDataCheck = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData?.responseData);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  const { data: mdmsPropertyData, isLoading } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
-
+  const { data: mdmsPropertyData } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
   console.log("mdmsPropertyData", mdmsPropertyData);
 
-  console.log("currentStepData", currentStepData);
   // 🔹 Dropdown options
   const propertyTypeOptions = [
     { name: t("ON_RENT"), code: "ON_RENT", i18nKey: "ON_RENT" },
@@ -1306,66 +1302,153 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   // 🔹 Mock property data
   const mockProperties = [
     {
+      i18nKey: "Commercial Space - Prime Location",
+      code: 1,
       id: 1,
+      name: "Commercial Space - Prime Location",
       title: "Commercial Space - Prime Location",
+      propertyId: "RL001",
       propertyType: "ON_RENT",
       propertySpecific: "COMMERCIAL",
+      usageCategory: "rent",
       locationType: "PRIME",
       area: "1200 sq ft",
+      propertySizeOrArea: "1200",
       address: "123 Main Street, City Center",
-      rent: "₹50,000/month",
+      geoLocation: { latitude: "28.6139", longitude: "77.2090" },
+      propertyImage: "https://via.placeholder.com/150",
+      rent: "50,000",
+      baseRent: "50000",
+      securityDeposit: "10000",
+      tax_applicable: true,
+      refund_applicable_on_discontinuation: true,
+      penaltyType: "DAILY",
+      latePayment: "2%",
     },
     {
+      i18nKey: "Residential Apartment - Prime",
+      code: 2,
       id: 2,
+      name: "Residential Apartment - Prime",
       title: "Residential Apartment - Prime",
+      propertyId: "RL002",
       propertyType: "ON_LEASE",
       propertySpecific: "RESIDENTIAL",
+      usageCategory: "rent",
       locationType: "PRIME",
       area: "1500 sq ft",
+      propertySizeOrArea: "1500",
       address: "456 Park Avenue, Downtown",
-      rent: "₹35,000/month",
+      geoLocation: { latitude: "28.7041", longitude: "77.1025" },
+      propertyImage: "https://via.placeholder.com/150",
+      rent: "35,000",
+      baseRent: "35000",
+      securityDeposit: "8000",
+      tax_applicable: true,
+      refund_applicable_on_discontinuation: false,
+      penaltyType: "MONTHLY",
+      latePayment: "5%",
     },
     {
+      i18nKey: "Commercial Shop - Non-Prime",
+      code: 3,
       id: 3,
+      name: "Commercial Shop - Non-Prime",
       title: "Commercial Shop - Non-Prime",
+      propertyId: "RL003",
       propertyType: "ON_RENT",
       propertySpecific: "COMMERCIAL",
+      usageCategory: "rent",
       locationType: "NON_PRIME",
       area: "800 sq ft",
+      propertySizeOrArea: "800",
       address: "789 Suburban Road, Outskirts",
-      rent: "₹25,000/month",
+      geoLocation: { latitude: "27.1767", longitude: "78.0081" },
+      propertyImage: "https://via.placeholder.com/150",
+      rent: "25,000",
+      baseRent: "25000",
+      securityDeposit: "5000",
+      tax_applicable: false,
+      refund_applicable_on_discontinuation: true,
+      penaltyType: "ONETIME",
+      latePayment: "1%",
     },
     {
+      i18nKey: "Industrial Warehouse - Non-Prime",
+      code: 4,
       id: 4,
+      name: "Industrial Warehouse - Non-Prime",
       title: "Industrial Warehouse - Non-Prime",
+      propertyId: "RL004",
       propertyType: "ON_LEASE",
       propertySpecific: "INDUSTRIAL",
+      usageCategory: "rent",
       locationType: "NON_PRIME",
       area: "5000 sq ft",
+      propertySizeOrArea: "5000",
       address: "321 Industrial Area, Zone B",
-      rent: "₹1,00,000/month",
+      geoLocation: { latitude: "19.0760", longitude: "72.8777" },
+      propertyImage: "https://via.placeholder.com/150",
+      rent: "1,00,000",
+      baseRent: "100000",
+      securityDeposit: "20000",
+      tax_applicable: true,
+      refund_applicable_on_discontinuation: false,
+      penaltyType: "MONTHLY",
+      latePayment: "10%",
     },
     {
+      i18nKey: "Residential House - Prime",
+      code: 5,
       id: 5,
+      name: "Residential House - Prime",
       title: "Residential House - Prime",
+      propertyId: "RL005",
       propertyType: "ON_RENT",
       propertySpecific: "RESIDENTIAL",
+      usageCategory: "rent",
       locationType: "PRIME",
       area: "2000 sq ft",
+      propertySizeOrArea: "2000",
       address: "555 Elite Avenue, Premium Area",
-      rent: "₹60,000/month",
+      geoLocation: { latitude: "12.9716", longitude: "77.5946" },
+      propertyImage: "https://via.placeholder.com/150",
+      rent: "60,000",
+      baseRent: "60000",
+      securityDeposit: "15000",
+      tax_applicable: true,
+      refund_applicable_on_discontinuation: true,
+      penaltyType: "ONETIME",
+      latePayment: "3%",
     },
     {
+      i18nKey: "Mixed Use Property - Prime",
+      code: 6,
       id: 6,
+      name: "Mixed Use Property - Prime",
       title: "Mixed Use Property - Prime",
+      propertyId: "RL006",
       propertyType: "ON_LEASE",
       propertySpecific: "MIXED_USE",
+      usageCategory: "rent",
       locationType: "PRIME",
       area: "3000 sq ft",
+      propertySizeOrArea: "3000",
       address: "999 Business Hub, Central",
-      rent: "₹80,000/month",
+      geoLocation: { latitude: "22.5726", longitude: "88.3639" },
+      propertyImage: "https://via.placeholder.com/150",
+      rent: "80,000",
+      baseRent: "80000",
+      securityDeposit: "25000",
+      tax_applicable: false,
+      refund_applicable_on_discontinuation: true,
+      penaltyType: "ONETIME",
+      latePayment: "4%",
     },
   ];
+
+  const [filteredProperties, setFilteredProperties] = useState(mockProperties);
+  console.log("filteredProperties", filteredProperties);
 
   // 🔹 Form setup
   const {
@@ -1397,27 +1480,16 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       latePaymentPercent: "",
       termsAndConditions: "",
       // notificationPrefs: {},
-      penaltyType: {},
+      penaltyType: "",
     },
   });
+
+  console.log("errors", errors);
 
   const selectedPropertyType = watch("propertyType");
   const selectedPropertySpecific = watch("propertySpecific");
   const selectedLocationType = watch("locationType");
   const selectedProperty = watch("selectedProperty");
-
-  console.log("errors", errors);
-
-  // 🔹 Filter properties
-  const filteredProperties = useMemo(() => {
-    if (!selectedPropertyType || !selectedPropertySpecific || !selectedLocationType) return [];
-    return mockProperties.filter(
-      (property) =>
-        property.propertyType === selectedPropertyType?.code &&
-        property.propertySpecific === selectedPropertySpecific?.code &&
-        property.locationType === selectedLocationType?.code
-    );
-  }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
   // 🔹 Reset selected property when filters change
   useEffect(() => {
@@ -1426,11 +1498,20 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     }
   }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType, setValue]);
 
-  const propertyNameOptions = mockProperties.map((p) => ({
-    name: p.title,
-    code: p.id,
-    i18nKey: p.title,
-  }));
+  useEffect(() => {
+    if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
+      const filtered = mockProperties.filter(
+        (p) =>
+          p.propertyType === selectedPropertyType?.code &&
+          p.propertySpecific === selectedPropertySpecific?.code &&
+          p.locationType === selectedLocationType?.code
+      );
+      console.log("filtered123", filtered);
+      setFilteredProperties(filtered);
+    } else {
+      setFilteredProperties(filteredProperties);
+    }
+  }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
   const todayISO = new Date().toISOString().split("T")[0];
 
@@ -1467,7 +1548,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       trigger("selectedProperty");
       return;
     }
-
+    triggerLoader(true);
     // Build one consistent object
     const propertyDetails = {
       propertyName: data.propertyName,
@@ -1490,22 +1571,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       latePaymentPercent: data.latePaymentPercent || null,
       termsAndConditions: data.termsAndConditions,
       penaltyType: data.penaltyType || null,
-
-      // Multi-checkbox → transform into array
-      // notificationPrefs: Object.keys(data.notificationPrefs || {}).filter((k) => data.notificationPrefs[k]),
-      // penaltyType: Object.keys(data.penaltyType || {}).filter((k) => data.penaltyType[k]),
     };
-
     // Dispatch to Redux under one key
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", propertyDetails));
-
-    if (currentStepData?.CreatedResponse?.applicationNumber || currentStepData?.applicationData?.applicationNumber) {
-      goNext(propertyDetails);
-      return;
-    }
-
-    // For new applications, just proceed to next step
-    setLoader(false);
+    triggerLoader(false);
     goNext(propertyDetails);
   };
 
@@ -1519,28 +1588,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     }
   }, [currentStepData, setValue]);
 
-  const radioStyles = { width: "15px", height: "15px", cursor: "pointer" };
+  const radioStyles = { width: "18px", height: "18px", cursor: "pointer" };
   const wrapper = { display: "flex", alignItems: "center", gap: "10px", margin: "10px 0px 20px 0px" };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
-
-      {/* Property Name Dropdown */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_NAME")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="propertyName"
-          rules={{ required: t("RENT_LEASE_PROPERTY_NAME_REQUIRED") }}
-          render={(props) => (
-            <Dropdown className="form-field" select={props.onChange} selected={props.value} option={propertyNameOptions} optionKey="name" t={t} />
-          )}
-        />
-      </LabelFieldPair>
-      {errors.propertyName && <CardLabelError style={errorStyle}>{getErrorMessage("propertyName")}</CardLabelError>}
 
       {/* Property Type Dropdown */}
       <LabelFieldPair>
@@ -1590,6 +1643,55 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       </LabelFieldPair>
       {errors.locationType && <CardLabelError style={errorStyle}>{getErrorMessage("locationType")}</CardLabelError>}
 
+      {/* Property Name Dropdown */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_NAME")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="propertyName"
+          rules={{ required: t("RENT_LEASE_PROPERTY_NAME_REQUIRED") }}
+          render={({ value, onChange }) => (
+            <Dropdown
+              className="form-field"
+              select={(selected) => {
+                console.log("selected", selected);
+                // ✅ set propertyName field
+                onChange(selected.name);
+                // ✅ also set propertyId field
+                setValue("propertyId", selected?.id, { shouldValidate: true });
+                setValue("rentAmount", selected?.rent, { shouldValidate: true });
+                setValue("penaltyType", selected?.penaltyType, { shouldValidate: true });
+              }}
+              selected={filteredProperties.find((p) => p.name === value)}
+              option={filteredProperties}
+              optionKey="name"
+              t={t}
+            />
+          )}
+        />
+      </LabelFieldPair>
+      {errors.propertyName && <CardLabelError style={errorStyle}>{getErrorMessage("propertyName")}</CardLabelError>}
+
+      {/* Property ID */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_ID")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="propertyId"
+            rules={{ required: t("RENT_LEASE_PROPERTY_ID_REQUIRED") }}
+            render={({ value, onChange }) => (
+              <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} t={t} disabled={true} />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("propertyId")}</CardLabelError>}
+
       {/* Property Cards */}
       {selectedPropertyType && selectedPropertySpecific && selectedLocationType && (
         <div style={{ marginTop: "24px", marginBottom: "24px" }}>
@@ -1633,21 +1735,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       <Controller control={control} name="selectedProperty" rules={{ required: t("RENT_LEASE_PROPERTY_SELECTION_REQUIRED") }} render={() => null} />
       {errors.selectedProperty && <CardLabelError style={errorStyle}>{getErrorMessage("selectedProperty")}</CardLabelError>}
 
-      {/* Property ID */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_ID")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="propertyId"
-            rules={{ required: t("RENT_LEASE_PROPERTY_ID_REQUIRED") }}
-            render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} t={t} />}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("propertyId")}</CardLabelError>}
       {/* Start Date */}
       <LabelFieldPair>
         <CardLabel>
@@ -1751,6 +1838,89 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             control={control}
             name="rentAmount"
             rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />}
+          />
+        </div>
+      </LabelFieldPair>
+
+      {/* Penalty Type */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("PENALTY_TYPE")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="penaltyType"
+            rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            render={({ value, onChange }) => (
+              <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} t={t} disabled={true} />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>}
+
+      {/* Security Amount */}
+      <LabelFieldPair>
+        <CardLabel>
+          {t("SECURITY_AMOUNT")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="securityAmount"
+            rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
+          />
+        </div>
+      </LabelFieldPair>
+
+      {/* Terms & Conditions */}
+      <LabelFieldPair>
+        <CardLabel>
+          {t("TERMS_AND_CONDITIONS")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="termsAndConditions"
+            rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            render={({ value, onChange }) => <TextArea value={value || ""} onChange={onChange} />}
+          />
+        </div>
+      </LabelFieldPair>
+      {/* Refund Applicable */}
+      <LabelFieldPair>
+        <CardLabel>
+          {t("REFUND_APPLICABLE")} <span style={mandatoryStyle}>*</span>
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            name="refundApplicable"
+            render={({ value, onChange }) => (
+              <div style={wrapper}>
+                <input type="radio" checked={value === "YES"} onChange={() => onChange("YES")} style={radioStyles} /> {t("YES")}
+                <input type="radio" checked={value === "NO"} onChange={() => onChange("NO")} style={radioStyles} /> {t("NO")}
+              </div>
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+
+      {/* Amount to be Refunded */}
+      <LabelFieldPair>
+        <CardLabel>
+          {t("AMOUNT_TO_BE_REFUNDED")}
+          {/* <span style={mandatoryStyle}>*</span> */}
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="amountToBeRefunded"
+            // rules={{ required: t("PTR_FIELD_REQUIRED") }}
             render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
           />
         </div>
@@ -1790,65 +1960,17 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         </div>
       </LabelFieldPair>
 
-      {/* Security Amount */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("SECURITY_AMOUNT")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="securityAmount"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
-          />
-        </div>
-      </LabelFieldPair>
-      {/* Refund Applicable */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("REFUND_APPLICABLE")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            name="refundApplicable"
-            render={({ value, onChange }) => (
-              <div style={wrapper}>
-                <input type="radio" checked={value === "YES"} onChange={() => onChange("YES")} style={radioStyles} /> {t("YES")}
-                <input type="radio" checked={value === "NO"} onChange={() => onChange("NO")} style={radioStyles} /> {t("NO")}
-              </div>
-            )}
-          />
-        </div>
-      </LabelFieldPair>
-
-      {/* Amount to be Refunded */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("AMOUNT_TO_BE_REFUNDED")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="amountToBeRefunded"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
-          />
-        </div>
-      </LabelFieldPair>
-
       {/* Increment Applicable */}
       <LabelFieldPair>
         <CardLabel>
-          {t("INCREMENT_APPLICABLE")} <span style={mandatoryStyle}>*</span>
+          {t("INCREMENT_APPLICABLE")}
+          {/* <span style={mandatoryStyle}>*</span> */}
         </CardLabel>
         <div className="form-field">
           <Controller
             control={control}
             name="incrementApplicable"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            // rules={{ required: t("PTR_FIELD_REQUIRED") }}
             render={({ value, onChange }) => (
               <div style={wrapper}>
                 <input type="radio" checked={value === "YES"} onChange={() => onChange("YES")} style={radioStyles} /> {t("YES")}
@@ -1901,20 +2023,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         </div>
       </LabelFieldPair>
 
-      {/* Terms & Conditions */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("TERMS_AND_CONDITIONS")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="termsAndConditions"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextArea value={value || ""} onChange={onChange} />}
-          />
-        </div>
-      </LabelFieldPair>
       {/* Notification Preferences */}
       {/* <LabelFieldPair>
         <CardLabel>{t("NOTIFICATION_PREFERENCES")} <span style={mandatoryStyle}>*</span></CardLabel>
@@ -1937,7 +2045,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {errors.notificationPrefs && <CardLabelError style={errorStyle}>{getErrorMessage("notificationPrefs")}</CardLabelError>} */}
 
       {/* Penalty Type */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>
           {t("PENALTY_TYPE")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
@@ -1946,11 +2054,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           name="penaltyType"
           rules={{ required: t("PTR_FIELD_REQUIRED") }}
           render={({ value, onChange }) => (
-            <Dropdown className="form-field" option={penaltyTypeOptions} optionKey="name" selected={value} select={onChange} t={t} />
+            <Dropdown className="form-field" option={penaltyTypeOptions} optionKey="name" selected={value} select={onChange} t={t} disable={true}/>
           )}
         />
       </LabelFieldPair>
-      {errors.penaltyType && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>}
+      {errors.penaltyType && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>} */}
 
       {/* Action Bar */}
       <ActionBar>
@@ -1961,8 +2069,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
-
-      {(loader || isLoading) && <Loader page={true} />}
     </form>
   );
 };

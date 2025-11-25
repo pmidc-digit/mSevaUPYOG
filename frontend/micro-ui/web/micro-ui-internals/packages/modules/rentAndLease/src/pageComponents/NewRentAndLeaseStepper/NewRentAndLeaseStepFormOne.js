@@ -31,10 +31,12 @@ const NewRentAndLeaseStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
+  console.log('config', config)
+
   return (
     <React.Fragment>
       <div className="employeeCard">
-        <RentAndLeasePropertyDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+        <RentAndLeasePropertyDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} triggerLoader={config?.currStepConfig?.[0]?.triggerLoader}/>
         {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       </div>
     </React.Fragment>

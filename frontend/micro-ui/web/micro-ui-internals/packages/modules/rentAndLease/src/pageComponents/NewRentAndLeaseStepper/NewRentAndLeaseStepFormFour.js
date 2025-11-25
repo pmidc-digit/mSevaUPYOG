@@ -7,17 +7,15 @@ import { useHistory, useRouteMatch } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM,
-  RESET_RENTANDLEASE_NEW_APPLICATION_FORM,
 } from "../../redux/action/RentAndLeaseNewApplicationActions";
-import RentAndLeaseSummary from "../RentAndLeaseSummary";
 
 const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }) => {
   const dispatch = useDispatch();
   const { t: tHook } = useTranslation();
   const t = tProp || tHook;
   const { path } = useRouteMatch();
-  const [showToast, setShowToast] = useState(false);
-  const [error, setError] = useState("");
+  // const [showToast, setShowToast] = useState(false);
+  // const [error, setError] = useState("");
   const history = useHistory();
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -59,14 +57,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
-      setError(`Please fill the following field: ${missingFields[0]}`);
-      setShowToast({ key: "error" });
+      config?.currStepConfig?.[0]?.triggerToast(`Please fill the following field: ${missingFields[0]}`,true);
       return;
     }
 
     if (notFormattedFields.length > 0) {
-      setError(`Please format the following field: ${notFormattedFields[0]}`);
-      setShowToast({ key: "error" });
+      config?.currStepConfig?.[0]?.triggerToast(`Please format the following field: ${notFormattedFields[0]}`,true);
       return;
     }
 
@@ -76,12 +72,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       if (res?.isSuccess) {
         const action = res?.response?.RentAndLeaseApplications?.[0]?.workflow?.action;
         if (action == "CANCEL") {
-          alert("Cancelled Application");
           onGoToRentAndLease();
         } else if (action == "SAVEASDRAFT") {
-          setShowToast({ key: "success", label: "Successfully saved as draft" });
-          setError("Successfully saved as draft");
-
+          config?.currStepConfig?.[0]?.triggerToast("Successfully saved as draft");
           setTimeout(() => {
             onGoToRentAndLease();
           }, 1000);
@@ -92,13 +85,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           );
         }
       } else {
-        setError(res?.Errors?.message || "Update failed");
-        setShowToast({ key: "error" });
+        config?.currStepConfig?.[0]?.triggerToast((res?.Errors?.message || "Update failed"),false);
       }
     } catch (error) {
-      alert(`Error: ${error?.message}`);
-      setError(error?.message || "Update failed");
-      setShowToast({ key: "error" });
+      config?.currStepConfig?.[0]?.triggerToast((error?.message || "Update failed"),true);
     }
   }
 
@@ -162,10 +152,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     onBackClick(config.key, data);
   }
 
-  const closeToast = () => {
-    setShowToast(false);
-    setError("");
-  };
+  // const closeToast = () => {
+  //   setShowToast(false);
+  //   setError("");
+  // };
 
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
@@ -224,7 +214,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
 
-      {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {/* {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />} */}
     </React.Fragment>
   );
 };

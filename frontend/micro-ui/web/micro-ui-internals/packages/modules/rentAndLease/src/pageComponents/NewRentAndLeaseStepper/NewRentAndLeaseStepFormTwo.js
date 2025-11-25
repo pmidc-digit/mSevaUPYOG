@@ -18,11 +18,7 @@ const NewRentAndLeaseStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   });
 
   function goNext(data) {
-    console.log("NewRentAndLeaseStepFormOne - goNext called with data:", data);
-    console.log("NewRentAndLeaseStepFormOne - config.key:", config.key);
-    console.log("NewRentAndLeaseStepFormOne - onGoNext function:", onGoNext);
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM(config.key, data));
-    console.log("NewRentAndLeaseStepFormOne - About to call onGoNext()");
     if (onGoNext && typeof onGoNext === 'function') {
       onGoNext();
     } else {
@@ -42,7 +38,7 @@ const NewRentAndLeaseStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   return (
     <React.Fragment>
       <div className="employeeCard">
-        <RentAndLeaseCitizenDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+        <RentAndLeaseCitizenDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} triggerToast={config?.currStepConfig?.[0]?.triggerToast}  triggerLoader={config?.currStepConfig?.[0]?.triggerLoader}/>
         {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       </div>
     </React.Fragment>

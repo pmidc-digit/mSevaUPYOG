@@ -2,14 +2,11 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
-import { useState } from "react";
+// import { useState } from "react";
 import _ from "lodash";
 
 const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(false);
-  const [error, setError] = useState("");
-
   const stateId = Digit.ULBService.getStateId();
   const { isLoading, data: mdmsData } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId);
 
@@ -28,11 +25,7 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
-      setError(`You haven't uploaded: ${missingFields[0].replace(".", "_").toUpperCase()}`);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+      config?.currStepConfig?.[0]?.triggerToast(`You haven't uploaded: ${missingFields[0].replace(".", "_").toUpperCase()}`,true);
       return;
     }
     onGoNext();
@@ -60,23 +53,11 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     onBackClick(config.key, data);
   }
 
-  const closeToast = () => {
-    setShowToast(false);
-    setError("");
-  };
-
   const onFormValueChange = (setValue = true, data) => {
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM(config?.key, data));
     }
   };
-
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => setShowToast(null), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
 
   return (
     <React.Fragment>
@@ -89,7 +70,6 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

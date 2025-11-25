@@ -308,7 +308,9 @@
 
 // export default RentAndLeaseCitizenDetails;
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Controller, useForm, useFieldArray } from "react-hook-form";
 import {
   TextInput,
   CardLabel,
@@ -321,12 +323,12 @@ import {
   CardSectionHeader,
   Dropdown,
 } from "@mseva/digit-ui-react-components";
-import { Controller, useForm, useFieldArray } from "react-hook-form";
-import { Loader } from "../../../challanGeneration/src/components/Loader";
+import {UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM} from "../redux/action/RentAndLeaseNewApplicationActions"
 
-const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, validateStep }) => {
+const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, validateStep,triggerToast,triggerLoader }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [isLoading, setIsLoading] = useState(false);
+    const dispatch = useDispatch();
+
 
   console.log("currentStepData", currentStepData);
 
@@ -352,7 +354,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     name: "applicants",
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async(data) => {
     if (validateStep) {
       const validationErrors = validateStep(data);
       if (Object.keys(validationErrors)?.length > 0) return;
@@ -362,17 +364,38 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     const mobiles = data.applicants.map((a) => a.mobileNumber).filter(Boolean);
     const duplicateMobile = mobiles.find((m, i) => mobiles.indexOf(m) !== i);
     if (duplicateMobile) {
-      alert(t("RAL_DUPLICATE_MOBILE_ERROR")); // or set a form error
+      triggerToast(t("RAL_DUPLICATE_MOBILE_ERROR"),true);
       return;
     }
 
-    // ✅ Check for duplicate emails
-    const emails = data.applicants.map((a) => a.emailId).filter(Boolean);
-    const duplicateEmail = emails.find((e, i) => emails.indexOf(e) !== i);
-    if (duplicateEmail) {
-      alert(t("RAL_DUPLICATE_EMAIL_ERROR"));
+     // ✅ If booking already exists, skip slot_search & create
+    const existingPropertyAlloted = currentStepData?.CreatedResponse?.allotmentNumber;
+    if (existingPropertyAlloted) {
+      goNext(data);
       return;
     }
+
+    triggerLoader(true);
+        try {
+          // Call create API
+          const response = await Digit.RentAndLeaseService.create({ bookingApplication: data }, tenantId);
+          const status = response?.ResponseInfo?.status;
+          const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
+    
+          if (isSuccess) {
+            const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
+    
+            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", appData || response));
+            goNext(data);
+          } else {
+            triggerToast(t("CORE_SOMETHING_WENT_WRONG"),true );
+          }
+        } catch (err) {
+          triggerToast(t("CORE_SOMETHING_WENT_WRONG"), true);
+        } finally {
+          triggerLoader(false);
+        }
+
     goNext(data);
   };
 
@@ -408,7 +431,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
   const handleMobileChange = async (value, index) => {
     if (!value || value.length < 10) return;
-    setIsLoading(true);
+    triggerLoader(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       const user = userData?.user?.[0] || {};
@@ -418,22 +441,38 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false);
+      triggerLoader(false);
     }
   };
 
   const debouncedHandleMobileChange = React.useCallback(debounce(handleMobileChange, 600), []);
 
   useEffect(() => {
-    const ownershipType = watch("ownershipType");
-    if (ownershipType === "MULTIPLE" && fields.length < 2) {
+  const ownershipType = watch("ownershipType");
+
+  if (ownershipType === "SINGLE") {
+    // ensure exactly one applicant
+    if (fields.length === 0) {
       append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" });
-      append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" });
-    }
-    if (ownershipType === "SINGLE" && fields.length > 1) {
+    } else if (fields.length > 1) {
       reset({ ownershipType: "SINGLE", applicants: [fields[0]] });
     }
-  }, [watch("ownershipType")]);
+  }
+
+  if (ownershipType === "MULTIPLE") {
+    // ensure at least two applicants
+    if (fields.length < 2) {
+      reset({
+        ownershipType: "MULTIPLE",
+        applicants: [
+          { mobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
+          { mobileNumber: "", emailId: "", name: "", address: "", pincode: "" }
+        ]
+      });
+    }
+  }
+}, [watch("ownershipType")]);
+
 
   const ownershipOptions = [
     { code: "SINGLE", name: t("RAL_SINGLE") },
@@ -644,8 +683,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
-
-      {isLoading && <Loader page={true} />}
     </form>
   );
 };

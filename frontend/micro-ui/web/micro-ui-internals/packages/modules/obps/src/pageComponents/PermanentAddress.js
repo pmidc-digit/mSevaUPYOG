@@ -359,7 +359,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   return (
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+        {isopenlink && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep
           config={config}
@@ -384,7 +384,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={handleAddressSame}
             checked={isAddressSame}
-            style={{ paddingBottom: "10px", paddingTop: "10px" }}
+           
             //  disable={!isCitizenEditable}
           />
 

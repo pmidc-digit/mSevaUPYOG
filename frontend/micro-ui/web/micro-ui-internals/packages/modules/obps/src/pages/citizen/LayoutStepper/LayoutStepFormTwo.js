@@ -11,10 +11,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 
 const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
+  const { id } = useParams();
+  const isEditApplication = Boolean(id);
+  console.log("LOOK IN STEER",isEditApplication);
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
@@ -53,6 +57,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     trigger();
 
     dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
+
+     if (isEditApplication) {
+    console.log("Edit Mode → Skipping ALL API calls");
+    onGoNext();
+    return;
+  }
     
     if (currentStepData?.apiData?.Layout?.[0]?.applicationNo) {
       onGoNext();

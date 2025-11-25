@@ -12,6 +12,7 @@ import {
   CardLabelError,
   UploadFile
 } from "@mseva/digit-ui-react-components";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 
 
@@ -19,12 +20,17 @@ const LayoutSiteDetails = (_props) => {
   const Digit = typeof window !== "undefined" ? window.Digit : {}
   const tenantId = Digit?.ULBService?.getCurrentTenantId?.() || ""
   const stateId = Digit?.ULBService?.getStateId?.() || ""
+  const id = useParams();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props
 
-  const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
+  const applicationNo = Boolean(id) || currentStepData?.applicationNo || watch("applicationNo") 
   console.log(applicationNo, "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
+
+  console.log("STEPERDFATA", currentStepData);
+
+  console.log(isEditMode, "LOOK EDIT");
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00")
@@ -370,6 +376,7 @@ const LayoutSiteDetails = (_props) => {
               <Controller
                 control={control}
                 name={"roadType"}
+                defaultValue={currentStepData?.siteDetails?.roatType || null}
                 rules={{
                   required: t("REQUIRED_FIELD"),
                 }}

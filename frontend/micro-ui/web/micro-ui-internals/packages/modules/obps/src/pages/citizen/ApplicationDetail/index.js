@@ -146,49 +146,10 @@ console.log("licenseType:", licenseType);
 
   if (isLoading) return <Loader />;
 
-  // ---------------- UI Styles ----------------
-  const pageStyle = {
-    padding: isMobile ? "1rem" : "2rem",
-    backgroundColor: "#fbfbfbff",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-    paddingBottom: "5rem",
-  }
-
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: isMobile ? "0.75rem 1rem" : "1rem 1.5rem",
-    borderRadius: "8px",
-    marginBottom: "1.5rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  }
-
-  const headingStyle = {
-    fontSize: isMobile ? "1.2rem" : "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: isMobile ? "1.2rem" : "2rem",
-    marginBottom: "1rem",
-  }
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    flexDirection: isMobile ? "column" : "row",
-    justifyContent: "space-between",
-    alignItems: isMobile ? "flex-start" : "center",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-    gap: isMobile ? "0.25rem" : "0",
-  }
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
-
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div style={{ wordBreak: "break-word" }}>{value || t("CS_NA")}</div>
+    <div >
+      <CardLabel >{label}</CardLabel>
+      <div >{value || t("CS_NA")}</div>
     </div>
   )
 
@@ -203,63 +164,22 @@ const formatDate = (timestamp) => {
   return `${day}/${month}/${year}`;
 };
 
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-  }
-
-  const documentCardStyle = {
-    flex: isMobile ? "1 1 100%" : "1 1 calc(50% - 1rem)",
-    minWidth: "100%",
-    maxWidth: "100%",
-    backgroundColor: "#fdfdfd",
-    padding: "0.75rem",
-    border: "1px solid #e0e0e0",
-    borderRadius: "6px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    transition: "transform 0.2s, box-shadow 0.2s",
-  }
 
   return (
     <Fragment>
-      <div style={pageStyle}>
-        {/* Header */}
-     
-
-
+      <div >
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "2rem",
-            gap: "1rem",
-          }}
         >
-          <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: "2rem", color: "#2e4a66", marginBottom: "1rem" }}>{t("BPA_TASK_DETAILS_HEADER")}</h2>
+          <div >
+            <h2 >{t("BPA_TASK_DETAILS_HEADER")}</h2>
             <div
-              style={{
-                display: "flex",
-                gap: "1rem",
-                alignItems: "center",
-                flexWrap: "wrap",
-                flexDirection: isMobile ? "column" : "row",
-              }}
             >
               {recieptDataLoading ? (
                 <Loader />
               ) : (
                 reciept_data?.Payments?.length > 0 && (
                   <MultiLink
-                    style={{ position: "static" }}
+                    
                     optionsStyle={{ position: "static" }}
                     onHeadClick={() => setShowOptions(!showOptions)}
                     displayOptions={showOptions}
@@ -268,7 +188,7 @@ const formatDate = (timestamp) => {
                 )
               )}
               <DownloadCertificateButton applicationNumber={id} />
-              <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+              <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
             </div>
           </div>
 
@@ -280,34 +200,27 @@ const formatDate = (timestamp) => {
             if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
 
             return (
-              <div style={{display: "flex", flexDirection:"column" , alignItems: "center", marginBottom: "1rem"}}>
+              <div >
               <img
                 src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
                 alt="Owner Photograph"
-                style={{
-                  maxWidth: "120px",
-                  maxHeight: "120px",
-                  border: "2px solid #e0e0e0",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  flexShrink: 0,
-                }}
+              
                 onError={(e) => {
                   e.target.style.display = "none"
                 }}
               />
-              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              <CardLabel >{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
               </div>
             )
           })()}
         </div>
 
         {/* Application Details */}
-        <div style={sectionStyle}>{renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), License?.applicationNumber)}</div>
+        <div >{renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), License?.applicationNumber)}</div>
 
         {/* License Details */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_LICENSE_DETAILS_LABEL")}</h2>
+        <div >
+          <h2 >{t("BPA_LICENSE_DETAILS_LABEL")}</h2>
           {renderLabel(
             t("BPA_LICENSE_TYPE"),
             t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`),
@@ -325,8 +238,8 @@ const formatDate = (timestamp) => {
         </div>
 
         {/* Applicant Details */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>
+        <div >
+          <h2 >{t("BPA_LICENSE_DET_CAPTION")}</h2>
           {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.name)}
           {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(License?.tradeLicenseDetail?.owners?.[0]?.gender))}
           {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.mobileNumber)}
@@ -334,14 +247,14 @@ const formatDate = (timestamp) => {
         </div>
 
         {/* Permanent Address */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_LICENSEE_PERMANENT_LABEL")}</h2>
+        <div>
+          <h2 >{t("BPA_LICENSEE_PERMANENT_LABEL")}</h2>
           {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
         </div>
 
         {/* Correspondence Address */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_CORRESPONDANCE_ADDRESS_LABEL")}</h2>
+        <div >
+          <h2 >{t("BPA_CORRESPONDANCE_ADDRESS_LABEL")}</h2>
           {renderLabel(t("Address"), License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
         </div>
 
@@ -349,52 +262,28 @@ const formatDate = (timestamp) => {
 
  
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
-          <div style={sectionStyle}>
-            <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
-            <div style={{ overflowX: "auto" }}>
+          <div >
+            <h2 >{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
+            <div >
               <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  marginTop: "1rem",
-                }}
+               
               >
                 <thead>
                   <tr
-                    style={{
-                      backgroundColor: "#f5f5f5",
-                      borderBottom: "2px solid #ddd",
-                    }}
+                  
                   >
                     <th
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "center",
-                        fontWeight: "600",
-                        color: "#2e4a66",
-                        width: "100px",
-                      }}
+                     
                     >
                       {t("BPA_SL_NO")}
                     </th>
                     <th
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#2e4a66",
-                      }}
+                    
                     >
                       {t("BPA_DOCUMENT_TYPE")}
                     </th>
                     <th
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "center",
-                        fontWeight: "600",
-                        color: "#2e4a66",
-                        width: "150px",
-                      }}
+                     
                     >
                       {t("BPA_ACTION")}
                     </th>

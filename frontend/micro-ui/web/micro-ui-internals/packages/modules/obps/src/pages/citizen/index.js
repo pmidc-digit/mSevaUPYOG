@@ -57,10 +57,22 @@ const App = ({ path }) => {
   const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
+   const getBackPageNumber = () => {
+    let goBacktoFromProperty = -1;
+    if (sessionStorage.getItem("VisitedCommonPTSearch") === "true" && isCommonPTPropertyScreen) {
+      goBacktoFromProperty = -4;
+      return goBacktoFromProperty;
+    }
+    return goBacktoFromProperty;
+  };
+
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
-       {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+         {!isAcknowledgement && <BackButton style={{ border: "none" }} /* isCommonPTPropertyScreen={isCommonPTPropertyScreen} */ getBackPageNumber={getBackPageNumber}>
+          {t("CS_COMMON_BACK")}
+        </BackButton>}
+       {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr }
       <Switch>
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={NewLayoutEditLayoutApplication} />
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />

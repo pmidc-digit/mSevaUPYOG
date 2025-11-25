@@ -88,6 +88,8 @@ const EditLayoutApplication = () => {
   const formData = formState.formData;
   const step = formState.step
 
+  console.log("are we calling this page when doing edit");
+
   //Makesure to pass tenantId correctly
   let tenantId
   if (window.location.pathname.includes("employee")) {
@@ -104,14 +106,17 @@ const EditLayoutApplication = () => {
   const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
   const documents = layoutObject?.documents || [];
 
+  console.log("Layout Object View",layoutObject)
+
+
   const setStep = (updatedStepNumber) => {
     dispatch(SET_LayoutNewApplication_STEP(updatedStepNumber))
   }
 
   const stateId = Digit.ULBService.getStateId()
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId)
-  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId)
-  const { data: areaType, isLoading: isareaTypeLoading } = Digit.Hooks.obps.useLayoutAreaType(stateId)
+  // const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId)
+  // const { data: areaType, isLoading: isareaTypeLoading } = Digit.Hooks.obps.useLayoutAreaType(stateId)
   
   const {
     data: buildingCategory,
@@ -122,7 +127,7 @@ const EditLayoutApplication = () => {
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants()
   const [cities, setcitiesopetions] = useState(Digit.Hooks.obps.useTenants());
 
-  console.log("Edit mode data render =====>",buildingType,roadType, areaType,  buildingCategory,layoutType,ulbList   );
+  console.log("Edit mode data render =====>",buildingType,  buildingCategory,layoutType,ulbList   );
   
   const options = [
     {code: "YES", i18nKey: "YES"}, 
@@ -204,7 +209,7 @@ const EditLayoutApplication = () => {
       const updatedSiteDetails = {
         ...siteDetails,
         ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
-        roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
+        // roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
         buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
         isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
         district: districtObj,
@@ -232,8 +237,8 @@ const EditLayoutApplication = () => {
   }
 
   return (
-    <div className="pageCard">
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+    <div className="card">
+      <CardHeader divider={true}>
         {t("BPA_LAYOUT_REGISTRATION_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

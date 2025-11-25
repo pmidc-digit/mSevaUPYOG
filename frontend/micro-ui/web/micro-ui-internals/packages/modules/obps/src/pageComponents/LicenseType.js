@@ -490,10 +490,10 @@ const [validTo, setValidTo] = useState(() => {
   console.log("formData in LicenseType", formData);
   if(isQualificationLoading ) return <Loader /> ;
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-      <div style={{ flex: 1, marginRight: "20px" }}>
+    <div >
+      <div >
         <div className={isopenlink ? "OpenlinkContainer" : ""}>
-          {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+          {isopenlink && <BackButton >{t("CS_COMMON_BACK")}</BackButton>}
           {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
 
           <FormStep
@@ -556,12 +556,7 @@ const [validTo, setValidTo] = useState(() => {
                 />
                 {errorMessage && (
                   <div
-                    style={{
-                      color: "#d32f2f",
-                      fontSize: "12px",
-                      marginTop: "4px",
-                      marginBottom: "12px",
-                    }}
+                   
                   >
                     {errorMessage}
                   </div>
@@ -643,13 +638,7 @@ const [validTo, setValidTo] = useState(() => {
                 />
                 {errorMessage && (
                   <div
-                    style={{
-                      color: "#d32f2f",
-                      fontSize: "12px",
-                      marginTop: "4px",
-                      marginBottom: "12px",
-                      fontStyle: "italic",
-                    }}
+                   
                   >
                     {errorMessage}
                   </div>
@@ -682,42 +671,19 @@ const [validTo, setValidTo] = useState(() => {
               )} */}
           </FormStep>
           <div
-            style={{
-              flex: "0 0 30%",
-              border: "1px solid #dcdcdc",
-              backgroundColor: "#f9f9f9",
-              borderRadius: "8px",
-              padding: "20px",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              marginTop: "20px",
-            }}
+           
           >
             <h1
-              style={{
-                fontSize: "22px",
-                fontWeight: "600",
-                color: "#333",
-                marginBottom: "10px",
-                textAlign: "center",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-              }}
+             
             >
               {t("BPA_COMPETENCIES")}
             </h1>
             <ul
-              style={{
-                fontSize: "16px",
-                color: "#555",
-                lineHeight: "1.6",
-                textAlign: "justify",
-                margin: "0",
-                paddingLeft: "20px",
-              }}
+             
             >
               {LicenseType &&
                 CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.map((point, index) => (
-                  <li key={index} style={{ marginBottom: "8px" }}>
+                  <li key={index} >
                     {point.trim()}
                   </li>
                 ))}

@@ -11,7 +11,7 @@ import LanguageSelection from "./Home/LanguageSelection";
 import LocationSelection from "./Home/LocationSelection";
 import Login from "./Login";
 import NewLoginPage from "./NewLogin/NewLoginPage";
-import NewRegistration from "./NewRegistration/index"
+import NewRegistration from "./NewRegistration/index";
 import UserProfile from "./Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
 import FAQsSection from "./FAQs/FAQs";
@@ -24,7 +24,7 @@ import QRCode from "./QRCode";
 import ChallanQRCode from "./ChallanQRCode";
 import AcknowledgementQRCode from "./AcknowledgementQRCode";
 import EDCRScrutiny from "./Home/EdcrScrutiny";
-import { newConfig as newConfigEDCR  } from "../../config/edcrConfig";
+import { newConfig as newConfigEDCR } from "../../config/edcrConfig";
 import CreateEDCR1 from "./Home/EDCR";
 import EDCRAcknowledgement1 from "./Home/EDCR/EDCRAcknowledgement1";
 import FAQ from "../../FAQ";
@@ -39,13 +39,10 @@ const sidebarHiddenFor = [
   "/digit-ui/citizen/register/otp",
   "/digit-ui/citizen/sso/login",
   "/digit-ui/citizen/login-page",
-  "/digit-ui/citizen/new-registration"
+  "/digit-ui/citizen/new-registration",
 ];
 
-const topSidebarHiddenFor=[
-  "/digit-ui/citizen/sso/login"
-]
-
+const topSidebarHiddenFor = ["/digit-ui/citizen/sso/login"];
 
 const getTenants = (codes, tenants) => {
   return tenants.filter((tenant) => codes.map((item) => item.code).includes(tenant.code));
@@ -93,7 +90,7 @@ const Home = ({
   const { t } = useTranslation();
   const { path } = useRouteMatch();
   sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
-  const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf"
+  const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
   const history = useHistory();
   const handleClickOnWhatsApp = (obj) => {
     window.open(obj);
@@ -117,17 +114,33 @@ const Home = ({
     let mdmsDataObj = isLinkDataFetched ? processLinkData(linkData, code, t) : undefined;
 
     //if (mdmsDataObj?.header === "ACTION_TEST_WS") {
-      mdmsDataObj?.links && mdmsDataObj?.links.sort((a, b) => {
+    mdmsDataObj?.links &&
+      mdmsDataObj?.links.sort((a, b) => {
         return a.orderNumber - b.orderNumber;
       });
     // }
+
+    console.log("mdmsDataObj", mdmsDataObj);
+
     return (
       <React.Fragment>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
           <div className="moduleLinkHomePage">
-            <img src={ "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg"||bannerImage || stateInfo?.bannerUrl} alt="noimagefound" />
+            <img
+              src={
+                "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg" ||
+                bannerImage ||
+                stateInfo?.bannerUrl
+              }
+              alt="noimagefound"
+            />
             <BackButton className="moduleLinkHomePageBackButton" />
-           {isMobile? <h4 style={{top: "calc(16vw + 40px)",left:"1.5rem",position:"absolute",color:"white"}}>{t("MODULE_" + code.toUpperCase())}</h4>:<h1>{t("MODULE_" + code.toUpperCase())}</h1>}
+            {isMobile ? (
+              <h4 style={{ top: "calc(16vw + 40px)", left: "1.5rem", position: "absolute", color: "white" }}>{t("MODULE_" + code.toUpperCase())}</h4>
+            ) : (
+              <h1>{t("MODULE_" + code.toUpperCase())}</h1>
+            )}
+
             <div className="moduleLinkHomePageModuleLinks">
               {mdmsDataObj && code != "OBPS" && (
                 <CitizenHomeCard
@@ -169,7 +182,7 @@ const Home = ({
               )}
               {/* <Links key={index} matchPath={`/digit-ui/citizen/${code.toLowerCase()}`} userType={"citizen"} /> */}
             </div>
-            <StaticDynamicCard moduleCode={code?.toUpperCase()}/>
+            <StaticDynamicCard moduleCode={code?.toUpperCase()} />
           </div>
         </Route>
         <Route key={"faq" + index} path={`${path}/${code.toLowerCase()}-faq`}>
@@ -224,7 +237,7 @@ const Home = ({
           <PrivateRoute path={`${path}/feedback-acknowledgement`} component={AcknowledgementCF}></PrivateRoute>
 
           <Route exact path={`${path}/login-page`}>
-            <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
 
           <Route path={`${path}/new-registration`}>
@@ -233,12 +246,12 @@ const Home = ({
 
           <Route exact path={`${path}/select-language`}>
             {/* <LanguageSelection /> */}
-            <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
 
           <Route exact path={`${path}/select-location`}>
             {/* <LocationSelection /> */}
-            <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
           <Route path={`${path}/error`}>
             <ErrorComponent
@@ -260,13 +273,12 @@ const Home = ({
 
           <Route path={`${path}/login`}>
             {/* <Login stateCode={stateCode} /> */}
-             <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
-          
 
           <Route path={`${path}/register`}>
             {/* <Login stateCode={stateCode} isUserRegistered={false} /> */}
-             <NewRegistration stateCode={stateCode} />
+            <NewRegistration stateCode={stateCode} />
           </Route>
 
           <PrivateRoute path={`${path}/user/profile`}>
@@ -274,7 +286,7 @@ const Home = ({
           </PrivateRoute>
 
           <Route path={`${path}/Audit`}>
-            <Search/>
+            <Search />
           </Route>
           <Route path={`${path}/payment/verification`}>
             <QRCode></QRCode>
@@ -289,7 +301,7 @@ const Home = ({
             {/* <EDCRScrutiny config={newConfigEDCR} isSubmitBtnDisable={false}/>
             
             */}
-              <CreateEDCR1/>
+            <CreateEDCR1 />
           </Route>
           <Route path={`/digit-ui/citizen/core/edcr/scrutiny/acknowledgement`}>
             <EDCRAcknowledgement1 />
@@ -298,7 +310,7 @@ const Home = ({
             <NavigationPage stateCode={stateCode} />
           </Route>
           <Route path={`${path}/faqss`}>
-             <FAQ />
+            <FAQ />
           </Route>
           <ErrorBoundary initData={initData}>
             {appRoutes}
@@ -307,20 +319,50 @@ const Home = ({
         </Switch>
       </div>
 
-      <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
-        <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>
-          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
-          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px"}}>|</span>
-          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
+      <div style={{ width: "100%", position: "fixed", bottom: 0, backgroundColor: "white", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", color: "black" }}>
+          <span
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("https://www.digit.org/", "_blank").focus();
+            }}
+          >
+            Powered by DIGIT
+          </span>
+          <span style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>|</span>
+          <a
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            href="#"
+            target="_blank"
+          >
+            UPYOG License
+          </a>
 
-          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
+          <span className="upyog-copyright-footer" style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>
+            |
+          </span>
+          <span
+            className="upyog-copyright-footer"
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()} -
+          </span>
 
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
-
         </div>
         <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
+          <span
+            className=""
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()} -
+          </span>
         </div>
       </div>
     </div>

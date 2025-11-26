@@ -358,7 +358,8 @@ export const filterFunctions = {
 
     return { searchFilters, workflowFilters };
   },
-   ADV: (filtersArg) => {
+
+  ADV: (filtersArg) => {
     console.log("filer", filtersArg);
     let { uuid } = Digit.UserService.getUser()?.info || {};
 

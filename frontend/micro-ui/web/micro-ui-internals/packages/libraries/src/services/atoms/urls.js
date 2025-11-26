@@ -196,8 +196,8 @@ const Urls = {
     cluUpdate: "/clu-services/v1/clu/_update",
     cluSearch: "/clu-services/v1/clu/_search",
     cluCalculator: "/clu-calculator/v1/_calculate",
-    layoutCalculator:"/layout-calculator/v1/_calculate",
-    layoutCollectionSearch:"/collection-services/payments/layout/_search",
+    layoutCalculator: "/layout-calculator/v1/_calculate",
+    layoutCollectionSearch: "/collection-services/payments/layout/_search",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",
@@ -360,6 +360,12 @@ const Urls = {
     search: "/ndc-services/ndc/_search",
     update: "/ndc-services/ndc/_update",
     billingCalculate: "/ndc-calculator/v1/_calculate",
+  },
+
+  gc: {
+    create: "/gc-services/gc/_create",
+    search: "/gc-services/gc/_search",
+    update: "/gc-services/gc/_update",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

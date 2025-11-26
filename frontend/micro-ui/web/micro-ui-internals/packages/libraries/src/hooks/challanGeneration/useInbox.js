@@ -25,7 +25,7 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
         ? {
             // ...(status && status.length > 0 ? { challanStatus: status } : {}),
             sortOrder: sortOrder,
-            ...(challanNo ? { challanNo } : {}),
+            ...(challanNo ? { challanNumber: challanNo } : {}),
             ...(businessService && businessService.length > 0 ? { offenceTypeName: businessService.join(",") } : {}),
             // ...(businessService ? { offenceTypeName: businessService } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
@@ -33,7 +33,7 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
         : {
             // ...(status && status.length > 0 ? { challanStatus: status.join } : {}),
             sortOrder: sortOrder,
-            ...(challanNo ? { challanNo } : {}),
+            ...(challanNo ? { challanNumber: challanNo } : {}),
             ...(businessService && businessService.length > 0 ? { offenceTypeName: businessService.join(",") } : {}),
             // ...(businessService ? { offenceTypeName: businessService } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
@@ -60,6 +60,7 @@ const useChallanInbox = ({ tenantId, filters, config = {} }) => {
             amount: finalAmount,
             offenderName: dataRes?.citizen?.name,
             challanStatus: dataRes?.challanStatus,
+            feeWaiver: dataRes?.feeWaiver,
           };
         });
 

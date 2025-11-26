@@ -28,9 +28,9 @@
     "packages/modules/pgrai",
     "packages/modules/noc",
     "packages/modules/challanGeneration",
+    "packages/modules/garbageCollection",
     "packages/modules/rentAndLease",
-    "packages/modules/ndc",
-    "packages/modules/gc"
+    "packages/modules/ndc"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -57,6 +57,7 @@
     "dev:dss": "cd packages/modules/dss && yarn start",
     "dev:mcollect": "cd packages/modules/mCollect && yarn start",
     "dev:challangeneration": "cd packages/modules/challanGeneration && yarn start",
+    "dev:garbageCollection": "cd packages/modules/garbageCollection && yarn start",
     "dev:rentandlease": "cd packages/modules/rentAndLease && yarn start",
     "dev:receipts": "cd packages/modules/receipts && yarn start",
     "dev:tl": "cd packages/modules/tl && yarn start",
@@ -73,7 +74,6 @@
     "dev:chb": "cd packages/modules/chb && yarn start",
     "dev:asset": "cd packages/modules/asset && yarn start",
     "dev:ndc": "cd packages/modules/ndc && yarn start",
-    "dev:gc": "cd packages/modules/gc && yarn start",
     "devD:pgrai": "cd packages/modules/pgrai && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
@@ -88,6 +88,7 @@
     "build:dss": "cd packages/modules/dss && yarn build",
     "build:mcollect": "cd packages/modules/mCollect && yarn build",
     "build:challangeneration": "cd packages/modules/challanGeneration && yarn build",
+    "build:garbageCollection": "cd packages/modules/garbageCollection && yarn build",
     "build:rentandlease": "cd packages/modules/rentAndLease && yarn build",
     "buildD:receipts": "cd packages/modules/receipts && yarn build",
     "build:tl": "cd packages/modules/tl && yarn build",
@@ -105,7 +106,6 @@
     "build:asset": "cd packages/modules/asset && yarn build",
     "buildD:pgrai": "cd packages/modules/pgrai && yarn build",
     "build:ndc": "cd packages/modules/ndc && yarn build",
-    "build:gc": "cd packages/modules/gc && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
   "devDependencies": {

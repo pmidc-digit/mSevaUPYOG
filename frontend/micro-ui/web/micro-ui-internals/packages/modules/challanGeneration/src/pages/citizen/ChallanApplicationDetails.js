@@ -234,9 +234,9 @@ const ChallanApplicationDetails = () => {
             <Row
               className="border-none"
               label={t("CHALLAN_AMOUNT")}
-              text={Math.max(getChallanData?.bill?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
+              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
             />
-            {getChallanData?.feeWaiver && <Row className="border-none" label={t("COURT_AMOUNT")} text={getChallanData?.feeWaiver} />}
+            {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
 
           {/* <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

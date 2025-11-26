@@ -1,27 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
-import { useDispatch, useSelector } from "react-redux";
-import { SET_RENTANDLEASE_NEW_APPLICATION_STEP } from "../redux/action/RentAndLeaseNewApplicationActions";
+import React from "react";
+import { Card, CardLabel } from "@mseva/digit-ui-react-components";
+import { useSelector } from "react-redux";
 import RentAndLeaseDocument from "./RentAndLeaseDocument";
 
-function RentAndLeaseSummary({ t,config }) {
-  const dispatch = useDispatch();
+function RentAndLeaseSummary({ t }) {
   const formData = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {});
-  console.log('formData', formData)
   const applicantDetails = Array.isArray(formData?.applicantDetails?.applicants)
-  ? formData.applicantDetails?.applicants
-  : formData?.applicantDetails?.applicants
-  ? [formData.applicantDetails?.applicants]
-  : [];
-
-
+    ? formData.applicantDetails?.applicants
+    : formData?.applicantDetails?.applicants
+    ? [formData.applicantDetails?.applicants]
+    : [];
 
   const property = formData?.propertyDetails || {};
-  console.log('property', property)
   const docs = formData?.documents?.documents?.documents || [];
-  const tenantId = window.location.href.includes("citizen")
-    ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id");
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -80,71 +71,73 @@ function RentAndLeaseSummary({ t,config }) {
     </div>
   );
 
-  const formatDate = (dateValue, t) => {
-    if (dateValue === null || dateValue === undefined || dateValue === "") return t("CS_NA");
-    if (typeof dateValue === "number") {
-      const date = new Date(dateValue);
-      return date.toLocaleDateString();
-    }
-    return dateValue;
+
+  const propertyLabels = {
+    propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
+    propertyId: t("RENT_LEASE_PROPERTY_ID"),
+    propertyName: t("RAL_LEASE_SELECTED_PROPERTY"),
+    usageCategory: t("RAL_LEASE_USAGE_CATEGORY"),
+    propertySizeOrArea: t("RAL_LEASE_PROPERTY_AREA"),
+    address: t("RAL_LEASE_PROPERTY_ADDRESS"),
+    propertySpecific: t("RENT_LEASE_PROPERTY_SPECIFIC"),
+    locationType: t("RENT_LEASE_LOCATION_TYPE"),
+    baseRent: t("RENT_AMOUNT "),
+    securityDeposit: t("SECURITY_DEPOSIT"),
+    tax_applicable: t("RENT_LEASE_TAX_APPLICABLE"),
+    refund_applicable_on_discontinuation: t("REFUND_APPLICABLE"),
+    penaltyType: t("PENALTY_TYPE"),
+    latePayment: t("LATE_PAYMENT_PERCENT"),
   };
 
   return (
     <div className="application-summary">
       <Card className="summary-section" style={{ padding: "2px" }}>
-  <div style={sectionStyle}>
-    <div style={headerRow}>
-      <h3 style={headingStyle}>{t("ES_TITILE_APPLICANT_DETAILS")}</h3>
-    </div>
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{t("ADS_APPLICANT_DETAILS")}</h3>
+          </div>
 
-    {applicantDetails.length > 0 ? (
-      applicantDetails.map((applicant, index) => (
-        <div key={index} style={{ marginBottom: "1rem" }}>
-          {/* Optional sub-heading if multiple */}
-          {applicantDetails.length > 1 && (
-            <h4 style={{ color: "#555", margin: "0 0 0.5rem 0" }}>
-              {t("Applicant")} {index + 1}
-            </h4>
+          {applicantDetails.length > 0 ? (
+            applicantDetails.map((applicant, index) => (
+              <div key={index} style={{ marginBottom: "1rem" }}>
+                {/* Optional sub-heading if multiple */}
+                {applicantDetails.length > 1 && (
+                  <h4 style={{ color: "#555", margin: "0 0 0.5rem 1.5rem",fontWeight:"700" }}>
+                    {t("RAL_APPLICANT")} {index + 1}
+                  </h4>
+                )}
+
+                {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), applicant?.name)}
+                {renderRow(t("CORE_COMMON_MOBILE_NUMBER"), applicant?.mobileNumber)}
+                {renderRow(t("CORE_COMMON_EMAIL_ID"), applicant?.emailId)}
+                {renderRow(t("ADDRESS"), applicant?.address)}
+                {renderRow(t("CORE_COMMON_PINCODE"), applicant?.pincode)}
+              </div>
+            ))
+          ) : (
+            <div>{t("CS_NA")}</div>
           )}
-
-          {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), applicant?.name)}
-          {renderRow(t("CORE_COMMON_MOBILE_NUMBER"), applicant?.mobileNumber)}
-          {renderRow(t("CORE_COMMON_EMAIL_ID"), applicant?.emailId)}
-          {renderRow(t("ADDRESS"), applicant?.address)}
-          {renderRow(t("CORE_COMMON_PINCODE"), applicant?.pincode)}
         </div>
-      ))
-    ) : (
-      <div>{t("CS_NA")}</div>
-    )}
-  </div>
-</Card>
+      </Card>
 
-      <Card className="summary-section">
+      <Card className="summary-section" style={{ padding: "2px" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("Properties Details")}</h3>
           </div>
-          {renderRow(
-            t("RENT_LEASE_PROPERTY_TYPE") || "Property Type",
-            property?.propertyType?.name || property?.propertyType?.code || property?.propertyType || "NA"
-          )}
-          {renderRow(
-            t("RENT_LEASE_PROPERTY_SPECIFIC") || "Property Specific",
-            property?.propertySpecific?.name || property?.propertySpecific?.code || property?.propertySpecific || "NA"
-          )}
-          {renderRow(
-            t("RENT_LEASE_LOCATION_TYPE") || "Location Type",
-            property?.locationType?.name || property?.locationType?.code || property?.locationType || "NA"
-          )}
-          {property?.selectedProperty && (
-            <div>
-              {renderRow(t("RENT_LEASE_SELECTED_PROPERTY") || "Selected Property", property?.selectedProperty?.title || "NA")}
-              {renderRow(t("RENT_LEASE_PROPERTY_AREA") || "Area", property?.selectedProperty?.area || "NA")}
-              {renderRow(t("RENT_LEASE_PROPERTY_ADDRESS") || "Address", property?.selectedProperty?.address || "NA")}
-              {renderRow(t("RENT_LEASE_RENT_AMOUNT") || "Rent", property?.selectedProperty?.rent || "NA")}
-            </div>
-          )}
+          {Object.entries(propertyLabels).map(([key, label]) => {
+            let value = property?.selectedProperty?.[key];
+
+            // Special handling for booleans
+            if (key === "refund_applicable_on_discontinuation") {
+              value = value === true ? t("YES") : t("NO");
+            }
+            if (key === "tax_applicable") {
+              value = value === true ? t("YES") : t("NO");
+            }
+
+            return renderRow(label, value || "NA");
+          })}
         </div>
       </Card>
 

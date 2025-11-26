@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import { FormComposer } from "@mseva/digit-ui-react-components";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
-// import { useState } from "react";
 import _ from "lodash";
 
 const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
@@ -10,9 +9,8 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const stateId = Digit.ULBService.getStateId();
   const { isLoading, data: mdmsData } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId);
 
-  // const currentStepData = useSelector(function (state) {
-  //   return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
-  // });
+   const { triggerToast } = config?.currStepConfig[0];
+
 
   const currentStepData = useSelector(function (state) {
     return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData &&
@@ -20,12 +18,11 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       ? state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData[config?.key]
       : {};
   });
-  console.log("currentStepData", currentStepData);
 
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
-      config?.currStepConfig?.[0]?.triggerToast(`You haven't uploaded: ${missingFields[0].replace(".", "_").toUpperCase()}`,true);
+      triggerToast(`You haven't uploaded: ${missingFields[0].replace(".", "_").toUpperCase()}`,true);
       return;
     }
     onGoNext();

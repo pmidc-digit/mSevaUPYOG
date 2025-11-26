@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { CardLabel, UploadFile, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 
 const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
-  const [toastError, setToastError] = useState(null);
+  const { triggerToast } = config;
 
-  console.log('config', config)
 
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
@@ -86,7 +85,7 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
 
   const handleSubmit = () => {
     if (Object.keys(formErrors)?.length > 0) {
-      setToastError(t(formErrors?.missingRequired || "PTR_VALIDATION_ERROR"));
+      triggerToast(t(formErrors?.missingRequired || "PTR_VALIDATION_ERROR"),true);
       onSelect(config.key, { missingDocs: formErrors?.missingDocs || [] });
       return;
     }
@@ -94,12 +93,6 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
     onSelect(config.key, documentStep);
   };
 
-  useEffect(() => {
-    if (toastError) {
-      const timer = setTimeout(() => setToastError(null), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastError]);
 
   const onSkip = () => onSelect();
 
@@ -125,8 +118,6 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
                 />
               );
             })}
-
-          {toastError && <Toast isDleteBtn={true} label={toastError} onClose={() => setToastError(null)} error />}
         </FormStep>
       ) : (
         <Loader />

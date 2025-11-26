@@ -137,6 +137,13 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   const pathParts = window.location.pathname.split("/");
   const id = pathParts.find((part) => part.startsWith("UC-RL-"));
   const shouldEnableSearch = Boolean(id && id.startsWith("UC-RL-"));
+  const triggerToast = (labelKey, isError = false) => {
+    setShowToast({ label: labelKey, key: isError });
+  };
+
+  const triggerLoader = (status) => {
+    setLoading(status);
+  };
 
   // If you have a search hook for RentAndLease, use it here
   // const { isLoading, data: applicationData } = Digit.Hooks.rentAndLease?.useRentAndLeaseSearch({
@@ -152,46 +159,33 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   // }, [applicationData, id, dispatch]);
 
   const config = userType === "employee" ? createEmployeeConfig : createApplicationConfig;
-  // const updatedCreateApplicationConfig = config.map((item) => {
-  //   return {
-  //     ...item,
-  //     currStepConfig: (userType === "employee" ? employeeConfig : citizenConfig).filter(
-  //       (newConfigItem) => newConfigItem.stepNumber === item.stepNumber
-  //     ),
-  //       // 👇 add your handlers here
-  // extraProps: { triggerToast, triggerLoader }
-  //   };
-  // });
 
-  const triggerToast = (labelKey, isError = false) => {
-    setShowToast({ label: labelKey, key: isError });
-  };
-
-  const triggerLoader = (status) => {
-    setLoading(status);
-  };
-
+  // Build the final step configuration by enriching each step and its fields
   const updatedCreateApplicationConfig = config.map((item) => {
+    // Pick the base step config depending on user type (employee vs citizen)
     const baseStepConfig = (userType === "employee" ? employeeConfig : citizenConfig).filter(
       (newConfigItem) => newConfigItem.stepNumber === item.stepNumber
     );
 
-    // inject handlers into each config object
+    // Enrich each step config with utility handlers (toast, loader)
+    // and also propagate them down to every field in the step body
     const enrichedStepConfig = baseStepConfig.map((stepConf) => ({
       ...stepConf,
       triggerToast,
       triggerLoader,
+      body: stepConf.body.map((field) => ({
+        ...field,
+        triggerToast,
+        triggerLoader,
+      })),
     }));
 
+    // Return the updated step object with enriched currStepConfig
     return {
       ...item,
       currStepConfig: enrichedStepConfig,
     };
   });
-
-  // const updatedCreateApplicationConfig = createApplicationConfig.map((item) => {
-  //   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
-  // });
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_RENTANDLEASE_NEW_APPLICATION_STEP(updatedStepNumber));
@@ -234,7 +228,6 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
             setShowToast(null);
           }}
           isDleteBtn={"true"}
-          extraProps={{ triggerToast, triggerLoader }}
         />
       )}
     </div>

@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
+import { FormComposer, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useState } from "react";
 import _ from "lodash";
-import { useHistory, useRouteMatch } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM,
@@ -13,13 +13,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const dispatch = useDispatch();
   const { t: tHook } = useTranslation();
   const t = tProp || tHook;
-  const { path } = useRouteMatch();
-  // const [showToast, setShowToast] = useState(false);
-  // const [error, setError] = useState("");
   const history = useHistory();
+  const { triggerToast } = config?.currStepConfig[0];
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+    
 
   const currentStepData = useSelector(function (state) {
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
@@ -57,12 +56,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
-      config?.currStepConfig?.[0]?.triggerToast(`Please fill the following field: ${missingFields[0]}`,true);
+      triggerToast(`Please fill the following field: ${missingFields[0]}`,true);
       return;
     }
 
     if (notFormattedFields.length > 0) {
-      config?.currStepConfig?.[0]?.triggerToast(`Please format the following field: ${notFormattedFields[0]}`,true);
+      triggerToast(`Please format the following field: ${notFormattedFields[0]}`,true);
       return;
     }
 
@@ -74,7 +73,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         if (action == "CANCEL") {
           onGoToRentAndLease();
         } else if (action == "SAVEASDRAFT") {
-          config?.currStepConfig?.[0]?.triggerToast("Successfully saved as draft");
+          triggerToast("Successfully saved as draft");
           setTimeout(() => {
             onGoToRentAndLease();
           }, 1000);
@@ -85,10 +84,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           );
         }
       } else {
-        config?.currStepConfig?.[0]?.triggerToast((res?.Errors?.message || "Update failed"),false);
+        triggerToast((res?.Errors?.message || "Update failed"),false);
       }
     } catch (error) {
-      config?.currStepConfig?.[0]?.triggerToast((error?.message || "Update failed"),true);
+      triggerToast((error?.message || "Update failed"),true);
     }
   }
 
@@ -189,6 +188,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     goNext(action);
   }
 
+
   return (
     <React.Fragment>
       <FormComposer
@@ -213,8 +213,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
-
-      {/* {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />} */}
     </React.Fragment>
   );
 };

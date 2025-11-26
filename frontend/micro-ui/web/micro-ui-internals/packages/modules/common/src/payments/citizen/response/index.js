@@ -38,7 +38,7 @@ const WrapPaymentComponent = (props) => {
 
   const [allowFetchBill, setallowFetchBill] = useState(false);
   const { businessService: business_service, consumerCode, tenantId, receiptNumber } = useParams();
-  console.log('business_service here in citizen payment', business_service)
+  console.log('businessservice here in citizen payment', business_service)
   console.log('tenantId here', tenantId)
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
@@ -50,7 +50,7 @@ const WrapPaymentComponent = (props) => {
   );
 
   console.log('bpaData rn here', bpaData)
-    const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
+    const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: consumerCode, tenantId }, {});
     console.log('applicationDetails rn here', applicationDetails)
 
     let challanEmpData = ChallanData(tenantId, consumerCode);
@@ -1319,7 +1319,7 @@ const WrapPaymentZeroComponent = (props) => {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: consumerCode, tenantId }, {});
 
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
@@ -1479,6 +1479,7 @@ console.log('bpaData , data for zero', bpaData)
         }
         const fee = paymentData?.totalAmountPaid;
     console.log('fee here here for zero fee', fee)
+    console.log('licenseType', licenseType)
     const amountinwords = amountToWords(fee)
     const tenantId = paymentData?.tenantId;
     const state = Digit.ULBService.getStateId();

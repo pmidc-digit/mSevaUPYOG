@@ -231,6 +231,12 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.challanStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OFFENCE_NAME")} text={t(getChallanData?.offenceTypeName) || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OFFENCE_TYPE")} text={getChallanData?.offenceCategoryName || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("CHALLAN_AMOUNT")}
+              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
+            />
+            {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
 
           {/* <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   CardSubHeader,
@@ -8,15 +9,19 @@ import {
   MultiLink,
   CheckPoint,
   ConnectingCheckPoints,
+  ActionBar,
+  Menu,
+  SubmitBar,
+  Toast,
 } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import NDCDocumentTimline from "../../components/NDCDocument";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
 import { ChallanData } from "../../utils/index";
+import NDCModal from "../../pageComponents/NDCModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -60,7 +65,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
         {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption?.source?.toUpperCase())}</p>}
       </div>
     </div>
   );
@@ -68,27 +73,48 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const { acknowledgementIds, tenantId } = useParams();
   const [showOptions, setShowOptions] = useState(false);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
+  const menuRef = useRef();
   const [loader, setLoader] = useState(false);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
   const [getChallanData, setChallanData] = useState();
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [errorOne, setErrorOne] = useState(null);
+  const [showErrorToast, setShowErrorToastt] = useState(null);
+  const [getLable, setLable] = useState(false);
 
-  // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
-  //   tenantId,
-  //   filters: { bookingNo: acknowledgementIds },
-  // });
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
 
-  // const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
+  const closeToast = () => {
+    setShowToast(null);
+  };
+
+  const closeModal = () => {
+    setSelectedAction(null);
+    setShowModal(false);
+  };
+
+  const closeToastOne = () => {
+    setShowErrorToastt(null);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("search ", responseData);
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
@@ -107,14 +133,6 @@ const ChallanApplicationDetails = () => {
     }
   }, []);
 
-  // Getting HallsBookingDetails
-  // const hallsBookingApplication = get(data, "hallsBookingApplication", []);
-
-  // let chb_details = (hallsBookingApplication && hallsBookingApplication.length > 0 && hallsBookingApplication[0]) || {};
-  // const application = chb_details;
-
-  // sessionStorage.setItem("chb", JSON.stringify(application));
-
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: acknowledgementIds,
@@ -129,6 +147,19 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
+
+  let user = Digit.UserService.getUser();
+
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -149,7 +180,6 @@ const ChallanApplicationDetails = () => {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -164,7 +194,6 @@ const ChallanApplicationDetails = () => {
   }
 
   async function printChallanReceipt({ tenantId, payments, ...params }) {
-    console.log("payments", payments);
     if (printing) return;
     setPrinting(true);
     try {
@@ -173,7 +202,6 @@ const ChallanApplicationDetails = () => {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -202,6 +230,107 @@ const ChallanApplicationDetails = () => {
     });
   }
 
+  function onActionSelect(action) {
+    const payload = {
+      Licenses: [action],
+    };
+    console.log("action", action);
+    if (action.action == "PAY") {
+      const code = getChallanData?.challanNo;
+      history.push(`/digit-ui/employee/payment/collect/Challan_Generation/${code}/${tenantId}?tenantId=${tenantId}`);
+    } else if (action.action == "PAY_LATER") {
+      payLater();
+    } else if (action.action == "SETTLED") {
+      setShowModal(true);
+      setSelectedAction(action);
+    }
+  }
+
+  const payLater = async () => {
+    setLoader(true);
+    console.log("pay later", getChallanData);
+
+    const payload = {
+      Challan: {
+        ...getChallanData,
+        workflow: {
+          action: "PAY_LATER",
+        },
+      },
+    };
+
+    try {
+      const response = await Digit.ChallanGenerationService.update(payload);
+      setLoader(false);
+
+      // ✅ Show success first
+      // setShowToast({ key: "success", message: "Successfully updated the status" });
+      setLable("Challan set to pay later.");
+      setError(false);
+      setShowToast(true);
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/challangeneration/inbox");
+        window.location.reload();
+      }, 2000);
+
+      // history.push(`/digit-ui/employee/challangeneration/inbox`);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const submitAction = async (modalData) => {
+    if (!modalData?.amount) {
+      setErrorOne(`Please Enter Amount`);
+      setShowErrorToastt(true);
+    } else {
+      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
+      if (modalData?.amount > finalAmount) {
+        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
+        setShowErrorToastt(true);
+        setError(`Amount must be less than or equal to ${finalAmount}`);
+      } else {
+        console.log("nothing");
+
+        setLoader(true);
+
+        const payload = {
+          Challan: {
+            ...getChallanData,
+            workflow: {
+              action: "SETTLED",
+            },
+            feeWaiver: modalData?.amount,
+          },
+        };
+
+        console.log("payload", payload);
+        try {
+          const response = await Digit.ChallanGenerationService.update(payload);
+          setLoader(false);
+          setShowModal(false);
+          // ✅ Show success first
+          // setShowToast({ key: "success", message: "Successfully updated the status" });
+          setLable("Challan is Settled");
+          setError(false);
+          setShowToast(true);
+
+          // ✅ Delay navigation so toast shows
+          setTimeout(() => {
+            history.push("/digit-ui/employee/challangeneration/inbox");
+            window.location.reload();
+          }, 2000);
+
+          // history.push(`/digit-ui/employee/challangeneration/inbox`);
+        } catch (error) {
+          setLoader(false);
+        }
+      }
+    }
+  };
+
   return (
     <React.Fragment>
       <div>
@@ -220,7 +349,7 @@ const ChallanApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
+            <Row className="border-none" label={t("CHALLAN_OWNER_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
             {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
           </StatusTable>
 
@@ -230,25 +359,13 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.challanStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OFFENCE_NAME")} text={t(getChallanData?.offenceTypeName) || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OFFENCE_TYPE")} text={getChallanData?.offenceCategoryName || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("CHALLAN_AMOUNT")}
+              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
+            />
+            {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
-
-          {/* <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
-          <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
-              {getChallanData?.documents?.length > 0 ? (
-                getChallanData?.documents?.map((doc, index) => (
-                  <React.Fragment key={index}>
-                    <div>
-                      <CHBDocument value={getChallanData?.documents} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
-                    </div>
-                  </React.Fragment>
-                ))
-              ) : (
-                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
-              )}
-            </Card>
-          </StatusTable> */}
         </Card>
         {workflowDetails?.data?.timeline && (
           <Card style={{ marginTop: "20px" }}>
@@ -269,7 +386,37 @@ const ChallanApplicationDetails = () => {
             )}
           </Card>
         )}
+        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
+          <ActionBar>
+            {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+              <Menu localeKeyPrefix={`WF_CHALLAN`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+            ) : null}
+            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
       </div>
+
+      {showModal ? (
+        <NDCModal
+          t={t}
+          action={selectedAction}
+          tenantId={tenantId}
+          id={acknowledgementIds}
+          closeModal={closeModal}
+          submitAction={submitAction}
+          actionData={workflowDetails?.data?.timeline}
+          workflowDetails={workflowDetails}
+          showToast={showToast}
+          closeToast={closeToast}
+          errors={error}
+          showErrorToast={showErrorToast}
+          errorOne={errorOne}
+          closeToastOne={closeToastOne}
+          getLable={getLable}
+          getChallanData={getChallanData}
+        />
+      ) : null}
+      {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );

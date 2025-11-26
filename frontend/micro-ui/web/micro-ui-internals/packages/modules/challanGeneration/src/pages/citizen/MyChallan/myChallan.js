@@ -16,8 +16,6 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
 
   let result;
 
-  console.log("copming here");
-
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
@@ -100,13 +98,14 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         )}
 
         {getChallanData?.map((bill, index) => {
+          const checkAmount = Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0);
+          const total = checkAmount ?? 0;
+          const waiver = bill?.feeWaiver ?? 0;
+          const finalAmount = total - waiver;
+          console.log("finalAmount", finalAmount);
           return (
             <Card key={index}>
-              <KeyNote
-                keyValue={t("CHALLAN_AMOUNT")}
-                // note={bill?.amount ? bill?.amount?.[0]?.amount || bill?.challanAmount : 0}
-                note={Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0)}
-              />
+              <KeyNote keyValue={t("CHALLAN_AMOUNT")} note={finalAmount} />
               <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.challanStatus)} />
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />

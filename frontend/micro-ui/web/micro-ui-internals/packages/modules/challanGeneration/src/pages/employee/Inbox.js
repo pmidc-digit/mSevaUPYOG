@@ -156,6 +156,7 @@ const Inbox = ({
     offenceName: item?.offenceTypeName,
     challanStatus: item?.challanStatus,
     date: item?.date,
+    feeWaiver: item?.feeWaiver,
     // dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
     // tenantId: item?.tenantId,
     // receiptNumber: item?.receiptNumber,

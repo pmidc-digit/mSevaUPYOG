@@ -366,7 +366,8 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
         searchCriteria.setTenantId(criteria.getTenantId());
         Set<String> ownerids = new HashSet<>();
         licenses.forEach(license -> {
-            license.getTradeLicenseDetail().getOwners().forEach(owner -> ownerids.add(owner.getUuid()));
+        	if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners()))
+        		license.getTradeLicenseDetail().getOwners().forEach(owner -> ownerids.add(owner.getUuid()));
         });
 
       /*  licenses.forEach(tradeLicense -> {
@@ -432,12 +433,13 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
         Map<String,OwnerInfo> userIdToOwnerMap = new HashMap<>();
         users.forEach(user -> userIdToOwnerMap.put(user.getUuid(),user));
         licenses.forEach(license -> {
-            license.getTradeLicenseDetail().getOwners().forEach(owner -> {
-                    if(userIdToOwnerMap.get(owner.getUuid())==null)
-                        throw new CustomException("OWNER SEARCH ERROR","The owner of the tradeCategoryDetail "+license.getTradeLicenseDetail().getId()+" is not coming in user search");
-                    else
-                        owner.addUserDetail(userIdToOwnerMap.get(owner.getUuid()));
-                 });
+        	if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners()))
+	            license.getTradeLicenseDetail().getOwners().forEach(owner -> {
+	                    if(userIdToOwnerMap.get(owner.getUuid())==null)
+	                        throw new CustomException("OWNER SEARCH ERROR","The owner of the tradeCategoryDetail "+license.getTradeLicenseDetail().getId()+" is not coming in user search");
+	                    else
+	                        owner.addUserDetail(userIdToOwnerMap.get(owner.getUuid()));
+	                 });
 
            /* if(userIdToOwnerMap.get(license.getCitizenInfo().getUuid())!=null)
                 license.getCitizenInfo().addCitizenDetail(userIdToOwnerMap.get(license.getCitizenInfo().getUuid()));
@@ -618,7 +620,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                             List<Integer> res = JsonPath.read(mdmsDataMap.get(license.getTenantId()), jsonPath);
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.YEAR, res.get(0));
-                            if(license.getValidTo() !=  null)
+                            if(license.getValidTo() ==  null)
                             	license.setValidTo(calendar.getTimeInMillis());
                             license.setValidFrom(time);
                         }

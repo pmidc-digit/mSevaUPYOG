@@ -24,9 +24,10 @@ import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
 import CustomUploadFile from "../components/CustomUploadFile";
 
+
 const ErrorMessage = ({ message }) => {
   if (!message) return null;
-  return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{message}</div>;
+  return <div className="bpa-owner-error-message">{message}</div>;
 };
 
 const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData, onGoBack }) => {
@@ -880,66 +881,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
 
 
-      // ---------------- UI Styles ----------------
-      const pageStyle = {
-        padding: "2rem",
-        backgroundColor: "#f1f1f1ff",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        color: "#333",
-        paddingBottom: "5rem",
-      };
-    
-      const sectionStyle = {
-        backgroundColor: "#ffffff",
-    
-        borderRadius: "8px",
-     
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-      };
-    
-      const headingStyle = {
-        fontSize: "1.5rem",
-        borderBottom: "2px solid #ccc",
-        paddingBottom: "0.3rem",
-        color: "#2e4a66",
-        marginTop: "2rem",
-        marginBottom: "1rem",
-      };
-    
-      const labelFieldPairStyle = {
-        display: "flex",
-        justifyContent: "space-between",
-        borderBottom: "1px dashed #e0e0e0",
-        padding: "0.5rem 0",
-        color: "#333",
-      };
-    
-      const documentsContainerStyle = {
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "1rem",
-        
-      };
-    
-      const documentCardStyle = {
-    
-        minWidth: "200px",
-        maxWidth: "250px",
-        backgroundColor: "#fdfdfd",
-        padding: "0.75rem",
-        border: "1px solid #e0e0e0",
-        borderRadius: "6px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-        justifyContent:"center",
-        display:"flex",
-        
-      };
-    
-      const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-    
+      // ---------------- UI Classes are defined in OwnerDetails.css ----------------
       const renderLabel = (label, value) => (
-        <div style={labelFieldPairStyle}>
-          <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+        <div className="bpa-owner-label-field-pair">
+          <CardLabel className="bpa-owner-bold-label">{label}</CardLabel>
           <div>{value || t("CS_NA")}</div>
         </div>
       );
@@ -1002,88 +947,26 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                   {ismultiple && (
                       <LinkButton
                         label={
-                          <DeleteIcon
-                            style={{  bottom: "5px" }}
-                            fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"}
-                          />
+                          <DeleteIcon className="bpa-owner-delete-icon" fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"} />
                         }
-                        style={{ width: "50px", display: "inline",justifyContent:"center", alighItem:"center", background: "black", float:"right" }}
+                        className="bpa-owner-link-delete-button"
                         onClick={(e) => handleRemove(index)}
                       />
                     )}
-                  <div
-                    style={{
-                      border: "solid",
-                      borderRadius: "5px",
-                      padding: "10px",
-                      paddingTop: "20px",
-                      marginTop: "10px",
-                      borderColor: "#f3f3f3",
-                      background: "#FAFAFA",
-                    }}
-                  >
-                    <CardLabel style={{ marginBottom: "-15px" }}>{`${t("CORE_COMMON_MOBILE_NUMBER")} *`}</CardLabel>                    
-                    <div style={{ marginTop: "30px" }}>
-                      <div className="field-container">
-                        <div
-                          style={{
-                            marginBottom: "24px",
-                            padding: "3px 2px",
-                            border: "1px solid #b4b4b4",
-                            borderRadius: "8px 0px 0px 8px"
-                          }}
-                        >
-                          +91
-                        </div>
-                        <TextInput
-                          style={{ background: "#FAFAFA", padding: "0px 4px", borderRadius: "0px 8px 8px 0px", width: "96%"  }}
-                          type={"text"}
-                          t={t}
-                          isMandatory={false}
-                          optionKey="i18nKey"
-                          name="mobileNumber"
-                          value={field.mobileNumber}
-                          onChange={(e) => setMobileNo(index, e)}
-                          {...(validation = {
-                            isRequired: true,
-                            pattern: "[6-9]{1}[0-9]{9}",
-                            type: "tel",
-                            title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-                          })}
-                        />
-                        <div
-                          style={{
-                            position: "relative",
-                            zIndex: "100",
-                            right: "44px",
-                            marginTop: "-24px",
-                            marginRight: Webview ? "-20px" : "-20px",
-                          }}
-                          onClick={(e) => getOwnerDetails(index, e)}
-                        >
-                          {" "}
-                          <SearchIcon />{" "}
-                        </div>                        
+                  <div className="bpa-owner-owner-card">
+                    <CardLabel className="bpa-owner-cardlabel-negative-margin">{`${t("CORE_COMMON_MOBILE_NUMBER")} *`}</CardLabel>
+                    <div className="bpa-owner-mobile-row">
+                      <div className="bpa-owner-field-container">
+                          <div className="bpa-owner-country-prefix">+91</div>
+                          <TextInput className="bpa-owner-phone-input" type={"text"} t={t} isMandatory={false} optionKey="i18nKey" name="mobileNumber" value={field.mobileNumber} onChange={(e) => setMobileNo(index, e)} {...(validation = { isRequired: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"), })} />
+                          <div className="bpa-owner-search-icon-container" onClick={(e) => getOwnerDetails(index, e)}>
+                            <SearchIcon />
+                          </div>
                       </div>
                       <ErrorMessage message={errors[`mobileNumber_${index}`]} />
                     </div>
                     <CardLabel>{`${t("CORE_COMMON_NAME")} *`}</CardLabel>
-                    <TextInput
-                      style={{ background: "#FAFAFA" }}
-                      t={t}
-                      type={"text"}
-                      isMandatory={false}
-                      optionKey="i18nKey"
-                      name="name"
-                      value={field.name}
-                      onChange={(e) => setOwnerName(index, e)}
-                      {...(validation = {
-                        isRequired: true,
-                        pattern: "^[a-zA-Z ]*$",
-                        type: "text",
-                        title: t("TL_NAME_ERROR_MESSAGE"),
-                      })}
-                    />
+                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"text"} isMandatory={false} optionKey="i18nKey" name="name" value={field.name} onChange={(e) => setOwnerName(index, e)} {...(validation = { isRequired: true, pattern: "^[a-zA-Z ]*$", type: "text", title: t("TL_NAME_ERROR_MESSAGE"), })} />
                     <ErrorMessage message={errors[`name_${index}`]} />
                     <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")} *`}</CardLabel>
                     <RadioOrSelect
@@ -1112,24 +995,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       })}
                     /> */}
                     <CardLabel>{`${t("CORE_EMAIL_ID")}`}</CardLabel>
-                    <TextInput
-                      style={{ background: "#FAFAFA" }}
-                      t={t}
-                      type={"emailId"}
-                      isMandatory={false}
-                      optionKey="i18nKey"
-                      name="emailId"
-                      value={field.emailId}
-                      onChange={(e) => setOwnerEmail(index, e)}
-                      {...(validation = {
-                        //isRequired: true,
-                        pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
-                        type: "emailId",
-                        title: t("TL_EMAIL_ID_ERROR_MESSAGE"),
-                      })}
-                      disabled={false}
-                      //disabled={true}
-                    />
+                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"emailId"} isMandatory={false} optionKey="i18nKey" name="emailId" value={field.emailId} onChange={(e) => setOwnerEmail(index, e)} {...(validation = { pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$", type: "emailId", title: t("TL_EMAIL_ID_ERROR_MESSAGE"), })} disabled={false} />
                     <ErrorMessage message={errors[`email_${index}`]} />
                     {/* <CardLabel>{`Document Type *`}</CardLabel>
                     <Dropdown
@@ -1142,10 +1008,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     />
                     <ErrorMessage message={errors[`documentType_${index}`]} /> */}
 
-                    <CardLabel
-                      style={{ marginTop: "30px" }}
-                    >{`${t("Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB)")} *`}</CardLabel>
-                    <div style={{display:"flex", flexDirection:Webview?"row":"column", gap:"15px"}}>
+                    <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB) ")} *`}</CardLabel>
+                    <div className="bpa-owner-upload-row">
                     <CustomUploadFile
                       id={`document-upload-${index}`}
                       onUpload={selectDocumentFile(index)}
@@ -1166,8 +1030,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     </div>
                     <ErrorMessage message={errors[`documentFile_${index}`]} />
 
-                    <CardLabel style={{ marginTop: "30px" }}>{`${t("Upload Owner Photo")} *`}</CardLabel>
-                    <div style={{display:"flex", flexDirection:Webview?"row":"column", gap:"15px"}}>
+                    <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Owner Photo")} *`}</CardLabel>
+                    <div className="bpa-owner-upload-row">
                     <CustomUploadFile
                       id={`photo-upload-${index}`}
                       onUpload={selectPhotoFile(index)}
@@ -1189,36 +1053,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     <ErrorMessage message={errors[`ownerPhoto_${index}`]} />
 
                     <CardLabel style={{ marginTop: "30px" }}>{`${t("Date of Birth")} *`}</CardLabel>
-                    <TextInput
-                      style={{ background: "#FAFAFA" }}
-                      t={t}
-                      type={"date"}
-                      isMandatory={false}
-                      name="dob"
-                      value={field.dob}
-                      onChange={(e) => setDateOfBirth(index, e)}
-                    />
+                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"date"} isMandatory={false} name="dob" value={field.dob} onChange={(e) => setDateOfBirth(index, e)} />
                     <ErrorMessage message={errors[`dob_${index}`]} />
 
                     <CardLabel>{`${t("Authorized Person (If Any)")}`}</CardLabel>
-                    <TextInput
-                      style={{ background: "#FAFAFA" }}
-                      t={t}
-                      type={"text"}
-                      isMandatory={false}
-                      name="authorizedPerson"
-                      value={field.authorizedPerson}
-                      onChange={(e) => setAuthorizedPerson(index, e)}
-                      {...(validation = {
-                        pattern: "^[a-zA-Z ]*$",
-                        type: "text",
-                        title: "Invalid name format",
-                      })}
-                    />
+                    <TextInput className="ibpa-owner-nput-bg-fa" t={t} type={"text"} isMandatory={false} name="authorizedPerson" value={field.authorizedPerson} onChange={(e) => setAuthorizedPerson(index, e)} {...(validation = { pattern: "^[a-zA-Z ]*$", type: "text", title: "Invalid name format", })} />
 
                     {field.authorizedPerson && (
                       <React.Fragment>
-                        <CardLabel>{`${t("Authorization Letter (PDF, Max 5MB)")}`}</CardLabel>
+                        <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Authorization Letter (PDF, Max 5MB)")}`}</CardLabel>
                         <CustomUploadFile
                           id={`auth-letter-${index}`}
                           onUpload={selectAuthLetterFile(index)}
@@ -1245,30 +1088,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     )}
 
                     <CardLabel>{`${t("Owner's Address")} *`}</CardLabel>
-                    <textarea
-                      style={{
-                        background: "#FAFAFA",
-                        width: "100%",
-                        minHeight: "80px",
-                        padding: "8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        resize: "vertical",
-                      }}
-                      placeholder="Enter complete address"
-                      value={field?.permanentAddress || ""}
-                      onChange={(e) => setOwnerAddress(index, e)}
-                    />
+                    <TextArea className="bpa-owner-owner-textarea" placeholder="Enter complete address" value={field?.permanentAddress || ""} onChange={(e) => setOwnerAddress(index, e)} />
                     <ErrorMessage message={errors[`address_${index}`]} />
 
                     {ismultiple && (
-                      <CheckBox
-                        label={t("BPA_IS_PRIMARY_OWNER_LABEL")}
-                        onChange={(e) => setPrimaryOwner(index, e)}
-                        value={field.isPrimaryOwner}
-                        checked={field.isPrimaryOwner}
-                        style={{ paddingTop: "10px" }}
-                      />
+                      <CheckBox label={t("BPA_IS_PRIMARY_OWNER_LABEL")} onChange={(e) => setPrimaryOwner(index, e)} value={field.isPrimaryOwner} checked={field.isPrimaryOwner} className="checkbox-top" />
                     )}
                   </div>
                 </div>
@@ -1276,8 +1100,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             })}
             {ismultiple ? (
               <div>
-                <div style={{ display: "flex", paddingBottom: "15px", color: "#FF8C00" }}>
-                  <button type="button" style={{ paddingTop: "10px" }} onClick={() => handleAdd()}>
+                <div className="bpa-owner-add-owner-row">
+                  <button type="button" className="bpa-owner-add-owner-button" onClick={() => handleAdd()}>
                     {t("BPA_ADD_OWNER")}
                   </button>
                 </div>
@@ -1289,17 +1113,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         )}
       </FormStep>
       <ActionBar>
-        <SubmitBar
-                                              label="Back"
-                                              style={{
-                                                border: "1px solid",
-                                                background: "transparent",
-                                                color: "#2947a3",
-                                                marginRight: "5px",
-                                              }}
-                                              onSubmit={onGoBack}
-                                    />
-          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading || canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable}/>}
+        <SubmitBar label="Back" className="bpa-owner-submit-back" onSubmit={onGoBack} />
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading || canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable} />}
       </ActionBar>
       {showToast && (
         <Toast

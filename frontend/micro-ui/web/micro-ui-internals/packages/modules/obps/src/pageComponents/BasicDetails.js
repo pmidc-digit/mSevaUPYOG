@@ -139,7 +139,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
     <div>
       {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
       {isMobile && <Timeline />}
-      <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { margin: "8px" } : {}}>
+      <div className={isMobile ? "obps-search" : ""}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
         <TextInput
           className="searchInput"
@@ -149,7 +149,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
           signature={true} 
           signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
           disable={disableVlaue}
-          style={{ marginBottom: "10px" }}
+         
         />
       </div>
       {scrutinyNumber && basicData && (!riskType ?  <Loader /> :  <div>{basicData && (

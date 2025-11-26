@@ -138,9 +138,9 @@ const StaticDynamicCard = ({moduleCode}) => {
           //   </div>
           //</Card> : null } */}
           { mdmsConfigResult && mdmsConfigResult?.helpline ?
-            <Card style={{margin: "16px", padding: "16px", maxWidth: "unset"}}>
+            <Card >
           <div className="static-home-Card">
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }} className="static-home-Card-header"> <HelpLineIcon />{t("CALL_CENTER_HELPLINE")}</div>
+              <div  className="static-home-Card-header"> <HelpLineIcon />{t("CALL_CENTER_HELPLINE")}</div>
           </div>
           <div className="call-center-card-text">
           { mdmsConfigResult?.helpline?.contactOne ? <div className="call-center-card-content">
@@ -153,9 +153,9 @@ const StaticDynamicCard = ({moduleCode}) => {
           </Card> : null
           }
           { mdmsConfigResult && mdmsConfigResult?.serviceCenter ?
-          <Card style={{margin: "16px", padding: "16px", maxWidth: "unset"}}>
+          <Card>
           <div className="static-home-Card">
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }} className="static-home-Card-header">  <ServiceCenterIcon /> {t("CITIZEN_SERVICE_CENTER")}</div>
+              <div  className="static-home-Card-header">  <ServiceCenterIcon /> {t("CITIZEN_SERVICE_CENTER")}</div>
 
           </div>
           <div className="service-center-details-card">
@@ -167,14 +167,14 @@ const StaticDynamicCard = ({moduleCode}) => {
             <a href={mdmsConfigResult?.viewMapLocation}>{t("VIEW_ON_MAP")}</a>
           </div> : null}
           </Card> : <div/> }
-      <Card style={{margin: "16px", padding: "16px", maxWidth: "unset"}}>
+      <Card >
       { error || dynamicData == null || dynamicData?.dynamicDataOne === null ? (
         <div/>
       ) : (
       <div className="dynamicDataCard" style={isMobile ? {maxHeight:"fit-content"} : {}}>
         <div className="dynamicData">
-        <span style={{paddingTop: "2px"}}>
-        <IconComponent module={moduleCode} styles={{width: "18px", height: "24px"}}/></span>
+        <span >
+        <IconComponent module={moduleCode} /></span>
           <span className="dynamicData-content">
             {dynamicData?.dynamicDataOne}
           </span>
@@ -185,8 +185,8 @@ const StaticDynamicCard = ({moduleCode}) => {
       ) : (
       <div className="dynamicDataCard" style={isMobile ? {maxHeight:"fit-content"} : {}}>
       <div className="dynamicData">
-      <span style={{paddingTop: "2px"}}>
-        <IconComponent module={moduleCode} styles={{width: "18px", height: "24px"}}/></span>
+      <span >
+        <IconComponent module={moduleCode} /></span>
           <span className="dynamicData-content">
           {dynamicData?.dynamicDataTwo}
           </span>
@@ -247,8 +247,8 @@ const StaticDynamicCard = ({moduleCode}) => {
          <div className="staticDataCard">
           <div className="staticData">
             { moduleCode === "PGR" 
-            ? <span style={{paddingTop: "15px"}}>
-            <TimerIcon module={moduleCode} styles={{width: "18px", height: "24px", marginLeft: "13px"}}/></span>
+            ? <span >
+            <TimerIcon module={moduleCode}/></span>
             : <span className="validityIcon">
                <ValidityTimeIcon/>
             </span>}

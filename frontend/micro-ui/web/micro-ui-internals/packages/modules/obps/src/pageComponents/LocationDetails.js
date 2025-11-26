@@ -570,7 +570,7 @@ return (
 
         {/* Pincode Section */}
         <div>
-          <h2>{t("BPA_DETAILS_PIN_LABEL")}</h2>
+          <h2 className="card-label">{t("BPA_DETAILS_PIN_LABEL")}</h2>
           {!isOpen && (
             <TextInput
               isMandatory={false}
@@ -587,7 +587,7 @@ return (
 
         {/* City Section */}
         <div>
-          <h2>{t("BPA_CITY_LABEL")}</h2>
+          <h2 className="card-label">{t("BPA_CITY_LABEL")}</h2>
           {!isOpen && (
             <TextInput
               value={selectedCity?.name || ""}
@@ -599,7 +599,7 @@ return (
 
         {/* Locality (Mohalla) Section - RESTORED ORIGINAL GUARD */}
         <div>
-          <h2 >{t("BPA_LOC_MOHALLA_LABEL")}</h2>
+          <h2 className="card-label" >{t("BPA_LOC_MOHALLA_LABEL")}</h2>
 
           {!isOpen && selectedCity && localities && !propertyData?.address ? (
             <span className={"form-pt-dropdown-only"}>
@@ -636,7 +636,7 @@ return (
 
         {/* Site Photograph Section */}
         <div>
-          <h2 >{t("BPA_LOC_SITE_PHOTOGRAPH")}</h2>
+          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH")}</h2>
 
           <UploadFile
             id="loc-site-photo"

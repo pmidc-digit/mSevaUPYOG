@@ -281,7 +281,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+.documentation-list{
+  display: flex;
+}
 .Docs_CardWrapper{
   @apply bg-white m-sm px-md pt-md pb-lg shadow-card;
   border-radius: 4px;

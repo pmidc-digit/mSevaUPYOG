@@ -252,6 +252,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
+    console.log("payload data======> ",payloadData);
 
     const updatedApplicant = {
       ...payloadData,

@@ -398,7 +398,6 @@ const LayoutSiteDetails = (_props) => {
                 name="areaLeftForRoadWidening"
                 defaultValue=""
                 rules={{
-<<<<<<< HEAD
                   required: t("REQUIRED_FIELD"),
                   pattern: {
                     value: /^[0-9]*\.?[0-9]+$/,
@@ -408,16 +407,6 @@ const LayoutSiteDetails = (_props) => {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
-=======
-                   pattern: {
-                  value: /^[0-9]*\.?[0-9]+$/,
-                  message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                },
-                maxLength: {
-                  value: 200,
-                  message: t("MAX_200_CHARACTERS_ALLOWED"),
-                },
->>>>>>> 10821ee6c24e40c17b8def866d8eda66c92f8fad
                 }}
                 render={(props) => (
                   <TextInput

@@ -133,8 +133,8 @@ const CLUModal = ({
   }, [file]);
 
   useEffect(()=>{
-    if(action?.action === "SENDBACKTOCITIZEN"){
-      const uuid= applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
+    if(action?.action === "SENDBACKTOPROFESSIONAL" ){
+      const uuid= applicationDetails?.Clu?.[0]?.auditDetails?.createdBy || null;
      // console.log("uuid here", uuid);
       setSelectedApprover({uuid});
     }
@@ -146,7 +146,7 @@ const CLUModal = ({
   function submit(data) {
    // console.log("data here in Modal", data);
     
-    const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER","FORWARD"];
+    const mandatoryActions = [ "APPROVE","REJECT","SENDBACKTOPROFESSIONAL", "SENDBACKTOATP/AME","SENDBACKTOJC","SENDBACKTOMTP/ME","SENDBACKTOJE/BI","SENDBACKTODM","FORWARD_L1","FORWARD_L2", "FORWARD_L3", "FORWARD_L4", "FORWARD_FOR_APPROVAL"];
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action);
 

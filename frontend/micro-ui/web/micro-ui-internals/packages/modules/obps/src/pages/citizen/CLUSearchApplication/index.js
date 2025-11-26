@@ -8,7 +8,14 @@ import SearchApplication from "./Search";
 const Search = () => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser().info;
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+
+  let tenantId;
+  if(window.location.pathname.includes("employee")){
+   tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }else{
+   tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  }
+  console.log("tenantId here", tenantId);
 
   const defaultFilters = {
     offset: 0,

@@ -477,7 +477,7 @@ const CLUEmployeeApplicationDetails = () => {
           getEmployees={getEmployees}
           id={id}
           applicationDetails={applicationDetails}
-          applicationData={applicationDetails?.Noc}
+          applicationData={applicationDetails?.Clu}
           closeModal={closeModal}
           submitAction={submitAction}
           actionData={workflowDetails?.data?.timeline}

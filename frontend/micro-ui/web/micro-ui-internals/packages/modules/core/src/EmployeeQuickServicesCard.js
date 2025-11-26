@@ -139,6 +139,10 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <BillsIcon />;
       case "NOC":
         return <BillsIcon />;
+      case "GarbageCollection":
+        return <BillsIcon />;
+      case "CLU":
+        return <OBPSIcon />;
       default:
         return <PTIcon />;
     }

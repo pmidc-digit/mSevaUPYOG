@@ -15,6 +15,8 @@ const Inbox = ({ initialStates = {} }) => {
   const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationStatus", desc: false }]);
   // const [searchParams, setSearchParams] = useState({ filters: { wfFilters: { assignee: [{ code: "" }] } }, search: "", sort: {} });
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
+  const [complaints, setComplaints] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   let isMobile = Digit.Utils.browser.isMobile();
 
   const ttID = localStorage.getItem("punjab-tenantId");
@@ -25,14 +27,53 @@ const Inbox = ({ initialStates = {} }) => {
 
   useEffect(() => {
     (async () => {
-      // debugger;
-      const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
-      // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
-      const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
-      let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-      // console.log("useCount response in inbox else block", response);
-      if (response?.count) {
-        setTotalRecords(response.count);
+      setIsLoading(true);
+      try {
+        const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
+        const serviceCode = searchParams?.filters?.pgrQuery?.serviceCode;
+        const locality = searchParams?.filters?.pgrQuery?.locality;
+        const filteredTenentId = searchParams?.filters?.swachfilters?.tenants;
+        const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
+        
+        if (!filteredTenentId) {
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch count
+        let response = await Digit.SwachService.count(filteredTenentId, {
+          ...(applicationStatus?.length > 0 ? { applicationStatus } : {}),
+          ...(serviceCode ? { serviceCode } : {}),
+          ...(locality ? { locality } : {})
+        });
+        if (response?.count) {
+          setTotalRecords(response.count);
+        }
+
+        // Prepare pagination params
+        const paginationParams = isMobile
+          ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
+          : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+
+        // Call the inbox service
+        const transformedData = await Digit.SwachService.InboxServiceApicall({
+          tenantId: filteredTenentId,
+          filters: {
+            ...searchParams,
+            sortBy: paginationParams.sortBy,
+            sortOrder: paginationParams.sortOrder,
+            limit: paginationParams.limit,
+            offset: paginationParams.offset,
+          }
+        });
+
+        console.log("Transformed Data:", transformedData);
+        setComplaints(transformedData);
+      } catch (e) {
+        console.error("Error fetching inbox:", e);
+        setComplaints({ table: [] });
+      } finally {
+        setIsLoading(false);
       }
       // Do not remove the below commented code
 
@@ -56,7 +97,7 @@ const Inbox = ({ initialStates = {} }) => {
       // }
       // }
     })();
-  }, [searchParams, pageOffset, pageSize,tenantIdCheck, sessionEmpTenant]);
+  }, [searchParams, pageOffset, pageSize, sortParams, isMobile]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -79,22 +120,13 @@ const Inbox = ({ initialStates = {} }) => {
     setSearchParams({ ...searchParams, search: params });
   };
 
-  let paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
-
-  // let complaints = Digit.Hooks.swach.useInboxData(searchParams) || [];
-  // let { data: complaints, isLoading: swachLoading } = Digit.Hooks.swach.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize });
-  // console.log("complaints ----- ", complaints);
-
-  let { data: complaints, isLoading, refetch } = Digit.Hooks.swach.useInbox({
-    tenantId: tenantIdCheck,
-    filters: { ...searchParams, ...paginationParams, sortParams },
-    config: {},
-  });
-
-  // console.log("swachData=======", swachData);
-
+  // Hook call removed - now fetching in useEffect
+  // let { data: complaints, isLoading, refetch } = Digit.Hooks.swach.useInbox({
+  //   tenantId: tenantIdCheck,
+  //   filters: { ...searchParams, ...paginationParams, sortParams },
+  //   config: {},
+  // });
+console.log("Complaints Data:", complaints);
   if (complaints?.table?.length !== null) {
     if (isMobile) {
       return (

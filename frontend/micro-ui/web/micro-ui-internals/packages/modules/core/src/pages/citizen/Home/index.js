@@ -84,8 +84,6 @@ const Home = () => {
   const citizenInfoMain = getFromStorage("Citizen.user-info");
   const langSelect = getFromStorage("locale");
 
-  console.log("citizenInfoMain", citizenInfoMain, "langSelect", langSelect);
-
   const getUserDetails = (access_token, info) => ({ token: access_token, access_token, info });
 
   const userDetails = getUserDetails(citizenToken, citizenInfoMain);
@@ -127,8 +125,6 @@ const Home = () => {
         return <MCollectIcon />; // fallback icon
     }
   };
-
-  console.log("citizenServicesObj", citizenServicesObj);
 
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),

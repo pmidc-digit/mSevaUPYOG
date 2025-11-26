@@ -11,6 +11,7 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.egov.echallan.config.ChallanConfiguration;
 import org.egov.echallan.enums.ChallanStatusEnum;
 import org.egov.echallan.model.Amount;
+import org.egov.echallan.model.AuditDetails;
 import org.egov.echallan.model.Challan;
 import org.egov.echallan.model.ChallanRequest;
 import org.egov.echallan.model.SearchCriteria;
@@ -344,19 +345,23 @@ public class ChallanService {
 	 public Challan update(ChallanRequest request) {
 		 Object mdmsData = utils.mDMSCall(request);
 		 validator.validateFields(request, mdmsData);
-		 List<Challan> searchResult = searchChallans(request);
-		 validator.validateUpdateRequest(request,searchResult);
+		List<Challan> searchResult = searchChallans(request);
+		validator.validateUpdateRequest(request,searchResult);
 		 
 		 // Preserve original citizen data from database - prevent citizen updates
 		 Challan challan = request.getChallan();
-		 if (searchResult != null && !searchResult.isEmpty() && searchResult.get(0).getCitizen() != null) {
-			 Challan existingChallan = searchResult.get(0);
-			 // Preserve the original citizen data from database
-			 challan.setCitizen(existingChallan.getCitizen());
-			 log.info("Preserved original citizen data for challan: {}", challan.getChallanNo());
+		 Challan existingChallan = null;
+		 if (searchResult != null && !searchResult.isEmpty()) {
+			 existingChallan = searchResult.get(0);
+			 if (existingChallan.getCitizen() != null) {
+				 // Preserve the original citizen data from database
+				 challan.setCitizen(existingChallan.getCitizen());
+				 log.info("Preserved original citizen data for challan: {}", challan.getChallanNo());
+			 }
 		 }
 		 
-		 enrichmentService.enrichUpdateRequest(request);
+		 AuditDetails existingAuditDetails = existingChallan != null ? existingChallan.getAuditDetails() : null;
+		 enrichmentService.enrichUpdateRequest(request, existingAuditDetails);
 		 
 		 // Copy amount array to additionalDetail so it can be retrieved in search
 		 if (challan.getAmount() != null && !challan.getAmount().isEmpty()) {

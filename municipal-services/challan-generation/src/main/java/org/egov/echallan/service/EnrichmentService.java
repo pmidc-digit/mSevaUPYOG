@@ -271,10 +271,17 @@ public class EnrichmentService {
         return searchCriteria;
     }
 
-	public void enrichUpdateRequest(ChallanRequest request) {
+	public void enrichUpdateRequest(ChallanRequest request, AuditDetails existingAuditDetails) {
 		 RequestInfo requestInfo = request.getRequestInfo();
 	     String uuid = requestInfo.getUserInfo().getUuid();
 	     AuditDetails auditDetails = commUtils.getAuditDetails(uuid, false);
+	     if (existingAuditDetails != null) {
+	    	 auditDetails.setCreatedBy(existingAuditDetails.getCreatedBy());
+	    	 auditDetails.setCreatedTime(existingAuditDetails.getCreatedTime());
+	     } else if (request.getChallan() != null && request.getChallan().getAuditDetails() != null) {
+	    	 auditDetails.setCreatedBy(request.getChallan().getAuditDetails().getCreatedBy());
+	    	 auditDetails.setCreatedTime(request.getChallan().getAuditDetails().getCreatedTime());
+	     }
 	     Challan challan = request.getChallan();
 	     challan.setAuditDetails(auditDetails);
 	     String fileStoreId = challan.getFilestoreid();

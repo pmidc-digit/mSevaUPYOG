@@ -60,11 +60,9 @@ export const processLinkData = (newData, code, t) => {
         });
     });
   }
-
   return newObj;
 };
 const iconSelector = (code) => {
-  console.log("Icon Selector Code", code);
   switch (code) {
     case "PT":
       return <PTIcon className="fill-path-primary-main" />;
@@ -98,6 +96,10 @@ const iconSelector = (code) => {
       return <PTRIcon className="fill-path-primary-main" />;
     case "NDC":
       return <PTRIcon className="fill-path-primary-main" />;
+    case "GarbageCollection":
+      return <PTRIcon className="fill-path-primary-main" />;
+    case "CLU":
+      return <OBPSIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;
   }
@@ -141,42 +143,43 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
               if (mdmsDataObj?.links?.length > 0) {
                 return (
                   <div>
-                  {code === "OBPS"?
-                  <CitizenHomeCardWithExternalLink
-                    header={t(mdmsDataObj?.header)}
-                    links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
-                    Icon={() => iconSelector(code)}
-                    Info={
-                      code === "OBPS"
-                        ? () => (
-                            <CitizenInfoLabel
-                              style={{ margin: "0px", padding: "10px" }}
-                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                            />
-                          )
-                        : null
-                    }
-                    isInfo={code === "OBPS" ? true : false}
-                  />
-                    :
-                  <CitizenHomeCard
-                    header={t(mdmsDataObj?.header)}
-                    links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
-                    Icon={() => iconSelector(code)}
-                    Info={
-                      code === "OBPS"
-                        ? () => (
-                            <CitizenInfoLabel
-                              style={{ margin: "0px", padding: "10px" }}
-                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                            />
-                          )
-                        : null
-                    }
-                    isInfo={code === "OBPS" ? true : false}
-                  />}
+                    {code === "OBPS" ? (
+                      <CitizenHomeCardWithExternalLink
+                        header={t(mdmsDataObj?.header)}
+                        links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
+                        Icon={() => iconSelector(code)}
+                        Info={
+                          code === "OBPS"
+                            ? () => (
+                                <CitizenInfoLabel
+                                  style={{ margin: "0px", padding: "10px" }}
+                                  info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                                  text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                                />
+                              )
+                            : null
+                        }
+                        isInfo={code === "OBPS" ? true : false}
+                      />
+                    ) : (
+                      <CitizenHomeCard
+                        header={t(mdmsDataObj?.header)}
+                        links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
+                        Icon={() => iconSelector(code)}
+                        Info={
+                          code === "OBPS"
+                            ? () => (
+                                <CitizenInfoLabel
+                                  style={{ margin: "0px", padding: "10px" }}
+                                  info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                                  text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                                />
+                              )
+                            : null
+                        }
+                        isInfo={code === "OBPS" ? true : false}
+                      />
+                    )}
                   </div>
                 );
               } else return <React.Fragment />;
@@ -235,7 +238,6 @@ const EmployeeHome = ({ modules }) => {
     ],
   };
 
-  console.log("Modules: ", modules);
   return (
     <div className="employee-app-container employee-dashboard-container">
       <div

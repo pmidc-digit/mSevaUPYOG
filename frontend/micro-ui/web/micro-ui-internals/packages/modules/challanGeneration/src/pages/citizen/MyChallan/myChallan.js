@@ -16,8 +16,6 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
 
   let result;
 
-  console.log("copming here");
-
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {

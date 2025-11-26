@@ -4,6 +4,7 @@ import React from "react";
 export const ModalConfig = ({
   t,
   action,
+  setAmount,
   approvers,
   selectedApprover,
   setSelectedApprover,
@@ -36,42 +37,58 @@ export const ModalConfig = ({
     form: [
       {
         body: [
+          // {
+          //   label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")} *`,
+          //   placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
+          //   type: "dropdown",
+          //   populators: !checkCondtions ? null : (
+          //     <Dropdown
+          //       option={approvers}
+          //       autoComplete="off"
+          //       optionKey="name"
+          //       id="fieldInspector"
+          //       select={setSelectedApprover}
+          //       selected={selectedApprover}
+          //     />
+          //   ),
+          // },
           {
-            label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")} *`,
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-            type: "dropdown",
-            populators: !checkCondtions ? null : (
-              <Dropdown
-                option={approvers}
-                autoComplete="off"
-                optionKey="name"
-                id="fieldInspector"
-                select={setSelectedApprover}
-                selected={selectedApprover}
-              />
-            ),
-          },
-          {
-            label: `${t("CS_COMMON_COMMENTS")} *`,
-            type: "textarea",
-            populators: {
-              name: "comments",
-            },
-          },
-          {
-            label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
+            label: `${t("PAY_CUSTOM_AMOUNT")} *`,
+            // type: "text",
+            // populators: {
+            //   name: "amount",
+            // },
             populators: (
-              <UploadFile
-                id={"workflow-doc"}
-                // accept=".jpg"
-                onUpload={selectFile}
-                onDelete={() => {
-                  setUploadedFile(null);
+              <input
+                className="employee-card-input focus-visible"
+                type="number"
+                style={{ marginBottom: 0, width: "100%" }}
+                // value={props.value}
+                // error={errors?.name?.message}
+                onChange={(e) => setAmount(e.target.value)}
+                onWheel={(e) => e.target.blur()}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                  }
                 }}
-                message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
               />
             ),
           },
+          // {
+          //   label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
+          //   populators: (
+          //     <UploadFile
+          //       id={"workflow-doc"}
+          //       // accept=".jpg"
+          //       onUpload={selectFile}
+          //       onDelete={() => {
+          //         setUploadedFile(null);
+          //       }}
+          //       message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          //     />
+          //   ),
+          // },
         ],
       },
     ],

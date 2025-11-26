@@ -410,7 +410,7 @@ console.log("  Layout search params:", {
               <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
               <KeyNote
                 keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`${application?.applicationStatus || application?.status}`)}
+                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
                 noteStyle={application?.applicationStatus === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
               />
               <Link
@@ -445,22 +445,21 @@ console.log("  Layout search params:", {
                 keyValue={t("BPA_COMMON_SLA")}
                 note={typeof application?.sla == "string" && application?.sla?.includes("NA") ? t(`${`CS_NA`}`) : application?.sla}
               />
-              {(application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED") ? (
+              {/* {(application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED") ? ( */}
                 <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: "" } }}>
                   <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>
-              ) : (
+              {/* ) : (
                 <div>
                   {labelMessage ? (
                     <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: "" } }}>
                       <SubmitBar label={t("TL_VIEW_DETAILS")} />
                     </Link>
                   ) : (
-                    // <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAFormData(application, mdmsData, history, t)} />
                     <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => {console.log("EDIT_APPLICATIOn",application, mdmsData, history, t); editApplication(application, history)}} />
                   )}
                 </div>
-              )}
+              )} */}
               {application.status === "PENDINGPAYMENT" ? (
                 <Link
                   to={{

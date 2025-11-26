@@ -20,15 +20,15 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
   const stateId = Digit.ULBService.getStateId();
   const [Pinerror, setPinerror] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [pincode, setPincode] = useState(currentStepData?.createdResponse?.landInfo?.address?.pincode || "");
-  const [geoLocation, setgeoLocation] = useState(currentStepData?.createdResponse?.landInfo?.address?.geoLocation || { latitude: null, longitude: null });
+  const [pincode, setPincode] = useState(currentStepData?.createdResponse?.landInfo?.address?.pincode || currentStepData?.PlotDetails?.landInfo?.address?.pincode ||  "");
+  const [geoLocation, setgeoLocation] = useState(currentStepData?.createdResponse?.landInfo?.address?.geoLocation || currentStepData?.PlotDetails?.landInfo?.address?.geoLocation || { latitude: null, longitude: null });
   const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData);
-  const [selectedCity, setSelectedCity] = useState(() => currentStepData?.createdResponse?.landInfo?.address?.city || null);
+  const [selectedCity, setSelectedCity] = useState(() => currentStepData?.createdResponse?.landInfo?.address?.city || currentStepData?.PlotDetails?.landInfo?.address?.city || null);
   const [street, setStreet] = useState(formData?.address?.street || propertyData?.address?.street || "");
   const [landmark, setLandmark] = useState(formData?.address?.landmark || formData?.address?.Landmark || propertyData?.address?.landmark || "");
   const [placeName, setplaceName] = useState(formData?.address?.placeName || formData?.placeName || "");
   const [localities, setLocalities] = useState();
-  const [selectedLocality, setSelectedLocality] = useState(currentStepData?.createdResponse?.landInfo?.address?.locality || null);
+  const [selectedLocality, setSelectedLocality] = useState(currentStepData?.createdResponse?.landInfo?.address?.locality?.code ? currentStepData?.createdResponse?.landInfo?.address?.locality : currentStepData?.PlotDetails?.landInfo?.address?.locality || null);
   const [viewSiteImageURL, setViewSiteImageURL] = useState(null);
   const state = localStorage.getItem("Citizen.tenant-id");
   //const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
@@ -90,6 +90,8 @@ const [isFileLoading, setIsFileLoading] = useState(false);
       }
     }
   }, [selectedCity, localities, selectedLocality])
+
+  console.log("selectedLocality", selectedLocality)
 
 
   useEffect(() => {

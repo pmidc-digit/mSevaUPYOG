@@ -60,17 +60,18 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
           console.log(" Processing application:", application)
           return {
             applicationId:
-              application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber || "-",
+              application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber,
             date: application?.businessObject?.auditDetails?.createdTime
               ? Number.parseInt(application.businessObject.auditDetails.createdTime)
               : 0,
-            businessService: application?.ProcessInstance?.businessService || "-",
+            businessService: application?.ProcessInstance?.businessService,
             locality: application?.businessObject?.tenantId
               ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}`
               : "-",
-            status: application?.businessObject?.applicationStatus || "-",
-            owner: application?.ProcessInstance?.assigner?.[0]?.name || "-",
-            documents: application?.businessObject?.documents || application?.documents || [],
+            status: application?.businessObject?.applicationStatus,
+            owner: application?.businessObject?.owners?.[0]?.name,
+            applicationType: application?.businessObject?.applicationType,
+            documents: application?.businessObject?.documents || application?.documents,
           }
         })
 

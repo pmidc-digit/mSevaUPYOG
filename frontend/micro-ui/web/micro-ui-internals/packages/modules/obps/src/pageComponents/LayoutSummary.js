@@ -124,7 +124,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
-            {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_DATE"), formData?.applicationDetails?.professionalRegistrationValidity)}
+            {renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formData?.applicationDetails?.professionalRegistrationValidity)}
           </div>
         </React.Fragment>
       )}

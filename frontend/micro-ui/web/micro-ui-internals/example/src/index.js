@@ -15,6 +15,7 @@ import {
   initChallanGenerationComponents,
   ChallanReducers,
 } from "@mseva/digit-ui-module-challangeneration";
+import { GarbageCollectionModule, GarbageCollectionLinks, initGarbageCollectionComponents } from "@mseva/digit-ui-module-garbagecollection";
 import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
@@ -34,7 +35,6 @@ import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
-import { GCModule, GCLinks, GCComponents, GCReducers } from "@mseva/digit-ui-module-gc";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
@@ -133,6 +133,8 @@ const initDigitUI = () => {
     MCollectModule,
     ChallanGenerationModule,
     ChallanGenerationLinks,
+    GarbageCollectionModule,
+    GarbageCollectionLinks,
     RentAndLeaseModule,
     RentAndLeaseLinks,
     HRMSModule,
@@ -161,9 +163,6 @@ const initDigitUI = () => {
     ...PGRAIComponents,
     NOCModule,
     NOCLinks,
-    GCModule,
-    GCLinks,
-    ...GCComponents,
   });
   initFSMComponents();
   initPGRComponents();
@@ -171,6 +170,7 @@ const initDigitUI = () => {
   initDSSComponents();
   initMCollectComponents();
   initChallanGenerationComponents();
+  initGarbageCollectionComponents();
   initRentAndLeaseComponents();
   initHRMSComponents();
   initTLComponents();
@@ -195,7 +195,6 @@ const initDigitUI = () => {
     tl: TLReducers(initData),
     ndc: NDCReducers(initData),
     ptr: PTRReducers(initData),
-    gc: GCReducers(initData),
     ads: ADSReducers(initData),
     chb: CHBReducers(initData),
     noc: NOCReducers(initData),

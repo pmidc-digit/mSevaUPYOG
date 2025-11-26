@@ -23,9 +23,10 @@ const CloseBtn = (props) => {
   );
 };
 
-const NDCModal = ({ t, action, closeModal, submitAction, showToast, closeToast, errors, showErrorToast, errorOne, closeToastOne }) => {
+const NDCModal = ({ t, action, closeModal, submitAction, showErrorToast, errorOne, closeToastOne, getChallanData }) => {
   const [config, setConfig] = useState({});
   const [getAmount, setAmount] = useState();
+  const [error, setError] = useState();
 
   function submit(data) {
     const payload = { amount: getAmount };
@@ -39,6 +40,9 @@ const NDCModal = ({ t, action, closeModal, submitAction, showToast, closeToast, 
           t,
           action,
           setAmount,
+          getChallanData,
+          error,
+          setError,
         })
       );
     }

@@ -42,6 +42,7 @@ export const ChallanGenerationModule = ({ stateCode, userType, tenants }) => {
     return <Loader />;
   }
   const { path, url } = useRouteMatch();
+  console.log("Getting Here CG");
 
   if (userType === "employee") {
     return <EmployeeApp path={path} url={url} userType={userType} />;

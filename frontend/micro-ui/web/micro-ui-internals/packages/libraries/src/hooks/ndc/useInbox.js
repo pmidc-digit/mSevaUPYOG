@@ -26,12 +26,15 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
             status: status,
             ...(applicationNo ? { applicationNo } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
+            sortOrder: "DESC",
           }
         : {
             // status: status,
             ...(applicationNo ? { applicationNo } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
+            sortOrder: "DESC",
           },
+
     limit,
     offset,
   };

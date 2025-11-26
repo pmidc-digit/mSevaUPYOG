@@ -7,6 +7,7 @@ import org.egov.common.contract.request.Role;
 import org.egov.tl.config.TLConfiguration;
 import org.egov.tl.repository.ServiceRequestRepository;
 import org.egov.tl.repository.TLRepository;
+import org.egov.tl.util.TLConstants;
 import org.egov.tl.util.TradeUtil;
 import org.egov.tl.validator.TLValidator;
 import org.egov.tl.web.models.*;
@@ -23,6 +24,7 @@ import static org.egov.tl.util.TLConstants.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -108,6 +110,15 @@ public class UserService{
                     addNonUpdatableFields(user,userDetailResponse.getUser().get(0));
                    if (isBPARoleAddRequired) {
                         List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
+                        List<String> bpaRolesList = Arrays.asList("BPA_ARCHITECT", "BPA_ENGINEER", "BPA_TOWNPLANNER", "BPA_SUPERVISOR");
+                        if(tradeLicense.getApplicationType() !=  null && 
+                        		tradeLicense.getApplicationType().toString().equalsIgnoreCase(TLConstants.APPLICATION_TYPE_UPGRADE)) {
+                        	List<Role> userRoles = user.getRoles().stream()
+                        	.filter(userRole -> !(bpaRolesList.contains(userRole.getCode()) 
+                        			&& userRole.getTenantId().equalsIgnoreCase(tradeLicense.getTenantId())))
+                        	.collect(Collectors.toList());
+                        	user.setRoles(userRoles);
+                        }
                         for (String rolename : licenseeTyperRole) {
                          // Add BPA_ARCHITECT role with state level tenantId
                             if (rolename.equalsIgnoreCase(BPA_ARCHITECT))

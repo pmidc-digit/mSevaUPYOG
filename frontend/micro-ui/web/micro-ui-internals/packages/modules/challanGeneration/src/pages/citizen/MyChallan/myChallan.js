@@ -11,19 +11,35 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const history = useHistory();
   const userInfo = Digit.UserService.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const [filters, setFilters] = useState(null);
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
 
-  let result;
+  let filter = window.location.href.split("/").pop();
+  let t1;
+  let off;
+  if (!isNaN(parseInt(filter))) {
+    off = filter;
+    t1 = parseInt(filter) + 50;
+  } else {
+    t1 = 4;
+  }
 
-  console.log("copming here");
+  let initialFilters = !isNaN(parseInt(filter))
+    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
+    : { limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
 
-  const fetchChallans = async (filters) => {
+  useEffect(() => {
+    setFilters(initialFilters);
+  }, [filter, tenantId]);
+
+  const fetchChallans = async () => {
+    console.log("filters", filters);
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
       console.log("result", responseData);
-      setChallanData(responseData?.challans);
+      setChallanData(responseData);
       setLoader(false);
     } catch (error) {
       console.log("error", error);
@@ -32,59 +48,19 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   };
 
   useEffect(() => {
-    const filters = {};
-    filters.mobileNumber = userInfo?.info?.mobileNumber;
-    fetchChallans(filters);
-  }, []);
+    // const filters = {};
+    console.log("filters", filters);
+    if (filters) fetchChallans();
+    // filters.mobileNumber = userInfo?.info?.mobileNumber;
+  }, [filters]);
 
-  const onSubmit = (data) => {
-    history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
+  const handleLoadMore = () => {
+    setFilters((prev) => ({
+      ...prev,
+      // offset: prev.offset + 5, // 🔹 Add 5 more each click
+      limit: Number(prev.limit) + 5, // Load next 5 items only
+    }));
   };
-
-  const payment = {};
-
-  function getBillingPeriod(fromPeriod, toPeriod) {
-    if (fromPeriod && toPeriod) {
-      let from =
-        new Date(fromPeriod).getDate() +
-        " " +
-        Digit.Utils.date.monthNames[new Date(fromPeriod).getMonth()] +
-        " " +
-        new Date(fromPeriod).getFullYear();
-      let to =
-        new Date(toPeriod).getDate() + " " + Digit.Utils.date.monthNames[new Date(toPeriod).getMonth()] + " " + new Date(toPeriod).getFullYear();
-      return from + " - " + to;
-    } else return "N/A";
-  }
-
-  /* paymentDetails?.data?.Bill?.forEach((element) => {
-    if (element?.consumerCode) {
-      payment[element?.consumerCode] = {
-        total_due: element?.totalAmount,
-        bil_due__date: new Date(element?.billDate).toDateString(),
-      };
-    }
-  }); */
-
-  // const searchResults = getChallanData?.map((bill) => {
-  //   return {
-  //     businesService: bill?.businessService,
-  //     total_due: bill?.amount ? bill?.amount : 0,
-  //     OwnerName: bill.citizen?.name || t("CS_NA"),
-  //     status: bill.applicationStatus,
-  //     // BillingPeriod: getBillingPeriod(bill.billDetails[0].fromPeriod, bill.billDetails[0].toPeriod),
-  //     //bil_due__date: bill.billDetails[0].expiryDate || 0,
-  //     // bil_due__date: `${
-  //     //   new Date(bill.billDetails[0].expiryDate).getDate().toString() +
-  //     //   "/" +
-  //     //   (new Date(bill.billDetails[0].expiryDate).getMonth() + 1).toString() +
-  //     //   "/" +
-  //     //   new Date(bill.billDetails[0].expiryDate).getFullYear().toString()
-  //     // }`,
-  //     ChannelNo: bill?.challanNo || t("CS_NA"),
-  //     // ServiceCategory: bill.businessService ? bill.businessService.split(".")[bill.businessService.split(".").length - 1] : t("CS_NA"),
-  //   };
-  // });
 
   const handleMakePayment = (id) => {
     history.push(`/digit-ui/citizen/payment/collect/Challan_Generation/${id}/${tenantId}?tenantId=${tenantId}`);
@@ -95,18 +71,18 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
       <div>
         {header && (
           <Header style={{ marginLeft: "8px" }}>
-            {t(header)} ({getChallanData?.length})
+            {t(header)} ({getChallanData?.challans?.length})
           </Header>
         )}
 
-        {getChallanData?.map((bill, index) => {
+        {getChallanData?.challans?.map((bill, index) => {
+          const checkAmount = Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0);
+          const total = checkAmount ?? 0;
+          const waiver = bill?.feeWaiver ?? 0;
+          const finalAmount = total - waiver;
           return (
             <Card key={index}>
-              <KeyNote
-                keyValue={t("CHALLAN_AMOUNT")}
-                // note={bill?.amount ? bill?.amount?.[0]?.amount || bill?.challanAmount : 0}
-                note={Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0)}
-              />
+              <KeyNote keyValue={t("CHALLAN_AMOUNT")} note={finalAmount} />
               <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.challanStatus)} />
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
@@ -132,17 +108,18 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
           );
         })}
 
-        {/* <div>
-          <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel} onSubmit={onSubmit} />
-        </div> */}
-      </div>
+        {getChallanData?.challans?.length === 0 && !loader && (
+          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>
+        )}
 
-      {/* <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
-        <p>{t("CHALLAN_NOT_ABLE_TO_FIND_BILL_MSG")} </p>
-        <p className="link">
-          <Link to="/digit-ui/citizen/mcollect/search">{t("UC_CLICK_HERE_TO_SEARCH_LINK")}</Link>
-        </p>
-      </div> */}
+        {getChallanData?.challans?.length !== 0 && getChallanData?.totalCount > t1 && (
+          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
+            <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
+              {t("CHB_LOAD_MORE_MSG")}
+            </span>
+          </div>
+        )}
+      </div>
       {loader && <Loader page={true} />}
     </div>
   );

@@ -258,6 +258,7 @@ const ChallanStepperForm = () => {
           {t("CREATE_CHALLAN")}
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
+          <CardLabel style={{ fontWeight: "bold", paddingBottom: "30px", fontSize: "25px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
           <div style={{ width: "100%" }}>
             <div style={{ marginBottom: "20px" }}>
               <CardLabel>

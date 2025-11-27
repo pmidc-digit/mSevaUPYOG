@@ -64,7 +64,7 @@ const splitAddress = (addressLine1) => {
         title: t("CHB_EVENT_DETAILS"),
         values: [
           { title: t("CHB_SPECIAL_CATEGORY"), value: t(application?.specialCategory?.category) },
-          { title: t("CHB_PURPOSE"), value: application?.purpose?.purpose },
+          { title: t("CHB_PURPOSE"), value: t(application?.purpose?.purpose) },
           { title: t("CHB_PURPOSE_DESCRIPTION"), value: application?.purposeDescription },
         ],
       },

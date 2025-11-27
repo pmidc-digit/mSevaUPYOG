@@ -50,7 +50,7 @@ const WrapPaymentComponent = (props) => {
   );
 
   console.log("bpaData rn here", bpaData);
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: consumerCode, tenantId }, {});
   console.log("applicationDetails rn here", applicationDetails);
 
   let challanEmpData = ChallanData(tenantId, consumerCode);
@@ -1337,7 +1337,7 @@ const WrapPaymentZeroComponent = (props) => {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { consumerCode, tenantId }, {});
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: consumerCode, tenantId }, {});
 
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",

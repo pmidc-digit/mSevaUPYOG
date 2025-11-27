@@ -3,6 +3,18 @@ import { useLocation } from "react-router-dom";
 import { Loader, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { serviceMappings } from "../../../config/ssoConfig";
+// const encryptUserDetails = (user={}) =>
+// {
+//   debugger
+//   //user = JSON.parse(user)
+//   if (!user) return null
+//   const mobilenumber = btoa(user.mobileNumber);
+//   const name = btoa(user.name);
+//   const emailId = btoa(user.emailId);
+//   const dob= btoa(user.dob);
+//   user = {...user, mobileNumber : mobilenumber, emailId : emailId, name : name, dob : dob}
+//   return JSON.stringify(user);
+// }
 
 const setEmployeeDetail = (userObject, token) => {
   let locale = JSON.parse(sessionStorage.getItem("Digit.locale"))?.value || "en_IN";

@@ -62,20 +62,61 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   });
 
   // License Details
-  details.push({
-    title: t("BPA_LICENSE_DETAILS_LABEL"),
-    values: [
-      {
-        title: t("BPA_LICENSE_TYPE"),
-        value: t(`${application?.applicationDetails?.[1]?.values?.[0]?.value}`) || "NA",
-      },
-      {
-        title: t("BPA_COUNCIL_NUMBER"),
-        value: application?.applicationDetails?.[1]?.values?.[1]?.value || "NA",
-      },
-    ],
-  });
+  if (application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] === "ARCHITECT") {
+    details.push({
+      title: t("BPA_LICENSE_DETAILS_LABEL"),
+      values: [
+        {
+          title: t("BPA_LICENSE_TYPE"),
+          value: t(`TRADELICENSE_TRADETYPE_${application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "NA",
+        },
+        {
+          title: t("BPA_QUALIFICATION_TYPE"),
+          value: t(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType) || "NA",
+        },
+        {
+          title: t("BPA_COUNCIL_NUMBER"),
+          value: application?.applicationData?.licenseNumber || "NA",
+        },
 
+        {
+          title: t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
+          value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA",
+        }
+      ],
+    });
+  }else{
+    details.push({
+      title: t("BPA_LICENSE_DETAILS_LABEL"),
+      values: [
+        {
+          title: t("BPA_LICENSE_TYPE"),
+          value: t(`TRADELICENSE_TRADETYPE_${application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "NA",
+        },
+        {
+          title: t("BPA_QUALIFICATION_TYPE"),
+          value: t(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType) || "NA",
+        },
+        {
+          title: t("BPA_COUNCIL_NUMBER"),
+          value: application?.applicationData?.licenseNumber || "NA",
+        }
+      ],
+    });
+  }
+  
+
+  const getFormattedULBName = (ulbCode = "") => {
+    if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+
+    const parts = ulbCode.split(".");
+    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+
+    const namePart = parts[1];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  };
+
+  const ulbName = getFormattedULBName(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb);
   // Licensee Details
   details.push({
     title: t("BPA_LICENSEE_DETAILS_HEADER_OWNER_INFO"),
@@ -98,7 +139,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("BPA_APPLICANT_ULB_LIST"),
-        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb || "N/A",
+        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : ulbName || "N/A",
       },
     ],
   });

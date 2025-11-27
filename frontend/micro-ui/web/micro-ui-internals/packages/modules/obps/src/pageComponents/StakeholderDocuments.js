@@ -14,6 +14,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { LoaderNew } from "../components/LoaderNew";
+import { useLocation } from "react-router-dom";
 import CustomUploadFile from "../components/CustomUploadFile";
 
 const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
@@ -39,12 +40,13 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     };
 
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(selectedTenantId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
+  console.log("data in StakeholderDocsRequired", data);
 
   useEffect(() => {
     let filtredBpaDocs = [];
     if (data?.StakeholderRegistraition?.TradeTypetoRoleMapping) {
       filtredBpaDocs = data?.StakeholderRegistraition?.TradeTypetoRoleMapping?.filter(
-        (ob) => ob.tradeType === formData?.formData?.LicneseType?.LicenseType?.tradeType
+        (ob) => (ob.tradeType === formData?.formData?.LicneseType?.LicenseType?.tradeType || ob.tradeType === formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType)
       );
     }
 
@@ -52,7 +54,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     filtredBpaDocs?.[0]?.docTypes?.forEach((doc) => {
       documentsList.push(doc);
     });
-    console.log("documentsList here", documentsList);
+    console.log("documentsList here", documentsList, filtredBpaDocs);
     setBpaTaxDocuments(documentsList);
   }, [!isLoading]);
 
@@ -161,6 +163,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
                 documents={documents}
                 setCheckRequiredFields={setCheckRequiredFields}
                 isCitizenUrl={isCitizenUrl}
+                formData={formData}
               />
             );
           })}
@@ -176,7 +179,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   );
 };
 
-function SelectDocument({ t, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isCitizenUrl }) {
+function SelectDocument({ t, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isCitizenUrl, formData }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const [loader, setLoader] = useState(false);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -190,6 +193,11 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
   );
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const { pathname } = useLocation();
+  let currentPath = pathname.split("/").pop();
+  console.log("currentPath", formData);
+  let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
+  // let isEditable = true;
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
@@ -300,6 +308,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
           }}
           uploadedFile={uploadedFile}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          disabled={!isEditable}
           // iserror={error}
         />
       ) : (
@@ -313,9 +322,11 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
           }}
           uploadedFile={uploadedFile}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          disabled={!isEditable}
           // iserror={error}
         />
       )}
+      {doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
       {loader && <LoaderNew page={true} />}
     </div>
   );

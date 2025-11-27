@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Header, CardSectionHeader, PDFSvg, StatusTable, Row, MultiLink, LinkButton } from "@mseva/digit-ui-react-components";
+import { Header, CardSectionHeader, PDFSvg, StatusTable, Row, MultiLink, LinkButton, CardLabel } from "@mseva/digit-ui-react-components";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import { downloadAndPrintReciept } from "../../../utils";
 
@@ -15,6 +15,8 @@ const ApplicationDetail = () => {
   const { tenants } = storeData || {};
   const [showOptions, setShowOptions] = useState(false);
   const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb"? "pb.punjab" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb"? "pb.punjab" : tenantId }, {});
+  const License = applicationDetails?.applicationData
+  const [documents, setDocuments] = useState({});
   console.log('applicationDetails of obps here', applicationDetails)
  const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
   console.log('ulbType', ulbType)
@@ -38,11 +40,20 @@ console.log("licenseType:", licenseType);
     mutate,
   } = Digit.Hooks.obps.useBPAREGApplicationActions(tenantId === "pb"? "pb.punjab" : tenantId);
 
+  useEffect(() => {
+      if (License?.tradeLicenseDetail?.applicationDocuments?.length) {
+        const fileStoresIds = License?.tradeLicenseDetail?.applicationDocuments?.map((document) => document?.fileStoreId);
+        Digit.UploadServices.Filefetch(fileStoresIds, tenantId.split(".")[0]).then((res) => setDocuments(res?.data));
+      }
+    }, [License]);
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId === "pb"? "pb.punjab" : tenantId,
     id: id,
     moduleCode: "BPAREG",
   });
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
 
   const closeToast = () => {
     setShowToast(null);
@@ -66,12 +77,40 @@ console.log("licenseType:", licenseType);
 
   return (
     <div className={"employee-main-application-details"}>
-        <div  className={"employee-application-details"}>
+        <div  className={"employee-application-details"} style={{marginBottom: "40px"}}>
         <Header>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>        
-        {workflowDetails?.data?.timeline?.length>0 && (
+        <div style={{zIndex: "10", display: "flex", flexDirection:"row", gap: "10px", justifyContent:"space-between", alignItems:"center"}}> 
+                {(() => {
+            const passportPhoto = License?.tradeLicenseDetail?.applicationDocuments?.find(
+              (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO",
+            )
+
+            if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
+
+            return (
+              <div style={{display: "flex", flexDirection:"column" , alignItems: "center", marginBottom: "1rem"}}>
+              <img
+                src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
+                alt="Owner Photograph"
+                style={{
+                  maxWidth: "120px",
+                  maxHeight: "120px",
+                  border: "2px solid #e0e0e0",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  flexShrink: 0,
+                }}
+                onError={(e) => {
+                  e.target.style.display = "none"
+                }}
+              />
+              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              </div>
+            )
+          })()}       
+        {/* {workflowDetails?.data?.timeline?.length>0 && (
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
-        )}
+        )} */}
         </div>
         </div>
       <ApplicationDetailsTemplate

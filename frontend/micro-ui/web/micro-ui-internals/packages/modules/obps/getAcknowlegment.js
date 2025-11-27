@@ -76,6 +76,17 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
     ],
   });
 
+  const getFormattedULBName = (ulbCode = "") => {
+    if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+
+    const parts = ulbCode.split(".");
+    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+
+    const namePart = parts[1];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  };
+
+  const ulbName = getFormattedULBName(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb);
   // Licensee Details
   details.push({
     title: t("BPA_LICENSEE_DETAILS_HEADER_OWNER_INFO"),
@@ -98,7 +109,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("BPA_APPLICANT_ULB_LIST"),
-        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb || "N/A",
+        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : ulbName || "N/A",
       },
     ],
   });

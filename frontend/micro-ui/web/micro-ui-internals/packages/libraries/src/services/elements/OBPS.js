@@ -318,6 +318,18 @@ const formatDate = (timestamp) => {
   return `${day}/${month}/${year}`;
 };
 
+const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? License?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(License?.tradeLicenseDetail?.owners?.[0]?.dob)
+const getFormattedULBName = (ulbCode = "") => {
+    if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+
+    const parts = ulbCode.split(".");
+    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+
+    const namePart = parts[1];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  };
+
+  const ulbName = getFormattedULBName(License?.tradeLicenseDetail?.additionalDetail?.Ulb);
 
 
 
@@ -333,10 +345,15 @@ const formatDate = (timestamp) => {
           asSectionHeader: true,
           values: [
             {
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
+            },
+            {
               title: "BPA_LICENSE_TYPE",
               value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
             },
             { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
+            { title: "BPA_SELECTED_ULB", value:"BPA_ULB_SELECTED_MESSAGE" || "NA" },
             { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
           ],
         }
@@ -345,9 +362,14 @@ const formatDate = (timestamp) => {
           asSectionHeader: true,
           values: [
             {
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
+            },            
+            {
               title: "BPA_LICENSE_TYPE",
               value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
             },
+            { title: "BPA_SELECTED_ULB", value:  ulbName || "NA" },
           ],
         },
       {
@@ -358,19 +380,28 @@ const formatDate = (timestamp) => {
           { title: "BPA_APPLICANT_GENDER_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.gender || "NA" },
           { title: "BPA_OWNER_MOBILE_NO_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA" },
           { title: "BPA_APPLICANT_EMAIL_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.emailId || "NA" },
+          { title: "BPA_APPLICANT_DOB_LABEL", value: dob || "NA" },
           // { title: "BPA_APPLICANT_PAN_NO", value: License?.tradeLicenseDetail?.owners?.[0]?.pan || "NA" },
         ],
       },
       {
         title: "BPA_PERMANANT_ADDRESS_LABEL",
         asSectionHeader: true,
-        values: [{ title: "BPA_PERMANANT_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA" }],
+        values: [
+          { title: "BPA_APPLICANT_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA" },
+          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.additionalDetail?.permanentState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentCity || "NA" },
+          { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "NA" },
+        ],
       },
       {
         title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL",
         asSectionHeader: true,
         values: [
           { title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress || "NA" },
+          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.additionalDetail?.correspondenceState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity || "NA" },
+          { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || "NA" },
         ],
       },
       {

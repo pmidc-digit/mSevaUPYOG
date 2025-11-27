@@ -36,6 +36,10 @@ public class SWCalculationConstant {
 	public static final String EG_SW_FINANCIAL_MASTER_NOT_FOUND = "EG_SW_FINANCIAL_MASTER_NOT_FOUND";
 
 	public static final String EG_SW_FINANCIAL_MASTER_NOT_FOUND_MSG = "No Financial Year data is available for the given year value of : ";
+	
+	public static final String SW_DISCONNECTION_FEE = "SW_DISCONNECTION_FEE";
+	
+	public static final String SC_DISCONNECTION_MASTER = "DisconnectionFee";
 
 	public static final String FINANCIAL_YEAR_MASTER = "FinancialYear";
 

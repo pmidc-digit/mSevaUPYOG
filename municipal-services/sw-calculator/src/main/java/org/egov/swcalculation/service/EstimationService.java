@@ -424,6 +424,39 @@ public class EstimationService {
 
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
 		BigDecimal formFee = BigDecimal.ZERO;
+		
+		 // ----- create estimates list -----
+	    List<TaxHeadEstimate> estimates = new ArrayList<>();
+
+	 // ========= NEW LOGIC FOR DISCONNECTION ===========
+	    String applicationType = criteria.getSewerageConnection().getApplicationType();
+	    if ("DISCONNECT_SEWERAGE_CONNECTION".equalsIgnoreCase(applicationType)) {
+
+	        JSONArray disConnMaster = (JSONArray) masterData
+	                .getOrDefault(SWCalculationConstant.SC_DISCONNECTION_MASTER, null);
+
+	        if (disConnMaster == null || disConnMaster.isEmpty())
+	            throw new CustomException("DISCONNECTION_FEE_NOT_FOUND",
+	                    "Disconnection Fee not found!");
+
+
+	        JSONObject disConnObj = mapper.convertValue(disConnMaster.get(0), JSONObject.class);
+
+	     // Use a different variable name
+	     Object disconnFeeObj = disConnObj.get("disconnectionFee");
+	     BigDecimal disconnectionFee = (disconnFeeObj != null) ? new BigDecimal(disconnFeeObj.toString()) : BigDecimal.ZERO;
+
+	     // ADD TAX HEAD
+	     estimates.add(TaxHeadEstimate.builder()
+	             .taxHeadCode(SWCalculationConstant.SW_DISCONNECTION_FEE)
+	             .estimateAmount(disconnectionFee.setScale(2, 2))
+	             .category(TaxHeadCategory.FEE)
+	             .build());
+
+	     return estimates; // stop further fee processing
+	    }
+	    
+	    
 		if (feeObj.get(SWCalculationConstant.FORM_FEE_CONST) != null) {
 			formFee = new BigDecimal(feeObj.getAsNumber(SWCalculationConstant.FORM_FEE_CONST).toString());
 		}
@@ -610,7 +643,6 @@ public class EstimationService {
 //				.add(roadPlotCharge).add(usageTypeCharge);
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(SWCalculationConstant.HUNDRED));
 		//
-		List<TaxHeadEstimate> estimates = new ArrayList<>();
 		// BigDecimal otherCharges=BigDecimal.ZERO;
 		
 		/*

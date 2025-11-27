@@ -300,6 +300,8 @@ public class CalculatorUtils {
 				.filter("[?(@.isActive== " + true + ")]").build());
 		details.add(MasterDetail.builder().name(SWCalculationConstant.SC_PROPERTYUSAGETYPE_MASTER)
 				.filter("[?(@.isActive== " + true + ")]").build());
+		details.add(MasterDetail.builder().name(SWCalculationConstant.SC_DISCONNECTION_MASTER)
+				.filter("[?(@.isActive== " + true + ")]").build());
 		details.add(MasterDetail.builder().name(SWCalculationConstant.SC_FEESLAB_MASTER)
 				.filter("[?(@.isActive== " + true + ")]").build());
 		details.add(MasterDetail.builder().name(SWCalculationConstant.SC_ROADTYPE_MASTER)

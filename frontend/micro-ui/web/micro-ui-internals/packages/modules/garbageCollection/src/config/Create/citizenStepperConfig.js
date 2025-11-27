@@ -37,7 +37,7 @@ export const citizenConfig = [
     body: [
       {
         route: "documents",
-        component: "ChallanDocuments",
+        component: "CHBSelectProofIdentity",
         withoutLabel: true,
         key: "documents",
         type: "component",
@@ -51,7 +51,7 @@ export const citizenConfig = [
     body: [
       {
         route: "summary",
-        component: "ChallanSummary",
+        component: "CHBSummary",
         withoutLabel: true,
         key: "summary",
         type: "component",

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useReducer, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
+import { Loader } from "../../components/Loader";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
@@ -101,8 +102,6 @@ const Inbox = ({
 
   const { isLoading: hookLoading, data } = Digit.Hooks.challangeneration.useInbox({
     tenantId,
-    // filters: { ...formState, getFilter },
-    // filters: { ...formState, getFilter },
     filters: { ...searchParams, ...paginationParams },
   });
 
@@ -249,6 +248,7 @@ const Inbox = ({
           isLoader={isLoader}
           statutes={data?.statuses}
         />
+        {hookLoading && <Loader page={true} />}
       </div>
     );
   }

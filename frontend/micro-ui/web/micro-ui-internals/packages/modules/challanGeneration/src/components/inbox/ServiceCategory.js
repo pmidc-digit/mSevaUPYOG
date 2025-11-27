@@ -75,9 +75,6 @@ const ServiceCategory = ({
     else meuSecond.push(option);
   });
 
-  if (isLoading) {
-    return <Loader />;
-  }
   // translateState(option)
   return (
     <div className="status-container">

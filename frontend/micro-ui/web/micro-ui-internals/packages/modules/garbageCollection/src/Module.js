@@ -2,37 +2,18 @@ import { CitizenHomeCard, Loader, PTIcon } from "@mseva/digit-ui-react-component
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
-import InboxFilter from "./components/inbox/NewInboxFilter";
-import ChallanGenerationCard from "./components/ChallanGenerationCard";
-import EmployeeChallan from "./EmployeeChallan";
-import AddressDetails from "./pageComponents/AddressDetails";
-import ConsumerDetails from "./pageComponents/ConsumerDetails";
-import ServiceDetails from "./pageComponents/ServiceDetails";
-import CitizenApp from "./pages/citizen";
-import MyChallanResultsComponent from "./pages/citizen/MyChallan";
-import SearchChallanComponent from "./pages/citizen/SearchChallan";
-import SearchResultsComponent from "./pages/citizen/SearchResults";
-import EmployeeApp from "./pages/employee";
-import EditChallan from "./pages/employee/EditChallan";
-import MCollectAcknowledgement from "./pages/employee/EmployeeChallanAcknowledgement";
-import NewChallan from "./pages/employee/NewChallan";
-import SearchReceipt from "./pages/employee/SearchReceipt";
-import SearchChallan from "./pages/employee/SearchChallan";
-import SearchBill from "./pages/employee/SearchBill";
-import GroupBill from "./pages/employee/GroupBills";
-import ChallanStepperForm from "./pageComponents/ChallanStepper/ChallanStepperForm";
-import ChallanStepFormOne from "./pageComponents/ChallanStepper/ChallanStepFormOne";
-import ChallanStepFormTwo from "./pageComponents/ChallanStepper/ChallanStepFormTwo";
-import ChallanStepFormThree from "./pageComponents/ChallanStepper/ChallanStepFormThree";
-import ChallanStepFormFour from "./pageComponents/ChallanStepper/ChallanStepFormFour";
-import OffenderDetails from "./pageComponents/OffenderDetails";
-import OffenceDetails from "./pageComponents/OffenceDetails";
-import ChallanSummary from "./pageComponents/ChallanSummary";
-import ChallanDocuments from "./pageComponents/ChallanDocuments";
-import getRootReducer from "../redux/reducer";
-import ChallanResponseCitizen from "./components/ChallanResponseCitizen";
-import ChallanApplicationDetails from "./pages/citizen/ChallanApplicationDetails";
 import TestComp from "./pageComponents/TestComp";
+import CHBStepperForm from "./pageComponents/CHBStepper/CHBStepperForm";
+import CHBStepFormOne from "./pageComponents/CHBStepper/CHBStepFormOne";
+import CHBStepFormTwo from "./pageComponents/CHBStepper/CHBStepFormTwo";
+import CHBStepFormThree from "./pageComponents/CHBStepper/CHBStepFormThree";
+import CHBStepFormFour from "./pageComponents/CHBStepper/CHBStepFormFour";
+import CHBCitizenDetailsNew from "./pageComponents/CHBCitizenDetailsNew";
+import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
+import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
+import CHBSummary from "./pageComponents/CHBSummary";
+import getRootReducer from "../redux/reducer";
+import CitizenApp from "./pages/citizen";
 
 export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -60,7 +41,7 @@ export const GarbageCollectionLinks = ({ matchPath, userType }) => {
 
   const links = [
     {
-      link: `${matchPath}/My-Challans`,
+      link: `${matchPath}/my-applications`,
       i18nKey: t("GC_MY_APPLICATION"),
     },
     {
@@ -74,39 +55,19 @@ export const GarbageCollectionLinks = ({ matchPath, userType }) => {
   return <CitizenHomeCard header={t("ACTION_TEST_MCOLLECT")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };
 
-export const ChallanReducers = getRootReducer;
+export const GarbageReducers = getRootReducer;
 
 const componentsToRegister = {
-  ConsumerDetails,
-  ServiceDetails,
-  AddressDetails,
-  ChallanGenerationCard,
-  GarbageCollectionModule,
-  GarbageCollectionLinks,
-  MCollectEmployeeChallan: EmployeeChallan,
-  MCollectAcknowledgement: MCollectAcknowledgement,
-  MCollectEditChallan: EditChallan,
-  MCollectNewChallan: NewChallan,
-  MCollectSearchChallanComponent: SearchChallanComponent,
-  MCollectSearchResultsComponent: SearchResultsComponent,
-  MCollectMyChallanResultsComponent: MyChallanResultsComponent,
-  SearchReceipt,
-  SearchChallan,
-  SearchBill,
-  GroupBill,
-  MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
-  ChallanStepperForm,
-  ChallanStepFormOne,
-  ChallanStepFormTwo,
-  ChallanStepFormThree,
-  ChallanStepFormFour,
-  OffenderDetails,
-  OffenceDetails,
-  ChallanSummary,
-  ChallanDocuments,
-  ChallanResponseCitizen,
-  ChallanApplicationDetails,
   TestComp,
+  CHBStepperForm,
+  CHBStepFormOne,
+  CHBStepFormTwo,
+  CHBStepFormThree,
+  CHBStepFormFour,
+  CHBCitizenDetailsNew,
+  CHBCitizenSecond,
+  CHBSelectProofIdentity,
+  CHBSummary,
 };
 
 export const initGarbageCollectionComponents = () => {

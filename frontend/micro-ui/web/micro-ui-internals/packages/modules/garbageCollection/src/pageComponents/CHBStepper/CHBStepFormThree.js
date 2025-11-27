@@ -1,20 +1,22 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_ChallanApplication_FORM } from "../../../redux/action/ChallanApplicationActions";
+import { UPDATE_GarbageApplication_FORM } from "../../../redux/action/GarbageApplicationActions";
 import { useState } from "react";
 import _ from "lodash";
 
-const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
+const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
-  const checkFormData = useSelector((state) => state.challan.ChallanApplicationFormReducer.formData || {});
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
+  const checkFormData = useSelector((state) => state.gc.GarbageApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {
-    return state.challan.ChallanApplicationFormReducer.formData && state.challan.ChallanApplicationFormReducer.formData[config?.key]
-      ? state.challan.ChallanApplicationFormReducer.formData[config?.key]
+    return state.gc.GarbageApplicationFormReducer.formData && state.gc.GarbageApplicationFormReducer.formData[config?.key]
+      ? state.gc.GarbageApplicationFormReducer.formData[config?.key]
       : {};
   });
 
@@ -68,7 +70,7 @@ const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const onFormValueChange = (setValue = true, data) => {
     console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_ChallanApplication_FORM(config.key, data));
+      dispatch(UPDATE_GarbageApplication_FORM(config.key, data));
     }
   };
 
@@ -92,4 +94,4 @@ const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default ChallanStepFormThree;
+export default NewADSStepFormThree;

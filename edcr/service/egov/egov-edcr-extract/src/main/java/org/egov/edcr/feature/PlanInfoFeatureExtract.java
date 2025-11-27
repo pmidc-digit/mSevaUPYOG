@@ -754,16 +754,19 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (StringUtils.isNotBlank(khasraNo)) {
 			pi.setKhasraNo(khasraNo);
 		} else {
-			pl.addError(DxfFileConstants.KHASRA_NO, "KHASRA_NO is not defined in the Plan Information Layer");
+			pl.addError(DxfFileConstants.KHASRA_NO, "KHASRA NO is not defined in the Plan Information Layer");
 		}
 
 		String district = planInfoProperties.get(DxfFileConstants.DISTRICT);
 		if (StringUtils.isNotBlank(district))
 			pi.setDistrict(district);
 
-		String city = planInfoProperties.get(DxfFileConstants.DISTRICT);
-		if (StringUtils.isNotBlank(city))
+		String city = planInfoProperties.get(DxfFileConstants.CITY);
+		if (StringUtils.isNotBlank(city)) {
 			pi.setCity(city);
+		}else {
+			pl.addError(DxfFileConstants.CITY, "CITY is not defined in the Plan Information Layer");
+		}
 
 //		String mauza = planInfoProperties.get(DxfFileConstants.MAUZA);
 //		if (StringUtils.isNotBlank(mauza))

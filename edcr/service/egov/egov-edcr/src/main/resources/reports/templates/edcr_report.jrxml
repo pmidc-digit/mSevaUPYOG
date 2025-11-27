@@ -823,7 +823,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{planInformation}.getDistrict()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{planInformation}.getCity()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="142" y="186" width="406" height="21" uuid="34708d02-2315-4393-84d4-4c61443c9a75"/>

@@ -1136,12 +1136,15 @@ public class PlanReportService {
                                         "", blkName + "FrontRearSideYardDetails"));
                         valuesMap.put(blkName + "FrontRearSideYardDetails", combinedDetails);
                     } else {
-                    	rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear and Side");
-                        // 🏢 NON-RESIDENTIAL → same as your old behavior (Front + Rear only)
-                        drb.addConcatenatedReport(
-                                getSub(combined, j, j + ".Front/Rear Yard Details", SIDENUMBER_NAME,
-                                        "", blkName + "FrontRearYardDetails"));
-                        valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+                    	if(rear!=null) {
+                    		rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear and Side");
+                            // 🏢 NON-RESIDENTIAL → same as your old behavior (Front + Rear only)
+                            drb.addConcatenatedReport(
+                                    getSub(combined, j, j + ".Front/Rear Yard Details", SIDENUMBER_NAME,
+                                            "", blkName + "FrontRearYardDetails"));
+                            valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+                    	}
+                    	
                     }
 
                     // Combine remarks (if any) and add footer

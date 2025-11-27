@@ -553,11 +553,11 @@ public class AdditionalFeature extends FeatureProcess {
             }
 
             // If height exceeds allowed max
-            if (!isAccepted) {
-                errors.put("BUILDING_HEIGHT_ERROR",
-                        "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
-                pl.addErrors(errors);
-            }
+//            if (!isAccepted) {
+//                errors.put("BUILDING_HEIGHT_ERROR",
+//                        "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
+//                pl.addErrors(errors);
+//            }
 
             // END NEW/CHANGED
             

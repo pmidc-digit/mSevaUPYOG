@@ -315,10 +315,12 @@ public class PlanService {
         
         String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
         
-        if(!plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
-        	//"Invalid ULB: Plan ULB and login ULB must be the same."
-        	plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
+        if (plan.getPlanInformation().getCity() == null 
+                || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
+
+            plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
         }
+
         
         LOG.info("Setting mdms master data");
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());

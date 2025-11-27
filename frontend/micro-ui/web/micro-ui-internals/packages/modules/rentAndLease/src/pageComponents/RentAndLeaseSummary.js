@@ -73,7 +73,7 @@ function RentAndLeaseSummary({ t }) {
 
 
   const propertyLabels = {
-    propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
+    // propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
     propertyId: t("RENT_LEASE_PROPERTY_ID"),
     propertyName: t("RAL_LEASE_SELECTED_PROPERTY"),
     usageCategory: t("RAL_LEASE_USAGE_CATEGORY"),

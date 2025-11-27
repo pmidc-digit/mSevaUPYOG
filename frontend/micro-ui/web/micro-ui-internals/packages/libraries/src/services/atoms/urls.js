@@ -135,6 +135,7 @@ const Urls = {
     update_new: "/challan-generation/challan/_update",
   },
 
+  // Todo
   rentAndLease: {
     search: "/echallan-services/eChallan/v1/_search",
     create: "/echallan-services/eChallan/v1/_create?",

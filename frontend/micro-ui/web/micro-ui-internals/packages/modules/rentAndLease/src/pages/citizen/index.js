@@ -5,7 +5,7 @@ import { Redirect, Switch, useRouteMatch } from "react-router-dom";
 // import SearchResultsComponent from "./SearchResults";
 // import MyChallanResultsComponent from "./MyChallan";
 //import BillInfo from "./SearchResults/BillInfo";
-import ApplicationDetails from "./RALApplicationDetails"
+import ApplicationDetails from "./RALApplicationDetails";
 
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
@@ -24,8 +24,8 @@ const App = () => {
           <PrivateRoute path={`${path}/search`} component={SearchChallanComponent} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
           {/* <PrivateRoute path={`${path}/new-application`} component={NewRentAndLeaseStepperForm} /> */}
-          <PrivateRoute path={`${path}/My-Properties`} component={MyChallanResultsComponent} />
-           <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={ApplicationDetails} />
+          <PrivateRoute path={`${path}/my-properties`} component={MyChallanResultsComponent} />
+          <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={ApplicationDetails} />
         </AppContainer>
       </Switch>
     </span>

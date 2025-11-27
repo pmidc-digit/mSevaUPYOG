@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
@@ -20,6 +19,11 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const dispatch = useDispatch();
   const { triggerLoader, triggerToast } = config?.currStepConfig[0];
+
+  const ownershipOptions = [
+    { code: "SINGLE", name: t("RAL_SINGLE") },
+    { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
+  ];
 
   const {
     control,
@@ -106,9 +110,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     return error.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
-  const mandatoryStyle = { color: "red" };
-
   const debounce = (func, delay) => {
     let timer;
     return (...args) => {
@@ -161,10 +162,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     }
   }, [watch("ownershipType")]);
 
-  const ownershipOptions = [
-    { code: "SINGLE", name: t("RAL_SINGLE") },
-    { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
-  ];
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
+  const mandatoryStyle = { color: "red" };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

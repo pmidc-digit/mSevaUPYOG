@@ -83,6 +83,7 @@ const useRALPropertyMDMS = (tenantId) => {
       ),
     {
       select: (data) => {
+        console.log('dataFromMDMS', data)
         const properties = data?.rentAndLease?.RLProperty || [];
 
         // Map each property into a clean object

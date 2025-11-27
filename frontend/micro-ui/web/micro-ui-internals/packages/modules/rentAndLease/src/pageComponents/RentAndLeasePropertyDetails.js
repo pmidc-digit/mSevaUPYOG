@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   TextInput,
@@ -33,7 +32,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     { name: t("ON_RENT"), code: "ON_RENT", i18nKey: "ON_RENT" },
     { name: t("ON_LEASE"), code: "ON_LEASE", i18nKey: "ON_LEASE" },
   ];
-
 
   const propertySpecificOptions = [
     { name: t("COMMERCIAL"), code: "COMMERCIAL", i18nKey: "COMMERCIAL" },
@@ -195,12 +193,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       locationType: "",
       usageCategory: "",
       propertySizeOrArea: "",
-      address: "",
-      geoLocation: null,
-      propertyImage: "",
       baseRent: "",
       securityDeposit: "",
-      tax_applicable: null,
       refund_applicable_on_discontinuation: null,
       penaltyType: "",
       latePayment: "",
@@ -214,9 +208,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       termsAndConditions: "",
       amountToBeRefunded: "",
       selectedProperty: null,
+      // address: "",
+      // geoLocation: null,
+      // propertyImage: "",
+      // tax_applicable: null,
     },
   });
-
 
   const selectedPropertyType = watch("propertyType");
   const selectedPropertySpecific = watch("propertySpecific");
@@ -249,9 +246,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     if (!errors[fieldName]) return null;
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
-
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
-  const mandatoryStyle = { color: "red" };
 
   const handlePropertySelect = (property) => {
     setValue("selectedProperty", property);
@@ -292,17 +286,17 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     if (currentStepData?.propertyDetails) {
       const propertyDetails = currentStepData.propertyDetails;
 
-      Object.keys(propertyDetails).forEach((key) => {
+      Object.keys(propertyDetails)?.forEach((key) => {
         setValue(key, propertyDetails[key], { shouldValidate: true });
       });
     }
   }, [currentStepData, setValue]);
 
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
+  const mandatoryStyle = { color: "red" };
   const checkStyles = { marginBottom: "15px" };
   const radioStyles = { width: "18px", height: "18px", cursor: "pointer" };
   const wrapper = { display: "flex", alignItems: "center", gap: "10px", margin: "10px 0px 20px 0px" };
-
-
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -544,7 +538,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             control={control}
             name="securityDeposit"
             rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />}
+            render={({ value, onChange }) => (
+              <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
+            )}
           />
         </div>
       </LabelFieldPair>
@@ -591,8 +587,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             name="refund_applicable_on_discontinuation"
             render={({ value, onChange }) => (
               <div style={wrapper}>
-                <input type="radio" checked={value === true} onChange={() => onChange(true)} style={radioStyles} disabled/> {t("YES")}
-                <input type="radio" checked={value === false} onChange={() => onChange(false)} style={radioStyles} disabled/> {t("NO")}
+                <input type="radio" checked={value === true} onChange={() => onChange(true)} style={radioStyles} disabled /> {t("YES")}
+                <input type="radio" checked={value === false} onChange={() => onChange(false)} style={radioStyles} disabled /> {t("NO")}
               </div>
             )}
           />

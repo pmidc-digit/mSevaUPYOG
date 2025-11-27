@@ -191,6 +191,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       {!props.isSearch && (
         <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.businessService} />
+
           <div>
             {
               <FilterComponent

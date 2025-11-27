@@ -77,14 +77,16 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
     clearParams();
   }, []);
 
+
+
   const links = [
     {
       link: `${matchPath}/search`,
       i18nKey: t("UC_SEARCH_AND_PAY"),
     },
     {
-      link: `${matchPath}/My-Challans`,
-      i18nKey: t("UC_MY_CHALLANS"),
+      link: `${matchPath}/my-properties`,
+      i18nKey: t("UC_MY_PROPERTIES"),
     },
     {
       link: `${matchPath}/new-application`,

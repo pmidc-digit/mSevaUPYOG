@@ -9,6 +9,8 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   const { register, handleSubmit, reset, watch, control } = useForm({
     defaultValues: searchParams,
   });
+
+  console.log('searchFields', searchFields)
   const mobileView = innerWidth <= 640;
 
   const onSubmitInput = (data) => {
@@ -99,6 +101,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   <div>{clearAll()}</div>
                 </div>
               )}
+
               {type === "desktop" && !mobileView && (
                 <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
                   <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />

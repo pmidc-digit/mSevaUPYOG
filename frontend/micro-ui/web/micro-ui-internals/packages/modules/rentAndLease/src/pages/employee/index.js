@@ -2,9 +2,9 @@ import React from "react";
 import { RentAndLeaseModule } from "../../Module";
 import Inbox from "./Inbox";
 import { Switch, useLocation, Link } from "react-router-dom";
-import { PrivateRoute } from "@mseva/digit-ui-react-components";
+import { PrivateRoute, BackButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import RALApplicationDetails from "./RALApplicationDetails"
+import RALApplicationDetails from "./RALApplicationDetails";
 // import EmployeeChallan from "../../EmployeeChallan";
 // import CreateChallen from "../employee/CreateChallan";
 // import MCollectAcknowledgement from "../employee/EmployeeChallanAcknowledgement";
@@ -63,12 +63,15 @@ const EmployeeApp = ({ path, url, userType }) => {
     <Switch>
       <React.Fragment>
         <div className="ground-container">
-          <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
+          {/* <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
             <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
               {t("ES_COMMON_HOME")}
             </Link>{" "}
             / <span>{location.pathname === "/digit-ui/employee/mcollect/inbox" ? t("UC_SEARCH_HEADER") : t("UC_COMMON_HEADER_SEARCH")}</span>
-          </p>
+          </p> */}
+          <div style={{ marginLeft: "-4px", display: "flex", alignItems: "center" }}>
+            <BackButton location={location} />
+          </div>
           <PrivateRoute exact path={`${path}/`} component={() => <RentAndLeaseModule matchPath={path} userType={userType} />} />
           <PrivateRoute
             path={`${path}/inbox`}
@@ -89,7 +92,6 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox parentRoute={path} businessService="PT" middlewareSearch={searchMW} initialStates={inboxInitialState} isInbox={false} />
             )}
           />
-          
           <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} />
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
           <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />

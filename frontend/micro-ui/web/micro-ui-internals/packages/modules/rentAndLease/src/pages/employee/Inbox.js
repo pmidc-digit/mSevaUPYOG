@@ -118,6 +118,8 @@ const Inbox = ({
 
   const handlePageSizeChange = (e) => setPageSize(Number(e.target.value));
 
+
+  //Todo : do for propert Number 
   const getSearchFields = () => [
     { label: t("UC_CHALLAN_NO"), name: "challanNo" },
     {
@@ -153,7 +155,7 @@ const Inbox = ({
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("ACTION_TEST_NATIONAL_MCOLLECT")}</Header>}
+          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
           <DesktopInbox
             businessService={businessService}
             data={formedData}

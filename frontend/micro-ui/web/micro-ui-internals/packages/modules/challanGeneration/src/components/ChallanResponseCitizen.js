@@ -2,7 +2,7 @@ import { Banner, Card, CardText, ActionBar, SubmitBar, Toast } from "@mseva/digi
 import React, { useState, Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import { ChallanData } from "../utils";
+import { ChallanData, getLocationName } from "../utils";
 import { Loader } from "./Loader";
 
 const ChallanResponseCitizen = (props) => {
@@ -108,6 +108,8 @@ const ChallanResponseCitizen = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: ndcCode } });
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -116,7 +118,7 @@ const ChallanResponseCitizen = (props) => {
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application } }, "challan-notice");
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application,location } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });

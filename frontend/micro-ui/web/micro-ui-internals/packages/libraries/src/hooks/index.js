@@ -404,12 +404,17 @@ import useLayoutBuildingType from "./obps/useLayoutBuildingType";
 import useLayoutBuildingCategory from "./obps/useLayoutBuildingCategory";
 import useLayoutRoadType from "./obps/useLayoutRoadType";
 import useLayoutType from "./obps/useLayoutType";
-import {useLayoutSearchApplication} from "./obps/useSearchApplication";
-import {useLayoutCitizenSearchApplication} from "./obps/useLayoutCitizenSearchApplication";
+import { useLayoutSearchApplication } from "./obps/useSearchApplication";
+import { useLayoutCitizenSearchApplication } from "./obps/useLayoutCitizenSearchApplication";
 import useLayoutDocumentSearch from "./obps/useLayoutDocumentSearch";
+
+// GC
+import useGCInbox from "./gc/useInbox";
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
+import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile } from "./obps/useCLUSearchApplication";
+import useCLUInbox from "./obps/useCLUInbox";
 
 const pgr = {
   useComplaintDetails,
@@ -625,18 +630,21 @@ const obps = {
   useBPACalculation,
   useLayoutInbox,
   useLayoutFeeCalculator,
-  useLayoutBuildingType,  
-  useLayoutBuildingCategory,  
-  useLayoutRoadType, 
+  useLayoutBuildingType,
+  useLayoutBuildingCategory,
+  useLayoutRoadType,
   useLayoutType,
   useLayoutSearchApplication,
-  useLayoutBuildingType,  
-  useLayoutBuildingCategory,  
-  useLayoutRoadType, 
+  useLayoutBuildingType,
+  useLayoutBuildingCategory,
+  useLayoutRoadType,
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
-  useCLUFeeCalculator
-
+  useCLUFeeCalculator,
+  useCLUSearchApplication,
+  useCLUCitizenSearchApplication,
+  useCLUSearchApplicationByIdOrMobile,
+  useCLUInbox,
 };
 
 const events = {
@@ -827,11 +835,16 @@ const ws = {
 const reports = {
   useReportMeta,
 };
+
 const pgrAi = {
   useCreate,
   useSearchPGRAI,
   useFilterEmployee,
   useApplicationDetails,
+};
+
+const gc = {
+  useInbox: useGCInbox,
 };
 
 const Hooks = {
@@ -888,6 +901,7 @@ const Hooks = {
   survey,
   noc,
   ws,
+  gc,
   useCustomMDMS,
   useCustomAPIHook,
   reports,

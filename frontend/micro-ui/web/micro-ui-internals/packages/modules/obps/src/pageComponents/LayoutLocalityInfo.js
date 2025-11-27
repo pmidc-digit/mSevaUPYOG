@@ -64,6 +64,7 @@ useEffect(() => {
               control={control}
               name={"layoutAreaType"}
               rules={{ required: t("REQUIRED_FIELD") }}
+              defaultValue={currentStepData?.siteDetails?.layoutAreaType || null}
               render={(props) => (
                 <Dropdown 
                   className="form-field" 
@@ -89,10 +90,11 @@ useEffect(() => {
             <Controller
               control={control}
               name="layoutSchemeName"
+               defaultValue={currentStepData?.siteDetails?.schemeType || ""}
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
-              defaultValue={""}
+           
               render={(props) => (
                 <TextInput
                   className="form-field"
@@ -119,6 +121,7 @@ useEffect(() => {
             <Controller
               control={control}
               name="layoutApprovedColonyName"
+               defaultValue={currentStepData?.siteDetails?.layoutApprovedColonyName || ""}
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
@@ -147,8 +150,10 @@ useEffect(() => {
               <Controller
                 control={control}
                 name={"layoutNonSchemeType"}
+                defaultValue={currentStepData?.siteDetails?.layoutNonSchemeType || null}
                 rules={{
                 required: t("REQUIRED_FIELD"),
+                
                 }}
                 render={(props) => (
                 <Dropdown

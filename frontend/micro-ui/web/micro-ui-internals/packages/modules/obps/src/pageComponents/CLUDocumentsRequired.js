@@ -32,7 +32,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   //console.log("formData here =====", formData);
 
   const coordinates = useSelector(function (state) {
-    return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+    return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
 
   useEffect(() => {
@@ -46,12 +46,6 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   console.log("geocoordinates", geocoordinates);
 
   const currentStepData = useSelector((state) => state?.obps?.OBPSFormReducer?.formData) || {};
-
-  // const isVacant=currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
-  // //console.log("isVacant", isVacant);
-
-  // const filteredDocuments= isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
-  // //console.log("filteredDocuments", filteredDocuments);
 
   const handleSubmit = () => {
     let document = formData.documents;

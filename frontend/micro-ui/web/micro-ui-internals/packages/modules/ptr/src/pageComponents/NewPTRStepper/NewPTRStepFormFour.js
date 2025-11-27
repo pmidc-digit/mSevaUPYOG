@@ -5,11 +5,13 @@ import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { UPDATE_PTRNewApplication_FORM, RESET_PTR_NEW_APPLICATION_FORM } from "../../redux/action/PTRNewApplicationActions";
+import { Loader } from "../../components/Loader";
 
 const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const { path } = useRouteMatch();
   const [showToast, setShowToast] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [error, setError] = useState("");
   const history = useHistory();
   // const tenantId = window.localStorage.getItem("Citizen.tenant-id");
@@ -96,6 +98,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
+    setLoader(true);
     const { CreatedResponse, ownerDetails, petDetails: petDetailsFromData, documents: documentWrapper } = data;
     const {
       owner, // excluded
@@ -156,12 +159,17 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ownerName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`, //change to ownerName
       mobileNumber: ownerDetails?.mobileNumber,
     };
-
-    const response = await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
-    if (response?.ResponseInfo?.status === "successful") {
-      return { isSuccess: true, response };
-    } else {
-      return { isSuccess: false, response };
+    try {
+      const response = await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
+      setLoader(false);
+      if (response?.ResponseInfo?.status === "successful") {
+        return { isSuccess: true, response };
+      } else {
+        return { isSuccess: false, response };
+      }
+    } catch (error) {
+      setLoader(false);
+      console.log("error");
     }
   };
 
@@ -238,6 +246,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       </ActionBar>
 
       {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {loader && <Loader page={true} />}
     </React.Fragment>
   );
 };

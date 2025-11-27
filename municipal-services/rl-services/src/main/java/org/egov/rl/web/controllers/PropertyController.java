@@ -1,0 +1,44 @@
+package org.egov.rl.web.controllers;
+
+import java.util.List;
+
+import org.egov.common.contract.response.ResponseInfo;
+import org.egov.rl.models.PropertyReportSearchRequest;
+import org.egov.rl.models.PropertyReportSearchResponse;
+import org.egov.rl.models.RLProperty;
+import org.egov.rl.service.SearchPropertyService;
+import org.egov.rl.util.ResponseInfoFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Controller
+@RequestMapping("/property")
+@Slf4j
+public class PropertyController {
+
+	@Autowired
+    private SearchPropertyService searchPropertyService;
+	
+	@Autowired
+	private ResponseInfoFactory responseInfoFactory;
+	   
+	
+	@GetMapping("/_list")
+    public ResponseEntity<PropertyReportSearchResponse> vacantProperty(@RequestBody PropertyReportSearchRequest propertyReportSearchRequest) {
+    	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(propertyReportSearchRequest.getRequestInfo(), true);
+		List<RLProperty> propertyList=searchPropertyService.propertyListSearch(propertyReportSearchRequest);
+        PropertyReportSearchResponse response = PropertyReportSearchResponse.builder()
+                .responseInfo(resInfo)
+                .property(propertyList)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);	
+    }  
+
+}

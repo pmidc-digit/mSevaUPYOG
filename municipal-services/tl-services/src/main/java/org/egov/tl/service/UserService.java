@@ -110,15 +110,8 @@ public class UserService{
                     addNonUpdatableFields(user,userDetailResponse.getUser().get(0));
                    if (isBPARoleAddRequired) {
                         List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
-                        List<String> bpaRolesList = Arrays.asList("BPA_ARCHITECT", "BPA_ENGINEER", "BPA_TOWNPLANNER", "BPA_SUPERVISOR");
-                        if(tradeLicense.getApplicationType() !=  null && 
-                        		tradeLicense.getApplicationType().toString().equalsIgnoreCase(TLConstants.APPLICATION_TYPE_UPGRADE)) {
-                        	List<Role> userRoles = user.getRoles().stream()
-                        	.filter(userRole -> !(bpaRolesList.contains(userRole.getCode()) 
-                        			&& userRole.getTenantId().equalsIgnoreCase(tradeLicense.getTenantId())))
-                        	.collect(Collectors.toList());
-                        	user.setRoles(userRoles);
-                        }
+                     // Upgrade the professional role in case of Upgrade application type
+                        updateProfessionalUserRoles(tradeLicense, user, licenseeTyperRole);
                         for (String rolename : licenseeTyperRole) {
                          // Add BPA_ARCHITECT role with state level tenantId
                             if (rolename.equalsIgnoreCase(BPA_ARCHITECT))
@@ -494,4 +487,23 @@ public class UserService{
         return uuids;
     }
 
+    public void updateProfessionalUserRoles(TradeLicense tradeLicense,OwnerInfo user, List<String> licenseeTyperRole) {
+    	List<String> bpaRolesList = Arrays.asList("BPA_ARCHITECT", "BPA_ENGINEER", "BPA_TOWNPLANNER", "BPA_SUPERVISOR");
+        if(tradeLicense.getApplicationType() !=  null && 
+        		tradeLicense.getApplicationType().toString().equalsIgnoreCase(TLConstants.APPLICATION_TYPE_UPGRADE)) {
+        	List<Role> userRoles = user.getRoles();
+        	if(licenseeTyperRole.contains(BPA_ARCHITECT)) {
+        		userRoles = userRoles.stream()
+                    	.filter(userRole -> !bpaRolesList.contains(userRole.getCode()))
+                    	.collect(Collectors.toList());
+        	}else {
+        		userRoles = userRoles.stream()
+                    	.filter(userRole -> !(bpaRolesList.contains(userRole.getCode()) 
+                    			&& userRole.getTenantId().equalsIgnoreCase(tradeLicense.getTenantId())))
+                    	.collect(Collectors.toList());
+        	}
+        	user.setRoles(userRoles);
+        }
+    }
+    
 }

@@ -51,6 +51,29 @@ public class Connection {
 	@JsonProperty("applicationStatus")
 	private String applicationStatus = null;
 
+	@SafeHtml
+	@JsonProperty("propertyType")
+	private String propertyType = null;
+
+	@SafeHtml
+	@JsonProperty("plotSize")
+	private String plotSize = null;
+
+	@SafeHtml
+	@JsonProperty("location")
+	private String location = null;
+
+	@SafeHtml
+	@JsonProperty("Frequency_of_Garbage_Collection")
+	private String frequency_of_garbage_collection = null;
+
+	@SafeHtml
+	@JsonProperty("typeOfWaste")
+	private String typeOfWaste = null;
+
+
+
+
 	/**
 	 * Gets or Sets status
 	 */

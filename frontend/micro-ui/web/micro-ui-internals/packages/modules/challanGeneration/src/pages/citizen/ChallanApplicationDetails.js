@@ -74,8 +74,6 @@ const ChallanApplicationDetails = () => {
   const { tenants } = storeData || {};
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
-  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
-  const [printing, setPrinting] = useState(false);
 
   // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
   //   tenantId,
@@ -88,11 +86,9 @@ const ChallanApplicationDetails = () => {
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("search ", responseData);
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -142,15 +138,14 @@ const ChallanApplicationDetails = () => {
   const dowloadOptions = [];
 
   async function printChallanNotice({ tenantId, payments, ...params }) {
-    if (chbPermissionLoading) return;
-    setChbPermissionLoading(true);
+    setLoader(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
+
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -158,23 +153,23 @@ const ChallanApplicationDetails = () => {
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      setLoader(false);
       window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setChbPermissionLoading(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
     }
   }
 
   async function printChallanReceipt({ tenantId, payments, ...params }) {
-    console.log("payments", payments);
-    if (printing) return;
-    setPrinting(true);
+    setLoader(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
+
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -186,9 +181,11 @@ const ChallanApplicationDetails = () => {
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      setLoader(false);
       window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setPrinting(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
     }
   }
   dowloadOptions.push({

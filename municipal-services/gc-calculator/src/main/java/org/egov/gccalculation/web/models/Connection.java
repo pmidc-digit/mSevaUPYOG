@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.egov.gccalculation.web.models.workflow.ProcessInstance;
+import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -46,6 +47,27 @@ public class Connection {
 
 	@JsonProperty("applicationStatus")
 	private String applicationStatus = null;
+
+
+	@JsonProperty("propertyType")
+	private String propertyType = null;
+
+
+	@JsonProperty("plotSize")
+	private String plotSize = null;
+
+
+	@JsonProperty("location")
+	private String location = null;
+
+
+	@JsonProperty("Frequency_of_Garbage_Collection")
+	private String frequency_of_garbage_collection = null;
+
+
+	@JsonProperty("typeOfWaste")
+	private String typeOfWaste = null;
+
 
 	/**
 	 * Gets or Sets status

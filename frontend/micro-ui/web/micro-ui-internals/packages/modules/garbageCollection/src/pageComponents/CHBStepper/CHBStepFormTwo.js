@@ -1,27 +1,28 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_ChallanApplication_FORM } from "../../../redux/action/ChallanApplicationActions";
+import { UPDATE_GarbageApplication_FORM } from "../../../redux/action/GarbageApplicationActions";
 import { useState } from "react";
-import OffenceDetails from "../OffenceDetails";
+import CHBCitizenDetailsTwo from "../CHBCitizenDetailsNew";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
-const ChallanStepFormTwo = ({ config, onBackClick, onGoNext }) => {
+const NewADSStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.challan.ChallanApplicationFormReducer.formData;
+    return state.gc.GarbageApplicationFormReducer.formData;
   });
 
-  console.log("currentStepData", currentStepData);
-
   function goNext(data) {
-    dispatch(UPDATE_ChallanApplication_FORM(config.key, data));
+    dispatch(UPDATE_GarbageApplication_FORM(config.key, data));
     onGoNext();
+    return;
+    setError(`Please fill the following field: ${missingFields[0]}`);
+    setShowToast(true);
   }
 
   function onGoBack(data) {
@@ -35,11 +36,11 @@ const ChallanStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   return (
     <React.Fragment>
-      <OffenceDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+      <CHBCitizenDetailsTwo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };
 
-export default ChallanStepFormTwo;
+export default NewADSStepFormTwo;

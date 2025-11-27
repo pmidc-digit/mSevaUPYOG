@@ -1,40 +1,32 @@
 import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
-import EXIF from "exif-js";
 
-const ChallanDocuments = ({
-  t,
-  config,
-  onSelect,
-  userType,
-  formData,
-  setError: setFormError,
-  clearErrors: clearFormErrors,
-  formState,
-  data,
-  isLoading,
-  error,
-  setError,
-}) => {
-  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
-  // const [error, setError] = useState(null);
+const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const [documents, setDocuments] = useState(formData?.documents?.documents);
+  const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
+
+  console.log("data=====", data);
 
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
+    console.log("documentStep config.key", documentStep);
     onSelect(config.key, documentStep);
   };
+
   const onSkip = () => onSelect();
   function onAdd() {}
 
   useEffect(() => {
     let count = 0;
-    data?.Challan?.Documents?.map((doc) => {
+    data?.CHB?.Documents?.map((doc) => {
       doc.hasDropdown = true;
 
       let isRequired = false;
@@ -47,16 +39,12 @@ const ChallanDocuments = ({
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
-  useEffect(() => {
-    console.log("documents check again", documents);
-  }, [documents]);
-
   return (
     <div>
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.Challan?.Documents?.map((document, index) => {
+          {data?.CHB?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -71,7 +59,7 @@ const ChallanDocuments = ({
               />
             );
           })}
-          {error && <Toast isDleteBtn={true} label={error} onClose={() => setError(null)} error />}
+          {error && <Toast label={error} onClose={() => setError(null)} error />}
         </FormStep>
       ) : (
         <Loader />
@@ -82,6 +70,7 @@ const ChallanDocuments = ({
 
 function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  // console.log("filetetetetet",filteredDocument, documents, doc);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const [selectedDocument, setSelectedDocument] = useState(
@@ -109,76 +98,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const fileType = file.type.toLowerCase();
-
-    // ✅ Case 1: Handle image files with EXIF
-    if (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png")) {
-      const reader = new FileReader();
-      reader.onload = function () {
-        const img = new Image();
-        img.onload = function () {
-          EXIF.getData(img, function () {
-            const lat = EXIF.getTag(this, "GPSLatitude");
-            const lon = EXIF.getTag(this, "GPSLongitude");
-            const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
-            const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
-
-            let latitude = null;
-            let longitude = null;
-
-            if (lat && lon) {
-              latitude = convertDMSToDD(lat, latRef);
-              longitude = convertDMSToDD(lon, lonRef);
-              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
-            } else {
-              console.warn("⚠️ No GPS data found in image.");
-            }
-
-            // ✅ Save file + coordinates
-            setFile(file);
-            updateDocument(selectedDocument, { latitude, longitude });
-          });
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    }
-    // ✅ Case 2: Handle PDFs or other file types
-    else {
-      console.log("📄 Non-image file uploaded, skipping EXIF read");
-      setFile(file);
-      updateDocument(selectedDocument, {}); // no lat/long
-    }
+    setFile(e.target.files[0]);
   }
-
-  // helper function to avoid repeating code
-  function updateDocument(selectedDocument, extraFields = {}) {
-    setDocuments((prev = []) => {
-      const updated = prev.map((item) => (item?.documentType === selectedDocument?.code ? { ...item, ...extraFields } : item));
-
-      if (!updated.some((i) => i?.documentType === selectedDocument?.code)) {
-        updated.push({
-          documentType: selectedDocument?.code,
-          filestoreId: null,
-          documentUid: null,
-          ...extraFields,
-        });
-      }
-
-      return updated;
-    });
-  }
-
-  function convertDMSToDD(dms, ref) {
-    const [degrees, minutes, seconds] = dms;
-    let dd = degrees + minutes / 60 + seconds / 3600;
-    if (ref === "S" || ref === "W") dd *= -1;
-    return dd;
-  }
-
   const { dropdownData } = doc;
 
   var dropDownData = dropdownData;
@@ -186,48 +107,32 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const [isHidden, setHidden] = useState(false);
   const [getLoading, setLoading] = useState(false);
 
-  // useEffect(() => {
-  //   if (selectedDocument?.code) {
-  //     setDocuments((prev) => {
-  //       const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-  //       if (uploadedFile?.length === 0 || uploadedFile === null) {
-  //         return filteredDocumentsByDocumentType;
-  //       }
-
-  //       const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
-  //       return [
-  //         ...filteredDocumentsByFileStoreId,
-  //         {
-  //           documentType: selectedDocument?.code,
-  //           filestoreId: uploadedFile,
-  //           documentUid: uploadedFile,
-  //         },
-  //       ];
-  //     });
-  //   }
-  // }, [uploadedFile, selectedDocument]);
-
   useEffect(() => {
     if (selectedDocument?.code) {
+      console.log("selectedDocument", documents);
       setDocuments((prev) => {
-        return prev.map((item) => {
-          if (item?.documentType === selectedDocument?.code) {
-            // ✅ Preserve existing fields (like latitude, longitude)
-            return {
-              ...item,
-              filestoreId: uploadedFile,
-              documentUid: uploadedFile,
-            };
-          }
-          return item;
-        });
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+
+        if (uploadedFile?.length === 0 || uploadedFile === null) {
+          return filteredDocumentsByDocumentType;
+        }
+
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+        return [
+          ...filteredDocumentsByFileStoreId,
+          {
+            documentType: selectedDocument?.code,
+            filestoreId: uploadedFile,
+            documentUid: uploadedFile,
+          },
+        ];
       });
     }
   }, [uploadedFile, selectedDocument]);
 
   useEffect(() => {
     if (documents?.length > 0) {
+      console.log("documents", documents);
       handleSubmit();
     }
   }, [documents]);
@@ -236,8 +141,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     if (action === "update") {
       const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
       const docType = dropDownData
-        .filter((e) => e.code === originalDoc?.documentType)
-        .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
+        ?.filter((e) => e.code === originalDoc?.documentType)
+        ?.map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
       if (!docType) setHidden(true);
       else {
         setSelectedDocument(docType);
@@ -286,8 +191,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
 
   return (
-    <div style={{ marginBottom: "24px" }}>
-      {/* {doc?.hasDropdown ? (
+    <div style={{ marginBottom: "24px", width: "50%" }}>
+      {doc?.hasDropdown ? (
         <LabelFieldPair style={{ display: "inline" }}>
           <CardLabel style={{ width: "auto" }}>
             {t(doc?.code)} {doc?.required && " *"}
@@ -296,22 +201,22 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             className="form-field"
             selected={selectedDocument}
             style={{ width: "100%" }}
-            option={doc?.dropdownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+            option={doc?.dropdownData?.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handlePTRSelectDocument}
             optionKey="i18nKey"
             t={t}
           />
         </LabelFieldPair>
-      ) : null} */}
-      {/* {!doc?.hasDropdown ? (
+      ) : null}
+      {!doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"}
+          </CardLabel>
         </LabelFieldPair>
-      ) : null} */}
+      ) : null}
       <LabelFieldPair style={{ display: "inline" }}>
-        <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
-          {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
-        </CardLabel>
+        <CardLabel className="card-label-smaller"></CardLabel>
         <div className="field" style={{ width: "100%" }}>
           <UploadFile
             onUpload={selectfile}
@@ -333,4 +238,4 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   );
 }
 
-export default ChallanDocuments;
+export default CHBSelectProofIdentity;

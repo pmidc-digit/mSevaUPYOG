@@ -1,25 +1,25 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_ChallanApplication_FORM } from "../../../redux/action/ChallanApplicationActions";
+import { UPDATE_GarbageApplication_FORM } from "../../../redux/action/GarbageApplicationActions";
 import { useState } from "react";
-import OffenderDetails from "../OffenderDetails";
+import CHBCitizenOne from "../CHBCitizenSecond";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
-const ChallanStepFormOne = ({ config, onGoNext, onBackClick }) => {
+const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.challan.ChallanApplicationFormReducer.formData;
+    return state.gc.GarbageApplicationFormReducer.formData;
   });
 
   function goNext(data) {
     console.log("data aa rea", data);
-    dispatch(UPDATE_ChallanApplication_FORM(config.key, data));
+    dispatch(UPDATE_GarbageApplication_FORM(config.key, data));
     onGoNext();
   }
 
@@ -34,10 +34,10 @@ const ChallanStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   return (
     <React.Fragment>
-      <OffenderDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+      <CHBCitizenOne onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };
 
-export default ChallanStepFormOne;
+export default NewADSStepFormOne;

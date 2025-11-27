@@ -26,6 +26,7 @@ import {
   GarbageCollectionModule,
   GarbageCollectionLinks,
   initGarbageCollectionComponents,
+  GarbageReducers,
 } from "@mseva/digit-ui-module-garbagecollection";
 import {
   RentAndLeaseModule,
@@ -219,6 +220,7 @@ const moduleReducers = (initData) => ({
   noc: NOCReducers(initData),
   obps: OBPSReducers(initData),
   challan: ChallanReducers(initData),
+  gc: GarbageReducers(initData),
 });
 
 function App() {

@@ -149,9 +149,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
   ];
 
   let result;
-  if (props.isLoading || props.isLoader) {
-    result = <Loader />;
-  } else if (data?.length === 0) {
+  if (data?.length === 0) {
     result = (
       <Card style={{ marginTop: 20 }}>
         {/* TODO Change localization key */}

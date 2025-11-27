@@ -7,6 +7,8 @@ import Status from "./Status";
 let pgrQuery = {};
 let wfQuery = {};
 
+const SEARCH_PARAMS_KEY = "swach_inbox_search_params"; // Same key as Inbox.js
+
 const Filter = (props) => {
   let { uuid } = Digit.UserService.getUser().info;
   const { t } = useTranslation();
@@ -98,6 +100,26 @@ useEffect(() => {
     }
   }
 }, [cityChange, cities]);
+
+// Sync with sessionStorage on mount to restore previously selected tenant
+useEffect(() => {
+  try {
+    const savedParams = Digit.SessionStorage.get(SEARCH_PARAMS_KEY);
+    const savedTenant = savedParams?.filters?.swachfilters?.tenants;
+    
+    if (savedTenant && cities && cities.length) {
+      const matchedCity = cities.find((city) => city.code === savedTenant);
+      if (matchedCity && matchedCity.code !== selectedTenant?.code) {
+        setSelectedTenant(matchedCity);
+        setSwachFilters((prev) => ({
+          ...prev,
+          tenants: savedTenant,
+        }));
+      }
+    }
+  } catch (e) {
+  }
+}, [cities]);
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);

@@ -314,11 +314,9 @@ export const ComplaintDetails = (props) => {
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
-        // Redirect to inbox after toast appears
-        history.push("/digit-ui/employee/swach/inbox");
-      }, 3000); // 3 seconds delay
+        history.goBack();
+      }, 3000);
 
-      // Clean up the timeout on component unmount
       return () => clearTimeout(timer);
     }
   }, [toast, history]);

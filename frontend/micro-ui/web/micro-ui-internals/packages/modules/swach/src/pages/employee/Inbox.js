@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Header } from "@mseva/digit-ui-react-components";
 import { Params_Count } from "../../constants/Employee";
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+
+const SEARCH_PARAMS_KEY = "swach_inbox_search_params";
 
 const Inbox = ({ initialStates = {} }) => {
   const { t } = useTranslation();
@@ -13,8 +15,20 @@ const Inbox = ({ initialStates = {} }) => {
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationStatus", desc: false }]);
-  // const [searchParams, setSearchParams] = useState({ filters: { wfFilters: { assignee: [{ code: "" }] } }, search: "", sort: {} });
-  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
+  const [isInitializing, setIsInitializing] = useState(true);
+  const filterChangeTimeoutRef = useRef(null);
+  
+  // Restore searchParams from sessionStorage or use initialStates
+  const getInitialSearchParams = () => {
+    try {
+      const savedParams = Digit.SessionStorage.get(SEARCH_PARAMS_KEY);
+      return savedParams || initialStates.searchParams || {};
+    } catch (e) {
+      return initialStates.searchParams || {};
+    }
+  };
+  
+  const [searchParams, setSearchParams] = useState(getInitialSearchParams);
   const [complaints, setComplaints] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   let isMobile = Digit.Utils.browser.isMobile();
@@ -22,18 +36,36 @@ const Inbox = ({ initialStates = {} }) => {
   const ttID = localStorage.getItem("punjab-tenantId");
   const sessionEmpTenant = Digit.SessionStorage.get("Employee.tenantId");
   const tenantIdCheck = sessionEmpTenant || ttID || tenantId;
+  const selectedTenant = searchParams?.filters?.swachfilters?.tenants;
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(selectedTenant || tenantIdCheck, "admin", {}, t);
 
-  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (filterChangeTimeoutRef.current) {
+        clearTimeout(filterChangeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Persist searchParams to sessionStorage whenever it changes
+  useEffect(() => {
+    if (searchParams && Object.keys(searchParams).length > 0) {
+      Digit.SessionStorage.set(SEARCH_PARAMS_KEY, searchParams);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
+    if (isInitializing) return;
+    
     (async () => {
       setIsLoading(true);
       try {
-        const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
-        const serviceCode = searchParams?.filters?.pgrQuery?.serviceCode;
-        const locality = searchParams?.filters?.pgrQuery?.locality;
-        const filteredTenentId = searchParams?.filters?.swachfilters?.tenants;
-        const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
+        const { swachfilters = {}, pgrQuery = {} } = searchParams?.filters || {};
+        const applicationStatus = swachfilters.applicationStatus?.map((e) => e.code).join(",");
+        const serviceCode = pgrQuery.serviceCode;
+        const locality = pgrQuery.locality;
+        const filteredTenentId = swachfilters.tenants;
         
         if (!filteredTenentId) {
           setIsLoading(false);
@@ -41,33 +73,32 @@ const Inbox = ({ initialStates = {} }) => {
         }
 
         // Fetch count
-        let response = await Digit.SwachService.count(filteredTenentId, {
-          ...(applicationStatus?.length > 0 ? { applicationStatus } : {}),
-          ...(serviceCode ? { serviceCode } : {}),
-          ...(locality ? { locality } : {})
+        const response = await Digit.SwachService.count(filteredTenentId, {
+          ...(applicationStatus && { applicationStatus }),
+          ...(serviceCode && { serviceCode }),
+          ...(locality && { locality })
         });
         if (response?.count) {
           setTotalRecords(response.count);
         }
 
         // Prepare pagination params
-        const paginationParams = isMobile
-          ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-          : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+        const paginationParams = {
+          limit: isMobile ? 100 : pageSize,
+          offset: isMobile ? 0 : pageOffset,
+          sortBy: sortParams?.[0]?.id,
+          sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC"
+        };
 
         // Call the inbox service
         const transformedData = await Digit.SwachService.InboxServiceApicall({
           tenantId: filteredTenentId,
           filters: {
             ...searchParams,
-            sortBy: paginationParams.sortBy,
-            sortOrder: paginationParams.sortOrder,
-            limit: paginationParams.limit,
-            offset: paginationParams.offset,
+            ...paginationParams
           }
         });
 
-        console.log("Transformed Data:", transformedData);
         setComplaints(transformedData);
       } catch (e) {
         console.error("Error fetching inbox:", e);
@@ -97,7 +128,7 @@ const Inbox = ({ initialStates = {} }) => {
       // }
       // }
     })();
-  }, [searchParams, pageOffset, pageSize, sortParams, isMobile]);
+  }, [searchParams, pageOffset, pageSize, sortParams, isMobile, isInitializing]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -113,20 +144,38 @@ const Inbox = ({ initialStates = {} }) => {
   };
 
   const handleFilterChange = (filterParam) => {
-    setSearchParams({ ...searchParams, filters: filterParam });
+    // Preserve tenant from sessionStorage if filter doesn't have one
+    if (!filterParam?.swachfilters?.tenants) {
+      try {
+        const savedParams = Digit.SessionStorage.get(SEARCH_PARAMS_KEY);
+        const savedTenant = savedParams?.filters?.swachfilters?.tenants;
+        if (savedTenant) {
+          filterParam.swachfilters.tenants = savedTenant;
+        }
+      } catch (e) {
+      }
+    }
+    
+    // Clear any pending filter changes
+    if (filterChangeTimeoutRef.current) {
+      clearTimeout(filterChangeTimeoutRef.current);
+    }
+    
+    // Debounce filter changes during initialization to prevent multiple API calls
+    if (isInitializing) {
+      filterChangeTimeoutRef.current = setTimeout(() => {
+        setSearchParams({ ...searchParams, filters: filterParam });
+        setIsInitializing(false);
+      }, 300);
+    } else {
+      setSearchParams({ ...searchParams, filters: filterParam });
+    }
   };
 
   const onSearch = (params = "") => {
     setSearchParams({ ...searchParams, search: params });
   };
 
-  // Hook call removed - now fetching in useEffect
-  // let { data: complaints, isLoading, refetch } = Digit.Hooks.swach.useInbox({
-  //   tenantId: tenantIdCheck,
-  //   filters: { ...searchParams, ...paginationParams, sortParams },
-  //   config: {},
-  // });
-console.log("Complaints Data:", complaints);
   if (complaints?.table?.length !== null) {
     if (isMobile) {
       return (

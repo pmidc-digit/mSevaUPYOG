@@ -372,9 +372,8 @@ if(userType === 'citizen') {
               onSubmit={() => {
                 const appDate= new Date();
                 const proposedDate= format(addDays(appDate, slaData?.slaDays), 'yyyy-MM-dd').toString();
-console.log("disconnectionData",disconnectionData)
                 if( convertDateToEpoch(disconnectionData?.date)  <= convertDateToEpoch(proposedDate)){
-                  setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE"});
+                  setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE_ERROR"});
                   setTimeout(() => {
                     setError(false);
                   }, 3000);  

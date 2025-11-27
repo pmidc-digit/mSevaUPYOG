@@ -8,7 +8,7 @@ import _, { findIndex } from "lodash";
 const EmployeeSideBar = () => {
   const sidebarRef = useRef(null);
   const { isLoading, data } = Digit.Hooks.useAccessControl();
-  console.log("Sidebar Data: ",data);
+  // console.log("Sidebar Data: ",data);
   const [search, setSearch] = useState("");
   const { t } = useTranslation();
   useEffect(() => {

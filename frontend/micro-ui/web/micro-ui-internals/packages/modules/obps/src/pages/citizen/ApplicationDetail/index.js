@@ -124,7 +124,7 @@ let License = LicenseData?.Licenses?.[0];
 const qualificationType =
   LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
 
-  console.log(qualificationType, "kkkkkkkk");
+  console.log("LicenseData",License);
 
 const isArchitect = qualificationType === "B-Arch";
 
@@ -374,6 +374,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
             t("BPA_LICENSE_TYPE"),
             t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`),
           )}
+          {License?.licenseNumber && renderLabel(t("BPA_COUNCIL_NUMBER") , License?.licenseNumber)}
           {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
             renderLabel(
               t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
@@ -402,8 +403,8 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSEE_PERMANENT_LABEL")}</h2>
           {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
-          {renderLabel(t("BPA_STATE_TYPE"), License?.tradeLicenseDetail?.additionalDetail?.permanentState)}
-          {renderLabel(t("BPA_DISTRICT_TYPE"), License?.tradeLicenseDetail?.owners?.[0]?.permanentCity)}
+          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.additionalDetail?.permanentState))}
+          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.permanentCity))}
           {renderLabel(t("BPA_DETAILS_PIN_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
         </div>
 
@@ -411,8 +412,8 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_CORRESPONDANCE_ADDRESS_LABEL")}</h2>
           {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
-          {renderLabel(t("BPA_STATE_TYPE"), License?.tradeLicenseDetail?.additionalDetail?.correspondenceState)}
-          {renderLabel(t("BPA_DISTRICT_TYPE"), License?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity)}
+          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.additionalDetail?.correspondenceState))}
+          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity))}
           {renderLabel(t("BPA_DETAILS_PIN_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
         </div>
 

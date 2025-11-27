@@ -62,19 +62,49 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   });
 
   // License Details
-  details.push({
-    title: t("BPA_LICENSE_DETAILS_LABEL"),
-    values: [
-      {
-        title: t("BPA_LICENSE_TYPE"),
-        value: t(`${application?.applicationDetails?.[1]?.values?.[0]?.value}`) || "NA",
-      },
-      {
-        title: t("BPA_COUNCIL_NUMBER"),
-        value: application?.applicationDetails?.[1]?.values?.[1]?.value || "NA",
-      },
-    ],
-  });
+  if (application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] === "ARCHITECT") {
+    details.push({
+      title: t("BPA_LICENSE_DETAILS_LABEL"),
+      values: [
+        {
+          title: t("BPA_LICENSE_TYPE"),
+          value: t(`TRADELICENSE_TRADETYPE_${application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "NA",
+        },
+        {
+          title: t("BPA_QUALIFICATION_TYPE"),
+          value: t(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType) || "NA",
+        },
+        {
+          title: t("BPA_COUNCIL_NUMBER"),
+          value: application?.applicationData?.licenseNumber || "NA",
+        },
+
+        {
+          title: t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
+          value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA",
+        }
+      ],
+    });
+  }else{
+    details.push({
+      title: t("BPA_LICENSE_DETAILS_LABEL"),
+      values: [
+        {
+          title: t("BPA_LICENSE_TYPE"),
+          value: t(`TRADELICENSE_TRADETYPE_${application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "NA",
+        },
+        {
+          title: t("BPA_QUALIFICATION_TYPE"),
+          value: t(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType) || "NA",
+        },
+        {
+          title: t("BPA_COUNCIL_NUMBER"),
+          value: application?.applicationData?.licenseNumber || "NA",
+        }
+      ],
+    });
+  }
+  
 
   const getFormattedULBName = (ulbCode = "") => {
     if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");

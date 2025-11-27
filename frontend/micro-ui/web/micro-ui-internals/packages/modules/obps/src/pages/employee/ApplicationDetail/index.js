@@ -99,6 +99,7 @@ console.log("licenseType:", licenseType);
                   borderRadius: "8px",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   flexShrink: 0,
+                  marginTop: "245px"
                 }}
                 onError={(e) => {
                   e.target.style.display = "none"

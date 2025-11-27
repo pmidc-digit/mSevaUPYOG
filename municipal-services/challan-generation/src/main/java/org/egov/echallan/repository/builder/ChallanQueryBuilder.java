@@ -162,6 +162,7 @@ public class ChallanQueryBuilder {
         }
         else
         {
+            builder.append(" ORDER BY echallan.createdTime DESC, echallan.id DESC");
             return addPaginationWrapper(builder.toString(),preparedStmtList,criteria);
         }
 

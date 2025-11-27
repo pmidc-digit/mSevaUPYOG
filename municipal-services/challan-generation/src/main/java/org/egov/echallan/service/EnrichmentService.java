@@ -1,6 +1,13 @@
 package org.egov.echallan.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.egov.echallan.repository.ChallanRepository;
+import org.egov.echallan.repository.IdGenRepository;
+import org.egov.echallan.repository.ServiceRequestRepository;
+import org.egov.echallan.util.CommonUtils;
+import org.egov.echallan.web.models.Idgen.IdResponse;
+import org.egov.echallan.web.models.user.User;
+import org.egov.echallan.web.models.user.UserDetailResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.echallan.config.ChallanConfiguration;
 import org.egov.echallan.model.Amount;
@@ -10,17 +17,11 @@ import org.egov.echallan.model.Challan.StatusEnum;
 import org.egov.echallan.model.ChallanRequest;
 import org.egov.echallan.model.SearchCriteria;
 import org.egov.echallan.model.UserInfo;
-import org.egov.echallan.repository.ChallanRepository;
-import org.egov.echallan.repository.IdGenRepository;
-import org.egov.echallan.repository.ServiceRequestRepository;
-import org.egov.echallan.util.CommonUtils;
-import org.egov.echallan.web.models.Idgen.IdResponse;
-import org.egov.echallan.web.models.user.User;
-import org.egov.echallan.web.models.user.UserDetailResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -110,13 +111,29 @@ public class EnrichmentService {
     }
 
     public void enrichSearchCriteriaWithAccountId(RequestInfo requestInfo,SearchCriteria criteria){
-        if(criteria.isEmpty() && requestInfo.getUserInfo().getType().equalsIgnoreCase("CITIZEN")){
-            criteria.setAccountId(requestInfo.getUserInfo().getUuid());
-            criteria.setMobileNumber(requestInfo.getUserInfo().getUserName());
-            criteria.setTenantId(requestInfo.getUserInfo().getTenantId());
+        if (criteria == null || requestInfo == null || requestInfo.getUserInfo() == null) {
+            return;
         }
 
+        if (!"CITIZEN".equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+            return;
+        }
+
+        if (StringUtils.isNotBlank(criteria.getMobileNumber())) {
+            return;
+        }
+
+        if (StringUtils.isNotBlank(criteria.getAccountId()) || !CollectionUtils.isEmpty(criteria.getUserIds())) {
+            return;
+        }
+
+        criteria.setAccountId(requestInfo.getUserInfo().getUuid());
+
+        if (criteria.getTenantId() == null) {
+            criteria.setTenantId(requestInfo.getUserInfo().getTenantId());
+        }
     }
+
     
     public SearchCriteria getChallanCriteriaFromIds(List<Challan> challans){
         SearchCriteria criteria = new SearchCriteria();

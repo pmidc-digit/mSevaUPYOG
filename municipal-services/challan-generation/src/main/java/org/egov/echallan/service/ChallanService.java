@@ -257,7 +257,7 @@ public class ChallanService {
 	
 	 public List<Challan> search(SearchCriteria criteria, RequestInfo requestInfo){
 	        List<Challan> challans;
-	        //enrichmentService.enrichSearchCriteriaWithAccountId(requestInfo,criteria);
+	        enrichmentService.enrichSearchCriteriaWithAccountId(requestInfo,criteria);
 	         if(criteria.getMobileNumber()!=null){
 	        	 challans = getChallansFromMobileNumber(criteria,requestInfo);
 	         }
@@ -299,6 +299,7 @@ public class ChallanService {
 	 * @param requestInfo requestInfo
 	 */
 	public int countForSearch(SearchCriteria criteria, RequestInfo requestInfo){
+		enrichmentService.enrichSearchCriteriaWithAccountId(requestInfo,criteria);
 		int count=0;
 
 		if(criteria.getMobileNumber()!=null){

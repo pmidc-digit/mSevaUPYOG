@@ -115,18 +115,19 @@ public class CommonUtils {
     }
 
     /**
-     * Fetches rate details from MDMS based on subcategory
+     * Fetches rate details from MDMS based on offence type ID
      * Returns Map containing amount
+     * Note: This method accepts offenceTypeId (not subCategoryId)
      */
-	public Map<String, Object> fetchRateDetailsFromMDMS(Object mdmsData, String subCategoryId) {
+	public Map<String, Object> fetchRateDetailsFromMDMS(Object mdmsData, String offenceTypeId) {
 		try {
-			String jsonPath = ChallanConstants.MDMS_RATES_PATH.replace("{}", subCategoryId);
+			String jsonPath = ChallanConstants.MDMS_RATES_PATH.replace("{}", offenceTypeId);
 			List<Map<String, Object>> rateDetails = JsonPath.read(mdmsData, jsonPath);
 			if (rateDetails != null && !rateDetails.isEmpty()) {
 				return rateDetails.get(0);
 			}
 		} catch (Exception e) {
-			log.error("Error fetching rate details from MDMS for subcategory: {}", subCategoryId, e);
+			log.error("Error fetching rate details from MDMS for offence type: {}", offenceTypeId, e);
 		}
 		return new HashMap<>();
 	}
@@ -177,6 +178,80 @@ public class CommonUtils {
 			}
 		} catch (Exception e) {
 			log.error("Error fetching amount from subcategory name: {}", subCategoryName, e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Fetches amount from MDMS based on offence type name
+	 * The Rates master uses offenceTypeId field
+	 */
+	public BigDecimal fetchAmountFromOffenceTypeName(Object mdmsData, String offenceTypeName) {
+		try {
+			List<Map<String, Object>> offenceTypes = JsonPath.read(mdmsData, ChallanConstants.MDMS_OFFENCE_TYPE_PATH);
+			for (Map<String, Object> offenceType : offenceTypes) {
+				if (offenceTypeName.equals(offenceType.get("name"))) {
+					String offenceTypeId = (String) offenceType.get("id");
+					// Fetch amount from rates using the offence type ID
+					String jsonPath = ChallanConstants.MDMS_RATES_PATH.replace("{}", offenceTypeId);
+					List<Map<String, Object>> rateDetails = JsonPath.read(mdmsData, jsonPath);
+					if (rateDetails != null && !rateDetails.isEmpty()) {
+						return new BigDecimal(rateDetails.get(0).get("amount").toString());
+					}
+					break;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching amount from offence type name: {}", offenceTypeName, e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Fetches rate details (amount) from MDMS based on offence type name
+	 * Returns Map containing amount
+	 * The Rates master uses offenceTypeId field
+	 */
+	public Map<String, Object> fetchRateDetailsFromOffenceTypeName(Object mdmsData, String offenceTypeName) {
+		try {
+			List<Map<String, Object>> offenceTypes = JsonPath.read(mdmsData, ChallanConstants.MDMS_OFFENCE_TYPE_PATH);
+			for (Map<String, Object> offenceType : offenceTypes) {
+				if (offenceTypeName.equals(offenceType.get("name"))) {
+					String offenceTypeId = (String) offenceType.get("id");
+					// Fetch rate details from rates using the offence type ID
+					String jsonPath = ChallanConstants.MDMS_RATES_PATH.replace("{}", offenceTypeId);
+					List<Map<String, Object>> rateDetails = JsonPath.read(mdmsData, jsonPath);
+					if (rateDetails != null && !rateDetails.isEmpty()) {
+						return rateDetails.get(0);
+					}
+					break;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching rate details from offence type name: {}", offenceTypeName, e);
+		}
+		return new HashMap<>();
+	}
+	
+	/**
+	 * Fetches taxHeadCode from MDMS based on offence type name
+	 * TaxHeadCode comes from OffenceType master (like the previous flow but from OffenceType)
+	 */
+	public String fetchTaxHeadCodeFromOffenceTypeName(Object mdmsData, String offenceTypeName) {
+		try {
+			List<Map<String, Object>> offenceTypes = JsonPath.read(mdmsData, ChallanConstants.MDMS_OFFENCE_TYPE_PATH);
+			for (Map<String, Object> offenceType : offenceTypes) {
+				if (offenceTypeName.equals(offenceType.get("name"))) {
+					// Get taxHeadCode from offence type
+					String taxHeadCode = (String) offenceType.get("taxHeadCode");
+					if (taxHeadCode != null && !taxHeadCode.isEmpty()) {
+						return taxHeadCode;
+					}
+					break;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching taxHeadCode from offence type name: {}", offenceTypeName, e);
 		}
 		return null;
 	}

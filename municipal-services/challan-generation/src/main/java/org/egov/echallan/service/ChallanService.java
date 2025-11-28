@@ -99,14 +99,22 @@ public class ChallanService {
 			}
 		}
 		
-		// Auto-populate amount from MDMS based on subcategory name
-		if (StringUtils.isNotBlank(challan.getOffenceSubCategoryName())) {
-			BigDecimal amountFromMDMS = utils.fetchAmountFromSubCategoryName(mdmsData, challan.getOffenceSubCategoryName());
+		// Auto-populate amount and taxHeadCode from MDMS based on offence type name
+		// Both amount and taxHeadCode come from OffenceType (like the previous flow but from OffenceType)
+		if (StringUtils.isNotBlank(challan.getOffenceTypeName())) {
+			BigDecimal amountFromMDMS = utils.fetchAmountFromOffenceTypeName(mdmsData, challan.getOffenceTypeName());
 			
 			if (amountFromMDMS != null) {
+				// Fetch taxHeadCode from OffenceType (maintaining previous flow pattern but from OffenceType)
+				String taxHeadCode = "CH.CHALLAN_FINE"; // Default fallback
+				String taxHeadCodeFromMDMS = utils.fetchTaxHeadCodeFromOffenceTypeName(mdmsData, challan.getOffenceTypeName());
+				if (StringUtils.isNotBlank(taxHeadCodeFromMDMS)) {
+					taxHeadCode = taxHeadCodeFromMDMS;
+				}
+				
 				// Create amount object from MDMS data
 				Amount amountObject = Amount.builder()
-					.taxHeadCode("CH.CHALLAN_FINE") // Default tax head code
+					.taxHeadCode(taxHeadCode)
 					.amount(amountFromMDMS)
 					.build();
 				

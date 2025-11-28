@@ -56,7 +56,7 @@ public class ChallanConstants {
     public static final String MDMS_OFFENCE_TYPE_PATH = "$.MdmsRes.Challan.OffenceType";
     public static final String MDMS_OFFENCE_CATEGORY_PATH = "$.MdmsRes.Challan.Category";
     public static final String MDMS_OFFENCE_SUBCATEGORY_PATH = "$.MdmsRes.Challan.SubCategory";
-    public static final String MDMS_RATES_PATH = "$.MdmsRes.Challan.Rates[?(@.subCategoryId == '{}')]";
+    public static final String MDMS_RATES_PATH = "$.MdmsRes.Challan.Rates[?(@.offenceTypeId == '{}')]";
 
     // Offence validation constants
     public static final String OFFENCE_TYPE_MASTER = "OffenceType";

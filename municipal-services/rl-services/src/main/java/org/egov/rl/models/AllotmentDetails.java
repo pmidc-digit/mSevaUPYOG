@@ -78,7 +78,7 @@ public class AllotmentDetails {
 	private String penaltyType;;
 	
 	@JsonProperty("witness_details")
-	private List<WitnessDetails> witnessDetails;
+	private String witnessDetails;
 	
 	@JsonProperty("created_time")
 	private long createdTime;

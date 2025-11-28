@@ -177,10 +177,7 @@ public class FarExtract extends FeatureExtract {
 
                 //LOG.info("Working on Block deduction  " + deductLayerName);
 
-                //List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
-                List<DXFLWPolyline> bldDeductStarisCase = Util.getPolyLinesByLayer(pl.getDoc(), "BLK_1_FLR_0_BLT_UP_AREA_DEDUCT_STAIRCASE");
-                List<DXFLWPolyline> bldDeductLift = Util.getPolyLinesByLayer(pl.getDoc(), "BLK_1_FLR_0_BLT_UP_AREA_DEDUCT_LIFT");
-                
+                //List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);               
                 List<String> deductionLayerList = Util.getLayerNamesLike(pl.getDoc(), String.format(layerRegEx1, block.getNumber(), floor.getNumber()));
                 
                 for (String layer : deductionLayerList) {

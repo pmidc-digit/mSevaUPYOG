@@ -801,17 +801,26 @@ public class Far extends FeatureProcess {
 	            if (!floorDeductionTypes.isEmpty()) {
 	                LOG.info("Floor No : " + floorNumber);
 	                
+	                // Iterate through the finalized, grouped deductions for the current floor
 	                floorDeductionTypes.forEach((type, area) -> {
+	                    // Apply the scale and rounding mode (formatting)
 	                    BigDecimal formattedArea = area.setScale(2, RoundingMode.HALF_UP);
-	                    LOG.info(type + " : " + formattedArea);
+	                    
+	                    // 1. CLEAN THE TYPE STRING FOR DISPLAY AND REPORTING
+	                    String displayType = cleanDeductionType(type);
+
+	                    // Logging
+	                    // Changed log format to display the cleaned type
+	                    LOG.info(displayType + " : " + formattedArea + " m²"); 
 	                    
 	                    // *** STORE RECORD TO THE CENTRAL LIST ***
 	                    Map<String, String> recordDetails = new HashMap<>();
 	                    recordDetails.put("BLOCK", blockNumber);
 	                    recordDetails.put("FLOOR", floorNumber);
-	                    recordDetails.put("TYPE", type);
-	                    recordDetails.put("DEDUCTION", formattedArea.toString()+ " m²");
-	                    allDeductionRecords.add(recordDetails);	                     
+	                    // 2. USE THE CLEANED TYPE FOR THE REPORT
+	                    recordDetails.put("TYPE", displayType); 
+	                    recordDetails.put("DEDUCTION", formattedArea.toString() + " m²");
+	                    allDeductionRecords.add(recordDetails);
 	                });
 	            }
 	        } // End of Floor loop
@@ -825,6 +834,21 @@ public class Far extends FeatureProcess {
 	    
 	    LOG.info("\n=======================================================");
 	    LOG.info("Exiting splitDeductionFloorWise() method");
+	}
+	
+	/**
+	 * Cleans the deduction type string (e.g., "LIFT_1") to a readable format (e.g., "LIFT 1").
+	 * This assumes the suffix is an underscore followed by a digit (e.g., _1, _2).
+	 */
+	private String cleanDeductionType(String deductionType) {
+	    if (deductionType == null) {
+	        return "";
+	    }
+	    // Regex to find an underscore followed by one or more digits at the end of the string
+	    // and replace it with a space and the digits.
+	    // Example: "LIFT_1" -> "LIFT 1"
+	    // Example: "STAIRCASE" -> "STAIRCASE" (no change)
+	    return deductionType.replaceAll("_(\\d+)$", " $1");
 	}
 	
 	private void decideNocIsRequired(Plan pl) {
@@ -1981,7 +2005,7 @@ public class Far extends FeatureProcess {
 
 	                            // Step 7: Build result
 	                            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissableFar,
-	                                    typeOfArea, regularPermissableFar, isAccepted);
+	                                    typeOfArea, regularPermissableFar, isAccepted);	                           
 
 	                        } else {
 	                        	LOG.info("Purchasable FAR is false, processing as normal Rules");
@@ -1994,7 +2018,7 @@ public class Far extends FeatureProcess {
 	                            
 
 	                            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasableFar,
-	                                    typeOfArea, regularPermissableFar, isAccepted);
+	                                    typeOfArea, regularPermissableFar, isAccepted);	                            
 	                        }	                        
 	                        
 	                    } else {

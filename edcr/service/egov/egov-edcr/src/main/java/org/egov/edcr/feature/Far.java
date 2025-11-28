@@ -96,6 +96,7 @@ import static org.egov.edcr.utility.DcrConstants.ROUNDMODE_MEASUREMENTS;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -103,6 +104,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -735,11 +739,94 @@ public class Far extends FeatureProcess {
 		
 		//getFarDetailsFromMDMS(pl,mostRestrictiveOccupancyType.getType().getCode());
 		
+		// processing the deduction
+		splitDeductionFloorWise(pl);
+		
 		ProcessPrintHelper.print(pl);
 		//getFarDetailsFromMDMS(pl, );
 		return pl;
 	}
 
+	private void splitDeductionFloorWise(Plan pl) {
+	    LOG.info("Inside splitDeductionFloorWise() method for optimized reporting and formatting");
+
+	    List<Map<String, String>> allDeductionRecords = new ArrayList<>();
+
+	    // Regular Expression to capture the Block Number, Floor Number, and Deduction Type
+	    final String REGEX = "BLK_(\\d+)_FLR_(-?\\d+)_BLT_UP_AREA_DEDUCT_(.+)";
+	    final Pattern pattern = Pattern.compile(REGEX);
+	    
+	    // Iterate through all Blocks
+	    for (Block blk : pl.getBlocks()) {
+	        String blockNumber = String.valueOf(blk.getNumber()); // Ensure block number is treated as a String if needed for the Map key
+	        
+	        LOG.info("\n=======================================================");
+	        LOG.info("Block " + blockNumber + " Deduction (Built-Up Area Deductions)");
+	        LOG.info("=======================================================");
+
+	        if (blk.getBuilding() == null || blk.getBuilding().getFloors().isEmpty()) {
+	            LOG.info("  Block " + blockNumber + " has no floors. Skipping.");
+	            continue;
+	        }
+	        
+	        LOG.info("Block " + blockNumber + " Deductions");
+
+	        Map<Integer, Floor> sortedFloors = new TreeMap<>();
+	        for (Floor flr : blk.getBuilding().getFloors()) {
+	            sortedFloors.put(flr.getNumber(), flr);
+	        }
+
+	        for (Map.Entry<Integer, Floor> entry : sortedFloors.entrySet()) {
+	            Floor flr = entry.getValue();
+	            String floorNumber = String.valueOf(flr.getNumber());
+	            
+	            Map<String, BigDecimal> deductionMap = flr.getFloordeductions();
+
+	            if (deductionMap == null || deductionMap.isEmpty()) {
+	                continue; 
+	            }
+	           
+	            Map<String, BigDecimal> floorDeductionTypes = new TreeMap<>();	            
+	           
+	            deductionMap.forEach((layerKey, area) -> {
+	                Matcher matcher = pattern.matcher(layerKey);
+	                if (matcher.matches()) {
+	                    String deductionType = matcher.group(3); 	                    
+	                   
+	                    BigDecimal currentArea = floorDeductionTypes.getOrDefault(deductionType, BigDecimal.ZERO);
+	                    floorDeductionTypes.put(deductionType, currentArea.add(area));
+	                }
+	            });	            
+	            
+	            if (!floorDeductionTypes.isEmpty()) {
+	                LOG.info("Floor No : " + floorNumber);
+	                
+	                floorDeductionTypes.forEach((type, area) -> {
+	                    BigDecimal formattedArea = area.setScale(2, RoundingMode.HALF_UP);
+	                    LOG.info(type + " : " + formattedArea);
+	                    
+	                    // *** STORE RECORD TO THE CENTRAL LIST ***
+	                    Map<String, String> recordDetails = new HashMap<>();
+	                    recordDetails.put("BLOCK", blockNumber);
+	                    recordDetails.put("FLOOR", floorNumber);
+	                    recordDetails.put("TYPE", type);
+	                    recordDetails.put("DEDUCTION", formattedArea.toString()+ " m²");
+	                    allDeductionRecords.add(recordDetails);	                     
+	                });
+	            }
+	        } // End of Floor loop
+
+	    } // End of Block loop
+	    
+	    // 3. BUILD THE FINAL REPORT ONCE AFTER ALL BLOCKS/FLOORS ARE PROCESSED
+	    if (!allDeductionRecords.isEmpty()) {
+	        buildFinalDeductionReport(pl, allDeductionRecords);
+	    }
+	    
+	    LOG.info("\n=======================================================");
+	    LOG.info("Exiting splitDeductionFloorWise() method");
+	}
+	
 	private void decideNocIsRequired(Plan pl) {
 		Boolean isHighRise = false;
 		for (Block b : pl.getBlocks()) {
@@ -1516,7 +1603,62 @@ public class Far extends FeatureProcess {
 			buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 		}
 	}
+	
+	/**
+	 * Builds a single ScrutinyDetail object containing all collected deduction records
+	 * and adds it to the final report output.
+	 */
+	private void buildFinalDeductionReport(Plan pl, List<Map<String, String>> records) {
+	    if (records.isEmpty()) {
+	        return;
+	    }
 
+	    // 1. Create ONE ScrutinyDetail object for ALL deductions
+	    ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+	    
+	    // Set column headings and key ONCE
+	    scrutinyDetail.addColumnHeading(1, RULE_NO);
+	    scrutinyDetail.addColumnHeading(2, "BLOCK");
+	    scrutinyDetail.addColumnHeading(3, "FLOOR");
+	    scrutinyDetail.addColumnHeading(4, "TYPE");
+	    scrutinyDetail.addColumnHeading(5, "DEDUCTION");
+	    scrutinyDetail.setKey("Common_Deduction");
+
+	    // 2. Iterate through the collected records and add them all to the SAME ScrutinyDetail
+	    for (Map<String, String> record : records) {
+	        
+	        // Add the required RULE_NO (Assuming RULE is a constant)
+	        record.put(RULE_NO, RULE); 
+	        
+	        // Add this specific record to the SINGLE ScrutinyDetail's detail list
+	        scrutinyDetail.getDetail().add(record);
+	    }
+	    
+	    // 3. Add the single, complete ScrutinyDetail object to the plan report ONCE
+	    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
+
+//	private void buildResultDeduction(Plan pl, String BlockNo, String FloorNo, String deductionType, BigDecimal deductArea) {
+//		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+//		scrutinyDetail.addColumnHeading(1, RULE_NO);
+//		scrutinyDetail.addColumnHeading(2, "BLOCK");
+//		scrutinyDetail.addColumnHeading(5, "FLOOR");
+//		scrutinyDetail.addColumnHeading(2, "TYPE");
+//		scrutinyDetail.addColumnHeading(6, "DEDUCATION");
+//		scrutinyDetail.setKey("Common_Deducation");
+//
+//		Map<String, String> details = new HashMap<>();
+//		details.put(RULE_NO, RULE);
+//		details.put("BLOCK", BlockNo);
+//		details.put("FLOOR", FloorNo);
+//		details.put("TYPE", deductionType);
+//		details.put("DEDUCATION", String.valueOf(deductArea));	
+//		
+//		scrutinyDetail.getDetail().add(details);
+//		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//
+//	}
+	
 	private void buildResult1(Plan pl, String occupancyName, Double totalProvidedFar, Double purchasableFar, String typeOfArea,
 			Double expectedResult, boolean isAccepted) {
 		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();

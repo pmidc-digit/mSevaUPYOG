@@ -91,12 +91,20 @@ public class FarExtract extends FeatureExtract {
         String farDeductByFloor = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_BUILT_UP_AREA_DEDUCT");
+        
+        String layerRegEx1 =
+                layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
+                + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
+                + layerNames.getLayerName("LAYER_NAME_BUILT_UP_AREA")
+                + "_DEDUCT(?:_[A-Z]+(?:_\\d+)?)?";
+
+        
 
         loadRequiredMasterData(pl);
         if (LOG.isDebugEnabled())
             LOG.debug("Starting of FAR Extract......");
         LOG.info(" Extract BUILT_UP_AREA");
-        for (Block block : pl.getBlocks()) {
+        for (Block block : pl.getBlocks()) {        	
             /*
              * String singleFamily = "B_" + block.getNumber() + "_" + DxfFileConstants.SINGLE_FAMILY_BLDG; if
              * (pl.getPlanInformation().getSingleFamilyBuilding() != null) { Boolean value =
@@ -114,6 +122,8 @@ public class FarExtract extends FeatureExtract {
             int floorNo;
             FloorDetail floor;
             for (String s : layerNames) {
+            	// *** 1. INITIALIZE A NEW MAP FOR EACH FLOOR ***
+                Map<String, BigDecimal> deductionsMap = new HashMap<>();
                 String typical = "";
                 LOG.error("Working on Block  " + block.getNumber() + " For layer Name " + s);
                 polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), s);
@@ -161,32 +171,51 @@ public class FarExtract extends FeatureExtract {
                 }
                 if (block.getBuilding().getFloorNumber(floorNo) == null)
                     block.getBuilding().getFloors().add(floor);
+                
                 // find deductions
-                String deductLayerName = String.format(farDeductByFloor, block.getNumber(), floor.getNumber());
+                //String deductLayerName = String.format(farDeductByFloor, block.getNumber(), floor.getNumber());
 
-                LOG.error("Working on Block deduction  " + deductLayerName);
+                //LOG.info("Working on Block deduction  " + deductLayerName);
 
-                List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
-                for (DXFLWPolyline pline : bldDeduct) {
-                    BigDecimal deductionArea = Util.getPolyLineArea(pline);
-                    LOG.error(" deductionArea *************** " + deductionArea);
+                //List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
+                List<DXFLWPolyline> bldDeductStarisCase = Util.getPolyLinesByLayer(pl.getDoc(), "BLK_1_FLR_0_BLT_UP_AREA_DEDUCT_STAIRCASE");
+                List<DXFLWPolyline> bldDeductLift = Util.getPolyLinesByLayer(pl.getDoc(), "BLK_1_FLR_0_BLT_UP_AREA_DEDUCT_LIFT");
+                
+                List<String> deductionLayerList = Util.getLayerNamesLike(pl.getDoc(), String.format(layerRegEx1, block.getNumber(), floor.getNumber()));
+                
+                for (String layer : deductionLayerList) {
+                	LOG.info("Working on Block deduction  " + layer);
+                	List<DXFLWPolyline> polylines = Util.getPolyLinesByLayer(pl.getDoc(), layer);
+                    if (polylines.isEmpty())
+                        continue;
+                    
+                    for (DXFLWPolyline pline : polylines) {
+                        BigDecimal deductionArea = Util.getPolyLineArea(pline);
+                        LOG.info("DeductionArea *************** " + deductionArea);
+                        Occupancy occupancy = new Occupancy();
+                        occupancy.setDeduction(deductionArea == null ? BigDecimal.ZERO : deductionArea);
+                        if (deductionArea != null && deductionArea.compareTo(BigDecimal.ZERO) > 0) {                            
+                            deductionsMap.put(layer, deductionArea);
+                        } else {                            
+                            deductionsMap.put(layer, BigDecimal.ZERO);
+                        }
+                        occupancy.setExistingDeduction(BigDecimal.ZERO);
+                        occupancy.setType(Util.findOccupancyType(pline));
+                        occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
+                        LOG.info("occupancy type deduction " + occupancy.getType());
 
-                    Occupancy occupancy = new Occupancy();
-                    occupancy.setDeduction(deductionArea == null ? BigDecimal.ZERO : deductionArea);
-                    occupancy.setExistingDeduction(BigDecimal.ZERO);
-                    occupancy.setType(Util.findOccupancyType(pline));
-                    occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                    LOG.error(" occupancy type deduction " + occupancy.getType());
-
-					if (occupancy.getTypeHelper() == null
-							|| (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() == null))
-						pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
-								getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
-										deductLayerName));
-					else
-						floor.addDeductionArea(occupancy);
-                }
+    					if (occupancy.getTypeHelper() == null
+    							|| (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() == null))
+    						pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
+    								getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
+    										layer));
+    					else
+    						floor.addDeductionArea(occupancy);
+                    }                    
+                } 
+                floor.setFloordeductions(deductionsMap);
             }
+           
             if (!typicals.isEmpty()) {
                 LOG.info("Adding typical:" + block.getNumber());
                 List<TypicalFloor> typicalFloors = new ArrayList<>();
@@ -196,6 +225,7 @@ public class FarExtract extends FeatureExtract {
                 }
                 block.setTypicalFloor(typicalFloors);
             }
+           
         }
 
         // set Floor wise poly line for terrace check.

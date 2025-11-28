@@ -177,13 +177,69 @@ public class CalculationUtils {
     }
 
     /**
-     * Fetches rates from MDMS based on subcategory
+     * Dynamically maps offence type name to offence type ID by fetching from MDMS
      * @param requestInfo The RequestInfo of the calculation request
      * @param tenantId The tenantId
-     * @param subCategoryId The subcategory ID
-     * @return Rate amount for the subcategory
+     * @param offenceTypeName The offence type name
+     * @return Mapped offence type ID from MDMS
      */
-    public BigDecimal getRateFromMDMS(RequestInfo requestInfo, String tenantId, String subCategoryId) {
+    public String mapOffenceTypeNameToId(RequestInfo requestInfo, String tenantId, String offenceTypeName) {
+        if (offenceTypeName == null || offenceTypeName.isEmpty()) {
+            return null;
+        }
+        
+        StringBuilder uri = new StringBuilder();
+        uri.append(config.getMdmsHost());
+        uri.append(config.getMdmsEndPoint());
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+        
+        Map<String, Object> mdmsCriteria = new HashMap<>();
+        mdmsCriteria.put("tenantId", tenantId);
+        
+        Map<String, Object> moduleDetail = new HashMap<>();
+        moduleDetail.put("moduleName", "Challan");
+        
+        Map<String, Object> masterDetail = new HashMap<>();
+        masterDetail.put("masterName", "OffenceType");
+        masterDetail.put("filter", "[?(@.name=='" + offenceTypeName + "')]");
+        
+        moduleDetail.put("masterDetails", Arrays.asList(masterDetail));
+        mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail));
+        
+        request.put("MdmsCriteria", mdmsCriteria);
+
+        Object result = serviceRequestRepository.fetchResult(uri, request);
+        
+        try {
+            Map<String, Object> response = mapper.convertValue(result, Map.class);
+            Map<String, Object> mdmsRes = (Map<String, Object>) response.get("MdmsRes");
+            Map<String, Object> challan = (Map<String, Object>) mdmsRes.get("Challan");
+            List<Map<String, Object>> offenceTypes = (List<Map<String, Object>>) challan.get("OffenceType");
+            
+            if (!CollectionUtils.isEmpty(offenceTypes)) {
+                Map<String, Object> offenceType = offenceTypes.get(0);
+                String offenceTypeId = (String) offenceType.get("id");
+                log.info("Mapped offence type '{}' to ID: {}", offenceTypeName, offenceTypeId);
+                return offenceTypeId;
+            }
+        } catch (Exception e) {
+            log.error("Error fetching offence type mapping from MDMS for: {}", offenceTypeName, e);
+        }
+        
+        log.warn("No mapping found in MDMS for offence type: {}", offenceTypeName);
+        return null;
+    }
+
+    /**
+     * Fetches rates from MDMS based on offence type
+     * @param requestInfo The RequestInfo of the calculation request
+     * @param tenantId The tenantId
+     * @param offenceTypeId The offence type ID
+     * @return Rate amount for the offence type
+     */
+    public BigDecimal getRateFromMDMS(RequestInfo requestInfo, String tenantId, String offenceTypeId) {
         StringBuilder uri = new StringBuilder();
         uri.append(config.getMdmsHost());
         uri.append(config.getMdmsEndPoint());
@@ -198,7 +254,7 @@ public class CalculationUtils {
         
         Map<String, Object> masterDetail = new HashMap<>();
         masterDetail.put("masterName", "Rates");
-        masterDetail.put("filter", "[?(@.subCategoryId=='" + subCategoryId + "')]");
+        masterDetail.put("filter", "[?(@.offenceTypeId=='" + offenceTypeId + "')]");
         
         moduleDetail.put("masterDetails", Arrays.asList(masterDetail));
         mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail));
@@ -221,10 +277,67 @@ public class CalculationUtils {
                 }
             }
         } catch (Exception e) {
-            throw new CustomException("MDMS_ERROR", "Failed to fetch rate from MDMS for subcategory: " + subCategoryId);
+            throw new CustomException("MDMS_ERROR", "Failed to fetch rate from MDMS for offence type: " + offenceTypeId);
         }
         
         return BigDecimal.ZERO;
+    }
+
+    /**
+     * Fetches tax head code from MDMS based on offence type name
+     * @param requestInfo The RequestInfo of the calculation request
+     * @param tenantId The tenantId
+     * @param offenceTypeName The offence type name
+     * @return Tax head code for the offence type
+     */
+    public String getTaxHeadCodeFromOffenceTypeName(RequestInfo requestInfo, String tenantId, String offenceTypeName) {
+        if (offenceTypeName == null || offenceTypeName.isEmpty()) {
+            return "CH.CHALLAN_FINE"; // Default fallback
+        }
+        
+        StringBuilder uri = new StringBuilder();
+        uri.append(config.getMdmsHost());
+        uri.append(config.getMdmsEndPoint());
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+        
+        Map<String, Object> mdmsCriteria = new HashMap<>();
+        mdmsCriteria.put("tenantId", tenantId);
+        Map<String, Object> moduleDetail = new HashMap<>();
+        moduleDetail.put("moduleName", "Challan");
+        
+        Map<String, Object> masterDetail = new HashMap<>();
+        masterDetail.put("masterName", "OffenceType");
+        masterDetail.put("filter", "[?(@.name=='" + offenceTypeName + "')]");
+        
+        moduleDetail.put("masterDetails", Arrays.asList(masterDetail));
+        mdmsCriteria.put("moduleDetails", Arrays.asList(moduleDetail));
+        
+        request.put("MdmsCriteria", mdmsCriteria);
+
+        Object result = serviceRequestRepository.fetchResult(uri, request);
+        
+        try {
+            Map<String, Object> response = mapper.convertValue(result, Map.class);
+            Map<String, Object> mdmsRes = (Map<String, Object>) response.get("MdmsRes");
+            Map<String, Object> challan = (Map<String, Object>) mdmsRes.get("Challan");
+            List<Map<String, Object>> offenceTypes = (List<Map<String, Object>>) challan.get("OffenceType");
+            
+            if (!CollectionUtils.isEmpty(offenceTypes)) {
+                Map<String, Object> offenceType = offenceTypes.get(0);
+                String taxHeadCode = (String) offenceType.get("taxHeadCode");
+                if (taxHeadCode != null && !taxHeadCode.isEmpty()) {
+                    log.info("Fetched tax head code '{}' from OffenceType '{}'", taxHeadCode, offenceTypeName);
+                    return taxHeadCode;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error fetching tax head code from MDMS for offence type: {}", offenceTypeName, e);
+        }
+        
+        log.warn("No tax head code found in MDMS for offence type: {}, using default", offenceTypeName);
+        return "CH.CHALLAN_FINE"; // Default fallback
     }
 
     /**

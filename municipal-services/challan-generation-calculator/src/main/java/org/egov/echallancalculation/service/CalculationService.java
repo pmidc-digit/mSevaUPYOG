@@ -108,24 +108,27 @@ public class CalculationService {
 	              }
 	          }
 	          
-	          // Get MDMS rate by fetching from MDMS service (if subcategory is available)
-	          BigDecimal mdmsRate = BigDecimal.ZERO;
-	          String subCategoryId = null;
-	          
-	          // Try to get subcategory ID from offenceSubCategoryName first, then from subCategory field
-	          if (challan.getOffenceSubCategoryName() != null && !challan.getOffenceSubCategoryName().isEmpty()) {
-	              subCategoryId = utils.mapSubCategoryNameToId(requestInfo, challan.getTenantId(), challan.getOffenceSubCategoryName());
-	          } else if (challan.getSubCategory() != null && !challan.getSubCategory().isEmpty()) {
-	              subCategoryId = challan.getSubCategory();
-	          }
-	          
-	          if (subCategoryId != null) {
-	              mdmsRate = utils.getRateFromMDMS(requestInfo, challan.getTenantId(), subCategoryId);
-	              String mdmsTaxHeadCode = utils.getTaxHeadCodeFromMDMS(requestInfo, challan.getTenantId(), "CH.CHALLAN_FINE");
-	              if (mdmsTaxHeadCode != null && !mdmsTaxHeadCode.isEmpty()) {
-	                  taxHeadCode = mdmsTaxHeadCode;
-	              }
-	          }
+          // Get MDMS rate by fetching from MDMS service (if offence type is available)
+          BigDecimal mdmsRate = BigDecimal.ZERO;
+          String offenceTypeId = null;
+          
+          // Try to get offence type ID from offenceTypeName first, then from offenceType field
+          if (challan.getOffenceTypeName() != null && !challan.getOffenceTypeName().isEmpty()) {
+              offenceTypeId = utils.mapOffenceTypeNameToId(requestInfo, challan.getTenantId(), challan.getOffenceTypeName());
+          } else if (challan.getOffenceType() != null && !challan.getOffenceType().isEmpty()) {
+              offenceTypeId = challan.getOffenceType();
+          }
+          
+          if (offenceTypeId != null) {
+              mdmsRate = utils.getRateFromMDMS(requestInfo, challan.getTenantId(), offenceTypeId);
+              // Fetch tax head code from OffenceType master
+              if (challan.getOffenceTypeName() != null && !challan.getOffenceTypeName().isEmpty()) {
+                  String mdmsTaxHeadCode = utils.getTaxHeadCodeFromOffenceTypeName(requestInfo, challan.getTenantId(), challan.getOffenceTypeName());
+                  if (mdmsTaxHeadCode != null && !mdmsTaxHeadCode.isEmpty()) {
+                      taxHeadCode = mdmsTaxHeadCode;
+                  }
+              }
+          }
 	          
 	          // Compare all three values and use the highest
 	          // Sources: 1) challanAmount (user-entered), 2) amountArrayMax (MDMS from array), 3) mdmsRate (MDMS fetched)
@@ -191,15 +194,15 @@ public class CalculationService {
 		log.info("=== Testing Dynamic Calculation with Provided Payload ===");
 		
 		// Example from your payload:
-		// "offenceSubCategoryName": "Loud Music After 10 PM"
+		// "offenceTypeName": "Loud Music After 10 PM"
 		// "challanAmount": "200"
 		
-		String offenceSubCategoryName = "Loud Music After 10 PM";
+		String offenceTypeName = "Loud Music After 10 PM";
 		String challanAmount = "200";
 		
-		// Dynamically map offence subcategory name to ID from MDMS
-		String subCategoryId = utils.mapSubCategoryNameToId(requestInfo, tenantId, offenceSubCategoryName);
-		log.info("Offence Subcategory: {} -> Dynamically mapped to ID: {}", offenceSubCategoryName, subCategoryId);
+		// Dynamically map offence type name to ID from MDMS
+		String offenceTypeId = utils.mapOffenceTypeNameToId(requestInfo, tenantId, offenceTypeName);
+		log.info("Offence Type: {} -> Dynamically mapped to ID: {}", offenceTypeName, offenceTypeId);
 		
 		// Parse user amount
 		BigDecimal userAmount = new BigDecimal(challanAmount);
@@ -207,9 +210,14 @@ public class CalculationService {
 		
 		// Dynamically fetch MDMS rate
 		BigDecimal mdmsRate = BigDecimal.ZERO;
-		if (subCategoryId != null) {
-			mdmsRate = utils.getRateFromMDMS(requestInfo, tenantId, subCategoryId);
-			log.info("MDMS rate for {}: {}", subCategoryId, mdmsRate);
+		String taxHeadCode = "CH.CHALLAN_FINE";
+		if (offenceTypeId != null) {
+			mdmsRate = utils.getRateFromMDMS(requestInfo, tenantId, offenceTypeId);
+			log.info("MDMS rate for {}: {}", offenceTypeId, mdmsRate);
+			
+			// Fetch tax head code from OffenceType master
+			taxHeadCode = utils.getTaxHeadCodeFromOffenceTypeName(requestInfo, tenantId, offenceTypeName);
+			log.info("Tax Head Code from OffenceType: {}", taxHeadCode);
 		}
 		
 		// Calculate final amount (higher of the two)
@@ -217,7 +225,7 @@ public class CalculationService {
 		log.info("Final amount (higher of user amount and MDMS rate): {}", finalAmount);
 		
 		log.info("=== Dynamic Calculation Result ===");
-		log.info("Tax Head Code: CH.CHALLAN_FINE");
+		log.info("Tax Head Code: {}", taxHeadCode);
 		log.info("Final Amount: {}", finalAmount);
 		log.info("===============================================");
 	}
@@ -230,16 +238,18 @@ public class CalculationService {
 		log.info("=== Testing Minimum Payable Amount Functionality ===");
 		
 		// Example calculation with your payload
-		String offenceSubCategoryName = "Loud Music After 10 PM";
+		String offenceTypeName = "Loud Music After 10 PM";
 		String challanAmount = "200";
 		
-		// Get subcategory ID and rate
-		String subCategoryId = utils.mapSubCategoryNameToId(requestInfo, tenantId, offenceSubCategoryName);
+		// Get offence type ID and rate
+		String offenceTypeId = utils.mapOffenceTypeNameToId(requestInfo, tenantId, offenceTypeName);
 		BigDecimal userAmount = new BigDecimal(challanAmount);
 		BigDecimal mdmsRate = BigDecimal.ZERO;
+		String taxHeadCode = "CH.CHALLAN_FINE";
 		
-		if (subCategoryId != null) {
-			mdmsRate = utils.getRateFromMDMS(requestInfo, tenantId, subCategoryId);
+		if (offenceTypeId != null) {
+			mdmsRate = utils.getRateFromMDMS(requestInfo, tenantId, offenceTypeId);
+			taxHeadCode = utils.getTaxHeadCodeFromOffenceTypeName(requestInfo, tenantId, offenceTypeName);
 		}
 		
 		// Calculate final amount (higher of the two)
@@ -265,7 +275,7 @@ public class CalculationService {
 		
 		log.info("=== Demand Creation ===");
 		log.info("Demand will be created with:");
-		log.info("- Tax Head: CH.CHALLAN_FINE");
+		log.info("- Tax Head: {}", taxHeadCode);
 		log.info("- Amount: {}", finalAmount);
 		log.info("- Round-off: {}", roundOff);
 		log.info("- minimumPayableAmount: {}", totalWithRoundOff);

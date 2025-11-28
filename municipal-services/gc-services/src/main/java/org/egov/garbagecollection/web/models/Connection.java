@@ -64,7 +64,7 @@ public class Connection {
 	private String location = null;
 
 	@SafeHtml
-	@JsonProperty("Frequency_of_Garbage_Collection")
+	@JsonProperty("frequency")
 	private String frequency_of_garbage_collection = null;
 
 	@SafeHtml

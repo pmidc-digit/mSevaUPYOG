@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.Builder;
 import lombok.Getter;
 
-@ApiModel(description = "Details of the owner of the pet")
+@ApiModel(description = "Details of the owner of the RL")
 @Validated
 @javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2022-08-16T15:34:24.436+05:30")
 

@@ -145,7 +145,7 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setStatus(allotmentDetails.getStatus());
 		allotmentDbDetails.setTermAndCondition(allotmentDetails.getTermAndCondition());
 		allotmentDbDetails.setPenaltyType(allotmentDetails.getPenaltyType());
-		allotmentDbDetails.setUser(allotmentDetails.getUser());
+		allotmentDbDetails.setOwnerInfo(allotmentDetails.getOwnerInfo());
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
 		allotmentRequest.setAllotment(allotmentDbDetails);
@@ -185,12 +185,12 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setDocuments(docList);	
 		}
 
-		List<OwnerInfo> lst=allotmentDetails.getUser().stream().map(m->{
+		List<OwnerInfo> lst=allotmentDetails.getOwnerInfo().stream().map(m->{
 			m.setOwnerId(UUID.randomUUID().toString());
 			m.setAllotmentId(allotmentId);
 			return m;
 		}).collect(Collectors.toList());
-		allotmentDetails.setUser(lst);
+		allotmentDetails.setOwnerInfo(lst);
 		allotmentDetails.setId(allotmentId);
 		List<AllotmentDetails> allotmentDetails2=new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
@@ -203,7 +203,7 @@ public class AllotmentEnrichmentService {
 		String allotmentId=allotmentDetails.getId();
 		
 //		if (!CollectionUtils.isEmpty(allotmentDetails.getDocuments())) {
-		System.out.println(allotmentDetails.getDocuments()+"document------"+allotmentDetails.getUser());
+		System.out.println(allotmentDetails.getDocuments()+"document------"+allotmentDetails.getOwnerInfo());
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 		
 		if(allotmentDetails.getDocuments()!=null&&allotmentDetails.getDocuments().size()>0) {
@@ -218,12 +218,12 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setDocuments(docList);	
 		}
 
-		List<OwnerInfo> lst=allotmentDetails.getUser().stream().map(m->{
+		List<OwnerInfo> lst=allotmentDetails.getOwnerInfo().stream().map(m->{
 			m.setOwnerId(UUID.randomUUID().toString());
 			m.setAllotmentId(allotmentId);
 			return m;
 		}).collect(Collectors.toList());
-		allotmentDetails.setUser(lst);
+		allotmentDetails.setOwnerInfo(lst);
 		allotmentDetails.setId(allotmentId);
 		List<AllotmentDetails> allotmentDetails2=new ArrayList();
 		allotmentDetails2.add(allotmentDetails);

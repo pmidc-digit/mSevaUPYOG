@@ -60,7 +60,7 @@ public class AllotmentValidator {
 						"Witness cannot be empty, please provide at least two witness information");
 			}
 		}
-		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().getUser()).orElse(null);
+		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().getOwnerInfo()).orElse(null);
 		if (owners==null||CollectionUtils.isEmpty(owners))
 			throw new CustomException("OWNER INFO ERROR",
 					"Owners cannot be empty, please provide at least one owner information");
@@ -80,15 +80,15 @@ public class AllotmentValidator {
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
 		
-		long uniqueAadharNumberSet = owners.stream().map(owner -> owner.getAadharCardNumber().trim()).distinct().count();
-		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();
+//		long uniqueAadharNumberSet = owners.stream().map(owner -> owner.getAadharCardNumber().trim()).distinct().count();
+//		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();
 //	    Set<String> uniquePanNumberSet = owners.stream()
 //				.map(owner -> owner.getPanNumber()).collect(Collectors.toSet());
 		long uniqueEmailSet = owners.stream().map(owner -> owner.getEmailId().trim()).distinct().count();
-		if (uniqueAadharNumberSet != owners.size())
-			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate AadharCard Number in the request");
-		if (uniquePanNumberSet != owners.size())
-			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate PAN Card Number in the request");
+//		if (uniqueAadharNumberSet != owners.size())
+//			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate AadharCard Number in the request");
+//		if (uniquePanNumberSet != owners.size())
+//			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate PAN Card Number in the request");
 		if (uniqueEmailSet != owners.size())
 			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Email ID in the request");
 
@@ -172,14 +172,14 @@ public class AllotmentValidator {
 	private void validateOwnersData(AllotmentRequest allotementRequest, Map<String, String> errorMap) {
 //		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
 //		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
-		List<OwnerInfo> owners = allotementRequest.getAllotment().getUser();
+		List<OwnerInfo> owners = allotementRequest.getAllotment().getOwnerInfo();
 		owners.stream().forEach(u -> {
-			if(!isValidAadhaar( u.getAadharCardNumber())){
-				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid Aadhar Card number");
-			}
-			if(!isValidPAN( u.getPanCardNumber())){
-				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid PAN Card number");
-			}
+//			if(!isValidAadhaar( u.getAadharCardNumber())){
+//				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid Aadhar Card number");
+//			}
+//			if(!isValidPAN( u.getPanCardNumber())){
+//				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid PAN Card number");
+//			}
 			if(!isValidEmail( u.getEmailId())){
 				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid EMAIL ID");
 			}

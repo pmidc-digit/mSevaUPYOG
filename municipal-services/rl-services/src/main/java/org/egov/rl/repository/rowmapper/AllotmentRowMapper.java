@@ -60,7 +60,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<AllotmentDetails> 
   					.build();
 		}
 		
-		currentAllotment.setUser(userList);
+		currentAllotment.setOwnerInfo(userList);
 		currentAllotment.setAuditDetails(auditDetails);		
 		return currentAllotment;
 
@@ -72,20 +72,21 @@ public class AllotmentRowMapper implements ResultSetExtractor<AllotmentDetails> 
 		    owner = OwnerInfo.builder()
 				    .ownerId(rs.getString("id"))
 				    .allotmentId(rs.getString("allotment_id"))
+				    .userUuid(rs.getString("user_uuid"))
 //					.gender(rs.getString("gender"))
 //					.fatherOrHusbandName(rs.getString("father_or_husband_name"))
 					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
 //					.ownerShipPercentage(rs.getDouble("owner_ship_percentage"))
 					.ownerType(rs.getString("owner_type"))
-					.firstName(rs.getString("first_name"))
-					.middleName(rs.getString("middle_name"))
-					.lastName(rs.getString("last_name"))
-					.emailId(rs.getString("email_id"))
-					.mobileNo(rs.getString("mobile_no"))
-					.address(rs.getString("address"))
-					.aadharCardNumber(rs.getString("aadhar_card_number"))
+//					.firstName(rs.getString("first_name"))
+//					.middleName(rs.getString("middle_name"))
+//					.lastName(rs.getString("last_name"))
+//					.emailId(rs.getString("email_id"))
+//					.mobileNo(rs.getString("mobile_no"))
+//					.permanentAddress(rs.getObject("permanentAddress").)
+//					.aadharCardNumber(rs.getString("aadhar_card_number"))
 					.aadharCard(rs.getString("aadhar_card"))
-					.panCardNumber(rs.getString("pan_card_number"))
+//					.panCardNumber(rs.getString("pan_card_number"))
 					.panCard(rs.getString("pan_card"))
 //					.relationship(Relationship.valueOf(rs.getString("relationship")))
 //					.active(rs.getBoolean("active"))

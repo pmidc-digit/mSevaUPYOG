@@ -1,12 +1,19 @@
 package org.egov.rl.service;
 
+import java.security.acl.Owner;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.OwnerInfo;
+import org.egov.rl.models.oldProperty.Address;
+import org.egov.rl.models.user.User;
+import org.egov.rl.models.user.UserDetailResponse;
 import org.egov.rl.producer.PropertyProducer;
 import org.egov.rl.util.EncryptionDecryptionUtil;
 import org.egov.rl.validator.AllotmentValidator;
@@ -41,6 +48,9 @@ public class AllotmentService {
 	@Autowired
 	BoundaryService boundaryService;
 
+	@Autowired
+	UserService userService;
+
 	/**
 	 * Enriches the Request and pushes to the Queue
 	 *
@@ -52,6 +62,7 @@ public class AllotmentService {
 
 		allotmentValidator.validateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichCreateRequest(allotmentRequest);
+		userService.createUser(allotmentRequest);
 		
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
@@ -77,10 +88,12 @@ public class AllotmentService {
 		
 		allotmentValidator.validateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
+		userService.createUser(allotmentRequest);
+		
 		AllotmentDetails allotmentDetails=allotmentRequest.getAllotment();
 		allotmentRequest.setAllotment(allotmentDetails);
 		if (config.getIsWorkflowEnabled()) {
-//			wfService.updateWorkflowStatus(allotmentRequest);
+			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
 			allotmentRequest.getAllotment().setStatus("ACTIVE");
 		}
@@ -97,9 +110,35 @@ public class AllotmentService {
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
 		
-		
 		JsonNode additionalDetails=boundaryService.loadPropertyData(allotmentRequest);
 		AllotmentDetails allotmentDetails= allotmentEnrichmentService.searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria);
+		
+		List<OwnerInfo> ownerList=allotmentDetails.getOwnerInfo().stream().map(u->{
+			String[] tenantId=allotmentRequest.getAllotment().getTenantId().split("\\.");
+			User userDetails=userService.searchByUuid(u.getUserUuid(),tenantId.length>1?tenantId[0]:allotmentRequest.getAllotment().getTenantId()).getUser().get(0);
+			String[] names=userDetails.getName().split("\\s+");
+			u.setFirstName(names.length>0?names[0]:"");
+			u.setMiddleName(names.length>1?names[1]:"");
+			u.setLastName(names.length>2?names[2]:"");
+			org.egov.rl.models.oldProperty.Address permemantAddress=Address.builder()
+					.addressLine1(userDetails.getPermanentAddress())
+					.city(userDetails.getPermanentCity())
+					.pincode(userDetails.getPermanentPincode())
+					.build();
+			u.setPermanentAddress(permemantAddress);
+			org.egov.rl.models.oldProperty.Address crosAddress=Address.builder()
+					.addressLine1(userDetails.getCorrespondenceAddress())
+					.city(userDetails.getCorrespondenceCity())
+					.pincode(userDetails.getCorrespondencePincode())
+					.build();
+			u.setCorrespondenceAddress(crosAddress);
+			u.setMobileNo(userDetails.getMobileNumber());
+			u.setEmailId(userDetails.getEmailId());
+			u.setDob(userDetails.getDob());
+			u.setActive(userDetails.getActive());
+			return u;
+		}).collect(Collectors.toList());
+		allotmentDetails.setOwnerInfo(ownerList);
 		allotmentDetails.setAdditionalDetails(additionalDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
 	    return allotmentRequest;

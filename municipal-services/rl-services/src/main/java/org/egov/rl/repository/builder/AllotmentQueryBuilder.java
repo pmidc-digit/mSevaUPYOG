@@ -27,7 +27,7 @@ public class AllotmentQueryBuilder {
 			+ "    doc_count.documentCount,\r\n"
 			+ "    ap_count.applicantCount\r\n"
 			+ "FROM eg_rl_allotment al\r\n"
-			+ "INNER JOIN eg_rl_applicant ap ON al.id = ap.allotment_id\r\n"
+			+ "INNER JOIN eg_rl_owner_info ap ON al.id = ap.allotment_id\r\n"
 			+ "INNER JOIN eg_rl_document doc ON al.id = doc.allotment_id\r\n"
 			+ "LEFT JOIN (\r\n"
 			+ "    SELECT allotment_id, COUNT(DISTINCT id) AS documentCount\r\n"
@@ -36,7 +36,7 @@ public class AllotmentQueryBuilder {
 			+ ") doc_count ON doc_count.allotment_id = al.id\r\n"
 			+ "LEFT JOIN (\r\n"
 			+ "    SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount\r\n"
-			+ "    FROM eg_rl_applicant\r\n"
+			+ "    FROM eg_rl_owner_info\r\n"
 			+ "    GROUP BY allotment_id\r\n"
 			+ ") ap_count ON ap_count.allotment_id = al.id ";
 //		    "SELECT al.*, ap.*, count(ap.*) as applicantCount,doc.*,count(doc.*) as documentCount FROM eg_rl_allotment al " +

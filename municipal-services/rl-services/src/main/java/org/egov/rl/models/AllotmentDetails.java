@@ -93,7 +93,7 @@ public class AllotmentDetails {
 	private AuditDetails auditDetails;
 	
 	@JsonProperty("OwnerInfo")
-    private List<OwnerInfo> user;
+    private List<OwnerInfo> ownerInfo;
 	
 	@JsonProperty("additional_details")
     private JsonNode additionalDetails;
@@ -105,12 +105,12 @@ public class AllotmentDetails {
 	private Workflow workflow;
 	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
-		if (this.user == null) {
-			this.user = new ArrayList<>();
+		if (this.ownerInfo == null) {
+			this.ownerInfo = new ArrayList<>();
 		}
 
 		if (null != ownersItem)
-			this.user.add(ownersItem);
+			this.ownerInfo.add(ownersItem);
 		return this;
 	}
 	
@@ -145,7 +145,7 @@ public class AllotmentDetails {
 	            ", createdBy='" + createdBy + '\'' +
 	            ", documents=" + documents +
 	            ", auditDetails=" + auditDetails +
-	            ", user=" + user +
+	            ", ownerInfo=" + ownerInfo +
 	            ", additionalDetails=" + additionalDetails +
 	            ", workflowCode='" + workflowCode + '\'' +
 	            ", workflow=" + workflow +

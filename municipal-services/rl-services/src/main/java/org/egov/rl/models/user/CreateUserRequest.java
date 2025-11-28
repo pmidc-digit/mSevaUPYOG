@@ -22,7 +22,7 @@ public class CreateUserRequest {
     private RequestInfo requestInfo;
 
     @JsonProperty("user")
-    private OwnerInfo user;
+    private User user;
 
     
 }

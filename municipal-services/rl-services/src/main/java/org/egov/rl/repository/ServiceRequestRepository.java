@@ -37,11 +37,16 @@ public class ServiceRequestRepository {
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		Object response = null;
 		log.info("URI: "+uri.toString());
+		System.out.println("uuuuuuuuuuuuuuuu----------------"+uri);
+		
 		try {
-			log.info("Request: "+mapper.writeValueAsString(request));
-			response = restTemplate.postForObject(uri.toString(), request, Map.class);
-		} catch (HttpClientErrorException e) {
+			System.out.println("mapper.writeValueAsString(request)----------------"+mapper.writeValueAsString(request));
 			
+			log.info("Request: "+mapper.writeValueAsString(request));
+			response = restTemplate.postForObject(uri.toString().replace("//_", "/_"), request, Map.class);
+		} catch (HttpClientErrorException e) {
+			System.out.println("-----ttttt----------"+response);
+			e.printStackTrace();
 			log.error("External Service threw an Exception: ", e);
 			throw new ServiceCallException(e.getResponseBodyAsString());
 		} catch (Exception e) {

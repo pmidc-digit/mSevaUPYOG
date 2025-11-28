@@ -54,12 +54,12 @@ public class AllotmentValidator {
 				if (allotementRequest.getAllotment() == null)
 			throw new CustomException("ALLOTMENT INFO ERROR",
 					"Allotment cannot be empty, please provide the Allotment information");
-		if (allotementRequest.getAllotment() != null) {
-			if (allotementRequest.getAllotment().getWitnessDetails() == null) {
-				throw new CustomException("WITNESS INFO ERROR",
-						"Witness cannot be empty, please provide at least two witness information");
-			}
-		}
+//		if (allotementRequest.getAllotment() != null) {
+//			if (allotementRequest.getAllotment().getWitnessDetails() == null) {
+//				throw new CustomException("WITNESS INFO ERROR",
+//						"Witness cannot be empty, please provide at least two witness information");
+//			}
+//		}
 		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().getOwnerInfo()).orElse(null);
 		if (owners==null||CollectionUtils.isEmpty(owners))
 			throw new CustomException("OWNER INFO ERROR",

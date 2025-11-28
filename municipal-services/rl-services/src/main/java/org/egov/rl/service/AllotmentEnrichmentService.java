@@ -1,23 +1,13 @@
 package org.egov.rl.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.mdms.model.MasterDetail;
-import org.egov.mdms.model.MdmsCriteria;
-import org.egov.mdms.model.MdmsCriteriaReq;
-import org.egov.mdms.model.ModuleDetail;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
@@ -25,47 +15,39 @@ import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.AuditDetails;
 import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
-import org.egov.common.contract.request.Role;
-import org.egov.rl.models.enums.ApplicationType;
-import org.egov.rl.models.enums.Channel;
 import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.user.User;
-import org.egov.rl.util.RLConstants;
 import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.repository.AllotmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class AllotmentEnrichmentService {
 
+	@Autowired
+	private PropertyUtil propertyutil;
 
-    @Autowired
-    private PropertyUtil propertyutil;
+	@Autowired
+	private BoundaryService boundaryService;
 
-    @Autowired
-    private BoundaryService boundaryService;
+	@Autowired
+	private RentLeaseConfiguration config;
 
-    @Autowired
-    private RentLeaseConfiguration config;
-
-	
 	@Autowired
 	private AllotmentRepository allotmentRepository;
 
-    /**
-     * Assigns UUIDs to all id fields and also assigns acknowledgement-number and assessment-number generated from id-gen
-     * @param request  PropertyRequest received for property creation
-     */
-	
+	/**
+	 * Assigns UUIDs to all id fields and also assigns acknowledgement-number and
+	 * assessment-number generated from id-gen
+	 * 
+	 * @param request PropertyRequest received for property creation
+	 */
+
 	public void enrichCreateRequest(AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails=allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
-	
+
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 		allotmentDetails.setAuditDetails(auditDetails);
 		allotmentDetails.setAdditionalDetails(boundaryService.loadPropertyData(allotmentRequest));
@@ -83,7 +65,7 @@ public class AllotmentEnrichmentService {
 //		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
 ////		setIdgenIds(allotmentRequest);
 //	}
-	
+
 //    public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String userType, Boolean active) {
 //	    
 //		
@@ -113,28 +95,28 @@ public class AllotmentEnrichmentService {
 //	    return result;
 //	}
 
-	
-    /**
-     * Assigns UUID for new fields that are added and sets propertyDetail and address id from propertyId
-     * 
-     * @param request  PropertyRequest received for property update
-     * @param propertyFromDb Properties returned from DB
-     */
-    public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {
-    	AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-        RequestInfo requestInfo = allotmentRequest.getRequestInfo();
-		
-    	AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
-		Set<String> id=new HashSet<>();
+	/**
+	 * Assigns UUID for new fields that are added and sets propertyDetail and
+	 * address id from propertyId
+	 * 
+	 * @param request        PropertyRequest received for property update
+	 * @param propertyFromDb Properties returned from DB
+	 */
+	public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+
+		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
+		Set<String> id = new HashSet<>();
 		id.add(allotmentRequest.getAllotment().getId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
-		AllotmentDetails allotmentDbDetails= searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria);
-		
+		AllotmentDetails allotmentDbDetails = searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria);
+
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
 		auditDetails.setCreatedBy(allotmentDbDetails.getCreatedBy());
 		auditDetails.setCreatedTime(allotmentDbDetails.getCreatedTime());
-		
+
 		allotmentDbDetails.setAuditDetails(auditDetails);
 		allotmentDbDetails.setAutoRenewal(allotmentDetails.isAutoRenewal());
 		allotmentDbDetails.setStartDate(allotmentDetails.getStartDate());
@@ -149,90 +131,96 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
 		allotmentRequest.setAllotment(allotmentDbDetails);
-		
-		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest);
-		setIdgenIds(allotmentRequest);
-		
-    }
-    public AllotmentDetails searchAllotment(RequestInfo requestInfo,
-		    AllotmentCriteria allotmentCriteria) {
-    	    
-			// Handle mobile number search by converting to owner UUIDs
-			if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
-			System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
-			}
-			return allotmentRepository.getAllotmentByIds(allotmentCriteria);
-		}
 
+		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest,allotmentDbDetails);
+		setIdgenIds(allotmentRequest);
+
+	}
+
+	public AllotmentDetails searchAllotment(RequestInfo requestInfo, AllotmentCriteria allotmentCriteria) {
+
+		// Handle mobile number search by converting to owner UUIDs
+		if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
+			System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
+		}
+		return allotmentRepository.getAllotmentByIds(allotmentCriteria);
+	}
 
 	private void enrichUuidsForOwnerCreate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails=allotmentRequest.getAllotment();
-		String allotmentId=UUID.randomUUID().toString();
-		
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		String allotmentId = UUID.randomUUID().toString();
+
 //		if (!CollectionUtils.isEmpty(allotmentDetails.getDocuments())) {
-		System.out.println(allotmentDetails.getDocuments().size()+"document----------------------------------------------------");
+		System.out.println(allotmentDetails.getDocuments().size()
+				+ "document----------------------------------------------------");
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-		
-		if(allotmentDetails.getDocuments()!=null&&allotmentDetails.getDocuments().size()>0) {
-		List<Document> docList =	allotmentDetails.getDocuments().stream().map(doc -> {
-			    Document document=doc;
-			    document.setDocumentUid(allotmentId);
-			    document.setId(UUID.randomUUID().toString());
-			    document.setStatus(Status.ACTIVE);
-			    document.setAuditDetails(auditDetails);
+
+		if (allotmentDetails.getDocuments() != null && allotmentDetails.getDocuments().size() > 0) {
+			List<Document> docList = allotmentDetails.getDocuments().stream().map(doc -> {
+				Document document = doc;
+				document.setDocumentUid(allotmentId);
+				document.setId(UUID.randomUUID().toString());
+				document.setStatus(Status.ACTIVE);
+				document.setAuditDetails(auditDetails);
 				return document;
 			}).collect(Collectors.toList());
-		allotmentDetails.setDocuments(docList);	
+			allotmentDetails.setDocuments(docList);
 		}
 
-		List<OwnerInfo> lst=allotmentDetails.getOwnerInfo().stream().map(m->{
+		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(UUID.randomUUID().toString());
 			m.setAllotmentId(allotmentId);
 			return m;
 		}).collect(Collectors.toList());
 		allotmentDetails.setOwnerInfo(lst);
 		allotmentDetails.setId(allotmentId);
-		List<AllotmentDetails> allotmentDetails2=new ArrayList();
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
-		
+
 	}
-	
-	private void enrichUuidsForOwnerUpdate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails=allotmentRequest.getAllotment();
-		String allotmentId=allotmentDetails.getId();
+
+	private void enrichUuidsForOwnerUpdate(RequestInfo requestInfo, AllotmentRequest allotmentRequest,AllotmentDetails allotmentDbDetails) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AuditDetails auditDbDetails=allotmentDbDetails.getAuditDetails();
+		String allotmentId = allotmentDetails.getId();
+		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(),false);
+		auditDetails.setCreatedBy(auditDbDetails.getCreatedBy());
+		auditDetails.setCreatedTime(auditDbDetails.getCreatedTime());
 		
-//		if (!CollectionUtils.isEmpty(allotmentDetails.getDocuments())) {
-		System.out.println(allotmentDetails.getDocuments()+"document------"+allotmentDetails.getOwnerInfo());
-		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-		
-		if(allotmentDetails.getDocuments()!=null&&allotmentDetails.getDocuments().size()>0) {
-		List<Document> docList =	allotmentDetails.getDocuments().stream().map(doc -> {
-			    Document document=doc;
-			    document.setDocumentUid(allotmentId);
-			    document.setId(UUID.randomUUID().toString());
-			    document.setStatus(Status.ACTIVE);
-			    document.setAuditDetails(auditDetails);
+//		if (allotmentDetails.getWorkflow().getStatus().equals("INITIATED")) {
+			List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
+				m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
+				m.setAllotmentId(allotmentId);
+				return m;
+			}).collect(Collectors.toList());
+			allotmentDetails.setOwnerInfo(lst);
+			allotmentDetails.setId(allotmentId);
+			List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+			allotmentDetails2.add(allotmentDetails);
+			updateDocument(allotmentDetails, allotmentId, auditDetails);
+//		} else {
+//			updateDocument(allotmentDetails, allotmentId, auditDetails);
+//		}
+
+		allotmentRequest.setAllotment(allotmentDetails);
+	}
+
+	private void updateDocument(AllotmentDetails allotmentDetails, String allotmentId, AuditDetails auditDetails) {
+		if (allotmentDetails.getDocuments() != null && allotmentDetails.getDocuments().size() > 0) {
+			List<Document> docList = allotmentDetails.getDocuments().stream().map(doc -> {
+				Document document = doc;
+				document.setDocumentUid(allotmentId);
+				document.setId(doc.getId() == null ? UUID.randomUUID().toString() : doc.getId());
+				document.setStatus(Status.ACTIVE);
+				document.setAuditDetails(auditDetails);
 				return document;
 			}).collect(Collectors.toList());
-		allotmentDetails.setDocuments(docList);	
+			allotmentDetails.setDocuments(docList);
 		}
-
-		List<OwnerInfo> lst=allotmentDetails.getOwnerInfo().stream().map(m->{
-			m.setOwnerId(UUID.randomUUID().toString());
-			m.setAllotmentId(allotmentId);
-			return m;
-		}).collect(Collectors.toList());
-		allotmentDetails.setOwnerInfo(lst);
-		allotmentDetails.setId(allotmentId);
-		List<AllotmentDetails> allotmentDetails2=new ArrayList();
-		allotmentDetails2.add(allotmentDetails);
-		allotmentRequest.setAllotment(allotmentDetails);
 	}
 
-
-
-    /**
+	/**
 	 * Sets the acknowledgement and assessment Numbers for given PropertyRequest
 	 * 
 	 * @param request PropertyRequest which is to be created
@@ -246,9 +234,11 @@ public class AllotmentEnrichmentService {
 		if (config.getIsWorkflowEnabled()) {
 			allotmentDetails.setStatus(allotmentRequest.getAllotment().getWorkflow().getStatus());
 		}
-		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId, config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1).get(0);
+		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId,
+				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
+				.get(0);
 		allotmentDetails.setApplicationNumber(applicationNumber);
-		List<AllotmentDetails> allotmentDetails2=new ArrayList();
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
 	}
@@ -261,7 +251,7 @@ public class AllotmentEnrichmentService {
 //    	
 //        boundaryService.getAreaType(property, requestInfo, PTConstants.BOUNDARY_HEIRARCHY_CODE);
 //    }
-    
+
 //    /**
 //     * 
 //     * Enrichment method for mutation request
@@ -325,7 +315,7 @@ public class AllotmentEnrichmentService {
 //		
 ////		enrichUuidsForNewUpdate(requestInfo, property);
 //	}
-	
+
 //	private void enrichUuidsForNewUpdate(RequestInfo requestInfo, Property property) {
 //		
 //		AuditDetails propertyAuditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
@@ -365,11 +355,13 @@ public class AllotmentEnrichmentService {
 //				owner.setStatus(Status.ACTIVE);
 //		});
 //	}
-	
-    /**
-     * In case of SENDBACKTOCITIZEN enrich the assignee with the owners and creator of property
-     * @param property to be enriched
-     */
+
+	/**
+	 * In case of SENDBACKTOCITIZEN enrich the assignee with the owners and creator
+	 * of property
+	 * 
+	 * @param property to be enriched
+	 */
 //    public void enrichAssignes(Property property){
 //
 //            if(config.getIsWorkflowEnabled() && property.getWorkflow().getAction().equalsIgnoreCase(PTConstants.CITIZEN_SENDBACK_ACTION)){
@@ -393,6 +385,5 @@ public class AllotmentEnrichmentService {
 //                    property.getWorkflow().setAssignes(assignes);
 //            }
 //    }
-
 
 }

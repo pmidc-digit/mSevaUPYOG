@@ -57,6 +57,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<AllotmentDetails> 
 					.penaltyType(rs.getString("penalty_type"))
 					.createdTime(rs.getLong("created_time"))
 					.createdBy(rs.getString("created_by"))
+					.documents(docList)
   					.build();
 		}
 		

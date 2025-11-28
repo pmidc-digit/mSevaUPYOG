@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { CheckPoint, ConnectingCheckPoints, Loader } from "@mseva/digit-ui-react-components";
 
-/* ===== CSS CLASSES ===== */
+/* ===== RESPONSIVE CSS ===== */
 const styles = `
 .timeline-hoc-container .checkpoint header,
 .timeline-hoc-container .checkpoint-done header {
@@ -12,7 +12,7 @@ const styles = `
   width: 100%;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 20px;
+  padding: clamp(12px, 3vw, 20px);
   margin: 20px 0;
   background: #fff;
   font-family: "Segoe UI", sans-serif;
@@ -23,27 +23,29 @@ const styles = `
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: nowrap; /* keep all in one row */
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .timeline-header-item {
   display: flex;
-  flex-direction: row; /* label and value inline */
+  flex-direction: row;
   align-items: center;
-  margin-right: 16px;
-  white-space: nowrap; /* prevent line breaks */
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .timeline-label {
   font-weight: 500;
   color: #444;
-  margin-right: 6px;
+  font-size: clamp(12px, 2vw, 14px);
 }
 
 .timeline-value {
   color: #222;
   font-weight: 400;
+  font-size: clamp(12px, 2vw, 14px);
 }
 
 .timeline-note {
@@ -54,117 +56,119 @@ const styles = `
   border: 1px solid #ccc;
   border-radius: 6px;
   padding: 10px;
-  font-size: 14px;
-  min-height: 60px;
+  font-size: clamp(12px, 2vw, 14px);
+  min-height: 40px;
   background: #f9f9f9;
+  word-break: break-word;
 }
 
 .timeline-docs {
   margin-top: 16px;
 }
+
+@media (max-width: 768px) {
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .timeline-header-item {
+    width: 100%;
+  }
+  
+  .timeline-card {
+    padding: 12px;
+  }
+
+
+}
 `;
+
+/* ===== Optimized Date Parser ===== */
+const parseDate = (dateStr) => {
+    if (!dateStr || dateStr === "N/A") return null;
+    if (typeof dateStr === 'string' && dateStr?.includes('/')) {
+        const [day, month, year] = dateStr?.split('/');
+        return new Date(year, month - 1, day);
+    }
+    return new Date(dateStr);
+};
 
 /* ===== Utility: Calculate Days ===== */
 const calculateDays = (start, end) => {
     if (!start || !end) return "N/A";
 
-    // Parse DD/MM/YYYY format
-    const parseDate = (dateStr) => {
-        if (typeof dateStr === 'string' && dateStr.includes('/')) {
-            const [day, month, year] = dateStr.split('/');
-            return new Date(year, month - 1, day);
-        }
-        return new Date(dateStr);
-    };
-
     const startDate = parseDate(start);
     const endDate = parseDate(end);
 
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    if (!startDate || !endDate || isNaN(startDate?.getTime()) || isNaN(endDate?.getTime())) {
         return "N/A";
     }
 
-    const diffTime = endDate.getTime() - startDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor((endDate - startDate) / 86400000);
     return diffDays < 0 ? "N/A" : diffDays === 0 ? "0 Days" : `${diffDays} Days`;
 };
 
 /* ===== Document Components ===== */
-const PDFSvg = ({ width = 20, height = 20, style }) => (
+const PDFSvg = React.memo(({ width = 85, height = 100, style }) => (
     <svg style={style} xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 20 20" fill="gray">
         <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />
     </svg>
-);
+));
 
-const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
-    let downloadLink = documents[fileStoreId] || "";
-    let differentFormats = downloadLink?.split(",") || [];
-    let fileURL = "";
-    differentFormats.length > 0 &&
-        differentFormats.map((link) => {
-            if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
-                fileURL = link;
-            }
-        });
-    return fileURL;
+const pdfDownloadLink = (documents, fileStoreId) => {
+    const downloadLink = documents?.[fileStoreId] || "";
+    const formats = downloadLink?.split(",")?.filter(Boolean) || [];
+    return formats?.find(link => !link?.includes("large") && !link?.includes("medium") && !link?.includes("small")) || formats?.[0] || "";
 };
 
-const TimelineDocument = ({ value = {}, Code, index }) => {
-    const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
+const TimelineDocument = React.memo(({ value, Code, index }) => {
+    const { isLoading, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
 
-    const documents = value?.documents
-        ? value.documents.documents
-            .filter((doc) => doc.documentType === Code)
-            .map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }))
-        : value.filter((doc) => doc.documentType === Code).map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }));
+    const documents = useMemo(() => {
+        const docs = value?.documents ? value?.documents?.documents : value;
+        return docs?.filter(doc => doc?.documentType === Code) || [];
+    }, [value, Code]);
 
-    if (isLoading) {
-        return <Loader />;
-    }
+    if (isLoading) return <Loader />;
 
     return (
-        <div style={{ marginTop: "19px" }}>
-            <React.Fragment>
-                {data?.pdfFiles && (
-                    <div style={{ display: "flex", flexWrap: "wrap" }}>
-                        {documents?.map((document, index) => {
-                            let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
-                            return (
-                                <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
-                                    <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                                </a>
-                            );
-                        })}
-                    </div>
-                )}
-            </React.Fragment>
+        <div style={{ marginTop: "19px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            {documents?.map((document, idx) => {
+                const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
+                if (!documentLink) return null;
+                return (
+                    <a
+                        key={idx}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={documentLink}
+                        style={{ minWidth: "100px" }}
+                    >
+                        <PDFSvg style={{ background: "#f6f6f6", padding: "8px" }} />
+                    </a>
+                );
+            })}
         </div>
     );
-};
+});
 
-/* ===== Normalizer Utility ===== */
+/* ===== Optimized Normalizer ===== */
 const normalizeTimeline = (workflowDetails) => {
-    const rawTimeline = workflowDetails?.data?.timeline || [];
+    const rawTimeline = workflowDetails?.data?.timeline;
+    if (!rawTimeline || !Array.isArray(rawTimeline)) return [];
 
-    return rawTimeline.map((item, index) => {
-        let createdDate = "N/A";
-        let lastModified = "N/A";
-
-        if (item.auditDetails?.created) {
-            createdDate = item.auditDetails.created;
-        }
-
-        if (item.auditDetails?.lastModified) {
-            lastModified = item.auditDetails.lastModified;
-        }
+    return rawTimeline?.map((item, index) => {
+        const createdDate = item?.auditDetails?.created || "N/A";
+        const lastModified = item?.auditDetails?.lastModified || "N/A";
 
         return {
             id: index,
-            state: item.state,
-            performedAction: item.performedAction,
-            assignerName: item.assigner?.name || "N/A",
-            comment: item.wfComment?.[0] || "",
-            documents: item.wfDocuments || [],
+            state: item?.state,
+            assignerName: item?.assigner?.name || "N/A",
+            performedAction: item?.performedAction,
+            comment: item?.wfComment?.[0] || "",
+            documents: item?.wfDocuments || [],
             createdDate,
             lastModified,
             noOfDays: calculateDays(createdDate, lastModified),
@@ -172,85 +176,84 @@ const normalizeTimeline = (workflowDetails) => {
     });
 };
 
-/* ===== Caption Component ===== */
-const TimelineCaption = ({ checkpoint, t }) => {
-    return (
-        <div className="timeline-card">
-            {/* Header */}
-            <div className="timeline-header">
-                <div className="timeline-header-item">
-                    <span className="timeline-label">{t("Name")}:</span>
-                    <span className="timeline-value">{checkpoint.assignerName}</span>
-                </div>
-                <div className="timeline-header-item">
-                    <span className="timeline-label">{t("Action Taken")}:</span>
-                    <span className="timeline-value">{checkpoint.state}</span>
-                </div>
-                <div className="timeline-header-item">
-                    <span className="timeline-label">{t("Action Taken On")}:</span>
-                    <span className="timeline-value">{checkpoint.lastModified}</span>
-                </div>
-                <div className="timeline-header-item">
-                    <span className="timeline-label">{t("Date Received")}:</span>
-                    <span className="timeline-value">{checkpoint.createdDate}</span>
-                </div>
-                <div className="timeline-header-item">
-                    <span className="timeline-label">{t("No. of Days")}:</span>
-                    <span className="timeline-value">{checkpoint.noOfDays}</span>
-                </div>
-            </div>
+/* ===== Header Field Configuration ===== */
+const HEADER_FIELDS = [
+    { label: "CM_TIMELINE_NAME", key: "assignerName" },
+    { label: "CM_TIMELINE_ACTION_TAKEN", key: "performedAction" },
+    { label: "CM_TIMELINE_ACTION_TAKEN_ON", key: "lastModified" },
+    { label: "CM_TIMELINE_DATE_RECEIVED", key: "createdDate" },
+    { label: "CM_TIMELINE_NO_OF_DAYS", key: "noOfDays" },
+];
 
-            {/* Note */}
-            <div className="timeline-note">
-                <span className="timeline-label">{t("Note")}:</span>
-                <div className="note-box">{checkpoint.comment || t("No comments")}</div>
-            </div>
 
-            {/* Documents */}
-            {checkpoint.documents?.length > 0 && (
-                <div className="timeline-docs">
-                    <span className="timeline-label">{t("Documents Attached")}:</span>
-                    {checkpoint.documents.map((doc, index) => (
-                        <TimelineDocument
-                            key={index}
-                            value={checkpoint.documents}
-                            Code={doc?.documentType}
-                            index={index}
-                        />
-                    ))}
+/* ===== Memoized Caption Component ===== */
+const TimelineCaption = React.memo(({ checkpoint, t }) => (
+    <div className="timeline-card">
+        <div className="timeline-header">
+            {HEADER_FIELDS?.map(({ label, key }) => (
+                <div key={key} className="timeline-header-item">
+                    <span className="timeline-label">{t(label)}:</span>
+                    <span className="timeline-value">{checkpoint?.[key] || "N/A"}</span>
                 </div>
-            )}
+            ))}
         </div>
-    );
-};
 
-/* ===== Main Timeline Template ===== */
+        <div className="timeline-note">
+            <span className="timeline-label">{t("CM_TIMELINE_NOTE")}:</span>
+            <div className="note-box">{checkpoint?.comment || t("CM_TIMELINE_NO_COMMENTS")}</div>
+        </div>
+
+        {checkpoint?.documents?.length > 0 && (
+            <div className="timeline-docs">
+                <span className="timeline-label">{t("CM_TIMELINE_DOCUMENT_ATTACHED")}:</span>
+                {checkpoint?.documents?.map((doc, index) => (
+                    <TimelineDocument
+                        key={`${doc?.documentType}-${index}`}
+                        value={checkpoint?.documents}
+                        Code={doc?.documentType}
+                        index={index}
+                    />
+                ))}
+            </div>
+        )}
+    </div>
+));
+
+/* ===== Main Timeline Component ===== */
 export const TimelineHOC = ({ workflowDetails, t }) => {
     useEffect(() => {
         const styleTag = document.createElement("style");
         styleTag.innerHTML = styles;
+        styleTag.setAttribute("data-timeline-hoc", "true");
         document.head.appendChild(styleTag);
+
+        return () => {
+            const tag = document.querySelector('[data-timeline-hoc="true"]');
+            if (tag) tag?.remove();
+        };
     }, []);
 
-    const timeline = normalizeTimeline(workflowDetails);
+    const timeline = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
     const currentState = workflowDetails?.data?.timeline?.[0]?.state;
+
+    if (!timeline?.length) return null;
 
     return (
         <div className="timeline-hoc-container">
-            {timeline.length === 1 ? (
+            {timeline?.length === 1 ? (
                 <CheckPoint
                     isCompleted={true}
-                    label={t(`${timeline[0].state}`)}
-                    customChild={<TimelineCaption checkpoint={timeline[0]} t={t} />}
+                    label={t(timeline?.[0]?.state)}
+                    customChild={<TimelineCaption checkpoint={timeline?.[0]} t={t} />}
                 />
             ) : (
                 <ConnectingCheckPoints>
-                    {timeline.map((checkpoint) => (
+                    {timeline?.map((checkpoint) => (
                         <CheckPoint
-                            key={checkpoint.id}
-                            keyValue={checkpoint.id}
-                            isCompleted={checkpoint.state === currentState}
-                            label={t(`${checkpoint.state}`)}
+                            key={checkpoint?.id}
+                            keyValue={checkpoint?.id}
+                            isCompleted={checkpoint?.state === currentState}
+                            label={t(checkpoint?.state)}
                             customChild={<TimelineCaption checkpoint={checkpoint} t={t} />}
                         />
                     ))}

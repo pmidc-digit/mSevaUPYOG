@@ -1014,3 +1014,19 @@ config:
         dockerfile: 'build/maven/Dockerfile'
    #   - work-dir: "municipal-services/clu-calculator/migration"
     #    image-name: "clu-calculator-db"
+
+  - name: "builds/upyog/municipal-services/gc-calculator"
+    build:
+      - work-dir: "municipal-services/gc-calculator"
+        image-name: "gc-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/gc-calculator/src/main/resources/db"
+        image-name: "gc-calculator-db"
+
+  - name: "builds/upyog/municipal-services/gc-services"
+    build:
+      - work-dir: "municipal-services/gc-services"
+        image-name: "gc-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/gc-services/src/main/resources/db"
+        image-name: "gc-services-db"

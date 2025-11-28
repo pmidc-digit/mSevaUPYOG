@@ -29,6 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
+import { amountToWords } from "../../../utils/index";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -93,7 +94,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const applicationDetails = data?.resData
 
   console.log(applicationDetails,data, "DATALAYOUT")
-
+const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
@@ -295,8 +296,11 @@ const [viewTimeline, setViewTimeline] = useState(false);
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
+    const fee = payments?.totalAmountPaid;
+    console.log("fee here here", fee);
+    const amountinwords = amountToWords(fee);
     let response = { filestoreIds: [payments?.fileStoreId] }
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "layout-receipt")
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,amountinwords,usage }] }, "layout-receipt")
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }

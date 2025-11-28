@@ -2,6 +2,7 @@ import { CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader } from "@m
 import React from "react";
 import { useTranslation } from "react-i18next";
 import ADSWFCaption from "./ADSWFCaption";
+import TimelineHOC from "../../../ptr/src/pageComponents/TimelineHOC";
 
 const ADSWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
@@ -12,6 +13,7 @@ const ADSWFApplicationTimeline = (props) => {
     id: props.id || props.application?.applicationNumber || props.application?.bookingNo,
     moduleCode: "advandhoarding-services",
   });
+
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -52,7 +54,7 @@ const ADSWFApplicationTimeline = (props) => {
         <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSectionHeader>
       )}
 
-      {data?.timeline && data?.timeline?.length === 1 ? (
+      {/* {data?.timeline && data?.timeline?.length === 1 ? (
         <CheckPoint
           isCompleted={true}
           label={t((data?.timeline[0]?.state && `WF_${businessService}_${data.timeline[0].state}`) || "NA")}
@@ -86,7 +88,9 @@ const ADSWFApplicationTimeline = (props) => {
               );
             })}
         </ConnectingCheckPoints>
-      )}
+      )} */}
+
+      <TimelineHOC workflowDetails={data} t={t} />
     </React.Fragment>
   );
 };

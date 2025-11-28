@@ -31,6 +31,7 @@ import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
+import TimelineHOC from "../../../../../ptr/src/pageComponents/TimelineHOC";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -348,7 +349,7 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card className="ndc_card_main">
           <CardSubHeader className="ndc_label">{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -366,7 +367,8 @@ const CitizenApplicationOverview = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+      <TimelineHOC workflowDetails={workflowDetails} t={t} />
     </div>
   );
 };

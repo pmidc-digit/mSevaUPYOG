@@ -8,7 +8,7 @@ ALTER TABLE eg_gc_connection
 
 
 
-ALTER TABLE public.eg_gc_connection_audit
+ALTER TABLE eg_gc_connection_audit
     ADD COLUMN property_type VARCHAR(64),
     ADD COLUMN plot_size VARCHAR(64),
     ADD COLUMN location VARCHAR(256),

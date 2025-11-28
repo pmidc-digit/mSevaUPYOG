@@ -141,7 +141,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
                 <p style="margin:0 0 28px 0; font-weight:bold; font-size:17px; color:#000;">${getModalData?.name || ownername   }</p>
                 
                
-                <p style="margin:0; font-weight:600; color:#000; line-height:1.6;">${getModalData?.address   }</p>
+               
               </div>
             </td>
           </tr>

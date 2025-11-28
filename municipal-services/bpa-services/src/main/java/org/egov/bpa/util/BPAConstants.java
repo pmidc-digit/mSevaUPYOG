@@ -414,4 +414,8 @@ public class BPAConstants {
 
 	public static final String TENANTS = "tenants";
 
+	public static final String PENDINGVERIFICATION_STATE = "PENDINGVERIFICATION";
+	
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
+
 }

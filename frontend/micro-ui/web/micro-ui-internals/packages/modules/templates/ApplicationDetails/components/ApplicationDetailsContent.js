@@ -779,7 +779,7 @@ const caption = {
         <PaymentHistory payments={payments}/>
         {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" &&  moduleCode !== "BPAStakeholder" &&  moduleCode !== "BPAREG" &&<ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
 
-      {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
+      {/* {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
           <BreakLine />
           {(workflowDetails?.isLoading || isDataLoading) && <Loader />}
@@ -837,7 +837,7 @@ const caption = {
             </Fragment>
           )}
         </React.Fragment>
-      )}
+      )} */}
 
       {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container" style={{ display: "block" }}>

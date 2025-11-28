@@ -16,6 +16,7 @@ import PTRWFCaption from "./PTRWFCaption";
 import PTRModal from "./PTRModal";
 import PTRWFDocument from "./PTRWFDocument";
 import { Loader } from "../components/Loader";
+import { TimelineTemplate } from "./TimeLine";
 
 const PTRWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
@@ -278,7 +279,7 @@ const PTRWFApplicationTimeline = (props) => {
           </CardSectionHeader>
         )}
 
-        {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
+        {/* {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
           <CheckPoint
             isCompleted={true}
             label={t((workflowDetails?.data?.timeline[0]?.state && `WF_${businessService}_${workflowDetails?.data.timeline[0].state}`) || "NA")}
@@ -303,7 +304,9 @@ const PTRWFApplicationTimeline = (props) => {
                 );
               })}
           </ConnectingCheckPoints>
-        )}
+        )} */}
+
+        <TimelineTemplate workflowDetails={workflowDetails} businessService={businessService} t={t} />
 
         {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
           <ActionBar>

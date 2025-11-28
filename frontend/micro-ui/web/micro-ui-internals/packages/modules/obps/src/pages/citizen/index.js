@@ -53,6 +53,8 @@ const App = ({ path }) => {
   const LayoutResponseEmployee = Digit.ComponentRegistryService.getComponent("LayoutResponseEmployee");
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
   const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
+  const LayoutSearchApplication = Digit?.ComponentRegistryService?.getComponent("LayoutSearchApplication");
+  const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications"); 
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
@@ -72,6 +74,8 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseEmployee} />
         <PrivateRoute path={`${path}/layout/:id`} component={LayoutApplicationSummary} />
+        <PrivateRoute path={`${path}/layout/search-application`} component={LayoutSearchApplication} />
+         <PrivateRoute path={`${path}/layout/my-applications`} component={LayoutMyApplications} />
 
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/clu/response/:id`} component={CLUResponse} />

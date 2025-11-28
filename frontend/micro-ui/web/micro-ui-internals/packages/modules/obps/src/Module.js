@@ -97,6 +97,8 @@ import LayoutCLUDetails from "./pageComponents/LayoutCLUDetails";
 import LayoutSpecificationDetails from "./pageComponents/LayoutSpecificationDetails";
 import LayoutDocumentsRequired from "./pageComponents/LayoutDocumentsRequired";
 import LayoutSummary from "./pageComponents/LayoutSummary";
+import LayoutSearchApplication from "./pages/citizen/LayoutSearchApplication/index";
+
 import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
 import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
 import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
@@ -116,6 +118,7 @@ import LayoutInbox from "./pages/employee/Inbox/LayoutInbox";
 import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
 import LayoutResponseEmployee from "./pages/employee/ApplicationOverview/LayoutResponseEmployee";
 import EditLayoutApplication from "./pageComponents/EditApplication/EditLayoutApplication";
+import LayoutMyApplications from "./pages/citizen/Applications/LayoutMyApplications";
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -274,7 +277,10 @@ const componentsToRegister = {
   CLUMyApplications,
   CLUEditApplication,
   CLUApplicationDetails,
+  LayoutApplicationDetails,
   CLUSearchApplication,
+  LayoutSearchApplication,
+  LayoutMyApplications,
   CLUInbox,
   CLUEmployeeApplicationDetails
 }

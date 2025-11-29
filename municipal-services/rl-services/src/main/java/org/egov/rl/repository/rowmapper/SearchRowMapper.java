@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.rl.models.*;
 import org.egov.rl.models.enums.Relationship;
 import org.egov.rl.models.enums.Status;
+import org.egov.rl.models.oldProperty.Address;
+import org.egov.rl.models.user.User;
 import org.egov.rl.service.BoundaryService;
+import org.egov.rl.service.UserService;
 import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
@@ -27,6 +31,9 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
     
 	@Autowired
 	RestTemplate restTemplate;// = new RestTemplate();
+	
+	@Autowired
+	UserService userService;
     
 	@Override
 	public List<AllotmentDetails> extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -45,12 +52,12 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 					.startDate(rs.getLong("start_date"))
 					.endDate(rs.getLong("end_date"))
 					.termAndCondition(rs.getString("term_and_condition"))
+					.ownerInfo(null)
 					.penaltyType(rs.getString("penalty_type"))
 					.createdTime(rs.getLong("created_time"))
 					.createdBy(rs.getString("created_by"))
 					.auditDetails(auditDetails)
   					.build());
-
 		}
 		
 		return currentAllotment;
@@ -68,6 +75,6 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 		}
 		return null;
 	}
-
+		
 }
 

@@ -17,48 +17,45 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AllotmentQueryBuilder {
 
-	private static final String SEARCH_BASE_QUERY ="SELECT * FROM eg_rl_allotment ";
+	private static final String SEARCH_BASE_QUERY = "SELECT * FROM eg_rl_allotment ";
 
-
-	private static final String BASE_QUERY ="SELECT\r\n"
-			+ "    al.*,\r\n"
-			+ "    ap.*,\r\n"
-			+ "    doc.*,\r\n"
-			+ "    doc_count.documentCount,\r\n"
-			+ "    ap_count.applicantCount\r\n"
-			+ "FROM eg_rl_allotment al\r\n"
+	private static final String BASE_QUERY = "SELECT\r\n" + "    al.*,\r\n" + "    ap.*,\r\n" + "    doc.*,\r\n"
+			+ "    doc_count.documentCount,\r\n" + "    ap_count.applicantCount,\r\n"
+			+ "    total_count.totalAllotments\r\n" + "FROM eg_rl_allotment al\r\n"
 			+ "INNER JOIN eg_rl_owner_info ap ON al.id = ap.allotment_id\r\n"
-			+ "INNER JOIN eg_rl_document doc ON al.id = doc.allotment_id\r\n"
-			+ "LEFT JOIN (\r\n"
-			+ "    SELECT allotment_id, COUNT(DISTINCT id) AS documentCount\r\n"
-			+ "    FROM eg_rl_document\r\n"
-			+ "    GROUP BY allotment_id\r\n"
-			+ ") doc_count ON doc_count.allotment_id = al.id\r\n"
-			+ "LEFT JOIN (\r\n"
-			+ "    SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount\r\n"
-			+ "    FROM eg_rl_owner_info\r\n"
-			+ "    GROUP BY allotment_id\r\n"
-			+ ") ap_count ON ap_count.allotment_id = al.id ";
-//		    "SELECT al.*, ap.*, count(ap.*) as applicantCount,doc.*,count(doc.*) as documentCount FROM eg_rl_allotment al " +
-//		    "INNER JOIN eg_rl_applicant ap ON al.id = ap.allotment_id INNER JOIN eg_rl_document doc ON al.id = doc.allotment_id ";
-	
-//	private final String GROUPBY_QUERY = " GROUP BY al.id, ap.id , doc.id;";
+			+ "INNER JOIN eg_rl_document doc ON al.id = doc.allotment_id\r\n" + "LEFT JOIN (\r\n"
+			+ "    SELECT allotment_id, COUNT(DISTINCT id) AS documentCount\r\n" + "    FROM eg_rl_document\r\n"
+			+ "    GROUP BY allotment_id\r\n" + ") doc_count ON doc_count.allotment_id = al.id\r\n" + "LEFT JOIN (\r\n"
+			+ "    SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount\r\n" + "    FROM eg_rl_owner_info\r\n"
+			+ "    GROUP BY allotment_id\r\n" + ") ap_count ON ap_count.allotment_id = al.id\r\n" + " CROSS JOIN (\r\n"
+			+ "SELECT COUNT(*) AS totalAllotments FROM eg_rl_allotment al \r\n";
+	String GROUPBY_QUERY = ") total_count\r\n";
 
 	public String getAllotmentSearchById(AllotmentCriteria criteria, List<Object> preparedStmtList) {
-
 		StringBuilder subQuery = new StringBuilder("");
 		List<Object> subQueryParams = new ArrayList<>();
-
-
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
 			subQuery.append(" al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
-		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
-			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
-			addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+		if (!criteria.getIsReportSearch()) {
+			if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
+				addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+			}
+		}
+		if (criteria.getIsReportSearch()) {
+			if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+				addClauseIfRequired(subQuery, subQueryParams);
+                if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+					subQuery.append(" (al.start_date >= ? AND al.end_date <= ?) OR al.end_date <= ? ");
+					subQueryParams.add(criteria.getFromDate()); // long value
+					subQueryParams.add(criteria.getToDate()); // long value
+					subQueryParams.add(criteria.getToDate()); // long value
+				}
+			}
 		}
 //		
 		// Now build the main query
@@ -75,7 +72,9 @@ public class AllotmentQueryBuilder {
 		preparedStmtList.addAll(subQueryParams);
 
 		// Order the final result
-//		mainQuery.append(GROUPBY_QUERY);
+		mainQuery.append(GROUPBY_QUERY);
+		mainQuery.append(subQuery);
+		preparedStmtList.addAll(subQueryParams);
 
 		return mainQuery.toString();
 	}
@@ -86,8 +85,7 @@ public class AllotmentQueryBuilder {
 		} else {
 			query.append("AND");
 		}
-    }
-
+	}
 
 	private String createQuery(Set<String> ids) {
 		StringBuilder builder = new StringBuilder();
@@ -105,21 +103,20 @@ public class AllotmentQueryBuilder {
 			preparedStmtList.add(id);
 		});
 	}
-	
+
 	public String createdAllotedQuery(String tenantId) {
-	    long currentDate = System.currentTimeMillis(); // current timestamp in long
-	      
-	    StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-	    mainQuery.append(" WHERE tenant_id='").append(tenantId).append("'");
-	    mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
-	    return mainQuery.toString();
-	}	
-	
+		long currentDate = System.currentTimeMillis(); // current timestamp in long
+
+		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
+		mainQuery.append(" WHERE tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+		return mainQuery.toString();
+	}
+
 	public String getAllotmentByApplicationNumber(AllotmentCriteria criteria, List<Object> preparedStmtList) {
 
 		StringBuilder subQuery = new StringBuilder("");
 		List<Object> subQueryParams = new ArrayList<>();
-
 
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
@@ -128,7 +125,8 @@ public class AllotmentQueryBuilder {
 		}
 		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.application_number IN (").append(createQuery(criteria.getApplicationNumbers())).append(" ) ");
+			subQuery.append(" al.application_number IN (").append(createQuery(criteria.getApplicationNumbers()))
+					.append(" ) ");
 			addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
 		}
 		// Now build the main query
@@ -141,18 +139,15 @@ public class AllotmentQueryBuilder {
 		// Order the final result
 		return mainQuery.toString();
 	}
-	
-	public String getAllotmentByPropertyId(String propertyId,String tenantId) {
-	    long currentDate = System.currentTimeMillis(); // current timestamp in long
-	      
-	    StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-	    mainQuery.append(" WHERE tenant_id='").append(tenantId).append("'");
-	    mainQuery.append(" AND property_id='").append(propertyId).append("'");
-	    mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
-	    return mainQuery.toString();
+
+	public String getAllotmentByPropertyId(String propertyId, String tenantId) {
+		long currentDate = System.currentTimeMillis(); // current timestamp in long
+
+		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
+		mainQuery.append(" WHERE tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" AND property_id='").append(propertyId).append("'");
+		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+		return mainQuery.toString();
 	}
 
 }
-
-
-

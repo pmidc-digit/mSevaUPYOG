@@ -33,7 +33,7 @@ public class PropertyController {
 	@GetMapping("/_list")
     public ResponseEntity<PropertyReportSearchResponse> vacantProperty(@RequestBody PropertyReportSearchRequest propertyReportSearchRequest) {
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(propertyReportSearchRequest.getRequestInfo(), true);
-		List<RLProperty> propertyList=searchPropertyService.propertyListSearch(propertyReportSearchRequest);
+		Object propertyList=searchPropertyService.propertyListSearch(propertyReportSearchRequest);
         PropertyReportSearchResponse response = PropertyReportSearchResponse.builder()
                 .responseInfo(resInfo)
                 .property(propertyList)

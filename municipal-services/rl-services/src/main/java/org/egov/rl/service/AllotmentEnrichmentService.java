@@ -3,6 +3,7 @@ package org.egov.rl.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -111,7 +112,8 @@ public class AllotmentEnrichmentService {
 		id.add(allotmentRequest.getAllotment().getId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
-		AllotmentDetails allotmentDbDetails = searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria);
+		AllotmentDetails allotmentDbDetails = Optional
+				.ofNullable(searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).get(0)).orElse(null);
 
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
 		auditDetails.setCreatedBy(allotmentDbDetails.getCreatedBy());
@@ -132,18 +134,23 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
 		allotmentRequest.setAllotment(allotmentDbDetails);
 
-		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest,allotmentDbDetails);
+		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
 		setIdgenIds(allotmentRequest);
 
 	}
 
-	public AllotmentDetails searchAllotment(RequestInfo requestInfo, AllotmentCriteria allotmentCriteria) {
-
-		// Handle mobile number search by converting to owner UUIDs
-		if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
-			System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
+	public List<AllotmentDetails> searchAllotment(RequestInfo requestInfo, AllotmentCriteria allotmentCriteria) {
+		try {
+			// Handle mobile number search by converting to owner UUIDs
+			if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
+				System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
+			}
+			return allotmentRepository.getAllotmentByIds(allotmentCriteria);
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO: handle exception
 		}
-		return allotmentRepository.getAllotmentByIds(allotmentCriteria);
+		return null;
 	}
 
 	private void enrichUuidsForOwnerCreate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
@@ -180,25 +187,26 @@ public class AllotmentEnrichmentService {
 
 	}
 
-	private void enrichUuidsForOwnerUpdate(RequestInfo requestInfo, AllotmentRequest allotmentRequest,AllotmentDetails allotmentDbDetails) {
+	private void enrichUuidsForOwnerUpdate(RequestInfo requestInfo, AllotmentRequest allotmentRequest,
+			AllotmentDetails allotmentDbDetails) {
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-		AuditDetails auditDbDetails=allotmentDbDetails.getAuditDetails();
+		AuditDetails auditDbDetails = allotmentDbDetails.getAuditDetails();
 		String allotmentId = allotmentDetails.getId();
-		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(),false);
+		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
 		auditDetails.setCreatedBy(auditDbDetails.getCreatedBy());
 		auditDetails.setCreatedTime(auditDbDetails.getCreatedTime());
-		
+
 //		if (allotmentDetails.getWorkflow().getStatus().equals("INITIATED")) {
-			List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
-				m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
-				m.setAllotmentId(allotmentId);
-				return m;
-			}).collect(Collectors.toList());
-			allotmentDetails.setOwnerInfo(lst);
-			allotmentDetails.setId(allotmentId);
-			List<AllotmentDetails> allotmentDetails2 = new ArrayList();
-			allotmentDetails2.add(allotmentDetails);
-			updateDocument(allotmentDetails, allotmentId, auditDetails);
+		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
+			m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
+			m.setAllotmentId(allotmentId);
+			return m;
+		}).collect(Collectors.toList());
+		allotmentDetails.setOwnerInfo(lst);
+		allotmentDetails.setId(allotmentId);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		updateDocument(allotmentDetails, allotmentId, auditDetails);
 //		} else {
 //			updateDocument(allotmentDetails, allotmentId, auditDetails);
 //		}

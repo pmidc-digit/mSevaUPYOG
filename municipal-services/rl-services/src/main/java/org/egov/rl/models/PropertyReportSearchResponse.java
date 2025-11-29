@@ -24,5 +24,5 @@ public class PropertyReportSearchResponse {
     ResponseInfo responseInfo;
     
     @JsonProperty("property")
-    private List<RLProperty> property;
+    private Object property;
 }

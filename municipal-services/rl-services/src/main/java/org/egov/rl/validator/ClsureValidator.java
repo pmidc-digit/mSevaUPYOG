@@ -73,7 +73,7 @@ public class ClsureValidator {
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentClsure.getTenantId());
 		
-	    AllotmentDetails alllAllotmentDetails=allotmentRepository.getAllotmentByIds(allotmentCriteria);
+	    AllotmentDetails alllAllotmentDetails=Optional.ofNullable(allotmentRepository.getAllotmentByIds(allotmentCriteria).get(0)).orElse(null);
 	    if (alllAllotmentDetails == null)
 			throw new CustomException("CLSURE INFO ERROR",
 					"Enter valid allotment_id , please provide the CLSURE information");
@@ -122,7 +122,7 @@ public class ClsureValidator {
 		id.add(clsureRequest.getAllotmentClsure().getAllotmentId());
 		allotmentCriteria.setTenantId(allotmentClsure.getTenantId());
 		allotmentCriteria.setAllotmentIds(id);
-		AllotmentDetails alllAllotmentDetails=allotmentRepository.getAllotmentByIds(allotmentCriteria);
+		AllotmentDetails alllAllotmentDetails=Optional.ofNullable(allotmentRepository.getAllotmentByIds(allotmentCriteria).get(0)).orElse(null);
 		System.out.println("alootment data get successfully------"+alllAllotmentDetails.getId());
 		if (alllAllotmentDetails == null)
 			throw new CustomException("CLSURE INFO ERROR",

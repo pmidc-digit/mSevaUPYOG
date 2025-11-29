@@ -39,7 +39,7 @@ public class AllotmentRepository {
 	SearchRowMapper searchRowMapper;
     
 	
-	public AllotmentDetails getAllotmentByIds(AllotmentCriteria criterias) {
+	public List<AllotmentDetails> getAllotmentByIds(AllotmentCriteria criterias) {
 
 		List<Object> preparedStmtList = new ArrayList<>();
 		
@@ -54,7 +54,7 @@ public class AllotmentRepository {
 
 	}
 	
-	public AllotmentDetails getAllotmentByApplicationNumber(AllotmentCriteria criterias) {
+	public List<AllotmentDetails> getAllotmentByApplicationNumber(AllotmentCriteria criterias) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getAllotmentByApplicationNumber(criterias, preparedStmtList);
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);

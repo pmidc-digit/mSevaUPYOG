@@ -3,6 +3,7 @@ package org.egov.rl.service;
 import java.security.acl.Owner;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -104,6 +105,12 @@ public class AllotmentService {
 	}
 	
 	public AllotmentRequest allotmentSearch(AllotmentRequest allotmentRequest){
+		allotmentRequest.setAllotment(searchAllotedProperty(allotmentRequest));
+	    return allotmentRequest;
+	}
+	
+	public AllotmentDetails searchAllotedProperty(AllotmentRequest allotmentRequest) {
+		
 		AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
 		Set<String> id=new HashSet<>();
 		id.add(allotmentRequest.getAllotment().getId());
@@ -111,8 +118,7 @@ public class AllotmentService {
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
 		
 		JsonNode additionalDetails=boundaryService.loadPropertyData(allotmentRequest);
-		AllotmentDetails allotmentDetails= allotmentEnrichmentService.searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria);
-		
+		AllotmentDetails allotmentDetails= Optional.ofNullable(allotmentEnrichmentService.searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).get(0)).orElse(null);
 		List<OwnerInfo> ownerList=allotmentDetails.getOwnerInfo().stream().map(u->{
 			String[] tenantId=allotmentRequest.getAllotment().getTenantId().split("\\.");
 			User userDetails=userService.searchByUuid(u.getUserUuid(),tenantId.length>1?tenantId[0]:allotmentRequest.getAllotment().getTenantId()).getUser().get(0);
@@ -140,7 +146,7 @@ public class AllotmentService {
 		}).collect(Collectors.toList());
 		allotmentDetails.setOwnerInfo(ownerList);
 		allotmentDetails.setAdditionalDetails(additionalDetails);
-		allotmentRequest.setAllotment(allotmentDetails);
-	    return allotmentRequest;
+		
+		return allotmentDetails;
 	}
 }

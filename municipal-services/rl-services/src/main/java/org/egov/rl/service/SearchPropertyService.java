@@ -1,10 +1,15 @@
 package org.egov.rl.service;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.egov.mdms.model.MasterDetail;
@@ -15,8 +20,12 @@ import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.OwnerInfo;
+import org.egov.rl.models.PropertyReport;
 import org.egov.rl.models.PropertyReportSearchRequest;
 import org.egov.rl.models.RLProperty;
+import org.egov.rl.models.oldProperty.Address;
+import org.egov.rl.models.user.User;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
@@ -47,41 +56,94 @@ public class SearchPropertyService {
 
 	@Autowired
 	private AllotmentRepository allotmentRepository;
-	
+
 	@Autowired
 	private RentLeaseConfiguration configs;
 
 	@Autowired
 	RestTemplate restTemplate;// = new RestTemplate();
-	
+
 	@Autowired
 	private AllotmentEnrichmentService allotmentEnrichmentService;
 
 	@Autowired
 	BoundaryService boundaryService;
+	
+	@Autowired
+	AllotmentService allotmentService;
+	
+	@Autowired
+	UserService userService;
 
 	@Autowired
-    private ObjectMapper mapper;
-		
-	public List<RLProperty> propertyListSearch(PropertyReportSearchRequest propertyReportSearchRequest){
-		AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
-		
-		Set<String> id=new HashSet<>();
+	private ObjectMapper mapper;
+
+	public Object propertyListSearch(PropertyReportSearchRequest propertyReportSearchRequest) {
+		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
+		allotmentCriteria.setIsReportSearch(true);
+		allotmentCriteria.setFromDate(1764547200000l);
+		allotmentCriteria.setToDate(1825094400000l);
+
+		Set<String> id = new HashSet<>();
 		id.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(propertyReportSearchRequest.getSearchProperty().getTenantId());
-		List<AllotmentDetails> allotmentDetailsList=allotmentRepository.getAllotedByTanentIds(allotmentCriteria);
-		List<String> propertyIdList=allotmentDetailsList.stream().map(d->d.getPropertyId()).collect(Collectors.toList());
-		List<RLProperty> propertyList=boundaryService.loadPropertyData(propertyReportSearchRequest);
-		boolean isVacant=propertyReportSearchRequest.getSearchProperty().getSearchType().equals("1");
+		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentByIds(allotmentCriteria).stream().map(d->{
+			AllotmentDetails al1=d;
+			al1.setOwnerInfo(userList(d, propertyReportSearchRequest.getSearchProperty().getTenantId()));
+			return al1;
+		}).collect(Collectors.toList());
 		
-		List<RLProperty> propertyLists = isVacant?(propertyList.stream()
-	                .filter(prop ->!propertyIdList.contains(prop.getPropertyId()))
-	                .collect(Collectors.toList())):(propertyList.stream()
-	    	                .filter(prop ->propertyIdList.contains(prop.getPropertyId()))
-	    	                .collect(Collectors.toList()));
-		 
-		 return propertyLists;
+		List<String> propertyIdList = allotmentDetailsList.stream().map(d -> d.getPropertyId())
+				.collect(Collectors.toList());
+		List<RLProperty> propertyList = boundaryService.loadPropertyData(propertyReportSearchRequest);
+		boolean isVacant = propertyReportSearchRequest.getSearchProperty().getSearchType().equals("1");
+		Object propertyLists = isVacant
+				? (propertyList.stream().filter(prop -> !propertyIdList.contains(prop.getPropertyId()))
+						.collect(Collectors.toList()))
+				: (propertyList.stream().filter(prop -> propertyIdList.contains(prop.getPropertyId())).map(d -> {
+					AllotmentDetails al = allotmentDetailsList.stream().filter(d2 -> d2.getPropertyId().equals(d.getPropertyId())).collect(Collectors.toList()).get(0);
+					LocalDate endDate = new Date(al.getEndDate()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+					LocalDate currentDate = LocalDate.now();
+					// Calculate difference
+					Period period = Period.between(endDate, currentDate);
+					String months = String.valueOf(period.getMonths()).replace("-", "");
+					String days = String.valueOf(period.getDays()).replace("-", "");
+                    String afterProperty="after "+months+" month "+days+" day"+(Long.valueOf(days)>1?"s":"")+" expaire".replaceAll("-", "");
+                   return PropertyReport.builder().exapire(afterProperty).allocatedTo(al.getOwnerInfo()).property(d).build();
+				}).collect(Collectors.toList()));
+
+		return propertyLists;
+	}
+	
+	private List<OwnerInfo> userList(AllotmentDetails allotmentDetails,String tenantIds){
+		List<OwnerInfo> ownerList=allotmentDetails.getOwnerInfo().stream().map(u->{
+			String[] tenantId=tenantIds.split("\\.");
+			User userDetails=userService.searchByUuid(u.getUserUuid(),tenantId.length>1?tenantId[0]:tenantIds).getUser().get(0);
+			String[] names=userDetails.getName().split("\\s+");
+			u.setFirstName(names.length>0?names[0]:"");
+			u.setMiddleName(names.length>1?names[1]:"");
+			u.setLastName(names.length>2?names[2]:"");
+			org.egov.rl.models.oldProperty.Address permemantAddress=Address.builder()
+					.addressLine1(userDetails.getPermanentAddress())
+					.city(userDetails.getPermanentCity())
+					.pincode(userDetails.getPermanentPincode())
+					.build();
+			u.setPermanentAddress(permemantAddress);
+			org.egov.rl.models.oldProperty.Address crosAddress=Address.builder()
+					.addressLine1(userDetails.getCorrespondenceAddress())
+					.city(userDetails.getCorrespondenceCity())
+					.pincode(userDetails.getCorrespondencePincode())
+					.build();
+			u.setCorrespondenceAddress(crosAddress);
+			u.setMobileNo(userDetails.getMobileNumber());
+			u.setEmailId(userDetails.getEmailId());
+			u.setDob(userDetails.getDob());
+			u.setActive(userDetails.getActive());
+			return u;
+		}).collect(Collectors.toList());
+		
+		return ownerList;
 	}
 
 

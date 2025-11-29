@@ -20,60 +20,60 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Component
-public class AllotmentRowMapper implements ResultSetExtractor<AllotmentDetails> {
-    
+public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
+
 	@Autowired
 	private ObjectMapper mapper;
-    
+
 	@Autowired
 	RestTemplate restTemplate;// = new RestTemplate();
-    
+
 	@Override
-	public AllotmentDetails extractData(ResultSet rs) throws SQLException, DataAccessException {
-		AllotmentDetails currentAllotment =null;
+	public List<AllotmentDetails> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		AuditDetails auditDetails = null;
+		List<AllotmentDetails> currentAllotmentList = new ArrayList<>();
+
 		List<OwnerInfo> userList = new ArrayList<>();
 		List<Document> docList = new ArrayList<>();
-				
+		AllotmentDetails currentAllotment = null;
 		while (rs.next()) {
-			if(userList.size()<rs.getLong("applicantCount")){
+			if (currentAllotmentList.size() <= rs.getLong("totalAllotments")) {
+				if (currentAllotment != null) {
+					String allotmentId = currentAllotment.getId();
+					if (currentAllotmentList.stream().noneMatch(d -> d.getId().equals(allotmentId))) {
+						currentAllotmentList.add(currentAllotment);
+					}
+				}
+			}
+			if (userList.size() < rs.getLong("applicantCount")) {
 				userList.add(getOwnerInfo(rs));
 			}
-			if(docList.size()<rs.getLong("documentCount")){
+			if (docList.size() < rs.getLong("documentCount")) {
 				docList.add(getDocuments(rs));
 			}
 			auditDetails = getAuditDetail(rs, "allotment");
-			currentAllotment = AllotmentDetails.builder()
-					.id(rs.getString("id"))
-					.propertyId(rs.getString("property_id"))
-					.tenantId(rs.getString("tenant_id"))
-					.isAutoRenewal(rs.getBoolean("is_auto_renewal"))
+			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
+					.tenantId(rs.getString("tenant_id")).isAutoRenewal(rs.getBoolean("is_auto_renewal"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
 					.applicationStatus(rs.getInt("application_status"))
-					.applicationType(rs.getString("application_type"))
-					.startDate(rs.getLong("start_date"))
-					.endDate(rs.getLong("end_date"))
-					.termAndCondition(rs.getString("term_and_condition"))
-					.penaltyType(rs.getString("penalty_type"))
-					.createdTime(rs.getLong("created_time"))
-					.createdBy(rs.getString("created_by"))
-					.documents(docList)
-  					.build();
+					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
+					.endDate(rs.getLong("end_date")).termAndCondition(rs.getString("term_and_condition"))
+					.penaltyType(rs.getString("penalty_type")).createdTime(rs.getLong("created_time"))
+					.createdBy(rs.getString("created_by")).documents(docList).ownerInfo(userList)
+					.auditDetails(auditDetails).build();
 		}
-		
-		currentAllotment.setOwnerInfo(userList);
-		currentAllotment.setAuditDetails(auditDetails);		
-		return currentAllotment;
+
+//		currentAllotment.setOwnerInfo(userList);
+//		currentAllotment.setAuditDetails(auditDetails);		
+		return currentAllotmentList;
 
 	}
 
 	private OwnerInfo getOwnerInfo(ResultSet rs) {
-		OwnerInfo owner=null;
+		OwnerInfo owner = null;
 		try {
-		    owner = OwnerInfo.builder()
-				    .ownerId(rs.getString("id"))
-				    .allotmentId(rs.getString("allotment_id"))
-				    .userUuid(rs.getString("user_uuid"))
+			owner = OwnerInfo.builder().ownerId(rs.getString("id")).allotmentId(rs.getString("allotment_id"))
+					.userUuid(rs.getString("user_uuid"))
 //					.gender(rs.getString("gender"))
 //					.fatherOrHusbandName(rs.getString("father_or_husband_name"))
 					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
@@ -86,9 +86,9 @@ public class AllotmentRowMapper implements ResultSetExtractor<AllotmentDetails> 
 //					.mobileNo(rs.getString("mobile_no"))
 //					.permanentAddress(rs.getObject("permanentAddress").)
 //					.aadharCardNumber(rs.getString("aadhar_card_number"))
-					.aadharCard(rs.getString("aadhar_card"))
+//					.aadharCard(rs.getString("aadhar_card"))
 //					.panCardNumber(rs.getString("pan_card_number"))
-					.panCard(rs.getString("pan_card"))
+//					.panCard(rs.getString("pan_card"))
 //					.relationship(Relationship.valueOf(rs.getString("relationship")))
 //					.active(rs.getBoolean("active"))
 //					.dob(rs.getLong("dob"))
@@ -115,13 +115,10 @@ public class AllotmentRowMapper implements ResultSetExtractor<AllotmentDetails> 
 
 	private Document getDocuments(ResultSet rs) throws SQLException {
 
-			 return Document.builder()
-					 .id(rs.getString("id"))
-					 .documentUid(rs.getString("allotment_id"))
-					 .documentType(rs.getString("documenttype"))
-					 .fileStoreId(rs.getString("fileStoreId"))
+		return Document.builder().id(rs.getString("id")).documentUid(rs.getString("allotment_id"))
+				.documentType(rs.getString("documenttype")).fileStoreId(rs.getString("fileStoreId"))
 //					 .documentUid(entityId).id(docId).auditDetails(allotmentRequest.getAllotment().getAuditDetails())
-					.build();
+				.build();
 	}
 }
 

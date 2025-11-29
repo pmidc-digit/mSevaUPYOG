@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS eg_gc_connectionholder(
   CONSTRAINT fk_eg_gc_connectionholder FOREIGN KEY (connectionid) REFERENCES eg_gc_connection (id)
  );
 
- CREATE INDEX eg_gc_connectionholder_connectionid ON public.eg_gc_connectionholder USING btree (connectionid) WITH (deduplicate_items='true');
- CREATE INDEX index_eg_gc_connectionholder_userid ON public.eg_gc_connectionholder USING btree (userid);
+ CREATE INDEX IF NOT EXISTS eg_gc_connectionholder_connectionid ON public.eg_gc_connectionholder USING btree (connectionid) WITH (deduplicate_items='true');
+ CREATE INDEX IF NOT EXISTS index_eg_gc_connectionholder_userid ON public.eg_gc_connectionholder USING btree (userid);

@@ -1,4 +1,4 @@
-CREATE TABLE eg_gc_connection_audit (
+CREATE TABLE IF NOT EXISTS eg_gc_connection_audit (
 	id varchar(64) NOT NULL,
 	tenantid varchar(250) NOT NULL,
 	property_id varchar(64) NOT NULL,
@@ -28,12 +28,12 @@ CREATE TABLE eg_gc_connection_audit (
 	disconnectionreason varchar(1024) NULL,
 	disconnectionexecutiondate int8 NULL
 );
-CREATE INDEX index_eg_gc_connection_audit_applicationno ON public.eg_gc_connection_audit USING btree (applicationno);
-CREATE INDEX index_eg_gc_connection_audit_applicationstatus ON public.eg_gc_connection_audit USING btree (applicationstatus);
-CREATE INDEX index_eg_gc_connection_audit_connectionno ON public.eg_gc_connection_audit USING btree (connectionno);
-CREATE INDEX index_eg_gc_connection_audit_oldconnectionno ON public.eg_gc_connection_audit USING btree (oldconnectionno);
-CREATE INDEX index_eg_gc_connection_audit_property_id ON public.eg_gc_connection_audit USING btree (property_id);
-CREATE INDEX index_eg_gc_connection_audit_tenantid ON public.eg_gc_connection_audit USING btree (tenantid);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_applicationno ON public.eg_gc_connection_audit USING btree (applicationno);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_applicationstatus ON public.eg_gc_connection_audit USING btree (applicationstatus);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_connectionno ON public.eg_gc_connection_audit USING btree (connectionno);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_oldconnectionno ON public.eg_gc_connection_audit USING btree (oldconnectionno);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_property_id ON public.eg_gc_connection_audit USING btree (property_id);
+CREATE INDEX IF NOT EXISTS index_eg_gc_connection_audit_tenantid ON public.eg_gc_connection_audit USING btree (tenantid);
 
 
 CREATE TABLE IF NOT EXISTS eg_gc_service_audit (
@@ -58,21 +58,21 @@ CREATE TABLE IF NOT EXISTS eg_gc_service_audit (
 CREATE INDEX IF NOT EXISTS index_eg_gc_service_audit_appCreatedDate ON eg_gc_service_audit (appCreatedDate);
 
 
-CREATE SEQUENCE SEQ_GC_CON_ID
+CREATE SEQUENCE IF NOT EXISTS SEQ_GC_CON_ID
 START WITH 1
 INCREMENT BY 1;
 
 
 
-CREATE SEQUENCE SEQ_GC_APP_ID
+CREATE SEQUENCE IF NOT EXISTS SEQ_GC_APP_ID
 START WITH 1
 INCREMENT BY 1;
 
 
-CREATE SEQUENCE DC_SEQ_GC_APP_ID
+CREATE SEQUENCE IF NOT EXISTS DC_SEQ_GC_APP_ID
 START WITH 1
 INCREMENT BY 1;
 
 
-ALTER TABLE public.eg_gc_applicationdocument
+ALTER TABLE IF EXISTS public.eg_gc_applicationdocument
 RENAME COLUMN documentuid TO applicationid;

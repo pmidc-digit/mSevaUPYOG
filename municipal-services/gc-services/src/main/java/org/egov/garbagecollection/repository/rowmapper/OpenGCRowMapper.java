@@ -56,6 +56,11 @@ public class OpenGCRowMapper implements ResultSetExtractor<List<GarbageConnectio
                 garbageConnection
                         .processInstance(ProcessInstance.builder().action((rs.getString("action"))).build());
                 garbageConnection.setPropertyId(rs.getString("property_id"));
+                garbageConnection.setPropertyType(rs.getString("property_type"));
+                garbageConnection.setPlotSize(rs.getString("plot_size"));
+                garbageConnection.setLocation(rs.getString("location"));
+                garbageConnection.setFrequency_of_garbage_collection(rs.getString("frequency_of_garbage_collection"));
+                garbageConnection.setTypeOfWaste(rs.getString("type_of_waste"));
 
                 garbageConnection.setConnectionExecutionDate(rs.getLong("connectionExecutionDate"));
                 garbageConnection.setApplicationType(rs.getString("applicationType"));

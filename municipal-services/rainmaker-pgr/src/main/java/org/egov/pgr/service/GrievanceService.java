@@ -60,6 +60,9 @@ public class GrievanceService {
 
 	@Value("${kafka.topics.save.service}")
 	private String saveTopic;
+	
+	@Value("${kafka.topics.save.dgr.service}")
+	private String saveForDgrTopic;	
 
 	@Value("${kafka.topics.update.service}")
 	private String updateTopic;
@@ -116,6 +119,8 @@ public class GrievanceService {
 		log.info("Service layer for createss");
 		enrichserviceRequestForcreate(request);
 		pGRProducer.push(saveTopic, request);
+		pGRProducer.push(saveForDgrTopic, request);
+
 		pGRProducer.push(saveIndexTopic, dataTranformationForIndexer(request, true));
 		return getServiceResponse(request);
 	}

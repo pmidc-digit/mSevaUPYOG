@@ -56,6 +56,11 @@ public class GcRowMapper implements ResultSetExtractor<List<GarbageConnection>> 
 				currentGarbageConnection.setOldConnectionNo(rs.getString("oldConnectionNo"));
 				currentGarbageConnection.setDisconnectionReason(rs.getString("disconnectionReason"));
 				currentGarbageConnection.setIsDisconnectionTemporary(rs.getBoolean("isDisconnectionTemporary"));
+				currentGarbageConnection.setPropertyType(rs.getString("property_type"));
+				currentGarbageConnection.setPlotSize(rs.getString("plot_size"));
+				currentGarbageConnection.setLocation(rs.getString("location"));
+				currentGarbageConnection.setFrequency_of_garbage_collection(rs.getString("frequency_of_garbage_collection"));
+				currentGarbageConnection.setTypeOfWaste(rs.getString("type_of_waste"));
 
 				PGobject pgObj = (PGobject) rs.getObject("additionaldetails");
 				this.setFull_count(rs.getInt("full_count"));

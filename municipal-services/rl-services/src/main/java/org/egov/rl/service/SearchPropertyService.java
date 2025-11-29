@@ -81,8 +81,10 @@ public class SearchPropertyService {
 	public Object propertyListSearch(PropertyReportSearchRequest propertyReportSearchRequest) {
 		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
 		allotmentCriteria.setIsReportSearch(true);
-		allotmentCriteria.setFromDate(1764547200000l);
-		allotmentCriteria.setToDate(1825094400000l);
+		allotmentCriteria.setFromDate(propertyReportSearchRequest.getSearchProperty().getFromDate());
+		allotmentCriteria.setToDate(propertyReportSearchRequest.getSearchProperty().getToDate());
+//		allotmentCriteria.setFromDate(1764547200000l);
+//		allotmentCriteria.setToDate(1825094400000l);
 
 		Set<String> id = new HashSet<>();
 		id.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());

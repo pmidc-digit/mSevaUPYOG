@@ -62,7 +62,7 @@ public class ClsureService {
 		enrichmentService.enrichCreateRequest(clsureRequest);
 		
 //		if (config.getIsWorkflowEnabled()) {
-////			wfService.updateWorkflowStatus(allotmentRequest);
+//			wfService.updateWorkflowStatus(allotmentRequest);
 //		} else {
 //			allotmentRequest.getAllotment().setStatus("ACTIVE");
 //		}

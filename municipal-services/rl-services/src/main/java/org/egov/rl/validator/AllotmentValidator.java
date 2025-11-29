@@ -193,6 +193,7 @@ public class AllotmentValidator {
 		
 	}
 	private void validateAndLoadPropertyData(AllotmentRequest allotementRequest, Map<String, String> errorMap) {
+		try {
 		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
 		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
 	
@@ -221,10 +222,15 @@ public class AllotmentValidator {
 //		System.out.println(propertyId+"----------------"+rlProps.isEmpty());
 		if(rlProps.isEmpty()){
 			throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
-					"startDate cannot be wrong, please provide the valid propertyId and tenentId information");
+					"propertyId and tenantId cannot be wrong, please provide the valid propertyId and tenentId information");
 		}
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
+		}catch (Exception e) {
+			throw new CustomException("TENANT ID INFO ERROR",
+					"TENANT ID is wrong, please provide the valid tenentId information");
+		
+		}
 	}
 
 	

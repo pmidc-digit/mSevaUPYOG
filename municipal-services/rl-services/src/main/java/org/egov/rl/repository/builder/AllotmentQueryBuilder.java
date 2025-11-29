@@ -36,7 +36,7 @@ public class AllotmentQueryBuilder {
 		List<Object> subQueryParams = new ArrayList<>();
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.tenant_id = ? ");
+			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!criteria.getIsReportSearch()) {
@@ -108,7 +108,7 @@ public class AllotmentQueryBuilder {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
 		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" WHERE expireflag=false AND tenant_id='").append(tenantId).append("'");
 		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
 		return mainQuery.toString();
 	}
@@ -120,7 +120,7 @@ public class AllotmentQueryBuilder {
 
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.tenant_id = ? ");
+			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
@@ -144,7 +144,7 @@ public class AllotmentQueryBuilder {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
 		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" WHERE expireflag=false AND tenant_id='").append(tenantId).append("'");
 		mainQuery.append(" AND property_id='").append(propertyId).append("'");
 		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
 		return mainQuery.toString();

@@ -103,11 +103,12 @@ public class BoundaryService {
 						"This property already alloted in this tenantId, please provide the another property information");
 				}
 			}
-			
+		}catch(CustomException e) {
+			throw e;	
 		} catch (Exception e) {
-			e.printStackTrace();
-//			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms");
-			throw e;
+//			e.printStackTrace();
+			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms ,please provide valid tenantId information");
+//			throw e;
 
 		}
 		return body;
@@ -148,11 +149,12 @@ public class BoundaryService {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"startDate cannot be wrong, please provide the valid propertyId and tenentId information");
 			}
-
+		}catch(CustomException e) {
+			throw e;	
 		} catch (Exception e) {
 			e.printStackTrace();
-//			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms");
-			throw e;
+			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms ,please provide valid tenantId information");
+//			throw e;
 		}
 		return propertyList;
 	}
@@ -180,10 +182,11 @@ public class BoundaryService {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"startDate cannot be wrong, please provide the valid propertyId and tenentId information");
 			}
+		}catch(CustomException e) {
+			throw e;	
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-//			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms");
+//			throw e;
+			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms ,please provide valid tenantId information");
 
 		}
 		return body;
@@ -219,10 +222,10 @@ public class BoundaryService {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"startDate cannot be wrong, please provide the valid propertyId and tenentId information");
 			}
+		}catch(CustomException e) {
+			throw e;	
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-//			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms");
+			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms ,please provide valid tenantId information");
 
 		}
 		return amount;

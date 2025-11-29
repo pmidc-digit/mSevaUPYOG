@@ -206,6 +206,9 @@ public class User   {
         @JsonProperty("alternatemobilenumber")
         private String alternatemobilenumber;
 
+    	@JsonProperty("otpValidationMandatory")
+    	@Builder.Default
+    	private Boolean otpValidationMandatory=false;
 
         public User addRolesItem(Role rolesItem) {
             if (this.roles == null) {

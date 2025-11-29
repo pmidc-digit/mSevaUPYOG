@@ -191,6 +191,10 @@ public class Owner {
 	@JsonProperty("status")
 	@Builder.Default
 	private String status = null;
+	
+	@JsonProperty("otpValidationMandatory")
+	@Builder.Default
+	private Boolean otpValidationMandatory=false;
 
 	public Owner addRolesItem(org.egov.common.contract.request.Role rolesItem) {
 		if (this.roles == null) {

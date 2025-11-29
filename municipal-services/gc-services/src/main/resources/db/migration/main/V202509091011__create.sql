@@ -75,4 +75,8 @@ CREATE TABLE IF NOT EXISTS eg_gc_applicationdocument (
 );
 CREATE INDEX IF NOT EXISTS eg_gc_gcid ON public.eg_gc_applicationdocument USING btree (gcid) WITH (deduplicate_items='true');
 
+
+ALTER TABLE public.eg_gc_applicationdocument
+  DROP CONSTRAINT IF EXISTS fk_eg_gc_applicationdocument_connection_id;
+
 ALTER TABLE IF EXISTS public.eg_gc_applicationdocument ADD CONSTRAINT fk_eg_gc_applicationdocument_connection_id FOREIGN KEY (gcid) REFERENCES public.eg_gc_connection(id);

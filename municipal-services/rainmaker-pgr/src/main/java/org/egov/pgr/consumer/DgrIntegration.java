@@ -357,7 +357,7 @@ public class DgrIntegration {
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
+log.info("CreateGrievance Response Body: {}", response.getBody());
             return response.getBody();
 
         } catch (Exception e) {

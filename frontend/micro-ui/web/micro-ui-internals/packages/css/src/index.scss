@@ -129,9 +129,11 @@
 .display-none {
   display: none;
 }
+
 .primary-label-btn {
   margin: 10px auto 0px !important;
 }
+
 .p-unset {
   padding: unset !important;
 }
@@ -143,6 +145,7 @@
 .display-flex-gap-2 {
   @apply flex gap-3;
 }
+
 .rm-mb {
   margin-bottom: unset !important;
 }
@@ -158,12 +161,15 @@
 .text-align-center {
   @apply text-center;
 }
+
 .text-align-left {
   @apply text-left;
 }
+
 .text-align-right {
   @apply text-right;
 }
+
 .desktop-only {
   @apply hidden;
 }
@@ -301,14 +307,17 @@
 .react-time-picker {
   width: 194px;
   height: 2.5rem;
+
   &__wrapper {
     border: 2px solid #0b0c0c;
     padding-left: 16px;
   }
+
   &__inputGroup__input {
     @apply px-sm;
     line-height: 2.5rem;
     min-width: 16px;
+
     &:focus {
       outline: 2px solid black;
     }
@@ -325,6 +334,7 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 input[type="number"] {
   -moz-appearance: textfield;
 }
@@ -337,8 +347,10 @@ input[type="number"] {
     flex: 1;
     max-height: 75vh;
     overflow: scroll;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 
     &::-webkit-scrollbar {
       display: none;
@@ -441,6 +453,7 @@ input[type="number"] {
     text-indent: 5px;
     padding: 6px 0px;
   }
+
   button {
     @apply outline-none;
     border: 0px;
@@ -451,6 +464,7 @@ input[type="number"] {
 
 .text-input {
   @apply relative w-full;
+
   input {
     &:hover {
       @apply border-2 border-solid border-primary-main;
@@ -539,16 +553,19 @@ input[type="number"] {
   align-items: center;
   flex-direction: column;
   position: absolute !important;
+
   .error-container {
     display: flex;
     width: 400px;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+
     h1 {
       font-size: 32px;
       font-weight: bold;
     }
+
     button {
       height: 40px;
       width: 153px;
@@ -573,10 +590,12 @@ input[type="number"] {
 .full-width-card {
   width: 92vw !important;
 }
+
 .full-employee-card-link {
   width: 100% !important;
   margin: 7px 0px;
 }
+
 .full-employee-card-height {
   height: unset !important;
 }
@@ -585,15 +604,19 @@ input[type="number"] {
   .full-employee-card-height {
     height: 196px !important;
   }
+
   .full-employee-card-link {
     width: 30% !important;
   }
+
   .full-width-card {
     @apply w-full !important;
   }
 }
+
 .applications-list-container {
 }
+
 .complaint-summary {
   @media (min-width: 780px) {
     flex: 1 0 auto;
@@ -612,6 +635,7 @@ input[type="number"] {
     padding-right: 16px;
   }
 }
+
 @media (min-width: 780px) {
   .citizen-card-container {
     padding-left: 15px;
@@ -640,12 +664,14 @@ input[type="number"] {
     margin-top: 1rem;
   }
 }
+
 @media only screen and (max-width: 768px) {
   /* For mobile phones: */
   .error-boundary {
     height: 75vh;
   }
 }
+
 .employee-app-wrapper {
   min-height: calc(100vh - 8em);
 }
@@ -656,9 +682,11 @@ input[type="number"] {
     flex-direction: row-reverse !important;
     width: 100% !important;
     align-items: center;
+
     button {
       width: 240px !important;
     }
+
     p {
       width: unset;
       margin-right: 1rem;
@@ -676,6 +704,7 @@ input[type="number"] {
   margin-top: 6%;
   color: "white";
 }
+
 .ws-search-button {
   border: 1px solid black;
   display: block;
@@ -686,9 +715,11 @@ input[type="number"] {
   margin-top: 6%;
   color: "white";
 }
+
 .button {
   color: "white";
 }
+
 .plumber-details-new-value-wrapper {
   flex: 2 1 auto;
 }
@@ -706,6 +737,7 @@ input[type="number"] {
     padding-bottom: 8px;
     margin-bottom: 8px;
   }
+
   .row {
     color: #b1b4b6;
     font-weight: 700;
@@ -724,11 +756,13 @@ input[type="number"] {
 .connection-details-old-value-wrapper,
 .plumber-details-old-value-wrapper {
   flex: 1 1 auto;
+
   .old-value-null-wrapper {
     visibility: hidden;
     padding-bottom: 8px;
     margin-bottom: 8px;
   }
+
   .row {
     color: #b1b4b6;
     font-weight: 700;
@@ -740,6 +774,7 @@ input[type="number"] {
   padding: 1rem;
   font-weight: 400;
 }
+
 .modal-body-ws {
   padding: 1rem;
   font-weight: 700;
@@ -747,9 +782,11 @@ input[type="number"] {
   font-size: 24px;
   margin-bottom: 1rem;
 }
+
 .privacy-icon {
   cursor: pointer;
 }
+
 .privacy-icon:hover {
   path {
     fill: rgba(244, 119, 56, 1);
@@ -759,9 +796,11 @@ input[type="number"] {
 .employee-app-wrapper {
   min-height: calc(100vh - 8em);
 }
+
 .submit-bar header {
   line-height: 2rem !important;
 }
+
 .logo-removeBorderRadiusLogo svg {
   width: 50px;
   height: 60px;
@@ -770,11 +809,13 @@ input[type="number"] {
 .icon-banner-employee {
   background-color: #d7aefc !important;
 }
+
 .icon-banner-employee svg {
   background-color: #0d43a7 !important;
   width: 40px;
   height: 40px;
 }
+
 .inboxButton {
   border: none;
   color: #4c5656;
@@ -789,13 +830,87 @@ input[type="number"] {
   font-family: sans-serif;
   font-weight: 700;
 }
+
 .employee .inboxButton {
   padding: 5px 15px;
   background: #ba2b36;
 }
-.citizen .inboxButton {
-  padding: 15px;
-  font-size: 1.2rem;
+
+/* ===== TimelineHOC CSS ===== */
+.timeline-hoc-container .checkpoint header,
+.timeline-hoc-container .checkpoint-done header {
+  flex: 1;
+}
+
+.timeline-card {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: clamp(12px, 3vw, 20px);
+  margin: 10px 0;
+  background: #fff;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.timeline-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.timeline-header-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.timeline-label {
+  font-weight: 500;
+  color: #0d43a7 !important;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.timeline-value {
+  color: #0d43a7 !important;
+  font-weight: 400;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.timeline-note {
+  margin: 10px 0;
+}
+
+.timeline-note .note-box {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: clamp(12px, 2vw, 14px);
+  min-height: 40px;
+  background: #f9f9f9;
+  word-break: break-word;
+}
+
+.timeline-docs {
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeline-header-item {
+    width: 100%;
+  }
+
+  .timeline-card {
+    padding: 12px;
+  }
 }
 
 .ndc_property_search .text-input {
@@ -856,24 +971,34 @@ input[type="number"] {
   .stepper {
     display: grid !important;
   }
+
   .action-bar-wrap {
     padding: 10px 0;
     text-align: center;
   }
+
   .submit-bar {
     font-size: 11px;
   }
 }
 
 .options-card {
-  max-height: 350px; /* Upper limit to trigger scrolling */
-  min-height: 120px; /* Always some visible height */
-  overflow-y: auto; /* Vertical scrolling only */
-  overflow-x: hidden; /* No horizontal scroll */
-  border: 1px solid #ccc; /* Optional: visual boundary */
-  border-radius: 8px; /* Rounded corners for a modern look */
-  background-color: #fff; /* Ensure readable background */
+  max-height: 350px;
+  /* Upper limit to trigger scrolling */
+  min-height: 120px;
+  /* Always some visible height */
+  overflow-y: auto;
+  /* Vertical scrolling only */
+  overflow-x: hidden;
+  /* No horizontal scroll */
+  border: 1px solid #ccc;
+  /* Optional: visual boundary */
+  border-radius: 8px;
+  /* Rounded corners for a modern look */
+  background-color: #fff;
+  /* Ensure readable background */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   padding: 4px 0;
-  z-index: 1000; /* Ensure it appears above other elements */
+  z-index: 1000;
+  /* Ensure it appears above other elements */
 }

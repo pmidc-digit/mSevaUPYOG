@@ -1,87 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { CheckPoint, ConnectingCheckPoints, Loader } from "@mseva/digit-ui-react-components";
 
-/* ===== RESPONSIVE CSS ===== */
-const styles = `
-.timeline-hoc-container .checkpoint header,
-.timeline-hoc-container .checkpoint-done header {
-  flex: 1;
-}
-
-.timeline-card {
-  width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: clamp(12px, 3vw, 20px);
-  margin: 10px 0;
-  background: #fff;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.timeline-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.timeline-header-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.timeline-label {
-  font-weight: 500;
-  color: #0d43a7 !important;
-  font-size: clamp(12px, 2vw, 14px);
-}
-
-.timeline-value {
- color: #0d43a7 !important;
-  font-weight: 400;
-  font-size: clamp(12px, 2vw, 14px);
-}
-
-.timeline-note {
-  margin: 10px 0;
-}
-
-.timeline-note .note-box {
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: clamp(12px, 2vw, 14px);
-  min-height: 40px;
-  background: #f9f9f9;
-  word-break: break-word;
-}
-
-.timeline-docs {
-  margin-top: 10px;
-}
-
-@media (max-width: 768px) {
-  .timeline-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .timeline-header-item {
-    width: 100%;
-  }
-  
-  .timeline-card {
-    padding: 12px;
-  }
-
-
-}
-`;
-
 /* ===== Optimized Date Parser ===== */
 const parseDate = (dateStr) => {
   if (!dateStr || dateStr === "N/A") return null;
@@ -205,20 +124,8 @@ const TimelineCaption = React.memo(({ checkpoint, t }) => (
   </div>
 ));
 
-/* ===== Main Timeline Component ===== */
-export const TimelineHOC = ({ workflowDetails, t }) => {
-  useEffect(() => {
-    const styleTag = document.createElement("style");
-    styleTag.innerHTML = styles;
-    styleTag.setAttribute("data-timeline-hoc", "true");
-    document.head.appendChild(styleTag);
-
-    return () => {
-      const tag = document.querySelector('[data-timeline-hoc="true"]');
-      if (tag) tag?.remove();
-    };
-  }, []);
-
+/* ===== Main Application Timeline Component ===== */
+export const ApplicationTimeline = ({ workflowDetails, t }) => {
   // ✅ Normalize input: handle both { data: { timeline } } and { timeline }
   const details = workflowDetails?.data || workflowDetails;
   const timeline = useMemo(() => normalizeTimeline({ data: details }), [details]);
@@ -247,4 +154,4 @@ export const TimelineHOC = ({ workflowDetails, t }) => {
   );
 };
 
-export default TimelineHOC;
+export default ApplicationTimeline;

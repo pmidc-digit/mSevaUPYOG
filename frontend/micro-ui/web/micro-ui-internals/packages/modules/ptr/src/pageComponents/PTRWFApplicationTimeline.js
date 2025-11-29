@@ -20,7 +20,7 @@ import PTRModal from "./PTRModal";
 // import PTRWFDocument from "./PTRWFDocument";
 // ===== END OLD IMPLEMENTATION =====
 
-import TimelineHOC from "./TimelineHOC";
+import ApplicationTimeline from "../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import { Loader } from "../components/Loader";
 
 const PTRWFApplicationTimeline = (props) => {
@@ -316,7 +316,7 @@ const PTRWFApplicationTimeline = (props) => {
         */}
         {/* =================================================================== */}
 
-        <TimelineHOC
+        <ApplicationTimeline
           workflowDetails={workflowDetails}
           t={t}
         />

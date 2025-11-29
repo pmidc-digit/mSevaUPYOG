@@ -2,7 +2,7 @@ import { CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader } from "@m
 import React from "react";
 import { useTranslation } from "react-i18next";
 import ADSWFCaption from "./ADSWFCaption";
-import TimelineHOC from "../../../ptr/src/pageComponents/TimelineHOC";
+import ApplicationTimeline from "../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 const ADSWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
@@ -90,7 +90,7 @@ const ADSWFApplicationTimeline = (props) => {
         </ConnectingCheckPoints>
       )} */}
 
-      <TimelineHOC workflowDetails={data} t={t} />
+      <ApplicationTimeline workflowDetails={data} t={t} />
     </React.Fragment>
   );
 };

@@ -59,7 +59,7 @@ CREATE INDEX IF NOT EXISTS index_eg_gc_service_appcreateddate ON public.eg_gc_se
 CREATE INDEX IF NOT EXISTS index_eg_gc_service_connectioncategory ON public.eg_gc_service USING btree (connectioncategory);
 --CREATE INDEX IF NOT EXISTS index_eg_gc_service_usagecategory ON public.eg_gc_service USING btree (usagecategory);
 
-CREATE TABLE public.eg_gc_applicationdocument (
+CREATE TABLE IF NOT EXISTS eg_gc_applicationdocument (
 	id varchar(64) NOT NULL,
 	tenantid varchar(64) NULL,
 	documenttype varchar(64) NULL,
@@ -73,6 +73,6 @@ CREATE TABLE public.eg_gc_applicationdocument (
 	lastmodifiedtime int8 NULL,
 	CONSTRAINT uk_eg_gc_applicationdocument PRIMARY KEY (id)
 );
-CREATE INDEX eg_gc_gcid ON public.eg_gc_applicationdocument USING btree (gcid) WITH (deduplicate_items='true');
+CREATE INDEX IF NOT EXISTS eg_gc_gcid ON public.eg_gc_applicationdocument USING btree (gcid) WITH (deduplicate_items='true');
 
-ALTER TABLE public.eg_gc_applicationdocument ADD CONSTRAINT fk_eg_gc_applicationdocument_connection_id FOREIGN KEY (gcid) REFERENCES public.eg_gc_connection(id);
+ALTER TABLE IF EXISTS public.eg_gc_applicationdocument ADD CONSTRAINT fk_eg_gc_applicationdocument_connection_id FOREIGN KEY (gcid) REFERENCES public.eg_gc_connection(id);

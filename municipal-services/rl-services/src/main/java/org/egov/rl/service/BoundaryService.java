@@ -96,8 +96,12 @@ public class BoundaryService {
 			if (body.isEmpty()) {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"propertyId cannot be wrong, please provide the valid propertyId and tenentId information");
-			}else {
-				List<AllotmentDetails> allotmentDetails=allotmentRepository.getAllotedByPropertyIds(propertyId, tenantId);
+			}
+			else {
+				String previousApplicationNumber=allotementRequest.getAllotment().getPreviousApplicationNumber();
+				previousApplicationNumber=previousApplicationNumber.trim().length()>0?previousApplicationNumber:null;
+				List<AllotmentDetails> allotmentDetails=allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber);
+//				System.out.println("------allotmentDetails--------"+allotmentDetails.size());
 				if(allotmentDetails.size()>0) {
 				   throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"This property already alloted in this tenantId, please provide the another property information");
@@ -106,7 +110,7 @@ public class BoundaryService {
 		}catch(CustomException e) {
 			throw e;	
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms ,please provide valid tenantId information");
 //			throw e;
 

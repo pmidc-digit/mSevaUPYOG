@@ -71,8 +71,6 @@ public class ClsureEnrichmentService {
 		AllotmentClsure	clusure=clsureRequest.getAllotmentClsure();
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 		clusure.setAuditDetails(auditDetails);
-//		allotmentDetails.setAdditionalDetails(boundaryService.loadPropertyData(allotmentRequest));
-//		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
 		setIdgenIds(clsureRequest);
 	}
 
@@ -108,7 +106,11 @@ public class ClsureEnrichmentService {
 		allotmentDbClsure.setReasonForClosure(allotmentClsure.getReasonForClosure());
 		allotmentDbClsure.setRefundAmount(allotmentClsure.getRefundAmount());
 		allotmentDbClsure.setUploadProof(allotmentClsure.getUploadProof());
-		allotmentDbClsure.setStatus(allotmentClsure.getStatus());
+		allotmentDbClsure.setStatus(allotmentClsure.getWorkflow().getStatus());
+		allotmentDbClsure.setNotesComments(allotmentClsure.getNotesComments());
+		allotmentDbClsure.setWorkflow(allotmentClsure.getWorkflow());
+		clsureRequest.setAllotmentClsure(allotmentDbClsure);
+		System.out.println("---------allotmentDbClsure--------"+allotmentDbClsure.getAmountToBeDeducted());
 		
     }
     public List<AllotmentClsure> searchClsure(RequestInfo requestInfo,
@@ -125,18 +127,16 @@ public class ClsureEnrichmentService {
 
 		AllotmentClsure allotmentClsure=clsureRequest.getAllotmentClsure();
 		allotmentClsure.setId(UUID.randomUUID().toString());
-//		String tenantId = clsureRequest.getAllotmentClsure().getTenantId();
-//		RequestInfo requestInfo = clsureRequest.getRequestInfo();
+		String tenantId = clsureRequest.getAllotmentClsure().getTenantId();
+		RequestInfo requestInfo = clsureRequest.getRequestInfo();
 		if (config.getIsWorkflowEnabled()) {
 			allotmentClsure.setStatus(allotmentClsure.getWorkflow().getStatus());
 		}
 		clsureRequest.setAllotmentClsure(allotmentClsure);
 		
-//		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId, config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1).get(0);
-//		allotmentDbClsure.setApplicationNumber(applicationNumber);
-//		List<AllotmentDetails> allotmentDetails2=new ArrayList();
-//		allotmentDetails2.add(allotmentDetails);
-//		allotmentRequest.setAllotment(allotmentDetails);
+		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId, config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1).get(0);
+		allotmentClsure.setClosedApplicationNumber(applicationNumber);
+		clsureRequest.setAllotmentClsure(allotmentClsure);
 	}
 
 }

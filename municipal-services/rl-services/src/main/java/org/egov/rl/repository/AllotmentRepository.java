@@ -71,5 +71,9 @@ public class AllotmentRepository {
 		String query = queryBuilder.getAllotmentByPropertyId(propertyId, tenantId);
 		return jdbcTemplate.query(query, searchRowMapper);
 	}
-
+   public List<AllotmentDetails> getAllotedByPropertyIdsAndPreviousApplicationNumber(String propertyId,String tenantId,String previousApplicationNumber) {
+		
+		String query = queryBuilder.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber);
+		return jdbcTemplate.query(query, searchRowMapper);
+	}
 }

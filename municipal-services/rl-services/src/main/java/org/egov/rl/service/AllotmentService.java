@@ -117,8 +117,8 @@ public class AllotmentService {
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
 		
-		JsonNode additionalDetails=boundaryService.loadPropertyData(allotmentRequest);
-		AllotmentDetails allotmentDetails= Optional.ofNullable(allotmentEnrichmentService.searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).get(0)).orElse(null);
+//		AllotmentDetails allotmentDetails= Optional.ofNullable(.get(0)).orElse(null);
+		AllotmentDetails allotmentDetails = allotmentEnrichmentService.searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).stream().findFirst().orElse(null);
 		List<OwnerInfo> ownerList=allotmentDetails.getOwnerInfo().stream().map(u->{
 			String[] tenantId=allotmentRequest.getAllotment().getTenantId().split("\\.");
 			User userDetails=userService.searchByUuid(u.getUserUuid(),tenantId.length>1?tenantId[0]:allotmentRequest.getAllotment().getTenantId()).getUser().get(0);
@@ -145,6 +145,7 @@ public class AllotmentService {
 			return u;
 		}).collect(Collectors.toList());
 		allotmentDetails.setOwnerInfo(ownerList);
+		JsonNode additionalDetails=boundaryService.loadPropertyData(allotmentRequest);
 		allotmentDetails.setAdditionalDetails(additionalDetails);
 		
 		return allotmentDetails;

@@ -41,6 +41,9 @@ public class AllotmentClsure {
 
     @JsonProperty("status")
     private String status;
+    
+	@JsonProperty("closed_application_number")
+	private String closedApplicationNumber;
 
     @NotNull
     @JsonProperty("reason_for_clsure")
@@ -64,15 +67,6 @@ public class AllotmentClsure {
     @JsonProperty("audit_details")
     private AuditDetails auditDetails;
     
-	@JsonProperty("Document")
-	private List<Document> documents;
-	
-	@JsonProperty("workflow_code")
-	private String workflowCode;
-	
 	@JsonProperty("workflow")
 	private Workflow workflow;
-
-	@JsonProperty("closedApplicationNumber")
-	private String closedApplicationNumber;
 }

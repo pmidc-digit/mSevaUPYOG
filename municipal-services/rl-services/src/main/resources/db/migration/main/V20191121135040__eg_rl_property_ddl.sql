@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     lastmodified_by character varying(128) COLLATE pg_catalog."default",
     additional_details jsonb,
     CONSTRAINT pk_eg_rl_allotment PRIMARY KEY (id),
-    CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number)
+    CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number),
+    CONSTRAINT emailid_eg_rl_applicant UNIQUE (property_id, previous_application_number)
 )
 
 TABLESPACE pg_default;

@@ -38,16 +38,15 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class ClsureValidator {
 
-
 	@Autowired
 	private RentLeaseConfiguration configs;
-	
+
 	@Autowired
 	RestTemplate restTemplate;// = new RestTemplate();
-	
+
 	@Autowired
 	AllotmentRepository allotmentRepository;
-	
+
 	@Autowired
 	ClsureRepository clsureRepository;
 
@@ -61,125 +60,104 @@ public class ClsureValidator {
 	 */
 	public void validateCreateClsureRequest(ClsureRequest clsureRequest) {
 
-		AllotmentClsure allotmentClsure=clsureRequest.getAllotmentClsure();
+		AllotmentClsure allotmentClsure = clsureRequest.getAllotmentClsure();
 
 		if (clsureRequest.getAllotmentClsure() == null)
 			throw new CustomException("CLSURE INFO ERROR",
 					"CLSURE cannot be empty, please provide the CLSURE information");
-		
-		AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
-		Set<String> id=new HashSet<>();
+
+		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
+		Set<String> id = new HashSet<>();
 		id.add(clsureRequest.getAllotmentClsure().getAllotmentId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentClsure.getTenantId());
-		
-	    AllotmentDetails alllAllotmentDetails=Optional.ofNullable(allotmentRepository.getAllotmentByIds(allotmentCriteria).get(0)).orElse(null);
-	    if (alllAllotmentDetails == null)
+
+		AllotmentDetails alllAllotmentDetails = allotmentRepository.getAllotmentByIds(allotmentCriteria).stream()
+				.findAny().orElse(null);
+		if (alllAllotmentDetails == null) {
 			throw new CustomException("CLSURE INFO ERROR",
 					"Enter valid allotment_id , please provide the CLSURE information");
-	    
-//		Map<String, String> errorMap = new HashMap<>();
-		if(allotmentClsure.getAllotmentId()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+		if (allotmentClsure.getAllotmentId() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"allotment_id can't be null or empty, please provide the CLSURE information");
-	    }
-		if(allotmentClsure.getTenantId()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+		if (allotmentClsure.getTenantId() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"tenant_id can't be null or empty, please provide the CLSURE information");
-	    }
-		
-		if(allotmentClsure.getReasonForClosure()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+
+		if (allotmentClsure.getReasonForClosure() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"reason_for_closure can't be null or empty, please provide the CLSURE information");
-	    }
-		
-		if(allotmentClsure.getRefundAmount()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+
+		if (allotmentClsure.getRefundAmount() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"refund_amount can't be null or empty, please provide the CLSURE information");
-	    }
-		if(allotmentClsure.getNotesComments()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+		if (allotmentClsure.getNotesComments() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"notes_comments can't be null or empty, please provide the CLSURE information");
-	    }
-		if(allotmentClsure.getAmountToBeDeducted()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+		if (allotmentClsure.getAmountToBeDeducted() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"amount_to_be_deducted can't be null or empty, please provide the CLSURE information");
-	    }
-		
+		}
+
 	}
 
 	public void validateUpdateClsureRequest(ClsureRequest clsureRequest) {
 
-//		ClsureRequest clsureRequest2 = new ClsureRequest();
-		AllotmentClsure allotmentClsure=clsureRequest.getAllotmentClsure();
+		AllotmentClsure allotmentClsure = clsureRequest.getAllotmentClsure();
 
 		if (clsureRequest.getAllotmentClsure() == null)
 			throw new CustomException("CLSURE INFO ERROR",
 					"CLSURE cannot be empty, please provide the CLSURE information");
-		
-		AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
-		Set<String> id=new HashSet<>();
-		id.add(clsureRequest.getAllotmentClsure().getAllotmentId());
-		allotmentCriteria.setTenantId(allotmentClsure.getTenantId());
-		allotmentCriteria.setAllotmentIds(id);
-		AllotmentDetails alllAllotmentDetails=Optional.ofNullable(allotmentRepository.getAllotmentByIds(allotmentCriteria).get(0)).orElse(null);
-		System.out.println("alootment data get successfully------"+alllAllotmentDetails.getId());
-		if (alllAllotmentDetails == null)
+
+		if (clsureRequest.getAllotmentClsure().getId() == null)
 			throw new CustomException("CLSURE INFO ERROR",
-					"Enter valid allotment_id , please provide the CLSURE information");
-	    
-	    if (clsureRequest.getAllotmentClsure().getId() == null)
-	    	throw new CustomException("CLSURE INFO ERROR",
 					"Closure's id can't be null or empty, please provide the CLSURE information");
-	    
-        
-	    ClsureCriteria clsureCriteria=new ClsureCriteria();
-		Set<String> ids=new HashSet<>();
+
+		ClsureCriteria clsureCriteria = new ClsureCriteria();
+		Set<String> ids = new HashSet<>();
 		ids.add(clsureRequest.getAllotmentClsure().getId());
 		clsureCriteria.setIds(ids);
 		clsureCriteria.setTenantId(allotmentClsure.getTenantId());
-		
-	    List<AllotmentClsure> allotmentClsure2=clsureRepository.getClsureByIds(clsureCriteria);
-	    if (allotmentClsure2.size() < 1)
+
+		List<AllotmentClsure> allotmentClsure2 = clsureRepository.getClsureByIds(clsureCriteria);
+		if (allotmentClsure2.size() < 1)
 			throw new CustomException("CLSURE INFO ERROR",
 					"Enter valid closure's id , please provide the CLSURE information");
 
-	    
-		Map<String, String> errorMap = new HashMap<>();
-		if(allotmentClsure.getAllotmentId()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
-					"allotment_id can't be null or empty, please provide the CLSURE information");
-	    }
-		if(allotmentClsure.getTenantId()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		if (allotmentClsure.getTenantId() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"tenant_id can't be null or empty, please provide the CLSURE information");
-	    }
-		
-		if(allotmentClsure.getReasonForClosure()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+
+		if (allotmentClsure.getReasonForClosure() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"reason_for_closure can't be null or empty, please provide the CLSURE information");
-	    }
-		
-		if(allotmentClsure.getRefundAmount()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+
+		if (allotmentClsure.getRefundAmount() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"refund_amount can't be null or empty, please provide the CLSURE information");
-	    }
-		if(allotmentClsure.getNotesComments()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+		if (allotmentClsure.getNotesComments() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"notes_comments can't be null or empty, please provide the CLSURE information");
-	    }
-		if(allotmentClsure.getAmountToBeDeducted()==null) {
-	    	throw new CustomException("CLSURE INFO ERROR",
+		}
+		if (allotmentClsure.getAmountToBeDeducted() == null) {
+			throw new CustomException("CLSURE INFO ERROR",
 					"amount_to_be_deducted can't be null or empty, please provide the CLSURE information");
-	    }
-				
+		}
 	}
 
-	
 	private void validateAndLoadPropertyData(AllotmentRequest clsureRequest, Map<String, String> errorMap) {
 		String propertyId = Optional.ofNullable(clsureRequest.getAllotment().getPropertyId()).orElse(null);
 		String tenantId = Optional.ofNullable(clsureRequest.getAllotment().getTenantId()).orElse(null);
-	
+
 		MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
 		mdmsCriteriaReq.setRequestInfo(clsureRequest.getRequestInfo()); // from your context
 		MdmsCriteria mdmsCriteria = new MdmsCriteria();
@@ -188,19 +166,19 @@ public class ClsureValidator {
 		moduleDetail.setModuleName("rentAndLease");
 		MasterDetail masterDetail = new MasterDetail();
 		masterDetail.setName("RLProperty");
-		masterDetail.setFilter("$.[?(@.propertyId=='"+propertyId+"')]");
+		masterDetail.setFilter("$.[?(@.propertyId=='" + propertyId + "')]");
 		moduleDetail.setMasterDetails(Arrays.asList(masterDetail));
 		mdmsCriteria.setModuleDetails(Arrays.asList(moduleDetail));
 		mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
-		
-		String mdmsUrl = configs.getMdmsHost()+configs.getMdmsEndpoint();//"http://<mdms-host>/egov-mdms-service/v1/_search";
-		ResponseEntity<Map> response = restTemplate.postForEntity(mdmsUrl, mdmsCriteriaReq, Map.class);
-		Map<String,Object> body=response.getBody();
 
-        Map<String, Object> mdms = (Map<String, Object>) body.get("MdmsRes");
-        Map<String, Object> rentLease = (Map<String, Object>) mdms.get("rentAndLease");
-        List<Map<String, Object>> rlProps = (List<Map<String, Object>>) rentLease.get("RLProperty");
-		if(rlProps.isEmpty()){
+		String mdmsUrl = configs.getMdmsHost() + configs.getMdmsEndpoint();// "http://<mdms-host>/egov-mdms-service/v1/_search";
+		ResponseEntity<Map> response = restTemplate.postForEntity(mdmsUrl, mdmsCriteriaReq, Map.class);
+		Map<String, Object> body = response.getBody();
+
+		Map<String, Object> mdms = (Map<String, Object>) body.get("MdmsRes");
+		Map<String, Object> rentLease = (Map<String, Object>) mdms.get("rentAndLease");
+		List<Map<String, Object>> rlProps = (List<Map<String, Object>>) rentLease.get("RLProperty");
+		if (rlProps.isEmpty()) {
 			throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 					"startDate cannot be wrong, please provide the valid propertyId and tenentId information");
 		}

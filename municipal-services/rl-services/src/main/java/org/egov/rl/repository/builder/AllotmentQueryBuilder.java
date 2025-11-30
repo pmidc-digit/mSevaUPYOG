@@ -36,7 +36,7 @@ public class AllotmentQueryBuilder {
 		List<Object> subQueryParams = new ArrayList<>();
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
+			subQuery.append(" al.status != 'CLOSED' AND al.expireflag=false AND al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!criteria.getIsReportSearch()) {
@@ -108,7 +108,7 @@ public class AllotmentQueryBuilder {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
 		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE expireflag=false AND tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" WHERE status != 'CLOSED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
 		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
 		return mainQuery.toString();
 	}
@@ -120,7 +120,7 @@ public class AllotmentQueryBuilder {
 
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
+			subQuery.append(" al.status != 'CLOSED' AND al.expireflag=false AND al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
@@ -144,9 +144,22 @@ public class AllotmentQueryBuilder {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
 		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE expireflag=false AND tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" WHERE status != 'CLOSED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
 		mainQuery.append(" AND property_id='").append(propertyId).append("'");
 		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+		return mainQuery.toString();
+	}
+	
+	public String getAllotedByPropertyIdsAndPreviousApplicationNumber(String propertyId, String tenantId, String previousApplicationNumber) {
+		long currentDate = System.currentTimeMillis(); // current timestamp in long
+
+		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
+		mainQuery.append(" WHERE status != 'CLOSED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" AND previous_application_number='").append(previousApplicationNumber).append("'");
+//		mainQuery.append(" OR previous_application_number is null)");
+		mainQuery.append(" AND property_id='").append(propertyId).append("'");
+//		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+		System.out.println("mainQuery--------"+mainQuery);
 		return mainQuery.toString();
 	}
 

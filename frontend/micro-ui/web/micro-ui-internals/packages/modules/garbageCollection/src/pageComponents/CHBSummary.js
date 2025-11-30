@@ -13,12 +13,11 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { SET_ChallanApplication_STEP } from "../../redux/action/ChallanApplicationActions";
 import ApplicationTable from "../components/inbox/ApplicationTable";
 import { useTranslation } from "react-i18next";
-import ChallanDocument from "../components/ChallanDocument";
+import CHBDocument from "../components/ChallanDocument";
 
-function ChallanSummary({ formData, goNext, onGoBack }) {
+function CHBSummary({ formData, goNext, onGoBack }) {
   const { pathname: url } = useLocation();
   const { t } = useTranslation();
   const history = useHistory();
@@ -140,7 +139,7 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
       hallName: formData?.venueDetails?.[0]?.communityHallName,
       hallCode: slot.hallCode + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
-      bookingStatus: `${t(slot.status)}`,
+      bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
 
   return (
@@ -167,9 +166,9 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
       <div style={sectionStyle}>
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
 
-        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.venueDetails?.[0]?.specialCategory?.category)}
-        {renderLabel(t("CHB_PURPOSE"), formData?.venueDetails?.[0]?.purpose?.purpose)}
-        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.venueDetails?.[0]?.purposeDescription)}
+        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.ownerDetails?.hallsBookingApplication?.specialCategory?.category)}
+        {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose?.name)}
+        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.ownerDetails?.hallsBookingApplication?.purposeDescription)}
       </div>
 
       {/* Documents Section */}
@@ -211,7 +210,7 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
           {docs?.map((doc, index) => (
             <React.Fragment>
               <div>
-                <ChallanDocument value={docs} Code={doc?.documentType} index={index} />
+                <CHBDocument value={docs} Code={doc?.documentType} index={index} />
                 <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
               </div>
             </React.Fragment>
@@ -231,4 +230,4 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
   );
 }
 
-export default ChallanSummary;
+export default CHBSummary;

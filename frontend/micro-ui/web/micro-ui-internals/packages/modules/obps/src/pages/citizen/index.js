@@ -83,7 +83,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/clu/response/:id`} component={CLUResponse} />
         <PrivateRoute path={`${path}/clu/my-applications`} component={CLUMyApplications} />
         <PrivateRoute path={`${path}/clu/application-overview/:id`} component={CLUApplicationDetails} />       
-        <PrivateRoute path={`${path}/clu/search-application`} component={CLUSearchApplication} />
+        <PrivateRoute path={`${path}/search/clu-application`} component={CLUSearchApplication} />
         <PrivateRoute path={`${path}/clu/edit-application/:id`} component={CLUEditApplication} />
 
         

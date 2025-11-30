@@ -130,7 +130,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "updateSurvey",
         Cell: ({ row }) => {
           return (
-               (row?.original?.tenantId === userInfo?.info?.tenantId ?(
             <div className="tooltip" /* style={{position:"relative"}} */>
               <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
                 <button onClick={() => handleUpdateSurveyConfirm(row)}>
@@ -141,14 +140,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 </span>
               </div>
             </div>
-             )
-              :
-              (
-                <div style={{color:'red'}}>
-                  No access
-                </div>
-              )
-            )
           );
         },
       },

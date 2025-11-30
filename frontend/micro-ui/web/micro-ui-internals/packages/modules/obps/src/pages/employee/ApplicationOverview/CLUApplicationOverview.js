@@ -21,7 +21,7 @@ import {
   MultiLink,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { composeInitialProps, useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
@@ -100,7 +100,9 @@ const CLUEmployeeApplicationDetails = () => {
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
-  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
+  console.log("businessService here", businessServiceCode);
+  
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -118,14 +120,26 @@ const CLUEmployeeApplicationDetails = () => {
   }
 
   useEffect(() => {
-      let WorkflowService = null;
-      (async () => {
+    if (isLoading || !tenantId || !businessServiceCode) return;
+      
+     (async () => {
+      try{
         setLoader(true);
-        WorkflowService = await Digit.WorkflowService.init(tenantId, businessServiceCode);
+        const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
+        console.log("wf=>", wf);
         setLoader(false);
-        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
-      })();
-  }, [tenantId]);
+        setWorkflowService(wf?.BusinessServices?.[0]?.states);
+      }catch(e){
+         console.error(e);
+      }finally{
+        setLoader(false);
+      }
+     })();
+    
+  }, [tenantId, businessServiceCode, isLoading]);
+
+
+  console.log("getWorkflowService =>", getWorkflowService);
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -282,6 +296,10 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   console.log("displayData here", displayData);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className={"employee-main-application-details"}>

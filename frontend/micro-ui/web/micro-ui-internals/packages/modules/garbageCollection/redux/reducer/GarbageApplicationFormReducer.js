@@ -1,5 +1,5 @@
 // reducers/employeeFormReducer.js
-import { UPDATE_Challan_Application_FORMType, SET_Challan_Application_STEPType, RESET_Challan__APPLICATION_FORMType } from "../action/types";
+import { UPDATE_Garbage_Application_FORMType, SET_Garbage_Application_STEPType, RESET_Garbage__APPLICATION_FORMType } from "../action/types";
 
 const initialState = {
   step: 1,
@@ -7,9 +7,9 @@ const initialState = {
   formData: {},
 };
 
-const ChallanApplicationFormReducer = (state = initialState, action) => {
+const GarbageApplicationFormReducer = (state = initialState, action) => {
   switch (action.type) {
-    case UPDATE_Challan_Application_FORMType:
+    case UPDATE_Garbage_Application_FORMType:
       return {
         ...state,
         formData: {
@@ -17,16 +17,16 @@ const ChallanApplicationFormReducer = (state = initialState, action) => {
           [action.payload.key]: action.payload.value,
         },
       };
-    case SET_Challan_Application_STEPType:
+    case SET_Garbage_Application_STEPType:
       return {
         ...state,
         step: action.payload,
       };
-    case RESET_Challan__APPLICATION_FORMType:
+    case RESET_Garbage__APPLICATION_FORMType:
       return initialState;
     default:
       return state;
   }
 };
 
-export default ChallanApplicationFormReducer;
+export default GarbageApplicationFormReducer;

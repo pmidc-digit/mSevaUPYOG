@@ -1,9 +1,9 @@
 import { combineReducers } from "redux";
-import ChallanApplicationFormReducer from "./ChallanApplicationFormReducer";
+import GarbageApplicationFormReducer from "./GarbageApplicationFormReducer";
 
 const getRootReducer = () =>
   combineReducers({
-    ChallanApplicationFormReducer,
+    GarbageApplicationFormReducer,
   });
 
 export default getRootReducer;

@@ -120,9 +120,6 @@ public class PGRConstants {
 	
 	public static final String  SERVICE_REQID_REGEX = "(^[0-9/]*$)";
 
-	 public static final String TOKEN_ACCESS_KEY = "KqikS7ajpTrBGTtbSoQB";
-	    public static final String TOKEN_PUBLIC_KEY = "J3R7AuiEmw4Yu1HuAoCj";
-
 	    // =========================
 	    // Citizen defaults
 	    // =========================

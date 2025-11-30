@@ -150,8 +150,7 @@ public class PGRConstants {
 	public static final String MDMS_TENANTS_MASTERS_MASTER_NAME = "tenants";
 	public static final String MDMS_THIRD_PART_MASTERS_MASTER_NAME = "thirdpartydistrictmapping";
 	public static final String MDMS_TENANT_MODULE_NAME = "tenant";
-	 public static final String TOKEN_ACCESS_KEY = "KqikS7ajpTrBGTtbSoQB";
-	    public static final String TOKEN_PUBLIC_KEY = "J3R7AuiEmw4Yu1HuAoCj";
+
 
 	    // =========================
 	    // Citizen defaults

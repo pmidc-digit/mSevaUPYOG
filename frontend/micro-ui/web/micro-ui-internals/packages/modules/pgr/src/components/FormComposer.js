@@ -119,7 +119,7 @@ export const FormComposer = (props) => {
                   <LabelFieldPair>
                     <CardLabel>
                       {field.label}
-                      {field.isMandatory ? <span className="pgr-mandoatoryfields"> * </span> : null}
+                      {field.isMandatory ? <span style={{ color: "red" }}> * </span> : null}
                     </CardLabel>
                     <div className="field">{fieldSelector(field.type, field.populators,field?.component,field.value, field)}</div>
                   </LabelFieldPair>

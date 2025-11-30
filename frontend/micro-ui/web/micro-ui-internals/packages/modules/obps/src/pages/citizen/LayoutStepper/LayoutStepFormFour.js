@@ -230,7 +230,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: "Layout",
   });
 
-  console.log("workflow Details here==>", workflowDetails);
+  console.log("workflow Details here layout==>", workflowDetails);
 
     console.log("workflow Details here==>", workflowDetails)
 

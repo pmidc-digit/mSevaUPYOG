@@ -71,7 +71,7 @@ const Search = () => {
 
   return (
     <div>
-      <CardHeader styles={!isMobile ? {fontSize: "32px", fontWeight: "700"} : {fontSize: "32px", fontWeight: "700", paddingLeft: "10px"}}>{t("ACTION_TEST_SEARCH_CLU_APPLICATION")}</CardHeader>
+      <CardHeader styles={!isMobile ? {fontSize: "32px", fontWeight: "700"} : {fontSize: "32px", fontWeight: "700", paddingLeft: "10px"}}>{t("Search Layout Application")}</CardHeader>
       <SearchApplication
         t={t}
         tenantId={tenantId}

@@ -25,7 +25,7 @@ const LayoutSiteDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
-
+console.log(currentStepData, "DTATA TO BE MAPPED");
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
   console.log(applicationNo, "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
@@ -63,8 +63,8 @@ const LayoutSiteDetails = (_props) => {
   const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "");
   const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
 
-  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
-  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
+  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
+  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
 
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
@@ -276,6 +276,7 @@ const LayoutSiteDetails = (_props) => {
                     selected={props.value}
                     option={ulbListOptions}
                     optionKey="displayName"
+                     disable={currentStepData?.apiData?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -376,6 +377,7 @@ const LayoutSiteDetails = (_props) => {
               <Controller
                 control={control}
                 name={"roadType"}
+                defaultValue={currentStepData?.siteDetails?.roadType || currentStepData?.apiData?.layoutDetails?.additionalDetails?.siteDetails?.roadType || ""}
                 rules={{
                   required: t("REQUIRED_FIELD"),
                 }}
@@ -417,6 +419,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                     disable={currentStepData?.apiData?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -453,6 +456,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disable={currentStepData?.apiData?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -563,6 +567,7 @@ const LayoutSiteDetails = (_props) => {
                 control={control}
                 name={"buildingCategory"}
                 rules={{ required: t("REQUIRED_FIELD") }}
+                defaultValue={currentStepData?.siteDetails?.buildingCategory || currentStepData?.apiData?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory || ""}
                 render={(props) => (
                   <Dropdown
                     className="form-field"
@@ -573,7 +578,7 @@ const LayoutSiteDetails = (_props) => {
                     selected={props.value}
                     option={buildingCategory}
                     optionKey="name"
-                    disable={isEditMode}
+                    disable={currentStepData?.apiData?.Clu?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -870,6 +875,7 @@ const LayoutSiteDetails = (_props) => {
               <Controller
                 control={control}
                 name={"isBasementAreaAvailable"}
+                
                 rules={{
                   required: t("REQUIRED_FIELD"),
                 }}

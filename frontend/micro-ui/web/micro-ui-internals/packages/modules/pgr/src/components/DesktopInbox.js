@@ -50,7 +50,10 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_LOCALITY"),
         Cell: ({ row }) => {
-          return GetCell(t(Digit.Utils.locale.getLocalityCode(row.original["locality"], row.original["tenantId"])));
+          const localityCode = row.original["locality"] 
+            ? Digit.Utils.locale.getLocalityCode(row.original["locality"], row.original["tenantId"]) 
+            : "NA";
+          return GetCell(t(localityCode));
         },
       },
       {

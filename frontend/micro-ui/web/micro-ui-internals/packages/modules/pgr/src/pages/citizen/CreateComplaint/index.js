@@ -164,6 +164,7 @@ const [description, setDescription] = useState("")
   const selectCity = async (city) => {
     // if (selectedCity?.code !== city.code) {}
     setSelectedCity(city);
+    setSelectedLocality(null);
     return;
   };
 
@@ -304,29 +305,29 @@ const [description, setDescription] = useState("")
     //   ],
     // },
     {
-      head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
+      // head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
       body: [
         {
           label: t("CS_ADDCOMPLAINT_COMPLAINT_TYPE"),
           isMandatory: true,
           type: "dropdown",
-          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
+          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_TYPE")} />,
         },
         {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
           isMandatory: true,
           type: "dropdown",
           menu: { ...subTypeMenu },
-          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
+          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_SUBTYPE")} />,
         },
-        // {
+        {
           
-        //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-        //     isMandatory: true,
-        //     type: "dropdown",
-        //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+            isMandatory: true,
+            type: "dropdown",
+            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
           
-        // },
+        },
         // {
         //   //label: t("WS_COMMON_PROPERTY_DETAILS"),
         //   "isEditConnection": true,
@@ -353,16 +354,16 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_ADDCOMPLAINT_LOCATION"),
       body: [
-        {
-          label: t("CORE_COMMON_PINCODE"),
-          type: "text",
-          populators: {
-            name: "pincode",
-          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-            //error: t("CORE_COMMON_PINCODE_INVALID"),
-            onChange: handlePincode,
-          },
-        },
+        // {
+        //   label: t("CORE_COMMON_PINCODE"),
+        //   type: "text",
+        //   populators: {
+        //     name: "pincode",
+        //   //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+        //     //error: t("CORE_COMMON_PINCODE_INVALID"),
+        //     onChange: handlePincode,
+        //   },
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,
@@ -371,7 +372,7 @@ const [description, setDescription] = useState("")
             <Dropdown
               isMandatory
               selected={selectedCity}
-              freeze={true}
+              // freeze={true}
               option={getCities()}
               id="city"
               select={selectCity}
@@ -386,7 +387,7 @@ const [description, setDescription] = useState("")
           isMandatory: true,
           dependency: selectedCity && localities ? true : false,
           populators: (
-            <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} />
+            <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} placeholder={t("CS_CREATECOMPLAINT_CHOOSE_LOCALITY_MOHALLA")} />
           ),
         },
         {
@@ -394,6 +395,7 @@ const [description, setDescription] = useState("")
           type: "textarea",
           populators: {
             name: "streetName",
+            placeholder: t("CS_HOUSE_NO_STREET_NAME_PLACEHOLDER"),
           },
         },
         {
@@ -401,6 +403,7 @@ const [description, setDescription] = useState("")
           type: "textarea",
           populators: {
             name: "landmark",
+            placeholder: t("CS_LANDMARK_PLACEHOLDER"),
           },
         },
         {
@@ -468,6 +471,7 @@ const [description, setDescription] = useState("")
           value:description,
           populators: {
             name: "description",
+            placeholder: t("CS_ADDITIONAL_DETAILS_PLACEHOLDER"),
             onChange: handleDescription,
           },
         },

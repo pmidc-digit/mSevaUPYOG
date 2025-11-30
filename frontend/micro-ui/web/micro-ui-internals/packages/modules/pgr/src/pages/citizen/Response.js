@@ -39,7 +39,8 @@ const TextPicker = ({ response }) => {
   const { t } = useTranslation();
   if (complaints && complaints.response && complaints.response.responseInfo) {
     const { action } = complaints.response.ServiceWrappers[0].workflow;
-    return action === "RATE" ? <CardText>{t("CS_COMMON_RATING_SUBMIT_TEXT")}</CardText> : <CardText>{t("CS_COMMON_TRACK_COMPLAINT_TEXT")}</CardText>;
+    // return action === "RATE" ? <CardText>{t("CS_COMMON_RATING_SUBMIT_TEXT")}</CardText> : <CardText>{t("CS_COMMON_TRACK_COMPLAINT_TEXT")}</CardText>;
+    return action === "RATE" ? <CardText>{t("CS_COMMON_RATING_SUBMIT_TEXT")}</CardText> : "";
   }
 };
 

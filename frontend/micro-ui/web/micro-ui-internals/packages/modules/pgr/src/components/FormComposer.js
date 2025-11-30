@@ -46,11 +46,26 @@ export const FormComposer = (props) => {
         return (
           <div className="field-container">
             {populators.componentInFront ? populators.componentInFront : null}
-            <TextInput className="field desktop-w-full" {...populators} inputRef={register(populators.validation)} value={value}/>
+            <TextInput 
+              className="field desktop-w-full" 
+              {...populators} 
+              inputRef={register(populators.validation)} 
+              value={value}
+              placeholder={populators.placeholder || ""}
+            />
           </div>
         );
       case "textarea":
-        return <TextArea className="field desktop-w-full" value={value} name={populators.name || ""} {...populators} inputRef={register(populators.validation)} />;
+        return (
+          <TextArea 
+            className="field desktop-w-full" 
+            value={value} 
+            name={populators.name || ""} 
+            {...populators} 
+            inputRef={register(populators.validation)}
+            placeholder={populators.placeholder || ""}
+          />
+        );
       case "component":
         {
           
@@ -104,7 +119,7 @@ export const FormComposer = (props) => {
                   <LabelFieldPair>
                     <CardLabel>
                       {field.label}
-                      {field.isMandatory ? " * " : null}
+                      {field.isMandatory ? <span style={{ color: "red" }}> * </span> : null}
                     </CardLabel>
                     <div className="field">{fieldSelector(field.type, field.populators,field?.component,field.value, field)}</div>
                   </LabelFieldPair>

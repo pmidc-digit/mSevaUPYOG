@@ -8,6 +8,7 @@ import org.egov.mdms.model.ModuleDetail;
 import org.egov.pgr.config.PGRConfiguration;
 import org.egov.pgr.repository.ServiceRequestRepository;
 import org.egov.pgr.web.models.ServiceRequest;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -98,4 +99,79 @@ public class MDMSUtils {
         return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsEndPoint());
     }
 
+    
+    public MdmsCriteriaReq prepareMdMsRequestForDistrict(String tenantId, String masterName, String code, RequestInfo requestInfo) {
+
+	    String filter = null;
+
+	    // Apply filter only when masterName = "District"
+	    if (masterName != null && masterName.equalsIgnoreCase(PGRConstants.MDMS_TENANTS_MASTERS_MASTER_NAME)) {
+	        filter = "[?(@.code == '" + code + "')]";
+	    }
+
+	    MasterDetail masterDetail = MasterDetail.builder()
+	            .name(masterName)
+	            .filter(filter)  // null means no filter applied
+	            .build();
+
+	    ModuleDetail moduleDetail = ModuleDetail.builder()
+	            .moduleName(PGRConstants.MDMS_TENANT_MODULE_NAME)
+	            .masterDetails(Collections.singletonList(masterDetail))
+	            .build();
+
+	    MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+	            .tenantId(tenantId)
+	            .moduleDetails(Collections.singletonList(moduleDetail))
+	            .build();
+
+	    return MdmsCriteriaReq.builder()
+	            .requestInfo(requestInfo)
+	            .mdmsCriteria(mdmsCriteria)
+	            .build();
+	}
+    
+    public Object getDisrict(RequestInfo requestInfo, String masterName, List<String> cityCode, String tenantId) {
+
+	    // Build the MDMS URI
+	    StringBuilder deptUri = new StringBuilder();
+	    deptUri.append(config.getMdmsHost()).append(config.getMdmsEndPoint());
+
+	    Object response = null;
+	    MdmsCriteriaReq mdmsCriteriaReq = null;
+
+	    try {
+	        // Prepare MDMS request for the first city code
+	        if (cityCode != null && !cityCode.isEmpty()) {
+	            String code = cityCode.get(0); // First city code
+	            mdmsCriteriaReq = prepareMdMsRequestForDistrict(tenantId, masterName, code, requestInfo);
+	        } else {
+	            throw new CustomException(
+	                    "CITY_CODE_MISSING",
+	                    "City code list is empty or null"
+	            );
+	        }
+
+	        // Execute MDMS call
+	        response = serviceRequestRepository.fetchResult(deptUri, mdmsCriteriaReq);
+
+	        if (response == null) {
+	            throw new CustomException(
+	                    "NO_DISTRICT_FOUND",
+	                    "No district found for the given tenant and city code"
+	            );
+	        }
+
+	    } catch (CustomException ce) {
+	        throw ce; // rethrow custom exceptions unchanged
+
+	    } catch (Exception e) {
+	
+	        throw new CustomException(
+	                "INVALID_DISTRICT_TENANT_KEY",
+	                "Error while fetching district for the given tenant and city code"
+	        );
+	    }
+
+	    return response; // return response as-is
+	}
 }

@@ -66,6 +66,8 @@ public class PGRService {
         enrichmentService.enrichCreateRequest(request);
         workflowService.updateWorkflowStatus(request);
         producer.push(config.getCreateTopic(),request);
+        producer.push(config.getSaveForDgrTopic(),request);
+
         return request;
     }
 

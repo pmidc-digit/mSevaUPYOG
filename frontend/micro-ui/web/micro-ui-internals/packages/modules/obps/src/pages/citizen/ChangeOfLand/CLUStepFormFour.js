@@ -129,7 +129,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             // applicantGender: cluFormData?.applicationDetails?.applicantGender?.code || "",
           },
           siteDetails: {
-            ...cluFormData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails?.siteDetails?.businessService,
+            businessService: cluFormData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails?.siteDetails?.businessService,
             ...cluFormData?.siteDetails,
             // ulbName: cluFormData?.siteDetails?.ulbName?.name || "",
             // roadType: cluFormData?.siteDetails?.roadType?.name || "",

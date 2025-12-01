@@ -20,8 +20,8 @@ const CLULocalityInfo = (_props) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [selectedAreaType, setSelectedAreaType] = useState(currentStepData?.siteDetails?.cluAreaType || []);
-  const [nonSchemeType, setNonSchemeType] = useState(currentStepData?.siteDetails?.cluNonSchemeType || []);
+  const [selectedAreaType, setSelectedAreaType] = useState(currentStepData?.siteDetails?.localityAreaType || []);
+  const [nonSchemeType, setNonSchemeType] = useState(currentStepData?.siteDetails?.localityNonSchemeType || []);
   const [noticeIssued, setNoticeIssued] = useState(currentStepData?.siteDetails?.localityNoticeIssued || null);
 
   const options = [

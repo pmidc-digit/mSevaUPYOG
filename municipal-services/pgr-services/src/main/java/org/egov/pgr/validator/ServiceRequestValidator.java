@@ -163,8 +163,8 @@ public class ServiceRequestValidator {
 
         Map<String, String> errorMap = new HashMap<>();
 
-        if(!departments.contains(departmentFromMDMS))
-            errorMap.put("INVALID_ASSIGNMENT","The application cannot be assigned to employee of department: "+departments.toString());
+//        if(!departments.contains(departmentFromMDMS))
+//            errorMap.put("INVALID_ASSIGNMENT","The application cannot be assigned to employee of department: "+departments.toString());
 
 
         if(!errorMap.isEmpty())

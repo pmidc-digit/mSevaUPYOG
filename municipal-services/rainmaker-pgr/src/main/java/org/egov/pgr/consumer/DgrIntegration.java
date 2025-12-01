@@ -231,7 +231,7 @@ public class DgrIntegration {
             // 12. Map district
             List<Map<String, Object>> districts = JsonPath.read(
                     thirdyPartyDistrictName,
-                    "$.MdmsRes.tenant.thirdpartydistrictmapping[0].districts"
+                    "$.MdmsRes.tenant.thirdpartydistrictmapping[0].thirdpartydistrictmapping.districts"
             );
             String dgrName = districts.stream()
                     .filter(dist -> districtName.trim().equalsIgnoreCase(String.valueOf(dist.get("msevaname")).trim()))

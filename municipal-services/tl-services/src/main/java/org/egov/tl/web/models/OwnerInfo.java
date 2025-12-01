@@ -82,7 +82,6 @@ public class OwnerInfo extends User  {
         @JsonProperty("relationship")
         private RelationshipEnum relationship;
 
-        @JsonIgnore
         @JsonProperty("isRoleUpdatable")
         private Boolean isRoleUpdatable = false;
 

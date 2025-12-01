@@ -67,7 +67,7 @@ public class TLBatchService {
      */
     public void getLicensesAndPerformAction(String serviceName, String jobName, RequestInfo requestInfo){
     	
-    	List <String> tenantIdsFromRepository = repository.fetchTradeLicenseTenantIds();
+    	List <String> tenantIdsFromRepository = repository.fetchTradeLicenseTenantIds(serviceName);
 
         List <String> workflowCodes = Arrays.asList(config.getTlBusinessServices().split("\\s*,\\s*"));
 

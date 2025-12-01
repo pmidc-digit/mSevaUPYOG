@@ -120,6 +120,13 @@ public class WorkflowIntegrator {
 						if(pickWFServiceNameFromTradeTypeOnly)
 						{
 							tradeType=tradeType.split("\\.")[0];
+							String applicationType = license.getApplicationType() != null ? license.getApplicationType().toString() : "";
+							if(TLConstants.APPLICATION_TYPE_UPGRADE.equalsIgnoreCase(applicationType)) {
+		                    	if(tradeType.equalsIgnoreCase("ARCHITECT"))
+		                    		tradeType = tradeType + "_" + TLConstants.APPLICATION_TYPE_UPGRADE;
+		                    	else
+		                    		tradeType = businessService_BPA + "_" + TLConstants.APPLICATION_TYPE_UPGRADE;
+		                    }
 						}
 						obj.put(BUSINESSSERVICEKEY, tradeType);
 						obj.put(MODULENAMEKEY, BPAMODULENAMEVALUE);

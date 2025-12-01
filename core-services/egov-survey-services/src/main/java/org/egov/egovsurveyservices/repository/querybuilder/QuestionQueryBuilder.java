@@ -30,6 +30,19 @@ public class QuestionQueryBuilder {
                 "WHERE question.uuid = ?";
     }
 
+    public String getQuestionSearchQueryPlainSearch(QuestionSearchCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder query = new StringBuilder(SELECT_QUESTION_WITH_CATEGORY);
+        if (!StringUtils.isBlank(criteria.getTenantId())) {
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" (question.tenantid = ? or question.tenantid ='pb.punjab' )");
+            preparedStmtList.add(criteria.getTenantId());
+        }
+        query.append(" ORDER BY question.createdtime DESC ");
+//        int offset = (criteria.getPageNumber() - 1) * criteria.getSize();
+//        query.append(" LIMIT ").append(criteria.getSize()).append(" OFFSET ").append(offset);
+        return query.toString();
+    }
+
     public String getQuestionSearchQuery(QuestionSearchCriteria criteria, List<Object> preparedStmtList) {
         StringBuilder query = new StringBuilder(SELECT_QUESTION_WITH_CATEGORY);
         if (!StringUtils.isBlank(criteria.getTenantId())) {

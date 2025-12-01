@@ -40,8 +40,12 @@ public class QuestionRepository {
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     }
 
-    public String findQuestionStatementByUuid(String questionUuid) {
-        String sql = "SELECT questionstatement FROM public.eg_ss_question WHERE uuid = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{questionUuid}, String.class);
+
+    public List<Question> fetchQuestionsPlainSearch(QuestionSearchCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+
+        String query = questionQueryBuilder.getQuestionSearchQueryPlainSearch(criteria, preparedStmtList);
+        log.info("query for category search: " + query + " params: " + preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     }
 }

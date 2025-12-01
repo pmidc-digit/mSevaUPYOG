@@ -392,4 +392,26 @@ public class ScorecardSurveyService {
                 .sectionResponses(sectionResponses)
                 .build();
     }
+
+    public ScorecardAnswerResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+
+        List<AnswerNew> answers = surveyRepository.getAnswersForPlainSearch(criteria.getSurveyUuid(),criteria.getCitizenId(),criteria.getTenantId());
+        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId(), criteria.getTenantId());
+        SurveyResponseNew surveyResponseNew;
+        if (surveyResponseStatus.isEmpty()) {
+            surveyResponseNew = null;
+        }
+        else {
+            surveyResponseNew = surveyResponseStatus.get(0);
+        }
+        ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
+        if(surveyResponseNew!=null) {
+            scorecardAnswerResponse.setTenantId(surveyResponseNew.getTenantId());
+            scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
+            scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
+            scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+        }
+        return scorecardAnswerResponse;
+    }
+
 }

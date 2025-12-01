@@ -253,4 +253,34 @@ public class ScorecardSurveyQueryBuilder {
         return "SELECT uuid FROM eg_ss_answer_detail WHERE answeruuid = ?";
     }
 
+    public String getAnswersForPlainSearch() {
+        return "SELECT " +
+                "answer.uuid, " +
+                "answer.questionuuid, " +
+                "answer.sectionuuid, " +
+                "answer.comments, " +
+                "answer.createdby, " +
+                "answer.lastmodifiedby, " +
+                "answer.createdtime, " +
+                "answer.lastmodifiedtime, " +
+                "question.questionstatement, " +
+                "ansdetail.uuid AS answer_detail_uuid,"+
+                "ansdetail.answeruuid AS answer_detail_answeruuid," +
+                "ansdetail.answertype AS answer_detail_type," +
+                "ansdetail.answercontent AS answer_detail_content," +
+                "ansdetail.weightage AS answer_detail_weightage," +
+                "surveyresponse.uuid AS survey_response_uuid," +
+                "surveyresponse.surveyuuid AS survey_uuid," +
+                "surveyresponse.citizenid AS survey_citizen_id," +
+                "surveyresponse.tenantid AS survey_tenant_id " +
+                "FROM public.eg_ss_answer AS answer " +
+                "LEFT JOIN public.eg_ss_question AS question " +
+                "ON answer.questionuuid = question.uuid " +
+                "JOIN public.eg_ss_answer_detail AS ansdetail " +
+                "ON answer.uuid = ansdetail.answeruuid " +
+                "JOIN public.eg_ss_survey_response AS surveyresponse " +
+                "ON answer.surveyresponseuuid = surveyresponse.uuid " +
+                "WHERE surveyresponse.tenantid = ?";
+    }
+
 }

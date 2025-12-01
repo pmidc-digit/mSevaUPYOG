@@ -111,6 +111,13 @@ public class ScorecardSurveyRepository {
         return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
     }
 
+    public List<AnswerNew> getAnswersForPlainSearch(String surveyUuid, String citizenId, String tenantId) {
+        String query=surveyQueryBuilder.getAnswersForPlainSearch();
+        List<Object> preparedStmtList = new ArrayList<>();
+        preparedStmtList.add(tenantId);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
+    }
+
     public List<SurveyResponseNew> getSurveyResponseDetails(String surveyUuid, String citizenId, String tenantId) {
         String query = surveyQueryBuilder.getSurveyResponseDetails();
         try {

@@ -44,6 +44,14 @@ public class QuestionController {
         return new ResponseEntity<>(questionResponse,HttpStatus.OK);
     }
 
+    @PostMapping("/question/_plainsearch")
+    public ResponseEntity<QuestionResponse> plainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+                                                   @ModelAttribute QuestionSearchCriteria criteria) {
+
+        QuestionResponse questionResponse = questionService.searchQuestionPlainSearch(criteria);
+        return new ResponseEntity<>(questionResponse,HttpStatus.OK);
+    }
+
 
 //    @RequestMapping(value = "/question/_upload",
 //            produces = {MediaType.APPLICATION_JSON_VALUE},

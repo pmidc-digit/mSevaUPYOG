@@ -80,6 +80,10 @@ public class DgrIntegration {
                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         String tokenResponse = generateLoginToken();
+        if (tokenResponse == null || tokenResponse.trim().isEmpty()) {
+            log.error("Failed to generate token. Aborting DGR grievance creation.");
+            return;
+        }
         log.info("Token API Response: {}", tokenResponse);
 
         ObjectMapper mapper = new ObjectMapper();

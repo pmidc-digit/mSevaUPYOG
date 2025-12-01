@@ -131,7 +131,14 @@ public class GcQueryBuilder {
 				propertyIdsPresent = true;
 			}
 		}
-		
+		if (!StringUtils.isEmpty(criteria.getUserIds())) {
+			addORClauseIfRequired(preparedStatement, query);
+			if(!propertyIdsPresent)
+				query.append("(");
+			query.append(" connectionholder.userid in (").append(createQuery(criteria.getUserIds())).append(" ))");
+			addToPreparedStatement(preparedStatement, criteria.getUserIds());
+
+		}
 		Set<String> uuids = null;
 		if(!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getOwnerName())
 				|| !StringUtils.isEmpty(criteria.getDoorNo())) {

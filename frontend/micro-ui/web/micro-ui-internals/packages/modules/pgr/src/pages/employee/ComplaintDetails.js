@@ -67,7 +67,7 @@ const TLCaption = ({ data, comments }) => {
       {comments?.map( e => 
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{overflowX:"scroll"}}>{e}</p>
+          <p className="pgr-complaintdetils-overflowX">{e}</p>
         </div>
       )}
     </div>
@@ -87,7 +87,6 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
     true
     );
 
-   // console.log("useEmployeData in PGR: ",useEmployeeData);
 
 
   // const employeeData = useEmployeeData
@@ -237,7 +236,6 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
 export const ComplaintDetails = (props) => {
   // let { id } = useParams();
    const { fullIdAndUlb } = useParams();
-  //console.log("PGR: fullIdAndUlb", fullIdAndUlb);
   const parts = fullIdAndUlb?.split("/");
   const ulb = parts[parts.length - 1];
   const id = parts.slice(0, parts.length - 1).join("/");
@@ -249,10 +247,9 @@ export const ComplaintDetails = (props) => {
   const [toast, setToast] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
- // console.log("PGR : tenantId", ulb, "id", id);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId:ulb, id, moduleCode: "PGR", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([])
-  
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
   // Fix for next action  assignee dropdown issue
   if (workflowDetails && workflowDetails?.data){
@@ -279,6 +276,15 @@ export const ComplaintDetails = (props) => {
   const [rerender, setRerender] = useState(1);
   const [viewTimeline, setViewTimeline]=useState(false);
   const client = useQueryClient();
+
+  const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
+  const localityObj = localities?.find((loc) => loc?.code == localityCode);
+  const localityName = localityObj?.name || "";
+  const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
+  const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
+  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
+
+
   function popupCall(option) {
     setDisplayMenu(false);
     setPopup(true);
@@ -446,7 +452,8 @@ export const ComplaintDetails = (props) => {
       {comment ? <div>{comment?.map( e => 
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{overflowX:"scroll"}}>{e}</p>
+          <p 
+          className="pgr-complaintdetils-overflowX" >{e}</p>
         </div>
       )}</div> : null}
       {checkpoint.status !== "COMPLAINT_FILED" && thumbnailsToShow?.thumbs?.length > 0 ? <div className="TLComments">
@@ -461,17 +468,26 @@ export const ComplaintDetails = (props) => {
   return (
     <React.Fragment>
       <Card>
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <div 
+        className="pgr-complaintDetails-headerTimeline-spaceclass"
+        >
         <CardSubHeader>{t(`CS_HEADER_COMPLAINT_SUMMARY`)}</CardSubHeader>
-        <LinkButton label={t("VIEW_TIMELINE")} style={{marginLeft:'auto', color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
+        <LinkButton label={t("VIEW_TIMELINE")} 
+        onClick={handleViewTimeline}></LinkButton>
         </div>
-        <CardLabel style={{fontWeight:"700"}}>{t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)}</CardLabel>
+        {/* <CardLabel 
+        style={{fontWeight:"700"}}
+        >
+          {t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)}
+        </CardLabel> */}
         {isLoading ? (
           <Loader />
         ) : (
           <StatusTable>
             {complaintDetails?.details &&
-              Object.keys(complaintDetails?.details).map((k, i, arr) => (
+              Object.keys(complaintDetails?.details)
+              .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
+              .map((k, i, arr) => (
                 <Row
                   key={k}
                   label={t(k)}
@@ -480,10 +496,10 @@ export const ComplaintDetails = (props) => {
                       ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                       : t(complaintDetails?.details[k]) || "N/A"
                   }
-                  last={arr.length - 1 === i}
+                  // last={arr.length - 1 === i}
                 />
               ))}
-
+              <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
             {1 === 1 ? null : (
               <MediaRow label="CS_COMPLAINT_DETAILS_GEOLOCATION">
                 <MapView onClick={zoomView} />
@@ -553,14 +569,14 @@ export const ComplaintDetails = (props) => {
         />
       ) : null}
       {toast && <Toast label={t(assignResponse ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />}
-      {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && (
+      {/* {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && (
         <ActionBar>
           {displayMenu && workflowDetails?.data?.nextActions ? (
             <Menu options={workflowDetails?.data?.nextActions.map((action) => action.action)} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
-      )}
+      )} */}
     </React.Fragment>
   );
 };

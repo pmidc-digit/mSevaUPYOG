@@ -49,9 +49,14 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)} style={{ marginLeft: "24px" }}>
+    <form onSubmit={handleSubmit(onSubmitInput)} 
+    className="pgr-employeeInbox-search-app-form"
+    // style={{ marginLeft: "24px" , color:"orange"}}
+    >
       <React.Fragment>
-        <div className="search-container" style={{ width: "auto" }}>
+        <div className="search-container pgr-employeeInbox-search-app-container" 
+        // style={{ width: "auto" ,color:"yellow"}}
+        >
           <div className="search-complaint-container">
             {type === "mobile" && (
               <div className="complaint-header">
@@ -61,7 +66,9 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{display:"grid"}}>
+            <div className="complaint-input-container pgr-employeeInbox-search-app-input-container" 
+            // style={{display:"grid", color:"brown"}}
+            >
               <span className="complaint-input">
                 <Label>{t("CS_COMMON_COMPLAINT_NO")}.</Label>
                 <TextInput
@@ -71,7 +78,8 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                   inputRef={register({
                     pattern: /(?!^$)([^\s])/,
                   })}
-                  style={{ marginBottom: "8px" }}
+                  className="pgr-employeeInbox-search-app-complaint-textinput"
+                  // style={{ marginBottom: "8px" ,color:"red"}}
                 ></TextInput>
               </span>
               <span className="mobile-input">
@@ -87,7 +95,8 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
               </span>
               {type === "desktop" && (
                 <SubmitBar
-                  style={{ marginTop: 32, marginLeft: "16px", width: "calc( 100% - 16px )" }}
+                className="pgr-employeeInbox-search-app-submitbar "
+                  // style={{ marginTop: 32, marginLeft: "16px", width: "calc( 100% - 16px )" ,color:"green"}}
                   label={t("ES_COMMON_SEARCH")}
                   submit={true}
                   disabled={Object.keys(errors).filter((i) => errors[i]).length}

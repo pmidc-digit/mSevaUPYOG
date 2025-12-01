@@ -76,7 +76,6 @@ const [description, setDescription] = useState("")
    ]
   const dispatch = useDispatch();
   const match = useRouteMatch();
-  console.log("Match path",match.path)
   const history = useHistory();
   const serviceDefinitions = Digit.GetServiceDefinitions;
   const client = useQueryClient();
@@ -108,7 +107,6 @@ const [description, setDescription] = useState("")
             val: "",
             place: "",
           };
-          // console.log("newGeoLocation", newGeoLocation);
           setGeoLocation(newGeoLocation);
         },
         (error) => {
@@ -169,7 +167,6 @@ const [description, setDescription] = useState("")
   };
 
   function selectLocality(locality) {
-    //console.log("ddddddddd",locality)
     setSelectedLocality(locality);
   }
 
@@ -232,7 +229,6 @@ const [description, setDescription] = useState("")
   const handleMobileNumber = (event) => {
  
     const { value } = event.target;
-    console.log("handleMobileNumber",value)
     setMobileNumber(value);
   
   };
@@ -320,14 +316,14 @@ const [description, setDescription] = useState("")
           menu: { ...subTypeMenu },
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_SUBTYPE")} />,
         },
-        {
+        // {
           
-         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-            isMandatory: true,
-            type: "dropdown",
-            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+        //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //     isMandatory: true,
+        //     type: "dropdown",
+        //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
           
-        },
+        // },
         // {
         //   //label: t("WS_COMMON_PROPERTY_DETAILS"),
         //   "isEditConnection": true,
@@ -479,17 +475,14 @@ const [description, setDescription] = useState("")
     },
   ];
     useEffect(()=>{
-     // console.log("heloo world",propetyData )
       if(propetyData !== "undefined"   && propetyData !== null)
       {
        let data =JSON.parse(propetyData)
-       console.log("stp 1",propetyData)
        setPropertyData(data)
         setPropertyId(data?.propertyId)
       }
     },[])
   useEffect(()=>{
-    console.log("step 2",propetyData,property,typeof(propetyData))
     if(property !== "undefined" && property !== null )
     {
       let data =property
@@ -501,7 +494,6 @@ const [description, setDescription] = useState("")
       })
       setSelectedLocality(b?.[0])
       setDescription(data?.propertyId)
-      //console.log("pgrProperty",localities,data?.propertyId,data)
     }
    
   },[propertyId])

@@ -224,19 +224,19 @@ export const CreateComplaint = ({ parentUrl }) => {
           type: "dropdown",
           populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_TYPE")} />,
         },
-        // {
-        //   label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
-        //   isMandatory: true,
-        //   type: "dropdown",
-        //   menu: { ...subTypeMenu },
-        //   populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_SUBTYPE")}/>,
-        // },
         {
-          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-          // isMandatory: true,
+          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
+          isMandatory: true,
           type: "dropdown",
-          populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_PRIORITY_LEVEL")} />,
+          menu: { ...subTypeMenu },
+          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_SUBTYPE")}/>,
         },
+        // {
+        //   label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //   // isMandatory: true,
+        //   type: "dropdown",
+        //   populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_PRIORITY_LEVEL")} />,
+        // },
         // {
         //   //label: t("WS_COMMON_PROPERTY_DETAILS"),
         //   isEditConnection: true,
@@ -377,8 +377,10 @@ export const CreateComplaint = ({ parentUrl }) => {
     const houseNoAndStreetName = data?.houseNoAndStreetName;
     
     // Use complaintType.key as serviceCode (complaint type key)
-    const serviceCode = complaintType?.key;
-    
+    // const serviceCode = complaintType?.key;
+     const { key } = subType;
+    const complaintType = key;
+
     const mobileNumber = data?.mobileNumber;
     const name = data?.name;
     const emailId = data?.emailId;
@@ -393,7 +395,7 @@ export const CreateComplaint = ({ parentUrl }) => {
       localityName,
       landmark,
       houseNoAndStreetName,
-      complaintType: serviceCode,  // Send the complaint type key as serviceCode
+      complaintType,  // Send the complaint type key as serviceCode
       priorityLevel,
       mobileNumber,
       name,

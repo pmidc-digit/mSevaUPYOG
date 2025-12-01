@@ -8,11 +8,6 @@ drop table eg_rl_allotment;
 -- SELECT * FROM pg_extension WHERE extname = 'hstore';
 -- audit_details JSONB;
 --> allotment table
-
--- Table: public.eg_rl_allotment
-
--- DROP TABLE IF EXISTS public.eg_rl_allotment;
-
 CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
 (
     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
@@ -37,42 +32,15 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     additional_details jsonb,
     CONSTRAINT pk_eg_rl_allotment PRIMARY KEY (id),
     CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number),
-    CONSTRAINT emailid_eg_rl_applicant UNIQUE (property_id, previous_application_number)
+    CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id, previous_application_number)
 )
 
-TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_tenant_id ON eg_rl_allotment(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_property_id ON eg_rl_allotment(property_id);
+CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_start_end_date ON eg_rl_allotment(start_date, end_date);
 
-ALTER TABLE IF EXISTS public.eg_rl_allotment
-    OWNER to postgres;
--- Index: idx_eg_rl_allotment_property_id
 
--- DROP INDEX IF EXISTS public.idx_eg_rl_allotment_property_id;
-
-CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_property_id
-    ON public.eg_rl_allotment USING btree
-    (property_id COLLATE pg_catalog."default" ASC NULLS LAST)
-    TABLESPACE pg_default;
--- Index: idx_eg_rl_allotment_start_end_date
-
--- DROP INDEX IF EXISTS public.idx_eg_rl_allotment_start_end_date;
-
-CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_start_end_date
-    ON public.eg_rl_allotment USING btree
-    (start_date ASC NULLS LAST, end_date ASC NULLS LAST)
-    TABLESPACE pg_default;
--- Index: idx_eg_rl_allotment_tenant_id
-
--- DROP INDEX IF EXISTS public.idx_eg_rl_allotment_tenant_id;
-
-CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_tenant_id
-    ON public.eg_rl_allotment USING btree
-    (tenant_id COLLATE pg_catalog."default" ASC NULLS LAST)
-    TABLESPACE pg_default;
-    
-    -- Table: public.eg_rl_owner_info
-
--- DROP TABLE IF EXISTS public.eg_rl_owner_info;
-
+--> owner or applicant table
 CREATE TABLE IF NOT EXISTS public.eg_rl_owner_info
 (
     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
@@ -89,16 +57,11 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_owner_info
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )
+CREATE INDEX IF NOT EXISTS idx_eg_rl_owner_info_user_uuid ON eg_rl_owner_info (user_uuid);
+CREATE INDEX IF NOT EXISTS idx_eg_rl_owner_info_allotment_id ON eg_rl_owner_info (allotment_id);
 
-TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.eg_rl_owner_info
-    OWNER to postgres;
-    
-    -- Table: public.eg_rl_document
-
--- DROP TABLE IF EXISTS public.eg_rl_document;
-
+--> document table
 CREATE TABLE IF NOT EXISTS public.eg_rl_document
 (
     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
@@ -116,36 +79,28 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_document
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )
+CREATE INDEX IF NOT EXISTS idx_eg_rl_document_tenantid ON eg_rl_document (allotment_id);
 
-TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.eg_rl_document
-    OWNER to postgres;
--- Index: idx_eg_rl_document_tenantid
 
--- DROP INDEX IF EXISTS public.idx_eg_rl_document_tenantid;
 
-CREATE INDEX IF NOT EXISTS idx_eg_rl_document_tenantid
-    ON public.eg_rl_document USING btree
-    (allotment_id COLLATE pg_catalog."default" ASC NULLS LAST)
-    TABLESPACE pg_default;
-    
-    -- Table: public.eg_rl_allotment_clsure
-
--- DROP TABLE IF EXISTS public.eg_rl_allotment_clsure;
-
+-->allotment closure or discontunation table 
 CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
 (
     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
     allotment_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
     status character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    closed_application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
     reason_for_clsure character varying(128) COLLATE pg_catalog."default" NOT NULL,
     amount_to_be_refund character varying(256) COLLATE pg_catalog."default" NOT NULL,
     amount_to_be_deducted character varying(256) COLLATE pg_catalog."default" NOT NULL,
     refund_amount character varying(256) COLLATE pg_catalog."default" NOT NULL,
     notes_comments character varying(256) COLLATE pg_catalog."default" NOT NULL,
     upload_proof character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    audit_details jsonb NOT NULL,
+    created_time bigint NOT NULL,
+    created_by character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    lastmodified_time bigint,
+    lastmodified_by character varying(128) COLLATE pg_catalog."default",
     CONSTRAINT pk_eg_rl_allotment_clsure PRIMARY KEY (id),
     CONSTRAINT unique_eg_rl_allotment_clsure UNIQUE (allotment_id),
     CONSTRAINT fk_eg_rl_allotment_clsure FOREIGN KEY (allotment_id)
@@ -154,36 +109,24 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
         ON DELETE NO ACTION
 )
 
-TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.eg_rl_allotment_clsure
-    OWNER to postgres;
-    
-    -- Table: public.eg_rl_allotment_scheduler
 
--- DROP TABLE IF EXISTS public.eg_rl_allotment_scheduler;
+-->allotments_cheduler table 
+CREATE TABLE IF NOT EXISTS eg_rl_allotment_scheduler(
+ id CHARACTER VARYING(128) NOT NULL,
+ allotment_id CHARACTER VARYING(128) NOT NULL,
+ status int NOT NULL, --> 1-Active,0-inActive
 
-CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_scheduler
-(
-    id character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    allotment_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    status integer NOT NULL,
-    next_cycle character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    next_notification_date character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    notification_type character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    notification_status integer NOT NULL,
-    notification_message character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    payment_link character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    audit_details jsonb NOT NULL,
-    CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
-    CONSTRAINT unique_eg_rl_allotment_scheduler UNIQUE (allotment_id),
-    CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id)
-        REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-)
+ --> scheduler details section
+ next_cycle CHARACTER VARYING(128) NOT NULL, --> monthly
+ next_notification_date CHARACTER VARYING(128) NOT NULL,
+ notification_type CHARACTER VARYING(128) NOT NULL, --> 1-sms,2-email,3-both
+ notification_status int NOT NULL, --> 1-sent,2-failed,3-pending
 
-TABLESPACE pg_default;
+ notification_message CHARACTER VARYING(256) NOT NULL,
+ payment_link CHARACTER VARYING(256) NOT NULL,
+ audit_details JSONB NOT NULL,
 
-ALTER TABLE IF EXISTS public.eg_rl_allotment_scheduler
-    OWNER to postgres;
+CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
+CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id) REFERENCES eg_rl_allotment(id)
+);

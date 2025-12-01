@@ -78,9 +78,9 @@ public class UserService {
 
 					StringBuilder uri = new StringBuilder(configuration.getUserHost())
 							.append(configuration.getUserContextPath()).append(configuration.getUserUpdateEndPoint());
-					if (userDetailResponse.getUser() != null && holderInfo.getRelationship().contains("*")) {
-						holderInfo.setRelationship(userDetailResponse.getUser().get(0).getRelationship());
-					}
+//					if (userDetailResponse.getUser() != null && holderInfo.getRelationship().contains("*")) {
+//						holderInfo.setRelationship(userDetailResponse.getUser().get(0).getRelationship());
+//					}
 					userDetailResponse = userCall(new ConnectionUserRequest(request.getRequestInfo(), holderInfo), uri);
 					if (userDetailResponse.getUser().get(0).getUuid() == null) {
 						throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");

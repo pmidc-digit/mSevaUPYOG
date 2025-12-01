@@ -53,7 +53,7 @@ public class GcQueryBuilder {
 			+  LEFT_OUTER_JOIN_STRING
 			+ "eg_gc_applicationdocument document ON document.gcid = conn.id"
 			+ LEFT_OUTER_JOIN_STRING
-			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
+			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id ";
 
 	private static final String SEARCH_COUNT_QUERY =  " FROM eg_gc_connection conn "
 			+  INNER_JOIN_STRING 
@@ -61,7 +61,7 @@ public class GcQueryBuilder {
 			+  LEFT_OUTER_JOIN_STRING
 			+ "eg_gc_applicationdocument document ON document.gcid = conn.id"
 			+ LEFT_OUTER_JOIN_STRING
-			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
+			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id ";
 
 	private static final String TOTAL_APPLICATIONS_COUNT_QUERY = "select count(*) from eg_gc_connection where tenantid = ?;";
 	
@@ -116,6 +116,8 @@ public class GcQueryBuilder {
 
 		Set<String> propertyIds = new HashSet<>();
 		String propertyIdQuery = " (conn.property_id in (";
+
+
 
 		if (!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getDoorNo())
 				|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId())) {

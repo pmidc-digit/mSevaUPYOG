@@ -53,7 +53,7 @@ public class OwnerInfo extends User{
 	@JsonProperty("ownerShipPercentage")
 	private Double ownerShipPercentage;
 
-	@NotNull
+//	@NotNull
 	@SafeHtml
 	@JsonProperty("ownerType")
 	private String ownerType;

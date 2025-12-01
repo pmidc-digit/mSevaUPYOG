@@ -254,7 +254,7 @@ public class EnrichmentService {
 					.equalsIgnoreCase(GCConstants.APPROVE_CONNECTION_CONST)) {
 				additionalDetail.put(GCConstants.ESTIMATION_DATE_CONST, System.currentTimeMillis());
 			}
-			additionalDetail.put(GCConstants.LOCALITY, addDetail.get(GCConstants.LOCALITY).toString());
+//			additionalDetail.put(GCConstants.LOCALITY, addDetail.get(GCConstants.LOCALITY).toString());
 
 			for (Map.Entry<String, Object> entry : addDetail.entrySet()) {
 				if (additionalDetail.getOrDefault(entry.getKey(), null) == null) {

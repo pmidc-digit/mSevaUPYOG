@@ -234,8 +234,9 @@ public class TLRepository {
                 new SingleColumnRowMapper<>(String.class));
     }
     
-    public List <String> fetchTradeLicenseTenantIds(){
+    public List <String> fetchTradeLicenseTenantIds(String businessservice){
     	List<Object> preparedStmtList = new ArrayList<>();
+    	preparedStmtList.add(businessservice);
     	return jdbcTemplate.query(queryBuilder.TENANTIDQUERY,preparedStmtList.toArray(),new SingleColumnRowMapper<>(String.class));
     	
     }

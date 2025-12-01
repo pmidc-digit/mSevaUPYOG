@@ -22,7 +22,7 @@ public class TLConstants {
 	public static final String CATEGORY_KEY = "category";
 	public static final String ROLE_CODE_KEY = "rolecode";
 
-    public static  final String businessService_TL = "NewTL";
+    public static  final String businessService_TL = "TL";
 
     public static  final String businessService_DIRECT_RENEWAL = "DIRECTRENEWAL";
     
@@ -403,7 +403,7 @@ public class TLConstants {
 
     public static final String JOB_EXPIRY = "EXPIRY";
 
-    public static final String DEFAULT_WORKFLOW = "NewTL";
+    public static final String DEFAULT_WORKFLOW = "TL";
 
     public static final String PAYMENT_LINK_PLACEHOLDER="{PAYMENT_LINK}";
 
@@ -459,5 +459,9 @@ public class TLConstants {
     public TLConstants() {}
 
     public static final String TENANTS_JSONPATH = "$.MdmsRes.tenant.tenants";
+    
+    public static final String STATUS_BLACKLISTED="BLACKLISTED";
+    
+    public static final String STATUS_INACTIVE="INACTIVE";
 
 }

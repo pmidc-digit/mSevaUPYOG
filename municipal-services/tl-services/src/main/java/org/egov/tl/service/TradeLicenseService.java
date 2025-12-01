@@ -22,6 +22,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import static org.egov.tl.util.TLConstants.*;
@@ -65,6 +66,8 @@ public class TradeLicenseService {
     private TradeUtil tradeUtil;
 
     private TLBatchService tlBatchService;
+        
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${workflow.bpa.businessServiceCode.fallback_enabled}")
     private Boolean pickWFServiceNameFromTradeTypeOnly;
@@ -75,7 +78,7 @@ public class TradeLicenseService {
                                TLValidator tlValidator, TLWorkflowService TLWorkflowService,
                                CalculationService calculationService, TradeUtil util, DiffService diffService,
                                TLConfiguration config, EditNotificationService editNotificationService, WorkflowService workflowService,
-                               TradeUtil tradeUtil, TLBatchService tlBatchService) {
+                               TradeUtil tradeUtil, TLBatchService tlBatchService, KafkaTemplate<String, Object> kafkaTemplate) {
         this.wfIntegrator = wfIntegrator;
         this.enrichmentService = enrichmentService;
         this.userService = userService;
@@ -91,6 +94,7 @@ public class TradeLicenseService {
         this.workflowService = workflowService;
         this.tradeUtil = tradeUtil;
         this.tlBatchService = tlBatchService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
 
@@ -317,7 +321,10 @@ public class TradeLicenseService {
         List<TradeLicense> licensesToAddRoles = new ArrayList<>();
         for (int i = 0; i < tradeLicenseRequest.getLicenses().size(); i++) {
             TradeLicense license = tradeLicenseRequest.getLicenses().get(0);
-            if ((license.getStatus() != null) && license.getStatus().equalsIgnoreCase(endstates.get(i))) {
+            if ((license.getStatus() != null) && (license.getStatus().equalsIgnoreCase(endstates.get(i))
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_BLACKLISTED)
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_EXPIRED)
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_INACTIVE) )) {
                 licensesToAddRoles.add(license);
             }
         }
@@ -440,6 +447,12 @@ public class TradeLicenseService {
                     if (pickWFServiceNameFromTradeTypeOnly)
                         tradeType = tradeType.split("\\.")[0];
                     businessServiceName = tradeType;
+                    if(TLConstants.APPLICATION_TYPE_UPGRADE.equals(applicationType != null ? applicationType.toString() : "")) {
+                    	if(businessServiceName.equalsIgnoreCase("ARCHITECT"))
+                    		businessServiceName = businessServiceName + "_" + TLConstants.APPLICATION_TYPE_UPGRADE;
+                    	else
+                    		businessServiceName = businessService_BPA + "_" + TLConstants.APPLICATION_TYPE_UPGRADE;
+                    }
                     break;
             }
             
@@ -485,7 +498,8 @@ public class TradeLicenseService {
             }
             enrichmentService.postStatusEnrichment(tradeLicenseRequest,endStates,mdmsDataMap);
             userService.createUser(tradeLicenseRequest, false);
-            calculationService.addCalculation(tradeLicenseRequest);
+            if(!TLConstants.APPLICATION_TYPE_UPGRADE.equals(applicationType != null ? applicationType.toString() : ""))
+            	calculationService.addCalculation(tradeLicenseRequest);
             repository.update(tradeLicenseRequest, idToIsStateUpdatableMap);
             licenceResponse=  tradeLicenseRequest.getLicenses();
         }
@@ -585,6 +599,104 @@ public class TradeLicenseService {
 
 	public int getApplicationValidity() {
 		return Integer.valueOf(config.getApplicationValidity());
+	}
+	
+	/**
+	 * Inactive all the previous applications
+	 * 
+	 * @author Roshan chaudhary
+	 * 
+	 * @param tradeLicense
+	 */
+	public void inactivepreviousApplications(TradeLicense tradeLicense) {
+		TradeLicenseSearchCriteria criteria = TradeLicenseSearchCriteria.builder()
+				.status(Collections.singletonList(TLConstants.STATUS_APPROVED))
+				.tenantId(tradeLicense.getTenantId())
+				.mobileNumber(tradeLicense.getTradeLicenseDetail().getOwners().get(0).getMobileNumber())
+				.businessService(businessService_BPA)
+				.build();
+		
+		//For Architect License type then find all the Approved Applications
+		if(tradeLicense.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().contains("ARCHITECT")) 
+			criteria.setOnlyLatestApplication(true);
+		
+		RequestInfo requestInfo = RequestInfo.builder()
+				.userInfo(userService.searchSystemUser())
+				.authToken("")
+				.build();
+		
+		List<TradeLicense> licenses = getLicensesFromMobileNumber(criteria,requestInfo);
+		
+		if(!CollectionUtils.isEmpty(licenses)) {
+			// Remove latest Approved application
+			licenses = licenses.stream()
+					.filter(license -> !(license.getApplicationNumber().equalsIgnoreCase(tradeLicense.getApplicationNumber())))
+					.collect(Collectors.toList());
+			
+			// Set Inactive Action on all the previous application
+			licenses.forEach(license -> {
+				license.setAction(STATUS_INACTIVE);
+			});
+			TradeLicenseRequest tradeLicenseRequest = TradeLicenseRequest.builder().requestInfo(requestInfo).licenses(licenses).build();
+			update(tradeLicenseRequest, businessService_BPA);
+		}
+		
+	}
+	
+	/**
+	 * Search all the licenses with an expiry date matching
+	 * the current day are marked as expired automatically.
+	 * 
+	 * @author Roshan chaudhary
+	 * 
+	 * @param serviceName
+	 * @param requestInfo of the System user
+	 */
+	
+	public void getLicensesAndExpire(String serviceName, RequestInfo requestInfo) {
+
+		List<String> tenantIdsFromRepository = repository.fetchTradeLicenseTenantIds(serviceName);
+
+		tenantIdsFromRepository.forEach(tenantIdFromRepository -> {
+
+			try {
+
+				Long validTill = System.currentTimeMillis();
+
+				TradeLicenseSearchCriteria criteria = TradeLicenseSearchCriteria.builder().businessService(serviceName)
+						.validTo(validTill).status(Collections.singletonList(STATUS_APPROVED))
+						.tenantId(tenantIdFromRepository).limit(config.getPaginationSize()).build();
+				
+
+				List<TradeLicense> licenses = getLicensesWithOwnerInfo(criteria,requestInfo);
+
+				if (!CollectionUtils.isEmpty(licenses)) {
+
+					licenses.forEach(license -> {
+		                license.setAction(ACTION_EXPIRE);
+		                license.setStatus(STATUS_EXPIRED);
+		                TradeLicenseRequest tradeLicenseRequest = new TradeLicenseRequest(requestInfo, Collections.singletonList(license));
+		                try {
+		                	wfIntegrator.callWorkFlow(tradeLicenseRequest);
+						} catch (Exception e) {
+							log.error("Error While Auto Expiry Application : " + license.getApplicationNumber());
+							e.printStackTrace();
+						}finally {
+		        			kafkaTemplate.send(config.getUpdateTopic(), tradeLicenseRequest);
+						}
+		                
+		            });
+
+				}
+
+			
+
+			} catch (Exception ex) {
+				log.error("The batch process could not be completed for the tenant id : " + tenantIdFromRepository);
+			}
+
+		});
+
 	}
 
 }

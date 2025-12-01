@@ -17,6 +17,7 @@ import org.egov.tl.web.models.user.UserSearchRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -43,14 +44,18 @@ public class UserService{
     private TradeUtil tradeUtil;
 
     private TLRepository repository;
+    
+    private TradeLicenseService licenseService;
 
     @Autowired
-    public UserService(ObjectMapper mapper, ServiceRequestRepository serviceRequestRepository, TLConfiguration config,TradeUtil tradeUtil,TLRepository repository) {
+    public UserService(ObjectMapper mapper, ServiceRequestRepository serviceRequestRepository, TLConfiguration config,
+    		TradeUtil tradeUtil,TLRepository repository, @Lazy TradeLicenseService licenseService) {
         this.mapper = mapper;
         this.serviceRequestRepository = serviceRequestRepository;
         this.config = config;
         this.tradeUtil=tradeUtil;
         this.repository=repository;
+        this.licenseService = licenseService;
     }
 
 
@@ -110,15 +115,9 @@ public class UserService{
                     addNonUpdatableFields(user,userDetailResponse.getUser().get(0));
                    if (isBPARoleAddRequired) {
                         List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
-                     // Upgrade the professional role in case of Upgrade application type
+                     // Update the professional role
                         updateProfessionalUserRoles(tradeLicense, user, licenseeTyperRole);
-                        for (String rolename : licenseeTyperRole) {
-                         // Add BPA_ARCHITECT role with state level tenantId
-                            if (rolename.equalsIgnoreCase(BPA_ARCHITECT))
-                        		user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(user.getTenantId()).build());
-                        	else
-                        		user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
-                        }
+                        user.setIsRoleUpdatable(true);
                    }
                     userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);
                     switch (businessService)
@@ -487,23 +486,82 @@ public class UserService{
         return uuids;
     }
 
-    public void updateProfessionalUserRoles(TradeLicense tradeLicense,OwnerInfo user, List<String> licenseeTyperRole) {
-    	List<String> bpaRolesList = Arrays.asList("BPA_ARCHITECT", "BPA_ENGINEER", "BPA_TOWNPLANNER", "BPA_SUPERVISOR");
-        if(tradeLicense.getApplicationType() !=  null && 
-        		tradeLicense.getApplicationType().toString().equalsIgnoreCase(TLConstants.APPLICATION_TYPE_UPGRADE)) {
-        	List<Role> userRoles = user.getRoles();
-        	if(licenseeTyperRole.contains(BPA_ARCHITECT)) {
-        		userRoles = userRoles.stream()
-                    	.filter(userRole -> !bpaRolesList.contains(userRole.getCode()))
-                    	.collect(Collectors.toList());
-        	}else {
-        		userRoles = userRoles.stream()
-                    	.filter(userRole -> !(bpaRolesList.contains(userRole.getCode()) 
-                    			&& userRole.getTenantId().equalsIgnoreCase(tradeLicense.getTenantId())))
-                    	.collect(Collectors.toList());
-        	}
-        	user.setRoles(userRoles);
-        }
+	/**
+	 * 
+	 * Updates the roles assigned to a professional user according to the specified
+	 * application type and its current status.
+	 *
+	 * This method ensures that role changes reflect the business rules associated
+	 * with different application workflows.
+	 * 
+	 * @param tradeLicense Professional Registration application object
+	 * @param user User object on roles will be updated.
+	 * @param licenseeTyperRole List of Roles will be assigned.
+	 * 
+	 * @author Roshan chaudhary
+	 */
+	public void updateProfessionalUserRoles(TradeLicense tradeLicense, OwnerInfo user, List<String> licenseeTyperRole) {
+		String action = tradeLicense.getAction();
+		String applicationStatus = tradeLicense.getStatus();
+		String applicationType = tradeLicense.getApplicationType() != null
+				? tradeLicense.getApplicationType().toString()
+				: "";
+
+		switch (applicationStatus) {
+		case TLConstants.STATUS_BLACKLISTED:
+		case TLConstants.STATUS_INACTIVE:
+		case TLConstants.STATUS_EXPIRED:
+			List<Role> userRoles = user.getRoles();
+			if (licenseeTyperRole.contains(BPA_ARCHITECT)) {
+				userRoles = userRoles.stream().filter(userRole -> !userRole.getCode().equalsIgnoreCase(BPA_ARCHITECT))
+						.collect(Collectors.toList());
+			} else {
+				userRoles = userRoles.stream()
+						.filter(userRole -> !(userRole.getCode().equalsIgnoreCase(licenseeTyperRole.get(0))
+								&& userRole.getTenantId().equalsIgnoreCase(tradeLicense.getTenantId())))
+						.collect(Collectors.toList());
+			}
+			user.setRoles(userRoles);
+			break;
+		case TLConstants.STATUS_APPROVED:
+			for (String rolename : licenseeTyperRole) {
+				// Add BPA_ARCHITECT role with state level tenantId
+				if (rolename.equalsIgnoreCase(BPA_ARCHITECT))
+					user.addRolesItem(
+							Role.builder().code(rolename).name(rolename).tenantId(user.getTenantId()).build());
+				else
+					user.addRolesItem(
+							Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
+			}
+			
+			//Inactive the previous application in case of Upgrade
+			if (TLConstants.APPLICATION_TYPE_UPGRADE.equalsIgnoreCase(applicationType)
+					&& TLConstants.ACTION_APPROVE.equalsIgnoreCase(action)) {
+				licenseService.inactivepreviousApplications(tradeLicense);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+    
+	/**
+	 * Retrieves the user record where the username is set to SYSTEM.
+	 * This is typically used for system-level operations or default configurations.
+	 * @return System user
+	 * @author Roshan chaudhary
+	 */
+    public org.egov.common.contract.request.User searchSystemUser(){
+        UserSearchRequest userSearchRequest = new UserSearchRequest();
+        userSearchRequest.setUserType("SYSTEM");
+        userSearchRequest.setUserName("SYSTEM");
+        userSearchRequest.setTenantId("pb");
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
+        if(CollectionUtils.isEmpty(userDetailResponse.getUser()))
+        	throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+        return mapper.convertValue(userDetailResponse.getUser().get(0), org.egov.common.contract.request.User.class);
+
     }
     
 }

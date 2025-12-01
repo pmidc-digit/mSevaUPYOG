@@ -2,19 +2,43 @@
 export const serviceMappings = [
   {
     serviceName: "wns",
-    path: "wns/search",
+    path: "/employee/wns/search",
   },
   {
-    serviceName: "pt-mutation",
-    path: "pt-mutation/propertySearch",
+    serviceName: "pt",
+    path: "/employee/pt-mutation/propertySearch",
   },
   {
     serviceName: "tradelicence",
-    path: "tradelicence/search",
+    path: "/employee/tradelicence/search",
   },
   {
     serviceName: "fire-noc",
-    path: "fire-noc/search",
+    path: "/employee/fire-noc/search",
+  },
+  {
+    serviceName: "ptr",
+    path: "/digit-ui/employee/ptr/petservice/new-application",
+  },
+  {
+    serviceName: "ndc",
+    path: "/digit-ui/employee/ndc/create",
+  },
+  {
+    serviceName: "chb",
+    path: "/digit-ui/employee/chb/bookHall",
+  },
+  {
+    serviceName: "wsdc",
+    path: "/digit-ui/employee/ws/water/search-connection",
+  },
+  {
+    serviceName: "swdc",
+    path: "/digit-ui/employee/ws/sewerage/search-connection",
+  },
+  {
+    serviceName: "billamend",
+    path: "/employee/bill-amend/search",
   },
 ];
 

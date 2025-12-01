@@ -16,7 +16,7 @@ import { useParams } from "react-router-dom";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData } from "../../utils/index";
+import { ChallanData , getLocationName } from "../../utils/index";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -74,8 +74,6 @@ const ChallanApplicationDetails = () => {
   const { tenants } = storeData || {};
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
-  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
-  const [printing, setPrinting] = useState(false);
 
   // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
   //   tenantId,
@@ -92,7 +90,6 @@ const ChallanApplicationDetails = () => {
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -142,39 +139,39 @@ const ChallanApplicationDetails = () => {
   const dowloadOptions = [];
 
   async function printChallanNotice({ tenantId, payments, ...params }) {
-    if (chbPermissionLoading) return;
-    setChbPermissionLoading(true);
+    setLoader(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments } }, "challan-notice");
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments ,location } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      setLoader(false);
       window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setChbPermissionLoading(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
     }
   }
 
   async function printChallanReceipt({ tenantId, payments, ...params }) {
-    console.log("payments", payments);
-    if (printing) return;
-    setPrinting(true);
+    setLoader(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
+
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -186,9 +183,11 @@ const ChallanApplicationDetails = () => {
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      setLoader(false);
       window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setPrinting(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
     }
   }
   dowloadOptions.push({
@@ -234,9 +233,9 @@ const ChallanApplicationDetails = () => {
             <Row
               className="border-none"
               label={t("CHALLAN_AMOUNT")}
-              text={Math.max(getChallanData?.bill?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
+              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
             />
-            {getChallanData?.feeWaiver && <Row className="border-none" label={t("COURT_AMOUNT")} text={getChallanData?.feeWaiver} />}
+            {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
 
           {/* <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

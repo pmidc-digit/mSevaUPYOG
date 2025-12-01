@@ -1,22 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair,Card,CardSubHeader,CardLabelDesc} from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  Dropdown,
+  UploadFile,
+  Toast,
+  Loader,
+  FormStep,
+  LabelFieldPair,
+  Card,
+  CardSubHeader,
+  CardLabelDesc,
+} from "@mseva/digit-ui-react-components";
 import ChbCancellationPolicy from "../components/ChbCancellationPolicy";
 import Timeline from "../components/CHBTimeline";
 // import { TimerValues } from "../components/TimerValues";
 
-const CHBDocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState,value=formData.slotlist}) => {
+const CHBDocumentDetails = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  setError: setFormError,
+  clearErrors: clearFormErrors,
+  formState,
+  value = formData.slotlist,
+}) => {
   const tenantId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents?.documents || value?.existingDataSet?.documents?.documents  || []);
+  const [documents, setDocuments] = useState(formData?.documents?.documents || value?.existingDataSet?.documents?.documents || []);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-    const stateId = Digit.ULBService.getStateId();
-  
+  const stateId = Digit.ULBService.getStateId();
 
   const { isLoading, data } = Digit.Hooks.chb.useChbDocumentsMDMS(stateId, "CHB", "Documents");
-  
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -31,7 +50,7 @@ const CHBDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
     let count = 0;
     data?.CHB?.Documents.map((doc) => {
       doc.hasDropdown = true;
-      
+
       let isRequired = false;
       documents.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
@@ -46,11 +65,10 @@ const CHBDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
     const sortedSlots = slots.sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
     const firstDate = sortedSlots[0]?.bookingDate;
     const lastDate = sortedSlots[sortedSlots.length - 1]?.bookingDate;
-    if(firstDate===lastDate){
+    if (firstDate === lastDate) {
       return `${sortedSlots[0]?.name} (${firstDate})`;
-    }
-    else{
-    return `${sortedSlots[0]?.name} (${firstDate} - ${lastDate})`;
+    } else {
+      return `${sortedSlots[0]?.name} (${firstDate} - ${lastDate})`;
     }
   };
 
@@ -59,14 +77,12 @@ const CHBDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
       <Timeline currentStep={5} />
       <Card>
         <CardSubHeader>
-          <div style={{display:"flex", justifyContent: "space-between", width: "100%" }}>
-          {value?.bookingSlotDetails && value.bookingSlotDetails.length > 0
-            ? formatSlotDetails(value.bookingSlotDetails)
-            : null}
+          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+            {value?.bookingSlotDetails && value.bookingSlotDetails.length > 0 ? formatSlotDetails(value.bookingSlotDetails) : null}
             {/* <TimerValues timerValues={value?.existingDataSet?.timervalue?.timervalue}  SlotSearchData={value?.Searchdata}/> */}
           </div>
         </CardSubHeader>
-        <ChbCancellationPolicy slotDetail={value?.bookingSlotDetails}/>
+        <ChbCancellationPolicy slotDetail={value?.bookingSlotDetails} />
       </Card>
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
@@ -96,7 +112,6 @@ const CHBDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
   );
 };
 
-
 function CHBSelectDocument({
   t,
   document: doc,
@@ -105,20 +120,24 @@ function CHBSelectDocument({
   documents,
   action,
   formData,
-  
+
   id,
-  
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  
+
   const user = Digit.UserService.getUser().info;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-    ? { ...filteredDocument, active: true, code: filteredDocument?.documentType, i18nKey:"CHB_" +filteredDocument?.documentType.replaceAll(".", "_") }
-    : doc?.dropdownData?.length > 0
-        ? doc?.dropdownData[0]
-        : {}
+      ? {
+          ...filteredDocument,
+          active: true,
+          code: filteredDocument?.documentType,
+          i18nKey: "CHB_" + filteredDocument?.documentType.replaceAll(".", "_"),
+        }
+      : doc?.dropdownData?.length > 0
+      ? doc?.dropdownData[0]
+      : {}
   );
 
   const [file, setFile] = useState(null);
@@ -130,12 +149,10 @@ function CHBSelectDocument({
     setFile(e.target.files[0]);
   }
   const { dropdownData } = doc;
-  
-  var dropDownData = dropdownData;
-   
-  const [isHidden, setHidden] = useState(false);
 
-  
+  var dropDownData = dropdownData;
+
+  const [isHidden, setHidden] = useState(false);
 
   useEffect(() => {
     if (selectedDocument?.code) {
@@ -157,7 +174,6 @@ function CHBSelectDocument({
         ];
       });
     }
-    
   }, [uploadedFile, selectedDocument]);
 
   useEffect(() => {
@@ -207,13 +223,15 @@ function CHBSelectDocument({
     <div style={{ marginBottom: "24px" }}>
       {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("CHB_"+(doc?.code.replaceAll(".", "_"))) } <span className="check-page-link-button">*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t("CHB_" + doc?.code.replaceAll(".", "_"))} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}
-            style={{width:user.type==="EMPLOYEE"?"50%":"100%"}}
-            placeholder={"Select " + t("CHB_"+(doc?.code.replaceAll(".", "_"))) }
-            option={dropDownData.map((e) => ({ ...e, i18nKey:"CHB_" + e.code?.replaceAll(".", "_") }))}
+            style={{ width: user.type === "EMPLOYEE" ? "50%" : "100%" }}
+            placeholder={"Select " + t("CHB_" + doc?.code.replaceAll(".", "_"))}
+            option={dropDownData.map((e) => ({ ...e, i18nKey: "CHB_" + e.code?.replaceAll(".", "_") }))}
             select={handleCHBSelectDocument}
             optionKey="i18nKey"
             t={t}
@@ -232,7 +250,7 @@ function CHBSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png"   //  to accept document of all kind
+            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
           />

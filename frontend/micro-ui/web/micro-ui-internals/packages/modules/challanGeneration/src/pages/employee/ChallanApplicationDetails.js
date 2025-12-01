@@ -20,7 +20,7 @@ import { useParams, useHistory } from "react-router-dom";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData } from "../../utils/index";
+import { ChallanData,getLocationName } from "../../utils/index";
 import NDCModal from "../../pageComponents/NDCModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -176,6 +176,8 @@ const ChallanApplicationDetails = () => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -183,7 +185,7 @@ const ChallanApplicationDetails = () => {
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments } }, "challan-notice");
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments,location } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -283,47 +285,50 @@ const ChallanApplicationDetails = () => {
 
   const submitAction = async (modalData) => {
     if (!modalData?.amount) {
-      setErrorOne(`Please enter Amount`);
-      // setShowToast(true);
-      // setLable("Please enter Amount");
-      // setError(true);
+      setErrorOne(`Please Enter Amount`);
       setShowErrorToastt(true);
     } else {
-      console.log("modalData", modalData);
-      console.log("getChallanData", getChallanData);
+      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
+      if (modalData?.amount > finalAmount) {
+        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
+        setShowErrorToastt(true);
+        setError(`Amount must be less than or equal to ${finalAmount}`);
+      } else {
+        console.log("nothing");
 
-      setLoader(true);
+        setLoader(true);
 
-      const payload = {
-        Challan: {
-          ...getChallanData,
-          workflow: {
-            action: "SETTLED",
+        const payload = {
+          Challan: {
+            ...getChallanData,
+            workflow: {
+              action: "SETTLED",
+            },
+            feeWaiver: modalData?.amount,
           },
-          feeWaiver: modalData?.amount,
-        },
-      };
+        };
 
-      console.log("payload", payload);
-      try {
-        const response = await Digit.ChallanGenerationService.update(payload);
-        setLoader(false);
-        setShowModal(false);
-        // ✅ Show success first
-        // setShowToast({ key: "success", message: "Successfully updated the status" });
-        setLable("Challan is setlled");
-        setError(false);
-        setShowToast(true);
+        console.log("payload", payload);
+        try {
+          const response = await Digit.ChallanGenerationService.update(payload);
+          setLoader(false);
+          setShowModal(false);
+          // ✅ Show success first
+          // setShowToast({ key: "success", message: "Successfully updated the status" });
+          setLable("Challan is Settled");
+          setError(false);
+          setShowToast(true);
 
-        // ✅ Delay navigation so toast shows
-        setTimeout(() => {
-          history.push("/digit-ui/employee/challangeneration/inbox");
-          window.location.reload();
-        }, 2000);
+          // ✅ Delay navigation so toast shows
+          setTimeout(() => {
+            history.push("/digit-ui/employee/challangeneration/inbox");
+            window.location.reload();
+          }, 2000);
 
-        // history.push(`/digit-ui/employee/challangeneration/inbox`);
-      } catch (error) {
-        setLoader(false);
+          // history.push(`/digit-ui/employee/challangeneration/inbox`);
+        } catch (error) {
+          setLoader(false);
+        }
       }
     }
   };
@@ -346,7 +351,7 @@ const ChallanApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
+            <Row className="border-none" label={t("CHALLAN_OWNER_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
             {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
           </StatusTable>
 
@@ -356,6 +361,12 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.challanStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OFFENCE_NAME")} text={t(getChallanData?.offenceTypeName) || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OFFENCE_TYPE")} text={getChallanData?.offenceCategoryName || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("CHALLAN_AMOUNT")}
+              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
+            />
+            {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
         </Card>
         {workflowDetails?.data?.timeline && (
@@ -404,6 +415,7 @@ const ChallanApplicationDetails = () => {
           errorOne={errorOne}
           closeToastOne={closeToastOne}
           getLable={getLable}
+          getChallanData={getChallanData}
         />
       ) : null}
       {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}

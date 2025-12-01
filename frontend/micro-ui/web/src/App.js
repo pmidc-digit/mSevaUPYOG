@@ -23,6 +23,12 @@ import {
   ChallanReducers,
 } from "@mseva/digit-ui-module-challangeneration";
 import {
+  GarbageCollectionModule,
+  GarbageCollectionLinks,
+  initGarbageCollectionComponents,
+  GarbageReducers,
+} from "@mseva/digit-ui-module-garbagecollection";
+import {
   RentAndLeaseModule,
   RentAndLeaseLinks,
   initRentAndLeaseComponents,
@@ -54,12 +60,6 @@ import {
   PTRComponents,
   PTRReducers,
 } from "@mseva/digit-ui-module-ptr";
-import {
-  GCModule,
-  GCLinks,
-  GCComponents,
-  GCReducers,
-} from "@mseva/digit-ui-module-gc";
 
 import {
   initReceiptsComponents,
@@ -157,6 +157,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   MCollectModule,
   ChallanGenerationModule,
   ChallanGenerationLinks,
+  GarbageCollectionModule,
+  GarbageCollectionLinks,
   RentAndLeaseModule,
   RentAndLeaseLinks,
   HRMSModule,
@@ -182,9 +184,6 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PGRAIModule,
   PGRAILinks,
   ...PGRAIComponents,
-  GCModule,
-  GCLinks,
-  ...GCComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -192,6 +191,7 @@ initFSMComponents();
 initDSSComponents();
 initMCollectComponents();
 initChallanGenerationComponents();
+initGarbageCollectionComponents();
 initRentAndLeaseComponents();
 initHRMSComponents();
 initTLComponents();
@@ -216,13 +216,13 @@ const moduleReducers = (initData) => ({
   swach: SWACHReducers(initData),
   ndc: NDCReducers(initData),
   ptr: PTRReducers(initData),
-  gc: GCReducers(initData),
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),
   noc: NOCReducers(initData),
   obps: OBPSReducers(initData),
   challan: ChallanReducers(initData),
   rentAndLease: RentAndLeaseReducers(initData),
+  gc: GarbageReducers(initData),
 });
 
 function App() {

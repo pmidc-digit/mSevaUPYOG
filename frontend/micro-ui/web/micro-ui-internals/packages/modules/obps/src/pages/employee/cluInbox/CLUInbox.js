@@ -20,9 +20,9 @@ const CLUInbox = ({ parentRoute }) => {
   }
 
   const filterFormDefaultValues = {
-    moduleName: "layout-services",
+    moduleName: "clu-service",
     applicationStatus: [],
-    businessService: "Layout_mcUp",
+    businessService: "clu_mcl",// it is dynamic as it  consists of two businessServices
     assignee: "ASSIGNED_TO_ALL",
   }
 
@@ -58,7 +58,7 @@ const CLUInbox = ({ parentRoute }) => {
   }
 
   const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "layout-services")
+    setFilterFormValue("moduleName", "clu-service")
     setFilterFormValue("applicationStatus", "")
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL")
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues })
@@ -197,7 +197,7 @@ const CLUInbox = ({ parentRoute }) => {
     onSortingByData,
   })
 
-  const propsForInboxMobileCards = useCLUInboxMobileCardsData({ parentRoute, tableData })
+  const propsForInboxMobileCards = useCLUInboxMobileCardsData({ parentRoute, table:tableData })
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
 

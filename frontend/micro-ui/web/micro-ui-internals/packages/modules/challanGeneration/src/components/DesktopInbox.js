@@ -86,7 +86,14 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
     {
       Header: t("UC_COMMON_TOTAL_AMT"),
       Cell: ({ row }) => {
-        return GetCell(t(`${row.original?.totalAmount}`));
+        const total = row.original?.totalAmount ?? 0;
+        const waiver = row.original?.feeWaiver ?? 0;
+        const finalAmount = total - waiver;
+
+        return GetCell(finalAmount);
+        // const finalAmount = row.original?.totalAmount - row.original?.feeWaiver;
+        // const finAm = finalAmount ? finalAmount : row.original?.totalAmount;
+        // return GetCell(finAm);
       },
       mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
     },
@@ -142,9 +149,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
   ];
 
   let result;
-  if (props.isLoading || props.isLoader) {
-    result = <Loader />;
-  } else if (data?.length === 0) {
+  if (data?.length === 0) {
     result = (
       <Card style={{ marginTop: 20 }}>
         {/* TODO Change localization key */}

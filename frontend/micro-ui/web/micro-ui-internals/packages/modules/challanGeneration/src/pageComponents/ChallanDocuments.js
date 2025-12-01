@@ -29,6 +29,7 @@ const ChallanDocuments = ({
     documentStep = { ...document, documents: documents };
     onSelect(config.key, documentStep);
   };
+
   const onSkip = () => onSelect();
   function onAdd() {}
 
@@ -46,10 +47,6 @@ const ChallanDocuments = ({
     if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
-
-  useEffect(() => {
-    console.log("documents check again", documents);
-  }, [documents]);
 
   return (
     <div>
@@ -148,7 +145,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     }
     // ✅ Case 2: Handle PDFs or other file types
     else {
-      console.log("📄 Non-image file uploaded, skipping EXIF read");
       setFile(file);
       updateDocument(selectedDocument, {}); // no lat/long
     }
@@ -185,29 +181,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   const [isHidden, setHidden] = useState(false);
   const [getLoading, setLoading] = useState(false);
-
-  // useEffect(() => {
-  //   if (selectedDocument?.code) {
-  //     setDocuments((prev) => {
-  //       const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-  //       if (uploadedFile?.length === 0 || uploadedFile === null) {
-  //         return filteredDocumentsByDocumentType;
-  //       }
-
-  //       const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
-  //       return [
-  //         ...filteredDocumentsByFileStoreId,
-  //         {
-  //           documentType: selectedDocument?.code,
-  //           filestoreId: uploadedFile,
-  //           documentUid: uploadedFile,
-  //         },
-  //       ];
-  //     });
-  //   }
-  // }, [uploadedFile, selectedDocument]);
-
   useEffect(() => {
     if (selectedDocument?.code) {
       setDocuments((prev) => {
@@ -284,30 +257,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   useEffect(() => {
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
-
+  console.log("doc===", doc);
   return (
     <div style={{ marginBottom: "24px" }}>
-      {/* {doc?.hasDropdown ? (
-        <LabelFieldPair style={{ display: "inline" }}>
-          <CardLabel style={{ width: "auto" }}>
-            {t(doc?.code)} {doc?.required && " *"}
-          </CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={doc?.dropdownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null} */}
-      {/* {!doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
-        </LabelFieldPair>
-      ) : null} */}
       <LabelFieldPair style={{ display: "inline" }}>
         <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
           {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
@@ -326,6 +278,29 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             buttonType="button"
             error={!uploadedFile}
           />
+          {console.log("documents", documents)}
+          {doc?.code == "CHALLAN.EVIDENCE_IMAGE" && (
+            <span style={{ color: "green", fontSize: "14px" }}>
+              <span style={{ color: "red", paddingRight: "3px" }}>Note:</span>
+              Please upload a picture **clicked with location enabled**.
+            </span>
+          )}
+          {doc?.code == "CHALLAN.EVIDENCE_IMAGE" &&
+            documents
+              ?.filter((item) => item.documentType == "CHALLAN.EVIDENCE_IMAGE")
+              ?.map((item, index) => (
+                <div key={index} style={{ marginTop: "10px" }}>
+                  {/* Latitude & Longitude */}
+                  <div style={{ marginTop: "5px", fontSize: "14px", color: "#333" }}>
+                    <div>
+                      <b>Latitude:</b> {item.latitude}
+                    </div>
+                    <div>
+                      <b>Longitude:</b> {item.longitude}
+                    </div>
+                  </div>
+                </div>
+              ))}
         </div>
       </LabelFieldPair>
       {getLoading && <Loader page={true} />}

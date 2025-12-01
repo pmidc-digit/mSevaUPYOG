@@ -253,6 +253,7 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
+    console.log("payload data======> ",payloadData);
 
     const updatedApplicant = {
       ...payloadData,

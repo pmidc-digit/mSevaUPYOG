@@ -89,6 +89,7 @@ const CLULocalityInfo = (_props) => {
                   selected={props.value}
                   option={areaTypeOptions}
                   optionKey="name"
+                  t={t}
                 />
               )}
             />
@@ -164,7 +165,7 @@ const CLULocalityInfo = (_props) => {
                 required: t("REQUIRED_FIELD"),
               }}
               render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={nonSchemeTypeOptions} optionKey="name" />
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={nonSchemeTypeOptions} optionKey="name" t={t}/>
               )}
             />
           </LabelFieldPair>
@@ -189,6 +190,7 @@ const CLULocalityInfo = (_props) => {
                 selected={props.value}
                 option={options}
                 optionKey="i18nKey"
+                t={t}
               />
             )}
           />
@@ -235,7 +237,7 @@ const CLULocalityInfo = (_props) => {
               required: t("REQUIRED_FIELD"),
             }}
             render={(props) => (
-              <Dropdown className="form-field" select={props.onChange} selected={props.value} option={colonyTypeOptions} optionKey="name" />
+              <Dropdown className="form-field" select={props.onChange} selected={props.value} option={colonyTypeOptions} optionKey="name" t={t}/>
             )}
           />
         </LabelFieldPair>
@@ -256,6 +258,7 @@ const CLULocalityInfo = (_props) => {
                 selected={props.value}
                 option={transferredSchemeTypeOptions}
                 optionKey="name"
+                t={t}
               />
             )}
           />

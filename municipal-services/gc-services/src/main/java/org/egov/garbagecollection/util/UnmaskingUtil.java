@@ -80,7 +80,7 @@ public class UnmaskingUtil {
         if (ownerInfo.getName().contains("*")) {
             ownerInfo.setName(unmaskedUser.getName());
         }
-        if (ownerInfo.getGender().contains("*")) {
+        if (!StringUtils.isEmpty(ownerInfo.getGender()) && ownerInfo.getGender().contains("*")) {
             ownerInfo.setGender(unmaskedUser.getGender());
         }
     }

@@ -83,11 +83,13 @@ const DesktopInbox = ({
     result = <Loader />;
   } else if (data && data?.length === 0) {
     result = ( 
-      <Card className="pgr-desktop-card-empty-state">
+      // <Card className="pgr-desktop-card-empty-state">
+      <Card style={{ marginTop: 20 }}>
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
           .map((text, index) => (
-            <p key={index}>
+            // <p key={index}>
+            <p key={index} style={{ textAlign: "center" }}>
               {text}
             </p>
           ))}
@@ -96,7 +98,7 @@ const DesktopInbox = ({
   } else if (data?.length > 0) {
     result = (
       <ComplaintTable
-        className="pgr-desktop-complaint-table"
+        // className="pgr-desktop-complaint-table"
         t={t}
         data={data} 
         columns={columns}
@@ -108,11 +110,12 @@ const DesktopInbox = ({
           //       : "pgr-timeline-cell",
           // };
           return {
-            className:
-              cellInfo.column.Header === t("CS_COMMON_COMPLAINT_NO")
-                ? "pgr-timeline-cell pgr-timeline-large-cell"
-                : "pgr-timeline-cell",
-          };
+             style: {
+              minWidth: cellInfo.column.Header === t("CS_COMMON_COMPLAINT_NO") ? "240px" : "",
+              padding: "20px 18px",
+              fontSize: "16px",
+            },
+          }
         }}
         onNextPage={onNextPage}
         onPrevPage={onPrevPage}
@@ -124,7 +127,8 @@ const DesktopInbox = ({
     );
   } else {
     result = (
-      <Card className="pgr-desktop-card-error-state">
+      // <Card className="pgr-desktop-card-error-state">
+      <Card style={{ marginTop: 20 }}>
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
@@ -137,16 +141,19 @@ const DesktopInbox = ({
   }
 
   return (
-    <div className="pgr-desktop-inbox-container inbox-container">
+    // <div className="pgr-desktop-inbox-container inbox-container">
+     <div className="inbox-container">
       <div className="filters-container">
         <ComplaintsLink />
         <div>
           <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} localities={localities}/>
         </div>
       </div>
-      <div className="pgr-desktop-inbox-content-wrapper">
+      {/* <div className="pgr-desktop-inbox-content-wrapper"> */}
+      <div style={{ flex: 1 }}>
         <SearchComplaint onSearch={onSearch} type="desktop" />
-        <div className="pgr-desktop-inbox-result-container">{result}</div>
+         <div style={{ marginTop: "24px", marginTop: "24px", marginLeft: "24px", flex: 1 }}>{result}</div>
+        {/* <div className="pgr-desktop-inbox-result-container">{result}</div> */}
       </div>
     </div>
   );

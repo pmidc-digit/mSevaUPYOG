@@ -81,7 +81,9 @@ const NavigationApp = () => {
       .then((response) => {
         if (response.status === true) {
           if (typeof response?.result?.url == "string") {
-            setNavigateToUrl(response.result.url);
+              let domainURL = response?.result?.url.split('/').slice(0, 3).join('/');
+              //console.log("domainURL",domainURL)
+            setNavigateToUrl(domainURL);
             callOauthTokenApi(response);
             setShowSuccessToast(response.message);
             setTimeout(closeSuccessToast, 2000);

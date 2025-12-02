@@ -61,6 +61,23 @@ export const getActionButton = (businessService, receiptNumber) => {
   );
 };
 
+// location fetch function similar to the one already used in pgrai module used
+export const getLocationName = async (lat, lng) => {
+  try {
+    if (lat == null || lng == null || (lat === 0 && lng === 0)) {
+      return "Address not provided";
+    }
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+    );
+    const data = await res.json();
+    return data?.display_name || "Address not provided";
+  } catch {
+    return "Address not provided";
+  }
+};
+
+
 export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
   if (searcher == "") return str;
   while (str.includes(searcher)) {

@@ -81,13 +81,16 @@ const EmployeeApp = ({ path }) => {
 
   const CLUInbox = Digit.ComponentRegistryService.getComponent("CLUInbox");
   const CLUEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("CLUEmployeeApplicationDetails");
+  const LayoutEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("LayoutEmployeeApplicationDetails");
   const CLUResponse = Digit?.ComponentRegistryService?.getComponent("CLUResponse"); 
+
 
   return (
     <Fragment>
       {!isFromNoc && !isRes ? <div style={isLocation ? {marginLeft: "10px"} : {}}><OBPSBreadCrumbs location={location} /></div> : null}
       {isFromNoc ? <BackButton style={{ border: "none", margin: "0", padding: "0" }}>{t("CS_COMMON_BACK")}</BackButton>: null}
       <Switch>
+         <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />

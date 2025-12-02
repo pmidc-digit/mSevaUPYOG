@@ -3,7 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { transformBookingResponseToBookingData, ChallanData, amountToWords } from "../../index";
+import { transformBookingResponseToBookingData, ChallanData, amountToWords ,getLocationName } from "../../index";
 
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
@@ -53,6 +53,11 @@ const WrapPaymentComponent = (props) => {
   const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: consumerCode, tenantId }, {});
   console.log("applicationDetails rn here", applicationDetails);
 
+  const { data: cluapplicationdetails } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: consumerCode }, tenantId, {});
+  const { data:layoutapplicationdetails } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: consumerCode }, tenantId)
+
+  console.log('cluapplicationdetails', cluapplicationdetails)
+  console.log('layoutapplicationdetails', layoutapplicationdetails)
   let challanEmpData = ChallanData(tenantId, consumerCode);
 
   const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
@@ -115,6 +120,10 @@ const WrapPaymentComponent = (props) => {
         ? "bpa-receiptsecond"
         : business_service === "BPA.NC_APP_FEE"
         ? "bpa-obps-receipt"
+        : business_service === "clu"
+        ? "clu-receipt"
+        : business_service === "layout"
+        ? "layout-receipt"
         : data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
@@ -248,10 +257,12 @@ const WrapPaymentComponent = (props) => {
       licenseType = t(licenseSection?.values?.find((val) => val?.title === "BPA_LICENSE_TYPE")?.value);
     }
 
-    if (bpaData) {
-      fileNo = `PB/${districtCode}/${ulbCode}/${+bpaData?.[0]?.approvalNo?.slice(-6) + 500000}`;
+    const sourceData = bpaData?.[0] || cluapplicationdetails?.resData?.Clu?.[0]?.cluDetails || layoutapplicationdetails?.resData?.Layout?.[0]?.layoutDetails;
+
+    if (sourceData) {
+      fileNo = `PB/${districtCode}/${ulbCode}/${+sourceData?.approvalNo?.slice(-6) + 500000}`;
       console.log("newCode", fileNo);
-      usage = bpaData?.[0]?.additionalDetails?.usage;
+      usage = sourceData?.additionalDetails?.usage || sourceData?.additionalDetails?.siteDetails?.buildingCategory?.name ;
       console.log("usage", usage);
     }
 
@@ -305,7 +316,7 @@ const WrapPaymentComponent = (props) => {
         paymentArray[0] = payments.Payments[0];
         if (business_service == "WS" || business_service == "SW") {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
-        } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
+        } else if (paymentData.paymentDetails[0].businessService.includes("BPA") ||paymentData.paymentDetails[0].businessService.includes("clu")||paymentData.paymentDetails[0].businessService.includes("layout")) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
           let updatedpayments;
           if (paymentData.paymentDetails[0].businessService.includes("BPAREG")) {
@@ -526,6 +537,8 @@ const WrapPaymentComponent = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -537,7 +550,7 @@ const WrapPaymentComponent = (props) => {
         const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { challan: { ...application, ...(payments?.Payments?.[0] || {}) } },
+          { challan: { ...application,  ...(payments?.Payments?.[0] || {}),location } },
           "challan-notice"
         );
         fileStoreId = response?.filestoreIds[0];
@@ -1248,7 +1261,7 @@ const WrapPaymentComponent = (props) => {
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
       ) : null} */}
-      {business_service === "BPAREG" ? (
+      {business_service === "BPAREG" ?  (
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px" }}>
           <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
           <Link to={`/digit-ui/citizen`}>

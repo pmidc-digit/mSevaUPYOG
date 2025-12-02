@@ -224,9 +224,9 @@ public class DgrIntegration {
         if (addr != null && addr.getLocality() != null) {
             Boundary locality = addr.getLocality();
             localityName = safeString(locality.getName());
-            if (localityName.isEmpty()) {
-                localityCode = safeString(locality.getCode());
-            }
+
+            	localityCode = safeString(locality.getCode());
+
         }
 
         String latitude = "";
@@ -278,21 +278,37 @@ public class DgrIntegration {
                 .findFirst()
                 .orElse(tehsilList.get(0));
 
-        String tehsilId = String.valueOf(matchedTehsil.get("Tehsil_ID"));
+        String tehsilId = String.valueOf(matchedTehsil.get("Respective_GOI_LGD_Code"));
         String tehsilName = String.valueOf(matchedTehsil.get("Tehsil_Name"));
         String tehsilNameLocal = String.valueOf(matchedTehsil.get("Tehsil_Name_Local_language"));
 
         List<Map<String, Object>> villageList = fetchDataFromApi(VILLAGE_BY_TEHSIL_URL + tehsilId);
         Map<String, Object> firstVillage = (villageList != null && !villageList.isEmpty()) ? villageList.get(0) : Collections.emptyMap();
-        String villageId = safeString(firstVillage.get("Village_ID"), "0");
+        String villageId = safeString(firstVillage.get("Respective_GOI_LGD_Code"), "0");
         String villageName = safeString(firstVillage.get("Village_Name"));
         String villageNameLocal = safeString(firstVillage.get("Village_Name_Local_Lang"));
 
-        List<Map<String, Object>> municipalityList = fetchDataFromApi(MUNICIPALITY_BY_TEHSIL_URL + tehsilId);
-        Map<String, Object> firstMunicipality = (municipalityList != null && !municipalityList.isEmpty()) ? municipalityList.get(0) : Collections.emptyMap();
-        String municipalityId = safeString(firstMunicipality.get("Municipality_ID"), "0");
-        String municipalityName = safeString(firstMunicipality.get("Municipality_Name"));
-        String municipalityNameLocal = safeString(firstMunicipality.get("Municipality_Name_Local_Lang"));
+        
+        
+        List<Map<String, Object>> municipalityList =
+                fetchDataFromApi(MUNICIPALITY_BY_TEHSIL_URL + tehsilId);
+
+        Map<String, Object> selectedMunicipality = Collections.emptyMap();
+
+        if (municipalityList != null && !municipalityList.isEmpty()) {
+
+            // Try to find by matching name
+            selectedMunicipality = municipalityList.stream()
+                    .filter(m -> tehsilSearchName.equalsIgnoreCase(
+                            safeString(m.get("Municipality_Name"))
+                    ))
+                    .findFirst()
+                    .orElse(municipalityList.get(0));   // fallback to 0th
+        }
+
+        String municipalityId = safeString(selectedMunicipality.get("Respective_GOI_LGD_Code"), "0");
+        String municipalityName = safeString(selectedMunicipality.get("Municipality_Name"));
+        String municipalityNameLocal = safeString(selectedMunicipality.get("Municipality_Name_Local_Lang"));
 
         // User info
         User userInfo = serviceReqRequest.getRequestInfo() != null ? serviceReqRequest.getRequestInfo().getUserInfo() : null;
@@ -308,11 +324,11 @@ public class DgrIntegration {
         requestBody.put("Citizen_Address", fullAddress);
         requestBody.put("Citizen_District_ID", districtId);
         requestBody.put("Citizen_Tehsil_ID", tehsilId);
-        requestBody.put("Citizen_Village_ID", villageId);
+        requestBody.put("Citizen_Village_ID", 0);
         requestBody.put("Citizen_Municipality_ID", municipalityId);
         requestBody.put("Citizen_District", districtNameGgr);
         requestBody.put("Citizen_Tehsil", tehsilName);
-        requestBody.put("Citizen_Village", villageName);
+        requestBody.put("Citizen_Village", null);
         requestBody.put("Citizen_Municipality", municipalityName);
         requestBody.put("Citizen_State", constants.STATE_NAME);
         requestBody.put("Citizen_State_ID", stateId);

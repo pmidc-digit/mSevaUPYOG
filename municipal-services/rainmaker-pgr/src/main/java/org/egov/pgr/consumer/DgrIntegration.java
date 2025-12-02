@@ -269,23 +269,37 @@ public class DgrIntegration {
                     .findFirst()
                     .orElse(tehsilList.get(0)); // fallback to 0th tehsil
 
-            String tehsilId = String.valueOf(matchedTehsil.get("Tehsil_ID"));
+            String tehsilId = String.valueOf(matchedTehsil.get("Respective_GOI_LGD_Code"));
             String tehsilName = String.valueOf(matchedTehsil.get("Tehsil_Name"));
             String tehsilNameLocal = String.valueOf(matchedTehsil.get("Tehsil_Name_Local_language"));
 
             // 14. Get first village by tehsil
             List<Map<String, Object>> villageList = fetchDataFromApi(VILLAGE_BY_TEHSIL_URL + tehsilId);
             Map<String, Object> firstVillage = (villageList != null && !villageList.isEmpty()) ? villageList.get(0) : Collections.emptyMap();
-            String villageId = firstVillage.get("Village_ID") != null ? String.valueOf(firstVillage.get("Village_ID")) : "0";
+            String villageId = firstVillage.get("Respective_GOI_LGD_Code") != null ? String.valueOf(firstVillage.get("Village_ID")) : "0";
             String villageName = firstVillage.get("Village_Name") != null ? String.valueOf(firstVillage.get("Village_Name")) : "";
             String villageNameLocal = firstVillage.get("Village_Name_Local_Lang") != null ? String.valueOf(firstVillage.get("Village_Name_Local_Lang")) : "";
 
             // 15. Get first municipality by tehsil
-            List<Map<String, Object>> municipalityList = fetchDataFromApi(MUNICIPALITY_BY_TEHSIL_URL + tehsilId);
-            Map<String, Object> firstMunicipality = (municipalityList != null && !municipalityList.isEmpty()) ? municipalityList.get(0) : Collections.emptyMap();
-            String municipalityId = firstMunicipality.get("Municipality_ID") != null ? String.valueOf(firstMunicipality.get("Municipality_ID")) : "0";
-            String municipalityName = firstMunicipality.get("Municipality_Name") != null ? String.valueOf(firstMunicipality.get("Municipality_Name")) : "";
-            String municipalityNameLocal = firstMunicipality.get("Municipality_Name_Local_Lang") != null ? String.valueOf(firstMunicipality.get("Municipality_Name_Local_Lang")) : "";
+            List<Map<String, Object>> municipalityList =
+                    fetchDataFromApi(MUNICIPALITY_BY_TEHSIL_URL + tehsilId);
+
+            Map<String, Object> selectedMunicipality = Collections.emptyMap();
+
+            if (municipalityList != null && !municipalityList.isEmpty()) {
+
+                // Try to find by matching name
+                selectedMunicipality = municipalityList.stream()
+                        .filter(m -> tehsilSearchName.equalsIgnoreCase(
+                                safeString(m.get("Municipality_Name"))
+                        ))
+                        .findFirst()
+                        .orElse(municipalityList.get(0));   // fallback to 0th
+            }
+
+            String municipalityId = safeString(selectedMunicipality.get("Respective_GOI_LGD_Code"), "0");
+            String municipalityName = safeString(selectedMunicipality.get("Municipality_Name"));
+            String municipalityNameLocal = safeString(selectedMunicipality.get("Municipality_Name_Local_Lang"));
 
             // 16. Prepare payload
             Map<String, Object> requestBody = new HashMap<>();
@@ -334,8 +348,8 @@ public class DgrIntegration {
             requestBody.put("Town_ID", 0);
             requestBody.put("Previous_Grievance", 0);
             requestBody.put("Town_Name", "");
-            requestBody.put("Locality_Code", "");
-            requestBody.put("Locality_Name", "");
+            requestBody.put("Locality_Code", mohallaCodes);
+            requestBody.put("Locality_Name", mohallaName);
             requestBody.put("Citizen_State_Local_Lang", constants.STATE_LOCAL_LANG);
             requestBody.put("Citizen_District_Local_Lang", districtNameGgr);
             requestBody.put("Citizen_Tehsil_Local_Lang", tehsilNameLocal);
@@ -427,5 +441,12 @@ log.info("CreateGrievance Response Body: {}", response.getBody());
         result.put("Category_ID", "0");
         result.put("Sub_Category_ID", "0");
         return result;
+    }
+    
+    private String safeString(Object obj) {
+        return obj != null ? obj.toString().trim() : "";
+    }
+    private String safeString(Object obj, String defaultValue) {
+        return obj != null ? obj.toString().trim() : defaultValue;
     }
 }

@@ -58,34 +58,38 @@ export const useLayoutSearchApplication = (params, tenantId, config = {}, t) => 
 }
 
 export const useLayoutSearchApplicationByIdOrMobile = (params, tenantId, config = {}, t) => {
-  const client = useQueryClient()
-  const result = useQuery(
-    ["LAYOUT_SEARCH_APPLICATION_BY_ID_MOBILENO", params],
-    useLayoutSearch(params, tenantId, config),
-    {
-      staleTime: Number.POSITIVE_INFINITY,
-      select: (data) => {
-        let tableData
+  const client = useQueryClient();
+  console.log("ttttt");
+  const result = useQuery(["LAYOUT_SEARCH_APPLICATION_BY_ID_MOBILENO", params], useLayoutSearch(params, tenantId, config), {
+    staleTime: Infinity,
+    select: (data) => {
 
-        if (data?.data?.Layout?.length === 0) {
-          tableData = [{ display: "ES_COMMON_NO_DATA" }]
-        } else {
-          tableData = data?.data?.Layout?.map((application) => {
-            return {
-              applicationNo: application?.applicationNo,
-              date: Digit.DateUtils.ConvertEpochToDate(application?.auditDetails?.createdTime),
-              locality: `${application?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
-              applicationStatus: `${application?.applicationStatus}`,
-            }
-          })
-        }
+    let tableData;
 
-        return {
-          data: tableData,
-          totalCount: data?.data?.count || 0,
-        }
-      },
+    console.log(data, "LAYOU APPLOICATION");
+
+    if(data?.data?.Layout?.length == 0){
+      tableData=[{ display: "ES_COMMON_NO_DATA" }];
+    }
+    else{
+    tableData = data?.data?.Layout?.map((application) => {
+          return {
+            applicationNo: application?.applicationNo,
+           // date: Digit.DateUtils.ConvertEpochToDate(application?.auditDetails?.lastModifiedBy),
+            date: Digit.DateUtils.ConvertEpochToDate(application?.auditDetails?.createdTime),
+            locality: `${application?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
+            applicationStatus: `${application?.applicationStatus}`,
+          };
+    });
+
+    }
+
+    return {
+        data: tableData,
+        totalCount: data?.data?.count || 0,
+    }
+
     },
-  )
-  return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params]) }
-}
+  });
+  return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params]) };
+};

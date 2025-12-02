@@ -1,7 +1,7 @@
 import React from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
-const ComplaintTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage, currentPage, totalRecords, pageSizeLimit, onPageSizeChange }) => (
+const ComplaintTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage, currentPage, totalRecords, pageSizeLimit, onPageSizeChange, className }) => (
   <Table
     t={t}
     data={data}
@@ -13,6 +13,7 @@ const ComplaintTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage
     totalRecords={totalRecords}
     onPageSizeChange={onPageSizeChange}
     pageSizeLimit={pageSizeLimit}
+    className={className}
   />
 );
 

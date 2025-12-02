@@ -197,6 +197,14 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           link: `layout/apply`,
           i18nKey: t("BPA_LAYOUT_LABEL"),
         },
+         {
+          link: `layout/my-applications`,
+          i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
+        },
+                {
+          link: `layout/search-application`,
+          i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
+        },
       ],
       styles: { minWidth: "90%", minHeight: "90%" },
     },

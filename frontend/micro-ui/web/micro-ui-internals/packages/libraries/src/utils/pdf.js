@@ -399,7 +399,7 @@ const jsPdfGeneratorBPAREG = async ({
         height: 842,
       },
     ],
-    margin: [20, 20, 20, 20],
+    margin: [10, 10, 10, 10],
 
     header: {},
 
@@ -421,7 +421,7 @@ const jsPdfGeneratorBPAREG = async ({
     ],
     defaultStyle: {
       font: "Hind",
-      margin: [20, 10, 20, 10],
+      margin: [20, 5, 20, 5],
     },
   };
   pdfMake.vfs = Fonts;
@@ -1394,6 +1394,8 @@ function createHeader(headerDetails, logo, tenantId) {
 function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId, phoneNumber, breakPageLimit = null) {
   const detailsHeaders = [];
   let counter = 1;
+  console.log("details here are: ",details)
+  console.log("createcontent func here")
   details.forEach((detail, index) => {
     if (detail?.values?.length > 0) {
       const headerBody = [
@@ -1415,7 +1417,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
               stack: [
                 {
                   style: "tableExample",
-                  margin: [10, 20, 10, 0],
+                  margin: [10, 5, 5, 0],
                   layout: "noBorders",
                   table: {
                     widths: counter === 1 ? ["70%", "30%"] : ["101.8%", "*"],
@@ -1431,7 +1433,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
                     image: qrCodeDataUrl,
                     width: 70,
                     alignment: "right",
-                    margin: [0, 10, 10, 0],
+                    margin: [0, 5, 5, 0],
                   },
                 ]
               : []),
@@ -1440,7 +1442,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
       } else {
         detailsHeaders.push({
           style: "tableExample",
-          margin: [10, 20, 10, 0],
+          margin: [10, 0, 5, 0],
           layout: "noBorders",
           table: {
             widths: ["101.8%", "*"],
@@ -1455,7 +1457,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
       detailsHeaders.push({
         style: "tableExample",
 
-        margin: [10, 0, 10, 0],
+        margin: [10, 0, 5, -5],
         table: {
           widths: ["40%", "*"],
           body: [
@@ -1476,7 +1478,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
         detailsHeaders.push({
           style: "tableExample",
           layout: "noBorders",
-          margin: [10, 0, 10, 0],
+          margin: [10, 0, 5, 0],
           table: {
             widths: ["40%", "*"],
             body: [
@@ -1485,11 +1487,12 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
                   text: indData?.title,
                   style: "header",
                   fontSize: 10,
+                  margin: [10 , 0, 0, 0]
                   //border:  index< detail?.values?.length-1  ?  [true, false, false,false]:index===detail?.values?.length-1 ? [true, false, false, true]:[] ,
                 },
 
                 {
-                  text: `:  ${indData?.value}`,
+                  text: indData?.value && indData?.value?.trim() !== "" ? `: ${indData?.value}` : "",
                   //border: index< detail?.values?.length-1    ?  [false, false, true, false]:index===detail?.values?.length-1? [false, false, true, true] :[],
                   //borderColor:borderColor,
                   fontSize: 10,

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo,Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { Dropdown, Loader } from "@mseva/digit-ui-react-components";
-import { useRouteMatch, useHistory } from "react-router-dom";
+import { Dropdown, Loader, BackButton } from "@mseva/digit-ui-react-components";
+import { useRouteMatch, useHistory, useLocation } from "react-router-dom";
 import { useQueryClient } from "react-query";
 
 import { FormComposer } from "../../../components/FormComposer";
@@ -65,13 +65,14 @@ export const CreateComplaint = ({ parentUrl }) => {
   const history = useHistory();
   const serviceDefinitions = Digit.GetServiceDefinitions;
   const client = useQueryClient();
+  const location = useLocation();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code) {
+    if (complaintType?.key && selectedCity?.code && selectedLocality?.code) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
     }
-  }, [complaintType, subType, selectedCity, selectedLocality]);
+  }, [complaintType, selectedCity, selectedLocality]);
 
   useEffect(() => {
     setLocalities(fetchedLocalities);
@@ -127,7 +128,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   function selectLocality(locality) {
-    console.log("ddddddddd", locality);
+
     setSelectedLocality(locality);
   }
 
@@ -140,7 +141,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
   const handleMobileNumber = (event) => {
     const { value } = event.target;
-    console.log("handleMobileNumber", value);
+
     setMobileNumber(value);
   };
   const handleName = (event) => {
@@ -163,6 +164,23 @@ export const CreateComplaint = ({ parentUrl }) => {
       head: t("ES_CREATECOMPLAINT_PROVIDE_COMPLAINANT_DETAILS"),
       body: [
         {
+          label: t("ES_CREATECOMPLAINT_COMPLAINT_NAME"),
+          isMandatory: true,
+          type: "text",
+          value: fullName,
+          populators: {
+            name: "name",
+            placeholder: "Enter Citizen Name",
+            onChange: handleName,
+            validation: {
+              required: true,
+              pattern: /^[A-Za-z]/,
+            },
+            error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
+          },
+           placeholder: t("ES_CREATECOMPLAINT_COMPLAINT_NAME_PLACEHOLDER"),
+        },
+        {
           label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
           isMandatory: true,
           type: "text",
@@ -177,21 +195,7 @@ export const CreateComplaint = ({ parentUrl }) => {
             },
             componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
             error: t("CORE_COMMON_MOBILE_ERROR"),
-          },
-        },
-        {
-          label: t("ES_CREATECOMPLAINT_COMPLAINT_NAME"),
-          isMandatory: true,
-          type: "text",
-          value: fullName,
-          populators: {
-            name: "name",
-            onChange: handleName,
-            validation: {
-              required: true,
-              pattern: /^[A-Za-z]/,
-            },
-            error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
+            placeholder: t("ES_CREATECOMPLAINT_MOBILE_NUMBER_PLACEHOLDER"),
           },
         },
         // {
@@ -218,41 +222,41 @@ export const CreateComplaint = ({ parentUrl }) => {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
           isMandatory: true,
           type: "dropdown",
-          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
+          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_TYPE")} />,
         },
         {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
           isMandatory: true,
           type: "dropdown",
           menu: { ...subTypeMenu },
-          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
+          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_SUBTYPE")}/>,
         },
-        {
-          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-          isMandatory: true,
-          type: "dropdown",
-          populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
-        },
-        {
-          //label: t("WS_COMMON_PROPERTY_DETAILS"),
-          isEditConnection: true,
-          isCreateConnection: true,
-          isModifyConnection: true,
-          isEditByConfigConnection: true,
-          isProperty: subType?.key?.includes("Property") ? true : false,
-          component: "CPTPropertySearchNSummary",
-          key: "cpt",
-          type: "component",
-          body: [
-            {
-              component: "CPTPropertySearchNSummary",
-              withoutLabel: true,
-              key: "cpt",
-              type: "component",
-              hideInCitizen: true,
-            },
-          ],
-        },
+        // {
+        //   label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //   // isMandatory: true,
+        //   type: "dropdown",
+        //   populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_PRIORITY_LEVEL")} />,
+        // },
+        // {
+        //   //label: t("WS_COMMON_PROPERTY_DETAILS"),
+        //   isEditConnection: true,
+        //   isCreateConnection: true,
+        //   isModifyConnection: true,
+        //   isEditByConfigConnection: true,
+        //   isProperty: subType?.key?.includes("Property") ? true : false,
+        //   component: "CPTPropertySearchNSummary",
+        //   key: "cpt",
+        //   type: "component",
+        //   body: [
+        //     {
+        //       component: "CPTPropertySearchNSummary",
+        //       withoutLabel: true,
+        //       key: "cpt",
+        //       type: "component",
+        //       hideInCitizen: true,
+        //     },
+        //   ],
+        // },
       ],
     },
     {
@@ -291,7 +295,7 @@ export const CreateComplaint = ({ parentUrl }) => {
           isMandatory: true,
           dependency: selectedCity && localities ? true : false,
           populators: (
-            <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} />
+            <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} placeholder={t("CS_CREATECOMPLAINT_CHOOSE_LOCALITY_MOHALLA")} />
           ),
         },
         {
@@ -299,6 +303,7 @@ export const CreateComplaint = ({ parentUrl }) => {
           type: "text",
           populators: {
             name: "houseNoAndStreetName",
+            placeholder:t("CS_HOUSE_NO_STREET_NAME_PLACEHOLDER"),
           },
         },
         {
@@ -306,6 +311,7 @@ export const CreateComplaint = ({ parentUrl }) => {
           type: "textarea",
           populators: {
             name: "landmark",
+            placeholder:t("CS_LANDMARK_PLACEHOLDER"),
           },
         },
       ],
@@ -321,22 +327,21 @@ export const CreateComplaint = ({ parentUrl }) => {
           populators: {
             name: "description",
             onChange: handleDescription,
+            placeholder:t("CS_ADDITIONAL_DETAILS_PLACEHOLDER"),
           },
         },
       ],
     },
   ];
   useEffect(() => {
-    console.log("heloo world", propetyData);
+
     if (propetyData !== "undefined" && propetyData !== null) {
       let data = JSON.parse(propetyData);
-      console.log("stp 1", propetyData);
       setPropertyData(data);
       setPropertyId(data?.propertyId);
     }
   }, []);
   useEffect(() => {
-    console.log("step 2", propetyData, property, typeof propetyData);
     if (property !== "undefined" && property !== null) {
       let data = property;
 
@@ -347,7 +352,7 @@ export const CreateComplaint = ({ parentUrl }) => {
       });
       setSelectedLocality(b?.[0]);
       setDescription(data?.propertyId);
-      console.log("pgrProperty", localities, data?.propertyId, data);
+
     }
   }, [propertyId]);
 
@@ -359,7 +364,7 @@ export const CreateComplaint = ({ parentUrl }) => {
 
   //On SUbmit
   const onSubmit = async (data) => {
-    console.log("priorityLevel", priorityLevel);
+
 
     if (!canSubmit) return;
     const cityCode = selectedCity.code;
@@ -370,8 +375,12 @@ export const CreateComplaint = ({ parentUrl }) => {
     const localityName = selectedLocality.name;
     const landmark = data?.landmark;
     const houseNoAndStreetName = data?.houseNoAndStreetName;
-    const { key } = subType;
+    
+    // Use complaintType.key as serviceCode (complaint type key)
+    // const serviceCode = complaintType?.key;
+     const { key } = subType;
     const complaintType = key;
+
     const mobileNumber = data?.mobileNumber;
     const name = data?.name;
     const emailId = data?.emailId;
@@ -386,7 +395,7 @@ export const CreateComplaint = ({ parentUrl }) => {
       localityName,
       landmark,
       houseNoAndStreetName,
-      complaintType,
+      complaintType,  // Send the complaint type key as serviceCode
       priorityLevel,
       mobileNumber,
       name,
@@ -399,12 +408,15 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   return (
+    <>
+    {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}
       onSubmit={wrapperSubmit}
       isDisabled={!canSubmit && !submitted}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
-    />
+      />
+    </>
   );
 };

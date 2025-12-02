@@ -176,6 +176,9 @@ public class InboxService {
     @Autowired
     private CHBInboxFilterService chbInboxFilterService;
 
+    @Autowired
+    private GarbageInboxFilterService garbageInboxFilterService;
+
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
@@ -452,6 +455,13 @@ public class InboxService {
 
             case "clu-service":
                 applicationNumbers = cluInboxFilterService.fetchApplicationNumbersFromSearcher(
+                        criteria, statusIdNameStringMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put("applicationNumber", applicationNumbers);
+                break;
+
+            case "gc-services":
+                applicationNumbers = garbageInboxFilterService.fetchApplicationNumbersFromSearcher(
                         criteria, statusIdNameStringMap, requestInfo);
                 if (!CollectionUtils.isEmpty(applicationNumbers))
                     moduleSearchCriteria.put("applicationNumber", applicationNumbers);

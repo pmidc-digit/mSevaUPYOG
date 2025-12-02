@@ -58,8 +58,8 @@ const CLUFilterFormFieldsComponent = ({
               <React.Fragment>
                 {statuses?.map((status, index) => (
                   <CheckBox
-                    key={status.applicationstatus}
-                    label={`${t(status.applicationstatus)} - ${status.count}`}
+                    key={status.applicationstatus}              
+                    label={`${t(`BPA_STATUS_${status.applicationstatus}`)} - ${status.totalCount}`}
                     value={status.applicationstatus}
                     checked={props.value.includes(status.applicationstatus)}
                     onChange={() => toggleStatus(status.applicationstatus)}

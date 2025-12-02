@@ -311,7 +311,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_GENDER_REQUIRED") });
         }
 
-        if (!requestData.emailId || !Digit.Utils.getPattern("Pincode").test(requestData.emailId)) {
+        if (!requestData.emailId || !Digit.Utils.getPattern("Email").test(requestData.emailId)) {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_EMAIL_INVALID") });
         }
 

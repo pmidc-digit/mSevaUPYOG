@@ -48,6 +48,7 @@ import { Link } from "react-router-dom"
 import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
+import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 
 
 const BpaApplicationDetail = () => {
@@ -1983,7 +1984,8 @@ useEffect(() => {
                   <Card>
                     <Fragment>
                       <div id="timeline">
-                        <BPAApplicationTimeline application={data?.applicationData} id={id} />
+                        {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
+                        <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
                         {!workflowDetails?.isLoading &&
                           workflowDetails?.data?.newNextAction?.length > 0 &&
                           !isFromSendBack &&

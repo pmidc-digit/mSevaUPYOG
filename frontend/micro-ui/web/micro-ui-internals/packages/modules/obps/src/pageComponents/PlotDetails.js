@@ -20,6 +20,7 @@ import Timeline from "../components/Timeline";
 import { useForm, Controller } from "react-hook-form";
 import { PropertySearch } from "./PropertySearch";
 import { PropertySearchModal } from "./PropertySearchModal";
+import { set } from "lodash";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -179,6 +180,17 @@ console.log("sessionStorageData",currentStepData);
   //     }
   //   }
   // }, []);
+
+  useEffect(() => {
+    if(typeof zonenumber === "string" && zonesOptions?.length > 0){
+      const zone = zonesOptions.find((zone) => zone.code === zonenumber);
+      if(zone){
+        setZoneNumber(zone);
+      }
+    }else if(zonenumber === null){
+      setZoneNumber(currentStepData?.createdResponse?.additionalDetails?.zonenumber || "");
+    }
+  }, [zonenumber, menuList2]);
   useEffect(() => {
     if (LicenseData) {
         if (LicenseData?.Licenses?.[0]?.tradeLicenseDetail) {
@@ -393,7 +405,7 @@ useEffect(() => {
       registrationDetails,
       boundaryWallLength,
       wardnumber,
-      zonenumber,
+      zonenumber: zonenumber?.code,
       khasraNumber,
       architectid,
       propertyuid: isPropertyAvailable?.value ? propertyuid : null,
@@ -427,7 +439,7 @@ useEffect(() => {
       registrationDetails,
       boundaryWallLength,
       wardnumber,
-      zonenumber,
+      zonenumber: zonenumber?.code,
       khasraNumber,
       architectid,
       propertyuid: isPropertyAvailable?.value ? propertyuid : null,

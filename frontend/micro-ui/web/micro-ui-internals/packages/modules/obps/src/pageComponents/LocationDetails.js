@@ -57,7 +57,7 @@ const geoLocations = useMemo(() => {
     formData.address = {};
   }
 
-  console.log("formData in location page", selectedCity ,currentStepData, allCities);
+  console.log("formData in location page", selectedCity ,currentStepData, allCities, geoLocationFromImg);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -750,7 +750,7 @@ return (
               <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
             </div>
           )}
-          {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 &&(
+          {!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0 &&(
             // <div style={{ marginTop: "16px" }}>
             //   <a 
             //     href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 

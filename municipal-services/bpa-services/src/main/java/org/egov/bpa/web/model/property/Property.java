@@ -10,21 +10,20 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 
 import org.egov.bpa.web.model.AuditDetails;
-import org.egov.bpa.web.model.landInfo.Address;
-import org.egov.bpa.web.model.landInfo.Institution;
-import org.egov.bpa.web.model.landInfo.OwnerInfo;
-import org.egov.bpa.web.model.landInfo.Unit;
+import org.egov.bpa.web.model.BPA;
+import org.egov.bpa.web.model.landInfo.*;
 import org.egov.bpa.web.model.workflow.ProcessInstance;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 
 import org.egov.bpa.web.model.Document;
-import org.egov.bpa.web.model.enums.*;
+import org.egov.bpa.web.model.enums.CreationReason;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Property
@@ -35,7 +34,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Data
+@SuperBuilder
 public class Property extends PropertyInfo {
 
 	@JsonProperty("acknowldgementNumber")
@@ -124,33 +124,34 @@ public class Property extends PropertyInfo {
 	@Builder.Default
 	@JsonProperty("isOldDataEncryptionRequest")
 	private boolean isOldDataEncryptionRequest = false;
+	
 
-	@Builder
-	public Property(String id, String propertyId, String surveyId, List<String> linkedProperties, String tenantId,
-			String accountId, String oldPropertyId, Status status, Address address, String acknowldgementNumber,
-			String propertyType, String ownershipCategory, List<OwnerInfo> owners, Institution institution,
-			CreationReason creationReason, String usageCategory, Long noOfFloors, Double landArea,
-			BigDecimal superBuiltUpArea, Source source, Channel channel, List<Document> documents, List<Unit> units,
-			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow) {
-		super(id, propertyId, surveyId, linkedProperties, tenantId, accountId, oldPropertyId, status, address);
-		this.acknowldgementNumber = acknowldgementNumber;
-		this.propertyType = propertyType;
-		this.ownershipCategory = ownershipCategory;
-		this.owners = owners;
-		this.institution = institution;
-		this.creationReason = creationReason;
-		this.usageCategory = usageCategory;
-		this.noOfFloors = noOfFloors;
-		this.landArea = landArea;
-		this.superBuiltUpArea = superBuiltUpArea;
-		this.source = source;
-		this.channel = channel;
-		this.documents = documents;
-		this.units = units;
-		this.additionalDetails = additionalDetails;
-		this.auditDetails = auditDetails;
-		this.workflow = workflow;
-	}
+//	@Builder
+//	public Property(String id, String propertyId, String surveyId, List<String> linkedProperties, String tenantId,
+//			String accountId, String oldPropertyId, Status status, Address address, String acknowldgementNumber,
+//			String propertyType, String ownershipCategory, List<OwnerInfo> owners, Institution institution,
+//			CreationReason creationReason, String usageCategory, Long noOfFloors, Double landArea,
+//			BigDecimal superBuiltUpArea, Source source, Channel channel, List<Document> documents, List<Unit> units,
+//			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow) {
+//		super(id, propertyId, surveyId, linkedProperties, tenantId, accountId, oldPropertyId, status, address);
+//		this.acknowldgementNumber = acknowldgementNumber;
+//		this.propertyType = propertyType;
+//		this.ownershipCategory = ownershipCategory;
+//		this.owners = owners;
+//		this.institution = institution;
+//		this.creationReason = creationReason;
+//		this.usageCategory = usageCategory;
+//		this.noOfFloors = noOfFloors;
+//		this.landArea = landArea;
+//		this.superBuiltUpArea = superBuiltUpArea;
+//		this.source = source;
+//		this.channel = channel;
+//		this.documents = documents;
+//		this.units = units;
+//		this.additionalDetails = additionalDetails;
+//		this.auditDetails = auditDetails;
+//		this.workflow = workflow;
+//	}
 
 	public Property addOwnersItem(OwnerInfo ownersItem) {
 		if (this.owners == null) {
@@ -161,6 +162,7 @@ public class Property extends PropertyInfo {
 			this.owners.add(ownersItem);
 		return this;
 	}
+	
 	
 	public Property addUnitsItem(Unit unit) {
 		if (this.units == null) {

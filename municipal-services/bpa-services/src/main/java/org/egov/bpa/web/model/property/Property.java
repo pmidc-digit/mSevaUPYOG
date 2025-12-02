@@ -18,6 +18,9 @@ import org.egov.bpa.web.model.workflow.ProcessInstance;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 
+import org.egov.bpa.web.model.Document;
+import org.egov.bpa.web.model.enums.*;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 

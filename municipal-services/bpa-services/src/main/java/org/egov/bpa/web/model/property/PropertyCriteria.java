@@ -1,5 +1,6 @@
 package org.egov.bpa.web.model.property;
 
+import org.egov.bpa.web.model.enums.*;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

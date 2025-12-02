@@ -15,7 +15,12 @@ import {
   initChallanGenerationComponents,
   ChallanReducers,
 } from "@mseva/digit-ui-module-challangeneration";
-import { GarbageCollectionModule, GarbageCollectionLinks, initGarbageCollectionComponents } from "@mseva/digit-ui-module-garbagecollection";
+import {
+  GarbageCollectionModule,
+  GarbageCollectionLinks,
+  initGarbageCollectionComponents,
+  GarbageReducers,
+} from "@mseva/digit-ui-module-garbagecollection";
 import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
@@ -200,6 +205,7 @@ const initDigitUI = () => {
     noc: NOCReducers(initData),
     obps: OBPSReducers(initData),
     challan: ChallanReducers(initData),
+    gc: GarbageReducers(initData),
   });
 
   window.Digit.Customizations = {

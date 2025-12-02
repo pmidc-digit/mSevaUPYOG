@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useReducer, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
+import { Loader } from "../../components/Loader";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
@@ -25,9 +26,7 @@ const Inbox = ({
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  const { isLoading, data: countData } = Digit.Hooks.mcollect.useMCollectCount(tenantId);
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
-  const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
   const [isLoader, setIsLoader] = useState(false);
   const [getFilter, setFilter] = useState();
 
@@ -35,8 +34,6 @@ const Inbox = ({
   const paginationParams = isMobile
     ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" }
     : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" };
-
-  const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
 
   // const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
   //   tenantId,
@@ -66,86 +63,10 @@ const Inbox = ({
     sortOrder: "DESC",
   };
 
-  const formInitValue = useMemo(() => {
-    return (
-      InboxObjectInSessionStorage || {
-        filterForm: filterFormDefaultValues,
-        searchForm: searchFormDefaultValues,
-        tableForm: tableOrderFormDefaultValues,
-      }
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
-    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
-    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
-  ]);
-
-  const [formState, dispatch] = useReducer(formReducer, formInitValue);
-
-  function formReducer(state, payload) {
-    switch (payload.action) {
-      case "mutateSearchForm":
-        Digit.SessionStorage.set("Challan.INBOX", { ...state, searchForm: payload.data });
-        return { ...state, searchForm: payload.data };
-      case "mutateFilterForm":
-        Digit.SessionStorage.set("Challan.INBOX", { ...state, filterForm: payload.data });
-        return { ...state, filterForm: payload.data };
-      case "mutateTableForm":
-        Digit.SessionStorage.set("Challan.INBOX", { ...state, tableForm: payload.data });
-        return { ...state, tableForm: payload.data };
-      default:
-        return state;
-    }
-  }
-
   const { isLoading: hookLoading, data } = Digit.Hooks.challangeneration.useInbox({
     tenantId,
-    // filters: { ...formState, getFilter },
-    // filters: { ...formState, getFilter },
     filters: { ...searchParams, ...paginationParams },
   });
-
-  // useEffect(() => {
-  //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
-  //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
-  // }, [hookLoading, data]);
-
-  useEffect(() => {
-    async function fetchBills() {
-      let businessServiceMap = {};
-
-      data?.challans?.forEach((item) => {
-        if (item.businessService !== "ADVT.Canopy_Fee") {
-          if (!businessServiceMap[item.businessService]) businessServiceMap[item.businessService] = [];
-          businessServiceMap[item.businessService].push(item.challanNo);
-        }
-      });
-
-      let processInstanceArray = [];
-      for (let key in businessServiceMap) {
-        const consumerCodes = businessServiceMap[key].join(",");
-        const res = await Digit.PaymentService.fetchBill(tenantId, { consumerCode: consumerCodes, businessService: key });
-        processInstanceArray = [...processInstanceArray, ...(res?.Bill || [])];
-      }
-
-      const mapping = {};
-      processInstanceArray.forEach((item) => {
-        mapping[item?.consumerCode] = {
-          businessService: item?.businessService,
-          totalAmount: item?.billDetails?.[0]?.totalAmount || 0,
-          dueDate: item?.billDetails?.[0]?.expiryDate,
-        };
-      });
-
-      setBusinessIdToOwnerMappings(mapping);
-      setIsLoader(false);
-    }
-
-    if (data?.challans?.length > 0) {
-      fetchBills();
-    }
-  }, [data]);
 
   const formedData = (data?.table || []).map((item) => ({
     challanNo: item?.applicationId,
@@ -249,6 +170,7 @@ const Inbox = ({
           isLoader={isLoader}
           statutes={data?.statuses}
         />
+        {hookLoading && <Loader page={true} />}
       </div>
     );
   }

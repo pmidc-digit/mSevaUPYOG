@@ -27,6 +27,7 @@ import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
+import { amountToWords } from "../../../utils/index";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -126,7 +127,7 @@ const CLUApplicationDetails = () => {
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "obpas_noc",
+      businessService: "clu",
       consumerCodes: id,
       isEmployee: false,
     },
@@ -145,8 +146,11 @@ const CLUApplicationDetails = () => {
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
+    const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
+    const fee = payments?.totalAmountPaid;
+    const amountinwords = amountToWords(fee);
     let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "noc-receipt");
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage,amountinwords }] }, "clu-receipt");
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }

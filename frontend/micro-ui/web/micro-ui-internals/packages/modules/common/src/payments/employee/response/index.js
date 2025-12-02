@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { format } from "date-fns";
 import { transformBookingResponseToBookingData } from "../../index";
-import { ChallanData } from "../../index";
+import { ChallanData ,getLocationName } from "../../index";
 
 export const convertEpochToDate = (dateEpoch) => {
   // Returning NA in else case because new Date(null) returns Current date from calender
@@ -213,6 +213,8 @@ export const SuccessfulPayment = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -224,7 +226,7 @@ export const SuccessfulPayment = (props) => {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { challan: { ...application, ...(payments?.Payments?.[0] || {}) } },
+          { challan: { ...application, ...(payments?.Payments?.[0] || {}),location } },
           "challan-notice"
         );
         fileStoreId = response?.filestoreIds[0];

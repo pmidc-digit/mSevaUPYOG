@@ -263,8 +263,11 @@ console.log("building category here: & fileNo", usage,fileno);
       enabled: !!data,
     },
   })
+  const userInfo = Digit.SessionStorage.get("User")?.info;
 
-  console.log("datata=====", workflowDetails, data)
+  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.mobileNumber;
+
+  console.log("datata=====", workflowDetails, data, isArchitect)
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
@@ -1997,7 +2000,8 @@ useEffect(() => {
                             />
                           )}
                       </div>
-                      {!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
+                      {((workflowDetails?.data?.actionState?.applicationStatus === "CITIZEN_APPROVAL_INPROCESS" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_SANC_FEE_PAYMENT" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_APPL_FEE") && !isArchitect) &&
+                        <div>{!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
                         //removed this styles to fix the action button in application details UM-5347
                         <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                         >
@@ -2046,6 +2050,59 @@ useEffect(() => {
                           </div>
                         </ActionBar>
                       )}
+                      </div>}
+                      {(workflowDetails?.data?.actionState?.applicationStatus != "CITIZEN_APPROVAL_INPROCESS" && isArchitect) &&
+                        <div>{!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
+                        //removed this styles to fix the action button in application details UM-5347
+                        <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
+                        >
+                          <div style={{ width: "100%" }}>
+                            {displayMenu && workflowDetails?.data?.newNextAction ? (
+                              <Menu
+                                style={{minWidth: "310px" }}
+                                localeKeyPrefix={"WF_BPA_ACTION"}
+                                options={workflowDetails?.data?.newNextAction.map((action) => action.action)}
+                                t={t}
+                                onSelect={onActionSelect}
+                              />
+                            ) : null}
+                            <SubmitBar
+                            /*style={{ width: "100%" }}*/ disabled={
+                                false
+                                // Original condition commented out:
+                                // checkForSubmitDisable(isFromSendBack, isTocAccepted) ||
+                                // (workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING"
+                                //   ? !agree || !isOTPVerified || !citizenvalidations
+                                //   : false)
+                              }
+                              label={t("ES_COMMON_TAKE_ACTION")}
+                              onSubmit={() => setDisplayMenu(!displayMenu)}
+                            />
+                          </div>
+                        </ActionBar>
+                      )}
+                      {!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length == 1 && (
+                        //removed this style to fix the action button in application details UM-5347
+                        <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
+                        >
+                          <div style={{ width: "100%" }}>
+                            <button
+                              style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
+                              className="submit-bar"
+                              disabled={false}
+                              name={workflowDetails?.data?.newNextAction?.[0]?.action}
+                              value={workflowDetails?.data?.newNextAction?.[0]?.action}
+                              onClick={(e) => {
+                                onActionSelect(e.target.value)
+                              }}
+                            >
+                              {t(`WF_BPA_${workflowDetails?.data?.newNextAction?.[0]?.action}`)}
+                            </button>
+                          </div>
+                        </ActionBar>
+                      )}
+                        </div>
+                      }
                     </Fragment>
                   </Card>
                 )}

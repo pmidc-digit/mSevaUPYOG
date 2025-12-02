@@ -273,12 +273,13 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
 
   const getFormattedULBName = (ulbCode = "") => {
     if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+    if(typeof ulbCode !== "string") return ""
 
     const parts = ulbCode.split(".");
-    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+    if (parts.length < 2) return ulbCode?.charAt(0)?.toUpperCase() + ulbCode?.slice(1);
 
     const namePart = parts[1];
-    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    return namePart?.charAt(0)?.toUpperCase() + namePart?.slice(1);
   };
 
   const ulbName = getFormattedULBName(License?.tradeLicenseDetail?.additionalDetail?.Ulb);

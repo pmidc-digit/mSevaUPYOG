@@ -71,7 +71,7 @@ const getApplicantDetails = (appData, t) => {
     },
     {
       title: t("BPA_APPLICANT_DOB_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth || "N/A",
+      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth ? new Date(appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth)?.toLocaleDateString("en-GB") : "N/A",
     },
     {
       title: t("BPA_APPLICANT_GENDER_LABEL"),
@@ -159,8 +159,7 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("BPA_ULB_NAME_LABEL"),
-      value:
-        appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
     },
     {
       title: t("BPA_ULB_TYPE_LABEL"),

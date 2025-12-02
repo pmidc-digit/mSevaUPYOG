@@ -1,11 +1,12 @@
-import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile, Toast } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import { CardLabel, CardLabelError, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile, Toast } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
 import EXIF from "exif-js";
 import BharatMap from "./BharatMap";
+import CustomLocationSearch from "../components/CustomLocationSearch";
 
 
 const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepData, addNewOwner, isShowToast, onGoBack }) => {
@@ -47,12 +48,16 @@ const [apiLoading, setApiLoading] = useState(false);
 const [isUploading, setIsUploading] = useState(false);
 const [isFileLoading, setIsFileLoading] = useState(false);
 
+const geoLocations = useMemo(() => {
+  return [{...geoLocationFromImg}]
+},[geoLocationFromImg])
+
 
   if (!formData.address) {
     formData.address = {};
   }
 
-  console.log("formData in location page", selectedCity ,currentStepData, allCities);
+  console.log("formData in location page", selectedCity ,currentStepData, allCities, geoLocationFromImg);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -105,7 +110,7 @@ const [isFileLoading, setIsFileLoading] = useState(false);
 
       setcitiesopetions(filteredCities);
 
-      if (/^[1-9][0-9]{6}$/.test(pincode)) {
+      if (/^[1-9][0-9]{6}$/.test(pincode)) {        
         if (filteredCities?.length === 0) {
           setPinerror("BPA_PIN_NOT_VALID_ERROR");
         } else if (filteredCities.length === 1) {
@@ -175,7 +180,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (!propertyData?.address?.locality) {
-      if (selectedCity && fetchedLocalities && !Pinerror) {
+      if (selectedCity && fetchedLocalities) {
         let __localityList = fetchedLocalities;
         let filteredLocalityList = [];
         console.log("fetchedLocalities", fetchedLocalities);
@@ -183,10 +188,10 @@ useEffect(() => {
           setSelectedLocality(formData.address.locality);
         }
 
-        if ((formData?.address?.pincode || pincode) && !Pinerror) {
-          filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
-          // if (!formData?.address?.locality && filteredLocalityList.length <= 0) setSelectedLocality();
-        }
+        // if ((formData?.address?.pincode || pincode) && !Pinerror) {
+        //   filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
+        //   if (!formData?.address?.locality && filteredLocalityList.length <= 0) setSelectedLocality();
+        // }
         if (
           !localities ||
           (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) ||
@@ -206,7 +211,7 @@ useEffect(() => {
     } else {
       setSelectedLocality(propertyData?.address?.locality);
     }
-  }, [selectedCity, formData?.pincode, fetchedLocalities, pincode, geoLocation]);
+  }, [selectedCity, fetchedLocalities, geoLocation]);
 
   const handleGIS = () => {
     setIsOpen(!isOpen);
@@ -360,7 +365,7 @@ useEffect(() => {
     const val = typeof e === "object" && e !== null ? e.target.value : e;
     setPinerror(null);
 
-    if(!Digit.Utils.getPattern("Pincode").test(val)){
+    if(val && !Digit.Utils.getPattern("Pincode").test(val)){
       setPinerror("BPA_PIN_NOT_VALID_ERROR");
     }
 
@@ -369,8 +374,8 @@ useEffect(() => {
     sessionStorage.setItem("currentPincode", val);
     sessionStorage.setItem("currentCity", JSON.stringify({}));
     sessionStorage.setItem("currLocality", JSON.stringify({}));
-    setSelectedLocality(null);
-    setLocalities(null);
+    // setSelectedLocality(null);
+    // setLocalities(null);
   }
 
   function selectStreet(e) {
@@ -524,6 +529,8 @@ if (response?.data?.files?.length > 0) {
     color: "#333",
   };
 
+  const errorStyle = { width: "70%", fontSize: "12px", color: "red", marginTop:"20px" };
+
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
@@ -576,7 +583,7 @@ return (
         onSelect={handleSubmit}
         isDisabled={!selectedCity || Pinerror}
         isMultipleAllow={true}
-        forcedError={t(Pinerror)}
+        // forcedError={t(Pinerror)}
       >
         {/* GIS Section */}
         {/* <div style={sectionStyle}>
@@ -641,8 +648,9 @@ return (
               value={pincode}
               disabled={propertyData?.address ? true : false}
             />
-          )}
+          )}          
         </div>
+        <p style={errorStyle}>{t(Pinerror)}</p>
 
         {/* City Section */}
         <div style={sectionStyle}>
@@ -742,17 +750,18 @@ return (
               <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
             </div>
           )}
-          {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 &&(
-            <div style={{ marginTop: "16px" }}>
-              <a 
-                href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
-              >
-                {t("CS_COMMON_VIEW_SITE_LOCATION")}
-              </a>
-            </div>
+          {!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0 &&(
+            // <div style={{ marginTop: "16px" }}>
+            //   <a 
+            //     href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 
+            //     target="_blank" 
+            //     rel="noopener noreferrer"
+            //     style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
+            //   >
+            //     {t("CS_COMMON_VIEW_SITE_LOCATION")}
+            //   </a>
+            // </div>
+            <CustomLocationSearch position={geoLocations}/>
           )}
           {/* {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
             <BharatMap mapUrl={`lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`}/>

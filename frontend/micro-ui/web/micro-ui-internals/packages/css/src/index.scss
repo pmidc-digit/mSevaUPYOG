@@ -877,3 +877,80 @@ input[type="number"] {
   padding: 4px 0;
   z-index: 1000; /* Ensure it appears above other elements */
 }
+
+/* ===== TimelineHOC CSS ===== */
+.timeline-hoc-container .checkpoint header,
+.timeline-hoc-container .checkpoint-done header {
+  flex: 1;
+}
+
+.timeline-card {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: clamp(12px, 3vw, 20px);
+  margin: 10px 0;
+  background: #fff;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.timeline-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.timeline-header-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.timeline-label {
+  font-weight: 500;
+  color: #0d43a7 !important;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.timeline-value {
+  color: #0d43a7 !important;
+  font-weight: 400;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.timeline-note {
+  margin: 10px 0;
+}
+
+.timeline-note .note-box {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: clamp(12px, 2vw, 14px);
+  min-height: 40px;
+  background: #f9f9f9;
+  word-break: break-word;
+}
+
+.timeline-docs {
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeline-header-item {
+    width: 100%;
+  }
+
+  .timeline-card {
+    padding: 12px;
+  }
+}

@@ -2,6 +2,7 @@ package org.egov.bpa.web.model.property;
 
 import java.util.Set;
 
+import org.egov.bpa.web.model.NOC.enums.Status;
 import org.egov.bpa.web.model.enums.*;
 
 import lombok.AllArgsConstructor;

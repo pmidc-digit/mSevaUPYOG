@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.egov.bpa.web.model.enums.Status;
 import org.egov.bpa.web.model.landInfo.Address;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -80,8 +80,8 @@ public class DgrIntegration {
                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         String tokenResponse = generateLoginToken();
-        if (tokenResponse == null || tokenResponse.trim().isEmpty()) {
-            log.error("Failed to generate token. Aborting DGR grievance creation.");
+        if (tokenResponse == null || tokenResponse.trim().isEmpty() 
+                || "Invalid credentials!".equalsIgnoreCase(tokenResponse.trim())) {            log.error("Failed to generate token. Aborting DGR grievance creation.");
             return;
         }
         log.info("Token API Response: {}", tokenResponse);
@@ -343,6 +343,7 @@ public class DgrIntegration {
             requestBody.put("Citizen_Town_Local_Lang", "");
             requestBody.put("Application_Department_Local_Lang", constants.DEPARTMENT_LOCAL_LANG);
             requestBody.put("Application_District_Local_Lang", districtNameGgr);
+            requestBody.put("Citizen_EA_User_ID", "933838");
 
             log.info("District ID: {}", districtId);
             log.info("Tehsil ID: {}", tehsilId);

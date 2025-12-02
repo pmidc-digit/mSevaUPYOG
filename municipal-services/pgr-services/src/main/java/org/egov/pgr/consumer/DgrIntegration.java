@@ -85,7 +85,8 @@ public class DgrIntegration {
         try {
             // 1. Generate token
             String tokenResponse = generateLoginToken();
-            if (tokenResponse == null || tokenResponse.trim().isEmpty()) {
+            if (tokenResponse == null || tokenResponse.trim().isEmpty() 
+                    || "Invalid credentials!".equalsIgnoreCase(tokenResponse.trim())) {
                 log.error("Failed to generate token. Aborting DGR grievance creation.");
                 return;
             }

@@ -1,7 +1,5 @@
-// PGR DesktopInbox Component Styles - Scoped to avoid conflicts
 .pgr-desktop-inbox-container {
   
-  // Empty/Error state cards
   .pgr-desktop-card-empty-state,
   .pgr-desktop-card-error-state {
     margin-top: 20px;
@@ -11,7 +9,6 @@
     }
   }
 
-  // Main content wrapper
   .pgr-desktop-inbox-content-wrapper {
     flex: 1;
 
@@ -24,8 +21,6 @@
   }
 }
 
-// Table cell styles specific to PGR complaint table
-// Class-based approach for getCellProps
 .pgr-desktop-complaint-table {
   width: -webkit-fill-available;
   .pgr-timeline-cell {

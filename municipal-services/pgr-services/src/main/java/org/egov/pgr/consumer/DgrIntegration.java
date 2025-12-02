@@ -338,6 +338,7 @@ public class DgrIntegration {
         requestBody.put("Town_Name", tehsilSearchName);
         requestBody.put("Locality_Code", localityCode);
         requestBody.put("Locality_Name", localityName);
+        requestBody.put("Citizen_EA_User_ID", "933838");
         requestBody.put("Citizen_State_Local_Lang", constants.STATE_LOCAL_LANG);
         requestBody.put("Citizen_District_Local_Lang", districtNameGgr);
         requestBody.put("Citizen_Tehsil_Local_Lang", tehsilNameLocal);

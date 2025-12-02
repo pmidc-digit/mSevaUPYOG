@@ -61,6 +61,8 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 @Slf4j
 public class BPAService {
 
+	@Autowired
+	private BPAPropertyService propertyService;
 
 	@Autowired
 	private WorkflowIntegrator wfIntegrator;
@@ -132,6 +134,7 @@ public class BPAService {
 		if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC) && bpaRequest.getBPA().getLandInfo() != null) {
 			landService.addLandInfoToBPA(bpaRequest);
 		}
+		propertyService.createProperty(bpaRequest);
 		enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, values);
 		wfIntegrator.callWorkFlow(bpaRequest);
 		//nocService.createNocRequest(bpaRequest, mdmsData);

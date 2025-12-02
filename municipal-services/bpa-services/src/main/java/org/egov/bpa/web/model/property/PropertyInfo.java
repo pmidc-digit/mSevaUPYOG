@@ -10,10 +10,13 @@ import org.egov.bpa.web.model.landInfo.Address;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 /**
  * This is lightweight property object that can be used as reference by
@@ -26,6 +29,8 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
+@SuperBuilder
 public class PropertyInfo {
 
 	@JsonProperty("id")

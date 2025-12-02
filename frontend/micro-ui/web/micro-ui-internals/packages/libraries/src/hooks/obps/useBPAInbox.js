@@ -34,7 +34,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           : businessService
           ? [businessService.identifier]
           // ? [businessService]
-          :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR"],
+          :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR", "ARCHITECT_UPGRADE", "BPAREG_UPGRADE"],
           // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
     },

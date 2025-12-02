@@ -1,9 +1,7 @@
 import {
   ActionLinks,
   CardSectionHeader,
-  CheckPoint,
   CloseSvg,
-  ConnectingCheckPoints,
   SubmitBar,
   ActionBar,
   Menu,
@@ -12,9 +10,17 @@ import {
 import React, { Fragment, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
-import PTRWFCaption from "./PTRWFCaption";
 import PTRModal from "./PTRModal";
-import PTRWFDocument from "./PTRWFDocument";
+
+// ===== OLD TIMELINE IMPLEMENTATION (Replaced by TimelineHOC) =====
+// The following imports and code were used for the manual timeline rendering
+// before we created the generic TimelineHOC component
+// import { CheckPoint, ConnectingCheckPoints } from "@mseva/digit-ui-react-components";
+// import PTRWFCaption from "./PTRWFCaption";
+// import PTRWFDocument from "./PTRWFDocument";
+// ===== END OLD IMPLEMENTATION =====
+
+import ApplicationTimeline from "../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import { Loader } from "../components/Loader";
 
 const PTRWFApplicationTimeline = (props) => {
@@ -38,6 +44,8 @@ const PTRWFApplicationTimeline = (props) => {
     // config: { staleTime: 0, refetchOnMount: "always" },
   });
 
+  console.log('workflowDetails', workflowDetails)
+
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -49,52 +57,6 @@ const PTRWFApplicationTimeline = (props) => {
   const isLoading = false;
 
   console.log("data ==== ??Asdasdsadbkahjsdb", workflowDetails);
-
-  function OpenImage(imageSource, index, thumbnailsToShow) {
-    window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
-  }
-
-  const getTimelineCaptions = (checkpoint) => {
-    if (checkpoint.state === "OPEN") {
-      const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
-        source: props.application?.channel || "",
-        // mobileNumber: checkpoint?.assigner?.mobileNumber,
-      };
-      return <PTRWFCaption data={caption} />;
-    } else if (checkpoint.state) {
-      const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assigner?.name,
-        // mobileNumber: checkpoint?.assigner?.mobileNumber,
-        // comment: latestComment,
-        comment: checkpoint.state === "INITIATED" ? null : checkpoint?.wfComment?.[0],
-        wfDocuments: checkpoint?.wfDocuments,
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
-      };
-      return (
-        <div>
-          <PTRWFCaption data={caption} OpenImage={OpenImage} />
-          {checkpoint?.wfDocuments?.length > 0 && (
-            <div>
-              {checkpoint?.wfDocuments?.map((doc, index) => (
-                <div key={index}>
-                  <PTRWFDocument value={checkpoint?.wfDocuments} Code={doc?.documentType} index={index} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    } else {
-      const caption = {
-        date: Digit.DateUtils.ConvertTimestampToDate(props.application?.auditDetails.lastModified),
-        name: checkpoint?.assigner?.name,
-        comment: t(checkpoint?.comment),
-      };
-      return <PTRWFCaption data={caption} />;
-    }
-  };
 
   const isCitizen = window.location.href.includes("citizen");
 
@@ -269,6 +231,54 @@ const PTRWFApplicationTimeline = (props) => {
     }
   }, [tenantId]);
 
+  /* ===== OLD HELPER FUNCTIONS (Commented out for reference) =====
+  const getTimelineCaptions = (checkpoint) => {
+    if (checkpoint.state === "OPEN") {
+      const caption = {
+        date: checkpoint?.auditDetails?.lastModified,
+        source: props.application?.channel || "",
+        // mobileNumber: checkpoint?.assigner?.mobileNumber,
+      };
+      return <PTRWFCaption data={caption} />;
+    } else if (checkpoint.state) {
+      const caption = {
+        date: checkpoint?.auditDetails?.lastModified,
+        name: checkpoint?.assigner?.name,
+        // mobileNumber: checkpoint?.assigner?.mobileNumber,
+        // comment: latestComment,
+        comment: checkpoint.state === "INITIATED" ? null : checkpoint?.wfComment?.[0],
+        wfDocuments: checkpoint?.wfDocuments,
+        thumbnailsToShow: checkpoint?.thumbnailsToShow,
+      };
+      return (
+        <div>
+          <PTRWFCaption data={caption} OpenImage={OpenImage} />
+          {checkpoint?.wfDocuments?.length > 0 && (
+            <div>
+              {checkpoint?.wfDocuments?.map((doc, index) => (
+                <div key={index}>
+                  <PTRWFDocument value={checkpoint?.wfDocuments} Code={doc?.documentType} index={index} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    } else {
+      const caption = {
+        date: Digit.DateUtils.ConvertTimestampToDate(props.application?.auditDetails.lastModified),
+        name: checkpoint?.assigner?.name,
+        comment: t(checkpoint?.comment),
+      };
+      return <PTRWFCaption data={caption} />;
+    }
+  };
+
+  const OpenImage = (imageSource, index, thumbnailsToShow) => {
+    window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
+  };
+  =================================================================== */
+
   return (
     <React.Fragment>
       <Fragment>
@@ -278,32 +288,38 @@ const PTRWFApplicationTimeline = (props) => {
           </CardSectionHeader>
         )}
 
+        {/* ===== OLD TIMELINE IMPLEMENTATION (Commented out for reference) ===== */}
+        {/* 
         {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
           <CheckPoint
             isCompleted={true}
-            label={t((workflowDetails?.data?.timeline[0]?.state && `WF_${businessService}_${workflowDetails?.data.timeline[0].state}`) || "NA")}
+            label={t(`${workflowDetails?.data?.timeline[0]?.state}`)}
             customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0])}
           />
         ) : (
           <ConnectingCheckPoints>
             {workflowDetails?.data?.timeline &&
               workflowDetails?.data?.timeline.map((checkpoint, index, arr) => {
-                let timelineStatusPostfix = "";
-
                 return (
                   <React.Fragment key={index}>
                     <CheckPoint
                       keyValue={index}
                       isCompleted={index === 0}
-                      //label={checkpoint.state ? t(`WF_${businessService}_${checkpoint.state}`) : "NA"}
-                      label={t(`ES_PTR_COMMON_STATUS_${workflowDetails?.data?.processInstances[index].state?.["state"]}${timelineStatusPostfix}`)}
+                      label={t(`${checkpoint.state}`)}
                       customChild={getTimelineCaptions(checkpoint)}
                     />
                   </React.Fragment>
                 );
               })}
           </ConnectingCheckPoints>
-        )}
+        )} 
+        */}
+        {/* =================================================================== */}
+
+        <ApplicationTimeline
+          workflowDetails={workflowDetails}
+          t={t}
+        />
 
         {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
           <ActionBar>
@@ -314,7 +330,7 @@ const PTRWFApplicationTimeline = (props) => {
                 optionKey={"action"}
                 t={t}
                 onSelect={onActionSelect}
-                // style={MenuStyle}
+              // style={MenuStyle}
               />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

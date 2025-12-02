@@ -31,7 +31,7 @@ const useSearchApplicationTableConfig = () => {
         },
         {
           Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-          accessor: (row) => t(row?.applicationStatus|| "-"),
+          accessor: (row) => t(`BPA_STATUS_${row?.applicationStatus}`|| "-"),
           disableSortBy: true,
         },
 

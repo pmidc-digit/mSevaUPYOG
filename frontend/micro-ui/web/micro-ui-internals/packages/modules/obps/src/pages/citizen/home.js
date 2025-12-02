@@ -220,8 +220,8 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           link: `clu/my-applications`,
           i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
         },
-                {
-          link: `clu/search-application`,
+        {
+          link: `search/clu-application`,
           i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
         },
       ],

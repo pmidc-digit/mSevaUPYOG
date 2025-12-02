@@ -16,7 +16,7 @@ const CLUInbox = ({ parentRoute }) => {
 
   const searchFormDefaultValues = {
     mobileNumber: "",
-    applicationNo: "",
+    applicationNumber: "",
   }
 
   const filterFormDefaultValues = {
@@ -53,7 +53,7 @@ const CLUInbox = ({ parentRoute }) => {
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null)
-    setSearchFormValue("applicationNo", null)
+    setSearchFormValue("applicationNumber", null)
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues })
   }
 
@@ -99,7 +99,7 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (inboxData) {
-      console.log("  Setting inbox data:", inboxData)
+      //console.log("  Setting inbox data:", inboxData)
       setStatusData(inboxData?.statuses || [])
       setTableData(inboxData?.table || [])
       setTotalCountData(inboxData?.totalCount || 0)

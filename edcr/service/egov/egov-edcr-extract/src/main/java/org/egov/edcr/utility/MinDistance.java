@@ -121,10 +121,17 @@ public class MinDistance {
         if (!plotBoundary.isClosed() || !buildFoorPrint.isClosed() || !yardPolyline.isClosed())
             return BigDecimal.ZERO.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS);
         
-        if (!checkYardNotOverlappingBuilding(yardPolyline, buildFoorPrint, name, pl, layerNames)) {
+//        if (!checkYardNotOverlappingBuilding(yardPolyline, buildFoorPrint, name, pl, layerNames)) {
+//            //return BigDecimal.ZERO.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS);
+//        }
+
+     // NEW: STRONG VALIDATION - Yard must NOT enter building footprint
+     // FINAL SAFETY: Yard must NOT enter building — only touch or superimpose
+        // FINAL BULLETPROOF CHECK
+        if (!isYardOutsideOrTouchingBuildingOnly(yardPolyline, buildFoorPrint, name, pl, layerNames)) {
             return BigDecimal.ZERO.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS);
         }
-
+        
         Iterator yardVertexIterator = yardPolyline.getVertexIterator();
         PrintUtil.print(yardPolyline, name);
         List<Point> yardOutSidePoints = new ArrayList<>();
@@ -584,5 +591,88 @@ public class MinDistance {
 
         return true; // No errors found
     }
+    
+    
+    public static boolean isYardOutsideOrTouchingBuildingOnly(
+            DXFLWPolyline yardPolyline,
+            DXFLWPolyline buildingFootprint,
+            String yardName,
+            PlanDetail pl,
+            LayerNames layerNames) {
+
+        if (yardPolyline == null || buildingFootprint == null) return true;
+
+        List<DXFLine> yardLines = getLinesOfPolyline(yardPolyline);
+
+        for (DXFLine yLine : yardLines) {
+            Point y1 = yLine.getStartPoint();
+            Point y2 = yLine.getEndPoint();
+
+            // ---- 1. Check Start Vertex ----
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y1)) {
+
+                pl.getErrors().put(
+                    "YARD_POINTS_NOT_ON_PLOT_BOUNDARY - " + yardName,
+                    "Points of " + yardName + " not properly on " + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+               
+                return false;
+            }
+
+            // ---- 2. Check End Vertex ----
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y2)) {
+
+                try {
+                	pl.getErrors().put("Set back calculation error for boundary" + yardName,
+                            "Points of " + yardName + " not properly on " + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+                return false;
+            }
+
+            // ---- 3. Check Midpoint ----
+            Point mid = new Point();
+            mid.setX((y1.getX() + y2.getX()) / 2.0);
+            mid.setY((y1.getY() + y2.getY()) / 2.0);
+
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, mid)) {
+
+                pl.getErrors().put(
+                    "YARD_POINTS_NOT_ON_PLOT_BOUNDARY - " + yardName,
+                    "Points of " + yardName + " not properly on PLOT_BOUNDARY"
+                );
+
+                // Keep your DXF debugging line
+                PrintUtil.printForDXf(y1, y2, yardName + "_EDGE_INSIDE", pl);
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    public static Point getMidPoint(Point p1, Point p2, int scale) {
+
+        BigDecimal x1 = BigDecimal.valueOf(p1.getX());
+        BigDecimal y1 = BigDecimal.valueOf(p1.getY());
+        BigDecimal x2 = BigDecimal.valueOf(p2.getX());
+        BigDecimal y2 = BigDecimal.valueOf(p2.getY());
+
+        BigDecimal two = BigDecimal.valueOf(2);
+
+        BigDecimal midX = x1.add(x2).divide(two, scale, RoundingMode.HALF_UP);
+        BigDecimal midY = y1.add(y2).divide(two, scale, RoundingMode.HALF_UP);
+
+        Point mid = new Point();
+        mid.setX(midX.doubleValue());
+        mid.setY(midY.doubleValue());
+
+        return mid;
+    }
+
     
 }

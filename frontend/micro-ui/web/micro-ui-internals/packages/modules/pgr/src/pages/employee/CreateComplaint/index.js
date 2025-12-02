@@ -410,7 +410,7 @@ export const CreateComplaint = ({ parentUrl }) => {
 
   return (
     <>
-    {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
+    {/* {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}

@@ -826,7 +826,7 @@ const getFormattedULBName = (ulbCode = "") => {
         { title: ("BPA_LAT"), value: BPA?.landInfo?.address?.geoLocation?.latitude ? BPA?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : "NA" },
         { title: ("BPA_LONG"), value: BPA?.landInfo?.address?.geoLocation?.longitude ? BPA?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : "NA" },
         { title: "BPA_WARD_NUMBER_LABEL", value: BPA?.additionalDetails?.wardnumber || "NA", isNotTranslated: true },
-        { title: "BPA_ZONE_NUMBER_LABEL", value: BPA?.additionalDetails?.zonenumber || "NA", isNotTranslated: true },
+        { title: "BPA_ZONE_NUMBER_LABEL", value: BPA?.additionalDetails?.zonenumber?.name || BPA?.additionalDetails?.zonenumber || "NA", isNotTranslated: true },
         { title: "BPA_KHASRA_NUMBER_LABEL", value: BPA?.additionalDetails?.khasraNumber || "NA", isNotTranslated: true },
         { title: "BPA_ARCHITECT_ID", value: BPA?.additionalDetails?.architectid || "NA", isNotTranslated: true },
         { title: "BPA_NUMBER_OF_BATHS", value: BPA?.additionalDetails?.bathnumber || "NA", isNotTranslated: true },

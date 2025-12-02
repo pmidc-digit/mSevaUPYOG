@@ -31,6 +31,7 @@ import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
+import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -162,10 +163,10 @@ const CitizenApplicationOverview = () => {
           item?.businessService === "WS"
             ? "NDC_WATER_SERVICE_CONNECTION"
             : item?.businessService === "SW"
-            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-            : item?.businessService === "PT"
-            ? "NDC_PROPERTY_TAX"
-            : item?.businessService,
+              ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+              : item?.businessService === "PT"
+                ? "NDC_PROPERTY_TAX"
+                : item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
@@ -247,16 +248,16 @@ const CitizenApplicationOverview = () => {
         )}
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
           applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
-          <ActionBar>
-            <SubmitBar
-              label={t("COMMON_EDIT")}
-              onSubmit={() => {
-                const id = applicationDetails?.Applications?.[0]?.applicationNo;
-                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
-              }}
-            />
-          </ActionBar>
-        )}
+            <ActionBar>
+              <SubmitBar
+                label={t("COMMON_EDIT")}
+                onSubmit={() => {
+                  const id = applicationDetails?.Applications?.[0]?.applicationNo;
+                  history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+                }}
+              />
+            </ActionBar>
+          )}
       </div>
 
       <Card className="ndc_card_main">
@@ -271,8 +272,8 @@ const CitizenApplicationOverview = () => {
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
                     : typeof value === "object"
-                    ? t(value?.code || "N/A")
-                    : t(value || "N/A")
+                      ? t(value?.code || "N/A")
+                      : t(value || "N/A")
                 }
               />
             ))}
@@ -348,7 +349,7 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card className="ndc_card_main">
           <CardSubHeader className="ndc_label">{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -366,7 +367,8 @@ const CitizenApplicationOverview = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+      <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
     </div>
   );
 };

@@ -122,6 +122,8 @@ const Inbox = ({ parentRoute }) => {
     filters: { ...formState },
   });
 
+  console.log("IS IT HERE");
+
   const PropsForInboxLinks = {
     logoIcon: <CaseIcon />,
     headerText: "CS_COMMON_OBPS",

@@ -12,7 +12,7 @@ const useLayoutRoadType = (tenantId) => {
             tenantId: tenantId,
             moduleDetails: [
               {
-                moduleName: "Layout",
+                moduleName: "LAYOUT",
                 masterDetails: [
                   {
                     name: "RoadType",
@@ -22,11 +22,12 @@ const useLayoutRoadType = (tenantId) => {
             ],
           },
         },
-        "Layout",
+        "LAYOUT",
       ),
     {
       select: (data) => {
-        return data?.Layout?.RoadType?.filter((type) => type.active).map((type) => ({
+       
+        return data?.LAYOUT?.RoadType?.filter((type) => type.active).map((type) => ({
           name: type.name,
           code: type.code,
           active: type.active,

@@ -21,7 +21,7 @@ const CLUSearchFormFields = ({ registerRef, searchFormState, searchFieldComponen
             >
               <SearchField>
                 <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
-                <TextInput name="applicationNo" inputRef={registerRef({})} />
+                <TextInput name="applicationNumber" inputRef={registerRef({})} />
               </SearchField>
               <SearchField>
                 <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
@@ -40,7 +40,7 @@ const CLUSearchFormFields = ({ registerRef, searchFormState, searchFieldComponen
     <React.Fragment>
       <SearchField>
         <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
-        <TextInput name="applicationNo" inputRef={registerRef({})} />
+        <TextInput name="applicationNumber" inputRef={registerRef({})} />
       </SearchField>
       <SearchField>
         <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>

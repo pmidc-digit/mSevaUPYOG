@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -52,7 +53,7 @@ public class AllotmentController {
     }
 
 
-    @PostMapping("/_update")
+    @PutMapping("/_update")
     public ResponseEntity<AllotmentResponse> update(@Valid @RequestBody AllotmentRequest allotmentRequest) {
     	AllotmentDetails allotmentDetails =allotmentService.allotmentUpdate(allotmentRequest);
         ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), false);

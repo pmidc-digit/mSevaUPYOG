@@ -877,3 +877,7 @@ input[type="number"] {
   padding: 4px 0;
   z-index: 1000; /* Ensure it appears above other elements */
 }
+
+.engagement-citizen-wrapper {
+  overflow: scroll hidden;
+}

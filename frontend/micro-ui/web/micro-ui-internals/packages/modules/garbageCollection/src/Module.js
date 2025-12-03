@@ -13,7 +13,11 @@ import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
 import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
 import CHBSummary from "./pageComponents/CHBSummary";
 import getRootReducer from "../redux/reducer";
+import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
+import GCMyApplications from "./pages/citizen/MyChallan";
+import GCApplicationDetails from "./pages/citizen/ChallanApplicationDetails";
+import GCResponseCitizen from "./components/GCResponseCitizen";
 
 export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -68,6 +72,9 @@ const componentsToRegister = {
   CHBCitizenSecond,
   CHBSelectProofIdentity,
   CHBSummary,
+  GCMyApplications,
+  GCApplicationDetails,
+  GCResponseCitizen,
 };
 
 export const initGarbageCollectionComponents = () => {

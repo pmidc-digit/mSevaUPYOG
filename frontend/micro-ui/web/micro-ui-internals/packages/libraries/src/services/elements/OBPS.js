@@ -819,6 +819,7 @@ const getFormattedULBName = (ulbCode = "") => {
         { title: "BPA_IS_PROPERTY_AVAILABLE_LABEL", value: BPA?.additionalDetails?.isPropertyAvailable ? "YES" : "NO", isNotTranslated: true },
         ...(BPA?.additionalDetails?.propertyuid ? [{ title: "PROPERTY_ID", value: BPA?.additionalDetails?.propertyuid || "NA", isNotTranslated: true }] : []),
         { title: "BPA_IS_CLUBBED_PLOT_LABEL", value: BPA?.additionalDetails?.isClubbedPlot ? "YES" : "NO", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.isSelfCertification != null ? [{ title: "BPA_IS_SELF_CERTIFICATION_REQUIRED", value: BPA?.additionalDetails?.isSelfCertification? "YES" : "NO" , isNotTranslated: true }] : []),
         { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_WALL_LENGTH_LABEL", value: BPA?.additionalDetails?.boundaryWallLength || "NA", isNotTranslated: true },
         { title: ("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },

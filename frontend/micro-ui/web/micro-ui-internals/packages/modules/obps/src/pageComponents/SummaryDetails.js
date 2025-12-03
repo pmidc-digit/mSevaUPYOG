@@ -948,6 +948,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         />}
                         <Row
                             className="border-none"
+                            label={t(`BPA_IS_CLUBBED_PLOT_LABEL`)}
+                            text={
+                                currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot ? t("CORE_YES") : t("SCORE_NO")
+                            }
+                        />
+                        {currentStepData?.createdResponse?.additionalDetails?.isSelfCertification != null && <Row
+                            className="border-none"
+                            label={t(`BPA_IS_SELF_CERTIFICATION_REQUIRED`)}
+                            text={
+                                currentStepData?.createdResponse?.additionalDetails?.isSelfCertification ? t("CORE_YES") : t("SCORE_NO")
+                            }
+                        />}
+                        <Row
+                            className="border-none"
                             label={t(`BPA_PLOT_NUMBER_LABEL`)}
                             text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}
                             

@@ -6,42 +6,42 @@ import { useParams } from "react-router-dom";
 import { Loader } from "../components/Loader";
 
 const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp, getModalData }) => {
-  const { t } = useTranslation()
-  const user = Digit.UserService.getUser()
-  const ownername = user?.info?.name
-  const ownermobileNumber = user?.info.mobileNumber
-  const ownerEmail = user?.info?.emailId
-  const { id } = useParams()
+  const { t } = useTranslation();
+  const user = Digit.UserService.getUser();
+  const ownername = user?.info?.name;
+  const ownermobileNumber = user?.info.mobileNumber;
+  const ownerEmail = user?.info?.emailId;
+  const { id } = useParams();
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id")
-  const [loader, setLoader] = useState(false)
+    : window.localStorage.getItem("Employee.tenant-id");
+  const [loader, setLoader] = useState(false);
 
-  const [showOTPInput, setShowOTPInput] = useState(false)
-  const [otp, setOTP] = useState("")
-  const [otpError, setOTPError] = useState("")
-  const [otpSuccess, setOTPSuccess] = useState("")
-  const [isOTPVerified, setIsOTPVerified] = useState(false)
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [otp, setOTP] = useState("");
+  const [otpError, setOTPError] = useState("");
+  const [otpSuccess, setOTPSuccess] = useState("");
+  const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [TimeStamp, setOTPVerifiedTimestamp] = useState(() => {
-    return sessionStorage.getItem("otpVerifiedTimestampcitizen") || ""
-  })
-  const [userSelected, setUser] = useState(null)
-  const [setOtpLoading, setSetOtpLoading] = useState(false)
-  const stateCode = Digit.ULBService.getStateId()
+    return sessionStorage.getItem("otpVerifiedTimestampcitizen") || "";
+  });
+  const [userSelected, setUser] = useState(null);
+  const [setOtpLoading, setSetOtpLoading] = useState(false);
+  const stateCode = Digit.ULBService.getStateId();
 
-  console.log("getModalData", getModalData)
+  console.log("getModalData", getModalData);
 
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id })
-  const [isUploading, setIsUploading] = useState(false)
-  const [isFileUploaded, setIsFileUploaded] = useState(false)
+  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  const [isUploading, setIsUploading] = useState(false);
+  const [isFileUploaded, setIsFileUploaded] = useState(false);
 
-  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB")
-  const DateOnly = new Date()
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
+  const DateOnly = new Date();
 
   const updatedAdditionalDetails = {
     ...[data?.applicationData],
     TimeStamp: otpVerifiedTimestamp,
-  }
+  };
 
   const updatedData = {
     applicationNo: data?.applicationNo,
@@ -49,16 +49,14 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     applicationData: {
       ...updatedAdditionalDetails,
     },
-  }
+  };
 
   const formatUlbName = (ulbName = "") => {
-    if (!ulbName) return ""
-    const parts = ulbName.split(".")
-    return parts.length > 1
-      ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1)
-      : ulbName.charAt(0).toUpperCase() + ulbName.slice(1)
-  }
-  const formattedUlbName = formatUlbName(getModalData?.ulbName)
+    if (!ulbName) return "";
+    const parts = ulbName.split(".");
+    return parts.length > 1 ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : ulbName.charAt(0).toUpperCase() + ulbName.slice(1);
+  };
+  const formattedUlbName = formatUlbName(getModalData?.ulbName);
 
   const selfdeclarationform = `
     <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.8; padding:24px 30px;">
@@ -69,15 +67,17 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
       <div style="margin-bottom:32px; line-height:1.8;">
         <p style="margin:0 0 16px 0; text-align:justify;">
-          I, <strong>${getModalData?.name || ownername   }</strong>, resident of
-          <strong> ${getModalData?.residentOf || getModalData?.address   }</strong>, do hereby self-declare that:
+          I, <strong>${getModalData?.name || ownername}</strong>, resident of
+          <strong> ${getModalData?.residentOf || getModalData?.address}</strong>, do hereby self-declare that:
         </p>
       </div>
 
       <div style="margin-left:10px; line-height:1.9;">
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">1.</span>
-          <span>I want to book the community hall <strong>${getModalData?.communityHallName   }</strong> for the purpose of <strong>${getModalData?.purpose?.name   }</strong>.</span>
+          <span>I want to book the community hall <strong>${getModalData?.communityHallName}</strong> for the purpose of <strong>${
+    getModalData?.purpose?.name
+  }</strong>.</span>
         </div>
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
@@ -138,7 +138,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
             <td style="width:50%; vertical-align:top; padding-left:40px; float:right;">
               <div style="line-height:2.2;">
                 
-                <p style="margin:0 0 28px 0; font-weight:bold; font-size:17px; color:#000;">${getModalData?.name || ownername   }</p>
+                <p style="margin:0 0 28px 0; font-weight:bold; font-size:17px; color:#000;">${getModalData?.name || ownername}</p>
                 
                
                
@@ -148,11 +148,11 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         </table>
       </div>
     </div>
-  `
+  `;
 
   const closeModal = () => {
-    setShowTermsPopupOwner(false)
-  }
+    setShowTermsPopupOwner(false);
+  };
 
   const handleVerifyOTPClick = async () => {
     const requestData = {
@@ -160,13 +160,13 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       password: otp,
       tenantId: user?.info?.tenantId,
       userType: user?.info?.type,
-    }
+    };
     try {
-      setSetOtpLoading(true)
-      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData)
+      setSetOtpLoading(true);
+      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
       if (ResponseInfo.status === "Access Token generated successfully") {
-        setOTPSuccess(t("VERIFIED"))
-        const currentTimestamp = new Date()
+        setOTPSuccess(t("VERIFIED"));
+        const currentTimestamp = new Date();
         const opts = {
           timeZone: "Asia/Kolkata",
           weekday: "long",
@@ -178,32 +178,31 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
           second: "2-digit",
           hour12: true,
           timeZoneName: "short",
-        }
+        };
 
-        const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(currentTimestamp)
-        const map = Object.fromEntries(parts.map((p) => [p.type, p.value]))
+        const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(currentTimestamp);
+        const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
 
-        const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`
-        setOTPVerifiedTimestamp(formatted)
-        sessionStorage.setItem("otpVerifiedTimestampcitizen", formatted)
-        setUser({ info, ...tokens })
-        setSetOtpLoading(false)
-        setShowOTPInput(false)
-        setIsOTPVerified(true)
-        return currentTimestamp
+        const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
+        setOTPVerifiedTimestamp(formatted);
+        sessionStorage.setItem("otpVerifiedTimestampcitizen", formatted);
+        setUser({ info, ...tokens });
+        setSetOtpLoading(false);
+        setShowOTPInput(false);
+        setIsOTPVerified(true);
+        return currentTimestamp;
       } else {
-        setOTPError(t("WRONG OTP"))
-        setSetOtpLoading(false)
-        return ""
+        setOTPError(t("WRONG OTP"));
+        setSetOtpLoading(false);
+        return "";
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error)
-      setOTPError(t("Error verifying OTP"))
-      setSetOtpLoading(false)
-      return ""
+      console.error("Error verifying OTP:", error);
+      setOTPError(t("Error verifying OTP"));
+      setSetOtpLoading(false);
+      return "";
     }
-  }
-
+  };
 
   const handleGetOTPClick = async () => {
     try {
@@ -214,78 +213,73 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
           userType: user?.info?.type,
           type: "login",
         },
-      })
+      });
 
-      console.log("  Full OTP send response:", JSON.stringify(response, null, 2))
+      console.log("  Full OTP send response:", JSON.stringify(response, null, 2));
 
       if (response?.error) {
-
-
         if (response.error.fields && Array.isArray(response.error.fields)) {
           const hasUnknownCredential = response.error.fields.some((field) => {
-            return field?.code === "OTP.UNKNOWN_CREDENTIAL"
-          })
+            return field?.code === "OTP.UNKNOWN_CREDENTIAL";
+          });
 
           if (hasUnknownCredential) {
-            alert("User not registered")
-            return
+            alert("User not registered");
+            return;
           }
         }
 
-        alert("Error sending OTP: " + (response.error.message || "Unknown error"))
-        return
+        alert("Error sending OTP: " + (response.error.message || "Unknown error"));
+        return;
       }
 
       if (response.isSuccessful) {
-        setShowOTPInput(true)
+        setShowOTPInput(true);
       } else {
-        alert("Failed to send OTP")
+        alert("Failed to send OTP");
       }
     } catch (error) {
-
-
-      const errorData = error?.response?.data || error?.data
+      const errorData = error?.response?.data || error?.data;
 
       if (errorData?.error?.fields && Array.isArray(errorData.error.fields)) {
         const hasUnknownCredential = errorData.error.fields.some((field) => {
-
-          return field?.code === "OTP.UNKNOWN_CREDENTIAL"
-        })
+          return field?.code === "OTP.UNKNOWN_CREDENTIAL";
+        });
 
         if (hasUnknownCredential) {
-          alert("User not registered")
-          return
+          alert("User not registered");
+          return;
         }
       }
 
-      alert("Exception occurred: " + (error?.message || "Unknown error"))
+      alert("Exception occurred: " + (error?.message || "Unknown error"));
     }
-  }
+  };
 
   useEffect(() => {
     if (!userSelected) {
-      return
+      return;
     }
-    Digit.SessionStorage.set("citizen.userRequestObject", userSelected)
-    Digit.UserService.setUser(userSelected)
-    setCitizenDetail(userSelected?.info, userSelected?.access_token, stateCode)
-  }, [userSelected])
+    Digit.SessionStorage.set("citizen.userRequestObject", userSelected);
+    Digit.UserService.setUser(userSelected);
+    setCitizenDetail(userSelected?.info, userSelected?.access_token, stateCode);
+  }, [userSelected]);
 
   const setCitizenDetail = (userObject, token, tenantId) => {
-    const locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage
-    localStorage.setItem("Citizen.tenant-id", tenantId)
-    localStorage.setItem("tenant-id", tenantId)
-    localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject))
-    localStorage.setItem("locale", locale)
-    localStorage.setItem("Citizen.locale", locale)
-    localStorage.setItem("token", token)
-    localStorage.setItem("Citizen.token", token)
-    localStorage.setItem("user-info", JSON.stringify(userObject))
-    localStorage.setItem("Citizen.user-info", JSON.stringify(userObject))
-  }
+    const locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
+    localStorage.setItem("Citizen.tenant-id", tenantId);
+    localStorage.setItem("tenant-id", tenantId);
+    localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
+    localStorage.setItem("locale", locale);
+    localStorage.setItem("Citizen.locale", locale);
+    localStorage.setItem("token", token);
+    localStorage.setItem("Citizen.token", token);
+    localStorage.setItem("user-info", JSON.stringify(userObject));
+    localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
+  };
 
   const uploadSelfDeclaration = async () => {
-    setLoader(true)
+    setLoader(true);
     const Chb = [
       {
         ...getModalData,
@@ -293,33 +287,29 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         applicationNo: "CHB-0001",
         tenantId: tenantId,
       },
-    ]
+    ];
 
     try {
-      setIsUploading(true)
+      setIsUploading(true);
 
-      const result = await Digit.PaymentService.generatePdf(
-        Digit.ULBService.getStateId(),
-        { Chb: Chb },
-        "communityhallowner",
-      )
+      const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Chb: Chb }, "communityhallowner");
 
-      setLoader(false)
+      setLoader(false);
       if (result?.filestoreIds[0]?.length > 0) {
-        alert("File Uploaded Successfully")
-        sessionStorage.setItem("CitizenConsentdocFilestoreidCHB", result?.filestoreIds[0])
-        setIsFileUploaded(true)
+        alert("File Uploaded Successfully");
+        sessionStorage.setItem("CitizenConsentdocFilestoreidCHB", result?.filestoreIds[0]);
+        setIsFileUploaded(true);
       } else {
-        alert("File Upload Failed")
+        alert("File Upload Failed");
       }
     } catch (error) {
-      alert("Error Uploading PDF:", error)
-      setLoader(false)
+      alert("Error Uploading PDF:", error);
+      setLoader(false);
     } finally {
-      setLoader(false)
-      setIsUploading(false)
+      setLoader(false);
+      setIsUploading(false);
     }
-  }
+  };
 
   const modalStyles = {
     modal: {
@@ -354,9 +344,9 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       overflowY: "auto",
       lineHeight: "2",
     },
-  }
+  };
 
-  const isValidMobileNumber = ownermobileNumber && ownermobileNumber.length === 10
+  const isValidMobileNumber = ownermobileNumber && ownermobileNumber.length === 10;
 
   return (
     <div>
@@ -373,7 +363,6 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         <div>
           <div
             style={{
-            
               wordWrap: "break-word",
               textAlign: "justify",
               fontFamily: "Roboto, serif",
@@ -419,7 +408,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       </Modal>
       {loader && <Loader page={true} />}
     </div>
-  )
-}
+  );
+};
 
-export default CitizenConsent
+export default CitizenConsent;

@@ -25,13 +25,29 @@ import QRCode from "qrcode";
 const PTRApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { acknowledgementIds, tenantId } = useParams();
+  const { acknowledgementIds } = useParams();
   const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
   const isCitizen = window.location.href.includes("citizen");
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
+  const pathname = window.location.pathname;
+  // take the part after "/application/"
+  const afterApplication = pathname.split("/application/")[1];
+  // split into segments
+  const parts = afterApplication.split("/");
+  // last part = tenantId (pb.testing, pb.mohali etc.)
+  const tenantIdPop = parts.pop();
+  // remaining = application number (can have slashes or hyphens)
+  let applicationNumber = parts.join("/");
+
+  // decode '%20' → ' ' and any other encoded characters
+  applicationNumber = decodeURIComponent(applicationNumber);
+
+  console.log("applicationNumber", applicationNumber);
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -41,7 +57,7 @@ const PTRApplicationDetails = () => {
   console.log("tenantInfo", tenantInfo);
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({
     tenantId,
-    filters: { applicationNumber: acknowledgementIds },
+    filters: { applicationNumber },
   });
 
   const [billData, setBillData] = useState(null);
@@ -57,7 +73,7 @@ const PTRApplicationDetails = () => {
 
   const { data: approverData, isLoading: approverDataLoading } = Digit.Hooks.useWorkflowDetails({
     tenantId,
-    id: petId,
+    id: applicationNumber,
     moduleCode: "ptr",
   });
 
@@ -76,7 +92,7 @@ const PTRApplicationDetails = () => {
     setLoading(true);
     const result = await Digit.PaymentService.fetchBill(tenantId, {
       businessService: "pet-services",
-      consumerCode: acknowledgementIds,
+      consumerCode: applicationNumber,
     });
 
     setBillData(result);
@@ -84,12 +100,12 @@ const PTRApplicationDetails = () => {
   };
   useEffect(() => {
     fetchBillData();
-  }, [tenantId, acknowledgementIds]);
+  }, [tenantId, applicationNumber]);
 
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditResponse } = Digit.Hooks.ptr.usePTRSearch(
     {
       tenantId,
-      filters: { applicationNumber: petId, audit: true },
+      filters: { applicationNumber: applicationNumber, audit: true },
     },
     {
       enabled: true,
@@ -100,10 +116,10 @@ const PTRApplicationDetails = () => {
     {
       tenantId: tenantId,
       businessService: "pet-services",
-      consumerCodes: acknowledgementIds,
+      consumerCodes: applicationNumber,
       isEmployee: false,
     },
-    { enabled: acknowledgementIds ? true : false }
+    { enabled: applicationNumber ? true : false }
   );
 
   if (!pet_details.workflow) {
@@ -767,32 +783,83 @@ const PTRApplicationDetails = () => {
     });
   }
 
+  // const formatPetAge = (ageValue, t) => {
+  //   if (ageValue === null || ageValue === undefined || ageValue === "") return t("CS_NA");
+
+  //   const ageStr = String(ageValue).trim();
+  //   // accept numeric-like strings only
+  //   if (!/^\d+(\.\d+)?$/.test(ageStr)) return t("CS_NA");
+
+  //   const [yearsPart, decPart] = ageStr.split(".");
+  //   let years = Number(yearsPart) || 0;
+  //   let months = 0;
+
+  //   if (decPart) {
+  //     if (decPart.length === 1) {
+  //       // .5 -> 5 months
+  //       months = parseInt(decPart, 10);
+  //     } else {
+  //       // take first two digits: .11 -> 11 months, .5x -> 50 -> will be handled below
+  //       months = parseInt(decPart.slice(0, 2), 10);
+  //     }
+  //     if (isNaN(months)) months = 0;
+  //   }
+
+  //   // Clamp months to 0..11 (or convert overflow to years if you prefer)
+  //   if (months > 11) months = 11;
+
+  //   if (years === 0 && months === 0) return t("CS_NA");
+  //   if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
+  //   if (months === 0) return `${years} year${years > 1 ? "s" : ""}`;
+  //   return `${years} year${years > 1 ? "s" : ""} and ${months} month${months > 1 ? "s" : ""}`;
+  // };
+
   const formatPetAge = (ageValue, t) => {
-    if (ageValue === null || ageValue === undefined || ageValue === "") return t("CS_NA");
+    if (!ageValue) return t("CS_NA");
 
-    const ageStr = String(ageValue).trim();
-    // accept numeric-like strings only
-    if (!/^\d+(\.\d+)?$/.test(ageStr)) return t("CS_NA");
+    let ageStr = String(ageValue).trim();
 
-    const [yearsPart, decPart] = ageStr.split(".");
-    let years = Number(yearsPart) || 0;
-    let months = 0;
+    // --------------------------
+    // CASE 1: DECIMAL NUMBER
+    // --------------------------
+    if (/^\d+(\.\d+)?$/.test(ageStr)) {
+      const [yearsPart, decPart] = ageStr.split(".");
+      let years = Number(yearsPart) || 0;
+      let months = 0;
 
-    if (decPart) {
-      if (decPart.length === 1) {
-        // .5 -> 5 months
-        months = parseInt(decPart, 10);
-      } else {
-        // take first two digits: .11 -> 11 months, .5x -> 50 -> will be handled below
+      if (decPart) {
+        // "8" -> 8 months
+        // "80" -> 80 -> clamp later
         months = parseInt(decPart.slice(0, 2), 10);
+        if (isNaN(months)) months = 0;
+        if (months > 11) months = 11; // clamp
       }
-      if (isNaN(months)) months = 0;
+
+      if (years === 0 && months === 0) return t("CS_NA");
+      if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
+      if (months === 0) return `${years} year${years > 1 ? "s" : ""}`;
+      return `${years} year${years > 1 ? "s" : ""} and ${months} month${months > 1 ? "s" : ""}`;
     }
 
-    // Clamp months to 0..11 (or convert overflow to years if you prefer)
-    if (months > 11) months = 11;
+    // --------------------------
+    // CASE 2: TEXT FORMAT (e.g. "14 months", "2 Years 3 Months")
+    // --------------------------
+    const regex = /(\d+)\s*(year|years|yr|yrs|month|months|mo|mos)/gi;
+    const matches = ageStr.matchAll(regex);
+
+    let years = 0;
+    let months = 0;
+
+    for (const match of matches) {
+      const num = parseInt(match[1], 10);
+      const unit = match[2].toLowerCase();
+
+      if (unit.includes("year") || unit.includes("yr")) years = num;
+      if (unit.includes("month") || unit.includes("mo")) months = num;
+    }
 
     if (years === 0 && months === 0) return t("CS_NA");
+
     if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
     if (months === 0) return `${years} year${years > 1 ? "s" : ""}`;
     return `${years} year${years > 1 ? "s" : ""} and ${months} month${months > 1 ? "s" : ""}`;
@@ -915,7 +982,7 @@ const PTRApplicationDetails = () => {
               <SubmitBar
                 label={t("COMMON_EDIT")}
                 onSubmit={() => {
-                  history.push(`/digit-ui/citizen/ptr/petservice/new-application/${acknowledgementIds}`);
+                  history.push(`/digit-ui/citizen/ptr/petservice/new-application/${applicationNumber}`);
                 }}
               />
             </ActionBar>

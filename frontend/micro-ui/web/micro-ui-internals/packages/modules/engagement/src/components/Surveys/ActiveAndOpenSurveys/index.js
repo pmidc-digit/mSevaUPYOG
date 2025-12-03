@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Loader, SubmitBar, Table, Dropdown, SearchField, Card } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 
 const ActiveAndOpenSurveys = (props) => {
+  const tableWrapperRef = useRef(null);
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
@@ -47,6 +48,16 @@ const ActiveAndOpenSurveys = (props) => {
   });
   const formValues = watch();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  useEffect(() => {
+    // wait for Digit Table to render DOM
+    const el = tableWrapperRef.current?.querySelector(".table");
+    if (el) {
+      el.style.overflowX = "auto";
+      el.style.overflowY = "hidden";
+      el.style.WebkitOverflowScrolling = "touch";
+    }
+  }, []);
 
   const columns = useMemo(() => {
     return [
@@ -140,7 +151,14 @@ const ActiveAndOpenSurveys = (props) => {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        overflowX: "auto",
+        overflowY: "hidden",
+        width: "100%",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
       {tenantId === "pb.punjab" && window.location.href.includes("/employee") ? (
         <Card style={{ marginTop: "16px", marginBottom: "16px", backgroundColor: "white", maxWidth: "99%" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -179,31 +197,33 @@ const ActiveAndOpenSurveys = (props) => {
           </form>
         </Card>
       ) : null}
-      <Table
-        t={t}
-        data={data}
-        totalRecords={count}
-        columns={columns}
-        getCellProps={(cellInfo) => {
-          return {
-            style: {
-              minWidth: "300px", //cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-            },
-          };
-        }}
-        noResultsMessage="No Questions found"
-        inboxStyles={{ overflowX: "scroll", overflowY: "hidden" }}
-        // onPageSizeChange={onPageSizeChange}
-        // currentPage={getValues("offset") / getValues("limit")}
-        // onNextPage={nextPage}
-        // onPrevPage={previousPage}
-        // pageSizeLimit={getValues("limit")}
-        // onSort={onSort}
-        // disableSort={false}
-        // sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-      />
+      <div>
+        <Table
+          t={t}
+          data={data}
+          totalRecords={count}
+          columns={columns}
+          getCellProps={(cellInfo) => {
+            return {
+              style: {
+                minWidth: "300px", //cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                padding: "20px 18px",
+                fontSize: "16px",
+              },
+            };
+          }}
+          noResultsMessage="No Questions found"
+          // inboxStyles={{ overflowX: "scroll", overflowY: "hidden" }}
+          // onPageSizeChange={onPageSizeChange}
+          // currentPage={getValues("offset") / getValues("limit")}
+          // onNextPage={nextPage}
+          // onPrevPage={previousPage}
+          // pageSizeLimit={getValues("limit")}
+          // onSort={onSort}
+          // disableSort={false}
+          // sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+        />
+      </div>
       {loading && <Loader />}
     </div>
   );

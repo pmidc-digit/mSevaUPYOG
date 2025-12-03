@@ -1030,3 +1030,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/gc-services/src/main/resources/db"
         image-name: "gc-services-db"
+
+  - name: "builds/upyog/municipal-services/rl-services"
+    build:
+      - work-dir: "municipal-services/rl-services"
+        image-name: "rl-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/rl-services/src/main/resources/db"
+        image-name: "rl-services-db"

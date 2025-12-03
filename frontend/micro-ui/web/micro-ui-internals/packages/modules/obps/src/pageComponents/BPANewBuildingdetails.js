@@ -7,6 +7,8 @@ import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
+import { EmployeeData, getNOCSanctionLetter } from "../utils";
+import { set } from "lodash";
 
 
 
@@ -780,6 +782,27 @@ console.log("appDate", nocApprovedOn);
     setErrors((prev) => ({ ...prev, file: "" }))
   }
 
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, applicationDetails, ...params }) {
+    const application = applicationDetails?.Noc?.[0];
+    try {
+      if (!application) {
+        throw new Error("Noc Application data is missing");
+      }
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );
+
+      let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
+    setUploadedFile(response?.filestoreIds[0]);
+    setLoader(false);
+    // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    // window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      setLoader(false);
+      console.error("Sanction Letter download error:", error);
+    }
+    
+  }
+
   async function onClick(e) {
     if(!NocNumber || NocNumber === ""){
       alert(t("NOC NUMBER IS REQUIRED BEFORE SEARCH"));
@@ -813,6 +836,15 @@ console.log("appDate", nocApprovedOn);
             setNocApprovedOn(`${y1}-${m1}-${d1}`)
           }          
         }
+        setLoader(true);
+        let EmpData = await EmployeeData(tenantId, NocNumber);
+        console.log("Employee Data", EmpData);
+
+        const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
+        if(reciept_data?.Payments?.length > 0){
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        }
+        setLoader(false);
         return;
       }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
         alert(t("NOC NOT APPROVED"));

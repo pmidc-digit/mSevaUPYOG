@@ -259,7 +259,7 @@ console.log("sessionStorageData",currentStepData);
 // }, [currentStepData?.cpt?.zonalMapping?.zone]);
 
 useEffect(() => {
-  if (currentStepData?.cpt?.zonalMapping?.ward && !currentStepData?.createdResponse?.additionalDetails?.wardnumber) {
+  if (currentStepData?.cpt?.zonalMapping?.ward) {
     setWardNumber(currentStepData?.cpt?.zonalMapping?.ward?.code || "");
   }
 }, [currentStepData?.cpt?.zonalMapping?.ward]);

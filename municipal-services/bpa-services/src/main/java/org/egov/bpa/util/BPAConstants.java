@@ -233,6 +233,8 @@ public class BPAConstants {
 	// OCCUPANCY TYPE
 
 	public static final String RESIDENTIAL_OCCUPANCY = "A";
+	
+	public static final String RESIDENTIAL_GH_SUBOCCUPANCY = "A-AF";
 
 	// CALCULATION FEEe
 	public static final String APPLICATION_FEE_KEY = "ApplicationFee";

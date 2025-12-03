@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS eg_city (
     lastmodifiedby numeric,
     createddate timestamp without time zone,
     lastmodifieddate timestamp without time zone,
-    code character varying(4),
+    code character varying(255),
     recaptchapk character varying(64),
     districtcode character varying(10),
     districtname character varying(50),

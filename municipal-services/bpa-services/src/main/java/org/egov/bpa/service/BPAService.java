@@ -137,7 +137,6 @@ public class BPAService {
 		if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC) && bpaRequest.getBPA().getLandInfo() != null) {
 			landService.addLandInfoToBPA(bpaRequest);
 		}
-		propertyService.createProperty(bpaRequest);
 		enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, values);
 		wfIntegrator.callWorkFlow(bpaRequest);
 		//nocService.createNocRequest(bpaRequest, mdmsData);

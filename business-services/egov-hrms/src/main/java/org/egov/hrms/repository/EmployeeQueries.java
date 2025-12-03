@@ -45,6 +45,8 @@ public class EmployeeQueries {
 
 	
 	public static final String HRMS_GET_WARD = "SELECT * FROM employee_ward ";
+	public static final String OBPAS_EMPLOYEE_LIST = "SELECT * FROM eg_hrms_obpass_employee WHERE 1=1 ";
+
 	public static final String HRMS_PAGINATION_WRAPPER = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY employee_uuid) offset_ FROM " + "({})" + " result) result_offset "
 			+ "WHERE offset_ > $offset AND offset_ <= $limit";

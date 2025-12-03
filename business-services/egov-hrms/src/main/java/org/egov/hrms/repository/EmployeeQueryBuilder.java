@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.egov.hrms.config.PropertiesManager;
 import org.egov.hrms.model.EmployeeWithWard;
 import org.egov.hrms.web.contract.EmployeeSearchCriteria;
+import org.egov.hrms.web.contract.ObpasEmployeeRequest;
+import org.egov.hrms.web.contract.ObpasEmployeeSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,51 @@ public class EmployeeQueryBuilder {
 		addWhereClause(criteria, builder, preparedStmtList);
 		return paginationClause(criteria, builder);
 	}
+	public String getObpasEmployeeSearchQuery(ObpasEmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder builder = new StringBuilder(EmployeeQueries.OBPAS_EMPLOYEE_LIST);
+
+	    if (criteria.getTenantId() != null) {
+	        builder.append(" AND tenantid = ? ");
+	        preparedStmtList.add(criteria.getTenantId());
+	    }
+
+	    if (criteria.getUserUUID() != null) {
+	        builder.append(" AND userid = ? "); // keep as userid
+	        preparedStmtList.add(criteria.getUserUUID());
+	    }
+	    
+	    if (criteria.getUuid() != null) {
+	        builder.append(" AND uuid = ?::uuid ");
+	        preparedStmtList.add(criteria.getUuid());
+	    }
+
+
+
+	    if (criteria.getCategory() != null) {
+	        builder.append(" AND category = ? ");
+	        preparedStmtList.add(criteria.getCategory());
+	    }
+
+	    if (criteria.getSubcategory() != null) {
+	        builder.append(" AND subcategory = ? ");
+	        preparedStmtList.add(criteria.getSubcategory());
+	    }
+
+	    if (criteria.getZone() != null) {
+	        builder.append(" AND zone = ? ");
+	        preparedStmtList.add(criteria.getZone());
+	    }
+
+	    if (criteria.getAssignedTenantId() != null) {
+	        builder.append(" AND assigned_tenantid = ? ");
+	        preparedStmtList.add(criteria.getAssignedTenantId());
+	    }
+
+	    return builder.toString();
+	}
+
+
+
 
 	
 	public String getEmployeewithwardSearchQuery(EmployeeWithWard criteria, List<Object> preparedStmtList) {

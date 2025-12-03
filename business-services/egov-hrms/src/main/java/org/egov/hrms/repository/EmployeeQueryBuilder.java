@@ -31,11 +31,30 @@ public class EmployeeQueryBuilder {
 	 * @param criteria
 	 * @return
 	 */
-	public String getEmployeeSearchQuery(EmployeeSearchCriteria criteria,List <Object> preparedStmtList ) {
-		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
-		addWhereClause(criteria, builder, preparedStmtList);
-		return paginationClause(criteria, builder);
+	
+	public String getEmployeeSearchQuery(EmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
+
+	    StringBuilder builder;
+
+	    // Check if category, subcategory, or zone are present
+	    boolean hasCatSubZone = (criteria.getCategories() != null && !criteria.getCategories().isEmpty())
+	                            || (criteria.getSubcategories() != null && !criteria.getSubcategories().isEmpty())
+	                            || (criteria.getZones() != null && !criteria.getZones().isEmpty())
+	                            || (criteria.getAssignedtenattids() != null && !criteria.getAssignedtenattids().isEmpty());
+	                            
+
+	    if (hasCatSubZone) {
+	        // Use OBPAS join query if category/subcategory/zone present
+	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES_WITH_OBPAS);
+	    } else {
+	        // Default query
+	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
+	    }
+
+	    addWhereClause(criteria, builder, preparedStmtList);
+	    return paginationClause(criteria, builder);
 	}
+
 	public String getObpasEmployeeSearchQuery(ObpasEmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
 		StringBuilder builder = new StringBuilder(EmployeeQueries.OBPAS_EMPLOYEE_LIST);
 
@@ -157,6 +176,29 @@ public class EmployeeQueryBuilder {
 			builder.append(" and employee.active = ?");
 			preparedStmtList.add(criteria.getIsActive());
 		}
+		
+		  // -------------------------
+	    // OBPAS FIELDS
+	    // -------------------------
+		 if(!CollectionUtils.isEmpty(criteria.getCategories())){
+		        builder.append(" and obpas.category IN (").append(createQuery(criteria.getCategories())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getCategories());
+		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getSubcategories())){
+		        builder.append(" and obpas.subcategory IN (").append(createQuery(criteria.getSubcategories())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getSubcategories());
+		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getZones())){
+		        builder.append(" and obpas.zone IN (").append(createQuery(criteria.getZones())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getZones());
+		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getAssignedtenattids())){
+		        builder.append(" and obpas.assigned_tenantid IN (").append(createQuery(criteria.getAssignedtenattids())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getAssignedtenattids());
+		    }
 	}
 	
 	public String paginationClause(EmployeeSearchCriteria criteria, StringBuilder builder) {

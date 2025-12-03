@@ -14,7 +14,7 @@ export const CLUModalConfig = ({
   businessService,
 }) => {
   let checkCondtions = true;
-  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SENDBACK")
+  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SENDBACK" ||  action?.action == "SENDBACKTOPROFESSIONAL")
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 

@@ -109,6 +109,9 @@ public class BPAService {
 	@Autowired
 	private BPAConfiguration config;
 	
+	@Autowired
+	private BPAPropertyService bpaPropertyService;
+	
 	/**
 	 * does all the validations required to create BPA Record in the system
 	 * @param bpaRequest
@@ -442,6 +445,7 @@ public class BPAService {
                 	if(bpa.getApplicationType() == null) {
                 		bpa.setApplicationType(applicationType);
                 	}
+                	bpaPropertyService.createProperty(bpaRequest);
                     calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
                 }
                 

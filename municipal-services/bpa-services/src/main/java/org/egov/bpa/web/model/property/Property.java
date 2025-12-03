@@ -16,13 +16,11 @@ import org.egov.bpa.web.model.workflow.ProcessInstance;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 
-import org.egov.bpa.web.model.Document;
-import org.egov.bpa.web.model.enums.CreationReason;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.*;
+import lombok.Builder.Default;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -59,7 +57,8 @@ public class Property extends PropertyInfo {
 
 	@JsonProperty("creationReason")
 	@NotNull(message="The value provided is either Invald or null")
-	private CreationReason creationReason;
+	@Default
+	private CreationReason creationReason = CreationReason.CREATE;
 	
 	@JsonProperty("usageCategory")
 	@SafeHtml
@@ -78,10 +77,12 @@ public class Property extends PropertyInfo {
 	private BigDecimal superBuiltUpArea;
 
 	@JsonProperty("source")
-	private Source source;
+	@Default
+	private Source source = Source.OBPAS;
 
 	@JsonProperty("channel")
-	private Channel channel;
+	@Default
+	private Channel channel = Channel.SYSTEM;
 	
 	@Builder.Default
 	@JsonProperty("isactive")
@@ -125,33 +126,8 @@ public class Property extends PropertyInfo {
 	@JsonProperty("isOldDataEncryptionRequest")
 	private boolean isOldDataEncryptionRequest = false;
 	
-
-//	@Builder
-//	public Property(String id, String propertyId, String surveyId, List<String> linkedProperties, String tenantId,
-//			String accountId, String oldPropertyId, Status status, Address address, String acknowldgementNumber,
-//			String propertyType, String ownershipCategory, List<OwnerInfo> owners, Institution institution,
-//			CreationReason creationReason, String usageCategory, Long noOfFloors, Double landArea,
-//			BigDecimal superBuiltUpArea, Source source, Channel channel, List<Document> documents, List<Unit> units,
-//			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow) {
-//		super(id, propertyId, surveyId, linkedProperties, tenantId, accountId, oldPropertyId, status, address);
-//		this.acknowldgementNumber = acknowldgementNumber;
-//		this.propertyType = propertyType;
-//		this.ownershipCategory = ownershipCategory;
-//		this.owners = owners;
-//		this.institution = institution;
-//		this.creationReason = creationReason;
-//		this.usageCategory = usageCategory;
-//		this.noOfFloors = noOfFloors;
-//		this.landArea = landArea;
-//		this.superBuiltUpArea = superBuiltUpArea;
-//		this.source = source;
-//		this.channel = channel;
-//		this.documents = documents;
-//		this.units = units;
-//		this.additionalDetails = additionalDetails;
-//		this.auditDetails = auditDetails;
-//		this.workflow = workflow;
-//	}
+	@JsonProperty("address")
+	private Address address;
 
 	public Property addOwnersItem(OwnerInfo ownersItem) {
 		if (this.owners == null) {

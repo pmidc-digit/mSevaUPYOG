@@ -15,7 +15,6 @@ const App = () => {
   const { t } = useTranslation();
   const { path, url, ...match } = useRouteMatch();
   const location = useLocation();
-  console.log("path",path)
   const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("PGRCitizenCreateComplaint");
   const ComplaintsList = Digit?.ComponentRegistryService?.getComponent("PGRComplaintsList");
   const ComplaintDetailsPage = Digit?.ComponentRegistryService?.getComponent("PGRComplaintDetailsPage");
@@ -24,7 +23,7 @@ const App = () => {
 
   return (
     <React.Fragment>
-      <div className="pgr-citizen-wrapper">
+      <div className="pgr-citizen-wrapper-width-fixed ">
         {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
         <Switch>
           {/* <AppContainer> */}

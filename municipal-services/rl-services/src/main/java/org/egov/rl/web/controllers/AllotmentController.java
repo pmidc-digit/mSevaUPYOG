@@ -53,7 +53,7 @@ public class AllotmentController {
     }
 
 
-    @PutMapping("/_update")
+    @PostMapping("/_update")
     public ResponseEntity<AllotmentResponse> update(@Valid @RequestBody AllotmentRequest allotmentRequest) {
     	AllotmentDetails allotmentDetails =allotmentService.allotmentUpdate(allotmentRequest);
         ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), false);
@@ -64,11 +64,10 @@ public class AllotmentController {
         return new ResponseEntity<>(response, HttpStatus.OK);	
     }
     
-    @GetMapping("/_search")
+    @PostMapping("/_search")
     public ResponseEntity<AllotmentResponse> search(@RequestBody AllotmentRequest allotmentRequest) {
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
-      allotmentService.allotmentSearch(allotmentRequest);
-    	System.out.println();
+         allotmentService.allotmentSearch(allotmentRequest);
         AllotmentResponse response = AllotmentResponse.builder()
                 .allotment(Arrays.asList(allotmentRequest.getAllotment()))
                 .responseInfo(resInfo)

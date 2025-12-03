@@ -52,7 +52,7 @@ public class ClosureController {
     }
 
 
-    @PutMapping("/_update")
+    @PostMapping("/_update")
     public ResponseEntity<ClsureResponse> update(@Valid @RequestBody ClsureRequest clsureRequest) {
     	AllotmentClsure clsure =clsureService.clsureUpdate(clsureRequest);
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(clsureRequest.getRequestInfo(), false);
@@ -63,7 +63,7 @@ public class ClosureController {
         return new ResponseEntity<>(response, HttpStatus.OK);	
     }
     
-    @GetMapping("/_search")
+    @PostMapping("/_search")
     public ResponseEntity<ClsureResponse> search(@RequestBody ClsureRequest clsureRequest) {
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(clsureRequest.getRequestInfo(), true);
         clsureService.clsureSearch(clsureRequest);

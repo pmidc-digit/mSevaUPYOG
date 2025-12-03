@@ -123,12 +123,13 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         ...cluFormData?.apiData?.Clu?.[0]?.cluDetails,
         //update data with redux as we can not use old data for update api
         additionalDetails: {
-          ...cluFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
+          ...cluFormData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails,
           applicationDetails: {
             ...cluFormData?.applicationDetails,
             // applicantGender: cluFormData?.applicationDetails?.applicantGender?.code || "",
           },
           siteDetails: {
+            businessService: cluFormData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails?.siteDetails?.businessService,
             ...cluFormData?.siteDetails,
             // ulbName: cluFormData?.siteDetails?.ulbName?.name || "",
             // roadType: cluFormData?.siteDetails?.roadType?.name || "",

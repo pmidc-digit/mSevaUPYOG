@@ -337,7 +337,7 @@ const CHBApplicationDetails = () => {
     let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
       let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments , ...application }] }, "chbservice-receipt");
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
       const updatedApplication = {
         ...application,
         paymentReceiptFilestoreId: response?.filestoreIds[0],
@@ -353,14 +353,14 @@ const CHBApplicationDetails = () => {
   }
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = {
-      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
-          return {
-            ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            })
-          };
-        })
+      hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+        return {
+          ...app,
+          bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
+            return new Date(a.bookingDate) - new Date(b.bookingDate);
+          }),
+        };
+      }),
     };
 
     let fileStoreId = application?.permissionLetterFilestoreId;
@@ -372,17 +372,8 @@ const CHBApplicationDetails = () => {
     window.open(fileStore[fileStoreId], "_blank");
   }
 
-  const handleDownload = async (document, tenantid) => {
-    let tenantId = tenantid ? tenantid : tenantId;
-    const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], tenantId);
-    let documentLink = pdfDownloadLink(res.data, document?.fileStoreId);
-    window.open(documentLink, "_blank");
-  };
-
   let dowloadOptions = [];
 
-  //commented out, need later for download receipt and certificate
-  // if (reciept_data?.Payments[0]?.paymentStatus !== "NEW")
   dowloadOptions.push({
     label: t("CHB_DOWNLOAD_ACK_FORM"),
     onClick: () => getChbAcknowledgement(),
@@ -487,8 +478,6 @@ const CHBApplicationDetails = () => {
     } catch (err) {
       setErrorOne("Something went wrong");
       setShowErrorToastt(true);
-      // setShowToast({ key: "error", message: "Something went wrong" });
-      // setError("Something went wrong");
     }
   };
 
@@ -497,22 +486,7 @@ const CHBApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
-        </div>
         <Card>
-          {/* <StatusTable>
-              
-            </StatusTable> */}
-
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CHB_APPLICANT_NAME")} text={chb_details?.applicantDetail?.applicantName || t("CS_NA")} />
@@ -544,24 +518,6 @@ const CHBApplicationDetails = () => {
             isPaginationRequired={false}
             totalRecords={slotlistRows.length}
           />
-          {/* {docs?.map((doc, index) => (
-            <React.Fragment>
-              <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
-              <StatusTable>
-                <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
-                  <React.Fragment>
-                    <div>
-                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                        {t(doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                      </CardSectionHeader>
-                    </div>
-                  </React.Fragment>
-                </Card>
-              </StatusTable>
-            </React.Fragment>
-          ))} */}
-
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>

@@ -37,6 +37,7 @@ import { stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
 import EXIF from "exif-js";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { LoaderNew } from "../components/LoaderNew";
 
 const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, currentStepData, onGoBack }) => {
   const stateId = Digit.ULBService.getStateId();
@@ -283,6 +284,7 @@ function SelectDocument({
 
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [loader, setLoader] = useState(false);
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
@@ -360,15 +362,18 @@ function SelectDocument({
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
           if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
+          setLoader(true);
           try {
             setUploadedFile(null);
             const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
+            setLoader(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -421,12 +426,13 @@ function SelectDocument({
             accept="image/*,.pdf"
           // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
+          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           {/* {uploadedFile ? <div>
             <SubmitBar onSubmit={() => {routeTo(uploadedFile)}} label={t("CS_VIEW_DOCUMENT")} />
           </div> : null } */}
         </div>
       </LabelFieldPair>
-
+      {loader && <LoaderNew page={true} />}
 
     </div>
   );

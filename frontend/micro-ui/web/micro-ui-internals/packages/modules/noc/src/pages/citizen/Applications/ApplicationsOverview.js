@@ -28,6 +28,7 @@ import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
+import {EmployeeData} from "../../../utils/index";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -139,7 +140,6 @@ const CitizenApplicationOverview = () => {
     { enabled: id ? true : false }
   );
 
-  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
   const handleDownloadPdf = async () => {
     const Property = applicationDetails?.Noc?.[0];
     //console.log("tenants", tenants);
@@ -150,42 +150,48 @@ const CitizenApplicationOverview = () => {
     Digit.Utils.pdf.generate(acknowledgementData);
   };
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "noc-receipt");
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
-  }
-
-  const downloadSanctionLetter = async () => {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
     const application = applicationDetails?.Noc?.[0];
     try {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      await getNOCSanctionLetter(application, t, amountPaid);
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );
+
+      let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
       console.error("Sanction Letter download error:", error);
     }
-  };
+    
+  }
+
+  
 
   const dowloadOptions = [];
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
-      label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-      onClick: downloadSanctionLetter,
-    });
+  let EmpData = EmployeeData(tenantId, id);
+  if ( applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
+
+    
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
     });
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading ){
+      dowloadOptions.push({
+      label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+      onClick: ()=> getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData }),
+    });
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-receipt",EmpData }),
       });
+    
     }
+    
   }
 
   //console.log("acknowledgementData", acknowledgementData);
@@ -368,7 +374,7 @@ const CitizenApplicationOverview = () => {
         ))}
       </Card>
 
-      {displayData?.applicantDetails?.professionalName &&
+      {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
             <Card>

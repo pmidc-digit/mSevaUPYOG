@@ -23,7 +23,6 @@ const SelectComplaintType = ({ t, config, onSelect, value }) => {
     return priorityLevel? priorityLevel:{};
   })
   const goNext = () => {
-    console.log("complaintType",complaintType)
     sessionStorage.setItem("complaintType",JSON.stringify(complaintType))
     onSelect({ subType , priorityLevel});
   };
@@ -69,7 +68,6 @@ const SelectComplaintType = ({ t, config, onSelect, value }) => {
  
   function selectedSubType(value) {
    
-    console.log("selectedSubType",value)
     setSubType(value);
   }
   const config1 = [

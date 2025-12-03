@@ -348,7 +348,8 @@ const getFloorLabel = (index) => {
         ))}
       </Card>
 
-        {displayData?.applicantDetails?.professionalName && displayData?.applicantDetails?.map((detail, index) => (
+        {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
+         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
            <Card>
           <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>

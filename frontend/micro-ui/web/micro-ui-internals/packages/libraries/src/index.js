@@ -27,6 +27,7 @@ import { TLService } from "./services/elements/TL";
 import { Surveys } from "./services/elements/Surveys";
 import { MCollectService } from "./services/elements/MCollect";
 import { ChallanGenerationService } from "./services/elements/ChallanGeneration";
+import { GCService } from "./services/elements/GC";
 import { RentAndLeaseService } from "./services/elements/RentAndLease";
 import { ReportsService } from "./services/elements/Reports";
 import HrmsService from "./services/elements/HRMS";
@@ -98,6 +99,7 @@ const initLibraries = () => {
   setupLibraries("ReceiptsService", ReceiptsService);
   setupLibraries("MCollectService", MCollectService);
   setupLibraries("ChallanGenerationService", ChallanGenerationService);
+  setupLibraries("GCService", GCService);
   setupLibraries("RentAndLeaseService", RentAndLeaseService);
   setupLibraries("ReportsService", ReportsService);
   setupLibraries("PaymentService", PaymentService);

@@ -15,6 +15,12 @@ import {
   initChallanGenerationComponents,
   ChallanReducers,
 } from "@mseva/digit-ui-module-challangeneration";
+import {
+  GarbageCollectionModule,
+  GarbageCollectionLinks,
+  initGarbageCollectionComponents,
+  GarbageReducers,
+} from "@mseva/digit-ui-module-garbagecollection";
 import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
@@ -87,7 +93,9 @@ const enabledModules = [
   "ChallanGeneration",
   "RentAndLease",
   "BPAStakeholder",
-  "Layout"
+  "Layout",
+  "GarbageCollection",
+  "CLU",
 ];
 
 const initTokens = (stateCode) => {
@@ -130,6 +138,8 @@ const initDigitUI = () => {
     MCollectModule,
     ChallanGenerationModule,
     ChallanGenerationLinks,
+    GarbageCollectionModule,
+    GarbageCollectionLinks,
     RentAndLeaseModule,
     RentAndLeaseLinks,
     HRMSModule,
@@ -165,6 +175,7 @@ const initDigitUI = () => {
   initDSSComponents();
   initMCollectComponents();
   initChallanGenerationComponents();
+  initGarbageCollectionComponents();
   initRentAndLeaseComponents();
   initHRMSComponents();
   initTLComponents();
@@ -194,6 +205,7 @@ const initDigitUI = () => {
     noc: NOCReducers(initData),
     obps: OBPSReducers(initData),
     challan: ChallanReducers(initData),
+    gc: GarbageReducers(initData),
   });
 
   window.Digit.Customizations = {

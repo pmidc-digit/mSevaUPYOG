@@ -78,11 +78,19 @@ const EmployeeApp = ({ path }) => {
   const isLocation = window.location.href.includes("bpa") || window.location.href.includes("stakeholder-inbox/stakeholder") || window.location.href.includes("application");
   const isFromNoc = window.location.href.includes("digit-ui/employee/obps/bpa/");
   const isRes = window.location.href.includes("obps/response") || window.location.href.includes("obps/stakeholder-response");
+
+  const CLUInbox = Digit.ComponentRegistryService.getComponent("CLUInbox");
+  const CLUEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("CLUEmployeeApplicationDetails");
+  const LayoutEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("LayoutEmployeeApplicationDetails");
+  const CLUResponse = Digit?.ComponentRegistryService?.getComponent("CLUResponse"); 
+
+
   return (
     <Fragment>
       {!isFromNoc && !isRes ? <div style={isLocation ? {marginLeft: "10px"} : {}}><OBPSBreadCrumbs location={location} /></div> : null}
       {isFromNoc ? <BackButton style={{ border: "none", margin: "0", padding: "0" }}>{t("CS_COMMON_BACK")}</BackButton>: null}
       <Switch>
+         <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
@@ -99,6 +107,10 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
         <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
         <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
+
+        <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
+        <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
+        <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
       </Switch>
     </Fragment>
   )

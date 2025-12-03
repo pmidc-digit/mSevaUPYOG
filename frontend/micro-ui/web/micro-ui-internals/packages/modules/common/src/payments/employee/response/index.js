@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { format } from "date-fns";
 import { transformBookingResponseToBookingData } from "../../index";
-import { ChallanData } from "../../index";
+import { ChallanData ,getLocationName } from "../../index";
 
 export const convertEpochToDate = (dateEpoch) => {
   // Returning NA in else case because new Date(null) returns Current date from calender
@@ -213,6 +213,8 @@ export const SuccessfulPayment = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -224,7 +226,7 @@ export const SuccessfulPayment = (props) => {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { challan: { ...application, ...(payments?.Payments?.[0] || {}) } },
+          { challan: { ...application, ...(payments?.Payments?.[0] || {}),location } },
           "challan-notice"
         );
         fileStoreId = response?.filestoreIds[0];
@@ -310,6 +312,26 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
           tenantId,
           { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
           "adv-bill"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
+  const printPetReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+    try {
+      let fileStoreId = payments.Payments[0]?.fileStoreId;
+      if (!fileStoreId) {
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}) }] },
+          "pet-receipt-employee"
         );
         fileStoreId = response?.filestoreIds[0];
       }
@@ -746,6 +768,7 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
           <div style={{ display: "flex", justifyContent: "space-evenly" }}>
             {businessService !== "chb-services" &&
               businessService !== "adv-services" &&
+              businessService !== "pet-services" &&
               businessService !== "NDC" &&
               businessService !== "Challan_Generation" && (
                 <div
@@ -863,6 +886,23 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
             {businessService == "adv-services" ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
                 <div className="primary-label-btn d-grid" onClick={printing ? undefined : printADVReceipt}>
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CHB_FEE_RECEIPT")}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+            {businessService == "pet-services" ? (
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
+                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printPetReceipt}>
                   {printing ? (
                     <Loader />
                   ) : (

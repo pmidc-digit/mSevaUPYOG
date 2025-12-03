@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/Timeline";
 import { CompetencyDescriptions } from "../constants/LicenseTypeConstants";
+import { useLocation } from "react-router-dom";
 // import useQualificationTypes from "../../../../libraries/src/hooks/obps/QualificationTypesForLicense";
 
 const LicenseType = ({ t, config, onSelect, userType, formData }) => {
@@ -12,6 +13,9 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   const index = window.location.href?.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
+  const { pathname } = useLocation();
+  let currentPath = pathname.split("/").pop();
+  let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
 
   const [qualificationType, setQualificationType] = useState(() => {
     // const saved = localStorage.getItem("licenseForm_qualificationType");
@@ -68,6 +72,7 @@ const [validTo, setValidTo] = useState(() => {
   return `${day}/${month}/${year}`;
 });
 
+console.log("validTo",validTo);
 
 
 
@@ -231,6 +236,8 @@ const [validTo, setValidTo] = useState(() => {
             i18nKey,
             tradeType: item.tradeType,
             code: item?.code,
+            applicationFee: item?.applicationFee || 0,
+            renewalFee: item?.renewalFee || 0,
           });
         }
       }
@@ -476,7 +483,7 @@ const [validTo, setValidTo] = useState(() => {
         qualificationType: qualificationType,
       })
     } else {
-      const data = formData?.formData
+      const data = formData?.formData || formData
       console.log("onSelect going 2", data)
       data.LicneseType.LicenseType = LicenseType
       data.LicneseType.ArchitectNo = ArchitectNo
@@ -519,6 +526,7 @@ const [validTo, setValidTo] = useState(() => {
                 select={(value) => {
                   selectQualificationType(value);
                 }}
+                disable={!isEditable}
               />
             </div>
 
@@ -553,6 +561,7 @@ const [validTo, setValidTo] = useState(() => {
                       e.preventDefault();
                     }
                   }}
+                  disabled={!isEditable}
                 />
                 {errorMessage && (
                   <div
@@ -612,6 +621,7 @@ const [validTo, setValidTo] = useState(() => {
                       maxDate.setFullYear(maxDate.getFullYear() + 80)
                       return maxDate.toISOString().split("T")[0]
                     })()}
+                    disabled={!isEditable}
                   />
 
                 </div>
@@ -630,6 +640,7 @@ const [validTo, setValidTo] = useState(() => {
                   name="ArchitectNo"
                   value={ArchitectNo}
                   onChange={selectAssociateOrFellowNo}
+                  disabled={!isEditable}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -687,6 +698,9 @@ const [validTo, setValidTo] = useState(() => {
                     {point.trim()}
                   </li>
                 ))}
+                <li>
+                  {`*NOTE: Registration Fees as per Council norms is ${LicenseType?.applicationFee || 0} INR and Renewal Fees is ${LicenseType?.renewalFee || 0} INR.`}
+                </li>
             </ul>
           </div>
         </div>

@@ -16,6 +16,8 @@ const App = () => {
   const ChallanSearch = Digit?.ComponentRegistryService?.getComponent("ChallanStepperForm");
   const ChallanResponseCitizen = Digit?.ComponentRegistryService?.getComponent("ChallanResponseCitizen");
 
+  console.log("here coming");
+
   return (
     <span className={"mcollect-citizen"}>
       <Switch>

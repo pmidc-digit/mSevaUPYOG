@@ -197,6 +197,14 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           link: `layout/apply`,
           i18nKey: t("BPA_LAYOUT_LABEL"),
         },
+         {
+          link: `layout/my-applications`,
+          i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
+        },
+                {
+          link: `layout/search-application`,
+          i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
+        },
       ],
      
     },
@@ -207,6 +215,14 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         {
           link: `clu/apply`,
           i18nKey: t("BPA_CHANGE_OF_LAND_USE_LABEL"),
+        },
+                {
+          link: `clu/my-applications`,
+          i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
+        },
+        {
+          link: `search/clu-application`,
+          i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
         },
       ],
      

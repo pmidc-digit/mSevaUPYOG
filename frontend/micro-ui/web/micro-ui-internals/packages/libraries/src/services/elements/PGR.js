@@ -1,5 +1,6 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
+import InboxApiPgrCall from "../molecules/PGR/inboxApiPgrCall";
 
 export const PGRService = {
   search: (tenantId, filters = {}) => {
@@ -58,4 +59,7 @@ export const PGRService = {
      userService: false,
      params: { tenantId, ...filters },
    }),
+
+  // ✅ Inbox API Call - fetches and transforms inbox data
+  InboxApiPgrCall,
 };

@@ -114,7 +114,8 @@ const Home = () => {
     } catch (e) {
       return value
     }
-  }
+  };
+
 
   const getFromStorage = (key) => {
     const value = window.localStorage.getItem(key)
@@ -166,8 +167,6 @@ const Home = () => {
         return <MCollectIcon />
     }
   }
-
-  console.log("citizenServicesObj", citizenServicesObj)
 
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),

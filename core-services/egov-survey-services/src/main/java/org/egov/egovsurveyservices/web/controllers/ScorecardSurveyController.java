@@ -76,8 +76,8 @@ public class ScorecardSurveyController {
     }
 
     @RequestMapping(value = "/survey/response/_plainsearch", method = RequestMethod.POST)
-    public ResponseEntity<ScorecardAnswerResponse> getAnswersForPlainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,@ModelAttribute AnswerFetchCriteria criteria) {
-        ScorecardAnswerResponse answerResponse = surveyService.getAnswersForPlainSearch(criteria);
+    public ResponseEntity<PlainSearchResponse> getAnswersForPlainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,@ModelAttribute AnswerFetchCriteria criteria) {
+        PlainSearchResponse answerResponse = surveyService.getAnswersForPlainSearch(criteria);
         ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
         answerResponse.setResponseInfo(responseInfo);
         return new ResponseEntity<>(answerResponse, HttpStatus.OK);

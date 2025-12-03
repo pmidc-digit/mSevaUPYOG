@@ -393,25 +393,94 @@ public class ScorecardSurveyService {
                 .build();
     }
 
-    public ScorecardAnswerResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+//    public ScorecardAnswerResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+//
+//        List<AnswerNew> answers = surveyRepository.getAnswersForPlainSearch(criteria.getSurveyUuid(),criteria.getCitizenId(),criteria.getTenantId());
+//        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId(), criteria.getTenantId());
+//        SurveyResponseNew surveyResponseNew;
+//        if (surveyResponseStatus.isEmpty()) {
+//            surveyResponseNew = null;
+//        }
+//        else {
+//            surveyResponseNew = surveyResponseStatus.get(0);
+//        }
+//        ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
+//        if(surveyResponseNew!=null) {
+//            scorecardAnswerResponse.setTenantId(surveyResponseNew.getTenantId());
+//            scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
+//            scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
+//            scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+//        }
+//        return scorecardAnswerResponse;
+//    }
 
-        List<AnswerNew> answers = surveyRepository.getAnswersForPlainSearch(criteria.getSurveyUuid(),criteria.getCitizenId(),criteria.getTenantId());
-        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId(), criteria.getTenantId());
-        SurveyResponseNew surveyResponseNew;
-        if (surveyResponseStatus.isEmpty()) {
-            surveyResponseNew = null;
+    public PlainSearchResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+        List<String> surveyUuids = surveyRepository.getSurveyUuidsByTenant(criteria.getTenantId());
+        List<ScorecardAnswerResponse> responses = new ArrayList<>();
+
+        for (String surveyUuid : surveyUuids) {
+            List<AnswerNew> answers = surveyRepository.getAnswersForSurvey(surveyUuid, criteria.getTenantId());
+            for (AnswerNew answer : answers) {
+                Integer qWeight = surveyRepository.getQuestionWeightage(answer.getQuestionUuid(), answer.getSectionUuid());
+                Integer sWeight = surveyRepository.getSectionWeightage(answer.getSectionUuid());
+                answer.setQuestionWeightage(BigDecimal.valueOf(qWeight));
+                answer.setSectionWeightage(BigDecimal.valueOf(sWeight));
+            }
+
+            List<SurveyResponseNew> surveyResponses = surveyRepository.getSurveyResponsesBySurveyAndTenant(surveyUuid, criteria.getTenantId());
+
+            for (SurveyResponseNew sr : surveyResponses) {
+                AnswerFetchCriteria scopedCriteria = AnswerFetchCriteria.builder()
+                        .surveyUuid(surveyUuid)
+                        .citizenId(sr.getCitizenId())
+                        .tenantId(criteria.getTenantId())
+                        .build();
+
+                ScorecardAnswerResponse response = buildScorecardAnswerResponseWithWeightage(answers, scopedCriteria);
+                response.setSurveyUuid(sr.getSurveyUuid());
+                response.setTenantId(sr.getTenantId());
+                response.setCitizenId(sr.getCitizenId());
+                response.setLocality(sr.getLocality());
+                response.setStatus(sr.getStatus().toString());
+                response.setCoordinates(sr.getCoordinates());
+                responses.add(response);
+            }
         }
-        else {
-            surveyResponseNew = surveyResponseStatus.get(0);
-        }
-        ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
-        if(surveyResponseNew!=null) {
-            scorecardAnswerResponse.setTenantId(surveyResponseNew.getTenantId());
-            scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
-            scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
-            scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
-        }
-        return scorecardAnswerResponse;
+
+        return PlainSearchResponse.builder()
+                .surveyResponses(responses)
+                .build();
     }
+
+    private ScorecardAnswerResponse buildScorecardAnswerResponseWithWeightage(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
+        Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
+        for (AnswerNew answer : answers) {
+
+
+            ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
+                    .questionUuid(answer.getQuestionUuid())
+                    .questionStatement(answer.getQuestionStatement())
+                    .answerUuid(answer.getUuid())
+                    .comments(answer.getComments())
+                    .answerResponse(answer)
+                    .build();
+
+            sectionResponsesMap.computeIfAbsent(answer.getSectionUuid(), k -> new ArrayList<>()).add(questionResponse);
+        }
+
+        List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
+                .map(entry -> ScorecardSectionResponse.builder()
+                        .sectionUuid(entry.getKey())
+                        .questionResponses(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ScorecardAnswerResponse.builder()
+                .surveyUuid(criteria.getSurveyUuid())
+                .citizenId(criteria.getCitizenId())
+                .sectionResponses(sectionResponses)
+                .build();
+    }
+
 
 }

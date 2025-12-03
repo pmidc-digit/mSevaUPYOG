@@ -218,7 +218,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
       {actions && (
         <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="go-back-footer-button" label="Back" onSubmit={onGoBack} />
 
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />

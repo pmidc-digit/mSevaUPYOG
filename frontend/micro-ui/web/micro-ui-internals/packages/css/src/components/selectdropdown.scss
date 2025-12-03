@@ -118,7 +118,7 @@
   margin-bottom: 0;
 }
 
-.employee-select-wrap--elipses {
+.employee-select-wrap-elipses {
   width: 85% !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -203,3 +203,14 @@
 .employee-select-wrap .select img, .employee-select-wrap .select svg{
   margin-top: -10px;
 }
+
+
+
+
+
+.employee-login-form .field-container .custom-field {
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+

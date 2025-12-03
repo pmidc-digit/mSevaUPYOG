@@ -167,7 +167,7 @@ public class EDCRService {
 		}
 		this.validateOCEdcr(OccupancyTypes, plotAreas, buildingHeights, applicationType, masterData, riskType);
 		
-		Boolean isSelfCertification = Boolean.valueOf(additionalDetails.get("isSelfCertification"));
+		Boolean isSelfCertification = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isSelfCertification");
 		
 		if (isSelfCertification && OccupancyTypes.get(0).equalsIgnoreCase(BPAConstants.RESIDENTIAL_OCCUPANCY)) {
 			String subOccupancyType = subOccupancyTypes.get(0);

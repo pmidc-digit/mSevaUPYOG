@@ -121,6 +121,7 @@ public class CluQueryBuilder {
 
 
 
+
 		List<String> ids = criteria.getIds();
 		if (!CollectionUtils.isEmpty(ids)) {
 			addClauseIfRequired(builder);
@@ -203,7 +204,13 @@ public class CluQueryBuilder {
                         builder.append(" clu.status IN (").append(createQuery(status)).append(")");
                         addToPreparedStatement(preparedStmtList, status);
                 }
-
+		if(criteria.getCreatedBy()!=null || !criteria.getCreatedBy().isEmpty())
+		{
+			addClauseIfRequired(builder);
+			builder.append(" clu.createdby=? ");
+			preparedStmtList.add(criteria.getCreatedBy());
+			log.info(criteria.getCreatedBy());
+		}
 		builder.append(" GROUP BY clu.id, clu.tenantid, clu.lastModifiedTime, clu.createdBy, ")
 				.append("clu.lastModifiedBy, clu.createdTime, clu.applicationNo, clu.cluNo, clu.cluType,details.id, details.cluid, details.additionalDetails ");
 

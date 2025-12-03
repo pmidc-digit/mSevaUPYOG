@@ -440,7 +440,8 @@ public class BPAService {
                 	if(bpa.getApplicationType() == null) {
                 		bpa.setApplicationType(applicationType);
                 	}
-                	Boolean isPropertyAvailable = Boolean.valueOf(additionalDetails.getOrDefault("isPropertyAvailable", "false"));
+                	
+                	Boolean isPropertyAvailable = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isPropertyAvailable");
                 	if(!isPropertyAvailable)
                 		bpaPropertyService.createProperty(bpaRequest);
                     calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);

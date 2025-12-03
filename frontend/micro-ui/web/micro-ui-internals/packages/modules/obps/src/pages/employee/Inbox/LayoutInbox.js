@@ -224,8 +224,8 @@ const LayoutInbox = ({ parentRoute }) => {
     headerText: "Layout",
     links: [
       {
-        text: t("Layout New Application"),
-        link: "/digit-ui/employee/obps/layout/new-application",
+        text: t(""),
+        link: "",
       },
     ],
   }

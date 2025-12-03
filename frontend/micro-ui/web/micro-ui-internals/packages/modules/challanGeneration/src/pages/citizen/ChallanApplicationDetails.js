@@ -16,7 +16,7 @@ import { useParams } from "react-router-dom";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData } from "../../utils/index";
+import { ChallanData , getLocationName } from "../../utils/index";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -86,6 +86,7 @@ const ChallanApplicationDetails = () => {
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
+      console.log("search ", responseData);
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
@@ -141,7 +142,8 @@ const ChallanApplicationDetails = () => {
     setLoader(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
-
+      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      console.log('location', location)
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -149,7 +151,7 @@ const ChallanApplicationDetails = () => {
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments } }, "challan-notice");
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments ,location } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });

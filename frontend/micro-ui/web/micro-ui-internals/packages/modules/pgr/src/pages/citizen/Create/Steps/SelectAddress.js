@@ -11,11 +11,9 @@ const SelectAddress = ({ t, config, onSelect, value }) => {
   const [selectedCity, setSelectedCity] = useState(() => {
     if(pttype=="PT"){
       let filteredcities=cities.filter(city=>city.code === citynew);
-      console.log("filteredcities",filteredcities)
       if(filteredcities){
          value2=filteredcities[0]
       }
-      console.log("val2",value2)
       return value2;
     }
     else{

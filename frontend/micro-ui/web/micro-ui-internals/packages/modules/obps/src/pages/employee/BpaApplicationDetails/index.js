@@ -46,6 +46,7 @@ import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitec
 import BPAApplicationTimeline from "../../citizen/BpaApplicationDetail/BPAApplicationTimeline";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
+import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -1691,7 +1692,8 @@ const BpaApplicationDetail = () => {
                             })}
                       </ConnectingCheckPoints>
                     )} */}
-                    <BPAApplicationTimeline application={data?.applicationData} id={id} />
+                    {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
+                    <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
                     {/* {workflowDetails?.data?.timeline?.length > 2 && (
                       <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
                     )} */}

@@ -12,7 +12,7 @@ const useLayoutBuildingCategory = (tenantId) => {
             tenantId: tenantId,
             moduleDetails: [
               {
-                moduleName: "Layout",
+                moduleName: "LAYOUT",
                 masterDetails: [
                   {
                     name: "BuildingCategory",
@@ -22,11 +22,12 @@ const useLayoutBuildingCategory = (tenantId) => {
             ],
           },
         },
-        "Layout",
+        "LAYOUT",
       ),
     {
       select: (data) => {
-        return data?.Layout?.BuildingCategory?.filter((type) => type.active).map((type) => ({
+       
+        return data?.LAYOUT?.BuildingCategory?.filter((type) => type.active).map((type) => ({
           name: type.name,
           code: type.code,
           active: type.active,

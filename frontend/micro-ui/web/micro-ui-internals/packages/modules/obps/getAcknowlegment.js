@@ -108,12 +108,13 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
 
   const getFormattedULBName = (ulbCode = "") => {
     if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+    if(typeof ulbCode !== "string") return ""
 
-    const parts = ulbCode.split(".");
-    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+    const parts = ulbCode?.split(".");
+    if (parts.length < 2) return ulbCode?.charAt(0)?.toUpperCase() + ulbCode?.slice(1);
 
     const namePart = parts[1];
-    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    return namePart?.charAt(0)?.toUpperCase() + namePart?.slice(1);
   };
 
   const ulbName = getFormattedULBName(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb);
@@ -163,8 +164,8 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
   const documents = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values
   const docDetails = documents?.map((doc, index) => ({
-    title: `${index + 1}`,
-    value: t(`DOC_${doc.documentType}`) || "NA",
+    title: t(`DOC_${doc.documentType}`) || "NA",
+    value: " ",
     link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
   }));
 

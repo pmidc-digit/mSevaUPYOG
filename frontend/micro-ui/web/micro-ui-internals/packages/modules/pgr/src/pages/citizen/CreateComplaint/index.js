@@ -76,7 +76,6 @@ const [description, setDescription] = useState("")
    ]
   const dispatch = useDispatch();
   const match = useRouteMatch();
-  console.log("Match path",match.path)
   const history = useHistory();
   const serviceDefinitions = Digit.GetServiceDefinitions;
   const client = useQueryClient();
@@ -108,7 +107,6 @@ const [description, setDescription] = useState("")
             val: "",
             place: "",
           };
-          // console.log("newGeoLocation", newGeoLocation);
           setGeoLocation(newGeoLocation);
         },
         (error) => {
@@ -164,11 +162,11 @@ const [description, setDescription] = useState("")
   const selectCity = async (city) => {
     // if (selectedCity?.code !== city.code) {}
     setSelectedCity(city);
+    setSelectedLocality(null);
     return;
   };
 
   function selectLocality(locality) {
-    //console.log("ddddddddd",locality)
     setSelectedLocality(locality);
   }
 
@@ -231,7 +229,6 @@ const [description, setDescription] = useState("")
   const handleMobileNumber = (event) => {
  
     const { value } = event.target;
-    console.log("handleMobileNumber",value)
     setMobileNumber(value);
   
   };
@@ -304,20 +301,20 @@ const [description, setDescription] = useState("")
     //   ],
     // },
     {
-      head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
+      // head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
       body: [
         {
           label: t("CS_ADDCOMPLAINT_COMPLAINT_TYPE"),
           isMandatory: true,
           type: "dropdown",
-          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
+          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_TYPE")} />,
         },
         {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
           isMandatory: true,
           type: "dropdown",
           menu: { ...subTypeMenu },
-          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
+          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} placeholder={t("CS_COMPLAINT_DETAILS_SELECT_COMPLAINT_SUBTYPE")} />,
         },
         // {
           
@@ -353,16 +350,16 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_ADDCOMPLAINT_LOCATION"),
       body: [
-        {
-          label: t("CORE_COMMON_PINCODE"),
-          type: "text",
-          populators: {
-            name: "pincode",
-          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-            //error: t("CORE_COMMON_PINCODE_INVALID"),
-            onChange: handlePincode,
-          },
-        },
+        // {
+        //   label: t("CORE_COMMON_PINCODE"),
+        //   type: "text",
+        //   populators: {
+        //     name: "pincode",
+        //   //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+        //     //error: t("CORE_COMMON_PINCODE_INVALID"),
+        //     onChange: handlePincode,
+        //   },
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,
@@ -371,7 +368,7 @@ const [description, setDescription] = useState("")
             <Dropdown
               isMandatory
               selected={selectedCity}
-              freeze={true}
+              // freeze={true}
               option={getCities()}
               id="city"
               select={selectCity}
@@ -386,7 +383,7 @@ const [description, setDescription] = useState("")
           isMandatory: true,
           dependency: selectedCity && localities ? true : false,
           populators: (
-            <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} />
+            <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} placeholder={t("CS_CREATECOMPLAINT_CHOOSE_LOCALITY_MOHALLA")} />
           ),
         },
         {
@@ -394,6 +391,7 @@ const [description, setDescription] = useState("")
           type: "textarea",
           populators: {
             name: "streetName",
+            placeholder: t("CS_HOUSE_NO_STREET_NAME_PLACEHOLDER"),
           },
         },
         {
@@ -401,6 +399,7 @@ const [description, setDescription] = useState("")
           type: "textarea",
           populators: {
             name: "landmark",
+            placeholder: t("CS_LANDMARK_PLACEHOLDER"),
           },
         },
         {
@@ -468,6 +467,7 @@ const [description, setDescription] = useState("")
           value:description,
           populators: {
             name: "description",
+            placeholder: t("CS_ADDITIONAL_DETAILS_PLACEHOLDER"),
             onChange: handleDescription,
           },
         },
@@ -475,17 +475,14 @@ const [description, setDescription] = useState("")
     },
   ];
     useEffect(()=>{
-     // console.log("heloo world",propetyData )
       if(propetyData !== "undefined"   && propetyData !== null)
       {
        let data =JSON.parse(propetyData)
-       console.log("stp 1",propetyData)
        setPropertyData(data)
         setPropertyId(data?.propertyId)
       }
     },[])
   useEffect(()=>{
-    console.log("step 2",propetyData,property,typeof(propetyData))
     if(property !== "undefined" && property !== null )
     {
       let data =property
@@ -497,7 +494,6 @@ const [description, setDescription] = useState("")
       })
       setSelectedLocality(b?.[0])
       setDescription(data?.propertyId)
-      //console.log("pgrProperty",localities,data?.propertyId,data)
     }
    
   },[propertyId])

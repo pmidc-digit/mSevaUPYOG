@@ -33,7 +33,6 @@ const PGRCard = () => {
     }
   ]
   
-  console.log("PGR role access",propsForCSR.filter(link => link.role && Digit.Utils.didEmployeeHasRole(link.role) ))
   propsForCSR = propsForCSR.filter(link => link.role && Digit.Utils.didEmployeeHasRole(link.role) );
 
   const propsForModuleCard = {

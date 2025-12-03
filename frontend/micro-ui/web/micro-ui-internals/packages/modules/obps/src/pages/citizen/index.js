@@ -53,6 +53,8 @@ const App = ({ path }) => {
   const LayoutResponseEmployee = Digit.ComponentRegistryService.getComponent("LayoutResponseEmployee");
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
   const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
+  const LayoutSearchApplication = Digit?.ComponentRegistryService?.getComponent("LayoutSearchApplication");
+  const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications"); 
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   const CLUStepperForm = Digit?.ComponentRegistryService?.getComponent("CLUStepperForm");
@@ -67,17 +69,21 @@ const App = ({ path }) => {
       <div className="ws-citizen-wrapper">
        {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !location.pathname.includes("/stepper") && !location.pathname.includes("/obps/home") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
+        <PrivateRoute path={`${path}/layout/search-application`} component={LayoutSearchApplication} />
+        <PrivateRoute path={`${path}/layout/application-overview/:id`} component={LayoutApplicationSummary} />
+        <PrivateRoute path={`${path}/layout/my-applications`} component={LayoutMyApplications} />
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={NewLayoutEditLayoutApplication} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseCitizen} />
         <PrivateRoute path={`${path}/layout/response/:id`} component={LayoutResponseEmployee} />
         <PrivateRoute path={`${path}/layout/:id`} component={LayoutApplicationSummary} />
 
+
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/clu/response/:id`} component={CLUResponse} />
         <PrivateRoute path={`${path}/clu/my-applications`} component={CLUMyApplications} />
         <PrivateRoute path={`${path}/clu/application-overview/:id`} component={CLUApplicationDetails} />       
-        <PrivateRoute path={`${path}/clu/search-application`} component={CLUSearchApplication} />
+        <PrivateRoute path={`${path}/search/clu-application`} component={CLUSearchApplication} />
         <PrivateRoute path={`${path}/clu/edit-application/:id`} component={CLUEditApplication} />
 
         

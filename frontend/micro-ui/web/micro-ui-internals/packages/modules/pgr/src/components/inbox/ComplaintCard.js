@@ -31,11 +31,11 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
   let result;
   if (data && data?.length === 0) {
     result = (
-      <Card style={{ marginTop: 20 }}>
+      <Card className="pgr-inbox-ComplaintCard-MarginTop" >
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="pgr-inbox-ComplaintCard-TextAlign">
               {text}
             </p>
           ))}
@@ -45,11 +45,11 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
     result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/pgr/complaint/details/"} />;
   } else {
     result = (
-      <Card style={{ marginTop: 20 }}>
+      <Card className="pgr-inbox-ComplaintCard-MarginTop">
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="pgr-inbox-ComplaintCard-TextAlign">
               {text}
             </p>
           ))}

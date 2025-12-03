@@ -128,7 +128,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
           alignItems: "center",
         }}
       >
-        {finalDataBind?.action == "APPLY" && (
+        {(finalDataBind?.action == "APPLY" && !(finalDataBind?.applicationType === "UPGRADE")) && (
           <Link
             to={{
               pathname: `/digit-ui/citizen/payment/collect/${finalDataBind?.businessService}/${finalDataBind?.applicationNumber}/${finalDataBind?.tenantId}?tenantId=${finalDataBind?.tenantId}`,

@@ -156,7 +156,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
   const handleVerifyOTPClick = async () => {
     const requestData = {
-      username: ownermobileNumber,
+      username: getModalData?.mobileNumber,
       password: otp,
       tenantId: user?.info?.tenantId,
       userType: user?.info?.type,
@@ -204,23 +204,61 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     }
   }
 
+
   const handleGetOTPClick = async () => {
     try {
       const response = await Digit.UserService.sendOtp({
         otp: {
-          mobileNumber: ownermobileNumber,
+          mobileNumber: getModalData?.mobileNumber,
           tenantId: user?.info?.tenantId,
           userType: user?.info?.type,
           type: "login",
         },
       })
+
+      console.log("  Full OTP send response:", JSON.stringify(response, null, 2))
+
+      if (response?.error) {
+
+
+        if (response.error.fields && Array.isArray(response.error.fields)) {
+          const hasUnknownCredential = response.error.fields.some((field) => {
+            return field?.code === "OTP.UNKNOWN_CREDENTIAL"
+          })
+
+          if (hasUnknownCredential) {
+            alert("User not registered")
+            return
+          }
+        }
+
+        alert("Error sending OTP: " + (response.error.message || "Unknown error"))
+        return
+      }
+
       if (response.isSuccessful) {
         setShowOTPInput(true)
       } else {
-        console.error("Error sending OTP Response is false:", response.error)
+        alert("Failed to send OTP")
       }
     } catch (error) {
-      console.error("Error sending OTP:", error)
+
+
+      const errorData = error?.response?.data || error?.data
+
+      if (errorData?.error?.fields && Array.isArray(errorData.error.fields)) {
+        const hasUnknownCredential = errorData.error.fields.some((field) => {
+
+          return field?.code === "OTP.UNKNOWN_CREDENTIAL"
+        })
+
+        if (hasUnknownCredential) {
+          alert("User not registered")
+          return
+        }
+      }
+
+      alert("Exception occurred: " + (error?.message || "Unknown error"))
     }
   }
 
@@ -265,7 +303,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         { Chb: Chb },
         "communityhallowner",
       )
-      console.log(result, "RESULT")
+
       setLoader(false)
       if (result?.filestoreIds[0]?.length > 0) {
         alert("File Uploaded Successfully")

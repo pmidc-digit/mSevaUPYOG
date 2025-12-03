@@ -23,6 +23,7 @@ import org.egov.bpa.web.model.property.PropertyResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 
 @Service
 public class BPAPropertyService {
@@ -129,6 +133,8 @@ public class BPAPropertyService {
 	public List<Property> getPropertyDetails(Object result) {
 
 		try {
+			DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(result);
+			context.put("Properties.*.owners.*", "status", true);
 			PropertyResponse propertyResponse = objectMapper.convertValue(result, PropertyResponse.class);
 			return propertyResponse.getProperties();
 		} catch (Exception ex) {
@@ -201,13 +207,19 @@ public class BPAPropertyService {
 		address.setId("");
 		address.setAuditDetails(null);
 		
+		bpa.getLandInfo().getOwners().stream().forEach(owner -> {
+			if(owner.getOwnerType() == null)
+				owner.setOwnerType("NONE");
+		});
+		
 		return Property.builder()
 				.address(address).accountId(bpa.getAccountId())
-				.landArea((Double)additionalDetails.get("area"))
-				.usageCategory((String)additionalDetails.get("usage"))
+				.landArea(Double.valueOf(additionalDetails.get("area").toString()))
+				.usageCategory((String)additionalDetails.get("usage").toString().toUpperCase())
 				.ownershipCategory(bpa.getLandInfo().getOwnershipCategory())
 				.owners(bpa.getLandInfo().getOwners())
 				.tenantId(bpa.getTenantId())
+				.propertyType("VACANT")
 				.build();
 		
 	}

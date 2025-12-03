@@ -429,7 +429,6 @@ public class BPAService {
 //		nocService.manageOfflineNocs(bpaRequest, mdmsData);
 		bpaValidator.validatePreEnrichData(bpaRequest, mdmsData);
 		enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
-		
 		this.handleRejectSendBackActions(applicationType, bpaRequest, businessService, searchResult, mdmsData, edcrResponse);
                 String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
                 String businessSrvc = businessService.getBusinessService();
@@ -438,14 +437,13 @@ public class BPAService {
                  * Before Citizen approval we need to create Application fee demand
                  */
                 // Generate the Application Demand
-                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_LOW_MODULE_CODE))
-                        && state.equalsIgnoreCase(BPAConstants.STATUS_CITIZENAPPROVAL)) {
+                if (state.equalsIgnoreCase(BPAConstants.STATUS_CITIZENAPPROVAL)) {
                 	if(bpa.getApplicationType() == null) {
                 		bpa.setApplicationType(applicationType);
                 	}
-                	bpaPropertyService.createProperty(bpaRequest);
+                	Boolean isPropertyAvailable = Boolean.valueOf(additionalDetails.getOrDefault("isPropertyAvailable", "false"));
+                	if(!isPropertyAvailable)
+                		bpaPropertyService.createProperty(bpaRequest);
                     calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
                 }
                 

@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.ServiceRequestRepository;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.RequestInfoWrapper;
 import org.egov.bpa.web.model.enums.CreationReason;
+import org.egov.bpa.web.model.landInfo.Address;
 import org.egov.bpa.web.model.landInfo.LandInfo;
+import org.egov.bpa.web.model.property.Channel;
 import org.egov.bpa.web.model.property.Property;
 import org.egov.bpa.web.model.property.PropertyCriteria;
 import org.egov.bpa.web.model.property.PropertyRequest;
@@ -33,24 +36,19 @@ public class BPAPropertyService {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+	
+	@Autowired
+	private BPAConfiguration config;
 
+	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
-	@Value("${egov.property.service.host}")
-	private String propertyHost;
-
-	@Value("${egov.property.createendpoint}")
-	private String createPropertyEndPoint;
-
-	@Value("${egov.property.searchendpoint}")
-	private String searchPropertyEndPoint;
-
 	public StringBuilder getPropertyCreateURL() {
-		return new StringBuilder().append(propertyHost).append(createPropertyEndPoint);
+		return new StringBuilder().append(config.getPropertyHost()).append(config.getPropertyCreateEndpoint());
 	}
 
 	public StringBuilder getPropertyURL() {
-		return new StringBuilder().append(propertyHost).append(searchPropertyEndPoint);
+		return new StringBuilder().append(config.getPropertyHost()).append(config.getPropertySearchEndpoint());
 	}
 
 	public List<Property> propertySearch(List<String> propertyId, BPARequest bpaRequest) {
@@ -103,15 +101,7 @@ public class BPAPropertyService {
 		BPA bpa = bpaRequest.getBPA();
 		LandInfo landInfo = bpa.getLandInfo();
 
-		Property property = Property.builder().address(landInfo.getAddress()).accountId(bpa.getAccountId())
-				.acknowldgementNumber(null).AlternateUpdated(false).auditDetails(bpa.getAuditDetails())
-				.channel(landInfo.getChannel()).creationReason(CreationReason.NEWPROPERTY)
-				.documents(landInfo.getDocuments()).institution(landInfo.getInstitution()).isactive(true)
-				.isinactive(false).isOldDataEncryptionRequest(false).owners(landInfo.getOwners())
-				.ownershipCategory(landInfo.getOwnershipCategory()).tenantId(landInfo.getTenantId())
-
-				.propertyType(landInfo.getPropertyType()).usageCategory(landInfo.getUsageCategory())
-				.landArea(landInfo.getLandArea()).noOfFloors(landInfo.getNoOfFloors()).build();
+		Property property = createPropertFromBPA(bpa);
 
 		PropertyRequest propertyRequest = PropertyRequest.builder().property(property)
 				.requestInfo(bpaRequest.getRequestInfo()).build();
@@ -126,11 +116,11 @@ public class BPAPropertyService {
 		Object object = bpaRequest.getBPA().getAdditionalDetails();
 		if (object instanceof Map) {
 			Map<String, Object> additionalDetails = (Map<String, Object>) object;
-			additionalDetails.put("propertyId", propertyId);
+			additionalDetails.put("propertyuid", propertyId);
 			bpaRequest.getBPA().setAdditionalDetails(additionalDetails);
 		} else {
 			Map<String, Object> additionalDetails = new HashMap<>();
-			additionalDetails.put("propertyId", propertyId);
+			additionalDetails.put("propertyuid", propertyId);
 			bpaRequest.getBPA().setAdditionalDetails(additionalDetails);
 		}
 
@@ -201,6 +191,25 @@ public class BPAPropertyService {
 //				url.append(uuids).append(uuidString);
 //			}
 		return url;
+	}
+	
+	private Property createPropertFromBPA(BPA bpa) {
+		
+		Map<String,Object> additionalDetails = (Map<String, Object>)bpa.getAdditionalDetails();
+		
+		Address address = objectMapper.convertValue(bpa.getLandInfo().getAddress(), Address.class);
+		address.setId("");
+		address.setAuditDetails(null);
+		
+		return Property.builder()
+				.address(address).accountId(bpa.getAccountId())
+				.landArea((Double)additionalDetails.get("area"))
+				.usageCategory((String)additionalDetails.get("usage"))
+				.ownershipCategory(bpa.getLandInfo().getOwnershipCategory())
+				.owners(bpa.getLandInfo().getOwners())
+				.tenantId(bpa.getTenantId())
+				.build();
+		
 	}
 
 }

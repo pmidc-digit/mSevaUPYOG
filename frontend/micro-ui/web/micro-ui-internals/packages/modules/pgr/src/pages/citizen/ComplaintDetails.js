@@ -78,6 +78,16 @@ const ComplaintDetailsPage = (props) => {
   const [loader, setLoader] = useState(false);
   const [viewTimeline, setViewTimeline]=useState(false);
 
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(ulb, "admin", {}, t);
+  const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
+  const localityObj = localities?.find((loc) => loc?.code == localityCode);
+  const localityName = localityObj?.name || "";
+  const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
+  const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
+  
+  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
+
+
   useEffect(() => {
     (async () => {
       if (complaintDetails) {
@@ -146,10 +156,13 @@ const ComplaintDetailsPage = (props) => {
 
   return (
     <React.Fragment>
-      <div className="complaint-summary">
-        <div style={{display:"flex",justifyContent:"space-between",maxWidth:"960px"}}>
+      <div className="complaint-summary pgr-citizen-complaint-details-page">
+        <div 
+        className="pgr-complaintDetails-headerTimeline-spaceclass"
+        >
         <Header>{t(`${LOCALIZATION_KEY.CS_HEADER}_COMPLAINT_SUMMARY`)}</Header>
-        <div style={{ color:"#A52A2A"}}>
+        <div 
+        >
         <LinkButton label={t("VIEW_TIMELINE")}  onClick={handleViewTimeline} ></LinkButton>
         </div>
         </div>
@@ -158,7 +171,9 @@ const ComplaintDetailsPage = (props) => {
             <Card>
               <CardSubHeader>{t(`SERVICEDEFS.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>
               <StatusTable>
-                {Object.keys(complaintDetails.details).map((flag, index, arr) => (
+                {Object.keys(complaintDetails.details)
+                .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
+                .map((flag, index, arr) => (
                   <Row
                     key={index}
                     label={t(flag)}
@@ -167,9 +182,10 @@ const ComplaintDetailsPage = (props) => {
                         ? complaintDetails.details[flag].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                         : t(complaintDetails.details[flag]) || "N/A"
                     }
-                    last={index === arr.length - 1}
+                    // last={index === arr.length - 1}
                   />
                 ))}
+              <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} last={true} />
               </StatusTable>
               {imageShownBelowComplaintDetails?.thumbs ? (
                 <DisplayPhotos srcs={imageShownBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />

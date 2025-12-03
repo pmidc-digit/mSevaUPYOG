@@ -50,7 +50,10 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_LOCALITY"),
         Cell: ({ row }) => {
-          return GetCell(t(Digit.Utils.locale.getLocalityCode(row.original["locality"], row.original["tenantId"])));
+          const localityCode = row.original["locality"] 
+            ? Digit.Utils.locale.getLocalityCode(row.original["locality"], row.original["tenantId"]) 
+            : "NA";
+          return GetCell(t(localityCode));
         },
       },
       {
@@ -80,10 +83,12 @@ const DesktopInbox = ({
     result = <Loader />;
   } else if (data && data?.length === 0) {
     result = ( 
+      // <Card className="pgr-desktop-card-empty-state">
       <Card style={{ marginTop: 20 }}>
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
           .map((text, index) => (
+            // <p key={index}>
             <p key={index} style={{ textAlign: "center" }}>
               {text}
             </p>
@@ -93,33 +98,41 @@ const DesktopInbox = ({
   } else if (data?.length > 0) {
     result = (
       <ComplaintTable
+        // className="pgr-desktop-complaint-table"
         t={t}
         data={data} 
         columns={columns}
         getCellProps={(cellInfo) => {
+          // return {
+          //   className:
+          //     cellInfo.column.Header === t("CS_COMMON_COMPLAINT_NO")
+          //       ? "pgr-timeline-cell pgr-timeline-large-cell"
+          //       : "pgr-timeline-cell",
+          // };
           return {
-            style: {
+             style: {
               minWidth: cellInfo.column.Header === t("CS_COMMON_COMPLAINT_NO") ? "240px" : "",
               padding: "20px 18px",
               fontSize: "16px",
             },
-          };
+          }
         }}
         onNextPage={onNextPage}
         onPrevPage={onPrevPage}
         totalRecords={totalRecords}
-        onPageSizeChagne={onPageSizeChange}
+        onPageSizeChange={onPageSizeChange}
         currentPage={currentPage}
         pageSizeLimit={pageSizeLimit}
       />
     );
   } else {
     result = (
+      // <Card className="pgr-desktop-card-error-state">
       <Card style={{ marginTop: 20 }}>
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index}>
               {text}
             </p>
           ))}
@@ -128,16 +141,19 @@ const DesktopInbox = ({
   }
 
   return (
-    <div className="inbox-container">
+    // <div className="pgr-desktop-inbox-container inbox-container">
+     <div className="inbox-container">
       <div className="filters-container">
         <ComplaintsLink />
         <div>
           <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} localities={localities}/>
         </div>
       </div>
+      {/* <div className="pgr-desktop-inbox-content-wrapper"> */}
       <div style={{ flex: 1 }}>
         <SearchComplaint onSearch={onSearch} type="desktop" />
-        <div style={{ marginTop: "24px", marginTop: "24px", marginLeft: "24px", flex: 1 }}>{result}</div>
+         <div style={{ marginTop: "24px", marginTop: "24px", marginLeft: "24px", flex: 1 }}>{result}</div>
+        {/* <div className="pgr-desktop-inbox-result-container">{result}</div> */}
       </div>
     </div>
   );

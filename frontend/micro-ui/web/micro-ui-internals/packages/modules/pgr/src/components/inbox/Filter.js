@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Dropdown, RadioButtons, ActionBar, RemoveableTag, RoundedLabel } from "@mseva/digit-ui-react-components";
 import { ApplyFilterBar, CloseSvg } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ const Filter = (props) => {
   const { searchParams } = props;
   const { t } = useTranslation();
   const isAssignedToMe = searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
+  const isInitialMount = useRef(true);
 
   const assignedToOptions = useMemo(
     () => [
@@ -36,9 +37,7 @@ const Filter = (props) => {
   );
 
   const [wfFilters, setWfFilters] = useState(
-    searchParams?.filters?.wfFilters || {
-      assignee: [{ code: uuid }],
-    }
+    searchParams?.filters?.wfFilters || {}
   );
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -48,8 +47,11 @@ const Filter = (props) => {
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);
-    uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
-    setWfFilters({ ...wfFilters, assignee: [{ code: uuid }] });
+    if (value.code === "ASSIGNED_TO_ME") {
+      setWfFilters({ assignee: uuid });
+    } else {
+      setWfFilters({});
+    }
   };
 
   useEffect(() => {
@@ -66,20 +68,20 @@ const Filter = (props) => {
         }
       }
     }
-    for (const property in wfFilters) {
-      if (Array.isArray(wfFilters[property])) {
-        let params = wfFilters[property].map((prop) => prop.code).join();
-        if (params) {
-          wfQuery[property] = params;
-        } else {
-          wfQuery = {};
-        }
-      }
+    // Set wfQuery based on wfFilters (assignee)
+    if (wfFilters?.assignee) {
+      wfQuery = { assignee: wfFilters.assignee };
+    } else {
+      wfQuery = {};
     }
-    count += wfFilters?.assignee?.length || 0;
 
-    if (props.type !== "mobile") {
+    // ✅ Skip automatic filter submit on initial mount to prevent duplicate API call
+    if (props.type !== "mobile" && !isInitialMount.current) {
       handleFilterSubmit();
+    }
+    
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
     }
 
     Digit.inboxFilterCount = count;
@@ -141,9 +143,8 @@ const Filter = (props) => {
 
   function clearAll() {
     let pgrReset = { serviceCode: [], locality: [], applicationStatus: [] };
-    let wfRest = { assigned: [{ code: [] }] };
     setPgrFilters(pgrReset);
-    setWfFilters(wfRest);
+    setWfFilters({});
     pgrQuery = {};
     wfQuery = {};
     setSelectedAssigned("");
@@ -152,7 +153,7 @@ const Filter = (props) => {
   }
 
   const handleFilterSubmit = () => {
-    props.onFilterChange({ pgrQuery: pgrQuery, wfQuery: wfQuery, wfFilters, pgrfilters });
+    props.onFilterChange({ pgrQuery: pgrQuery, wfFilters, pgrfilters });
   };
 
   const GetSelectOptions = (lable, options, selected = null, select, optionKey, onRemove, key) => {

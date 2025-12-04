@@ -21,6 +21,6 @@ public class AllotmentResponse {
 	@JsonProperty("responseInfo")
     ResponseInfo responseInfo;
     
-    @JsonProperty("allotment")
-    private List<AllotmentDetails> allotment;
+    @JsonProperty("AllotmentDetails")
+    private AllotmentDetails allotment;
 }

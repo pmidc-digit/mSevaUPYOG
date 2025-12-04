@@ -19,18 +19,18 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
     property_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
     tenant_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    is_auto_renewal boolean,
-    expireflag boolean DEFAULT false,
-    application_status integer,
     status character varying(128) COLLATE pg_catalog."default" NOT NULL,
     application_type character varying(128) COLLATE pg_catalog."default" NOT NULL,
     application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
     previous_application_number character varying(128) COLLATE pg_catalog."default",
     start_date bigint NOT NULL,
     end_date bigint NOT NULL,
-    last_payment_percantage character varying(128) COLLATE pg_catalog."default",
-    term_and_condition character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    penalty_type character varying(128) COLLATE pg_catalog."default",
+    expireflag boolean DEFAULT false,
+	is_gst_applicable boolean DEFAULT true,
+	is_cow_cess_applicable boolean DEFAULT true,
+    is_refund_applicable_on_discontinuation boolean DEFAULT true,
+	penalty_type character varying(128) COLLATE pg_catalog."default",
+	term_and_condition character varying(256) COLLATE pg_catalog."default" NOT NULL,
     created_time bigint NOT NULL,
     created_by character varying(128) COLLATE pg_catalog."default" NOT NULL,
     lastmodified_time bigint,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     CONSTRAINT pk_eg_rl_allotment PRIMARY KEY (id),
     CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number),
     CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id,tenant_id, previous_application_number)
-)
+);
 
 CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_tenant_id ON eg_rl_allotment(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_property_id ON eg_rl_allotment(property_id);
@@ -53,16 +53,16 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_owner_info
     allotment_id character varying(256) COLLATE pg_catalog."default" NOT NULL,
     user_uuid character varying(256) COLLATE pg_catalog."default" NOT NULL,
     is_primary_owner boolean,
-    owner_type character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    ownership_percentage character varying(128) COLLATE pg_catalog."default",
-    relationship character varying(128) COLLATE pg_catalog."default",
-    status character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    owner_type character varying(256),
+    ownership_percentage character varying(128) ,
+    relationship character varying(128) ,
+    status character varying(128) ,
     CONSTRAINT pk_eg_rl_owner_info PRIMARY KEY (id),
     CONSTRAINT fk_eg_rl_allotment FOREIGN KEY (allotment_id)
         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+);
 CREATE INDEX IF NOT EXISTS idx_eg_rl_owner_info_user_uuid ON eg_rl_owner_info (user_uuid);
 CREATE INDEX IF NOT EXISTS idx_eg_rl_owner_info_allotment_id ON eg_rl_owner_info (allotment_id);
 
@@ -74,9 +74,9 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_document
     allotment_id character varying(256) COLLATE pg_catalog."default" NOT NULL,
     documenttype character varying(128) COLLATE pg_catalog."default" NOT NULL,
     filestoreid character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    status character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    status character varying(128) ,
     createdby character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    lastmodifiedby character varying(128) COLLATE pg_catalog."default",
+    lastmodifiedby character varying(128),
     createdtime bigint NOT NULL,
     lastmodifiedtime bigint,
     CONSTRAINT pk_eg_rl_document_id PRIMARY KEY (id),
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_document
         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+);
 CREATE INDEX IF NOT EXISTS idx_eg_rl_document_tenantid ON eg_rl_document (allotment_id);
 
 
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+);
 
 
 

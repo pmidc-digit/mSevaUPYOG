@@ -118,18 +118,20 @@ public class AllotmentEnrichmentService {
 		auditDetails.setCreatedTime(allotmentDbDetails.getCreatedTime());
 
 		allotmentDbDetails.setAuditDetails(auditDetails);
-		allotmentDbDetails.setAutoRenewal(allotmentDetails.isAutoRenewal());
 		allotmentDbDetails.setStartDate(allotmentDetails.getStartDate());
 		allotmentDbDetails.setEndDate(allotmentDetails.getEndDate());
-		allotmentDbDetails.setAdditionalDetails(allotmentDbDetails.getAdditionalDetails());
+		allotmentDbDetails.setGSTApplicable(allotmentDetails.isGSTApplicable());
+		allotmentDbDetails.setCowCessApplicable(allotmentDetails.isCowCessApplicable());
+		allotmentDbDetails.setRefundApplicableOnDiscontinuation(allotmentDetails.isRefundApplicableOnDiscontinuation());
 		allotmentDbDetails.setWitnessDetails(allotmentDetails.getWitnessDetails());
-		allotmentDbDetails.setApplicationStatus(allotmentDetails.getApplicationStatus());
 		allotmentDbDetails.setStatus(allotmentDetails.getStatus());
 		allotmentDbDetails.setTermAndCondition(allotmentDetails.getTermAndCondition());
 		allotmentDbDetails.setPenaltyType(allotmentDetails.getPenaltyType());
 		allotmentDbDetails.setOwnerInfo(allotmentDetails.getOwnerInfo());
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
+		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
+		
 		allotmentRequest.setAllotment(allotmentDbDetails);
 
 		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
@@ -156,21 +158,18 @@ public class AllotmentEnrichmentService {
 		String allotmentId = UUID.randomUUID().toString();
 
 //		if (!CollectionUtils.isEmpty(allotmentDetails.getDocuments())) {
-		System.out.println(allotmentDetails.getDocuments().size()
-				+ "document----------------------------------------------------");
-		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-
-		if (allotmentDetails.getDocuments() != null && allotmentDetails.getDocuments().size() > 0) {
-			List<Document> docList = allotmentDetails.getDocuments().stream().map(doc -> {
-				Document document = doc;
-				document.setDocumentUid(allotmentId);
-				document.setId(UUID.randomUUID().toString());
-				document.setStatus(Status.ACTIVE);
-				document.setAuditDetails(auditDetails);
-				return document;
-			}).collect(Collectors.toList());
-			allotmentDetails.setDocuments(docList);
-		}
+//		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
+//		if (allotmentDetails.getDocuments() != null && allotmentDetails.getDocuments().size() > 0) {
+//			List<Document> docList = allotmentDetails.getDocuments().stream().map(doc -> {
+//				Document document = doc;
+//				document.setDocumentUid(allotmentId);
+//				document.setId(UUID.randomUUID().toString());
+//				document.setStatus(Status.ACTIVE);
+//				document.setAuditDetails(auditDetails);
+//				return document;
+//			}).collect(Collectors.toList());
+//			allotmentDetails.setDocuments(docList);
+//		}
 
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(UUID.randomUUID().toString());

@@ -36,8 +36,8 @@ public class AllotmentRepository {
 	private AllotmentRowMapper rowMapper;
 	
 	@Autowired
-	SearchRowMapper searchRowMapper;
-    
+	private SearchRowMapper searchRowMapper;
+	    
 	
 	public List<AllotmentDetails> getAllotmentByIds(AllotmentCriteria criterias) {
 

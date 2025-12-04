@@ -53,14 +53,22 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			}
 			auditDetails = getAuditDetail(rs, "allotment");
 			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
-					.tenantId(rs.getString("tenant_id")).isAutoRenewal(rs.getBoolean("is_auto_renewal"))
+					.tenantId(rs.getString("tenant_id"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
-					.applicationStatus(rs.getInt("application_status"))
-					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
-					.endDate(rs.getLong("end_date")).termAndCondition(rs.getString("term_and_condition"))
-					.penaltyType(rs.getString("penalty_type")).createdTime(rs.getLong("created_time"))
-					.createdBy(rs.getString("created_by")).documents(docList).ownerInfo(userList)
-					.auditDetails(auditDetails).build();
+					.applicationType(rs.getString("application_type"))
+					.startDate(rs.getLong("start_date"))
+					.endDate(rs.getLong("end_date"))
+					.isGSTApplicable(rs.getBoolean("is_gst_applicable"))
+					.isCowCessApplicable(rs.getBoolean("is_cow_cess_applicable"))
+					.isRefundApplicableOnDiscontinuation(rs.getBoolean("is_refund_applicable_on_discontinuation"))
+					.termAndCondition(rs.getString("term_and_condition"))
+					.penaltyType(rs.getString("penalty_type"))
+					.createdTime(rs.getLong("created_time"))
+					.createdBy(rs.getString("created_by"))
+					.documents(docList)
+					.ownerInfo(userList)
+					.auditDetails(auditDetails)
+					.build();
 		}
 
 //		currentAllotment.setOwnerInfo(userList);

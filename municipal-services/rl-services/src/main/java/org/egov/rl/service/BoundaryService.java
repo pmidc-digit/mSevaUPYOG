@@ -67,6 +67,7 @@ public class BoundaryService {
 		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
 		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
 		JsonNode body = null;
+		System.out.println("propertyId---"+propertyId+"-------------"+tenantId);
 		try {
 //System.out.println("-----"+allotementRequest.getRequestInfo());
 			MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
@@ -97,16 +98,16 @@ public class BoundaryService {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"propertyId cannot be wrong, please provide the valid propertyId and tenentId information");
 			}
-			else {
-				String previousApplicationNumber=allotementRequest.getAllotment().getPreviousApplicationNumber();
-				previousApplicationNumber=previousApplicationNumber.trim().length()>0?previousApplicationNumber:null;
-				List<AllotmentDetails> allotmentDetails=allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber);
-//				System.out.println("------allotmentDetails--------"+allotmentDetails.size());
-				if(allotmentDetails.size()>0) {
-				   throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
-						"This property already alloted in this tenantId, please provide the another property information");
-				}
-			}
+//			else {
+//				String previousApplicationNumber=allotementRequest.getAllotment().getPreviousApplicationNumber();
+//				previousApplicationNumber=previousApplicationNumber.trim().length()>0?previousApplicationNumber:null;
+//				List<AllotmentDetails> allotmentDetails=allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber);
+////				System.out.println("------allotmentDetails--------"+allotmentDetails.size());
+//				if(allotmentDetails.size()>0) {
+//				   throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
+//						"This property already alloted in this tenantId, please provide the another property information");
+//				}
+//			}
 		}catch(CustomException e) {
 			throw e;	
 		} catch (Exception e) {

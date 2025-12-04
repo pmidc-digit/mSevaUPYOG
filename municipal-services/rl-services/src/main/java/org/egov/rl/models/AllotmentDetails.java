@@ -45,11 +45,11 @@ public class AllotmentDetails {
 	@JsonProperty("tenantId")
 	private String tenantId;
 	
-	@JsonProperty("isAutoRenewal")
-	private boolean isAutoRenewal; // default false
-
-	@JsonProperty("applicationStatus")
-	private int applicationStatus; // 0-draft,1-Saved,2-Submitted,3-Active and runing
+//	@JsonProperty("isAutoRenewal")
+//	private boolean isAutoRenewal; // default false
+//
+//	@JsonProperty("applicationStatus")
+//	private int applicationStatus; // 0-draft,1-Saved,2-Submitted,3-Active and runing
 	/// after final approval,4-InActive
 	
 	@JsonProperty("status")
@@ -70,6 +70,16 @@ public class AllotmentDetails {
 
 	@JsonProperty("endDate")
 	private long endDate;
+	
+	@JsonProperty("isGSTApplicable")
+	private boolean isGSTApplicable;
+	
+	@JsonProperty("isCowCessApplicable")
+	private boolean isCowCessApplicable;
+	
+	@JsonProperty("isRefundApplicableOnDiscontinuation")
+	private boolean isRefundApplicableOnDiscontinuation;
+
 	
 	@JsonProperty("termAndCondition")
 	private String termAndCondition;;
@@ -97,9 +107,6 @@ public class AllotmentDetails {
 	
 	@JsonProperty("additionalDetails")
     private JsonNode additionalDetails;
-	
-	@JsonProperty("workflowCode")
-	private String workflowCode;
 	
 	@JsonProperty("workflow")
 	private Workflow workflow;
@@ -130,14 +137,15 @@ public class AllotmentDetails {
 	            "id='" + id + '\'' +
 	            ", propertyId='" + propertyId + '\'' +
 	            ", tenantId='" + tenantId + '\'' +
-	            ", isAutoRenewal=" + isAutoRenewal +
-	            ", applicationStatus=" + applicationStatus +
 	            ", status=" + status +
 	            ", applicationNumber='" + applicationNumber + '\'' +
 	            ", previousApplicationNumber='" + previousApplicationNumber + '\'' +
 	            ", applicationType='" + applicationType + '\'' +
 	            ", startDate=" + startDate +
 	            ", endDate=" + endDate +
+	            ", isGSTApplicable=" + isGSTApplicable +
+	            ", isCowCessApplicable=" + isCowCessApplicable +
+	            ", isRefundApplicableOnDiscontinuation='" + isRefundApplicableOnDiscontinuation + '\'' +
 	            ", termAndCondition='" + termAndCondition + '\'' +
 	            ", penaltyType='" + penaltyType + '\'' +
 	            ", witnessDetails=" + witnessDetails +
@@ -147,7 +155,6 @@ public class AllotmentDetails {
 	            ", auditDetails=" + auditDetails +
 	            ", ownerInfo=" + ownerInfo +
 	            ", additionalDetails=" + additionalDetails +
-	            ", workflowCode='" + workflowCode + '\'' +
 	            ", workflow=" + workflow +
 	            '}';
 	}

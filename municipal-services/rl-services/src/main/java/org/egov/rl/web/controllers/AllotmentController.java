@@ -46,7 +46,7 @@ public class AllotmentController {
         AllotmentDetails allotmentDetails =allotmentService.allotmentCreate(allotmentRequest);
         ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
         AllotmentResponse response = AllotmentResponse.builder()
-                .allotment(Arrays.asList(allotmentDetails))
+                .allotment(allotmentDetails)
                 .responseInfo(resInfo)
                 .build();
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -58,7 +58,7 @@ public class AllotmentController {
     	AllotmentDetails allotmentDetails =allotmentService.allotmentUpdate(allotmentRequest);
         ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), false);
         AllotmentResponse response = AllotmentResponse.builder()
-                .allotment(Arrays.asList(allotmentDetails))
+                .allotment(allotmentDetails)
                 .responseInfo(resInfo)
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);	
@@ -69,7 +69,7 @@ public class AllotmentController {
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
          allotmentService.allotmentSearch(allotmentRequest);
         AllotmentResponse response = AllotmentResponse.builder()
-                .allotment(Arrays.asList(allotmentRequest.getAllotment()))
+                .allotment(allotmentRequest.getAllotment())
                 .responseInfo(resInfo)
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);	

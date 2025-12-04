@@ -90,7 +90,6 @@ public class AllotmentService {
 		allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
 		userService.createUser(allotmentRequest);
-		
 		AllotmentDetails allotmentDetails=allotmentRequest.getAllotment();
 		allotmentRequest.setAllotment(allotmentDetails);
 		if (config.getIsWorkflowEnabled()) {

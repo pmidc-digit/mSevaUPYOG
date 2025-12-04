@@ -64,6 +64,8 @@ const EmployeeApp = ({ path, url, userType }) => {
                 />
               )}
             />
+            {/* <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ChallanApplicationDetails} /> */}
+
             <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
             <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} />
           </div>

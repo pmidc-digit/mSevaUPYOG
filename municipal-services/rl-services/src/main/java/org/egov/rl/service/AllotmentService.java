@@ -87,7 +87,7 @@ public class AllotmentService {
 	
 	public AllotmentDetails allotmentUpdate(AllotmentRequest allotmentRequest){
 		
-		allotmentValidator.validateAllotementRequest(allotmentRequest);
+		allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
 		userService.createUser(allotmentRequest);
 		

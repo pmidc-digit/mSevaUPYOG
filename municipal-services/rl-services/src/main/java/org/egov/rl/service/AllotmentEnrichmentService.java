@@ -111,8 +111,7 @@ public class AllotmentEnrichmentService {
 		id.add(allotmentRequest.getAllotment().getId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
-		AllotmentDetails allotmentDbDetails = Optional
-				.ofNullable(searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).get(0)).orElse(null);
+		AllotmentDetails allotmentDbDetails = searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).stream().findFirst().orElse(null);
 
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
 		auditDetails.setCreatedBy(allotmentDbDetails.getCreatedBy());

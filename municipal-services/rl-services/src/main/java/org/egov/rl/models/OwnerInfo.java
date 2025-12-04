@@ -37,16 +37,16 @@ public class OwnerInfo { // extends User {
 
 
 	@SafeHtml
-	@JsonProperty("owner_id")
+	@JsonProperty("ownerId")
 	private String ownerId;
 	
-	@JsonProperty("allotment_id")
+	@JsonProperty("allotmentId")
 	private String allotmentId;
 
-	@JsonProperty("user_id")
+	@JsonProperty("userId")
 	private long userId;
 	
-	@JsonProperty("tenant_id")
+	@JsonProperty("tenantId")
 	private String tenantId;
 	
 	@SafeHtml
@@ -61,45 +61,45 @@ public class OwnerInfo { // extends User {
 	@JsonProperty("status")
 	private int status;
 
-	@JsonProperty("is_primary_owner")
+	@JsonProperty("isPrimaryOwner")
 	private Boolean isPrimaryOwner;
 
-	@JsonProperty("ownership_percentage")
+	@JsonProperty("ownershipPercentage")
 	private Double ownerShipPercentage;
 
 	@NotNull
 	@SafeHtml
-	@JsonProperty("owner_type")
+	@JsonProperty("ownerType")
 	private String ownerType;
 	
 	@NotNull
     @SafeHtml
     @Size(max=100)
     @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-    @JsonProperty("first_name")
+    @JsonProperty("firstName")
 	private String firstName;
 
 	@NotNull
     @SafeHtml
     @Size(max=100)
     @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-    @JsonProperty("middle_name")
+    @JsonProperty("middleName")
 	private String middleName;
 
 	@NotNull
     @SafeHtml
     @Size(max=100)
     @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-    @JsonProperty("last_name")
+    @JsonProperty("lastName")
 	private String lastName;
 
 	@Pattern(regexp = "(^[4-9][0-9]{9}$)", message = "Inavlid mobile number, should start with 4-9 and contain ten digits of 0-9")
     @NotNull
     @SafeHtml
-    @JsonProperty("email_id")
+    @JsonProperty("emailId")
 	private String emailId;
 
-	@JsonProperty("mobile_no")
+	@JsonProperty("mobileNo")
 	private String mobileNo;
 
 	@JsonProperty("permanentAddress")
@@ -112,13 +112,13 @@ public class OwnerInfo { // extends User {
 //	@JsonProperty("aadhar_card_number")
 //	private String aadharCardNumber;
 
-	@JsonProperty("aadhar_card")
+	@JsonProperty("aadharCard")
 	private String aadharCard;
 
 //	@JsonProperty("pan_card_number")
 //	private String panCardNumber;
 
-	@JsonProperty("pan_card")
+	@JsonProperty("panCard")
 	private String panCard;
 
 	@JsonProperty("relationship")
@@ -130,7 +130,7 @@ public class OwnerInfo { // extends User {
     @JsonProperty("dob")
     private Long dob;
     
-    @JsonProperty("user_uuid")
+    @JsonProperty("userUuid")
 	private String userUuid;
     
 	@JsonProperty("additionalDetails")

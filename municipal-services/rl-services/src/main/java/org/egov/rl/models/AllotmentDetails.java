@@ -39,66 +39,66 @@ public class AllotmentDetails {
 	@JsonProperty("id")
 	private String id;
 	
-	@JsonProperty("property_id")
+	@JsonProperty("propertyId")
 	private String propertyId;
 
-	@JsonProperty("tenant_id")
+	@JsonProperty("tenantId")
 	private String tenantId;
 	
-	@JsonProperty("is_auto_renewal")
+	@JsonProperty("isAutoRenewal")
 	private boolean isAutoRenewal; // default false
 
-	@JsonProperty("application_status")
+	@JsonProperty("applicationStatus")
 	private int applicationStatus; // 0-draft,1-Saved,2-Submitted,3-Active and runing
 	/// after final approval,4-InActive
 	
 	@JsonProperty("status")
 	private String status;
 	
-	@JsonProperty("application_number")
+	@JsonProperty("applicationNumber")
 	private String applicationNumber;
 	
-	@JsonProperty("previous_application_number")
+	@JsonProperty("previousApplicationNumber")
 	private String previousApplicationNumber;
 
-	@JsonProperty("application_type")
+	@JsonProperty("applicationType")
 	private String applicationType;
 
 	/* ------------Allotment Section---------------------- */
-	@JsonProperty("start_date")
+	@JsonProperty("startDate")
 	private long startDate;
 
-	@JsonProperty("end_date")
+	@JsonProperty("endDate")
 	private long endDate;
 	
-	@JsonProperty("term_and_condition")
+	@JsonProperty("termAndCondition")
 	private String termAndCondition;;
 	
-	@JsonProperty("penalty_type")
+	@JsonProperty("penaltyType")
 	private String penaltyType;;
 	
-	@JsonProperty("witness_details")
+	@JsonProperty("witnessDetails")
 	private String witnessDetails;
 	
-	@JsonProperty("created_time")
+	@JsonProperty("createdTime")
 	private long createdTime;
 	
-	@JsonProperty("created_by")
+	@JsonProperty("createdBy")
 	private String createdBy;
 	
 	@JsonProperty("Document")
 	private List<Document> documents;
 	
-	@JsonProperty("audit_details")
+	@JsonProperty("auditDetails")
 	private AuditDetails auditDetails;
 	
 	@JsonProperty("OwnerInfo")
     private List<OwnerInfo> ownerInfo;
 	
-	@JsonProperty("additional_details")
+	@JsonProperty("additionalDetails")
     private JsonNode additionalDetails;
 	
-	@JsonProperty("workflow_code")
+	@JsonProperty("workflowCode")
 	private String workflowCode;
 	
 	@JsonProperty("workflow")

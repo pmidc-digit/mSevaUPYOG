@@ -32,39 +32,39 @@ public class AllotmentClsure {
     private String id;
     
     @NotNull
-	@JsonProperty("tenant_id")
+	@JsonProperty("tenantId")
 	private String tenantId;
 
     @NotNull
-    @JsonProperty("allotment_id")
+    @JsonProperty("allotmentId")
     private String allotmentId;
 
     @JsonProperty("status")
     private String status;
     
-	@JsonProperty("closed_application_number")
+	@JsonProperty("closedApplicationNumber")
 	private String closedApplicationNumber;
 
     @NotNull
-    @JsonProperty("reason_for_clsure")
+    @JsonProperty("reasonForClosure")
     private String reasonForClosure;
 
-    @JsonProperty("amount_to_be_refund")
+    @JsonProperty("amountToBeRefund")
     private String amountToBeRefund;
 
-    @JsonProperty("amount_to_be_deducted")
+    @JsonProperty("amountToBeDeducted")
     private String amountToBeDeducted;
 
-    @JsonProperty("refund_amount")
+    @JsonProperty("refundAmount")
     private String refundAmount;
 
-    @JsonProperty("notes_comments")
+    @JsonProperty("notesComments")
     private String notesComments;
 
-    @JsonProperty("upload_proof")
+    @JsonProperty("uploadProof")
     private String uploadProof;
 
-    @JsonProperty("audit_details")
+    @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
     
 	@JsonProperty("workflow")

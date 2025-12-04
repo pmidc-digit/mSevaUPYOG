@@ -16,15 +16,15 @@ import lombok.ToString;
 @Builder
 public class WitnessDetails {
 	
-	@JsonProperty("full_name")
+	@JsonProperty("fullName")
 	private String fullName;
 
-	@JsonProperty("email_id")
+	@JsonProperty("emailId")
 	private String emailId;
 	
-	@JsonProperty("mobile_no")
+	@JsonProperty("mobileNo")
 	private String mobileNo;
 	
-	@JsonProperty("aadhar_card_number")
+	@JsonProperty("aadharCardNumber")
 	private String aadharCardNumber;
 }

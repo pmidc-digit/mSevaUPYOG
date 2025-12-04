@@ -36,10 +36,10 @@ import org.hibernate.validator.constraints.SafeHtml;
 @Builder
 public class Document {
 
-  @JsonProperty("doc_id")
+  @JsonProperty("docId")
   private String id ;
 
-  @JsonProperty("allotment_id")
+  @JsonProperty("allotmentId")
   private String documentUid ;
 
   @JsonProperty("documentType")
@@ -54,7 +54,7 @@ public class Document {
   private Status status;
 
 //  @SafeHtml
-  @JsonProperty("audit_details")
+  @JsonProperty("auditDetails")
   private AuditDetails auditDetails;
 }
 

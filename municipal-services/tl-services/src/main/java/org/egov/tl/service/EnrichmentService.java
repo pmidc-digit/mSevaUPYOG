@@ -620,7 +620,8 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                             List<Integer> res = JsonPath.read(mdmsDataMap.get(license.getTenantId()), jsonPath);
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.YEAR, res.get(0));
-                            if(license.getValidTo() ==  null)
+                            String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+                            if(!tradeType.equalsIgnoreCase("ARCHITECT"))
                             	license.setValidTo(calendar.getTimeInMillis());
                             license.setValidFrom(time);
                         }

@@ -1,8 +1,12 @@
 package org.egov.bpa.scheduler;
 
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.egov.bpa.service.BPAAutoEscalationService;
 import org.egov.bpa.service.BPAService;
 import org.egov.bpa.service.UserService;
@@ -100,6 +104,34 @@ public class BPAAutoEscalationScheduler {
 		return requestInfo;
 		
 	}
-	
-	
+
+
+
+	private LocalDate getPastNthWorkingDay(LocalDate fromDate, int n, Set<LocalDate> holidays) {
+		if (n < 0) throw new IllegalArgumentException("n must be >= 0");
+
+		LocalDate date = fromDate;
+
+		// If starting on weekend, move to previous Friday
+		DayOfWeek dow = date.getDayOfWeek();
+		if (dow == DayOfWeek.SATURDAY) date = date.minusDays(1);
+		else if (dow == DayOfWeek.SUNDAY) date = date.minusDays(2);
+
+		int remaining = n;
+		while (remaining > 0) {
+			date = date.minusDays(1);
+			DayOfWeek d = date.getDayOfWeek();
+
+			boolean isWeekend = (d == DayOfWeek.SATURDAY || d == DayOfWeek.SUNDAY);
+			boolean isHoliday = holidays.contains(date);
+
+			if (!isWeekend && !isHoliday) {
+				remaining--;
+			}
+		}
+		return date;
+	}
+
+
+
 }

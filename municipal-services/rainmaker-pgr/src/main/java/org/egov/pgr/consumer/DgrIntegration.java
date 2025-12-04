@@ -125,6 +125,8 @@ public class DgrIntegration {
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("Access_Key", TOKEN_ACCESS_KEY);
             requestBody.put("Public_Key", TOKEN_PUBLIC_KEY);
+            log.info("Access Key: "+ TOKEN_ACCESS_KEY );
+            log.info("Punblic Key: "+ TOKEN_PUBLIC_KEY );
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

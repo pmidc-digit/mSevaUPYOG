@@ -351,7 +351,7 @@ public class DgrIntegration {
             requestBody.put("doc", new ArrayList<>());
             requestBody.put("Town_ID", 0);
             requestBody.put("Previous_Grievance", 0);
-            requestBody.put("Town_Name", "");
+            requestBody.put("Town_Name",tehsilSearchName);
             requestBody.put("Locality_Code", mohallaCode);
             requestBody.put("Locality_Name", mohallaName);
             requestBody.put("Citizen_State_Local_Lang", constants.STATE_LOCAL_LANG);

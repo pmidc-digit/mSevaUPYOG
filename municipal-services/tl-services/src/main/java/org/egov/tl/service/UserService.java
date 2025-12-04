@@ -165,6 +165,11 @@ public class UserService{
         newowner.setIdentificationMark(getFromOwnerIfNotNull(user.getIdentificationMark(),owner.getIdentificationMark()));
         newowner.setPhoto(getFromOwnerIfNotNull(user.getPhoto(),owner.getPhoto()));
         newowner.setTenantId(getFromOwnerIfNotNull(user.getTenantId(),owner.getTenantId()));
+        newowner.setPermanentDistrict(getFromOwnerIfNotNull(user.getPermanentDistrict(),owner.getPermanentDistrict()));
+        newowner.setPermanentState(getFromOwnerIfNotNull(user.getPermanentState(),owner.getPermanentState()));
+        newowner.setCorrespondenceDistrict(getFromOwnerIfNotNull(user.getCorrespondenceDistrict(),owner.getCorrespondenceDistrict()));
+        newowner.setCorrespondenceState(getFromOwnerIfNotNull(user.getCorrespondenceState(),owner.getCorrespondenceState()));
+        
         return  newowner;
     }
 

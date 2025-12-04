@@ -230,6 +230,10 @@ public class OwnerInfo extends User  {
                 this.setIdentificationMark(user.getIdentificationMark());
                 this.setPhoto(user.getPhoto());
                 this.setTenantId(user.getTenantId());
+                this.setPermanentDistrict(user.getPermanentDistrict());
+                this.setPermanentState(user.getPermanentState());
+                this.setCorrespondenceDistrict(user.getCorrespondenceDistrict());
+                this.setCorrespondenceState(user.getCorrespondenceState());
         }
 
 

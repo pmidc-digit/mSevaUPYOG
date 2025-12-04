@@ -92,7 +92,7 @@ public class AllotmentValidator {
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
 		String id=allotementRequest.getAllotment().getId();
-		if(id!=null) {
+		if(id==null) {
 			AllotmentDetails allotmentDetails= allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber).stream().findFirst().orElse(null);
 			if ((allotmentDetails != null)) {
 				throw new CustomException("PROPERTY ID INFO ERROR",

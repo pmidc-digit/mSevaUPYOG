@@ -13,17 +13,6 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, clearCheck
     return `${state.applicationstatus || "ACTIVE"}`;
   };
 
-  // console.log("statutes", statutes);
-
-  // if (isLoading) {
-  //   return <Loader />;
-  // }
-
-  // 🔹 Show loader if `statutes` is not yet loaded or empty
-  if (!statutes || statutes.length === 0) {
-    return <Loader />;
-  }
-
   return (
     <div className="status-container">
       <div className="filter-label" style={{ fontWeight: "normal" }}>

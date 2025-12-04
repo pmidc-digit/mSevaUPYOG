@@ -167,8 +167,6 @@ const Home = () => {
     }
   }
 
-  console.log("citizenServicesObj", citizenServicesObj)
-
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
     sideOption: {

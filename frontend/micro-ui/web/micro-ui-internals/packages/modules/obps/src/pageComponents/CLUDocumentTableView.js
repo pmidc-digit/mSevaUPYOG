@@ -79,6 +79,7 @@ const CLUDocumentTableView = ({documents}) => {
           autoSort={true}
           manualPagination={false}
           isPaginationRequired={false}
+          pageSizeLimit = {documentsData?.length || 10}
         />
       }
     </div>

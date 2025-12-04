@@ -20,6 +20,35 @@ export const convertEpochToDate = (dateEpoch) => {
     }
 };
 
+export const EmployeeData = (tenantId, consumerCode) => {
+  const wfData = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: consumerCode,
+    moduleCode: "obpas_noc",
+    role: "EMPLOYEE",
+  });
+
+  const officerInstance = wfData?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
+
+  const codes = officerInstance?.assigner?.userName;
+  const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
+  console.log("employeeData", employeeData);
+  const officerRaw = employeeData?.data?.Employees?.[0];
+  const officerAssignment = officerRaw?.assignments?.[0];
+
+  const officer = officerRaw
+    ? {
+        code: officerRaw?.code,
+        id: officerRaw?.id,
+        name: officerRaw?.user?.name,
+        department: officerAssignment?.department,
+        designation: officerAssignment?.designation,
+
+      }
+    : null;
+
+  return { officer };
+};
 export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
     if (searcher == "") return str;
     while (str.includes(searcher)) {

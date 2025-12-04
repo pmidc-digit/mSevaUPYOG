@@ -42,6 +42,7 @@ export const ChallanGenerationModule = ({ stateCode, userType, tenants }) => {
     return <Loader />;
   }
   const { path, url } = useRouteMatch();
+  console.log("Getting Here CG");
 
   if (userType === "employee") {
     return <EmployeeApp path={path} url={url} userType={userType} />;
@@ -66,6 +67,8 @@ export const ChallanGenerationLinks = ({ matchPath, userType }) => {
       i18nKey: t("UC_MY_CHALLANS"),
     },
   ];
+
+  console.log("matchPath", matchPath);
 
   return <CitizenHomeCard header={t("ACTION_TEST_MCOLLECT")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };

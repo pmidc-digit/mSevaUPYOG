@@ -1,18 +1,12 @@
-
-
-
-
-
-import React,{useEffect} from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast, ActionBar, SubmitBar, Loader} from "@mseva/digit-ui-react-components";
+import { Toast, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
-
+import { useParams } from "react-router-dom";
 
 const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
@@ -22,6 +16,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
+  console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
 
   const {
     control,
@@ -54,22 +49,27 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 
   const onSubmit = (data) => {
-    trigger();
+    trigger()
 
-    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
+    // Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
+    const isEqual = data?.netTotalArea === data?.specificationPlotArea || false
 
-     if (isEditApplication) {
-    console.log("Edit Mode → Skipping ALL API calls");
-    onGoNext();
-    return;
-  }
-    
-    if (currentStepData?.apiData?.Layout?.[0]?.applicationNo) {
-      onGoNext();
-    } else {
-      callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
+    if (!isEqual) {
+      setShowToast({ key: "true", error: true, message: "BPA_PLOT_AREA_MUST_MATCH_NET_TOTAL_AREA" })
+      return
     }
-  };
+
+    // Save data in redux
+    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data))
+
+    // If create api is already called then move to next step
+    if (isEditApplication || currentStepData?.apiData?.Layout?.[0]?.applicationNo) {
+      onGoNext()
+    } else {
+      // Call Create API and move to next Page
+      callCreateAPI({ ...currentStepData, siteDetails: { ...data } })
+    }
+  }
 
   const callCreateAPI = async (formData) => {
     const userInfo = Digit.UserService.getUser()?.info || {};
@@ -87,19 +87,19 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
       specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
       specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
-      specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+      specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
     };
 
     const transformedApplicationDetails = {
       ...formData?.applicationDetails,
-      applicantGender: formData?.applicationDetails?.applicantGender?.code || ""
+      applicantGender: formData?.applicationDetails?.applicantGender?.code || "",
     };
 
     const ownerObj = {
       mobileNumber: transformedApplicationDetails?.applicantMobileNumber || userInfo?.mobileNumber || "",
       name: transformedApplicationDetails?.applicantOwnerOrFirmName || userInfo?.name || "",
       emailId: transformedApplicationDetails?.applicantEmailId || userInfo?.emailId || "",
-      userName: transformedApplicationDetails?.applicantMobileNumber || userInfo?.userName || userInfo?.mobileNumber || ""
+      userName: transformedApplicationDetails?.applicantMobileNumber || userInfo?.userName || userInfo?.mobileNumber || "",
     };
 
     const payload = {
@@ -177,7 +177,9 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
+      {showToast && (
+        <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />
+      )}
     </React.Fragment>
   );
 };

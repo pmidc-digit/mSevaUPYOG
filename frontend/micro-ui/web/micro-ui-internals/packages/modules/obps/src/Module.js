@@ -76,7 +76,14 @@ import CLUDocumentsRequired from "./pageComponents/CLUDocumentsRequired";
 import CLUApplicantDetails from "./pageComponents/CLUApplicantDetails";
 import CLUProfessionalDetails from "./pageComponents/CLUProfessionalDetails";
 import CLUSummary from "./pageComponents/CLUSummary";
-import CLUResponseCitizen from "./pages/citizen/Applications/CLUResponseCitizen";
+import CLUResponse from "./pageComponents/CLUResponse";
+import CLUMyApplications from "./pages/citizen/Applications/CLUMyApplications";
+import CLUEditApplication from "./pageComponents/EditApplication/EditCLUApplication";
+import CLUApplicationDetails from "./pages/citizen/Applications/CLUApplicationDetails";
+import CLUSearchApplication from "./pages/citizen/CLUSearchApplication/index";
+import CLUInbox from "./pages/employee/cluInbox/CLUInbox"
+import CLUEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/CLUApplicationOverview";
+import LayoutEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
@@ -91,6 +98,8 @@ import LayoutCLUDetails from "./pageComponents/LayoutCLUDetails";
 import LayoutSpecificationDetails from "./pageComponents/LayoutSpecificationDetails";
 import LayoutDocumentsRequired from "./pageComponents/LayoutDocumentsRequired";
 import LayoutSummary from "./pageComponents/LayoutSummary";
+import LayoutSearchApplication from "./pages/citizen/LayoutSearchApplication/index";
+
 import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
 import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
 import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
@@ -110,6 +119,7 @@ import LayoutInbox from "./pages/employee/Inbox/LayoutInbox";
 import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
 import LayoutResponseEmployee from "./pages/employee/ApplicationOverview/LayoutResponseEmployee";
 import EditLayoutApplication from "./pageComponents/EditApplication/EditLayoutApplication";
+import LayoutMyApplications from "./pages/citizen/Applications/LayoutMyApplications";
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -264,7 +274,16 @@ const componentsToRegister = {
   CLUApplicantDetails,
   CLUProfessionalDetails,
   CLUSummary,
-  CLUResponseCitizen
+  CLUResponse,
+  CLUMyApplications,
+  CLUEditApplication,
+  CLUApplicationDetails,
+  LayoutApplicationDetails,
+  CLUSearchApplication,
+  LayoutSearchApplication,
+  LayoutMyApplications,
+  CLUInbox,
+  CLUEmployeeApplicationDetails
 }
 
 export const initOBPSComponents = () => {

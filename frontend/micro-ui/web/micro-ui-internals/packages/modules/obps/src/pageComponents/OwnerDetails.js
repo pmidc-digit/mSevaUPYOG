@@ -23,6 +23,7 @@ import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoc
 import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { LoaderNew } from "../components/LoaderNew";
 
 
 const ErrorMessage = ({ message }) => {
@@ -50,6 +51,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [photoUploadedFiles, setPhotoUploadedFiles] = useState({})
   const [authLetterUploadedFiles, setAuthLetterUploadedFiles] = useState({})
   const [apiLoading, setApiLoading] = useState(false);
+  const [loader, setLoader] = useState(false);
 
   const [errors, setErrors] = useState({})
   const [ownerRoleCheck, setOwnerRoleCheck] = useState(null) // Declare ownerRoleCheck variable
@@ -76,7 +78,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     }
     console.log("OwnerDoc DocumentFile", file)
     try {
+        setLoader(true);
         const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+        setLoader(false);
         if (response?.data?.files?.length > 0) {
           setDocumentFile(index, response?.data?.files[0]?.fileStoreId);
           setDocumentUploadedFiles((prev) => ({ ...prev, [index]: response?.data?.files[0]?.fileStoreId }))
@@ -85,6 +89,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           setError(t("CS_FILE_UPLOAD_ERROR"));
         }
     } catch (err) {
+      setLoader(false);
       setError(t("CS_FILE_UPLOAD_ERROR"));
     }
     // setDocumentFile(index, file)
@@ -100,16 +105,19 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     }
     console.log("OwnerDoc OwnerPhoto", file)
     try {
+        setLoader(true);
         const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
-        if (response?.data?.files?.length > 0) {
+        setLoader(false);
+        if (response?.data?.files?.length > 0) {          
           setOwnerPhoto(index, response?.data?.files[0]?.fileStoreId);
           setPhotoUploadedFiles((prev) => ({ ...prev, [index]: response?.data?.files[0]?.fileStoreId }))
           setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "" }))
         } else {
-          setError(t("CS_FILE_UPLOAD_ERROR"));
+          setShowToast({ key: "true", error: true, message: t("CS_FILE_UPLOAD_ERROR")});
         }
     } catch (err) {
-      setError(t("CS_FILE_UPLOAD_ERROR"));
+      setLoader(false);
+      setShowToast({ key: "true", error: true, message: t("CS_FILE_UPLOAD_ERROR")});
     }
     // setOwnerPhoto(index, file)
     // setPhotoUploadedFiles((prev) => ({ ...prev, [index]: file }))
@@ -923,7 +931,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         onSkip={onSkip}
         t={t}
         isDisabled={canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable}
-        forcedError={t(error)}
+        // forcedError={t(error)}
       >
         {!isLoading ? (
           <div style={{ marginBottom: "10px" }}>
@@ -1125,6 +1133,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           onClose={closeToast}
         />
       )}
+      {loader && <LoaderNew page={true} />}
     </div>
 
 

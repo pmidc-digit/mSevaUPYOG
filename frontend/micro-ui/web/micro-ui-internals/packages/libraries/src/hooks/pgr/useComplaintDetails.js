@@ -15,15 +15,16 @@ const getDetailsRow = ({ id, service, complaintType }) => ({
   CS_COMPLAINT_DETAILS_APPLICATION_STATUS: `CS_COMMON_${service.applicationStatus}`,
   CS_ADDCOMPLAINT_COMPLAINT_TYPE: complaintType === "" ? `SERVICEDEFS.OTHERS` : `SERVICEDEFS.${complaintType}`,
   CS_ADDCOMPLAINT_COMPLAINT_SUB_TYPE: `SERVICEDEFS.${service.serviceCode.toUpperCase()}`,
-  CS_ADDCOMPLAINT_PRIORITY_LEVEL : service?.priority,
+  // CS_ADDCOMPLAINT_PRIORITY_LEVEL : service?.priority,
   CS_COMPLAINT_ADDTIONAL_DETAILS: service.description,
   CS_COMPLAINT_FILED_DATE: Digit.DateUtils.ConvertTimestampToDate(service.auditDetails.createdTime),
-  ES_CREATECOMPLAINT_ADDRESS: [
-    service.address.landmark,
-    Digit.Utils.locale.getLocalityCode(service.address.locality, service.tenantId),
-    service.address.city,
-    service.address.pincode,
-  ],
+  // ES_CREATECOMPLAINT_ADDRESS: [
+  //   service.address.landmark,
+  //   Digit.Utils.locale.getLocalityCode(service.address.locality, service.tenantId),
+  //   service.address.city,
+  //   service.address.pincode,
+  // ],
+  ES_CREATECOMPLAINT_ADDRESS: service.address,
 });
 
 const isEmptyOrNull = (obj) => obj === undefined || obj === null || Object.keys(obj).length === 0;
@@ -46,7 +47,7 @@ const transformDetails = ({ id, service, workflow, thumbnails, complaintType }) 
       source: service.source,
       rating: service.rating,
       serviceCode: service.serviceCode,
-      prioritylevel : service.priorityLevel
+      // prioritylevel : service.priorityLevel
     },
     service: service,
   };
@@ -70,8 +71,8 @@ const fetchComplaintDetails = async (tenantId, id) => {
 };
 
 const useComplaintDetails = ({ tenantId, id }) => {
-  console.log("tenantID in Use Complaint Details", tenantId);
-  console.log("ID in Use Complaint Details", id);
+  // console.log("tenantID in Use Complaint Details", tenantId);
+  // console.log("ID in Use Complaint Details", id);
   const queryClient = useQueryClient();
   const { isLoading, error, data } = useQuery(["complaintDetails", tenantId, id], () => fetchComplaintDetails(tenantId, id));
   return { isLoading, error, complaintDetails: data, revalidate: () => queryClient.invalidateQueries(["complaintDetails", tenantId, id]) };

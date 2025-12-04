@@ -228,6 +228,7 @@ const ChallanStepperForm = () => {
   );
 
   const handleRates = (val) => {
+    console.log("val==", val);
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
   };
@@ -258,6 +259,7 @@ const ChallanStepperForm = () => {
           {t("CREATE_CHALLAN")}
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
+          <CardLabel style={{ fontWeight: "bold", paddingBottom: "30px", fontSize: "25px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
           <div style={{ width: "100%" }}>
             <div style={{ marginBottom: "20px" }}>
               <CardLabel>
@@ -339,7 +341,11 @@ const ChallanStepperForm = () => {
                   <Dropdown
                     style={{ marginBottom: 0, width: "100%" }}
                     className="form-field"
-                    select={props.onChange}
+                    // select={props.onChange}
+                    select={(e) => {
+                      props.onChange(e);
+                      handleRates(e);
+                    }}
                     selected={props.value}
                     option={OffenceTypeData?.Challan?.OffenceType}
                     optionKey="name"
@@ -391,7 +397,6 @@ const ChallanStepperForm = () => {
                     className="form-field"
                     select={(e) => {
                       props.onChange(e);
-                      handleRates(e);
                     }}
                     selected={props.value}
                     option={subCategoryData?.Challan?.SubCategory}

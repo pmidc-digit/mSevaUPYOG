@@ -355,5 +355,12 @@ public class BPAConfiguration {
 
 	@Value("${egov.bpa.application.details.link}")
 	private String applicationDetailsLink;
+	
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
 
 }

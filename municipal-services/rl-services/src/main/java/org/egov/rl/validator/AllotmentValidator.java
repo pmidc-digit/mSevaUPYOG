@@ -91,11 +91,13 @@ public class AllotmentValidator {
 			throw new CustomException("PROPERTY ID INFO ERROR",
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
-		
-		AllotmentDetails allotmentDetails= allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber).stream().findFirst().orElse(null);
-		if ((allotmentDetails != null)) {
-			throw new CustomException("PROPERTY ID INFO ERROR",
-					"PropertyID already existing , please provide another property Id information");
+		String id=allotementRequest.getAllotment().getId();
+		if(id!=null) {
+			AllotmentDetails allotmentDetails= allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber).stream().findFirst().orElse(null);
+			if ((allotmentDetails != null)) {
+				throw new CustomException("PROPERTY ID INFO ERROR",
+						"PropertyID already existing , please provide another property Id information");
+			}
 		}
 //		long uniqueAadharNumberSet = owners.stream().map(owner -> owner.getAadharCardNumber().trim()).distinct().count();
 //		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();

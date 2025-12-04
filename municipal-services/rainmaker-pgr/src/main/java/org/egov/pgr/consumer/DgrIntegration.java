@@ -125,29 +125,15 @@ public class DgrIntegration {
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("Access_Key", TOKEN_ACCESS_KEY);
             requestBody.put("Public_Key", TOKEN_PUBLIC_KEY);
-
-            // ---- LOGGING REQUEST CURL ----
-            String curl = "curl -X POST '" + url + "' "
-                    + "-H 'Content-Type: application/json' "
-                    + "-d '" + new ObjectMapper().writeValueAsString(requestBody) + "'";
-            log.error("TOKEN API CURL :: " + curl);
-
+            
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
             RestTemplate restTemplate = new RestTemplate();
-
-            // ---- LOGGING BEFORE CALL ----
-            log.error("Calling TOKEN API URL: {}", url);
-            log.error("Request Body: {}", requestBody);
-
             ResponseEntity<String> response =
                     restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-            // ---- LOG RESPONSE ----
-            log.error("TOKEN API RESPONSE: {}", response.getBody());
 
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> json = mapper.readValue(response.getBody(), Map.class);
@@ -155,11 +141,10 @@ public class DgrIntegration {
             return (String) json.get("sys_message");
 
         } catch (Exception ex) {
-            log.error("TOKEN API ERROR: {}", ex.getMessage(), ex);
+            ex.printStackTrace();
             return null;
         }
     }
-
 
     /* =========================
        Main createGrievance flow (unchanged)
@@ -252,6 +237,10 @@ public class DgrIntegration {
                     thirdyPartyDistrictName,
                     "$.MdmsRes.tenant.thirdpartydistrictmapping[0].thirdpartydistrictmapping.districts"
             );
+            
+            String mohallaCode = mohallaCodes.stream()
+                    .collect(Collectors.joining(", "));
+
             String dgrName = districts.stream()
                     .filter(dist -> districtName.trim().equalsIgnoreCase(String.valueOf(dist.get("msevaname")).trim()))
                     .map(dist -> String.valueOf(dist.get("thirdpartyname")))
@@ -363,7 +352,7 @@ public class DgrIntegration {
             requestBody.put("Town_ID", 0);
             requestBody.put("Previous_Grievance", 0);
             requestBody.put("Town_Name", "");
-            requestBody.put("Locality_Code", mohallaCodes);
+            requestBody.put("Locality_Code", mohallaCode);
             requestBody.put("Locality_Name", mohallaName);
             requestBody.put("Citizen_State_Local_Lang", constants.STATE_LOCAL_LANG);
             requestBody.put("Citizen_District_Local_Lang", districtNameGgr);

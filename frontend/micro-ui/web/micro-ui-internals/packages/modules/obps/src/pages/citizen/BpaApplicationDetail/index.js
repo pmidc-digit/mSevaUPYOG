@@ -661,11 +661,10 @@ useEffect(() => {
   }
 
   async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-    const currentDate = new Date()
-    data.applicationData.additionalDetails.runDate = convertDateToEpoch(
-      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate(),
-    )
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno}
+const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+
+    console.log('nowIST', nowIST)
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST}
     console.log('requestData', requestData)
     let count = 0
 
@@ -687,7 +686,7 @@ useEffect(() => {
         "The plot has been officially regularized under No. " +
         requestData?.additionalDetails?.NocNumber +
         "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn +  " , registered in the name of "+  requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
-        state +
+        requestData?.additionalDetails?.UlbName +
         ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData =

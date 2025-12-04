@@ -96,11 +96,11 @@ public class OwnerInfo extends User  {
                          List<Role> roles, String fatherOrHusbandName, String bloodGroup,
                          String identificationMark, String photo, String createdBy, Long createdDate,
                          String lastModifiedBy, Long lastModifiedDate, String otpReference, String tenantId,
-                         String permanentState, String correspondenceState,
+                         String permanentState, String correspondenceState,String permanentDistrict, String correspondenceDistrict,
                          Boolean isPrimaryOwner, Double ownerShipPercentage, String ownerType,
                          String institutionId,List<Document> documents,RelationshipEnum relationship,
                          Boolean userActive) {
-                super(id,uuid, userName, password, salutation, name, gender, mobileNumber, emailId, altContactNumber, pan, aadhaarNumber, permanentAddress, permanentCity, permanentPincode, correspondenceCity, correspondencePincode, correspondenceAddress, active, dob, pwdExpiryDate, locale, type, signature, accountLocked, roles, fatherOrHusbandName, bloodGroup, identificationMark, photo, createdBy, createdDate, lastModifiedBy, lastModifiedDate, otpReference, tenantId, permanentState, correspondenceState);
+                super(id,uuid, userName, password, salutation, name, gender, mobileNumber, emailId, altContactNumber, pan, aadhaarNumber, permanentAddress, permanentCity, permanentPincode, correspondenceCity, correspondencePincode, correspondenceAddress, active, dob, pwdExpiryDate, locale, type, signature, accountLocked, roles, fatherOrHusbandName, bloodGroup, identificationMark, photo, createdBy, createdDate, lastModifiedBy, lastModifiedDate, otpReference, tenantId, permanentState, correspondenceState, permanentDistrict, correspondenceDistrict);
                 this.isPrimaryOwner = isPrimaryOwner;
                 this.ownerShipPercentage = ownerShipPercentage;
                 this.ownerType = ownerType;

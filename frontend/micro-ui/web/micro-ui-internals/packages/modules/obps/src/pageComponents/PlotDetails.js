@@ -62,7 +62,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [ptLoading, setPtLoading] = useState(false);
   const [showModal, setShowModal] = useState(false)
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
-  const { data: menuList2, isLoading2 } = Digit.Hooks.useCustomMDMS("pb", "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: menuList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS("pb", "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
   const dispatch = useDispatch();
   const common = [
@@ -82,7 +82,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const data = currentStepData?.BasicDetails?.edcrDetails;
   console.log("menuList2",menuList2,zonesOptions)
 
-console.log("sessionStorageData",currentStepData);
+console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -205,6 +205,8 @@ console.log("sessionStorageData",currentStepData);
         } else if (isSelfCertification === null) {
           if (currentStepData?.createdResponse?.additionalDetails?.isSelfCertification) {
             setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          }else{
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
           }
         }
   }, [isSelfCertification, currentStepData?.createdResponse?.additionalDetails?.isSelfCertification]);
@@ -259,7 +261,7 @@ console.log("sessionStorageData",currentStepData);
     setBoundaryWallLength(details?.boundaryWallLength || "");
     setWardNumber(details?.wardnumber || "");
     setIsClubbedPlot(details?.isClubbedPlot !== null ? details?.isClubbedPlot : {});
-    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : {});
+    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : true);
     setIsPropertyAvailable(details?.isPropertyAvailable !== null ? details?.isPropertyAvailable : {});
     setZoneNumber(details?.zonenumber || "");
     setKhasraNumber(details?.khasraNumber || "");
@@ -413,10 +415,11 @@ useEffect(() => {
     if (!validate()) return;
 
     const userInfo = Digit.UserService.getUser()
+    const isArchitect = userInfo?.info?.roles?.some((role) => role?.code?.includes("BPA_ARCHITECT"));
     const applicationType = data?.appliactionType || "";
     const serviceType = data?.applicationSubType || "";
     let architectName = sessionStorage.getItem("BPA_ARCHITECT_NAME")
-    const typeOfArchitect = architectName ? JSON.parse(architectName) : "ARCHITECT"
+    const typeOfArchitect = isArchitect ? "ARCHITECT" : userInfo?.info?.roles?.find(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId))?.code?.split("_")?.[1] || "" // 
     if(architectName){
       architectName = JSON.parse(architectName)
     }
@@ -487,6 +490,10 @@ useEffect(() => {
       isClubbedPlot: isClubbedPlot?.value,
       isPropertyAvailable: isPropertyAvailable?.value,
       isSelfCertification: isSelfCertification?.value,
+      categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
+      subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
+      categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
+      subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -524,6 +531,10 @@ useEffect(() => {
       isClubbedPlot: isClubbedPlot?.value,
       isPropertyAvailable: isPropertyAvailable?.value,
       isSelfCertification: isSelfCertification?.value,
+      categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
+      subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
+      categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
+      subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -715,7 +726,7 @@ useEffect(() => {
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isClubbedPlot"]}</CardLabelError>
           )}
           
-          {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A") &&
+          {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code?.includes("A") &&
             <React.Fragment>
               <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
               <Dropdown

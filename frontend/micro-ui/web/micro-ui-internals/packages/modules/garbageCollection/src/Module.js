@@ -18,6 +18,7 @@ import CitizenApp from "./pages/citizen";
 import GCMyApplications from "./pages/citizen/MyChallan";
 import GCApplicationDetails from "./pages/citizen/ChallanApplicationDetails";
 import GCResponseCitizen from "./components/GCResponseCitizen";
+import ApplicationDetails from "./pages/employee/ApplicationDetails";
 
 export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -75,6 +76,7 @@ const componentsToRegister = {
   GCMyApplications,
   GCApplicationDetails,
   GCResponseCitizen,
+  ApplicationDetails,
 };
 
 export const initGarbageCollectionComponents = () => {

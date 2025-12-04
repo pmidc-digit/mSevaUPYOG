@@ -102,11 +102,12 @@ const BpaApplicationDetail = () => {
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
 
-  
+
+
+
   // const { data: datafromAPI, isLoadingScrutiny, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, data?.applicationData?.edcrNumber, {
   //   enabled: data?.applicationData?.edcrNumber && tenantId ? true : false,
   // });
-
 console.log('cities', cities)
 let ulbType,districtCode,ulbCode, subjectLine = "";
 const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.districtName;

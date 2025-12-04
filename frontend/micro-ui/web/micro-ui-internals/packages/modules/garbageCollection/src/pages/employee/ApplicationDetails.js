@@ -68,8 +68,11 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
-  const { acknowledgementIds } = useParams();
-  const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const { acknowledgementIds, id } = useParams();
+
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
   const [showOptions, setShowOptions] = useState(false);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -82,6 +85,8 @@ const ChallanApplicationDetails = () => {
   //   tenantId,
   //   filters: { bookingNo: acknowledgementIds },
   // });
+
+  console.log("acknowledgementIds", acknowledgementIds, id);
 
   // const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
@@ -104,15 +109,15 @@ const ChallanApplicationDetails = () => {
       setLoader(false);
     }
   };
-  let challanEmpData = ChallanData(tenantId, acknowledgementIds);
+  let challanEmpData = ChallanData(tenantId, id);
 
   useEffect(() => {
-    if (acknowledgementIds) {
+    if (id) {
       const filters = {};
-      filters.acknowledgementIds = acknowledgementIds;
+      filters.applicationNumber = id;
       fetchChallans(filters);
     }
-  }, [acknowledgementIds]);
+  }, [id]);
 
   // Getting HallsBookingDetails
   // const hallsBookingApplication = get(data, "hallsBookingApplication", []);
@@ -124,7 +129,7 @@ const ChallanApplicationDetails = () => {
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
-    id: acknowledgementIds,
+    id: id,
     moduleCode: "NewGC",
     role: "EMPLOYEE",
   });
@@ -139,93 +144,9 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "Challan_Generation",
-      consumerCodes: acknowledgementIds,
-      isEmployee: false,
-    },
-    { enabled: acknowledgementIds ? true : false }
-  );
-  const dowloadOptions = [];
-
-  async function printChallanNotice({ tenantId, payments, ...params }) {
-    if (chbPermissionLoading) return;
-    setChbPermissionLoading(true);
-    try {
-      const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
-      const challan = {
-        ...applicationDetails,
-        ...challanEmpData,
-      };
-      console.log("applicationDetails", applicationDetails);
-      let application = challan;
-      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments } }, "challan-notice");
-        fileStoreId = response?.filestoreIds[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setChbPermissionLoading(false);
-    }
-  }
-
-  async function printChallanReceipt({ tenantId, payments, ...params }) {
-    console.log("payments", payments);
-    if (printing) return;
-    setPrinting(true);
-    try {
-      const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
-      const challan = {
-        ...applicationDetails,
-        ...challanEmpData,
-      };
-      console.log("applicationDetails", applicationDetails);
-      let application = challan;
-      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [{ ...payments, challan: application }] },
-          "challangeneration-receipt"
-        );
-        fileStoreId = response?.filestoreIds[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setPrinting(false);
-    }
-  }
-  dowloadOptions.push({
-    label: t("Challan_Notice"),
-    onClick: () => printChallanNotice({ tenantId, payments: reciept_data?.Payments[0] }),
-  });
-
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-    dowloadOptions.push({
-      label: t("PTR_FEE_RECIEPT"),
-      onClick: () => printChallanReceipt({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-    });
-  }
-
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("GC_APPLICATION_DETAILS")}</Header>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
-        </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>

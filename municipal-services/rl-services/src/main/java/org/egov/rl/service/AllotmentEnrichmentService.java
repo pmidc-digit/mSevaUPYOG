@@ -51,7 +51,6 @@ public class AllotmentEnrichmentService {
 
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 		allotmentDetails.setAuditDetails(auditDetails);
-		allotmentDetails.setAdditionalDetails(boundaryService.loadPropertyData(allotmentRequest));
 		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
 		setIdgenIds(allotmentRequest);
 	}

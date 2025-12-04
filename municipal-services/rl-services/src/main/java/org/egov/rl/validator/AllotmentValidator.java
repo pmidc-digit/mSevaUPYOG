@@ -22,6 +22,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,6 +43,9 @@ public class AllotmentValidator {
 	
 	@Autowired
 	AllotmentRepository allotmentRepository;
+	
+	@Autowired
+	ObjectMapper mapper;
 
 	/**
 	 * Validate the masterData and ctizenInfo of the given propertyRequest
@@ -219,10 +225,13 @@ public class AllotmentValidator {
         Map<String, Object> mdms = (Map<String, Object>) body.get("MdmsRes");
         Map<String, Object> rentLease = (Map<String, Object>) mdms.get("rentAndLease");
         List<Map<String, Object>> rlProps = (List<Map<String, Object>>) rentLease.get("RLProperty");
-//		System.out.println(propertyId+"----------------"+rlProps.isEmpty());
+//       System.out.println(propertyId+"------rlProps----------"+rlProps.size());
 		if(rlProps.isEmpty()){
 			throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 					"propertyId and tenantId cannot be wrong, please provide the valid propertyId and tenentId information");
+		}else {
+			 JsonNode node = mapper.valueToTree(rlProps);
+		     allotementRequest.getAllotment().setAdditionalDetails(node);
 		}
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);

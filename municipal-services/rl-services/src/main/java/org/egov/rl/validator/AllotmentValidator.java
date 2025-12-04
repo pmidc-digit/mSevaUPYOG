@@ -11,6 +11,7 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.rl.config.RentLeaseConfiguration;
+import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.repository.AllotmentRepository;
@@ -85,7 +86,17 @@ public class AllotmentValidator {
 			throw new CustomException("PROPERTY ID INFO ERROR",
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
+		String previousApplicationNumber=allotementRequest.getAllotment().getPreviousApplicationNumber();
+		if ((propertyId == null) || (propertyId != null && propertyId.isEmpty())) {
+			throw new CustomException("PROPERTY ID INFO ERROR",
+					"PropertyID cannot be empty, please provide tenantId information");
+		}
 		
+		AllotmentDetails allotmentDetails= allotmentRepository.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber).stream().findFirst().orElse(null);
+		if ((allotmentDetails != null)) {
+			throw new CustomException("PROPERTY ID INFO ERROR",
+					"PropertyID already existing , please provide another property Id information");
+		}
 //		long uniqueAadharNumberSet = owners.stream().map(owner -> owner.getAadharCardNumber().trim()).distinct().count();
 //		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();
 //	    Set<String> uniquePanNumberSet = owners.stream()

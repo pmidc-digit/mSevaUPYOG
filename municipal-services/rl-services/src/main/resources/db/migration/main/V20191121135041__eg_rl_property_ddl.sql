@@ -1,3 +1,9 @@
+delete from eg_rl_allotment_scheduler;
+delete from eg_rl_allotment_clsure;
+delete from eg_rl_document;
+delete from eg_rl_owner_info;
+delete from eg_rl_allotment;
+
 drop table eg_rl_allotment_scheduler;
 drop table eg_rl_allotment_clsure;
 drop table eg_rl_document;

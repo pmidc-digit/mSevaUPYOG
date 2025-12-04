@@ -162,6 +162,12 @@ public class User   {
 
         @JsonProperty("correspondenceState")
         private String correspondenceState;
+        
+        @JsonProperty("permanentDistrict")
+        String permanentDistrict;
+        
+        @JsonProperty("correspondenceDistrict")
+        String correspondenceDistrict;
 
         public User addRolesItem(Role rolesItem) {
                 if (this.roles == null) {

@@ -1,0 +1,3 @@
+ALTER TABLE eg_user_address
+ADD COLUMN state VARCHAR(100),
+ADD COLUMN district VARCHAR(100);

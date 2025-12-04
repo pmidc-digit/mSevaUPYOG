@@ -957,5 +957,14 @@ input[type="number"] {
 }
 
 .engagement-citizen-wrapper {
-  overflow: scroll hidden;
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+/* ❌ Disable overflow on Mobile */
+@media screen and (max-width: 768px) {
+  .engagement-citizen-wrapper {
+    overflow: hidden;
+  }
 }

@@ -23,9 +23,52 @@ const CloseBtn = (props) => {
   );
 };
 
-const NDCModal = ({ t, action, closeModal, submitAction, showToast, closeToast, errors, showErrorToast, errorOne, closeToastOne }) => {
+const NDCModal = ({
+  t,
+  action,
+  closeModal,
+  submitAction,
+  showToast,
+  closeToast,
+  errors,
+  showErrorToast,
+  errorOne,
+  closeToastOne,
+  getEmployees,
+  tenantId,
+}) => {
   const [config, setConfig] = useState({});
   const [getAmount, setAmount] = useState();
+  const [approvers, setApprovers] = useState([]);
+
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
+
+  console.log("allRolesNew", allRolesNew);
+
+  const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
+    tenantId,
+    {
+      // roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
+      roles: allRolesNew?.map((role) => ({ code: role })),
+      isActive: true,
+    },
+    { enabled: !action?.isTerminateState }
+  );
+
+  const { data: EmployeeStatusData } = Digit.Hooks.useCustomMDMS(tenantId, "common-masters", [{ name: "Department" }]);
+
+  useEffect(() => {
+    if (approverData && EmployeeStatusData) {
+      const departments = EmployeeStatusData["common-masters"].Department;
+      setApprovers(
+        approverData?.Employees?.map((employee) => {
+          const deptCode = employee?.assignments?.[0]?.department;
+          const matchedDept = departments?.find((d) => d?.code === deptCode);
+          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
+        })
+      );
+    }
+  }, [approverData]);
 
   function submit(data) {
     const payload = { amount: getAmount };
@@ -39,10 +82,11 @@ const NDCModal = ({ t, action, closeModal, submitAction, showToast, closeToast, 
           t,
           action,
           setAmount,
+          approvers,
         })
       );
     }
-  }, [action]);
+  }, [action, approvers]);
 
   if (!action || !config.form) return null;
 
@@ -60,6 +104,7 @@ const NDCModal = ({ t, action, closeModal, submitAction, showToast, closeToast, 
       {/* )} */}
       {/* {showToast && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />} */}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
+      {PTALoading && <Loader page={true} />}
     </Modal>
   );
 };

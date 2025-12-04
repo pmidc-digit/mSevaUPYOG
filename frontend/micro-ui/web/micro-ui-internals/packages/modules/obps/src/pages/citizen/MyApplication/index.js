@@ -468,7 +468,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
                   />
                 )}
 
-                {application.status === "APPROVED" ? (
+                {(application.status === "APPROVED" && !application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT")) ? (
                   <React.Fragment>
                     {/* <SubmitBar
                       label={t("BPA_PROFESSIONAL_UPDATE")}

@@ -228,6 +228,7 @@ const ChallanStepperForm = () => {
   );
 
   const handleRates = (val) => {
+    console.log("val==", val);
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
   };
@@ -340,7 +341,11 @@ const ChallanStepperForm = () => {
                   <Dropdown
                     style={{ marginBottom: 0, width: "100%" }}
                     className="form-field"
-                    select={props.onChange}
+                    // select={props.onChange}
+                    select={(e) => {
+                      props.onChange(e);
+                      handleRates(e);
+                    }}
                     selected={props.value}
                     option={OffenceTypeData?.Challan?.OffenceType}
                     optionKey="name"
@@ -392,7 +397,6 @@ const ChallanStepperForm = () => {
                     className="form-field"
                     select={(e) => {
                       props.onChange(e);
-                      handleRates(e);
                     }}
                     selected={props.value}
                     option={subCategoryData?.Challan?.SubCategory}

@@ -107,7 +107,6 @@ export const CreateComplaint = () => {
     {
       
       let data2 ={"complaintType":c}
-      console.log("handleSelect",data,data2)
       setParams({ ...params, ...data ,...data2 });
       goNext();
     }

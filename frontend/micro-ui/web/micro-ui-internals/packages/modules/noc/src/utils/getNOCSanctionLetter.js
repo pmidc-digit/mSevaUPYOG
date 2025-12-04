@@ -14,8 +14,8 @@ const getNOCSanctionLetter = async (application, t,EmpData) => {
     : "";
 
   let floorArea = [];
-  let basementArea = site?.basementArea || " ";
-  let totalFloorArea = site?.totalFloorArea || " ";
+  let basementArea = site?.basementArea || "NA";
+  let totalFloorArea = site?.totalFloorArea || "NA";
 
   if (site?.buildingStatus === "Built Up") {
     floorArea = (site?.floorArea || [])?.map((f, idx) => ({
@@ -23,11 +23,8 @@ const getNOCSanctionLetter = async (application, t,EmpData) => {
       floorNo: `Floor No ${idx + 1}`,
     }));
   } else {
-    floorArea = (site?.floorArea && site?.floorArea?.length > 0)
-    ? site?.floorArea?.map(() => ({ floorNo: "", value: "" }))
-    : [{ floorNo: "", value: "" }];
-    basementArea = " ";
-    totalFloorArea = " ";
+    floorArea = [{ floorNo: "Floor No NA", value: "NA" }];
+    
   }
 
   const sanctionKeys = [

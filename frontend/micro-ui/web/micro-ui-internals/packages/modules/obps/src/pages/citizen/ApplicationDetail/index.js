@@ -561,7 +561,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         </div> */}
 
 
-        <div style={sectionStyle}>
+        {!(License?.applicationType === "UPGRADE") && <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
 
           {recieptDataLoading ? (
@@ -586,7 +586,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
               )}
             </div>
           )}
-        </div>
+        </div>}
 
 
         {/* Timeline */}

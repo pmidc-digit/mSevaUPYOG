@@ -20,7 +20,8 @@ import Timeline from "../components/Timeline";
 import { useForm, Controller } from "react-hook-form";
 import { PropertySearch } from "./PropertySearch";
 import { PropertySearchModal } from "./PropertySearchModal";
-import { set } from "lodash";
+import { useDispatch, useSelector } from "react-redux";
+import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -30,6 +31,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [boundaryWallLength, setBoundaryWallLength] = useState("");
   const [wardnumber, setWardNumber] = useState("");
   const [isClubbedPlot, setIsClubbedPlot] = useState({});
+  const [isSelfCertification, setIsSelfCertification] = useState({}); //sSelfCertificationRequired
   const [isPropertyAvailable, setIsPropertyAvailable] = useState({});
   const [zonenumber, setZoneNumber] = useState("");
   const [khasraNumber, setKhasraNumber] = useState("");
@@ -62,6 +64,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
   const { data: menuList2, isLoading2 } = Digit.Hooks.useCustomMDMS("pb", "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
+  const dispatch = useDispatch();
   const common = [
     {
       code: "YES",
@@ -117,8 +120,36 @@ console.log("sessionStorageData",currentStepData);
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });
+    });    
   }, [])
+
+  useEffect(() => {
+    if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid){
+      fetchPropertyDetails(currentStepData?.createdResponse?.additionalDetails?.propertyuid);
+    }
+  }, [currentStepData]);
+
+  async function fetchPropertyDetails(propertyId){
+    try {
+            const fetchedData = await Digit.PTService.search({
+                tenantId, filters: {
+                    propertyIds: propertyId
+                }
+            })
+            console.log("fetchedData", fetchedData, propertyId);
+            if (fetchedData?.Properties?.length > 0) {
+                setPtLoading(false)
+                dispatch(UPDATE_OBPS_FORM("cpt", {  details: fetchedData?.Properties?.[0], id: fetchedData?.Properties?.[0]?.propertyId }))
+            }else{
+                setPtLoading(false)
+                return;
+            }
+        } catch (err) {
+            setPtLoading(false)
+            console.error("Error fetching property details:", err);
+            return;
+        }
+  }
 
   
   useEffect(() => {
@@ -166,6 +197,17 @@ console.log("sessionStorageData",currentStepData);
           }
         }
   }, [isClubbedPlot, currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot]);
+  
+  useEffect(() => {
+        if (typeof isSelfCertification === "boolean") {
+          const plan = common.find((item) => item.value === isSelfCertification);
+          if (plan) setIsSelfCertification(plan);
+        } else if (isSelfCertification === null) {
+          if (currentStepData?.createdResponse?.additionalDetails?.isSelfCertification) {
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          }
+        }
+  }, [isSelfCertification, currentStepData?.createdResponse?.additionalDetails?.isSelfCertification]);
 
   // useEffect(() => {
   //   const userInfoString = window.localStorage.getItem("user-info");
@@ -217,6 +259,7 @@ console.log("sessionStorageData",currentStepData);
     setBoundaryWallLength(details?.boundaryWallLength || "");
     setWardNumber(details?.wardnumber || "");
     setIsClubbedPlot(details?.isClubbedPlot !== null ? details?.isClubbedPlot : {});
+    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : {});
     setIsPropertyAvailable(details?.isPropertyAvailable !== null ? details?.isPropertyAvailable : {});
     setZoneNumber(details?.zonenumber || "");
     setKhasraNumber(details?.khasraNumber || "");
@@ -259,7 +302,7 @@ console.log("sessionStorageData",currentStepData);
 // }, [currentStepData?.cpt?.zonalMapping?.zone]);
 
 useEffect(() => {
-  if (currentStepData?.cpt?.zonalMapping?.ward && !currentStepData?.createdResponse?.additionalDetails?.wardnumber) {
+  if (currentStepData?.cpt?.zonalMapping?.ward) {
     setWardNumber(currentStepData?.cpt?.zonalMapping?.ward?.code || "");
   }
 }, [currentStepData?.cpt?.zonalMapping?.ward]);
@@ -273,6 +316,14 @@ useEffect(() => {
       newErrors.registrationDetails = t("BPA_REGISTRATION_DETAILS_REQUIRED");
     }
 
+    if (!isSelfCertification?.code && currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A")) {
+      newErrors.isSelfCertification = t("BPA_IS_SELF_CERTIFICATION_REQUIRED_MESSAGE");
+    }
+
+    if(!isPropertyAvailable?.code){
+      newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
+    }
+    
     if (!isClubbedPlot?.code) {
       newErrors.isClubbedPlot = t("BPA_IS_CLUBBED_PLOT_REQUIRED");
     }
@@ -434,7 +485,8 @@ useEffect(() => {
       isSelfCertificationRequired,
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       isClubbedPlot: isClubbedPlot?.value,
-      isPropertyAvailable: isPropertyAvailable?.value
+      isPropertyAvailable: isPropertyAvailable?.value,
+      isSelfCertification: isSelfCertification?.value,
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -470,7 +522,8 @@ useEffect(() => {
       roadType,
       farDetails,
       isClubbedPlot: isClubbedPlot?.value,
-      isPropertyAvailable: isPropertyAvailable?.value
+      isPropertyAvailable: isPropertyAvailable?.value,
+      isSelfCertification: isSelfCertification?.value,
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -582,6 +635,10 @@ useEffect(() => {
   function setClubbedPlot(option) {
     setIsClubbedPlot(option)
   }
+  
+  function setSelfCertificationRequired(option) {
+    setIsSelfCertification(option)
+  }
 
   function setProperyAvailable(option) {
     setIsPropertyAvailable(option)
@@ -590,6 +647,8 @@ useEffect(() => {
   function closeModal() {
     setShowModal(false)
   }
+
+  console.log("currentStepData in plot details", currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code);
 
 
 
@@ -623,6 +682,9 @@ useEffect(() => {
               t={t}
             />
           </div>
+          {errors["isPropertyAvailable"] && (
+            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isPropertyAvailable"]}</CardLabelError>
+          )}
           {/* {isPropertyAvailable?.value && <PropertySearch  formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>} */}
           {isPropertyAvailable?.value && <SubmitBar style={{marginBottom:"1rem"}} label={t("PT_SEARCH_PROPERTY")} onSubmit={() => {setShowModal(true)}} />}
           {showModal &&           
@@ -651,6 +713,24 @@ useEffect(() => {
           />
           {errors["isClubbedPlot"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isClubbedPlot"]}</CardLabelError>
+          )}
+          
+          {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A") &&
+            <React.Fragment>
+              <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
+              <Dropdown
+                placeholder={t("BPA_IS_SELF_CERTIFICATION_REQUIRED")}
+                selected={isSelfCertification}
+                select={setSelfCertificationRequired}
+                option={common}
+                optionKey="i18nKey"
+                t={t}
+                disable={currentStepData?.createdResponse?.applicationNo}
+              />
+            </React.Fragment>
+          }
+          {errors["isSelfCertification"] && (
+            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )}
             
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}

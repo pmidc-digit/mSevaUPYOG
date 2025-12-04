@@ -1405,7 +1405,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
           color: "#454545",
           style: "header",
           fontSize: 14,
-          bold: true,
+          bold: true
         },
       ];
 
@@ -1445,7 +1445,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
           margin: [10, 0, 5, 0],
           layout: "noBorders",
           table: {
-            widths: ["101.8%", "*"],
+            widths: [220, "*"],
             body: [[headerBody]],
           },
         });
@@ -1453,7 +1453,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
 
       counter++;
     }
-    if (detail?.isAttachments && detail.values) {
+    if (detail?.isAttachments && detail?.values) {
       detailsHeaders.push({
         style: "tableExample",
 
@@ -1474,34 +1474,31 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
         },
       });
     } else {
-      detail?.values?.map((indData, index) => {
+      if (detail?.values?.length > 0) {
+        const valueRows = detail.values.map(indData => [
+          {
+            text: indData?.title,
+            style: "header",
+            fontSize: 10,
+            margin: [10, 0, 0, 0]
+          },
+          {
+            text: indData?.value && indData?.value?.trim() !== "" ? `: ${indData?.value}` : "",
+            fontSize: 10,
+            margin: [6, 0, 0, 0] 
+          }
+        ]);
+
         detailsHeaders.push({
           style: "tableExample",
           layout: "noBorders",
           margin: [10, 0, 5, 0],
           table: {
-            widths: ["40%", "*"],
-            body: [
-              [
-                {
-                  text: indData?.title,
-                  style: "header",
-                  fontSize: 10,
-                  margin: [10 , 0, 0, 0]
-                  //border:  index< detail?.values?.length-1  ?  [true, false, false,false]:index===detail?.values?.length-1 ? [true, false, false, true]:[] ,
-                },
-
-                {
-                  text: indData?.value && indData?.value?.trim() !== "" ? `: ${indData?.value}` : "",
-                  //border: index< detail?.values?.length-1    ?  [false, false, true, false]:index===detail?.values?.length-1? [false, false, true, true] :[],
-                  //borderColor:borderColor,
-                  fontSize: 10,
-                },
-              ],
-            ],
-          },
+            widths: [220, "*"], 
+            body: valueRows        
+          }
         });
-      });
+      }
     }
   });
 

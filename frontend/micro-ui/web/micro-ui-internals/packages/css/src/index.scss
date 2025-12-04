@@ -125,6 +125,7 @@
 @import "./pages/common/sanctionFeeTable.scss";
 @import "./pages/citizen/loaderMessage.scss";
 @import "./pages/employee/disconnection.scss";
+@import "./pages/common/pgrUICssfix.scss";
 
 .display-none {
   display: none;
@@ -953,4 +954,8 @@ input[type="number"] {
   .timeline-card {
     padding: 12px;
   }
+}
+
+.engagement-citizen-wrapper {
+  overflow: scroll hidden;
 }

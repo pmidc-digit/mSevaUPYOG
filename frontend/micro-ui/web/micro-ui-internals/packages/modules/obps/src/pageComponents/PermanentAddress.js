@@ -19,41 +19,42 @@ import Timeline from "../components/Timeline";
 import { convertDateToEpoch } from "../utils";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 import { LoaderNew } from "../components/LoaderNew";
+import { set } from "lodash";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
   const [loader, setLoader] = useState(false);
   const onSkip = () => onSelect();
   const [PermanentAddress, setPermanentAddress] = useState(
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ||
     formData?.LicneseDetails?.PermanentAddress ||
-      formData?.formData?.LicneseDetails?.PermanentAddress ||
-      formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress
+      formData?.formData?.LicneseDetails?.PermanentAddress      
   );
   const { pathname } = useLocation();
   const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "");
+  const [pinCode, setPinCode] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode  || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedState, setSelectedState] = useState(
-    formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.permanentState || {}
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.permanentState || formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState ||  {}
   );
   const [selectedDistrict, setSelectedDistrict] = useState(
-    formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentCity || {}
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentCity || formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict ||  {}
   );
   console.log("selectedDistrict", selectedState, formData);
-  const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState(formData?.LicneseDetails?.PincodeCorrespondent || formData?.formData?.LicneseDetails?.PincodeCorrespondent || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || "");
+  const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || formData?.LicneseDetails?.PincodeCorrespondent || formData?.formData?.LicneseDetails?.PincodeCorrespondent ||  "");
   const [selectedCorrespondentState, setSelectedCorrespondentState] = useState(
-    formData?.LicneseDetails?.SelectedCorrespondentState || formData?.formData?.LicneseDetails?.SelectedCorrespondentState || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.correspondenceState || {}
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.correspondenceState || formData?.LicneseDetails?.SelectedCorrespondentState || formData?.formData?.LicneseDetails?.SelectedCorrespondentState ||  {}
   );
   const [selectedCorrespondentDistrict, setSelectedCorrespondentDistrict] = useState(
-    formData?.LicneseDetails?.SelectedCorrespondentDistrict || formData?.formData?.LicneseDetails?.SelectedCorrespondentDistrict || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity ||{}
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity || formData?.LicneseDetails?.SelectedCorrespondentDistrict || formData?.formData?.LicneseDetails?.SelectedCorrespondentDistrict || {}
   );
 
-  const [isAddressSame, setIsAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.isAddressSame || false);
+  const [isAddressSame, setIsAddressSame] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.isAddressSame || formData?.isAddressSame || formData?.formData?.isAddressSame ||  false);
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(null);
   let currentPath = pathname.split("/").pop();
@@ -68,9 +69,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
       ""
   );
+  const userInfo = Digit.UserService.getUser();
+  const uuid = userInfo?.info?.uuid;
 
   // const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState.code, "BPA", [{ name: "Ulb" }]);
   const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState?.code || "pb", "BPA", [{ name: "Ulb" }]);
+  const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(stateId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
 
   const stateOptions = useMemo(() => {
     return [{ code: "pb", name: "Punjab", i18Code: "Punjab" }];
@@ -92,7 +96,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
   const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
 
-  console.log("formData==????", formData, formData?.formData?.LicneseType?.qualificationType?.name);
+  console.log("formData==????", formData, formData?.formData?.LicneseType?.qualificationType?.name, userDetails);
 
   // useEffect(() => {
   //   const role = formData?.LicneseType?.LicenseType?.role;
@@ -133,6 +137,42 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       setSelectedCorrespondentDistrict(district);
     }
   }, [selectedCorrespondentDistrict, isLoading, uniqueDistricts]);
+
+  useEffect(() => {
+    if (!isUserLoading && userDetails?.user?.length > 0) {
+      console.log("userDetails", userDetails?.user[0]);
+      if(!PermanentAddress || PermanentAddress === ""){
+        setPermanentAddress(userDetails?.user[0]?.permanentAddress || "");
+      }
+      if(!pinCode || pinCode === ""){
+        setPinCode(userDetails?.user[0]?.permanentPinCode || "");
+      }
+      if(!selectedState || !selectedState?.code){
+        const state = stateOptions.find((state) => state.name === userDetails?.user[0]?.permanentState) || { code: "pb", name: "Punjab" };
+        setSelectedState(state);
+      }
+      if(!selectedDistrict || !selectedDistrict?.code){
+        const district = uniqueDistricts.find((district) => district.name === userDetails?.user[0]?.permanentCity);
+        setSelectedDistrict(district);
+      }
+      if(!isAddressSame){
+        if(!correspondenceAddress || correspondenceAddress === ""){
+          setCorrespondenceAddress(userDetails?.user[0]?.correspondenceAddress || "");
+        }
+        if(!pinCodeCorrespondent || pinCodeCorrespondent === ""){
+          setPinCodeCorrespondent(userDetails?.user[0]?.correspondencePinCode || "");
+        }
+        if(!selectedCorrespondentState || !selectedCorrespondentState?.code){
+          const state = stateOptions.find((state) => state.name === userDetails?.user[0]?.correspondenceState) || { code: "pb", name: "Punjab" };
+          setSelectedCorrespondentState(state);
+        }
+        if(!selectedCorrespondentDistrict || !selectedCorrespondentDistrict?.code){
+          const district = uniqueDistricts.find((district) => district.name === userDetails?.user[0]?.correspondenceCity);
+          setSelectedCorrespondentDistrict(district);
+        }
+      }
+    }
+  } ,[userDetails, isUserLoading])
 
   useEffect(() => {
     if (selectedState === "undefined" || !selectedState?.code) {

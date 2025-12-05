@@ -265,8 +265,8 @@ console.log("building category here: & fileNo", usage,fileno);
       enabled: !!data,
     },
   })
-  const userInfo = Digit.SessionStorage.get("User")?.info;
-
+  const userInfo = Digit.UserService.getUser();
+console.log('userInfo', userInfo)
   const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.mobileNumber;
 
   console.log("datata=====", workflowDetails, data, isArchitect)
@@ -335,7 +335,36 @@ console.log("building category here: & fileNo", usage,fileno);
   const handleMobileNumberChange = (e) => {
     setMobileNumber(e.target.value)
   }
+  const requestor = userInfo?.info?.mobileNumber;
+console.log(requestor); 
 
+    const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
+
+
+  console.log('LicenseData', LicenseData)
+
+  let stakeholderAddress="";
+
+if (!LicenseDataLoading && requestor) {
+  const matchedLicense = LicenseData?.Licenses?.find(
+    lic => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor
+  );
+
+  console.log('matchedLicense', matchedLicense)
+  if (matchedLicense) {
+    const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
+
+stakeholderAddress = [
+  owner?.permanentAddress,
+  owner?.permanentCity,
+  owner?.permanentDistrict,
+  owner?.permanentPinCode
+]
+.filter(Boolean) 
+.join(", ");
+
+console.log(stakeholderAddress,"stakeholderAddress");  }
+}
   const handleGetOTPClick = async () => {
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
@@ -680,6 +709,9 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
           workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime
         count = 1
       }
+    }
+    if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+      requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
@@ -1342,7 +1374,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     }
   }
 
-  if (isLoading || isEnableLoader || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees || apiLoading) {
+  if (isLoading || isEnableLoader ||LicenseDataLoading || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees || apiLoading) {
     return <Loader />
   }
 

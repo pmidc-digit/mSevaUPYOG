@@ -160,6 +160,9 @@ const Urls = {
     update: "/egov-hrms/employees/_update",
     employee_wise_report: "/report/rainmaker-hrms/_get",
     sso_authenticate_user: "/egov-hrms/employees/sso/authenticate-user",
+    empmap_search: "/egov-hrms/obpass/employees/_search",
+    createEmpMapping: "/egov-hrms/obpass/employees/_create",
+    deleteEmpMapping: "/egov-hrms/obpass/employees/_delete",
   },
   tl: {
     create: "/tl-services/v1/_create",

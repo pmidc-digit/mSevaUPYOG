@@ -151,6 +151,12 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                 businessService: "hrms",
                 roles: ["HRMS_ADMIN"],
               },
+              {
+                text: "HR_COMMON_OBPAS_EMP_MAPING",
+                link: "/digit-ui/employee/hrms/empMaping",
+                businessService: "hrms",
+                roles: ["HRMS_ADMIN"],
+              },
             ]}
             headerText={"HRMS"}
             businessService={props.businessService}

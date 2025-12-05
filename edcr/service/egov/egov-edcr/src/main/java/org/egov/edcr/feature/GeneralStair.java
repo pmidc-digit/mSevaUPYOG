@@ -271,6 +271,7 @@ public class GeneralStair extends FeatureProcess {
                                 }
 
                                 totalSteps = totalRisers.add(totalLandingWidth);
+                                LOG.info("total totalSteps :" + totalSteps);
 
                                 validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
                                         scrutinyDetailRise, mostRestrictiveOccupancyType, floor,
@@ -284,16 +285,11 @@ public class GeneralStair extends FeatureProcess {
                                             floor, typicalFloorValues, generalStair, landings, errors);
 
                                 } else {
-
-                                    // ❗ Skip error for typical floors
+                                    // Skip error for typical floors
                                     if (!isTypicalRepeat) {
-
-                                        // For Punjab: skip top floor case
                                         if (floor.getNumber() != generalStairCount - 1) {
-
                                             String key = "General Stair landing not defined in block " + block.getNumber()
                                                     + " floor " + floor.getNumber() + " stair " + generalStair.getNumber();
-
                                             errors.put(key, key);
                                             plan.addErrors(errors);
                                         }
@@ -302,7 +298,7 @@ public class GeneralStair extends FeatureProcess {
                             }
 
                         } else {
-                            // ❗ Skip stairAbsent addition for typical repeated floors
+                            //Skip stairAbsent addition for typical repeated floors
                             if (!isTypicalRepeat) {
                                 if (floor.getNumber() != generalStairCount) {
                                     stairAbsent.add(
@@ -311,33 +307,35 @@ public class GeneralStair extends FeatureProcess {
                             }
                         }
                     }
+                    
+                    LOG.info("landnig : " + totalLandings);
+                    LOG.info("flights : " + totalFlights);
+                   
+                    if(flrHt != null) {
+    	                BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
+    	            
+    	                if (currentFloor != null) {
+    	                    // Use currentFloor.getNumber() if currentFloor is not null
+    	                    String floorNumber = "" + currentFloor.getNumber().toString();
+    	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
+    	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Accepted.getResultVal(), scrutinyDetail4);
+    	                    } else {
+    	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Not_Accepted.getResultVal(), scrutinyDetail4);
+    	                    }
+    	                } else {
+    	                	// Use " " if currentFloor is null
+    	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
+    	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
+    	                                Result.Accepted.getResultVal(), scrutinyDetail4);
+    	                    } else {
+    	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
+    	                                Result.Not_Accepted.getResultVal(), scrutinyDetail4);
+    	                    }
+    	                }
+                    }
                 }
 
-                LOG.info("landnig : " + totalLandings);
-                LOG.info("flights : " + totalFlights);
-               
-                if(flrHt != null) {
-                BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
-            
-                if (currentFloor != null) {
-                    // Use currentFloor.getNumber() if currentFloor is not null
-                    String floorNumber = "" + currentFloor.getNumber().toString();
-                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
-                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Accepted.getResultVal(), scrutinyDetail4);
-                    } else {
-                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Not_Accepted.getResultVal(), scrutinyDetail4);
-                    }
-                } else {
-                	// Use " " if currentFloor is null
-                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
-                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
-                                Result.Accepted.getResultVal(), scrutinyDetail4);
-                    } else {
-                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
-                                Result.Not_Accepted.getResultVal(), scrutinyDetail4);
-                    }
-                }
-                }
+                
 
                 if (
                         !stairAbsent.isEmpty()) {

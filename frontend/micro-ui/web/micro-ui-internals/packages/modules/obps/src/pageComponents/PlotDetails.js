@@ -54,6 +54,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [apiLoading, setApiLoading] = useState(false);
   const tenantId = localStorage.getItem("CITIZEN.CITY")
   const userInfo = Digit.UserService.getUser();
+  const uuid = userInfo?.info?.uuid;
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT")
   const requestor = userInfo?.info?.mobileNumber;
   const queryObject = { 0: { tenantId: state }, 1: {mobileNumber: requestor} };
@@ -62,7 +63,8 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [ptLoading, setPtLoading] = useState(false);
   const [showModal, setShowModal] = useState(false)
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
-  const { data: menuList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS("pb", "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: menuList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS(state, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(state, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
   const dispatch = useDispatch();
   const common = [
@@ -432,7 +434,9 @@ useEffect(() => {
     const stakeholderRegistrationNumber= JSON.parse(
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
-    const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
+    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || null;
+    const stakeholderState = userDetails?.user[0]?.correspondenceState
+    const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
     const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid;
     const address = {
@@ -485,6 +489,8 @@ useEffect(() => {
       stakeholderName,
       stakeholderRegistrationNumber,
       stakeholderAddress,
+      stakeholderState,
+      stakeholderDistrict,
       isSelfCertificationRequired,
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       isClubbedPlot: isClubbedPlot?.value,
@@ -512,6 +518,8 @@ useEffect(() => {
       materialusedinfloor,
       materialusedinroofs,
       estimatedCost,
+      stakeholderState,
+      stakeholderDistrict,
       area: data?.planDetail?.planInformation?.plotArea?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
@@ -786,7 +794,7 @@ useEffect(() => {
                       }}
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading} />}
           </ActionBar>
         </FormStep>
       </div>

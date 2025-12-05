@@ -83,8 +83,8 @@ function RentAndLeaseSummary({ t }) {
     locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
     securityDeposit: t("SECURITY_DEPOSIT"),
-    tax_applicable: t("RENT_LEASE_TAX_APPLICABLE"),
-    refund_applicable_on_discontinuation: t("REFUND_APPLICABLE"),
+    tax_applicable: t("GST_APPLICABLE"),
+    refundApplicableOnDiscontinuation: t("REFUND_APPLICABLE"),
     penaltyType: t("PENALTY_TYPE"),
     latePayment: t("LATE_PAYMENT_PERCENT"),
   };
@@ -129,7 +129,7 @@ function RentAndLeaseSummary({ t }) {
             let value = property?.selectedProperty?.[key];
 
             // Special handling for booleans
-            if (key === "refund_applicable_on_discontinuation") {
+            if (key === "refundApplicableOnDiscontinuation") {
               value = value === true ? t("YES") : t("NO");
             }
             if (key === "tax_applicable") {

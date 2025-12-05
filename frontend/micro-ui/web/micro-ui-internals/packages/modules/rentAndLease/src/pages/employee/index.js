@@ -58,6 +58,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
   const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
   const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
+  const RALResponse = Digit?.ComponentRegistryService?.getComponent("RALResponse");
 
   return (
     <Switch>
@@ -94,6 +95,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           />
           <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} />
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
+          <PrivateRoute path={`${path}/response/:applicationNumber`} component={RALResponse} />
           <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}

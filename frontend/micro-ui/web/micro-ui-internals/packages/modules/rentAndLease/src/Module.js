@@ -33,7 +33,7 @@ import RentAndLeaseSummary from "./pageComponents/RentAndLeaseSummary";
 import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
 import CustomDatePicker from "./pageComponents/CustomDatePicker";
 import RALApplicationDetails from "./pages/citizen/RALApplicationDetails"
-import { Loader as RentAndLeaseLoader } from "./components/Loader";
+import RALResponse from "./pageComponents/Reponse"
 
 export const RentAndLeaseReducers = getRootReducer;
 
@@ -128,8 +128,8 @@ const componentsToRegister = {
   RentAndLeaseSelectProofIdentity,
   RentAndLeaseSummary,
   RentAndLeaseDocument,
+  RALResponse,
   CustomDatePicker,
-  RentAndLeaseLoader,
 };
 
 export const initRentAndLeaseComponents = () => {

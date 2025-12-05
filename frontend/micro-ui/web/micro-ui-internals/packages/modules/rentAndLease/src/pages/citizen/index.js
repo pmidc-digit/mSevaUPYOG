@@ -10,12 +10,14 @@ import ApplicationDetails from "./RALApplicationDetails";
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
 
+  console.log('path', path)
+
   const SearchChallanComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchChallanComponent");
   const SearchResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectSearchResultsComponent");
   const MyChallanResultsComponent = Digit?.ComponentRegistryService?.getComponent("MCollectMyChallanResultsComponent");
-  // const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
+  const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
+  const RALResponse = Digit?.ComponentRegistryService?.getComponent("RALResponse");
 
-  console.log("RentAndLease Citizen App", path);
   return (
     <span className={"mcollect-citizen"} style={{ width: "100%" }}>
       <Switch>
@@ -23,8 +25,9 @@ const App = () => {
           <BackButton style={{ top: "55px" }}>Back</BackButton>
           <PrivateRoute path={`${path}/search`} component={SearchChallanComponent} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
-          {/* <PrivateRoute path={`${path}/new-application`} component={NewRentAndLeaseStepperForm} /> */}
+          <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} />
           <PrivateRoute path={`${path}/my-properties`} component={MyChallanResultsComponent} />
+          <PrivateRoute path={`${path}/response/:applicationNumber`} component={RALResponse} />
           <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={ApplicationDetails} />
         </AppContainer>
       </Switch>

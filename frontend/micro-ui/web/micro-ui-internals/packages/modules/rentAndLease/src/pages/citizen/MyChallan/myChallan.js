@@ -15,12 +15,12 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const [getChallanData, setChallanData] = useState();
 
 
-  console.log("copming here");
+  console.log("copming here",getChallanData);
 
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
-      const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
+      const responseData = await Digit.rentAndLease.search({ tenantId, filters });
       console.log("result", responseData);
       setChallanData(responseData?.challans);
       setLoader(false);

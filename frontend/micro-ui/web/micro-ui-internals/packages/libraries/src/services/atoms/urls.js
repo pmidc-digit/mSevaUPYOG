@@ -137,12 +137,12 @@ const Urls = {
 
   // Todo
   rentAndLease: {
-    search: "/echallan-services/eChallan/v1/_search",
-    create: "/echallan-services/eChallan/v1/_create?",
+    create: "/rl-services/allotment/_create",
+    update: "/rl-services/allotment/_update",
+    search: "/rl-services/v1/_search",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
     search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
-    update: "/echallan-services/eChallan/v1/_update",
     download_pdf: "/egov-pdf/download/UC/mcollect-challan",
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
     bill_download: "/egov-pdf/download/BILL/consolidatedbill",

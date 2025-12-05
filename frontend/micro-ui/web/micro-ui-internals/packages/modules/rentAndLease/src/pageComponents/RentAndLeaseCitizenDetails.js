@@ -16,7 +16,9 @@ import {
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../redux/action/RentAndLeaseNewApplicationActions";
 
 const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, validateStep, config }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
   const dispatch = useDispatch();
   const { triggerLoader, triggerToast } = config?.currStepConfig[0];
 
@@ -24,6 +26,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     { code: "SINGLE", name: t("RAL_SINGLE") },
     { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
   ];
+
+  console.log("currentStepDataInSec", currentStepData);
 
   const {
     control,
@@ -47,7 +51,54 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     name: "applicants",
   });
 
+  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null, isAutoRenewal = false }) => {
+    const startDateEpoch = propertyDetails?.startDate ? new Date(propertyDetails?.startDate).getTime() : null;
+    const endDateEpoch = propertyDetails?.endDate ? new Date(propertyDetails?.endDate).getTime() : null;
+
+    return {
+      propertyId: propertyDetails.propertyId,
+      tenantId,
+      previousApplicationNumber,
+      isAutoRenewal,
+      startDate: startDateEpoch,
+      endDate: endDateEpoch,
+      termAndCondition: propertyDetails.termsAndConditions,
+      penaltyType: propertyDetails.penaltyType,
+      workflow: {
+        action: "INITIATE",
+        comments: "",
+        status: "INITIATED",
+      },
+      // Document: [],
+      ownerInfo: applicants?.map((a) => {
+        return {
+          firstName: a?.name,
+          lastName: a?.name,
+          middleName: a?.name,
+          // gender: a?.gender || "male", // default if not captured
+          mobileNo: a?.mobileNumber,
+          emailId: a?.emailId,
+          // isPrimaryOwner: true,
+          // ownerType: a.ownerType || "INDIVIDUAL",
+          // ownershipPercentage: Math?.floor(100 / applicants.length),
+          // relationship: a?.relationship || "SELF",
+          correspondenceAddress: {
+            pinCode: a?.pincode,
+            city: a?.city || "",
+            addressId: a?.address,
+          },
+          permanentAddress: {
+            pinCode: a?.pincode,
+            city: a?.city || "",
+            addressId: a?.address,
+          },
+        };
+      }),
+    };
+  };
+
   const onSubmit = async (data) => {
+    console.log("dataInSubmit", data);
     if (validateStep) {
       const validationErrors = validateStep(data);
       if (Object.keys(validationErrors)?.length > 0) return;
@@ -61,6 +112,12 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       return;
     }
 
+    const payload = buildAllotmentPayload({
+      propertyDetails: currentStepData?.propertyDetails,
+      applicants: data?.applicants,
+      tenantId,
+    });
+
     // ✅ If booking already exists, skip slot_search & create
     const existingPropertyAlloted = currentStepData?.CreatedResponse?.allotmentNumber;
     if (existingPropertyAlloted) {
@@ -71,12 +128,15 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     triggerLoader(true);
     try {
       // Call create API
-      const response = await Digit.RentAndLeaseService.create({ bookingApplication: data }, tenantId);
-      const status = response?.ResponseInfo?.status;
+      const response = await Digit.RentAndLeaseService.create({ allotmentDetails: payload }, tenantId);
+     
+      const status = response?.responseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
+      console.log("isSuccess", isSuccess);
+
       if (isSuccess) {
-        const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
+        const appData = Array.isArray(response?.allotment) ? response.allotment[0] : response?.allotment;
 
         dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", appData || response));
         goNext(data);
@@ -88,8 +148,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     } finally {
       triggerLoader(false);
     }
-
-    goNext(data);
   };
 
   useEffect(() => {
@@ -196,10 +254,10 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 {t("RAL_APPLICANT")} #{index + 1}
               </CardSectionHeader>
               {/* Remove applicant */}
-              {(watch("ownershipType") === "MULTIPLE" ? fields.length > 1 : fields.length > 2) && (
+              {watch("ownershipType") === "MULTIPLE" && fields?.length > 2 && (
                 <SubmitBar
-                  label={<span>❌{t("RAL_Remove_APPLICANT")}</span>}
-                  style={{ border: "1px solid #d33", background: "transparent", color: "#d33" }}
+                  label={<span>❌</span>}
+                  style={{ background: "transparent", width: "100%", maxWidth: "25px" }}
                   onSubmit={() => remove(index)}
                 />
               )}
@@ -355,7 +413,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
           <SubmitBar
             label={<span>➕{t("RAL_ADD_APPLICANT")}</span>}
-            style={{ border: "1px solid #2947a3", background: "transparent", color: "#2947a3" }}
+            style={{ border: "1px solid #2947a3", background: "transparent", color: "#2947a3", width: "100%", maxWidth: "140px" }}
             onSubmit={() => append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
           />
         </div>

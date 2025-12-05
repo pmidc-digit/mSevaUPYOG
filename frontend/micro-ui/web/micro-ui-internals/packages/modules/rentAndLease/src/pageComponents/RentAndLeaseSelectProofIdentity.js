@@ -55,7 +55,10 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
     };
   };
 
-  const { isLoading, data: mdmsDocsData } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId);
+   const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+  const { isLoading, data: mdmsDocsData } = Digit.Hooks.rentandlease.useRALDocumentsMDMS(tenantId);
 
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   // Centralized required-doc validation

@@ -69,6 +69,7 @@ const RALApplicationDetails = () => {
   const { tenants } = storeData || {};
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
+  console.log('getChallanData', getChallanData)
 
   // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
   //   tenantId,
@@ -80,7 +81,7 @@ const RALApplicationDetails = () => {
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
-      const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
+      const responseData = await Digit.rentAndLease.search({ tenantId, filters });
       console.log("search ", responseData);
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
@@ -110,7 +111,7 @@ const RALApplicationDetails = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: acknowledgementIds,
-    moduleCode: "challan-generation",
+    moduleCode: "RENT-N-LEASE",
     role: "EMPLOYEE",
   });
 

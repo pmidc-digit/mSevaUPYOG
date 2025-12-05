@@ -29,21 +29,19 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
   // 🔹 Dropdown options
   const propertyTypeOptions = [
-    { name: t("ON_RENT"), code: "ON_RENT", i18nKey: "ON_RENT" },
-    { name: t("ON_LEASE"), code: "ON_LEASE", i18nKey: "ON_LEASE" },
+    { name: t("ON_RENT"), code: "rent", i18nKey: "rent" },
+    { name: t("ON_LEASE"), code: "lease", i18nKey: "lease" },
   ];
 
   const propertySpecificOptions = [
-    { name: t("COMMERCIAL"), code: "COMMERCIAL", i18nKey: "COMMERCIAL" },
-    { name: t("RESIDENTIAL"), code: "RESIDENTIAL", i18nKey: "RESIDENTIAL" },
-    { name: t("INDUSTRIAL"), code: "INDUSTRIAL", i18nKey: "INDUSTRIAL" },
-    { name: t("MIXED_USE"), code: "MIXED_USE", i18nKey: "MIXED_USE" },
+    { name: t("COMMERCIAL"), code: "Commercial", i18nKey: "Commercial" },
+    { name: t("RESIDENTIAL"), code: "Residential", i18nKey: "Residential" },
   ];
 
   // 🔹 Location Type options
   const locationTypeOptions = [
-    { code: "PRIME", name: t("PRIME"), i18nKey: "PRIME" },
-    { code: "NON_PRIME", name: t("NON_PRIME"), i18nKey: "NON_PRIME" },
+    { name: t("PRIME"), code: "Prime", i18nKey: "Prime" },
+    { name: t("NON_PRIME"), code: "Non-Prime", i18nKey: "Non-Prime" },
   ];
 
   // const notificationPrefOptions = [
@@ -68,7 +66,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "ON_RENT",
       propertyId: "RL001",
       propertyName: "Commercial Space - Prime Location",
-      usageCategory: "rent",
+      allotmentType: "rent",
       propertySizeOrArea: "1200",
       address: "123 Main Street, City Center",
       geoLocation: { latitude: "28.6139", longitude: "77.2090" },
@@ -78,7 +76,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "50000",
       securityDeposit: "10000",
       tax_applicable: true,
-      refund_applicable_on_discontinuation: true,
+      refundApplicableOnDiscontinuation: true,
       penaltyType: "DAILY",
       latePayment: "2%",
     },
@@ -86,7 +84,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "ON_LEASE",
       propertyId: "RL002",
       propertyName: "Residential Apartment - Prime",
-      usageCategory: "rent",
+      allotmentType: "rent",
       propertySizeOrArea: "1500",
       address: "456 Park Avenue, Downtown",
       geoLocation: { latitude: "28.7041", longitude: "77.1025" },
@@ -96,7 +94,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "35000",
       securityDeposit: "8000",
       tax_applicable: true,
-      refund_applicable_on_discontinuation: false,
+      refundApplicableOnDiscontinuation: false,
       penaltyType: "MONTHLY",
       latePayment: "5%",
     },
@@ -104,7 +102,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "ON_RENT",
       propertyId: "RL003",
       propertyName: "Commercial Shop - Non-Prime",
-      usageCategory: "rent",
+      allotmentType: "rent",
       propertySizeOrArea: "800",
       address: "789 Suburban Road, Outskirts",
       geoLocation: { latitude: "27.1767", longitude: "78.0081" },
@@ -114,7 +112,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "25000",
       securityDeposit: "5000",
       tax_applicable: false,
-      refund_applicable_on_discontinuation: true,
+      refundApplicableOnDiscontinuation: true,
       penaltyType: "ONETIME",
       latePayment: "1%",
     },
@@ -122,7 +120,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "ON_LEASE",
       propertyId: "RL004",
       propertyName: "Industrial Warehouse - Non-Prime",
-      usageCategory: "rent",
+      allotmentType: "rent",
       propertySizeOrArea: "5000",
       address: "321 Industrial Area, Zone B",
       geoLocation: { latitude: "19.0760", longitude: "72.8777" },
@@ -132,7 +130,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "100000",
       securityDeposit: "20000",
       tax_applicable: true,
-      refund_applicable_on_discontinuation: false,
+      refundApplicableOnDiscontinuation: false,
       penaltyType: "MONTHLY",
       latePayment: "10%",
     },
@@ -140,7 +138,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "ON_RENT",
       propertyId: "RL005",
       propertyName: "Residential House - Prime",
-      usageCategory: "rent",
+      allotmentType: "rent",
       propertySizeOrArea: "2000",
       address: "555 Elite Avenue, Premium Area",
       geoLocation: { latitude: "12.9716", longitude: "77.5946" },
@@ -150,7 +148,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "60000",
       securityDeposit: "15000",
       tax_applicable: true,
-      refund_applicable_on_discontinuation: true,
+      refundApplicableOnDiscontinuation: true,
       penaltyType: "ONETIME",
       latePayment: "3%",
     },
@@ -158,7 +156,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "ON_LEASE",
       propertyId: "RL006",
       propertyName: "Mixed Use Property - Prime",
-      usageCategory: "rent",
+      allotmentType: "rent",
       propertySizeOrArea: "3000",
       address: "999 Business Hub, Central",
       geoLocation: { latitude: "22.5726", longitude: "88.3639" },
@@ -168,13 +166,13 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "80000",
       securityDeposit: "25000",
       tax_applicable: false,
-      refund_applicable_on_discontinuation: true,
+      refundApplicableOnDiscontinuation: true,
       penaltyType: "ONETIME",
       latePayment: "4%",
     },
   ];
 
-  const [filteredProperties, setFilteredProperties] = useState(mockProperties);
+  // const [filteredProperties, setFilteredProperties] = useState(mockProperties);
 
   // 🔹 Form setup
   const {
@@ -183,7 +181,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     setValue,
     watch,
     formState: { errors },
-    trigger,
   } = useForm({
     defaultValues: {
       propertyId: "",
@@ -191,11 +188,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       propertyType: "",
       propertySpecific: "",
       locationType: "",
-      usageCategory: "",
+      allotmentType: "",
       propertySizeOrArea: "",
       baseRent: "",
       securityDeposit: "",
-      refund_applicable_on_discontinuation: null,
+      refundApplicableOnDiscontinuation: null,
       penaltyType: "",
       latePayment: "",
       startDate: "",
@@ -208,6 +205,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       termsAndConditions: "",
       amountToBeRefunded: "",
       selectedProperty: null,
+      duration: "", // 👈 new field
       // address: "",
       // geoLocation: null,
       // propertyImage: "",
@@ -219,26 +217,42 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   const selectedPropertySpecific = watch("propertySpecific");
   const selectedLocationType = watch("locationType");
 
-  // 🔹 Reset selected property when filters change
-  useEffect(() => {
-    if (selectedPropertyType || selectedPropertySpecific || selectedLocationType) {
-      setValue("selectedProperty", null);
-    }
-  }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType, setValue]);
+  const [filteredProperties, setFilteredProperties] = useState([]);
+  console.log("filteredProperties", filteredProperties);
 
   useEffect(() => {
-    if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
-      const filtered = mockProperties.filter(
-        (p) =>
-          p.propertyType === selectedPropertyType?.code &&
-          p.propertySpecific === selectedPropertySpecific?.code &&
-          p.locationType === selectedLocationType?.code
-      );
-      setFilteredProperties(filtered);
-    } else {
-      setFilteredProperties(filteredProperties);
+    if (mdmsPropertyData) {
+      // Start with all properties from MDMS
+      let properties = mdmsPropertyData;
+
+      console.log("selectedPropertyType", selectedPropertyType, selectedPropertySpecific, selectedLocationType);
+
+      if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
+        properties = properties.filter(
+          (p) =>
+            p.allotmentType === selectedPropertyType?.code &&
+            p.propertyType === selectedPropertySpecific?.code &&
+            p.locationType === selectedLocationType?.code
+        );
+      }
+
+      setFilteredProperties(properties);
     }
-  }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
+  }, [mdmsPropertyData, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
+
+  // useEffect(() => {
+  //   if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
+  //     const filtered = mockProperties.filter(
+  //       (p) =>
+  //         p.propertyType === selectedPropertyType?.code &&
+  //         p.propertySpecific === selectedPropertySpecific?.code &&
+  //         p.locationType === selectedLocationType?.code
+  //     );
+  //     setFilteredProperties(filtered);
+  //   } else {
+  //     setFilteredProperties(filteredProperties);
+  //   }
+  // }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
   const todayISO = new Date().toISOString().split("T")[0];
 
@@ -248,19 +262,26 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   };
 
   const handlePropertySelect = (property) => {
+    if (!property) return;
+
+    // List only the fields you want to prefill
+    const fieldsToPrefill = [
+      "propertyId",
+      "propertyName",
+      "baseRent",
+      "securityDeposit",
+      "penaltyType",
+      "latePayment",
+      "refundApplicableOnDiscontinuation",
+    ];
+
     setValue("selectedProperty", property);
-
-    // ✅ Prefill only dependent fields
-    setValue("propertyId", property?.propertyId ?? null);
-    setValue("propertyName", property?.propertyName ?? null);
-    setValue("baseRent", property?.baseRent ?? null);
-    setValue("securityDeposit", property?.securityDeposit ?? null);
-    setValue("penaltyType", property?.penaltyType ?? null);
-    setValue("latePayment", property?.latePayment ?? null);
-    setValue("refund_applicable_on_discontinuation", property?.refund_applicable_on_discontinuation ?? null);
-
-    // keep dropdowns as they are (propertyType, propertySpecific, locationType)
-    trigger("selectedProperty");
+    fieldsToPrefill?.forEach((field) => {
+      setValue(field, property?.[field] ?? null, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    });
   };
 
   const onSubmit = async (data) => {
@@ -291,6 +312,46 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       });
     }
   }, [currentStepData, setValue]);
+
+  useEffect(() => {
+    const start = watch("startDate");
+    const end = watch("endDate");
+
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      // Calculate total months difference
+      let months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+      months += endDate.getMonth() - startDate.getMonth();
+
+      // Adjust if end day is before start day
+      if (endDate.getDate() < startDate.getDate()) {
+        months -= 1;
+      }
+
+      // Convert to years + months
+      const years = Math.floor(months / 12);
+      const remainingMonths = months % 12;
+
+      let durationText = "";
+      if (years > 0) {
+        durationText += `${years} ${years === 1 ? "year" : "years"}`;
+      }
+      if (remainingMonths > 0) {
+        durationText += (durationText ? " " : "") + `${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
+      }
+
+      // If exactly 0 months (edge case), show "0 months"
+      if (!durationText) {
+        durationText = "0 months";
+      }
+
+      setValue("duration", durationText, { shouldValidate: true });
+    } else {
+      setValue("duration", "", { shouldValidate: false });
+    }
+  }, [watch("startDate"), watch("endDate")]);
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };
@@ -395,11 +456,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         </div>
       </LabelFieldPair>
       {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("propertyId")}</CardLabelError>}
-
       {/* Hidden field for selected property */}
-      <Controller control={control} name="selectedProperty" rules={{ required: t("RENT_LEASE_PROPERTY_SELECTION_REQUIRED") }} render={() => null} />
-      {errors.selectedProperty && <CardLabelError style={errorStyle}>{getErrorMessage("selectedProperty")}</CardLabelError>}
-
+      <Controller control={control} name="selectedProperty" render={() => null} />
       {/* Start Date */}
       <LabelFieldPair>
         <CardLabel>
@@ -495,6 +553,14 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       </LabelFieldPair>
       {errors.endDate && <CardLabelError style={errorStyle}>{getErrorMessage("endDate")}</CardLabelError>}
 
+      {/* Duration (optional, auto-filled) */}
+      <LabelFieldPair>
+        <CardLabel>{t("DURATION")}</CardLabel>
+        <div className="form-field">
+          <Controller control={control} name="duration" render={({ value }) => <TextInput type="text" value={value || ""} disabled={true} />} />
+        </div>
+      </LabelFieldPair>
+
       {/* Rent Amount */}
       <LabelFieldPair>
         <CardLabel>
@@ -509,6 +575,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
+      {errors.baseRent && <CardLabelError style={errorStyle}>{getErrorMessage("baseRent")}</CardLabelError>}
 
       {/* Penalty Type */}
       <LabelFieldPair>
@@ -526,7 +593,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>}
+      {errors.penaltyType && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>}
 
       {/* Security Amount */}
       <LabelFieldPair>
@@ -544,6 +611,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
+      {errors.securityDeposit && <CardLabelError style={errorStyle}>{getErrorMessage("securityDeposit")}</CardLabelError>}
 
       {/* Late Payment % */}
       <LabelFieldPair>
@@ -553,11 +621,13 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         <div className="form-field">
           <Controller
             control={control}
+            rules={{ required: t("PTR_FIELD_REQUIRED") }}
             name="latePayment"
             render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />}
           />
         </div>
       </LabelFieldPair>
+      {errors.latePayment && <CardLabelError style={errorStyle}>{getErrorMessage("latePayment")}</CardLabelError>}
 
       {/* Terms & Conditions */}
       <LabelFieldPair>
@@ -584,7 +654,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           <Controller
             control={control}
             rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            name="refund_applicable_on_discontinuation"
+            name="refundApplicableOnDiscontinuation"
             render={({ value, onChange }) => (
               <div style={wrapper}>
                 <input type="radio" checked={value === true} onChange={() => onChange(true)} style={radioStyles} disabled /> {t("YES")}
@@ -594,6 +664,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
+      {errors.refundApplicableOnDiscontinuation && (
+        <CardLabelError style={errorStyle}>{getErrorMessage("refundApplicableOnDiscontinuation")}</CardLabelError>
+      )}
 
       {/* Amount to be Refunded */}
       <LabelFieldPair>

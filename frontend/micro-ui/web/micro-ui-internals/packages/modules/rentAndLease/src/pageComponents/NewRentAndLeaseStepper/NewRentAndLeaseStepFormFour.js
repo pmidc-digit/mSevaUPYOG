@@ -5,9 +5,7 @@ import { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM,
-} from "../../redux/action/RentAndLeaseNewApplicationActions";
+import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
 
 const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }) => {
   const dispatch = useDispatch();
@@ -18,11 +16,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-    
 
   const currentStepData = useSelector(function (state) {
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   });
+
+  console.log("currentStepDataINFourth", currentStepData);
 
   const updatedApplicantDetails = currentStepData?.applicantDetails || {};
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
@@ -56,12 +55,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
-      triggerToast(`Please fill the following field: ${missingFields[0]}`,true);
+      triggerToast(`Please fill the following field: ${missingFields[0]}`, true);
       return;
     }
 
     if (notFormattedFields.length > 0) {
-      triggerToast(`Please format the following field: ${notFormattedFields[0]}`,true);
+      triggerToast(`Please format the following field: ${notFormattedFields[0]}`, true);
       return;
     }
 
@@ -78,51 +77,35 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             onGoToRentAndLease();
           }, 1000);
         } else {
-          history.replace(
-            `/digit-ui/${isCitizen ? "citizen" : "employee"}/rent-and-lease/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
-            { applicationData: currentStepData?.CreatedResponse }
-          );
+          console.log("res", res);
+          // history.replace(
+          //   `/digit-ui/${isCitizen ? "citizen" : "employee"}/rent-and-lease/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
+          //   { applicationData: currentStepData?.CreatedResponse }
+          // );
         }
       } else {
-        triggerToast((res?.Errors?.message || "Update failed"),false);
+        triggerToast(res?.Errors?.message || "Update failed", false);
       }
     } catch (error) {
-      triggerToast((error?.message || "Update failed"),true);
+      triggerToast(error?.message || "Update failed", true);
     }
   }
 
   const onSubmit = async (data, selectedAction) => {
     // Adapt this to your RentAndLease service structure
     // This is a placeholder - you'll need to adjust based on your actual API structure
-    const { CreatedResponse, applicantDetails, propertyDetails: propertyDetailsFromData, documents: documentWrapper } = data;
-    const { applicant, propertyDetails, documents, applicantName, mobileNumber, workflow: existingWorkflow, ...otherDetails } = CreatedResponse || {};
+    const { CreatedResponse } = data;
+    const { workflow: existingWorkflow } = CreatedResponse || {};
 
     const formData = {
-      ...CreatedResponse,
-      applicant: {
-        ...CreatedResponse?.applicant,
-        ...updatedApplicantDetails,
-        name: `${updatedApplicantDetails.firstName || ""} ${updatedApplicantDetails.lastName || ""}`.trim(),
-      },
-      address: {
-        ...CreatedResponse?.address,
-        tenantId: tenantId,
-      },
-      propertyDetails: {
-        ...CreatedResponse?.propertyDetails,
-        ...updatedPropertyDetails,
-      },
-      documents: updatedDocuments.map((doc) => {
+      ...CreatedResponse?.AllotmentDetails,
+      Document: updatedDocuments.map((doc) => {
         const originalDoc =
           (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
 
         return {
-          id: originalDoc?.id || doc?.id,
-          uuid: originalDoc?.uuid || doc?.uuid,
-          documentUid: doc?.documentUid || originalDoc?.documentUid || doc?.filestoreId || "",
           documentType: doc?.documentType || originalDoc?.documentType || "",
-          documentAttachment: doc?.filestoreId || originalDoc?.documentAttachment || "",
-          filestoreId: doc?.filestoreId || originalDoc?.filestoreId || "",
+          filestoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
         };
       }),
       workflow: {
@@ -131,30 +114,21 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         comments: "",
         status: selectedAction?.action || "",
       },
-      applicantName: `${applicantDetails?.firstName || ""} ${applicantDetails?.lastName || ""}`.trim(),
-      mobileNumber: applicantDetails?.mobileNumber,
     };
 
     // Adapt this to your actual service call
-    // const response = await Digit.RentAndLeaseService.update({ RentAndLeaseApplications: [formData] }, tenantId);
-    // if (response?.ResponseInfo?.status === "successful") {
-    //   return { isSuccess: true, response };
-    // } else {
-    //   return { isSuccess: false, response };
-    // }
-
-    // Placeholder response - replace with actual service call
-    return { isSuccess: true, response: { RentAndLeaseApplications: [formData] } };
+    const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: formData }, tenantId);
+    console.log("response", response);
+    if (response?.ResponseInfo?.status === "successful") {
+      return { isSuccess: true, response };
+    } else {
+      return { isSuccess: false, response };
+    }
   };
 
   function onGoBack(data) {
     onBackClick(config.key, data);
   }
-
-  // const closeToast = () => {
-  //   setShowToast(false);
-  //   setError("");
-  // };
 
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
@@ -166,28 +140,30 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
+   const businessService = "RENT-N-LEASE";
+   const appNumber =  currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber
+   console.log( currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber," currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber")
   // Adapt workflow details hook for RentAndLease
-  // const workflowDetails = Digit.Hooks.useWorkflowDetails({
-  //   tenantId: tenantId,
-  //   id: currentStepData?.CreatedResponse?.applicationNumber,
-  //   moduleCode: "RENTANDLEASE",
-  // });
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: appNumber,
+    moduleCode: businessService,
+  });
+
+  console.log("workflowDetails", workflowDetails);
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  // let actions =
-  //   workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-  //   }) ||
-  //   workflowDetails?.data?.nextActions?.filter((e) => {
-  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-  //   });
-
-  let actions = [];
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
 
   function onActionSelect(action) {
     goNext(action);
   }
-
 
   return (
     <React.Fragment>
@@ -205,11 +181,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           label={t("CS_COMMON_BACK")}
           onSubmit={() => onGoBack(currentStepData)}
           style={{ backgroundColor: "white", color: "#2947a3", border: "1px solid", marginRight: "10px" }}
-        />        
+        />
 
         {displayMenu && actions && actions.length > 0 ? (
-          <Menu localeKeyPrefix={t(`WF_CITIZEN_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
-        ) : null}
+          <Menu options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+        ) : // <Menu localeKeyPrefix={t(`WF_CITIZEN_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+
+        null}
 
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>

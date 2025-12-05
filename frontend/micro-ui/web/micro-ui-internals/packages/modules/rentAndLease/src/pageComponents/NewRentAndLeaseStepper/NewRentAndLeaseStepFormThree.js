@@ -7,8 +7,11 @@ import _ from "lodash";
 const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const stateId = Digit.ULBService.getStateId();
-  const { isLoading, data: mdmsData } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId);
-
+   const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+  const { isLoading, data: mdmsData } =  Digit?.Hooks?.rentandlease.useRALDocumentsMDMS(tenantId);
+ 
    const { triggerToast } = config?.currStepConfig[0];
 
 

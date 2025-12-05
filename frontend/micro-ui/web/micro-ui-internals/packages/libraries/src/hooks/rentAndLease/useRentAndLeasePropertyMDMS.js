@@ -86,23 +86,26 @@ const useRALPropertyMDMS = (tenantId) => {
         console.log('dataFromMDMS', data)
         const properties = data?.rentAndLease?.RLProperty || [];
 
+        
+
         // Map each property into a clean object
         return properties.map((p) => ({
-          propertyId: p.propertyId,
-          propertyName: p.propertyName,
-          usageCategory: p.usageCategory,
-          propertySizeOrArea: p.propertySizeOrArea,
-          address: p.address,
-          geoLocation: p.geoLocation,
-          propertyImage: p.propertyImage,
-          propertyType: p.propertyType,
-          locationType: p.locationType,
-          baseRent: p.baseRent,
-          securityDeposit: p.securityDeposit,
-          taxApplicable: p.tax_applicable,
-          refundApplicableOnDiscontinuation: p.refund_applicable_on_discontinuation,
-          penaltyType: p.penaltyType,
-          latePayment: p.latePayment,
+          propertyId: p?.propertyId,
+          propertyName: p?.propertyName,
+          allotmentType: p?.allotmentType,
+          propertySizeOrArea: p?.propertySizeOrArea,
+          address: p?.address,
+          geoLocation: p?.geoLocation,
+          propertyImage: p?.propertyImage,
+          propertyType: p?.propertyType,
+          locationType: p?.locationType,
+          baseRent: p?.baseRent,
+          securityDeposit: p?.securityDeposit,
+          taxApplicable: p?.tax_applicable,
+          refundApplicableOnDiscontinuation: p?.refundApplicableOnDiscontinuation,
+          penaltyType: p?.penaltyType || "daily",
+          latePayment: p?.latePayment || "2%",
+          cowCessApplicable: p?.cowCessApplicable
         }));
       },
     }

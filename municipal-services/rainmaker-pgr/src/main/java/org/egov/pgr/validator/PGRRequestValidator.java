@@ -23,6 +23,7 @@ import org.egov.pgr.contract.ServiceResponse;
 import org.egov.pgr.model.ActionHistory;
 import org.egov.pgr.model.ActionInfo;
 import org.egov.pgr.model.Service;
+import org.egov.pgr.model.Service.SourceEnum;
 import org.egov.pgr.model.Service.StatusEnum;
 import org.egov.pgr.service.GrievanceService;
 import org.egov.pgr.service.ReportService;
@@ -127,7 +128,20 @@ public class PGRRequestValidator {
 			vaidateServiceCodes(serviceRequest, errorMap);
 		}
 		validateAssignments(serviceRequest, errorMap);
-		validateAction(serviceRequest, errorMap);
+			validateAddressDetail(serviceRequest, errorMap);
+	
+			if (!CollectionUtils.isEmpty(serviceRequest.getServices())) {
+				ActionInfo actionInfo = serviceRequest.getActionInfo().get(0);
+				Service.SourceEnum source = serviceRequest.getServices().get(0).getSource();
+				if (source.equals(Service.SourceEnum.IVR) && actionInfo != null
+						&& "resolve".equalsIgnoreCase(actionInfo.getAction())) {
+					// IVR can only resolve the complaint
+					log.info("Validating action is not required for IVR source");
+				} else {
+					validateAction(serviceRequest, errorMap);
+
+				}
+			}
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 	}

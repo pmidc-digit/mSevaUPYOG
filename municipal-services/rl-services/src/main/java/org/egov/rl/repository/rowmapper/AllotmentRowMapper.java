@@ -37,7 +37,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 		List<Document> docList = new ArrayList<>();
 		AllotmentDetails currentAllotment = null;
 		while (rs.next()) {
-			if (currentAllotmentList.size() <= rs.getLong("totalAllotments")) {
+			if (currentAllotmentList.size() <= rs.getLong("totalAllotments") && rs.getLong("totalAllotments") > 1) {
 				if (currentAllotment != null) {
 					String allotmentId = currentAllotment.getId();
 					if (currentAllotmentList.stream().noneMatch(d -> d.getId().equals(allotmentId))) {
@@ -55,20 +55,16 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
 					.tenantId(rs.getString("tenant_id"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
-					.applicationType(rs.getString("application_type"))
-					.startDate(rs.getLong("start_date"))
-					.endDate(rs.getLong("end_date"))
-					.isGSTApplicable(rs.getBoolean("is_gst_applicable"))
+					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
+					.endDate(rs.getLong("end_date")).isGSTApplicable(rs.getBoolean("is_gst_applicable"))
 					.isCowCessApplicable(rs.getBoolean("is_cow_cess_applicable"))
 					.isRefundApplicableOnDiscontinuation(rs.getBoolean("is_refund_applicable_on_discontinuation"))
-					.termAndCondition(rs.getString("term_and_condition"))
-					.penaltyType(rs.getString("penalty_type"))
-					.createdTime(rs.getLong("created_time"))
-					.createdBy(rs.getString("created_by"))
-					.documents(docList)
-					.ownerInfo(userList)
-					.auditDetails(auditDetails)
-					.build();
+					.termAndCondition(rs.getString("term_and_condition")).penaltyType(rs.getString("penalty_type"))
+					.createdTime(rs.getLong("created_time")).createdBy(rs.getString("created_by")).documents(docList)
+					.ownerInfo(userList).auditDetails(auditDetails).build();
+			if (rs.getLong("totalAllotments") < 2) {
+				currentAllotmentList.add(currentAllotment);
+			}
 		}
 
 //		currentAllotment.setOwnerInfo(userList);

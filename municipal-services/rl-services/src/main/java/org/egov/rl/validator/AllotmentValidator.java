@@ -203,16 +203,20 @@ public class AllotmentValidator {
 		String id = allotementRequest.getAllotment().getId();
 		if ((id == null) || (id != null && id.isEmpty())) {
 			throw new CustomException("TENANT ID INFO ERROR",
-					"TenantId cannot be empty, please provide tenantId information");
+					"Allotment Id cannot be empty, please provide allotment id information");
 		}
 
 		AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
+		System.out.println("------------id----------"+id);
+		System.out.println("------------tenantId----------"+tenantId);
+		
 		Set<String> ids=new HashSet<>();
-		ids.add(id);
+		ids.add(id.trim());
 		allotmentCriteria.setAllotmentIds(ids);
-		allotmentCriteria.setTenantId(tenantId);
+		allotmentCriteria.setTenantId(tenantId.trim());
 		
 		AllotmentDetails allotmentDetails= allotmentRepository.getAllotmentByIds(allotmentCriteria).stream().findFirst().orElse(null);
+		System.out.println("allotmentDetails-------"+allotmentRepository.getAllotmentByIds(allotmentCriteria).isEmpty());
 		if ((allotmentDetails == null)) {
 			throw new CustomException("ALLOTMENT ID INFO ERROR",
 					"Wrong allotment id is passing , please provide another corroct allotment Id information");

@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
@@ -21,13 +20,11 @@ import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.SurveyStatus;
-import org.egov.egovsurveyservices.web.models.user.UserSearchRequest;
 import org.egov.egovsurveyservices.web.models.user.UserSearchResponseContent;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -414,7 +411,7 @@ public class ScorecardSurveyService {
 //        return scorecardAnswerResponse;
 //    }
 
-    public PlainSearchResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+    public PlainSearchResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria, RequestInfo requestInfo) {
         List<String> surveyUuids = surveyRepository.getSurveyUuidsByTenant(criteria.getTenantId());
         List<ScorecardAnswerResponse> responses = new ArrayList<>();
 
@@ -430,6 +427,33 @@ public class ScorecardSurveyService {
             List<SurveyResponseNew> surveyResponses = surveyRepository.getSurveyResponsesBySurveyAndTenant(surveyUuid, criteria.getTenantId());
 
             for (SurveyResponseNew sr : surveyResponses) {
+
+                // ✅ ✅ FETCH USER DETAILS USING citizenId
+                String citizenId = sr.getCitizenId();
+                Map<String, UserSearchResponseContent> userMap = null;
+                UserSearchResponseContent user;
+
+                try {
+                    userMap = userService.searchUser(requestInfo,
+                            Collections.singletonList(citizenId));
+                    user = userMap.get(citizenId);
+                } catch (Exception e) {
+                    user = new UserSearchResponseContent();
+                    user.setUuid(citizenId);
+                }
+
+                JsonNode userNode = mapper.convertValue(user, JsonNode.class);
+
+                // ✅ ✅ ATTACH userDetails to each answerDetail
+                for (AnswerNew answer : answers) {
+                    if (answer.getAnswerDetails() != null) {
+                        answer.getAnswerDetails().forEach(detail -> detail.setUserDetails(userNode));
+                    }
+                }
+
+
+
+
                 AnswerFetchCriteria scopedCriteria = AnswerFetchCriteria.builder()
                         .surveyUuid(surveyUuid)
                         .citizenId(sr.getCitizenId())

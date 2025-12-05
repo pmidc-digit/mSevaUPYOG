@@ -3,15 +3,12 @@ package org.egov.bpa.util;
 import static org.egov.bpa.util.BPAConstants.BILL_AMOUNT;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import com.jayway.jsonpath.JsonPath;
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.ServiceRequestRepository;
 import org.egov.bpa.web.model.AuditDetails;
@@ -332,5 +329,199 @@ public class BPAUtil {
 				.build();
 		return mdmsCriteriaReq;
 	}
+
+
+	public MdmsCriteriaReq getMDMSRequestForHolidays(RequestInfo requestInfo, String tenantId, List<Integer> years) {
+		String filter = buildYearFilter(years);
+
+		ModuleDetail holidaysModule = ModuleDetail.builder()
+				.moduleName("common-masters")
+				.masterDetails(Arrays.asList(
+						MasterDetail.builder()
+								.name("Holidays")
+								.filter(filter)
+								.build()))
+				.build();
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+				.moduleDetails(Arrays.asList(holidaysModule))
+				.tenantId(tenantId)
+				.build();
+
+		return MdmsCriteriaReq.builder()
+				.mdmsCriteria(mdmsCriteria)
+				.requestInfo(requestInfo)
+				.build();
+	}
+
+
+	/**
+	 * Build the JSONPath filter for multiple years.
+	 */
+	private String buildYearFilter(List<Integer> years) {
+		if (CollectionUtils.isEmpty(years)) {
+			return "$.*";
+		}
+		String joined = years.stream()
+				.map(y -> "@.year==" + y)
+				.collect(Collectors.joining(" || "));
+		// Note the dot after $ to filter top-level master list
+		return "$.[?(" + joined + ")]";
+	}
+
+	/**
+	 * Makes MDMS call for Holidays for the given years.
+	 */
+	public Object mDMSCallForHolidays(RequestInfo requestInfo, String tenantId, List<Integer> years) {
+		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequestForHolidays(requestInfo, tenantId, years);
+		return serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+	}
+
+	// ---------------------------------------------------------------------
+	// Parsing utilities – build a year->month->days map from MdmsRes
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Builds a lookup map: year -> month (1..12) -> List<day>.
+	 * Uses JSONPath over MdmsRes to extract common-masters/Holidays entries.
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<Integer, Map<Integer, List<Integer>>> toYearMonthDaysMap(Object mdmsRes) {
+		defaultJsonPathConfig();
+		Map<Integer, Map<Integer, List<Integer>>> yearMonthDays = new HashMap<>();
+
+		List<Map<String, Object>> entries = JsonPath.read(mdmsRes, "$.MdmsRes['common-masters']['Holidays']");
+		if (entries == null) return yearMonthDays;
+
+		for (Map<String, Object> entry : entries) {
+			Integer year = (Integer) entry.get("year");
+			if (year == null) continue;
+
+			List<Map<String, Object>> months = (List<Map<String, Object>>) entry.get("months");
+			Map<Integer, List<Integer>> monthToDays = yearMonthDays.computeIfAbsent(year, k -> new HashMap<>());
+
+			if (months != null) {
+				for (Map<String, Object> m : months) {
+					Integer monthNum = (Integer) m.get("month"); // 1..12
+					if (monthNum == null) continue;
+					List<Integer> days = (List<Integer>) m.get("holidays");
+					monthToDays.put(monthNum, (days != null) ? days : Collections.emptyList());
+				}
+			}
+		}
+		return yearMonthDays;
+	}
+
+	/**
+	 * Converts stored day integers to a Set<LocalDate> for a given YearMonth.
+	 * Invalid day values (e.g., 31 in a 30-day month) are ignored defensively.
+	 */
+	public Set<LocalDate> toLocalDateSet(YearMonth ym, Map<Integer, Map<Integer, List<Integer>>> yearMonthDays) {
+		List<Integer> days = yearMonthDays
+				.getOrDefault(ym.getYear(), Collections.emptyMap())
+				.getOrDefault(ym.getMonthValue(), Collections.emptyList());
+
+		if (days.isEmpty()) return Collections.emptySet();
+
+		Set<LocalDate> out = new LinkedHashSet<>();
+		int max = ym.lengthOfMonth();
+		for (Integer d : days) {
+			if (d != null && d >= 1 && d <= max) {
+				out.add(LocalDate.of(ym.getYear(), ym.getMonthValue(), d));
+			}
+		}
+		return out;
+	}
+
+	// ---------------------------------------------------------------------
+	// Core API – return holiday dates as Set<LocalDate> for prev/current/next
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Given an anchor date, returns a map of YearMonth -> Set<LocalDate>
+	 * for the previous month, current month, and next month.
+	 *
+	 * Example keys: { 2025-11, 2025-12, 2026-01 }
+	 */
+	public Map<YearMonth, Set<LocalDate>> getHolidayDateSetsForMonthWindow(RequestInfo requestInfo,
+																		   String tenantId,
+																		   LocalDate anchorDate) {
+		YearMonth currentYM = YearMonth.from(anchorDate);
+		YearMonth prevYM = currentYM.minusMonths(1);
+		YearMonth nextYM = currentYM.plusMonths(1);
+
+		// Fetch all distinct years needed in one MDMS call
+		Set<Integer> yearsToFetch = new HashSet<>(Arrays.asList(prevYM.getYear(), currentYM.getYear(), nextYM.getYear()));
+		Object mdmsRes = mDMSCallForHolidays(requestInfo, tenantId, new ArrayList<>(yearsToFetch));
+
+		// Build lookup and convert to LocalDate sets
+		Map<Integer, Map<Integer, List<Integer>>> ymd = toYearMonthDaysMap(mdmsRes);
+
+		Map<YearMonth, Set<LocalDate>> result = new LinkedHashMap<>();
+		result.put(prevYM, toLocalDateSet(prevYM, ymd));
+		result.put(currentYM, toLocalDateSet(currentYM, ymd));
+		result.put(nextYM, toLocalDateSet(nextYM, ymd));
+		return result;
+	}
+
+	/**
+	 * Convenience overload accepting dd-MM-yyyy string.
+	 */
+	public Map<YearMonth, Set<LocalDate>> getHolidayDateSetsForMonthWindow(RequestInfo requestInfo,
+																		   String tenantId,
+																		   String ddMMyyyy) {
+		String[] p = ddMMyyyy.split("-");
+		int day = Integer.parseInt(p[0]);
+		int month = Integer.parseInt(p[1]);
+		int year = Integer.parseInt(p[2]);
+		LocalDate anchor = LocalDate.of(year, month, day);
+		return getHolidayDateSetsForMonthWindow(requestInfo, tenantId, anchor);
+	}
+
+	/**
+	 * Returns a single merged Set<LocalDate> for previous+current+next month.
+	 * (If you prefer one collection instead of a map by month.)
+	 */
+	public Set<LocalDate> getMergedHolidayDateSetForMonthWindow(RequestInfo requestInfo,
+																String tenantId,
+																LocalDate anchorDate) {
+		Map<YearMonth, Set<LocalDate>> byMonth = getHolidayDateSetsForMonthWindow(requestInfo, tenantId, anchorDate);
+		Set<LocalDate> merged = new LinkedHashSet<>();
+		byMonth.values().forEach(merged::addAll);
+		return merged;
+	}
+
+	public Set<LocalDate> getMergedHolidayDateSetForMonthWindow(RequestInfo requestInfo,
+																String tenantId,
+																String ddMMyyyy) {
+		Map<YearMonth, Set<LocalDate>> byMonth = getHolidayDateSetsForMonthWindow(requestInfo, tenantId, ddMMyyyy);
+		Set<LocalDate> merged = new LinkedHashSet<>();
+		byMonth.values().forEach(merged::addAll);
+		return merged;
+	}
+
+	// ---------------------------------------------------------------------
+	// Bonus helpers – check single date or build nested filter MDMS request
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Returns true if a given date exists in Holidays (year-month-day present).
+	 * Uses year-only MDMS filter and validates in code.
+	 */
+	public boolean isHoliday(RequestInfo requestInfo, String tenantId, String ddMMyyyy) {
+		String[] p = ddMMyyyy.split("-");
+		int day = Integer.parseInt(p[0]);
+		int month = Integer.parseInt(p[1]);
+		int year = Integer.parseInt(p[2]);
+
+		Object mdmsRes = mDMSCallForHolidays(requestInfo, tenantId, Arrays.asList(year));
+
+		defaultJsonPathConfig();
+		List<Integer> days = JsonPath.read(mdmsRes,
+				"$.MdmsRes['common-masters']['Holidays'][?(@.year==" + year + ")].months[?(@.month==" + month + ")].holidays[?(@==" + day + ")]"
+		);
+		return days != null && !days.isEmpty();
+	}
+
 
 }

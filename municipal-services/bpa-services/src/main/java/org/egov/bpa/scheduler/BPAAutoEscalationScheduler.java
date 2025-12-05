@@ -10,6 +10,7 @@ import java.util.Set;
 import org.egov.bpa.service.BPAAutoEscalationService;
 import org.egov.bpa.service.BPAService;
 import org.egov.bpa.service.UserService;
+import org.egov.bpa.util.BPAUtil;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
@@ -37,6 +38,9 @@ public class BPAAutoEscalationScheduler {
 	
 	@Autowired
 	private BPAService bpaService;
+
+	@Autowired
+	private BPAUtil bpaUtil;
 	
 	@Autowired
 	private UserService userService;
@@ -107,9 +111,10 @@ public class BPAAutoEscalationScheduler {
 
 
 
-	private LocalDate getPastNthWorkingDay(LocalDate fromDate, int n, Set<LocalDate> holidays) {
+	private LocalDate getPastNthWorkingDay(LocalDate fromDate, int n) {
+		RequestInfo requestInfo = getDefaultRequestInfo();
 		if (n < 0) throw new IllegalArgumentException("n must be >= 0");
-
+		Set<LocalDate> holidays = bpaUtil.getMergedHolidayDateSetForMonthWindow(requestInfo,"pb",fromDate);
 		LocalDate date = fromDate;
 
 		// If starting on weekend, move to previous Friday

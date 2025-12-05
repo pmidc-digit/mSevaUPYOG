@@ -123,7 +123,7 @@ public class PaymentUpdateService {
 						String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
 						
 						if (nextState != null 
-								&& nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGVERIFICATION_STATE)
+								&& nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE)
 								&& BPAConstants.ACTION_PAY.equalsIgnoreCase(action)) {
 							List<String> roles = new ArrayList<>();
 							nextState.getActions().forEach(stateAction -> {

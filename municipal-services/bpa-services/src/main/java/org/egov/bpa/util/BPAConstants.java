@@ -418,6 +418,8 @@ public class BPAConstants {
 
 	public static final String PENDINGVERIFICATION_STATE = "PENDINGVERIFICATION";
 	
+	public static final String PENDINGINITIALVERIFICATION_STATE = "PENDINGINITIALVERIFICATION";
+	
 	public static final String ACTION_RESUBMIT = "RESUBMIT";
 
 }

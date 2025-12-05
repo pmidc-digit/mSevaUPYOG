@@ -151,14 +151,26 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
     values: [
       {
         title: t("BPA_PERMANANT_ADDRESS_LABEL"),
-        value: application?.applicationDetails?.[3]?.values?.[0]?.value || "NA",
+        value: [
+          `${t("BPA_PERMANANT_ADDRESS_LABEL")}: ${application?.applicationDetails?.[3]?.values?.[0]?.value || "NA"}`,
+          `${t("BPA_STATE_TYPE")}: ${application?.applicationDetails?.[3]?.values?.[1]?.value || "NA"}`,
+          `${t("BPA_DISTRICT_TYPE")}: ${application?.applicationDetails?.[3]?.values?.[2]?.value || "NA"}`,
+          `${t("BPA_DETAILS_PIN_LABEL")}: ${application?.applicationDetails?.[3]?.values?.[3]?.value || "NA"}`,
+        ].join(", "),
       },
       {
         title: t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL"),
-        value: application?.applicationDetails?.[4]?.values?.[0]?.value || "NA",
+        value: [
+          `${t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}: ${application?.applicationDetails?.[4]?.values?.[0]?.value || "NA"}`,
+          `${t("BPA_STATE_TYPE")}: ${application?.applicationDetails?.[4]?.values?.[1]?.value || "NA"}`,
+          `${t("BPA_DISTRICT_TYPE")}: ${application?.applicationDetails?.[4]?.values?.[2]?.value || "NA"}`,
+          `${t("BPA_DETAILS_PIN_LABEL")}: ${application?.applicationDetails?.[4]?.values?.[3]?.value || "NA"}`,
+        ].join(", "),
       },
     ],
   });
+
+
 
   // Documents
   // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];

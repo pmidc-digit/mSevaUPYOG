@@ -55,11 +55,26 @@ const ApplicationDetails = () => {
   // const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   // let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
+  
+  const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
+const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
+
+//  Merge the license data from both tenants
+const LicenseData = {
+  Licenses: [
+    ...(LicenseDataDynamic?.Licenses || []),
+    ...(LicenseDataPunjab?.Licenses || [])
+  ]
+};
+
+let License = LicenseData?.Licenses?.[0];
+
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    { tenantId, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
+    { tenantId:`${License?.tradeLicenseDetail?.additionalDetail?.Ulb}`, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
     {}
   );
 
+  console.log('reciept_data', reciept_data)
   const handleDownloadPdf = async () => {
     try {
       const Property = applicationDetail;
@@ -73,7 +88,7 @@ const ApplicationDetails = () => {
       if (!tenantInfo) return;
 
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
-      Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+      Digit.Utils.pdf.generateNewBPAREG(acknowledgementData);
     } catch (err) {
       console.error("Error generating acknowledgement PDF", err);
     }
@@ -83,16 +98,7 @@ const ApplicationDetails = () => {
   console.log('ulbType', ulbType)
   console.log(reciept_data, "TOTAL AMOUNT");
     // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
-const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
-const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
 
-//  Merge the license data from both tenants
-const LicenseData = {
-  Licenses: [
-    ...(LicenseDataDynamic?.Licenses || []),
-    ...(LicenseDataPunjab?.Licenses || [])
-  ]
-};
 
 const { data: applicationDetailDynamic, isLoading: applicationDetailLoadingDynamic } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: id, tenantId }, {});
 const { data: applicationDetailPunjab, isLoading: applicationDetailLoadingPunjab } = Digit.Hooks.obps.useLicenseDetails("pb.punjab", { applicationNumber: id, tenantId: "pb.punjab" }, {});
@@ -105,7 +111,6 @@ console.log("applicationDetails 2",LicenseData);
 //  Update loading state to check both
 const isLoading = isLoadingDynamic || isLoadingPunjab;
 
-let License = LicenseData?.Licenses?.[0];
   const [viewTimeline, setViewTimeline] = useState(false);
   const menuRef = useRef();
   const applicationDetails= LicenseData

@@ -409,8 +409,8 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSEE_PERMANENT_LABEL")}</h2>
           {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
-          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.additionalDetail?.permanentState))}
-          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.permanentCity))}
+          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.permanentState))}
+          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict))}
           {renderLabel(t("BPA_DETAILS_PIN_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
         </div>
 
@@ -418,8 +418,8 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_CORRESPONDANCE_ADDRESS_LABEL")}</h2>
           {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
-          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.additionalDetail?.correspondenceState))}
-          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity))}
+          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.correspondenceState))}
+          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict))}
           {renderLabel(t("BPA_DETAILS_PIN_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
         </div>
 

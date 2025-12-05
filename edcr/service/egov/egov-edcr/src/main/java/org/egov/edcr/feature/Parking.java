@@ -352,9 +352,7 @@ public class Parking extends FeatureProcess {
         Integer noOfrequiredParking = 0;
         if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
         	if(mostRestrictiveOccupancy.getSubtype()!=null
-        			|| (mostRestrictiveOccupancy.getSubtype() != null
-					&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
-							|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())))) {
+							&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
         		// Reset parking calculation variables
                 noOfrequiredParking = 0; // This will hold the total ECS required for DUs + Guest Parking
                 // --- 1. Calculate base ECS based on Unit Area (per DU) from the first image ---

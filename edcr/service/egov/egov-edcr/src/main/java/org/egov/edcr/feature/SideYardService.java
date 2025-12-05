@@ -442,14 +442,21 @@ public class SideYardService extends GeneralRule {
             BigDecimal minDistanceSideYard2) {
 
         String occupancyName;
-        if (mostRestrictiveOccupancy.getSubtype() != null)
-            occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
-        else
-            occupancyName = mostRestrictiveOccupancy.getType().getName();
+        String occupanyCode;
+        if (mostRestrictiveOccupancy.getSubtype() != null) {
+        	occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+        }else {
+        	occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+    	}
+        
         LOG.info("SideYard1Result outside: actualDistance/expectedDistance and status:" + actualDistance +" / "+exptDistance +"and "+valid);
         // Set the values for the side yard result
         sideYard1Result.rule = rule;
         sideYard1Result.occupancy = occupancyName;
+        sideYard1Result.occupancyCode = occupanyCode;
+        
         sideYard1Result.subRule = subRule;
         sideYard1Result.blockName = blockName;
         sideYard1Result.level = level;
@@ -467,6 +474,7 @@ public class SideYardService extends GeneralRule {
         // sideYard2Result = sideYard1Result; for both side assuming same value
         sideYard2Result.rule = rule;
         sideYard2Result.occupancy = occupancyName;
+        sideYard2Result.occupancyCode = occupanyCode;
         sideYard2Result.subRule = subRule;
         sideYard2Result.blockName = blockName;
         sideYard2Result.level = level;

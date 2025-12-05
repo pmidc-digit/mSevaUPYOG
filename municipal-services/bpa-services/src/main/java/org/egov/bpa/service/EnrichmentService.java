@@ -225,7 +225,10 @@ public class EnrichmentService {
 		log.info("Application status is : " + bpa.getStatus());
 		String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
 
-		if (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE)) {
+		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+		
+		if ((state.equalsIgnoreCase(BPAConstants.PENDINGVERIFICATION_STATE) || state.equalsIgnoreCase(BPAConstants.FI_STATUS))
+				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
 			bpa.setApplicationDate(Calendar.getInstance().getTimeInMillis());
 		}
 

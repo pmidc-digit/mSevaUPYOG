@@ -3,6 +3,7 @@ package org.egov.bpa.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.ServiceRequestRepository;
@@ -13,12 +14,16 @@ import org.egov.bpa.web.model.landInfo.OwnerInfo;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.bpa.web.model.user.UserSearchRequest;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 @Service
 public class UserService {
@@ -222,6 +227,64 @@ public class UserService {
         	throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
         return userDetailResponse.getUser().get(0);
 
+    }
+    
+    UserDetailResponse employeeSearch(Object userRequest, StringBuilder uri) {
+		String dobFormat = null;
+		if (uri.toString().contains(config.getUserSearchEndpoint())
+				|| uri.toString().contains(config.getUserUpdateEndpoint()))
+			dobFormat = "yyyy-MM-dd";
+		else if (uri.toString().contains(config.getUserCreateEndpoint()))
+			dobFormat = "dd/MM/yyyy";
+		try {
+			LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri, userRequest);
+			parseResponse(responseMap, dobFormat);
+			UserDetailResponse userDetailResponse = mapper.convertValue(responseMap, UserDetailResponse.class);
+			return userDetailResponse;
+		} catch (IllegalArgumentException e) {
+			throw new CustomException("IllegalArgumentException", "ObjectMapper not able to convertValue in userCall");
+		}
+	}
+    
+    public List<String> getAssigneeFromBPA(BPA bpa, List<String> userRoles, RequestInfo requestInfo) {
+    	Map<String, Object> additionalDetails = (Map<String, Object>)bpa.getAdditionalDetails();
+    	String roles = userRoles.stream().collect(Collectors.joining(","));
+    	StringBuilder uri = getEmployeeSearchURL(bpa.getTenantId(), roles, additionalDetails, false);
+    	
+    	JSONObject hrmsRequest = new JSONObject();
+    	UserSearchRequest userSearchRequest = new UserSearchRequest();
+    	userSearchRequest.setRequestInfo(requestInfo);
+    	hrmsRequest.put("RequestInfo", requestInfo);
+    	Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+    	
+    	List<String> assignees = JsonPath.read(response, "$.Employees.*.user.uuid");
+    	assignees = assignees.stream().distinct().collect(Collectors.toList());
+    	return CollectionUtils.isEmpty(assignees) ? null :assignees;
+    }
+    
+    private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, Object> additionalDetails, boolean isAllAssignees) {
+    	String zones = StringUtils.isEmpty(additionalDetails.get("zonenumber")) ? null : additionalDetails.get("zonenumber").toString();
+    	String categories = StringUtils.isEmpty(additionalDetails.get("categories")) ? null : additionalDetails.get("categories").toString();
+    	String subcategories = StringUtils.isEmpty(additionalDetails.get("subcategories")) ? null : additionalDetails.get("subcategories").toString();
+    	
+    	StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
+    	uri.append("?tenantId=").append(tenantId)
+    	.append("&isActive=true");
+    	
+    	if(!StringUtils.isEmpty(roles))
+    		uri.append("&roles=").append(roles);
+    	
+    	if(!isAllAssignees) {
+    		uri.append("&assignedtenattids=").append(tenantId);
+    		if(!StringUtils.isEmpty(zones))
+        		uri.append("&zones=").append(zones);
+        	if(!StringUtils.isEmpty(categories))
+        		uri.append("&categories=").append(categories);
+        	if(!StringUtils.isEmpty(subcategories))
+        		uri.append("&subcategories=").append(subcategories);
+    	}
+    	
+    	return uri;
     }
     
 }

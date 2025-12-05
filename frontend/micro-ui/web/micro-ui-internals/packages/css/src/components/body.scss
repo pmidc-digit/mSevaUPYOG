@@ -76,6 +76,7 @@ body {
 .back-btn2 {
   cursor: pointer;
   width: fit-content;
+  color: black;
   @apply flex border-solid border-b border-text-primary font-rc text-text-primary text-text-btn ml-sm mb-md;
 
   img {
@@ -133,7 +134,7 @@ body {
 
   .back-btn2 {
     margin-left: 0;
-  }
+  } 
 }
 
 .body-container::-webkit-scrollbar {

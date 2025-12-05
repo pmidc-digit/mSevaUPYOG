@@ -12,12 +12,12 @@ const DashboardFooter = () => {
     padding: "48px 0 0 0",
     marginTop: "64px",
     width: "100%",
-    borderRadius:"15px",
-    marginBottom:"40px",
+
+
   }
 
   const footerContainerStyles = {
-    maxWidth: "1280px",
+    
     margin: "0 auto",
     padding: "0 40px",
   }

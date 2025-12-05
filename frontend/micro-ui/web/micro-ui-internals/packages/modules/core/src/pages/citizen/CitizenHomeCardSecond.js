@@ -1,60 +1,14 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 
-// const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
-//     // const isUserLoggedIn = Digit.UserService.isLoggedIn();
-//     const user = Digit.UserService?.getUser()
-//     const tenantId = localStorage.getItem("CITIZEN.CITY");
-//     const isUserLoggedIn = user?.access_token
-//     const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT" ) || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId));
-//     console.log("links", links, isUserLoggedIn, user);
-//   return (
-//     <div className="CitizenHomeCard" style={styles ? styles : {}}>
-//       <div className="header">
-//         <h2>{header}</h2>
-//         <Icon />
-//       </div>
 
-//       <div className="links">
-//         {links.map((e, i) => (
-//           <div className="linksWrapper" style={{paddingLeft:"10px"}}>
-//             {(e?.parentModule?.toUpperCase() == "BIRTH" ||
-//               e?.parentModule?.toUpperCase() == "DEATH" ||
-//               e?.parentModule?.toUpperCase() == "FIRENOC") ?
-//               <a href={e.link}>{e.i18nKey}</a> :
-//               <div>
-//                 {!e?.navigationURL?.includes("https") ?
-//                 <div>
-//                 {e?.name === "BPA_CITIZEN_HOME_VIEW_LOGIN_AS_PROFESSIONAL_LABEL" && !isUserLoggedIn && <Link key={i} to={{ pathname: e.link, state: e.state }}>
-//                     {e.i18nKey}
-//                 </Link>}
-//                 {e?.name === "BPA_CITIZEN_HOME_STAKEHOLDER_LOGIN_LABEL" && !isUserRegistered && <Link key={i} to={{ pathname: e.link, state: e.state }}>
-//                     {e.i18nKey}
-//                 </Link>}
-//                 {e?.name === "BPA_CITIZEN_HOME_ARCHITECT_LOGIN_LABEL" && isUserRegistered && <Link key={i} to={{ pathname: e.link, state: e.state }}>
-//                     {e.i18nKey}
-//                 </Link>}
-//                 {e?.name !== "BPA_CITIZEN_HOME_VIEW_LOGIN_AS_PROFESSIONAL_LABEL" && e?.name !== "BPA_CITIZEN_HOME_STAKEHOLDER_LOGIN_LABEL" && e?.name !== "BPA_CITIZEN_HOME_ARCHITECT_LOGIN_LABEL" && <Link key={i} to={{ pathname: e.link, state: e.state }}>
-//                     {e.i18nKey}
-//                 </Link>}
-//                 </div>
-//                  :
-//                 <a href={e.link} target="_blank" >{e.i18nKey}</a> 
-//                 }
-//               </div>
-//             }
-//           </div>
-//         ))}
-//       </div>
-//       <div>{isInfo ? <Info /> : null}</div>
-//     </div>
-//   );
-// };
-
-
-
-const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
+const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
+   const location = useLocation();
+  const shouldRemoveGrid = location.pathname.endsWith("all-services"); 
+  console.log(shouldRemoveGrid, "RRRR");
+
 
   // Predefined color schemes for cards
   const cardColors = [
@@ -175,6 +129,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   )
 
   const cardContainerStyle = {
+    ...(shouldRemoveGrid ? {display: "grid"} : {  }),
     display: "grid",
     gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "16px",
@@ -270,26 +225,49 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
           const colorScheme = cardColors[index % cardColors.length]
           const cardStyles = cardStyle(colorScheme)
 
-          // Always treat as external link for this component
-          return (
-            <a
-              key={index}
-              href={link.link}
-              style={cardStyles}
-              target={link.external ? "_blank" : "_self"}
-              rel={link.external ? "noopener noreferrer" : undefined}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)"
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)"
-                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)"
-              }}
-            >
-              {renderCardContent(link, colorScheme, index)}
-            </a>
-          )
+          // Check if external link
+          const isExternalLink =
+            link?.parentModule?.toUpperCase() === "BIRTH" ||
+            link?.parentModule?.toUpperCase() === "DEATH" ||
+            link?.parentModule?.toUpperCase() === "FIRENOC"
+
+          if (isExternalLink) {
+            return (
+              <a
+                key={index}
+                href={link.link}
+                style={cardStyles}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)"
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)"
+                }}
+              >
+                {renderCardContent(link, colorScheme, index)}
+              </a>
+            )
+          } else {
+            return (
+              <Link
+                key={index}
+                to={{ pathname: link.link, state: link.state }}
+                style={cardStyles}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)"
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)"
+                }}
+              >
+                {renderCardContent(link, colorScheme, index)}
+              </Link>
+            )
+          }
         })}
       </div>
 
@@ -302,4 +280,4 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   )
 }
 
-export default CitizenHomeCardWithExternalLink;
+export default CitizenHomeCardSecond;

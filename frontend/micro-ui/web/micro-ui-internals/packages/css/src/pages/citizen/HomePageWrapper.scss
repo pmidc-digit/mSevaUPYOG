@@ -94,7 +94,7 @@
     width:100vw;
   }
   h1 {
-    position: absolute;
+  
     top: 100px;
     left: 21px;
     @apply text-heading-xl text-white font-bold;
@@ -103,9 +103,9 @@
     border: none;
     top: 76px;
     svg {
-      fill: #ffffff;
+      fill: #000000;
     }
-    @apply absolute text-white text-heading-s ml-md;
+    @apply text-black text-heading-s ml-md;
   }
 }
 

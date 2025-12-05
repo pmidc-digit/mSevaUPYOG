@@ -405,7 +405,7 @@ function PTRSelectDocument({
           />
         )}
 
-        {previewLink && uploadedFile && (
+        {previewLink &&  (
           <div
             style={{ cursor: "pointer", padding: "10px", marginLeft: "25px" }}
             onClick={(e) => {

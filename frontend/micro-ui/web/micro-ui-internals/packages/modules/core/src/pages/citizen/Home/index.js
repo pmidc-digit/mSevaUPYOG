@@ -234,7 +234,7 @@ const Home = () => {
     <Loader />
   ) : (
     <div className="HomePageContainer" style={{ width: "100%", padding: "0" }}>
-      <div className="HomePageWrapper" style={{ maxWidth: "1600px", margin: "0 auto", padding: "0 40px" }}>
+      <div className="HomePageWrapper" style={{  margin: "0 auto", padding: "0 40px" }}>
         <div style={heroBannerStyles}>
           <h1 style={heroTitleStyles}>mSeva Punjab</h1>
           <p style={heroSubtitleStyles}>Access citizen services digitally with ease and transparency</p>
@@ -267,7 +267,7 @@ const Home = () => {
           <CardBasedOptions {...allInfoAndUpdatesProps} />
         </div>
 
-          <DashboardFooter />
+          {/* <DashboardFooter /> */}
       </div>
     </div>
   )

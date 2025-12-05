@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
+import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -162,7 +163,7 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                         isInfo={code === "OBPS" ? true : false}
                       />
                     ) : (
-                      <CitizenHomeCard
+                      <CitizenHomeCardAccordian
                         header={t(mdmsDataObj?.header)}
                         links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
                         Icon={() => iconSelector(code)}

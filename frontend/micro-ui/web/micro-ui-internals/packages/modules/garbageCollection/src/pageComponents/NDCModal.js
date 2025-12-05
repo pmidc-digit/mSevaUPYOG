@@ -36,14 +36,17 @@ const NDCModal = ({
   closeToastOne,
   getEmployees,
   tenantId,
+  businessService,
 }) => {
   const [config, setConfig] = useState({});
   const [getAmount, setAmount] = useState();
   const [approvers, setApprovers] = useState([]);
+  const [selectedApprover, setSelectedApprover] = useState({});
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [error, setError] = useState(null);
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
-
-  console.log("allRolesNew", allRolesNew);
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
@@ -70,9 +73,56 @@ const NDCModal = ({
     }
   }, [approverData]);
 
+  function selectFile(e) {
+    setFile(e.target.files[0]);
+  }
+
+  useEffect(() => {
+    (async () => {
+      setError(null);
+      if (file) {
+        if (file.size >= 5242880) {
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+        } else {
+          try {
+            const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+            } else {
+              setError(t("CS_FILE_UPLOAD_ERROR"));
+            }
+          } catch (err) {
+            setError(t("CS_FILE_UPLOAD_ERROR"));
+          }
+        }
+      }
+    })();
+  }, [file]);
+
   function submit(data) {
-    const payload = { amount: getAmount };
-    submitAction(payload);
+    console.log("data", data);
+    console.log("selectedApprover", selectedApprover);
+    const payload = {
+      action: action?.action,
+      comment: data?.comments,
+      assignes: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+      // assignee: action?.isTerminateState ? [] : [selectedApprover?.uuid],
+      documents: uploadedFile
+        ? [
+            {
+              documentType: file?.type,
+              documentUid: file?.name,
+              fileStoreId: uploadedFile,
+            },
+          ]
+        : null,
+    };
+
+    submitAction({
+      Licenses: [payload],
+    });
+    // const payload = { amount: getAmount };
+    // submitAction(payload);
   }
 
   useEffect(() => {
@@ -83,10 +133,16 @@ const NDCModal = ({
           action,
           setAmount,
           approvers,
+          selectedApprover,
+          setSelectedApprover,
+          uploadedFile,
+          selectFile,
+          setUploadedFile,
+          businessService,
         })
       );
     }
-  }, [action, approvers]);
+  }, [action, approvers, selectedApprover, uploadedFile]);
 
   if (!action || !config.form) return null;
 

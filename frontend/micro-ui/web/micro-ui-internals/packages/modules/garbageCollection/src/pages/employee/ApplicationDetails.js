@@ -96,31 +96,13 @@ const ChallanApplicationDetails = () => {
   const [errorOne, setErrorOne] = useState(null);
   const menuRef = useRef();
 
-  // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
-  //   tenantId,
-  //   filters: { bookingNo: acknowledgementIds },
-  // });
-
-  console.log("acknowledgementIds", acknowledgementIds, id);
-
-  // const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
-
-  // const pathname = window.location.pathname;
-
-  // const afterApplication = pathname.split("/application/")[1];
-  // const parts = afterApplication.split("/");
-
-  // const applicationNumber = parts.slice(0, 4).join("/");
-
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
       const responseData = await Digit.GCService.search({ tenantId, filters });
-      console.log("search ", responseData);
       setChallanData(responseData?.GarbageConnection?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -162,8 +144,6 @@ const ChallanApplicationDetails = () => {
     setShowToast(null);
   };
 
-  console.log("workflowDetails", workflowDetails);
-
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -189,7 +169,6 @@ const ChallanApplicationDetails = () => {
     (async () => {
       setLoader(true);
       WorkflowService = await Digit.WorkflowService.init(tenantId, "NewGC");
-      console.log("WorkflowService===", WorkflowService);
       setLoader(false);
       setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       // setComplaintStatus(applicationStatus);
@@ -200,11 +179,9 @@ const ChallanApplicationDetails = () => {
     const payload = {
       Licenses: [action],
     };
-    console.log("action", action);
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-    console.log("filterRoles", filterRoles);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -213,7 +190,38 @@ const ChallanApplicationDetails = () => {
   }
 
   const submitAction = async (modalData) => {
-    console.log("modalData", modalData);
+    console.log("modalData", modalData?.Licenses);
+
+    const payload = {
+      GarbageConnection: {
+        ...getChallanData,
+        processInstance: {
+          ...getChallanData?.processInstance,
+          ...modalData?.Licenses[0],
+        },
+      },
+    };
+
+    console.log("payload", payload);
+
+    try {
+      const response = await Digit.GCService.update(payload);
+      console.log("response", response);
+      setLoader(false);
+      setShowModal(false);
+      // ✅ Show success first
+      setLable("Challan is Settled");
+      setError(false);
+      setShowToast(true);
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/garbagecollection/inbox");
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      setLoader(false);
+    }
     return;
     if (!modalData?.amount) {
       setErrorOne(`Please Enter Amount`);

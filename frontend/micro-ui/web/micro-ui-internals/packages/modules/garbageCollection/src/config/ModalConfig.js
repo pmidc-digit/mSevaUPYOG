@@ -15,6 +15,7 @@ export const ModalConfig = ({
   businessService,
 }) => {
   console.log("action=====", action);
+  console.log("uploadedFile=====", uploadedFile);
   let checkCondtions = true;
   if (
     action?.action == "SENDBACKTOCITIZEN" ||

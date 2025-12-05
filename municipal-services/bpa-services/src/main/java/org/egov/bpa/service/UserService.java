@@ -258,12 +258,6 @@ public class UserService {
     	Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
     	
     	List<String> assignees = JsonPath.read(response, "$.Employees.*.user.uuid");
-    	
-    	if(CollectionUtils.isEmpty(assignees)) {
-    		uri = getEmployeeSearchURL(bpa.getTenantId(), roles, additionalDetails, true);
-    		response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
-    		assignees = JsonPath.read(response, "$.Employees.*.user.uuid");
-    	} 
     	assignees = assignees.stream().distinct().collect(Collectors.toList());
     	return CollectionUtils.isEmpty(assignees) ? null :assignees;
     }

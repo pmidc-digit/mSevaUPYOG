@@ -114,14 +114,19 @@ public class PaymentUpdateService {
 					bpas.forEach(bpa -> {
 						BusinessService busSer = workflowService.getBusinessService(bpa, updateRequest.getRequestInfo(),
 								bpa.getApplicationNo());
-						State state = workflowService.getCurrentStateObj(bpa.getStatus(), busSer);
-
-						String action = bpas.get(0).getWorkflow() != null ? bpas.get(0).getWorkflow().getAction() : "";
+						State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), busSer);
+						String nextStateId = currentState.getActions().stream()
+								.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
+								.findFirst().get().getNextState();
+						State nextState = busSer.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 						
-						if ((state.getState().equalsIgnoreCase(BPAConstants.PENDINGVERIFICATION_STATE) || state.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
-								&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+						String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+						
+						if (nextState != null 
+								&& nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGVERIFICATION_STATE)
+								&& BPAConstants.ACTION_PAY.equalsIgnoreCase(action)) {
 							List<String> roles = new ArrayList<>();
-							state.getActions().forEach(stateAction -> {
+							nextState.getActions().forEach(stateAction -> {
 								roles.addAll(stateAction.getRoles());
 							});
 							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);

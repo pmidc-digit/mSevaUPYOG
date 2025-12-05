@@ -43,7 +43,7 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
       for (const doc of requiredDocs) {
         const satisfied = docsArray?.some((d) => d.documentType?.includes(doc?.code) && (d?.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          missingDocs.push(t(doc?.code.replaceAll(".", "_")));
+          missingDocs.push(t(doc?.code?.replaceAll(".", "_")));
         }
       }
 
@@ -208,7 +208,7 @@ function RentAndLeaseSelectDocument({
       <LabelFieldPair>
         {/* <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required && <span style={mandatoryStyle}>  *</span>)}</CardLabel> */}
         <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
-          {t(doc?.code.replaceAll(".", "_"))}
+          {t(doc?.code?.replaceAll(".", "_"))}
           {doc?.required && <span style={mandatoryStyle}> *</span>}
         </CardLabel>
       </LabelFieldPair>

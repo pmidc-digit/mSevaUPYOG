@@ -20,7 +20,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
-      const responseData = await Digit.rentAndLease.search({ tenantId, filters });
+      const responseData = await Digit.RentAndLeaseService.search({ tenantId, filters });
       console.log("result", responseData);
       setChallanData(responseData?.challans);
       setLoader(false);

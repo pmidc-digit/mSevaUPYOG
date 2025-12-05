@@ -12,31 +12,30 @@ const useRALDocumentsMDMS = (tenantId) => {
             tenantId: tenantId,
             moduleDetails: [
               {
-                // rentAndLease
-                moduleName: "docuementName", // Module name
+                moduleName: "rentAndLease", // Module name
                 masterDetails: [
                   {
-                    name: "docName", // Master name
+                    name: "Documents", // Master name
                   },
                 ],
               },
             ],
           },
         },
-        "docuementName"
+        "rentAndLease"
       ),
     {
       select: (data) => {
         console.log("mdmsDocs",data)
         // Extract only active documents and map relevant fields
-        return data?.docuementName?.docName?.filter((doc) => doc.active).map((doc) => ({
+        return data?.rentAndLease?.Documents?.filter((doc) => doc.active).map((doc) => ({
           code: doc.code,
           documentType: doc.documentType,
           required: doc.required,
           hasDropdown: doc.hasDropdown,
-          dropdownData: doc.dropdownData?.filter((dd) => dd.active) || [],
+          // dropdownData: doc.dropdownData?.filter((dd) => dd.active) || [],
           description: doc.description,
-          additionalDetails: doc.additionalDetails || {},
+          // additionalDetails: doc.additionalDetails || {},
         }));
       },
     }

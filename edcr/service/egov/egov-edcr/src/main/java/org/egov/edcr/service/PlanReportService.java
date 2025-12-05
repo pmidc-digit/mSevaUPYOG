@@ -1080,6 +1080,7 @@ public class PlanReportService {
                 // Determine Occupancy Type
              // Determine Occupancy Type (from any available detail)
                 String occupancyType = "";
+		Boolean isSetbackCombine = false;
                 if (front != null && !front.getDetail().isEmpty() && front.getDetail().get(0).get("Occupancy") != null) {
                     occupancyType = front.getDetail().get(0).get("Occupancy");
                 } else if (rear != null && !rear.getDetail().isEmpty() && rear.getDetail().get(0).get("Occupancy") != null) {
@@ -1097,6 +1098,13 @@ public class PlanReportService {
                 // For Residential → include Front + Rear + Side
                 // For Non-Residential → include only Front + Rear
                 boolean isResidential = StringUtils.containsIgnoreCase(occupancyType, "residential");
+                if (rear != null && !rear.getDetail().isEmpty() && rear.getDetail().get(0).get("isSetbackCombine") != null) {
+                	isSetbackCombine = Boolean.valueOf(rear.getDetail().get(0).get("isSetbackCombine"));
+                }
+                
+                if(!isSetbackCombine) {
+                	isResidential=true;
+                }
 
                 if (front != null && front.getDetail() != null && !front.getDetail().isEmpty()) {
                     combinedDetails.addAll(front.getDetail());

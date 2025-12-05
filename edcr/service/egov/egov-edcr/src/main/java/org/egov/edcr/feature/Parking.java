@@ -151,6 +151,10 @@ public class Parking extends FeatureProcess {
     private static final String TWO_WHEEL_PARKING_PROVIDE = " 2 wheeler parking not provided.";
     private static final String TWO_WHEELER_SIZE_NOTE = "Note : Two Wheeler Size - 2.0 x 0.75 Meter";
     private static final String PARKING_AREA_DIM = "2.0 M x 0.75 M";
+    
+    // Placeholder variables you'd need to define elsewhere
+    private static final double totalDwellingUnits = 50.0; // Total number of dwelling units in the block
+    private static final double averageUnitAreaSqM = 150.0; // Average unit area (total covered area / total DUs) in sq. m
 
 
 
@@ -347,30 +351,77 @@ public class Parking extends FeatureProcess {
   
         Integer noOfrequiredParking = 0;
         if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
-        	if (pl.getPlot() != null) { // Check plot is not null before using plotArea
-                double area = plotArea.doubleValue();
-                if (area < 100) {
-                    // requiredCarParkArea += 2.5; // Original logic, commented out in provided code
-                     noOfrequiredParking = 0; // Explicitly setting based on image for plotArea 83.61
-                } else if (area >= 100 && area <= 150) {
-                    noOfrequiredParking += 1;
-                } else if (area > 150 && area <= 200) { // Adjusted condition slightly to match common patterns (>=150 was in original)
-                    noOfrequiredParking += 2;
-                } else if (area > 200) { // Adjusted condition slightly (>=200 was in original)
-                    noOfrequiredParking += 3;
+        	if(mostRestrictiveOccupancy.getSubtype()!=null
+        			|| (mostRestrictiveOccupancy.getSubtype() != null
+					&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
+							|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())))) {
+        		// Reset parking calculation variables
+                noOfrequiredParking = 0; // This will hold the total ECS required for DUs + Guest Parking
+                // --- 1. Calculate base ECS based on Unit Area (per DU) from the first image ---
+                double ecsPerDu = 0.0;
+                
+                if (averageUnitAreaSqM <= 120) {
+                    // 1. Up to 120 sq. m -> 1.5 ECS / DU
+                    ecsPerDu = 1.5;
+                } else if (averageUnitAreaSqM > 120 && averageUnitAreaSqM <= 300) {
+                    // 2. 120–300 sq. m -> 2 ECS / DU
+                    ecsPerDu = 2.0;
+                } else if (averageUnitAreaSqM > 300) {
+                    // 3. Above 300 sq. m -> 3 ECS / DU
+                    ecsPerDu = 3.0;
                 }
-             }
-        	
-//            if (openParkingArea.doubleValue() > 0) {
-//                requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
-//            } else if (stiltParkingArea.doubleValue() > 0) {
-//                requiredCarParkArea += STILT_ECS * noOfrequiredParking;
-//            } else if (basementParkingArea.doubleValue() > 0) {
-//                requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
-//            } else if (coverParkingArea.doubleValue() > 0) {
-//                requiredCarParkArea += COVER_ECS * noOfrequiredParking;
-//            }
-        } else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
+
+                // Calculate total ECS required for DUs
+                double totalDuEcs = ecsPerDu * totalDwellingUnits;
+                
+                // --- 2. Add Additional 10% Guest Parking ---
+                // (As per the second image: "Additional 10% guest parking shall also be provided")
+                double guestEcs = totalDuEcs * 0.10;
+                
+                // Total required ECS (noOfrequiredParking)
+                noOfrequiredParking = (int) Math.ceil(totalDuEcs + guestEcs);
+                
+                if (pl.getPlot() != null) {                 
+                    if (openParkingArea != null && openParkingArea.doubleValue() > 0) {
+                        requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
+                    } else if (stiltParkingArea != null && stiltParkingArea.doubleValue() > 0) {
+                        requiredCarParkArea += STILT_ECS * noOfrequiredParking;
+                    } else if (basementParkingArea != null && basementParkingArea.doubleValue() > 0) {
+                        requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
+                    } else if (coverParkingArea != null && coverParkingArea.doubleValue() > 0) {
+                        requiredCarParkArea += COVER_ECS * noOfrequiredParking;
+                    } 
+//                    else {
+//                         // Default to general ECS area if no specific area type is defined
+//                         requiredCarParkArea += GENERAL_ECS_AREA * noOfrequiredParking;
+//                    }
+                }
+        	}else {
+        		if (pl.getPlot() != null) { // Check plot is not null before using plotArea
+                    double area = plotArea.doubleValue();
+                    if (area < 100) {
+                        // requiredCarParkArea += 2.5; // Original logic, commented out in provided code
+                         noOfrequiredParking = 0; // Explicitly setting based on image for plotArea 83.61
+                    } else if (area >= 100 && area <= 150) {
+                        noOfrequiredParking += 1;
+                    } else if (area > 150 && area <= 200) { // Adjusted condition slightly to match common patterns (>=150 was in original)
+                        noOfrequiredParking += 2;
+                    } else if (area > 200) { // Adjusted condition slightly (>=200 was in original)
+                        noOfrequiredParking += 3;
+                    }
+                 }
+            	
+    	//            if (openParkingArea.doubleValue() > 0) {
+    	//                requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
+    	//            } else if (stiltParkingArea.doubleValue() > 0) {
+    	//                requiredCarParkArea += STILT_ECS * noOfrequiredParking;
+    	//            } else if (basementParkingArea.doubleValue() > 0) {
+    	//                requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
+    	//            } else if (coverParkingArea.doubleValue() > 0) {
+    	//                requiredCarParkArea += COVER_ECS * noOfrequiredParking;
+            	//            }
+        	}
+        }else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
             if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
                 // 1 ECS per 50 sqm

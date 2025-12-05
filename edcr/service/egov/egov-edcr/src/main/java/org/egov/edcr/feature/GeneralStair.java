@@ -131,92 +131,188 @@ public class GeneralStair extends FeatureProcess {
                 Floor currentFloor = null;
                 List<String> stairAbsent = new ArrayList<>();
                 // BigDecimal floorSize = block.getBuilding().getFloorsAboveGround();
+//                for (Floor floor : floors) {
+//                	currentFloor = floor;
+//                    if (!floor.getTerrace()) {
+//                    	
+//
+//                        boolean isTypicalRepititiveFloor = false;
+//                        Map<String, Object> typicalFloorValues = Util.getTypicalFloorValues(block, floor,
+//                                isTypicalRepititiveFloor);
+//
+//                        List<org.egov.common.entity.edcr.GeneralStair> generalStairs = floor.getGeneralStairs();
+//
+//                        int size = generalStairs.size();
+//                        generalStairCount = generalStairCount + size;
+//
+//                        if (!generalStairs.isEmpty()) {
+//                            for (org.egov.common.entity.edcr.GeneralStair generalStair : generalStairs) {
+//                            	
+//                         flrHt = generalStair.getFloorHeight();
+//                         LOG.info("flrHt___" + flrHt);
+//                            	   List<StairLanding> landings1 = generalStair.getLandings();
+//                                   totalLandings += landings1.size();
+//                                   
+//                                   List<Flight> flights = generalStair.getFlights();
+//                                   totalFlights += flights.size();
+//                                   
+//                                   for (Flight flight : flights) {
+//                                     
+//                                       
+//                                       BigDecimal risers = flight.getNoOfRises();
+//                                       totalRisers = totalRisers.add(risers);
+//                                   }
+//                                   LOG.info("total totalRisers : " + totalRisers);
+//                                   
+//                                   // Sum the landing widths
+//                                   for (StairLanding landing : landings1) {
+//                                       List<BigDecimal> widths = landing.getWidths();
+//                                       if (!widths.isEmpty()) {
+//                                           BigDecimal landingWidth = widths.stream().reduce(BigDecimal::min).get();
+//                                           totalLandingWidth = totalLandingWidth.add(landingWidth);  // Add to total
+//                                       }
+//                                   }
+//                                   
+//                                   
+//                                   LOG.info("total landings : " + totalLandingWidth);
+//                                   
+//                                   totalSteps = totalRisers.add(totalLandingWidth);
+//                                   
+//                                   LOG.info("total totalSteps :" + totalSteps);
+//                                   
+//                                   
+//
+//                                   
+//                                {
+//                                    validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
+//                                            scrutinyDetailRise, mostRestrictiveOccupancyType, floor, typicalFloorValues,
+//                                            generalStair, generalStairCount);
+//
+//                                    List<StairLanding> landings = generalStair.getLandings();
+//                                    if (!landings.isEmpty()) {
+//                                        validateLanding(plan, block, scrutinyDetailLanding, mostRestrictiveOccupancyType,
+//                                                floor,
+//                                                typicalFloorValues, generalStair, landings, errors);
+//                                    } else {
+//                                    	if (floor.getNumber() != generalStairCount - 1) //This condition because in top most floor stairs are not mandatory for punjab, 
+//                                            //so removing the error if stairs are not defined in top mist floor
+//                                        errors.put(
+//                                                "General Stair landing not defined in block " + block.getNumber() + " floor "                                                        + floor.getNumber()
+//                                                        + " stair " + generalStair.getNumber(),
+//                                                "General Stair landing not defined in block " + block.getNumber() + " floor "
+//                                                        + floor.getNumber()
+//                                                        + " stair " + generalStair.getNumber());
+//                                        plan.addErrors(errors);
+//                                    }
+//
+//                                }
+//                               
+//                            }
+//                           
+//                        } else {
+//                        	if (floor.getNumber() != generalStairCount)
+//                        	{
+//                            stairAbsent.add("Block " + block.getNumber() + " floor " + floor.getNumber());
+//                        }}
+//
+//                    }
+//                }
                 for (Floor floor : floors) {
-                	currentFloor = floor;
+
+                    currentFloor = floor;
+
                     if (!floor.getTerrace()) {
-                    	
 
                         boolean isTypicalRepititiveFloor = false;
+
+                        // Get typical floor details
                         Map<String, Object> typicalFloorValues = Util.getTypicalFloorValues(block, floor,
                                 isTypicalRepititiveFloor);
 
-                        List<org.egov.common.entity.edcr.GeneralStair> generalStairs = floor.getGeneralStairs();
+                        // Detect if this is a repeated typical floor
+                        boolean isTypicalRepeat = false;
 
+                        if (typicalFloorValues != null && typicalFloorValues.containsKey("isTypicalRepititiveFloor")) {
+                            Object flagObj = typicalFloorValues.get("isTypicalRepititiveFloor");
+                            if (flagObj instanceof Boolean) {
+                                isTypicalRepeat = (Boolean) flagObj;
+                            }
+                        }
+
+                        List<org.egov.common.entity.edcr.GeneralStair> generalStairs = floor.getGeneralStairs();
                         int size = generalStairs.size();
-                        generalStairCount = generalStairCount + size;
+                        generalStairCount += size;
 
                         if (!generalStairs.isEmpty()) {
+
                             for (org.egov.common.entity.edcr.GeneralStair generalStair : generalStairs) {
-                            	
-                         flrHt = generalStair.getFloorHeight();
-                         LOG.info("flrHt___" + flrHt);
-                            	   List<StairLanding> landings1 = generalStair.getLandings();
-                                   totalLandings += landings1.size();
-                                   
-                                   List<Flight> flights = generalStair.getFlights();
-                                   totalFlights += flights.size();
-                                   
-                                   for (Flight flight : flights) {
-                                     
-                                       
-                                       BigDecimal risers = flight.getNoOfRises();
-                                       totalRisers = totalRisers.add(risers);
-                                   }
-                                   LOG.info("total totalRisers : " + totalRisers);
-                                   
-                                   // Sum the landing widths
-                                   for (StairLanding landing : landings1) {
-                                       List<BigDecimal> widths = landing.getWidths();
-                                       if (!widths.isEmpty()) {
-                                           BigDecimal landingWidth = widths.stream().reduce(BigDecimal::min).get();
-                                           totalLandingWidth = totalLandingWidth.add(landingWidth);  // Add to total
-                                       }
-                                   }
-                                   
-                                   
-                                   LOG.info("total landings : " + totalLandingWidth);
-                                   
-                                   totalSteps = totalRisers.add(totalLandingWidth);
-                                   
-                                   LOG.info("total totalSteps :" + totalSteps);
-                                   
-                                   
 
-                                   
-                                {
-                                    validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
-                                            scrutinyDetailRise, mostRestrictiveOccupancyType, floor, typicalFloorValues,
-                                            generalStair, generalStairCount);
+                                flrHt = generalStair.getFloorHeight();
+                                LOG.info("flrHt___" + flrHt);
 
-                                    List<StairLanding> landings = generalStair.getLandings();
-                                    if (!landings.isEmpty()) {
-                                        validateLanding(plan, block, scrutinyDetailLanding, mostRestrictiveOccupancyType,
-                                                floor,
-                                                typicalFloorValues, generalStair, landings, errors);
-                                    } else {
-                                    	if (floor.getNumber() != generalStairCount - 1) //This condition because in top most floor stairs are not mandatory for punjab, 
-                                            //so removing the error if stairs are not defined in top mist floor
-                                        errors.put(
-                                                "General Stair landing not defined in block " + block.getNumber() + " floor "                                                        + floor.getNumber()
-                                                        + " stair " + generalStair.getNumber(),
-                                                "General Stair landing not defined in block " + block.getNumber() + " floor "
-                                                        + floor.getNumber()
-                                                        + " stair " + generalStair.getNumber());
-                                        plan.addErrors(errors);
-                                    }
+                                List<StairLanding> landings1 = generalStair.getLandings();
+                                totalLandings += landings1.size();
 
+                                List<Flight> flights = generalStair.getFlights();
+                                totalFlights += flights.size();
+
+                                for (Flight flight : flights) {
+                                    BigDecimal risers = flight.getNoOfRises();
+                                    totalRisers = totalRisers.add(risers);
                                 }
-                               
-                            }
-                           
-                        } else {
-                        	if (floor.getNumber() != generalStairCount)
-                        	{
-                            stairAbsent.add("Block " + block.getNumber() + " floor " + floor.getNumber());
-                        }}
 
+                                // Landing width sum
+                                for (StairLanding landing : landings1) {
+                                    List<BigDecimal> widths = landing.getWidths();
+                                    if (!widths.isEmpty()) {
+                                        BigDecimal landingWidth = widths.stream().reduce(BigDecimal::min).get();
+                                        totalLandingWidth = totalLandingWidth.add(landingWidth);
+                                    }
+                                }
+
+                                totalSteps = totalRisers.add(totalLandingWidth);
+
+                                validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
+                                        scrutinyDetailRise, mostRestrictiveOccupancyType, floor,
+                                        typicalFloorValues, generalStair, generalStairCount);
+
+                                List<StairLanding> landings = generalStair.getLandings();
+
+                                if (!landings.isEmpty()) {
+
+                                    validateLanding(plan, block, scrutinyDetailLanding, mostRestrictiveOccupancyType,
+                                            floor, typicalFloorValues, generalStair, landings, errors);
+
+                                } else {
+
+                                    // ❗ Skip error for typical floors
+                                    if (!isTypicalRepeat) {
+
+                                        // For Punjab: skip top floor case
+                                        if (floor.getNumber() != generalStairCount - 1) {
+
+                                            String key = "General Stair landing not defined in block " + block.getNumber()
+                                                    + " floor " + floor.getNumber() + " stair " + generalStair.getNumber();
+
+                                            errors.put(key, key);
+                                            plan.addErrors(errors);
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else {
+                            // ❗ Skip stairAbsent addition for typical repeated floors
+                            if (!isTypicalRepeat) {
+                                if (floor.getNumber() != generalStairCount) {
+                                    stairAbsent.add(
+                                            "Block " + block.getNumber() + " floor " + floor.getNumber());
+                                }
+                            }
+                        }
                     }
                 }
+
                 LOG.info("landnig : " + totalLandings);
                 LOG.info("flights : " + totalFlights);
                
@@ -320,64 +416,166 @@ public class GeneralStair extends FeatureProcess {
        
     }
 
-    private void validateFlight(Plan plan, HashMap<String, String> errors, Block block, ScrutinyDetail scrutinyDetail2,
-            ScrutinyDetail scrutinyDetail3, ScrutinyDetail scrutinyDetailRise, OccupancyTypeHelper mostRestrictiveOccupancyType,
-            Floor floor, Map<String, Object> typicalFloorValues, org.egov.common.entity.edcr.GeneralStair generalStair, int generalStairCount) {
+//    private void validateFlight(Plan plan, HashMap<String, String> errors, Block block, ScrutinyDetail scrutinyDetail2,
+//            ScrutinyDetail scrutinyDetail3, ScrutinyDetail scrutinyDetailRise, OccupancyTypeHelper mostRestrictiveOccupancyType,
+//            Floor floor, Map<String, Object> typicalFloorValues, org.egov.common.entity.edcr.GeneralStair generalStair, int generalStairCount) {
+//        if (!generalStair.getFlights().isEmpty()) {
+//        	
+//            for (Flight flight : generalStair.getFlights()) {
+//            	
+//                List<Measurement> flightPolyLines = flight.getFlights();
+//                List<BigDecimal> flightLengths = flight.getLengthOfFlights();
+//                List<BigDecimal> flightWidths = flight.getWidthOfFlights();
+//                BigDecimal noOfRises = flight.getNoOfRises();
+//                Boolean flightPolyLineClosed = flight.getFlightClosed();
+//               
+//           
+//            	//flight.getNumber();
+//                BigDecimal minTread = BigDecimal.ZERO;
+//                BigDecimal minFlightWidth = BigDecimal.ZERO;
+//                String flightLayerName = String.format(DxfFileConstants.LAYER_STAIR_FLIGHT,
+//                        block.getNumber(), floor.getNumber(), generalStair.getNumber(),
+//                        flight.getNumber());
+//
+//                if (flightPolyLines != null && flightPolyLines.size() > 0) {
+//                    if (flightPolyLineClosed) {
+//                        if (flightWidths != null && flightWidths.size() > 0) {
+//                            minFlightWidth = validateWidth(plan, scrutinyDetail2, floor, block,
+//                                    typicalFloorValues, generalStair, flight, flightWidths,
+//                                    minFlightWidth,
+//                                    mostRestrictiveOccupancyType);
+//
+//                        } else {
+//                            errors.put("Flight PolyLine width" + flightLayerName,
+//                                    FLIGHT_WIDTH_DEFINED_DESCRIPTION + flightLayerName);
+//                            plan.addErrors(errors);
+//                        }
+//
+//                        /*
+//                         * (Total length of polygons in layer BLK_n_FLR_i_STAIR_k_FLIGHT) / (Number of rises - number of polygons
+//                         * in layer BLK_n_FLR_i_STAIR_k_FLIGHT - number of lines in layer BLK_n_FLR_i_STAIR_k_FLIGHT)
+//                         */
+//
+//                        if (flightLengths != null && flightLengths.size() > 0) {
+//                            try {
+//                                minTread = validateTread(plan, errors, block, scrutinyDetail3,
+//                                        floor, typicalFloorValues, generalStair, flight, flightLengths,
+//                                        minTread,
+//                                        mostRestrictiveOccupancyType);
+//                            } catch (ArithmeticException e) {
+//                                LOG.info("Denominator is zero");
+//                            }
+//                        } else {
+//                        	
+//                            errors.put("Flight PolyLine length" + flightLayerName,
+//                                    FLIGHT_LENGTH_DEFINED_DESCRIPTION + flightLayerName);
+//                            plan.addErrors(errors);
+//
+//                        }
+//
+//                        if (noOfRises.compareTo(BigDecimal.ZERO) > 0) {
+//                            try {
+//                                validateNoOfRises(plan, errors, block, scrutinyDetailRise, floor,
+//                                        typicalFloorValues, generalStair, flight, noOfRises);
+//                            } catch (ArithmeticException e) {
+//                                LOG.info("Denominator is zero");
+//                            }
+//                        } else {
+//                            /*
+//                             * String layerName = String.format( DxfFileConstants.LAYER_STAIR_FLIGHT, block.getNumber(),
+//                             * floor.getNumber(), generalStair.getNumber(), flight.getNumber());
+//                             */
+//                            errors.put("noofRise" + flightLayerName,
+//                                    edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
+//                                            new String[] { NO_OF_RISERS + flightLayerName },
+//                                            LocaleContextHolder.getLocale()));
+//                            plan.addErrors(errors);
+//                        }
+//
+//                    }
+//                } else {
+//                    errors.put("Flight PolyLine " + flightLayerName,
+//                            FLIGHT_POLYLINE_NOT_DEFINED_DESCRIPTION + flightLayerName);
+//                    plan.addErrors(errors);
+//                }
+//
+//            }
+//            
+//        } else {
+////        	if(floor.getNumber() != generalStairCount - 1) 
+//        	{ //This condition because in top most floor stairs are not mandatory for punjab, 
+//        		                                            //so removing the error if stairs are not defined in top mist floor
+//            String error = String.format(FLIGHT_NOT_DEFINED_DESCRIPTION, block.getNumber(), floor.getNumber());
+//            errors.put(error, error);
+//            plan.addErrors(errors);
+//        }}
+//    }
+    
+    private void validateFlight(Plan plan, HashMap<String, String> errors, Block block, 
+            ScrutinyDetail scrutinyDetail2, ScrutinyDetail scrutinyDetail3, ScrutinyDetail scrutinyDetailRise,
+            OccupancyTypeHelper mostRestrictiveOccupancyType, Floor floor, 
+            Map<String, Object> typicalFloorValues, org.egov.common.entity.edcr.GeneralStair generalStair, 
+            int generalStairCount) {
+
+        boolean isTypicalRepeat = (Boolean) typicalFloorValues.get("isTypicalRepititiveFloor");
+        String floorLabel = typicalFloorValues.get("typicalFloors") != null
+                ? (String) typicalFloorValues.get("typicalFloors")
+                : " floor " + floor.getNumber();
+
         if (!generalStair.getFlights().isEmpty()) {
-        	
+
             for (Flight flight : generalStair.getFlights()) {
-            	
+
                 List<Measurement> flightPolyLines = flight.getFlights();
                 List<BigDecimal> flightLengths = flight.getLengthOfFlights();
                 List<BigDecimal> flightWidths = flight.getWidthOfFlights();
                 BigDecimal noOfRises = flight.getNoOfRises();
                 Boolean flightPolyLineClosed = flight.getFlightClosed();
-               
-           
-            	//flight.getNumber();
+
                 BigDecimal minTread = BigDecimal.ZERO;
                 BigDecimal minFlightWidth = BigDecimal.ZERO;
-                String flightLayerName = String.format(DxfFileConstants.LAYER_STAIR_FLIGHT,
-                        block.getNumber(), floor.getNumber(), generalStair.getNumber(),
-                        flight.getNumber());
 
-                if (flightPolyLines != null && flightPolyLines.size() > 0) {
+                String flightLayerName = String.format(DxfFileConstants.LAYER_STAIR_FLIGHT,
+                        block.getNumber(), floor.getNumber(), generalStair.getNumber(), flight.getNumber());
+
+                if (flightPolyLines != null && !flightPolyLines.isEmpty()) {
+
                     if (flightPolyLineClosed) {
-                        if (flightWidths != null && flightWidths.size() > 0) {
+
+                        // FLIGHT WIDTH
+                        if (flightWidths != null && !flightWidths.isEmpty()) {
                             minFlightWidth = validateWidth(plan, scrutinyDetail2, floor, block,
                                     typicalFloorValues, generalStair, flight, flightWidths,
-                                    minFlightWidth,
-                                    mostRestrictiveOccupancyType);
+                                    minFlightWidth, mostRestrictiveOccupancyType);
 
                         } else {
-                            errors.put("Flight PolyLine width" + flightLayerName,
-                                    FLIGHT_WIDTH_DEFINED_DESCRIPTION + flightLayerName);
-                            plan.addErrors(errors);
+                            // Skip error for repeated typical floors
+                            if (!isTypicalRepeat) {
+                                errors.put("Flight PolyLine width" + flightLayerName,
+                                        FLIGHT_WIDTH_DEFINED_DESCRIPTION + flightLayerName);
+                                plan.addErrors(errors);
+                            }
                         }
 
-                        /*
-                         * (Total length of polygons in layer BLK_n_FLR_i_STAIR_k_FLIGHT) / (Number of rises - number of polygons
-                         * in layer BLK_n_FLR_i_STAIR_k_FLIGHT - number of lines in layer BLK_n_FLR_i_STAIR_k_FLIGHT)
-                         */
-
-                        if (flightLengths != null && flightLengths.size() > 0) {
+                        // FLIGHT LENGTH
+                        if (flightLengths != null && !flightLengths.isEmpty()) {
                             try {
                                 minTread = validateTread(plan, errors, block, scrutinyDetail3,
-                                        floor, typicalFloorValues, generalStair, flight, flightLengths,
-                                        minTread,
-                                        mostRestrictiveOccupancyType);
+                                        floor, typicalFloorValues, generalStair, flight, 
+                                        flightLengths, minTread, mostRestrictiveOccupancyType);
                             } catch (ArithmeticException e) {
                                 LOG.info("Denominator is zero");
                             }
                         } else {
-                        	
-                            errors.put("Flight PolyLine length" + flightLayerName,
-                                    FLIGHT_LENGTH_DEFINED_DESCRIPTION + flightLayerName);
-                            plan.addErrors(errors);
-
+                            if (!isTypicalRepeat) {
+                                errors.put("Flight PolyLine length" + flightLayerName,
+                                        FLIGHT_LENGTH_DEFINED_DESCRIPTION + flightLayerName);
+                                plan.addErrors(errors);
+                            }
                         }
 
-                        if (noOfRises.compareTo(BigDecimal.ZERO) > 0) {
+                        // NO OF RISES
+                        if (noOfRises != null && noOfRises.compareTo(BigDecimal.ZERO) > 0) {
                             try {
                                 validateNoOfRises(plan, errors, block, scrutinyDetailRise, floor,
                                         typicalFloorValues, generalStair, flight, noOfRises);
@@ -385,35 +583,41 @@ public class GeneralStair extends FeatureProcess {
                                 LOG.info("Denominator is zero");
                             }
                         } else {
-                            /*
-                             * String layerName = String.format( DxfFileConstants.LAYER_STAIR_FLIGHT, block.getNumber(),
-                             * floor.getNumber(), generalStair.getNumber(), flight.getNumber());
-                             */
-                            errors.put("noofRise" + flightLayerName,
-                                    edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
-                                            new String[] { NO_OF_RISERS + flightLayerName },
-                                            LocaleContextHolder.getLocale()));
-                            plan.addErrors(errors);
+                            if (!isTypicalRepeat) {
+                                errors.put("noofRise" + flightLayerName,
+                                        edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
+                                                new String[] { NO_OF_RISERS + flightLayerName },
+                                                LocaleContextHolder.getLocale()));
+                                plan.addErrors(errors);
+                            }
                         }
-
                     }
+
                 } else {
-                    errors.put("Flight PolyLine " + flightLayerName,
-                            FLIGHT_POLYLINE_NOT_DEFINED_DESCRIPTION + flightLayerName);
-                    plan.addErrors(errors);
+                    // FLIGHT POLYLINE NOT DEFINED
+                    if (!isTypicalRepeat) {
+                        errors.put("Flight PolyLine " + flightLayerName,
+                                FLIGHT_POLYLINE_NOT_DEFINED_DESCRIPTION + flightLayerName);
+                        plan.addErrors(errors);
+                    }
                 }
 
             }
-            
+
         } else {
-//        	if(floor.getNumber() != generalStairCount - 1) 
-        	{ //This condition because in top most floor stairs are not mandatory for punjab, 
-        		                                            //so removing the error if stairs are not defined in top mist floor
-            String error = String.format(FLIGHT_NOT_DEFINED_DESCRIPTION, block.getNumber(), floor.getNumber());
-            errors.put(error, error);
-            plan.addErrors(errors);
-        }}
+            // Do NOT show error for repeated typical floors
+            if (!isTypicalRepeat) {
+                // Ignore only top-most floor special rule (Punjab)
+                if (floor.getNumber() != generalStairCount - 1) {
+                    String errorMsg = String.format("General stair not defined in Block %s%s",
+                            block.getNumber(), floorLabel);
+                    errors.put(errorMsg, errorMsg);
+                    plan.addErrors(errors);
+                }
+            }
+        }
     }
+
 
     private BigDecimal validateWidth(Plan plan, ScrutinyDetail scrutinyDetail2, Floor floor, Block block,
             Map<String, Object> typicalFloorValues, org.egov.common.entity.edcr.GeneralStair generalStair, Flight flight,

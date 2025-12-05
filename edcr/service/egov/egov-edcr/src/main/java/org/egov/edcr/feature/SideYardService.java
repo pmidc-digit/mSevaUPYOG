@@ -162,6 +162,8 @@ public class SideYardService extends GeneralRule {
         BigDecimal expectedmeanDistance = BigDecimal.ZERO;
         boolean status = false;
         String setBackPercentage;
+        boolean isSetbackCombine=false;
+        String occupancyCode;
     }
 
     public void processSideYard(Plan pl, List<ScrutinyDetail> scrutinyDetailList) {
@@ -275,8 +277,7 @@ public class SideYardService extends GeneralRule {
 								/* || F.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode()) */) {
                                 	//Added by Bimal 18-March-2924 to check side yard based on plotarea not on height
                                 	//if (buildingHeight.compareTo(BigDecimal.valueOf(10)) <= 0 && block.getBuilding()
-                                	if ( 
-                                			block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(4)) <= 0) {
+                                	if (block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(4)) <= 0) {
                                 		checkSideYardCommon(pl, block.getBuilding(), buildingHeight,
                                                 block.getName(), setback.getLevel(), plot, minlength, max, 
                                                 occupancy.getTypeHelper(),sideYard1Result,sideYard2Result, 
@@ -319,7 +320,7 @@ public class SideYardService extends GeneralRule {
 										 checkSideYardForOtherOccupancies(pl, block.getBuilding(),
 												  buildingHeight, block.getName(), setback.getLevel(), plot, minlength, max,
 												  minMeanlength, maxMeanLength, occupancy.getTypeHelper(), sideYard1Result,
-												  sideYard2Result, errors, sideYard1.getArea(), sideYard2.getArea()); 
+												  sideYard2Result, errors, sideYard1, sideYard2); 
 								}
 									 
 
@@ -404,7 +405,7 @@ public class SideYardService extends GeneralRule {
     		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
     	}
 
-
+    	minVal = minVal.setScale(2, RoundingMode.HALF_UP);
     	boolean valid = validateMinimumAndMeanValue(BigDecimal.valueOf(min), minVal, plotArea);
     	if(!valid) {
 	    	LOG.info("Side Yard Service: min value validity False: actual/expected :"+min+"/"+minVal);
@@ -502,19 +503,28 @@ public class SideYardService extends GeneralRule {
             String permissableValueWithPercentage;
 			String providedValue;
 			
-			if(sideYard1Result.occupancy.equalsIgnoreCase("Residential")) {
+			if(sideYard1Result.occupancyCode !=null && (sideYard1Result.occupancyCode.equalsIgnoreCase("A") || 
+					sideYard1Result.occupancyCode.equalsIgnoreCase("A-R")	||
+					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AF")
+					)) {
 				permissableValueWithPercentage = sideYard1Result.expectedDistance.toString();
 			    providedValue = sideYard1Result.actualDistance.toString();
+			    details.put("OccCode", sideYard1Result.occupancyCode);
+			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
 			}else if (sideYard1Result.setBackPercentage != null 
 			        && sideYard1Result.setBackPercentage.contains("m")) {							    
 			    permissableValueWithPercentage = sideYard1Result.setBackPercentage;
-			    providedValue = sideYard1Result.actualMeanDistance.toString() + "m";
+			    providedValue = sideYard1Result.actualDistance.toString() + "m";
+			    details.put("OccCode", sideYard1Result.occupancyCode);
+			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
 			} else {								
 //			    permissableValueWithPercentage = sideYard1Result.setBackPercentage 
 //			            + "% of the plot area (" 
 //			            + sideYard1Result.expectedDistance.toPlainString() + ")";
 				permissableValueWithPercentage = sideYard1Result.setBackPercentage;
 			    providedValue = sideYard1Result.actualDistance.toString();
+			    details.put("OccCode", sideYard1Result.occupancyCode);
+			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
 			}
 
             //details.put(FIELDVERIFIED, MINIMUMLABEL);
@@ -550,13 +560,16 @@ public class SideYardService extends GeneralRule {
                 String permissableValueWithPercentage;
     			String providedValue;
     			
-    			if(sideYard2Result.occupancy.equalsIgnoreCase("Residential")) {
+    			if(sideYard2Result.occupancyCode !=null && 
+    					(sideYard2Result.occupancyCode.equalsIgnoreCase("A") || 
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("A-R")	||
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AF") )) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
     			    providedValue = sideYard2Result.actualDistance.toString();
     			}else if (sideYard2Result.setBackPercentage != null 
     			        && sideYard2Result.setBackPercentage.contains("m")) {							    
     			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;
-    			    providedValue = sideYard2Result.actualMeanDistance.toString() + "m";
+    			    providedValue = sideYard2Result.actualDistance.toString() + "m";
     			} else {								
 //    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage 
 //    			            + "% of the plot area (" 
@@ -991,8 +1004,8 @@ public class SideYardService extends GeneralRule {
     private void checkSideYardForOtherOccupancies(final Plan pl, Building building, BigDecimal buildingHeight,
             String blockName, Integer level, final Plot plot, final double min, final double max, double minMeanlength,
             double maxMeanLength, final OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result,
-            SideYardResult sideYard2Result, HashMap<String, String> errors, BigDecimal areaSideYard1, 
-            BigDecimal areaSideYard2) {
+            SideYardResult sideYard2Result, HashMap<String, String> errors, Yard sideYard1, 
+            Yard sideYard2) {
 
         String rule = SIDE_YARD_DESC;
         String subRule = RULE_35;
@@ -1044,19 +1057,23 @@ public class SideYardService extends GeneralRule {
         if (min >= side2val.doubleValue())
             valid2 = true;
 
-//        compareSideYard2Result(blockName, side2val, BigDecimal.valueOf(min), BigDecimal.ZERO,
-//                BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
-//                level);
-//        compareSideYard1Result(blockName, side1val, BigDecimal.valueOf(max), BigDecimal.ZERO,
-//                BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
-//                level);
+
+        if(sideYard1Result.setBackPercentage.contains("m") && sideYard1Result.setBackPercentage.contains("m")) {
+	          compareSideYard2Result(blockName, side2val, BigDecimal.valueOf(min), BigDecimal.ZERO,
+	          BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
+	          level);
+	          compareSideYard1Result(blockName, side1val, BigDecimal.valueOf(max), BigDecimal.ZERO,
+	          BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
+	          level);
+        }else {
         
-        compareSideYard2Result(blockName, side2val, areaSideYard2, BigDecimal.ZERO,
-                BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
-                level);
-        compareSideYard1Result(blockName, side1val, areaSideYard1, BigDecimal.ZERO,
-                BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
-                level);
+	        compareSideYard2Result(blockName, side2val, sideYard2.getArea(), BigDecimal.ZERO,
+	                BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
+	                level);
+	        compareSideYard1Result(blockName, side1val, sideYard1.getArea(), BigDecimal.ZERO,
+	                BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
+	                level);
+        }
 
     }
 
@@ -1345,19 +1362,28 @@ public class SideYardService extends GeneralRule {
             OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, Boolean valid, String subRule,
             String rule, Integer level) {
         String occupancyName;
-        if (mostRestrictiveOccupancy.getSubtype() != null)
-            occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
-        else
-            occupancyName = mostRestrictiveOccupancy.getType().getName();
+        String occupanyCode;
+        if (mostRestrictiveOccupancy.getSubtype() != null) {
+        	occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+        }else {
+        	occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+    	}
+        
         if (exptDistance.compareTo(sideYard1Result.expectedDistance) >= 0) {
             if (exptDistance.compareTo(sideYard1Result.expectedDistance) == 0) {
                 sideYard1Result.rule = sideYard1Result.rule != null ? sideYard1Result.rule + "," + rule : rule;
                 sideYard1Result.occupancy = sideYard1Result.occupancy != null
                         ? sideYard1Result.occupancy + "," + occupancyName
                         : occupancyName;
+                sideYard1Result.occupancy = sideYard1Result.occupancy != null
+                        ? sideYard1Result.occupancy + "," + occupanyCode
+                        : occupanyCode;
             } else {
                 sideYard1Result.rule = rule;
                 sideYard1Result.occupancy = occupancyName;
+                sideYard1Result.occupancyCode = occupanyCode;
             }
 
             sideYard1Result.subRule = subRule;
@@ -1366,6 +1392,7 @@ public class SideYardService extends GeneralRule {
             sideYard1Result.actualDistance = actualDistance;
             sideYard1Result.expectedDistance = exptDistance;
             sideYard1Result.status = valid;
+            sideYard1Result.occupancyCode = occupanyCode;
         }
     }
 
@@ -1374,19 +1401,28 @@ public class SideYardService extends GeneralRule {
             OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard2Result, Boolean valid, String subRule,
             String rule, Integer level) {
         String occupancyName;
-        if (mostRestrictiveOccupancy.getSubtype() != null)
-            occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
-        else
-            occupancyName = mostRestrictiveOccupancy.getType().getName();
+        String occupanyCode;
+        if (mostRestrictiveOccupancy.getSubtype() != null) {
+        	occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+        }else {
+        	occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+    	}
+        
         if (exptDistance.compareTo(sideYard2Result.expectedDistance) >= 0) {
             if (exptDistance.compareTo(sideYard2Result.expectedDistance) == 0) {
                 sideYard2Result.rule = sideYard2Result.rule != null ? sideYard2Result.rule + "," + rule : rule;
                 sideYard2Result.occupancy = sideYard2Result.occupancy != null
                         ? sideYard2Result.occupancy + "," + occupancyName
                         : occupancyName;
+                sideYard2Result.occupancy = sideYard2Result.occupancy != null
+                        ? sideYard2Result.occupancy + "," + occupanyCode
+                        : occupanyCode;
             } else {
                 sideYard2Result.rule = rule;
                 sideYard2Result.occupancy = occupancyName;
+                sideYard2Result.occupancyCode = occupanyCode;
             }
 
             sideYard2Result.subRule = subRule;
@@ -1395,6 +1431,7 @@ public class SideYardService extends GeneralRule {
             sideYard2Result.actualDistance = actualDistance;
             sideYard2Result.expectedDistance = exptDistance;
             sideYard2Result.status = valid;
+            sideYard2Result.occupancyCode = occupanyCode;
         }
     }
 
@@ -1439,6 +1476,8 @@ public class SideYardService extends GeneralRule {
 	    // Set minVal dynamically using updated constants
 	    // Rule: If height is not given or < 21, use plotArea coverage rule
 	    if (buildingHeight == null || buildingHeight.compareTo(BigDecimal.valueOf(21)) < 0) {
+	    	sideYard1Result.isSetbackCombine=true;
+	    	sideYard2Result.isSetbackCombine=true;
 		    if (plotArea.compareTo(BigDecimal.ZERO) > 0
 		            && plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_41_82) <= 0) {	        
 		        minVal = BigDecimal.ZERO; // Up to 41.82 → Not compulsory → keep ZERO
@@ -1466,22 +1505,40 @@ public class SideYardService extends GeneralRule {
 	    else {
 	        if (buildingHeight.compareTo(BigDecimal.valueOf(21)) == 0) {
 	            minVal = BigDecimal.valueOf(7);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(24)) <= 0) {
 	            minVal = BigDecimal.valueOf(8);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(27)) <= 0) {
 	            minVal = BigDecimal.valueOf(9);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(30)) <= 0) {
 	            minVal = BigDecimal.valueOf(10);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(35)) <= 0) {
 	            minVal = BigDecimal.valueOf(11);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(40)) <= 0) {
 	            minVal = BigDecimal.valueOf(12);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(45)) <= 0) {
 	            minVal = BigDecimal.valueOf(13);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(50)) <= 0) {
 	            minVal = BigDecimal.valueOf(14);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        } else if (buildingHeight.compareTo(BigDecimal.valueOf(55)) >= 0) {
 	            minVal = BigDecimal.valueOf(16);
+	            sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+		        sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        }
 	    }
 

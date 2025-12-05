@@ -1582,38 +1582,86 @@ public class Util {
         return dxflwPolylines;
     }
 
+//    public static Map<String, Object> getTypicalFloorValues(Block block, Floor floor,
+//            Boolean isTypicalRepititiveFloor) {
+//        Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
+//        List<Integer> typicalFlrs = new ArrayList<>();
+//        String typicalFloors = null;
+//        Integer maxTypicalFloors;
+//        Integer minTypicalFloors;
+//        if (block.getTypicalFloor() != null)
+//            for (TypicalFloor typicalFloor : block.getTypicalFloor()) {
+//                if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber()))
+//                    isTypicalRepititiveFloor = true;
+//                if (typicalFloor.getModelFloorNo() == floor.getNumber()) {
+//                    typicalFlrs.add(floor.getNumber());
+//                    typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
+//                    if (!typicalFlrs.isEmpty()) {
+//                        maxTypicalFloors = typicalFlrs.get(0);
+//                        minTypicalFloors = typicalFlrs.get(0);
+//                        for (Integer typical : typicalFlrs) {
+//                            if (typical > maxTypicalFloors)
+//                                maxTypicalFloors = typical;
+//                            if (typical < minTypicalFloors)
+//                                minTypicalFloors = typical;
+//                        }
+//                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+//
+//                    }
+//                }
+//            }
+//        mapOfTypicalFloorValues.put("isTypicalRepititiveFloor", isTypicalRepititiveFloor);
+//        mapOfTypicalFloorValues.put("typicalFloors", typicalFloors);
+//        return mapOfTypicalFloorValues;
+//    }
+    
     public static Map<String, Object> getTypicalFloorValues(Block block, Floor floor,
-            Boolean isTypicalRepititiveFloor) {
-        Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
-        List<Integer> typicalFlrs = new ArrayList<>();
-        String typicalFloors = null;
-        Integer maxTypicalFloors;
-        Integer minTypicalFloors;
-        if (block.getTypicalFloor() != null)
-            for (TypicalFloor typicalFloor : block.getTypicalFloor()) {
-                if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber()))
-                    isTypicalRepititiveFloor = true;
-                if (typicalFloor.getModelFloorNo() == floor.getNumber()) {
-                    typicalFlrs.add(floor.getNumber());
-                    typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
-                    if (!typicalFlrs.isEmpty()) {
-                        maxTypicalFloors = typicalFlrs.get(0);
-                        minTypicalFloors = typicalFlrs.get(0);
-                        for (Integer typical : typicalFlrs) {
-                            if (typical > maxTypicalFloors)
-                                maxTypicalFloors = typical;
-                            if (typical < minTypicalFloors)
-                                minTypicalFloors = typical;
-                        }
-                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+            Boolean isTypicalRepititiveFloor) { // Reverting the signature change
+        
+    Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
+    List<Integer> typicalFlrs = new ArrayList<>();
+    String typicalFloors = null;
+    Integer maxTypicalFloors = null;
+    Integer minTypicalFloors = null;
 
+    if (block.getTypicalFloor() != null) {
+        for (TypicalFloor typicalFloor : block.getTypicalFloor()) {
+            
+            // Check if the current floor is a repetitive floor and update the input boolean
+            if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
+                isTypicalRepititiveFloor = true;
+            }
+
+            // This is the core fix: Check if the floor is EITHER the model or a repetitive floor.
+            if (typicalFloor.getModelFloorNo().equals(floor.getNumber())
+                    || typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
+                
+                // Add the model floor number and all repetitive floor numbers to a list.
+                typicalFlrs.add(typicalFloor.getModelFloorNo());
+                typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
+
+                // Calculate the min and max floor numbers for the typical set.
+                if (!typicalFlrs.isEmpty()) {
+                    // Use streams for a cleaner way to find min/max
+                    minTypicalFloors = typicalFlrs.stream().min(Integer::compareTo).orElse(null);
+                    maxTypicalFloors = typicalFlrs.stream().max(Integer::compareTo).orElse(null);
+                    
+                    if (minTypicalFloors != null && maxTypicalFloors != null) {
+                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
                     }
                 }
+                
+                // Break the loop once the typical floor set is found and processed
+                break; 
             }
-        mapOfTypicalFloorValues.put("isTypicalRepititiveFloor", isTypicalRepititiveFloor);
-        mapOfTypicalFloorValues.put("typicalFloors", typicalFloors);
-        return mapOfTypicalFloorValues;
+        }
     }
+    
+    // The map is populated with the potentially updated boolean and the calculated string
+    mapOfTypicalFloorValues.put("isTypicalRepititiveFloor", isTypicalRepititiveFloor);
+    mapOfTypicalFloorValues.put("typicalFloors", typicalFloors);
+    return mapOfTypicalFloorValues;
+}
 
     public static boolean checkExemptionConditionForBuildingParts(Block blk) {
         if (blk.getBuilding() != null && blk.getBuilding().getFloorsAboveGround() != null)

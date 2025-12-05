@@ -103,6 +103,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -1942,7 +1943,27 @@ public class Far extends FeatureProcess {
 	    if (Boolean.TRUE.equals(mdmsEnabled)) {
 	        try {
 	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-	            Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occType, plotArea);
+	            Object mdmsData = null;
+
+	            if (occupancyType != null && occupancyType.getSubtype().getCode() != null
+	            		&& occupancyType.getSubtype().getCode().equalsIgnoreCase("A-AF") ) {
+	                mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(),pl.getEdcrRequest(), 
+	                                                occupancyType.getSubtype().getCode(), plotArea);
+
+	                if (mdmsData != null) {
+	                    Map<String, List<Map<String, Object>>> masterPlanData1 =
+	                            BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.MASTER_PLAN_FILTER);
+
+	                    if (masterPlanData1 != null) {
+	                        // Convert the map into a List<Object> because mdmsMasterData expects that.
+	                        List<Object> wrapperList = new ArrayList<>();
+	                        wrapperList.add(masterPlanData1);
+	                        pl.getMdmsMasterData().putIfAbsent("masterMdmsData", wrapperList);
+	                    }
+	                }
+	            }else {
+	            	mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occType, plotArea);
+	            }	            
 
 	            if (mdmsData != null) {
 	                //String filterPath = "$.MdmsRes.EDCR.MasterPlan";

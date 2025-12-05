@@ -11,6 +11,11 @@ public class MdmsFilter {
     public static final String NORMAL_FAR_PATH = "$.MdmsRes.BPA.MasterPlan[*].FAR[*].NormalFAR";
     
     public static final String  ROLE_FILTER = "$.MdmsRes.EDCR-ROLES.roles[?(@.code=='%s')]";
+    
+    public static final String SITE_COVERAGE_PATH = "$[0].MasterPlan[0].siteCoverage";
+    
+    public static final String MIN_PLOT_AREA = "$[0].MasterPlan[0].minPlotArea";
 
+    public static final String LIST_FRONT_SETBACK_PATH = "$[0].MasterPlan[0].frontSetBack";
 
 }

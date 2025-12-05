@@ -53,6 +53,8 @@ package org.egov.edcr.feature;
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.G;
+import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+
 //import static org.egov.edcr.constants.DxfFileConstants.J;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
@@ -64,6 +66,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -78,8 +81,12 @@ import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
+import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+
 
 @Service
 public class Coverage extends FeatureProcess {
@@ -225,7 +232,27 @@ public class Coverage extends FeatureProcess {
 				A.equals(mostRestrictiveOccupancy.getType().getCode())
 				) {
 //			occupancyType = mostRestrictiveOccupancy.getType().getCode();
-			permissibleCoverageValue = getPermissibleCoverageForResidential(plotArea, coreArea);
+			
+			if(mostRestrictiveOccupancy.getSubtype().getCode() !=null &&
+					A_AF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
+				// getting permissible value from mdms
+				Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
+				minPlotArea.ifPresent(min -> LOG.info("Min plot are required : " + min));
+		        
+				if (plotArea == null || plotArea.compareTo(minPlotArea.get()) <= 0) {
+					errorMsgs.put("Plot Area Error:", "Plot area must be greater than : " + minPlotArea.get());
+			        pl.addErrors(errorMsgs);
+			        
+			    }
+				
+				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
+			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
+			        permissibleCoverageValue = scOpt.get();
+				}				
+			}else {
+				permissibleCoverageValue = getPermissibleCoverageForResidential(plotArea, coreArea);
+			}
 		
 		} else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);

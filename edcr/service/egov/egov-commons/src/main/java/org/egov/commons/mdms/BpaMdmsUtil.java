@@ -6,10 +6,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.commons.edcr.mdms.constants.MdmsConstants;
@@ -29,11 +31,19 @@ import org.springframework.web.client.ResourceAccessException;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class BpaMdmsUtil {
 	private RestCallService serviceRequestRepository;
 	private MdmsConfiguration mdmsConfiguration;
+	
+	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final Configuration JACKSON_CONFIG = Configuration.builder()
+	        .mappingProvider(new JacksonMappingProvider())
+	        .build();
 
 	public BpaMdmsUtil(RestCallService serviceRequestRepository, MdmsConfiguration mdmsConfiguration) {
 		this.serviceRequestRepository = serviceRequestRepository;
@@ -315,12 +325,165 @@ public class BpaMdmsUtil {
 		}
 	}
 
-	// ✅ Utility method to extract last key from JSONPath expression
+//	// ✅ Utility method to extract last key from JSONPath expression
+//	private static String extractLastKey(String jsonPath) {
+//		if (jsonPath == null || jsonPath.trim().isEmpty())
+//			return "unknown";
+//		String[] parts = jsonPath.split("\\.");
+//		return parts[parts.length - 1].replaceAll("[\\[\\]\\*]", ""); // remove [*] and special chars
+//	}
+	
 	private static String extractLastKey(String jsonPath) {
-		if (jsonPath == null || jsonPath.trim().isEmpty())
-			return "unknown";
-		String[] parts = jsonPath.split("\\.");
-		return parts[parts.length - 1].replaceAll("[\\[\\]\\*]", ""); // remove [*] and special chars
+	    if (jsonPath == null) return "value";
+	    String cleaned = jsonPath.replaceAll("[\\[\\]']", "");
+	    String[] parts = cleaned.split("\\.");
+
+	    return parts.length > 0 ? parts[parts.length - 1] : "value";
 	}
+
+	
+	public static <T> Optional<T> extractMdmsValue(Object mdmsData, String jsonPathExpression, Class<T> targetType) {
+        if (mdmsData == null) {
+            return Optional.empty();
+        }
+
+        try {
+            T result = JsonPath.using(JACKSON_CONFIG)
+                               .parse(mdmsData) 
+                               .read(jsonPathExpression, targetType);
+            
+            return Optional.ofNullable(result);
+            
+        } catch (PathNotFoundException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            System.err.println("Error extracting value with path " + jsonPathExpression + ": " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+	
+//	public static Optional<BigDecimal> findSetbackValueByHeight(
+//            List<Map<String, Object>> frontSetBacks, BigDecimal targetHeight) {
+//
+//        if (frontSetBacks == null || frontSetBacks.isEmpty() || targetHeight == null) {
+//            return Optional.empty();
+//        }
+//
+//        // 1. Find the SMALLEST height entry (the correct rule) that is >= targetHeight.
+//        Optional<Map<String, Object>> exactOrNextRuleOpt = frontSetBacks.stream()
+//                .filter(map -> map.get("height") instanceof BigDecimal) // Filter out bad data
+//                .filter(map -> {
+//                    BigDecimal heightBd = (BigDecimal) map.get("height");
+//                    // Filter: Keep only entries where heightBd >= targetHeight
+//                    return heightBd.compareTo(targetHeight) >= 0;
+//                })
+//                // Sort by height ascending to find the smallest matching rule
+//                .sorted(Comparator.comparing(map -> (BigDecimal) map.get("height")))
+//                .findFirst();
+//
+//        // 2. If an appropriate rule was found (i.e., targetHeight is within the table range)
+//        if (exactOrNextRuleOpt.isPresent()) {
+//            return exactOrNextRuleOpt.map(map -> (BigDecimal) map.get("setback"));
+//        }
+//
+//        // 3. If NO rule was found, the targetHeight must be GREATER THAN ALL DEFINED HEIGHTS.
+//        // In this case, the setback should be based on the MAXIMUM defined height rule.
+//        
+//        // Find the maximum defined height in the table
+//        Optional<Map<String, Object>> maxRuleOpt = frontSetBacks.stream()
+//                .filter(map -> map.get("height") instanceof BigDecimal)
+//                // Sort by height descending to find the maximum rule
+//                .sorted(Comparator.comparing((Map<String, Object> map) -> (BigDecimal) map.get("height")).reversed())
+//                .findFirst();
+//
+//        // If a max rule exists, return its setback value.
+//        return maxRuleOpt.map(map -> (BigDecimal) map.get("setback"));
+//    }
+	
+//	public static Optional<BigDecimal> findSetbackValueByHeight(
+//            List<Map<String, Object>> frontSetBacks, BigDecimal targetHeight) {
+//
+//        if (frontSetBacks == null || frontSetBacks.isEmpty() || targetHeight == null) {
+//            return Optional.empty();
+//        }
+//
+//        // 1. FIRST PASS: Find the SMALLEST height entry (the correct rule) that is >= targetHeight.
+//        Optional<Map<String, Object>> exactOrNextRuleOpt = frontSetBacks.stream()
+//                // Filter 1A: Ensure the height object is BigDecimal (data consistency check)
+//                .filter(map -> map.get("height") instanceof BigDecimal) 
+//                
+//                // Filter 1B: Keep rules where the rule height is greater than or equal to the target height
+//                .filter(map -> {
+//                    BigDecimal heightBd = (BigDecimal) map.get("height");
+//                    // heightBd >= targetHeight (compareTo returns 0 or 1)
+//                    return heightBd.compareTo(targetHeight) >= 0; 
+//                })
+//                // Sort by height ascending to find the smallest matching rule (e.g., 35 for 30.63)
+//                .sorted(Comparator.comparing(map -> (BigDecimal) map.get("height")))
+//                .findFirst();
+//
+//        // 2. If a rule was found (i.e., targetHeight is within or below the max rule)
+//        if (exactOrNextRuleOpt.isPresent()) {
+//            // Success: Return the setback value for that rule (e.g., 11 for height 35)
+//            return exactOrNextRuleOpt.map(map -> (BigDecimal) map.get("setback"));
+//        }
+//
+//        // 3. FALLBACK: The targetHeight must be GREATER THAN ALL DEFINED HEIGHTS (e.g., 60.00).
+//        // In this case, the setback should be based on the MAXIMUM defined height rule (e.g., 55).
+//        
+//        // Find the maximum defined height rule (highest height, largest setback)
+//        Optional<Map<String, Object>> maxRuleOpt = frontSetBacks.stream()
+//                .filter(map -> map.get("height") instanceof BigDecimal) // Filter bad data
+//                // Sort by height descending to find the maximum rule
+//                .sorted(Comparator.comparing((Map<String, Object> map) -> (BigDecimal) map.get("height")).reversed())
+//                .findFirst();
+//
+//        // If a max rule exists, return its setback value.
+//        // If the list was empty or malformed, this will still be Optional.empty().
+//        return maxRuleOpt.map(map -> (BigDecimal) map.get("setback"));
+//    }
+	 public static Optional<BigDecimal> findSetbackValueByHeight(
+	            List<Map<String, Object>> frontSetBacks, BigDecimal targetHeight) {
+
+	        if (frontSetBacks == null || frontSetBacks.isEmpty() || targetHeight == null) {
+	            return Optional.empty();
+	        }
+
+	        return frontSetBacks.stream()
+	                // 1. Filter: height >= targetHeight
+	                .filter(map -> {
+	                    Object heightObj = map.get("height");
+	                    BigDecimal height = toBigDecimal(heightObj);
+	                    return height != null && height.compareTo(targetHeight) >= 0;
+	                })
+	                // 2. Sort by height ascending → smallest height >= targetHeight
+	                .sorted(Comparator.comparing(map -> toBigDecimal(map.get("height"))))
+	                // 3. Take first
+	                .findFirst()
+	                // 4. Extract setback as BigDecimal
+	                .map(map -> toBigDecimal(map.get("setback")));
+	    }
+
+	    private static BigDecimal toBigDecimal(Object value) {
+	        if (value == null) return null;
+
+	        if (value instanceof BigDecimal) return (BigDecimal) value;
+
+	        if (value instanceof Number) return BigDecimal.valueOf(((Number) value).doubleValue());
+
+	        try {
+	            return new BigDecimal(value.toString());
+	        } catch (Exception e) {
+	            return null; // invalid number
+	        }
+	    }
+
+
+    /** Extracts a direct (non-list) key from a JSON Map */
+    private static Object extractSingleValue(Object data, String key) {
+        if (!(data instanceof Map)) return null;
+        Map<?, ?> map = (Map<?, ?>) data;
+        return map.get(key);
+    }
 
 }

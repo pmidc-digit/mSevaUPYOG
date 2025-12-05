@@ -34,7 +34,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   const [isUploading, setIsUploading] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [userSelected, setUser] = useState(null);
-
+console.log('currentStepData', currentStepData)
   // Map fields safely from params (these may be undefined)
   const architectid = currentStepData?.createdResponse?.additionalDetails?.architectid || "";
   const ownername = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.name || "";
@@ -140,7 +140,7 @@ const selfdeclarationform = `
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
@@ -269,10 +269,10 @@ const selfdeclarationform = `
           timestamp
         },
         edcrDetail: {
-          ...currentStepData?.BasicDetails?.edcrDetail,
+          ...currentStepData?.BasicDetails?.edcrDetails,
         }
       };
-
+console.log('paramsWithTimestamp', paramsWithTimestamp)
       const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [paramsWithTimestamp] }, "architectconsent");
 
       if (result?.filestoreIds?.[0]) {

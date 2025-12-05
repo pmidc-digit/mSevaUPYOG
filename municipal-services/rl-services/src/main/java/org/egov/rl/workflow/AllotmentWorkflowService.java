@@ -86,6 +86,7 @@ public class AllotmentWorkflowService {
 	private ProcessInstance getProcessInstanceForAllotment(AllotmentDetails application, RequestInfo requestInfo) {
 		Workflow workflow = application.getWorkflow();		
 		ProcessInstance processInstance = new ProcessInstance();
+		System.out.println("-------application.getApplicationNumber()--------"+application.getApplicationNumber());
 		processInstance.setBusinessId(application.getApplicationNumber());
 		processInstance.setAction(workflow.getAction());
 		processInstance.setModuleName("rl-service");

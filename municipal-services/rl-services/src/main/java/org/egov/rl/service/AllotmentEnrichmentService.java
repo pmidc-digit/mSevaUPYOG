@@ -131,11 +131,12 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
 		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
+		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
 		
 		allotmentRequest.setAllotment(allotmentDbDetails);
 
 		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
-		setIdgenIds(allotmentRequest);
+		updateIdgenIds(allotmentRequest);
 
 	}
 
@@ -243,6 +244,23 @@ public class AllotmentEnrichmentService {
 				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
 				.get(0);
 		allotmentDetails.setApplicationNumber(applicationNumber);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		allotmentRequest.setAllotment(allotmentDetails);
+	}
+	private void updateIdgenIds(AllotmentRequest allotmentRequest) {
+
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		String tenantId = allotmentDetails.getTenantId();
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+
+		if (config.getIsWorkflowEnabled()) {
+			allotmentDetails.setStatus(allotmentRequest.getAllotment().getWorkflow().getStatus());
+		}
+//		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId,
+//				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
+//				.get(0);
+//		allotmentDetails.setApplicationNumber(applicationNumber);
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);

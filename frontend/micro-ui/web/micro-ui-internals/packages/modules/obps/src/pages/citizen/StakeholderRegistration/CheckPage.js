@@ -34,8 +34,6 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const isArchitect = formData?.LicneseType?.LicenseType?.code?.includes("Architect") || formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect") || LicneseType?.LicenseType?.code?.includes("Architect");
   
 console.log("FormData in CheckPage", result, formData, safeValue, value);
-console.log('result here', result)
-console.log('formData', formData)
   const status = value?.result?.Licenses?.[0]?.status;  
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
 
@@ -59,7 +57,7 @@ console.log('formData', formData)
   const mainType = tradeTypeVal?.split(".")[0];
   const { data: EmployeeStatusData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(tenant, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
   const formattedData = EmployeeStatusData?.StakeholderRegistraition?.TradeTypetoRoleMapping;
-console.log('bparegData', bparegData)
+
   function getLicenseType() {
     const list = [];
     const found = false;
@@ -365,8 +363,8 @@ console.log('bparegData', bparegData)
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
-        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentState)}
-        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict))}
+        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.permanentState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentCity))}
         {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
       </div>
 
@@ -374,8 +372,8 @@ console.log('bparegData', bparegData)
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS")}</h2>
         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
-        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceState)}
-        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict))}
+        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.correspondenceState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity))}
         {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
       </div>
 

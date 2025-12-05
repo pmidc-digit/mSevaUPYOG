@@ -88,6 +88,12 @@ public class PropertiesManager {
 	@Value("${kafka.topics.save.service}")
 	public String saveEmployeeTopic;
 	
+	@Value("${kafka.topics.hrms.obpas.data}")
+	public String saveObpasEmployeeTopic;
+	
+	@Value("${kafka.topics.hrms.obpas.data.delete}")
+	public String deleteObpasEmployeeTopic;
+	
 	@Value("${kafka.topics.update.service}")
 	public String UpdateEmployeeTopic;
 	

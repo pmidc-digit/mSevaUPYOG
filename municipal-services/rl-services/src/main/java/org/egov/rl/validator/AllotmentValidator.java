@@ -93,7 +93,7 @@ public class AllotmentValidator {
 		String id = allotementRequest.getAllotment().getId();
 		if (id == null) {
 			AllotmentDetails allotmentDetails = allotmentRepository
-					.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,
+					.getAllotedByPropertyIdsAndStatusActive(propertyId, tenantId,
 							previousApplicationNumber)
 					.stream().findFirst().orElse(null);
 			if ((allotmentDetails != null)) {

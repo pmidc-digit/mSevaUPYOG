@@ -45,7 +45,12 @@ public class OwnerInfo { // extends User {
 
 	@JsonProperty("userId")
 	private long userId;
-	
+
+    
+    @JsonProperty("userUuid")
+	private String userUuid;
+
+    
 	@JsonProperty("tenantId")
 	private String tenantId;
 	
@@ -79,9 +84,7 @@ public class OwnerInfo { // extends User {
     @JsonProperty("firstName")
 	private String firstName;
 
-	@NotNull
-    @SafeHtml
-    @Size(max=100)
+	@Size(max=100)
     @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
     @JsonProperty("middleName")
 	private String middleName;
@@ -93,6 +96,11 @@ public class OwnerInfo { // extends User {
     @JsonProperty("lastName")
 	private String lastName;
 
+	@NotNull
+    @JsonProperty("name")
+	private String name;
+
+	
 	@Pattern(regexp = "(^[4-9][0-9]{9}$)", message = "Inavlid mobile number, should start with 4-9 and contain ten digits of 0-9")
     @NotNull
     @SafeHtml
@@ -129,9 +137,6 @@ public class OwnerInfo { // extends User {
 
     @JsonProperty("dob")
     private Long dob;
-    
-    @JsonProperty("userUuid")
-	private String userUuid;
     
 	@JsonProperty("additionalDetails")
 	private JsonNode additionalDetails;

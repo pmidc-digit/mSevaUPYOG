@@ -15,12 +15,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.OwnerInfo;
+import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder;
+import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder2;
 import org.egov.rl.repository.builder.AllotmentQueryBuilder;
 import org.egov.rl.repository.rowmapper.AllotmentRowMapper;
+import org.egov.rl.repository.rowmapper.OwnerInfoRowMapper;
 import org.egov.rl.repository.rowmapper.SearchRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Repository
@@ -31,7 +39,17 @@ public class AllotmentRepository {
 
 	@Autowired
 	private AllotmentQueryBuilder queryBuilder;
+	
+	@Autowired
+	OwnerInfoRowMapper ownerInfoRowMapper;
+	
 
+	@Autowired
+	private AllotmentApplicationSearchQueryBuilder searchQueryBuilder;
+
+	@Autowired
+	private AllotmentApplicationSearchQueryBuilder2 searchQueryBuilder2;
+	
 	@Autowired
 	private AllotmentRowMapper rowMapper;
 	
@@ -76,4 +94,18 @@ public class AllotmentRepository {
 		String query = queryBuilder.getAllotedByPropertyIdsAndPreviousApplicationNumber(propertyId, tenantId,previousApplicationNumber);
 		return jdbcTemplate.query(query, searchRowMapper);
 	}
+   
+	public List<AllotmentDetails> getAllotedApplications(AllotmentCriteria searchCriteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = searchQueryBuilder2.getAllotmentSearch(searchCriteria, preparedStmtList);
+		log.info("Final query: " + query);
+		return jdbcTemplate.query(query, preparedStmtList.toArray(), searchRowMapper);
+	}
+
+	 public List<OwnerInfo> getOwnerInfoListByAllotmentId(String propertyId) {
+		 List<Object> preparedStmtList = new ArrayList<>();
+				
+			String query = queryBuilder.createdOwnerInfoQuery(propertyId, preparedStmtList);
+			return jdbcTemplate.query(query, preparedStmtList.toArray(), ownerInfoRowMapper);
+		}
 }

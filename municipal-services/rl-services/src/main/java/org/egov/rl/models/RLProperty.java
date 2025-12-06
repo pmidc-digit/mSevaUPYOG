@@ -50,8 +50,11 @@ public class RLProperty {// extends PropertyInfo {
 //	@JsonProperty("propertyDetail")
 //	private String propertyDetail;
 	
-	@JsonProperty("usageCategory")
-	private String usageCategory;  /// Rent or Rease
+//	@JsonProperty("usageCategory")
+//	private String usageCategory;  /// Rent or Rease
+	
+	@JsonProperty("allotmentType")
+	private String allotmentType;  /// Rent or Rease
 
 
 	@Digits(integer = 8, fraction = 2)

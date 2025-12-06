@@ -2,14 +2,17 @@
 package org.egov.rl.web.controllers;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.AllotmentResponse;
 import org.egov.rl.models.PropertyReportSearchRequest;
+import org.egov.rl.models.RequestInfoWrapper;
 import org.egov.rl.service.AllotmentService;
 import org.egov.rl.service.SearchPropertyService;
 import org.egov.rl.util.ResponseInfoFactory;
@@ -18,10 +21,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,4 +79,18 @@ public class AllotmentController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);	
     } 
+    
+    @RequestMapping(value = "/v1/_search", method = RequestMethod.POST)
+	public ResponseEntity<org.egov.rl.models.user.AllotmentResponse> rlSearch(
+			@RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Valid @ModelAttribute AllotmentCriteria allotmentCriteria) {
+		List<AllotmentDetails> applications = allotmentService
+				.searchAllotedApplications(requestInfoWrapper.getRequestInfo(), allotmentCriteria);
+		ResponseInfo responseInfo = responseInfoFactory
+				.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+		org.egov.rl.models.user.AllotmentResponse response = org.egov.rl.models.user.AllotmentResponse.builder().allotment(applications)
+				.responseInfo(responseInfo).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

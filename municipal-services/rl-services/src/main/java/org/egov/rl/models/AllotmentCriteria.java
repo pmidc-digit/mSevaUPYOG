@@ -1,5 +1,6 @@
 package org.egov.rl.models;
 
+import java.util.List;
 import java.util.Set;
 
 import org.egov.rl.models.enums.Status;
@@ -36,9 +37,9 @@ public class AllotmentCriteria {
 	private String mobileNumber;
 
 	private String name;
-//	
-//	private Set<String> ownerIds;
-//	
+	
+	private Set<String> ownerIds;
+	
 	private boolean audit;
 	
 	private Long offset;

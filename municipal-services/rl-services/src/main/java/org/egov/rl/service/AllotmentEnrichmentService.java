@@ -21,6 +21,7 @@ import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.repository.AllotmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 @Service
@@ -37,6 +38,9 @@ public class AllotmentEnrichmentService {
 
 	@Autowired
 	private AllotmentRepository allotmentRepository;
+	
+	@Autowired
+	private UserService userService;
 
 	/**
 	 * Assigns UUIDs to all id fields and also assigns acknowledgement-number and
@@ -248,6 +252,7 @@ public class AllotmentEnrichmentService {
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
 	}
+	
 	private void updateIdgenIds(AllotmentRequest allotmentRequest) {
 
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
@@ -265,148 +270,72 @@ public class AllotmentEnrichmentService {
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
 	}
-
-//    /**
-//     *  Enriches the locality object
-//     * @param property The property object received for create or update
-//     */
-//    public void enrichBoundary(Property property, RequestInfo requestInfo){
-//    	
-//        boundaryService.getAreaType(property, requestInfo, PTConstants.BOUNDARY_HEIRARCHY_CODE);
-//    }
-
-//    /**
-//     * 
-//     * Enrichment method for mutation request
-//     * 
-//     * @param request
-//     */
-//	public void enrichMutationRequest(PropertyRequest request, Property propertyFromSearch) {
-//
-//		RequestInfo requestInfo = request.getRequestInfo();
-//		Property property = request.getProperty();
-//		Boolean isWfEnabled = config.getIsMutationWorkflowEnabled();
-//		Boolean iswfStarting = propertyFromSearch.getStatus().equals(Status.ACTIVE);
-//		AuditDetails auditDetailsForUpdate = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-//		propertyFromSearch.setAuditDetails(auditDetailsForUpdate);
-//
-//		if (!isWfEnabled) {
-//
-//			property.setStatus(Status.ACTIVE);
-//
-//		} else if (isWfEnabled && iswfStarting) {
-//
-//			enrichPropertyForNewWf(requestInfo, property, true);
-//		}
-//
-//		property.getOwners().forEach(owner -> {
-//
-//			if (owner.getOwnerInfoUuid() == null) {
-//				
-//				owner.setOwnerInfoUuid(UUID.randomUUID().toString());
-//				owner.setStatus(Status.ACTIVE);
-//			}
-//
-//			if (!CollectionUtils.isEmpty(owner.getDocuments()))
-//				owner.getDocuments().forEach(doc -> {
-//					if (doc.getId() == null) {
-//						doc.setId(UUID.randomUUID().toString());
-//						doc.setStatus(Status.ACTIVE);
-//					}
-//				});
-//		});
-//		 AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-//		 property.setAuditDetails(auditDetails);
-//	}
-
-	/**
-	 * enrich property as new entry for workflow validation
-	 * 
-	 * @param requestInfo
-	 * @param property
-	 */
-//	private void enrichPropertyForNewWf(RequestInfo requestInfo, Property property, Boolean isMutation) {
-//		
-//		String ackNo;
-//
-//		if (isMutation) {
-//			ackNo = propertyutil.getIdList(requestInfo, property.getTenantId(), config.getMutationIdGenName(), config.getMutationIdGenFormat(), 1).get(0);
-//		} else
-//			ackNo = propertyutil.getIdList(requestInfo, property.getTenantId(), config.getAckIdGenName(), config.getAckIdGenFormat(), 1).get(0);
-//		property.setId(UUID.randomUUID().toString());
-//		property.setAcknowldgementNumber(ackNo);
-//		
-////		enrichUuidsForNewUpdate(requestInfo, property);
-//	}
-
-//	private void enrichUuidsForNewUpdate(RequestInfo requestInfo, Property property) {
-//		
-//		AuditDetails propertyAuditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
-//		property.setId(UUID.randomUUID().toString());
-//		if (!CollectionUtils.isEmpty(property.getDocuments()))
-//			property.getDocuments().forEach(doc -> {
-//				doc.setId(UUID.randomUUID().toString());
-//				if (null == doc.getStatus())
-//					doc.setStatus(Status.ACTIVE);
-//			});
-//		property.getAddress().setTenantId(property.getTenantId());
-//		property.getAddress().setId(UUID.randomUUID().toString());
-//
-//		if (!ObjectUtils.isEmpty(property.getInstitution()))
-//			property.getInstitution().setId(UUID.randomUUID().toString());
-//
-//		property.setAuditDetails(propertyAuditDetails);
-//		
-//		if (!CollectionUtils.isEmpty(property.getUnits()))
-//			property.getUnits().forEach(unit -> {
-//
-//				unit.setId(UUID.randomUUID().toString());
-//				if (unit.getActive() == null)
-//				unit.setActive(true);
-//			});
-//		
-//		property.getOwners().forEach(owner -> {
-//			
-//			owner.setOwnerInfoUuid(UUID.randomUUID().toString());
-//			if (!CollectionUtils.isEmpty(owner.getDocuments()))
-//				owner.getDocuments().forEach(doc -> {
-//					doc.setId(UUID.randomUUID().toString());
-//					if (null == doc.getStatus())
-//						doc.setStatus(Status.ACTIVE);
-//				});
-//			if (null == owner.getStatus())
-//				owner.setStatus(Status.ACTIVE);
-//		});
-//	}
-
-	/**
-	 * In case of SENDBACKTOCITIZEN enrich the assignee with the owners and creator
-	 * of property
-	 * 
-	 * @param property to be enriched
-	 */
-//    public void enrichAssignes(Property property){
-//
-//            if(config.getIsWorkflowEnabled() && property.getWorkflow().getAction().equalsIgnoreCase(PTConstants.CITIZEN_SENDBACK_ACTION)){
-//
-//                    List<OwnerInfo> assignes = new LinkedList<>();
-//
-//                    // Adding owners to assignes list
-//                    property.getOwners().forEach(ownerInfo -> {
-//                       assignes.add(ownerInfo);
-//                    });
-//
-//                    // Adding creator of application
-//                    if(property.getAccountId()!=null)
-//                        assignes.add(OwnerInfo.builder().uuid(property.getAccountId()).build());
-//
-//					Set<OwnerInfo> registeredUsers = userService.getUUidFromUserName(property);
-//
-//					if(!CollectionUtils.isEmpty(registeredUsers))
-//						assignes.addAll(registeredUsers);
-//
-//                    property.getWorkflow().setAssignes(assignes);
-//            }
-//    }
+	
+	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> applications, RequestInfo requestInfo) {
+		for (AllotmentDetails application : applications) {
+			application.getOwnerInfo().stream().forEach(owner->{
+			
+			if (owner != null && owner.getUserUuid() != null) {
+				try {
+					// Fetch user details from user service using the stored UUID
+					org.egov.rl.models.user.UserSearchRequest userSearchRequest = 
+						userService.getBaseUserSearchRequest(application.getTenantId(), requestInfo);
+					userSearchRequest.setUuid(java.util.Collections.singleton(owner.getUserUuid()));
+					
+					org.egov.rl.models.user.UserDetailResponse userDetailResponse = 
+						userService.getUser(userSearchRequest);
+					
+					if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+						org.egov.rl.models.user.User user = userDetailResponse.getUser().get(0);
+						
+						// Populate owner with complete user details
+//						owner.setId(user.getId());
+						owner.setUserUuid(user.getUuid());
+//						owner.setUserName(user.getUserName());
+//						owner.setPassword(user.getPassword());
+//						owner.setSalutation(user.getSalutation());
+						owner.setName(user.getName());
+						owner.setGender(user.getGender());
+						owner.setMobileNo(user.getMobileNumber());
+						owner.setEmailId(user.getEmailId());
+//						owner.setAltContactNumber(user.getAltContactNumber());
+						owner.setPanCard(user.getPan());
+						owner.setAadharCard(user.getAadhaarNumber());
+//						owner.setPermanentAddress(user.getPermanentAddress());
+//						owner.setPermanentCity(user.getPermanentCity());
+//						owner.setPermanentPincode(user.getPermanentPincode());
+//						owner.setCorrespondenceCity(user.getCorrespondenceCity());
+//						owner.setCorrespondencePincode(user.getCorrespondencePincode());
+//						owner.setCorrespondenceAddress(user.getCorrespondenceAddress());
+//						owner.setActive(user.getActive());
+						owner.setDob(user.getDob());
+//						owner.setPwdExpiryDate(user.getPwdExpiryDate());
+//						owner.setLocale(user.getLocale());
+//						owner.setType(user.getType());
+//						owner.setSignature(user.getSignature());
+//						owner.setAccountLocked(user.getAccountLocked());
+//						owner.setRoles(user.getRoles());
+						owner.setFatherOrHusbandName(user.getFatherOrHusbandName());
+//						owner.setBloodGroup(user.getBloodGroup());
+//						owner.setIdentificationMark(user.getIdentificationMark());
+//						owner.setPhoto(user.getPhoto());
+//						owner.setCreatedBy(user.getCreatedBy());
+//						owner.setCreatedDate(user.getCreatedDate());
+//						owner.setLastModifiedBy(user.getLastModifiedBy());
+//						owner.setLastModifiedDate(user.getLastModifiedDate());
+						owner.setTenantId(user.getTenantId());
+						
+						// Populate father name in the application from user service
+//						application.setFatherName(user.getFatherOrHusbandName());
+					}
+				} catch (Exception e) {
+					// Log error but don't fail the search
+					System.err.println("Error fetching user details for owner: " + owner.getUserUuid() + ", Error: " + e.getMessage());
+				}
+			}
+			
+			});
+		}
+	}
 
 }

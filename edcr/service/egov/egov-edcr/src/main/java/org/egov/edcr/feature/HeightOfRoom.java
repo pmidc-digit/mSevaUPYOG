@@ -84,6 +84,7 @@ public class HeightOfRoom extends FeatureProcess {
 	private static final String RULE = "4.4.4";
 	private static final String RULE1 = "4.4.4 (ix)";
 	private static final String SUBRULE_41_II_B = "41-ii-b";
+	private static final BigDecimal minDoorWidth = BigDecimal.valueOf(1);
 
 	private static final String RULE_AC_DESC = "Minimum height of ac room";
 	private static final String RULE_REGULAR_DESC = "Minimum height of regular room";
@@ -159,7 +160,7 @@ public class HeightOfRoom extends FeatureProcess {
 						scrutinyDetail2.addColumnHeading(1, RULE_NO);
 						scrutinyDetail2.addColumnHeading(2, DESCRIPTION);
 						scrutinyDetail2.addColumnHeading(3, FLOOR);
-						scrutinyDetail2.addColumnHeading(4, Room);
+						//scrutinyDetail2.addColumnHeading(4, Room);
 						scrutinyDetail2.addColumnHeading(5, REQUIRED);
 						scrutinyDetail2.addColumnHeading(6, PROVIDED);
 						scrutinyDetail2.addColumnHeading(7, STATUS);
@@ -495,20 +496,21 @@ public class HeightOfRoom extends FeatureProcess {
 								for (Door door : floor.getDoors()) {
 									if (door != null) {
 										BigDecimal doorHeight = door.getDoorHeight();
-										BigDecimal doorWidth = door.getDoorWidth();
+										BigDecimal doorWidth = door.getDoorWidth();									
+											
 										// BigDecimal minDoorHeight = BigDecimal.valueOf(2.0);
-										BigDecimal minDoorWidth = BigDecimal.valueOf(1);
+										//BigDecimal minDoorWidth = BigDecimal.valueOf(1);
 										subRule = SUBRULE_41_II_B;
 										subRuleDesc = SUBRULE_41_II_B;
 										if (doorWidth.compareTo(minDoorWidth) >= 0) {
-											setReportOutputDetails(pl, subRuleDoor, subRuleDesc,
-													floor.getNumber().toString(), " Width >=" + minDoorWidth,
-													" Width = " + doorWidth + DcrConstants.IN_METER, "",
+											setReportOutputDetails2(pl, subRuleDoor, subRuleDesc,
+													floor.getNumber().toString(), 
+													" Width = " + minDoorWidth + DcrConstants.IN_METER, doorWidth.toString(),
 													Result.Accepted.getResultVal(), scrutinyDetail2);
 										} else {
-											setReportOutputDetails(pl, subRuleDoor, subRuleDesc, 
-													floor.getNumber().toString(),  " Width >=" + minDoorWidth,
-													" Width = " + doorWidth + DcrConstants.IN_METER, "",
+											setReportOutputDetails2(pl, subRuleDoor, subRuleDesc, 
+													floor.getNumber().toString(),  
+													" Width = " + minDoorWidth + DcrConstants.IN_METER, doorWidth.toString(),
 													Result.Not_Accepted.getResultVal(), scrutinyDetail2);
 										}
 									}
@@ -782,6 +784,19 @@ public class HeightOfRoom extends FeatureProcess {
 		details.put(DESCRIPTION, ruleDesc);
 		details.put(FLOOR, floor);
 		details.put(Room, room);
+		details.put(REQUIRED, expected);
+		details.put(PROVIDED, actual);
+		details.put(STATUS, status);
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
+	
+	private void setReportOutputDetails2(Plan pl, String ruleNo, String ruleDesc, String floor,  String expected,
+			String actual, String status, ScrutinyDetail scrutinyDetail) {
+		Map<String, String> details = new HashMap<>();
+		details.put(RULE_NO, ruleNo);
+		details.put(DESCRIPTION, ruleDesc);
+		details.put(FLOOR, floor);		
 		details.put(REQUIRED, expected);
 		details.put(PROVIDED, actual);
 		details.put(STATUS, status);

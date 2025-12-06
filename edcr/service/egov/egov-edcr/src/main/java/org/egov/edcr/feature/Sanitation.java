@@ -774,9 +774,9 @@ public class Sanitation extends FeatureProcess {
             addReportDetail(ruleNo, BLDG_PART_SPECIAL_WATER_CLOSET + " - Minimum one at Ground Floor",
                     String.valueOf(required), String.valueOf(provided), Result.Not_Accepted.getResultVal(), detail);
         } else {
-            actualResult.append("Found");
-            addReportDetail(ruleNo, BLDG_PART_SPECIAL_WATER_CLOSET + " - Minimum one at Ground Floor",
-                    String.valueOf(required), String.valueOf(provided), Result.Accepted.getResultVal(), detail);
+            //actualResult.append("Found");
+            //addReportDetail(ruleNo, BLDG_PART_SPECIAL_WATER_CLOSET + " - Minimum one at Ground Floor",
+                    //String.valueOf(required), String.valueOf(provided), Result.Accepted.getResultVal(), detail);
         }
 
         return !notFound;

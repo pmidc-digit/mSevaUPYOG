@@ -177,17 +177,33 @@ public class AllotmentQueryBuilder {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
 		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE status != 'CLOSED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
-		if(previousApplicationNumber==null){
-			mainQuery.append(" AND previous_application_number is null");	
-		}else {
-		    mainQuery.append(" AND previous_application_number='").append(previousApplicationNumber).append("'");
-		}
+		mainQuery.append(" WHERE status != 'CLOSED' AND status = 'ACTIVE' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
+//		if(previousApplicationNumber==null){
+//			mainQuery.append(" AND previous_application_number is null");	
+//		}else {
+//		    mainQuery.append(" AND previous_application_number='").append(previousApplicationNumber).append("'");
+//		}
 //		mainQuery.append(" OR previous_application_number is null)");
 		mainQuery.append(" AND property_id='").append(propertyId).append("'");
-//		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
 		System.out.println("mainQuery--------"+mainQuery);
 		return mainQuery.toString();
 	}
 
+	public String getAllotedByPropertyIdsAndStatusActive(String propertyId, String tenantId, String previousApplicationNumber) {
+		long currentDate = System.currentTimeMillis(); // current timestamp in long
+
+		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
+		mainQuery.append(" WHERE status != 'CLOSED' AND status = 'ACTIVE' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
+//		if(previousApplicationNumber==null){
+//			mainQuery.append(" AND previous_application_number is null");	
+//		}else {
+//		    mainQuery.append(" AND previous_application_number='").append(previousApplicationNumber).append("'");
+//		}
+//		mainQuery.append(" OR previous_application_number is null)");
+		mainQuery.append(" AND property_id='").append(propertyId).append("'");
+		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+		System.out.println("mainQuery--------"+mainQuery);
+		return mainQuery.toString();
+	}
 }

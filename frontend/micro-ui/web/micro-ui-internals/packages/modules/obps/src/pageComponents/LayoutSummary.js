@@ -53,14 +53,42 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" }
 
-  const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div>{value || "NA"}</div>
-    </div>
-  );
+  // const renderLabel = (label, value) => (
+  //   <div style={labelFieldPairStyle}>
+  //     <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+  //     <div>{value || "NA"}</div>
+  //   </div>
+  // );
 
+    const renderLabel = (label, value) => {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
+      return null;
+    }
+    
+    return (
+      <div style={labelFieldPairStyle}>
+        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+        <div>{value}</div>
+      </div>
+    );
+  }
 
+  const getFloorLabel = (index) => {
+  if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+
+  const floorNumber = index;
+  const lastDigit = floorNumber % 10;
+  const lastTwoDigits = floorNumber % 100;
+
+  let suffix = "th";
+  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+    if (lastDigit === 1) suffix = "st";
+    else if (lastDigit === 2) suffix = "nd";
+    else if (lastDigit === 3) suffix = "rd";
+  }
+
+  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
 
   const userInfo = Digit.UserService.getUser()
   const currentUser = userInfo?.info?.type

@@ -163,15 +163,15 @@ public class AllotmentQueryBuilder {
 		return mainQuery.toString();
 	}
 
-	public String getAllotmentByPropertyId(String propertyId, String tenantId) {
-		long currentDate = System.currentTimeMillis(); // current timestamp in long
-
-		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE status != 'CLOSED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
-		mainQuery.append(" AND property_id='").append(propertyId).append("'");
-		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
-		return mainQuery.toString();
-	}
+//	public String getAllotmentByPropertyId(String propertyId, String tenantId) {
+//		long currentDate = System.currentTimeMillis(); // current timestamp in long
+//
+//		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
+//		mainQuery.append(" WHERE status != 'CLOSED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
+//		mainQuery.append(" AND property_id='").append(propertyId).append("'");
+//		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+//		return mainQuery.toString();
+//	}
 	
 //	public String getAllotedByPropertyIdsAndPreviousApplicationNumber(String propertyId, String tenantId, String previousApplicationNumber) {
 //		long currentDate = System.currentTimeMillis(); // current timestamp in long

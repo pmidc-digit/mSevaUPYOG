@@ -84,11 +84,11 @@ public class AllotmentRepository {
         return jdbcTemplate.query(query, searchRowMapper);
 	}
 	
-   public List<AllotmentDetails> getAllotedByPropertyIds(String propertyId,String tenantId) {
-		
-		String query = queryBuilder.getAllotmentByPropertyId(propertyId, tenantId);
-		return jdbcTemplate.query(query, searchRowMapper);
-	}
+//   public List<AllotmentDetails> getAllotedByPropertyIds(String propertyId,String tenantId) {
+//		
+//		String query = queryBuilder.getAllotmentByPropertyId(propertyId, tenantId);
+//		return jdbcTemplate.query(query, searchRowMapper);
+//	}
    public List<AllotmentDetails> getAllotedByPropertyIdsAndStatusActive(String propertyId,String tenantId,String previousApplicationNumber) {
 		
 		String query = queryBuilder.getAllotedByPropertyIdsAndStatusActive(propertyId, tenantId,previousApplicationNumber);

@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     additional_details jsonb,
     CONSTRAINT pk_eg_rl_allotment PRIMARY KEY (id),
     CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number),
-    CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id,tenant_id, previous_application_number)
+   # CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id,tenant_id, previous_application_number)
 );
 
 CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_tenant_id ON eg_rl_allotment(tenant_id);

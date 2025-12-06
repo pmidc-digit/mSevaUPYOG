@@ -389,8 +389,8 @@ const getFormattedULBName = (ulbCode = "") => {
         asSectionHeader: true,
         values: [
           { title: "BPA_APPLICANT_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA" },
-          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.additionalDetail?.permanentState || "NA" },
-          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentCity || "NA" },
+          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict || "NA" },
           { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "NA" },
         ],
       },
@@ -399,8 +399,8 @@ const getFormattedULBName = (ulbCode = "") => {
         asSectionHeader: true,
         values: [
           { title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress || "NA" },
-          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.additionalDetail?.correspondenceState || "NA" },
-          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity || "NA" },
+          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict || "NA" },
           { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || "NA" },
         ],
       },

@@ -363,8 +363,8 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
-        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.permanentState)}
-        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentCity))}
+        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict))}
         {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
       </div>
 
@@ -372,8 +372,8 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS")}</h2>
         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
-        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.correspondenceState)}
-        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity))}
+        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict))}
         {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
       </div>
 
@@ -501,7 +501,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
 
 
  
-      <div style={sectionStyle}>
+      {result?.Licenses?.[0]?.applicationType != "UPGRADE" && <div style={sectionStyle}>
 
         <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
 
@@ -558,7 +558,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
 
 
 
-      </div>
+      </div>}
 
 
       {actions && actions.length > 0 ? (

@@ -7,7 +7,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
   const { t } = useTranslation();
   const availableOptions = [
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
-    // { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
+    { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
   ];
   const stateId = Digit.ULBService.getStateId();
   const { data: stakeholderServiceTypes, isLoading: stakeholderServiceTypesLoading } = Digit.Hooks.obps.useMDMS(stateId, "StakeholderRegistraition", "TradeTypetoRoleMapping", {
@@ -45,9 +45,9 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
 
 
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: null});
-  React.useEffect(() => {
-    setFilterFormValue("assignee", "ASSIGNED_TO_ME");
-  }, []);
+  // React.useEffect(() => {
+  //   setFilterFormValue("assignee", "ASSIGNED_TO_ME");
+  // }, []);
   return <>
     <FilterFormField>
       <Controller

@@ -5,19 +5,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
 import LayoutDocumentsView from "./LayoutDocumentsView";
 import LayoutImageView from "./LayoutImageView";
+import LayoutFeeEstimationDetails from "./LayoutFeeEstimationDetails";
+import LayoutDocumentTableView from "./LayoutDocumentsView";
 
 
 function LayoutSummary({ currentStepData: formData, t }) {
-  const { pathname: url } = useLocation()
-  const history = useHistory()
-  const dispatch = useDispatch()
+
 
   console.log("formData in Summary Page", formData)
 
 
-    const coordinates = useSelector(function (state) {
-        return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
-    });
+  const coordinates = useSelector(function (state) {
+    return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
+  });
+
   const sectionStyle = {
     backgroundColor: "#ffffff",
     padding: "1rem 1.5rem",
@@ -52,42 +53,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" }
 
-  const renderLabel = (label, value) => {
-    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
-      return null;
-    }
-    
-    return (
-      <div style={labelFieldPairStyle}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-        <div>{value}</div>
-      </div>
-    );
-  }
+  const renderLabel = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div>{value || "NA"}</div>
+    </div>
+  );
 
-  // const getFloorLabel = (index) => {
-  //   if (index === 0) return t("BPA_GROUND_FLOOR_AREA_LABEL")
-  //   const suffixes = ["st", "nd", "rd"]
-  //   const suffix = suffixes[((index - 1) % 10) - 1] || "th"
-  //   return `${index}${suffix} ${t("BPA_FLOOR_AREA_LABEL")}`
-  // }
 
-  const getFloorLabel = (index) => {
-  if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
-
-  const floorNumber = index;
-  const lastDigit = floorNumber % 10;
-  const lastTwoDigits = floorNumber % 100;
-
-  let suffix = "th";
-  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-    if (lastDigit === 1) suffix = "st";
-    else if (lastDigit === 2) suffix = "nd";
-    else if (lastDigit === 3) suffix = "rd";
-  }
-
-  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
-};
 
   const userInfo = Digit.UserService.getUser()
   const currentUser = userInfo?.info?.type
@@ -244,14 +217,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+           <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
-        {Array.isArray(formData?.documents?.documents?.documents) &&
-        formData.documents.documents.documents.length > 0 ? (
-          <LayoutDocumentsView value={{ workflowDocs: formData.documents.documents.documents }}></LayoutDocumentsView>
-        ) : (
-          <div>{t("BPA_NO_DOCUMENTS_MSG")}</div>
-        )}
+        {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {formData && <LayoutFeeEstimationDetails formData={formData}/>}
       </div>
     </div>
   )

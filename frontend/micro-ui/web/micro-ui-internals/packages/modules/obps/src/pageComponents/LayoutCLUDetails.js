@@ -58,6 +58,7 @@ const LayoutCLUDetails = (_props) => {
           rules={{ required: t("REQUIRED_FIELD") }}
           render={(props) => (
           <Dropdown 
+          t={t}
             className="form-field" 
             select={(e)=>{
               props.onChange(e);
@@ -66,6 +67,8 @@ const LayoutCLUDetails = (_props) => {
             selected={props.value} 
             option={cluOptions}
             optionKey="i18nKey" />
+            
+            
             )}
             />
         </LabelFieldPair>

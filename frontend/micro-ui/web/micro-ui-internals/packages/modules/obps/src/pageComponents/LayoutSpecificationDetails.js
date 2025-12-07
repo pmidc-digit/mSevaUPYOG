@@ -29,7 +29,7 @@ const LayoutSpecificationDetails = (_props) => {
       if (!isNaN(plotArea) && !isNaN(totalArea) && plotArea !== totalArea) {
         setShowToast({
           error: true,
-          label: "BPA_PLOT_AREA_MUST_MATCH_NET_TOTAL_AREA",
+          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)",
         })
       } else {
         setShowToast(null)
@@ -43,7 +43,7 @@ const LayoutSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -59,7 +59,7 @@ const LayoutSpecificationDetails = (_props) => {
                   const plotArea = Number.parseFloat(value)
                   const totalArea = Number.parseFloat(netTotalArea)
                   if (isNaN(plotArea) || isNaN(totalArea)) return true
-                  return plotArea === totalArea || t("BPA_PLOT_AREA_MUST_MATCH_NET_TOTAL_AREA")
+                  return plotArea === totalArea || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)")
                 },
               }}
               render={(props) => (

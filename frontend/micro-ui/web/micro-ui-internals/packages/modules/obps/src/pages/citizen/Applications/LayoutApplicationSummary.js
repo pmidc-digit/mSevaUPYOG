@@ -148,6 +148,20 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
+    const downloadSanctionLetter = async () => {
+    const application = applicationDetails?.Layout?.[0];
+    try {
+      if (!application) {
+        throw new Error("Layout Application data is missing");
+      }
+      //we will add sanctionLetter also
+      //await getNOCSanctionLetter(application, t, amountPaid);
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    }
+  };
+
+
   const dowloadOptions = []
   if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
@@ -155,12 +169,16 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
       onClick: handleDownloadPdf,
     })
 
+    dowloadOptions.push({
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: handleDownloadPdf,
+    });
+
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-      })
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      });
     }
   }
 
@@ -197,11 +215,12 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
   }
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
+  const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "Layout_mcUp",
+    moduleCode: businessServiceCode,
   })
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)

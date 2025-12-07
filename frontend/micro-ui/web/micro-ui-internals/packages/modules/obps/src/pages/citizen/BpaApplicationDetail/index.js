@@ -1726,6 +1726,150 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           ))
                           : null}
 
+                        {/* Fee Details Table */}
+                        {detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                          ? (() => {
+                              const values = detail?.additionalDetails?.values || [];
+                              const feeRows = [];
+                              let totalAmount = "0";
+                              
+                              // Parse fee details - skip subtitles, group fee name and status pairs
+                              for (let i = 0; i < values?.length; i++) {
+                                const item = values[i];
+                                
+                                // Check if this is the total amount (last item)
+                                if (item?.title === "BPA_TOT_AMT_PAID") {
+                                  totalAmount = item?.value || "₹0";
+                                  continue;
+                                }
+                                
+                                // Skip subtitle items
+                                if (item?.isSubTitle) {
+                                  continue;
+                                }
+                                
+                                // This should be a fee name item with amount
+                                if (item?.title && item?.title !== "BPA_STATUS_LABEL") {
+                                  const feeTitle = item?.title;
+                                  const feeAmount = item?.value || "₹0";
+                                  
+                                  // Next item should be the status
+                                  const statusItem = values[i + 1];
+                                  const feeStatus = statusItem?.value || "NA";
+                                  
+                                  feeRows.push({
+                                    title: feeTitle,
+                                    amount: feeAmount,
+                                    status: feeStatus,
+                                  });
+                                  
+                                  // Skip the status item in next iteration
+                                  i++;
+                                }
+                              }
+
+                              return feeRows?.length > 0 ? (
+                                <StatusTable>
+                                  <table style={{
+                                    width: "100%",
+                                    borderCollapse: "collapse"
+                                  }}>
+                                    <thead>
+                                      <tr style={{ backgroundColor: "#f5f5f5" }}>
+                                        <th style={{
+                                          padding: "12px 16px",
+                                          textAlign: "left",
+                                          borderBottom: "2px solid #D6D5D4",
+                                          fontWeight: "600",
+                                          fontSize: "14px"
+                                        }}>
+                                          {t("Fee Description")}
+                                        </th>
+                                        <th style={{
+                                          padding: "12px 16px",
+                                          textAlign: "right",
+                                          borderBottom: "2px solid #D6D5D4",
+                                          fontWeight: "600",
+                                          fontSize: "14px"
+                                        }}>
+                                          {t("Amount")}
+                                        </th>
+                                        <th style={{
+                                          padding: "12px 16px",
+                                          textAlign: "center",
+                                          borderBottom: "2px solid #D6D5D4",
+                                          fontWeight: "600",
+                                          fontSize: "14px"
+                                        }}>
+                                          {t("Status")}
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {feeRows?.map((row, index) => (
+                                        <tr key={index} style={{
+                                          borderBottom: index !== feeRows?.length - 1 ? "1px solid #f0f0f0" : "none"
+                                        }}>
+                                          <td style={{
+                                            padding: "12px 16px",
+                                            fontSize: "14px"
+                                          }}>
+                                            {t(row?.title)}
+                                          </td>
+                                          <td style={{
+                                            padding: "12px 16px",
+                                            textAlign: "right",
+                                            fontSize: "14px",
+                                            fontWeight: "500"
+                                          }}>
+                                            {row?.amount}
+                                          </td>
+                                          <td style={{
+                                            padding: "12px 16px",
+                                            textAlign: "center",
+                                            fontSize: "14px",
+                                            fontWeight: "500",
+                                            color: row?.status === "Paid" 
+                                              ? "darkgreen" 
+                                              : row?.status === "Unpaid" 
+                                                ? "red" 
+                                                : "inherit"
+                                          }}>
+                                            {t(row?.status)}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                    <tfoot>
+                                      <tr style={{ backgroundColor: "#f9f9f9", borderTop: "2px solid #D6D5D4" }}>
+                                        <td style={{
+                                          padding: "12px 16px",
+                                          fontSize: "15px",
+                                          fontWeight: "700"
+                                        }}>
+                                          {t("Total Amount")}
+                                        </td>
+                                        <td style={{
+                                          padding: "12px 16px",
+                                          textAlign: "right",
+                                          fontSize: "15px",
+                                          fontWeight: "700"
+                                        }}>
+                                          {totalAmount}
+                                        </td>
+                                        <td style={{
+                                          padding: "12px 16px",
+                                          textAlign: "center"
+                                        }}>
+                                        </td>
+                                      </tr>
+                                    </tfoot>
+                                  </table>
+                                </StatusTable>
+                              ) : null;
+                            })()
+                          : null}
+
                         {/* to get subOccupancyValues values */}
                         {detail?.isSubOccupancyTable && detail?.additionalDetails?.subOccupancyTableDetails ? (
                           <SubOccupancyTable

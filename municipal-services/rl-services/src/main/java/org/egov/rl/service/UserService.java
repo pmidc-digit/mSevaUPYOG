@@ -77,7 +77,7 @@ public class UserService {
 		ownerInfos=ownerInfos.stream().map(u->{
 			Owner owner=Owner.builder()
 					.uuid(u.getOwnerId())
-					.name(u.getFirstName()+" "+u.getMiddleName()+" "+u.getLastName())
+					.name(u.getName())
 					.mobileNumber(u.getMobileNo())
 					.emailId(u.getEmailId())
 					.dob(u.getDob())

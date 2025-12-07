@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     additional_details jsonb,
     CONSTRAINT pk_eg_rl_allotment PRIMARY KEY (id),
     CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number),
-   # CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id,tenant_id, previous_application_number)
+    -- CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id,tenant_id, previous_application_number)
 );
 
 CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_tenant_id ON eg_rl_allotment(tenant_id);
@@ -95,8 +95,10 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
 (
     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
     allotment_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+	tenant_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
     status character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    closed_application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
+	alloted_application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
     reason_for_clsure character varying(128) COLLATE pg_catalog."default" NOT NULL,
     amount_to_be_refund character varying(256) COLLATE pg_catalog."default" NOT NULL,
     amount_to_be_deducted character varying(256) COLLATE pg_catalog."default" NOT NULL,
@@ -109,6 +111,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
     lastmodified_by character varying(128) COLLATE pg_catalog."default",
     CONSTRAINT pk_eg_rl_allotment_clsure PRIMARY KEY (id),
     CONSTRAINT unique_eg_rl_allotment_clsure UNIQUE (allotment_id),
+	CONSTRAINT unique_eg_rl_alloted_application_number UNIQUE (alloted_application_number),
     CONSTRAINT fk_eg_rl_allotment_clsure FOREIGN KEY (allotment_id)
         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
         ON UPDATE NO ACTION

@@ -77,24 +77,24 @@ public class OwnerInfo { // extends User {
 	@JsonProperty("ownerType")
 	private String ownerType;
 	
-	@NotNull
-    @SafeHtml
-    @Size(max=100)
-    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-    @JsonProperty("firstName")
-	private String firstName;
-
-	@Size(max=100)
-    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-    @JsonProperty("middleName")
-	private String middleName;
-
-	@NotNull
-    @SafeHtml
-    @Size(max=100)
-    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-    @JsonProperty("lastName")
-	private String lastName;
+//	@NotNull
+//    @SafeHtml
+//    @Size(max=100)
+//    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
+//    @JsonProperty("firstName")
+//	private String firstName;
+//
+//	@Size(max=100)
+//    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
+//    @JsonProperty("middleName")
+//	private String middleName;
+//
+//	@NotNull
+//    @SafeHtml
+//    @Size(max=100)
+//    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
+//    @JsonProperty("lastName")
+//	private String lastName;
 
 	@NotNull
     @JsonProperty("name")
@@ -152,9 +152,9 @@ public class OwnerInfo { // extends User {
                 ", isPrimaryOwner=" + isPrimaryOwner +
                 ", ownerShipPercentage=" + ownerShipPercentage +
                 ", ownerType='" + ownerType + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", middleName='" + middleName + '\'' +
-                ", lastName='" + lastName + '\'' +
+                ", name='" + name + '\'' +
+//                ", middleName='" + middleName + '\'' +
+//                ", lastName='" + lastName + '\'' +
                 ", emailId='" + emailId + '\'' +
                 ", mobileNo='" + mobileNo + '\'' +
                 ", permanentAddress='" + permanentAddress + '\'' +

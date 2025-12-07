@@ -54,7 +54,7 @@ public class ClosureWorkflowService {
 	private ProcessInstance getProcessInstanceForClosure(AllotmentClsure allotmentClsure, RequestInfo requestInfo) {
 		Workflow workflow = allotmentClsure.getWorkflow();		
 		ProcessInstance processInstance = new ProcessInstance();
-		processInstance.setBusinessId(allotmentClsure.getClosedApplicationNumber());
+		processInstance.setBusinessId(allotmentClsure.getApplicationNumber());
 		processInstance.setAction(workflow.getAction());
 		processInstance.setModuleName("rl-service");
 		processInstance.setTenantId(allotmentClsure.getTenantId());

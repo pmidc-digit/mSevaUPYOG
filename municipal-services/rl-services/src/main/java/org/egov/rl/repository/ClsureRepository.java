@@ -16,8 +16,10 @@ import org.egov.rl.models.AllotmentClsure;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.ClosureCriteria;
 import org.egov.rl.models.ClsureCriteria;
 import org.egov.rl.repository.builder.AllotmentQueryBuilder;
+import org.egov.rl.repository.builder.ClosureApplicationSearchQueryBuilder;
 import org.egov.rl.repository.builder.ClsureQueryBuilder;
 import org.egov.rl.repository.rowmapper.AllotmentRowMapper;
 import org.egov.rl.repository.rowmapper.ClsurerRowMapper;
@@ -34,6 +36,9 @@ public class ClsureRepository {
 
 	@Autowired
 	private ClsureQueryBuilder clsureQueryBuilder;
+	
+	@Autowired
+	private ClosureApplicationSearchQueryBuilder closureApplicationSearchQueryBuilder;
 
 	@Autowired
 	private ClsurerRowMapper rowMapper;
@@ -49,6 +54,13 @@ public class ClsureRepository {
         log.info("With Parameters: {}", preparedStmtList);
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 
+	}
+	
+	public List<AllotmentClsure> getClosuredApplications(ClosureCriteria closureCriteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = closureApplicationSearchQueryBuilder.getClosureSearch(closureCriteria, preparedStmtList);
+		log.info("Final query: " + query);
+		return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 	}
 
 }

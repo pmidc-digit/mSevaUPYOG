@@ -42,8 +42,11 @@ public class AllotmentClsure {
     @JsonProperty("status")
     private String status;
     
-	@JsonProperty("closedApplicationNumber")
-	private String closedApplicationNumber;
+	@JsonProperty("applicationNumber")
+	private String applicationNumber;
+	
+	@JsonProperty("allotedApplicationNumber")
+	private String allotedApplicationNumber;
 
     @NotNull
     @JsonProperty("reasonForClosure")

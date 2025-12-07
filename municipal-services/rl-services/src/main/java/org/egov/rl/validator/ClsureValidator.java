@@ -66,25 +66,25 @@ public class ClsureValidator {
 			throw new CustomException("CLSURE INFO ERROR",
 					"CLSURE cannot be empty, please provide the CLSURE information");
 
+//		if (allotmentClsure.getTenantId() == null) {
+//			throw new CustomException("CLSURE INFO ERROR",
+//					"tenant_id can't be null or empty, please provide the CLSURE information");
+//		}
+		
 		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
-		Set<String> id = new HashSet<>();
-		id.add(clsureRequest.getAllotmentClsure().getAllotmentId());
-		allotmentCriteria.setAllotmentIds(id);
-		allotmentCriteria.setTenantId(allotmentClsure.getTenantId());
+		Set<String> applicationNumber = new HashSet<>();
+		applicationNumber.add(clsureRequest.getAllotmentClsure().getAllotedApplicationNumber());
+		allotmentCriteria.setApplicationNumbers(applicationNumber);
+//		allotmentCriteria.setTenantId(allotmentClsure.getTenantId());
 
-		AllotmentDetails alllAllotmentDetails = allotmentRepository.getAllotmentByIds(allotmentCriteria).stream()
+		AllotmentDetails alllAllotmentDetails = allotmentRepository.getAllotmentByApplicationNumber(allotmentCriteria).stream()
 				.findAny().orElse(null);
 		if (alllAllotmentDetails == null) {
 			throw new CustomException("CLSURE INFO ERROR",
-					"Enter valid allotment_id , please provide the CLSURE information");
-		}
-		if (allotmentClsure.getAllotmentId() == null) {
-			throw new CustomException("CLSURE INFO ERROR",
-					"allotment_id can't be null or empty, please provide the CLSURE information");
-		}
-		if (allotmentClsure.getTenantId() == null) {
-			throw new CustomException("CLSURE INFO ERROR",
-					"tenant_id can't be null or empty, please provide the CLSURE information");
+					"Enter valid allotedApplicationNumber , please provide the allotedApplicationNumber information");
+		}else {
+			allotmentClsure.setAllotmentId(alllAllotmentDetails.getId());
+			allotmentClsure.setTenantId(alllAllotmentDetails.getTenantId());
 		}
 
 		if (allotmentClsure.getReasonForClosure() == null) {
@@ -129,11 +129,11 @@ public class ClsureValidator {
 		if (allotmentClsure2.size() < 1)
 			throw new CustomException("CLSURE INFO ERROR",
 					"Enter valid closure's id , please provide the CLSURE information");
-
-		if (allotmentClsure.getTenantId() == null) {
-			throw new CustomException("CLSURE INFO ERROR",
-					"tenant_id can't be null or empty, please provide the CLSURE information");
-		}
+//
+//		if (allotmentClsure.getTenantId() == null) {
+//			throw new CustomException("CLSURE INFO ERROR",
+//					"tenant_id can't be null or empty, please provide the CLSURE information");
+//		}
 
 		if (allotmentClsure.getReasonForClosure() == null) {
 			throw new CustomException("CLSURE INFO ERROR",

@@ -2,16 +2,20 @@
 package org.egov.rl.web.controllers;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.rl.models.AllotmentClsure;
+import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.AllotmentResponse;
+import org.egov.rl.models.ClosureCriteria;
 import org.egov.rl.models.ClsureRequest;
 import org.egov.rl.models.ClsureResponse;
+import org.egov.rl.models.RequestInfoWrapper;
 import org.egov.rl.service.AllotmentService;
 import org.egov.rl.service.ClsureService;
 import org.egov.rl.util.ResponseInfoFactory;
@@ -20,10 +24,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,5 +79,18 @@ public class ClosureController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);	
     }
+    
+    @RequestMapping(value = "/v1/_search", method = RequestMethod.POST)
+  	public ResponseEntity<ClsureResponse> rlSearch(
+  			@RequestBody RequestInfoWrapper requestInfoWrapper,
+  			@Valid @ModelAttribute ClosureCriteria closureCriteria) {
+  		List<AllotmentClsure> applications = clsureService
+  				.searchClosedApplications(requestInfoWrapper.getRequestInfo(), closureCriteria);
+  		ResponseInfo responseInfo = responseInfoFactory
+  				.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+  		ClsureResponse response = ClsureResponse.builder().clsure(applications)
+  				.responseInfo(responseInfo).build();
+  		return new ResponseEntity<>(response, HttpStatus.OK);
+  	}
  
 }

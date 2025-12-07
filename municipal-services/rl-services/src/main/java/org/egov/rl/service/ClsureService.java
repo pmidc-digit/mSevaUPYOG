@@ -1,13 +1,18 @@
 package org.egov.rl.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentClsure;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.ClosureCriteria;
 import org.egov.rl.models.ClsureCriteria;
 import org.egov.rl.models.ClsureRequest;
 import org.egov.rl.producer.PropertyProducer;
@@ -19,6 +24,8 @@ import org.egov.rl.workflow.AllotmentWorkflowService;
 import org.egov.rl.workflow.ClosureWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -49,6 +56,8 @@ public class ClsureService {
 	@Autowired
 	ClsureRepository clsureRepository;
 
+	@Autowired
+	UserService userService;
 	/**
 	 * Enriches the Request and pushes to the Queue
 	 *
@@ -97,5 +106,41 @@ public class ClsureService {
 //		allotmentDetails.setAdditionalDetails(additionalDetails);
 //		allotmentRequest.setAllotment(allotmentDetails);
 	    return clsureRequest;
+	}
+	
+	public List<AllotmentClsure> searchClosedApplications(RequestInfo requestInfo,
+			ClosureCriteria closureCriteria) {
+
+// Handle mobile number search by converting to owner UUIDs
+		if (!ObjectUtils.isEmpty(closureCriteria.getMobileNumber())) {
+			System.out.println("DEBUG: Searching by mobile number: " + closureCriteria.getMobileNumber());
+
+			List<String> userUuids1 = userService.getUserUuidsByMobileNumber(
+					closureCriteria.getMobileNumber(), closureCriteria.getTenantId(),
+					requestInfo);
+			Set<String> userUuidSet = new HashSet<>(userUuids1);
+			System.out.println("DEBUG: Found user UUIDs: " + userUuidSet);
+
+			if (CollectionUtils.isEmpty(userUuidSet)) {
+// No users found for this mobile number, return empty list
+				System.out.println("DEBUG: No users found for mobile number, returning empty list");
+				return new ArrayList<>();
+			}
+
+// Set owner UUIDs for search and clear mobile number
+			closureCriteria.setOwnerIds(userUuidSet);
+			closureCriteria.setMobileNumber(null);
+			System.out.println("DEBUG: Set ownerUuids in criteria: " + closureCriteria.getOwnerIds());
+		}
+
+		List<AllotmentClsure> applications = clsureRepository.getClosuredApplications(closureCriteria);
+//		applications=applications.stream().map(d->{
+//		d.setOwnerInfo(allotmentRepository.getOwnerInfoListByAllotmentId(d.getId()));
+//		return d;}).collect(Collectors.toList());
+		if (CollectionUtils.isEmpty(applications))
+			return new ArrayList<>();
+//		allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, requestInfo);
+
+		return applications;
 	}
 }

@@ -133,10 +133,12 @@ public class AllotmentService {
 					.searchByUuid(u.getUserUuid(),
 							tenantId.length > 1 ? tenantId[0] : allotmentRequest.getAllotment().getTenantId())
 					.getUser().get(0);
-			String[] names = userDetails.getName().split("\\s+");
-			u.setFirstName(names.length > 0 ? names[0] : "");
-			u.setMiddleName(names.length > 1 ? names[1] : "");
-			u.setLastName(names.length > 2 ? names[2] : "");
+			String names = userDetails.getName();
+//					.split("\\s+");
+//			u.setFirstName(names.length > 0 ? names[0] : "");
+//			u.setMiddleName(names.length > 1 ? names[1] : "");
+//			u.setLastName(names.length > 2 ? names[2] : "");
+			u.setName(names);
 			org.egov.rl.models.oldProperty.Address permemantAddress = Address.builder()
 					.addressLine1(userDetails.getPermanentAddress()).city(userDetails.getPermanentCity())
 					.pincode(userDetails.getPermanentPincode()).build();

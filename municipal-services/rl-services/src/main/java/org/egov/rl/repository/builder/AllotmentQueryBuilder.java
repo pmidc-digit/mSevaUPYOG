@@ -143,14 +143,14 @@ public class AllotmentQueryBuilder {
 
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.status != 'CLOSED' AND al.expireflag=false AND al.tenant_id = ? ");
+			subQuery.append(" al.status = 'ACTIVE' AND al.expireflag=false ");
 			subQueryParams.add(criteria.getTenantId());
 		}
-		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
+		if (!CollectionUtils.isEmpty(criteria.getApplicationNumbers())) {
 			addClauseIfRequired(subQuery, subQueryParams);
 			subQuery.append(" al.application_number IN (").append(createQuery(criteria.getApplicationNumbers()))
 					.append(" ) ");
-			addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+			addToPreparedStatement(subQueryParams, criteria.getApplicationNumbers());
 		}
 		// Now build the main query
 		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
@@ -159,6 +159,10 @@ public class AllotmentQueryBuilder {
 		// Add all subquery parameters to the main prepared statement list
 		preparedStmtList.addAll(subQueryParams);
 
+		mainQuery.append(GROUPBY_QUERY);
+		mainQuery.append(subQuery);
+		preparedStmtList.addAll(subQueryParams);
+		
 		// Order the final result
 		return mainQuery.toString();
 	}

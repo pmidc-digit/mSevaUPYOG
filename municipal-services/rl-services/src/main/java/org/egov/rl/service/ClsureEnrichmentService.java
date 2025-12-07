@@ -135,7 +135,7 @@ public class ClsureEnrichmentService {
 		clsureRequest.setAllotmentClsure(allotmentClsure);
 		
 		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId, config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1).get(0);
-		allotmentClsure.setClosedApplicationNumber(applicationNumber);
+		allotmentClsure.setApplicationNumber(applicationNumber);
 		clsureRequest.setAllotmentClsure(allotmentClsure);
 	}
 

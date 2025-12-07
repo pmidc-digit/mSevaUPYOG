@@ -126,11 +126,11 @@ public class AllotmentValidator {
 			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Email ID in the request");
 
 		long uniqueOwnerSet = owners.stream()
-				.map(owner -> (owner.getFirstName() + owner.getMiddleName() + owner.getLastName() + owner.getMobileNo())
+				.map(owner -> (owner.getName() + owner.getMobileNo())
 						.trim())
 				.distinct().count();
 		if (uniqueOwnerSet != owners.size())
-			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Owners in the request");
+			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Owner's name and mobile number in the request");
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 
@@ -236,11 +236,11 @@ public class AllotmentValidator {
 			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Email ID in the request");
 
 		long uniqueOwnerSet = owners.stream()
-				.map(owner -> (owner.getFirstName() + owner.getMiddleName() + owner.getLastName() + owner.getMobileNo())
+				.map(owner -> (owner.getName() + owner.getMobileNo())
 						.trim())
 				.distinct().count();
 		if (uniqueOwnerSet != owners.size())
-			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Owners in the request");
+			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Owner's name and mobile number in the request");
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 

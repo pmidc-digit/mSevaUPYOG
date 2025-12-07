@@ -16,7 +16,7 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
-import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder;
+//import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder;
 import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder2;
 import org.egov.rl.repository.builder.AllotmentQueryBuilder;
 import org.egov.rl.repository.rowmapper.AllotmentRowMapper;
@@ -42,10 +42,10 @@ public class AllotmentRepository {
 	
 	@Autowired
 	OwnerInfoRowMapper ownerInfoRowMapper;
-	
-
-	@Autowired
-	private AllotmentApplicationSearchQueryBuilder searchQueryBuilder;
+//	
+//
+//	@Autowired
+//	private AllotmentApplicationSearchQueryBuilder searchQueryBuilder;
 
 	@Autowired
 	private AllotmentApplicationSearchQueryBuilder2 searchQueryBuilder2;

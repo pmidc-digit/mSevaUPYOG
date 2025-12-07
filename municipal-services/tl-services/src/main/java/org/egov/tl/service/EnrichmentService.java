@@ -169,7 +169,7 @@ public class EnrichmentService {
                 tradeUnit.setActive(true);
             });
 
-            if (tradeLicense.getAction().equalsIgnoreCase(ACTION_APPLY)) {
+            if (tradeLicense.getAction().equalsIgnoreCase(ACTION_APPLY) && !CollectionUtils.isEmpty(tradeLicense.getTradeLicenseDetail().getApplicationDocuments())) {
                 tradeLicense.getTradeLicenseDetail().getApplicationDocuments().forEach(document -> {
                     document.setId(UUID.randomUUID().toString());
                     document.setActive(true);
@@ -620,7 +620,8 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                             List<Integer> res = JsonPath.read(mdmsDataMap.get(license.getTenantId()), jsonPath);
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.YEAR, res.get(0));
-                            if(license.getValidTo() ==  null)
+                            String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+                            if(!tradeType.equalsIgnoreCase("ARCHITECT"))
                             	license.setValidTo(calendar.getTimeInMillis());
                             license.setValidFrom(time);
                         }

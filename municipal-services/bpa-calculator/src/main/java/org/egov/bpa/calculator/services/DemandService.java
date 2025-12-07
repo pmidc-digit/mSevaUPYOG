@@ -274,7 +274,7 @@ public class DemandService {
                     .tenantId(tenantId)
                     .taxPeriodFrom((Long)taxPeriod.get(BPACalculatorConstants.MDMS_STARTDATE))
                     .taxPeriodTo((Long)taxPeriod.get(BPACalculatorConstants.MDMS_ENDDATE))
-                    .consumerType("BPA")
+                    .consumerType("BPA-" + BPACalculatorConstants.MDMS_CHARGES_TYPE_CODE)
                     .businessService(utils.getBillingBusinessService(bpa.getBusinessService(),calculation.getFeeType()))
                     .build());
         }

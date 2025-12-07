@@ -32,6 +32,7 @@ import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.bpa.web.model.user.UserSearchRequest;
 import org.egov.bpa.web.model.workflow.BusinessService;
+import org.egov.bpa.web.model.workflow.State;
 import org.egov.bpa.workflow.ActionValidator;
 import org.egov.bpa.workflow.WorkflowIntegrator;
 import org.egov.bpa.workflow.WorkflowService;
@@ -475,6 +476,25 @@ public class BPAService {
                     bpa.setWorkflow(workflow);
                 }
 
+        		// Add Assignees in application workflow 
+        		State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), businessService);
+        		String nextStateId = currentState.getActions().stream()
+        				.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
+        				.findFirst().get().getNextState();
+        		State nextState = businessService.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+        		
+        		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+        		
+        		if ((nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
+        				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+        			List<String> roles = new ArrayList<>();
+        			nextState.getActions().forEach(stateAction -> {
+        				roles.addAll(stateAction.getRoles());
+        			});
+        			List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
+        			bpa.getWorkflow().setAssignes(assignee);
+        		}
+                
 		wfIntegrator.callWorkFlow(bpaRequest);
 		log.debug("===> workflow done =>" +bpaRequest.getBPA().getStatus()  );
 		enrichmentService.postStatusEnrichment(bpaRequest);

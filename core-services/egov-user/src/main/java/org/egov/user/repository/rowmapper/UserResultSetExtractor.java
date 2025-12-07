@@ -129,6 +129,8 @@ public class UserResultSetExtractor implements ResultSetExtractor<List<User>> {
                 .pinCode(rs.getString("addr_pincode"))
                 .userId(rs.getLong("addr_userid"))
                 .tenantId(rs.getString("addr_tenantid"))
+                .state(rs.getString("addr_state"))
+                .district(rs.getString("addr_district"))
                 .build();
 
         if (address.getType().equals(PERMANENT) && isNull(user.getPermanentAddress()))

@@ -45,6 +45,7 @@ const NDCModal = ({
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [error, setError] = useState(null);
+  const [loader, setLoader] = useState(false);
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
@@ -84,6 +85,7 @@ const NDCModal = ({
         if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
         } else {
+          setLoader(true);
           try {
             const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
             if (response?.data?.files?.length > 0) {
@@ -91,7 +93,9 @@ const NDCModal = ({
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
+            setLoader(false);
           } catch (err) {
+            setLoader(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -105,7 +109,7 @@ const NDCModal = ({
     const payload = {
       action: action?.action,
       comment: data?.comments,
-      assignes: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+      assignes: !selectedApprover?.uuid ? null : [{ uuid: selectedApprover?.uuid }],
       // assignee: action?.isTerminateState ? [] : [selectedApprover?.uuid],
       documents: uploadedFile
         ? [
@@ -160,7 +164,7 @@ const NDCModal = ({
       {/* )} */}
       {/* {showToast && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />} */}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
-      {PTALoading && <Loader page={true} />}
+      {(PTALoading || loader) && <Loader page={true} />}
     </Modal>
   );
 };

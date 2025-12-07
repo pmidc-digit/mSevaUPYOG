@@ -2,6 +2,15 @@ body {
   @apply bg-grey-bg;
 }
 
+:root {
+  --digit-font-family: "Source Sans Pro", sans-serif;
+}
+
+body {
+  font-family: var(--digit-font-family);
+}
+
+
 .body-container {
   @apply bg-grey-bg h-full min-h-screen overflow-x-hidden;
   position: relative !important;

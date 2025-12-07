@@ -145,7 +145,7 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                 return (
                   <div>
                     {code === "OBPS" ? (
-                      <CitizenHomeCardWithExternalLink
+                      <CitizenHomeCardAccordian
                         header={t(mdmsDataObj?.header)}
                         links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
                         Icon={() => iconSelector(code)}

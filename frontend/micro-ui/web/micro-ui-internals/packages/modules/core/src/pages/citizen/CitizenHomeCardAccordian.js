@@ -143,136 +143,40 @@ const CitizenHomeCardAccordian = ({ header, links = [], state, Icon, Info, isInf
     </svg>
   )
 
-  const accordionContainerStyle = {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    overflow: "hidden",
-    marginBottom: "16px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-  }
 
-  const accordionHeaderStyle = {
-    padding: "20px 24px",
-    backgroundColor: "#F9FAFB",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    cursor: "pointer",
-    userSelect: "none",
-    transition: "background-color 0.2s ease",
-  }
-
-  const headerTitleStyle = {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1F2937",
-    margin: 0,
-  }
-
-  const accordionContentStyle = {
-    maxHeight: isOpen ? "2000px" : "0",
-    overflow: "hidden",
-    transition: "max-height 0.4s ease",
-  }
-
-  const cardGridStyle = {
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "12px",
-    padding: "16px",
-  }
-
-  const cardStyle = (colorScheme) => ({
-    backgroundColor: colorScheme.bg,
-    padding: "16px",
-    borderRadius: "10px",
-    display: "flex",
-    gap: "12px",
-    alignItems: "center",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    textDecoration: "none",
-    border: "none",
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-  })
-
-  const iconContainerStyle = (colorScheme) => ({
-    width: "40px",
-    height: "40px",
-    borderRadius: "10px",
-    backgroundColor: colorScheme.iconBg,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    color: colorScheme.icon,
-  })
-
-  const contentStyle = {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  }
-
-  const titleStyle = {
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#1F2937",
-    margin: 0,
-    lineHeight: "1.4",
-  }
-
-  const descriptionStyle = {
-    fontSize: "13px",
-    color: "#6B7280",
-    margin: 0,
-    lineHeight: "1.4",
-  }
-
-  const arrowContainerStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  }
 
   const renderCardContent = (link, colorScheme, index) => (
     <React.Fragment>
-      <div style={iconContainerStyle(colorScheme)}>{getServiceIcon(link.i18nKey, index)}</div>
-      <div style={contentStyle}>
-        <div style={titleStyle}>{link.i18nKey}</div>
-        {link.description && <div style={descriptionStyle}>{link.description}</div>}
+      <div  className="new-accordion-card-icon"  style={{ backgroundColor: colorScheme.iconBg, color: colorScheme.icon }}>{getServiceIcon(link.i18nKey, index)}</div>
+      <div  className="new-accordion-card-content" >
+        <div className="new-accordion-card-title">{link.i18nKey}</div>
+        {link.description && <div className="new-accordion-card-description" >{link.description}</div>}
       </div>
-      <div style={arrowContainerStyle}>
+      <div className="new-accordion-card-arrow">
         <ArrowIcon />
       </div>
     </React.Fragment>
   )
 
   return (
-    <div style={styles ? styles : {}}>
-      <div style={accordionContainerStyle}>
-        <div
-          style={accordionHeaderStyle}
-          onClick={() => setIsOpen(!isOpen)}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F3F4F6"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#F9FAFB"
-          }}
+    <div className="new-accordion-wrapper" >
+      <div className="new-accordion-container" >
+        <div className="new-accordion-header"
+         
+         onClick={() => setIsOpen(!isOpen)}
+         
         >
-          <h3 style={headerTitleStyle}>{header || "Services"}</h3>
+          <h3 className="new-accordion-title" >{header || "Services"}</h3>
           <ChevronIcon isOpen={isOpen} />
         </div>
 
-        <div style={accordionContentStyle}>
-          <div style={cardGridStyle}>
+        <div className={`new-accordion-content ${isOpen ? "open" : ""}`} >
+          <div  className={`new-accordion-grid ${
+              shouldRemoveGrid ? "no-grid" : ""
+            } ${isMobile ? "mobile" : ""}`} >
             {links.map((link, index) => {
               const colorScheme = cardColors[index % cardColors.length]
-              const cardStyles = cardStyle(colorScheme)
+            
 
               const isExternalLink =
                 link?.parentModule?.toUpperCase() === "BIRTH" ||
@@ -284,7 +188,8 @@ const CitizenHomeCardAccordian = ({ header, links = [], state, Icon, Info, isInf
                   <a
                     key={index}
                     href={link.link}
-                    style={cardStyles}
+                   
+                     className="new-accordion-card"
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-2px)"
                       e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.08)"
@@ -302,7 +207,8 @@ const CitizenHomeCardAccordian = ({ header, links = [], state, Icon, Info, isInf
                   <Link
                     key={index}
                     to={{ pathname: link.link, state: link.state }}
-                    style={cardStyles}
+                   
+                     className="new-accordion-card"
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-2px)"
                       e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.08)"
@@ -321,11 +227,11 @@ const CitizenHomeCardAccordian = ({ header, links = [], state, Icon, Info, isInf
         </div>
       </div>
 
-      {isInfo && Info && (
-        <div style={{ marginTop: "16px" }}>
+      {/* {isInfo && Info && (
+        <div className="new-accordion-info" >
           <Info />
         </div>
-      )}
+      )} */}
     </div>
   )
 }

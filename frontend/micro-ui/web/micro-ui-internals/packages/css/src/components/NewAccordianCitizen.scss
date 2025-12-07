@@ -1,0 +1,130 @@
+.new-accordion-wrapper {
+  width: 100%;
+}
+
+.new-accordion-container {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* HEADER */
+.new-accordion-header {
+  padding: 20px 24px;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.new-accordion-header:hover {
+  background-color: #f3f4f6;
+}
+
+.new-accordion-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #1f2937;
+}
+
+/* CHEVRON */
+.new-accordion-chevron {
+  transition: transform 0.3s ease;
+}
+
+.new-accordion-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* CONTENT AREA */
+.new-accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.new-accordion-content.open {
+  max-height: 2000px;
+}
+
+/* GRID */
+.new-accordion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.new-accordion-grid.mobile {
+  grid-template-columns: 1fr;
+}
+
+.new-accordion-grid.no-grid {
+
+}
+
+/* CARD */
+.new-accordion-card {
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+  border: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.new-accordion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ICON */
+.new-accordion-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* TEXT */
+.new-accordion-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.new-accordion-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.new-accordion-card-description {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Arrow */
+.new-accordion-card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* INFO BOX */
+.new-accordion-info {
+  margin-top: 16px;
+}

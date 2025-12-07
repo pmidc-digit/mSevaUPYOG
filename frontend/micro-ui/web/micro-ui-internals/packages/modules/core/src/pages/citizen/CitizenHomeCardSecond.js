@@ -2,15 +2,12 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 
-
 const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
-  const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
-   const location = useLocation();
-  const shouldRemoveGrid = location.pathname.endsWith("all-services"); 
-  console.log(shouldRemoveGrid, "RRRR");
+  const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false;
+  const location = useLocation();
+  const shouldRemoveGrid = location.pathname.endsWith("all-services");
 
-
-  // Predefined color schemes for cards
+  // Predefined color schemes for reference (CSS classes handle actual colors)
   const cardColors = [
     { bg: "#EBF3FE", iconBg: "#2B6FED", icon: "#FFFFFF" }, // Blue
     { bg: "#E8F8F5", iconBg: "#0FA76F", icon: "#FFFFFF" }, // Green
@@ -18,11 +15,10 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
     { bg: "#FEF3E8", iconBg: "#F97316", icon: "#FFFFFF" }, // Orange
     { bg: "#FCE8F3", iconBg: "#EC4899", icon: "#FFFFFF" }, // Pink
     { bg: "#E0F2FE", iconBg: "#0EA5E9", icon: "#FFFFFF" }, // Cyan
-  ]
+  ];
 
-  // SVG Icons for different services
   const getServiceIcon = (linkText, index) => {
-    const lowerText = linkText.toLowerCase()
+    const lowerText = linkText.toLowerCase();
 
     if (lowerText.includes("apply") || lowerText.includes("new")) {
       return (
@@ -39,7 +35,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
           <path d="M12 18V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M9 15H15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      )
+      );
     } else if (lowerText.includes("renew") || lowerText.includes("renewal")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -60,7 +56,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
           />
           <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
         </svg>
-      )
+      );
     } else if (lowerText.includes("application") || lowerText.includes("track")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -89,7 +85,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
             fill="currentColor"
           />
         </svg>
-      )
+      );
     } else if (lowerText.includes("faq") || lowerText.includes("help") || lowerText.includes("question")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -103,9 +99,8 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
           />
           <circle cx="12" cy="17" r="0.5" fill="white" stroke="white" strokeWidth="1.5" />
         </svg>
-      )
+      );
     } else {
-      // Default document icon
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -118,166 +113,67 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
           />
           <path d="M13 2V9H20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      )
+      );
     }
-  }
+  };
 
   const ArrowIcon = () => (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M7.5 15L12.5 10L7.5 5" stroke="#666666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-  )
+  );
 
-  const cardContainerStyle = {
-    ...(shouldRemoveGrid ? {display: "grid"} : {  }),
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "16px",
-    marginBottom: "24px",
-    width: "100%",
-  }
-
-  const cardStyle = (colorScheme) => ({
-    backgroundColor: colorScheme.bg,
-    padding: "24px",
-    borderRadius: "12px",
-    display: "flex",
-    gap: "16px",
-    alignItems: "flex-start",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    textDecoration: "none",
-    border: "none",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-  })
-
-  const iconContainerStyle = (colorScheme) => ({
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    backgroundColor: colorScheme.iconBg,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    color: colorScheme.icon,
-  })
-
-  const contentStyle = {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  }
-
-  const titleStyle = {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1F1F1F",
-    margin: 0,
-    lineHeight: "1.4",
-  }
-
-  const descriptionStyle = {
-    fontSize: "14px",
-    color: "#666666",
-    margin: 0,
-    lineHeight: "1.5",
-  }
-
-  const arrowContainerStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  }
-
-  const renderCardContent = (link, colorScheme, index) => (
+  const renderCardContent = (link, index) => (
     <React.Fragment>
-      <div style={iconContainerStyle(colorScheme)}>{getServiceIcon(link.i18nKey, index)}</div>
-      <div style={contentStyle}>
-        <div style={titleStyle}>{link.i18nKey}</div>
-        {link.description && <div style={descriptionStyle}>{link.description}</div>}
+      <div className={`chc-icon chc-icon-bg-${index % 6}`}>{getServiceIcon(link.i18nKey, index)}</div>
+      <div className="chc-content">
+        <div className="chc-title">{link.i18nKey}</div>
+        {link.description && <div className="chc-description">{link.description}</div>}
       </div>
-      <div style={arrowContainerStyle}>
+      <div className="chc-arrow-container">
         <ArrowIcon />
       </div>
     </React.Fragment>
-  )
+  );
 
   return (
-    <div style={styles ? styles : {}}>
+    <div className="chc-root" style={styles ? styles : undefined}>
       {header && (
-        <h2
-          style={{
-            fontSize: isMobile ? "18px" : "20px",
-            fontWeight: "600",
-            marginBottom: "20px",
-            color: "#1F1F1F",
-          }}
-        >
-          {header}
-        </h2>
+        <h2 className="chc-header">{header}</h2>
       )}
 
-      <div style={cardContainerStyle}>
+      <div className={`chc-card-container ${shouldRemoveGrid ? "chc-no-grid" : ""}`}>
         {links.map((link, index) => {
-          const colorScheme = cardColors[index % cardColors.length]
-          const cardStyles = cardStyle(colorScheme)
-
-          // Check if external link
           const isExternalLink =
             link?.parentModule?.toUpperCase() === "BIRTH" ||
             link?.parentModule?.toUpperCase() === "DEATH" ||
-            link?.parentModule?.toUpperCase() === "FIRENOC"
+            link?.parentModule?.toUpperCase() === "FIRENOC";
+
+          const cardClass = `chc-card chc-card-bg-${index % 6}`;
 
           if (isExternalLink) {
             return (
-              <a
-                key={index}
-                href={link.link}
-                style={cardStyles}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)"
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)"
-                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)"
-                }}
-              >
-                {renderCardContent(link, colorScheme, index)}
+              <a key={index} href={link.link} className={cardClass}>
+                {renderCardContent(link, index)}
               </a>
-            )
+            );
           } else {
             return (
-              <Link
-                key={index}
-                to={{ pathname: link.link, state: link.state }}
-                style={cardStyles}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)"
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)"
-                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)"
-                }}
-              >
-                {renderCardContent(link, colorScheme, index)}
+              <Link key={index} to={{ pathname: link.link, state: link.state }} className={cardClass}>
+                {renderCardContent(link, index)}
               </Link>
-            )
+            );
           }
         })}
       </div>
 
       {isInfo && Info && (
-        <div style={{ marginTop: "16px" }}>
+        <div className="chc-info">
           <Info />
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 export default CitizenHomeCardSecond;

@@ -29,52 +29,7 @@ import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/Citize
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import DashboardFooter from "./DashboardFooter";
 
-const heroBannerStyles = {
-  background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
-  borderRadius: "16px",
-  padding: "60px 40px",
-  margin: "24px 0",
-  textAlign: "center",
-  color: "#FFF",
-}
 
-const heroTitleStyles = {
-  fontSize: "42px",
-  fontWeight: "700",
-  marginBottom: "12px",
-  letterSpacing: "-0.5px",
-}
-
-const heroSubtitleStyles = {
-  fontSize: "18px",
-  fontWeight: "400",
-  marginBottom: "32px",
-  opacity: "0.95",
-}
-
-const searchBarStyles = {
-  maxWidth: "600px",
-  margin: "0 auto",
-  background: "#FFF",
-  borderRadius: "12px",
-  padding: "14px 20px",
-  display: "flex",
-  alignItems: "center",
-  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-}
-
-const searchInputStyles = {
-  border: "none",
-  outline: "none",
-  width: "100%",
-  fontSize: "16px",
-  marginLeft: "12px",
-}
-
-const searchIconStyles = {
-  color: "#9CA3AF",
-  fontSize: "20px",
-}
 
 const Home = () => {
   const { t } = useTranslation()
@@ -233,17 +188,18 @@ const Home = () => {
   return isLoading ? (
     <Loader />
   ) : (
-    <div className="HomePageContainer" style={{ width: "100%", padding: "0" }}>
-      <div className="HomePageWrapper" style={{  margin: "0 auto", padding: "0 40px" }}>
-        <div style={heroBannerStyles}>
-          <h1 style={heroTitleStyles}>mSeva Punjab</h1>
-          <p style={heroSubtitleStyles}>Access citizen services digitally with ease and transparency</p>
-          <div style={searchBarStyles}>
-            <span style={searchIconStyles}><SearchIconSvg /></span>
+    <div className="HomePageContainer">
+      <div className="HomePageWrapper">
+        <div className="hero-banner-styles">
+          <h1 className="hero-title-styles">mSeva Punjab</h1>
+          <p className="heroSubtitleStyles" >Access citizen services digitally with ease and transparency</p>
+          <div className="searchBarStyles" >
+            <span className="searchIconStyles" ><SearchIconSvg /></span>
             <input
               type="text"
               placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER") || "Search for services..."}
-              style={searchInputStyles}
+             
+              className="searchInputStyles"
             />
           </div>
         </div>

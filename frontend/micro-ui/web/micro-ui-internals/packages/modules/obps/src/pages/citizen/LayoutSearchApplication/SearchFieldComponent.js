@@ -22,7 +22,7 @@ const SearchFormFieldsComponent = (props) => {
   
   
   return (
-    <>
+    <div className="search-form-wrapper">
       <SearchField>
         <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
@@ -74,7 +74,7 @@ const SearchFormFieldsComponent = (props) => {
           {t(`ES_COMMON_CLEAR_ALL`)}
         </p>
       </SearchField>
-    </>
+    </div>
   );
 };
 

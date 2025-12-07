@@ -8,7 +8,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
 
   const { filterForm, searchForm, tableForm, getFilter } = filters
   const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm
-  const { mobileNumber, applicationNo } = searchForm
+  const { mobileNumber, applicationNumber } = searchForm
   const { sortBy, limit, offset, sortOrder } = tableForm
   const user = Digit.UserService.getUser()
 
@@ -23,7 +23,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
 
     moduleSearchCriteria: {
       ...(mobileNumber ? { mobileNumber } : {}),
-      ...(applicationNo ? { applicationNo } : {}),
+      ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
@@ -76,9 +76,28 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
         })
 
         console.log(" Transformed table data:", tableData)
+              const statusMapData = Object.values(
+          data?.statusMap?.reduce((acc, { applicationstatus, businessservice, count }) => {
+            const key = applicationstatus;
+            if (!acc[key]) {
+              acc[key] = {
+                applicationstatus: key,
+                totalCount: 0,
+                byBusinessservice: {},
+              };
+            }
+
+            acc[key].totalCount += count || 0;
+
+            if (businessservice) {
+              acc[key].byBusinessservice[businessservice] = (acc[key].byBusinessservice[businessservice] || 0) + (count || 0);
+            }
+            return acc;
+          }, {})
+        );
 
         return {
-          statuses: data.statusMap || [],
+          statuses: statusMapData || [],
           table: tableData || [],
           totalCount: data.totalCount || 0,
           nearingSlaCount: data.nearingSlaCount || 0,

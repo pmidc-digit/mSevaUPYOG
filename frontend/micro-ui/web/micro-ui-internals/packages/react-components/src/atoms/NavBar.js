@@ -436,7 +436,7 @@ const NavBar = ({
             transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             background: "#ffffff",
             zIndex: "1250",
-            width: "260px",
+            width: "350px",
             transform: `${open ? "translateX(0)" : "translateX(-100%)"}`,
             boxShadow: "2px 0 8px rgba(0, 0, 0, 0.1)",
             overflowY: "hidden",

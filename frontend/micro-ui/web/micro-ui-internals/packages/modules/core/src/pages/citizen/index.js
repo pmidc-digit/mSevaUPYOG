@@ -302,7 +302,7 @@ const Home = ({
         />
       )}
 
-      <div className={`main center-container citizen-home-container mb-25`}>
+      <div style={{justifyContent:"center"}} className={`main center-container citizen-home-container mb-25`}>
         {/* {hideSidebar ? null : (
           <div className="SideBarStatic">
             <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />

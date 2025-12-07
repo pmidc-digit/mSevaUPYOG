@@ -103,7 +103,7 @@ const TimelineCaption = React.memo(({ checkpoint, t }) => (
       {HEADER_FIELDS?.map(({ label, key }) => (
         <div key={key} className="timeline-header-item">
           <span className="timeline-label">{t(label)}:</span>
-          <span className="timeline-value">{checkpoint?.[key] || "N/A"}</span>
+          <span className="timeline-value">{t(checkpoint?.[key]) || "N/A"}</span>
         </div>
       ))}
     </div>

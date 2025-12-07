@@ -54,6 +54,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [apiLoading, setApiLoading] = useState(false);
   const tenantId = localStorage.getItem("CITIZEN.CITY")
   const userInfo = Digit.UserService.getUser();
+  const uuid = userInfo?.info?.uuid;
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT")
   const requestor = userInfo?.info?.mobileNumber;
   const queryObject = { 0: { tenantId: state }, 1: {mobileNumber: requestor} };
@@ -62,7 +63,8 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [ptLoading, setPtLoading] = useState(false);
   const [showModal, setShowModal] = useState(false)
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
-  const { data: menuList2, isLoading2 } = Digit.Hooks.useCustomMDMS("pb", "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: menuList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS(state, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(state, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
   const dispatch = useDispatch();
   const common = [
@@ -82,7 +84,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const data = currentStepData?.BasicDetails?.edcrDetails;
   console.log("menuList2",menuList2,zonesOptions)
 
-console.log("sessionStorageData",currentStepData);
+console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]);
 
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
     
@@ -184,6 +186,8 @@ console.log("sessionStorageData",currentStepData);
         } else if (isSelfCertification === null) {
           if (currentStepData?.createdResponse?.additionalDetails?.isSelfCertification) {
             setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          }else{
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
           }
         }
   }, [isSelfCertification, currentStepData?.createdResponse?.additionalDetails?.isSelfCertification]);
@@ -238,7 +242,7 @@ console.log("sessionStorageData",currentStepData);
     setBoundaryWallLength(details?.boundaryWallLength || "");
     setWardNumber(details?.wardnumber || "");
     setIsClubbedPlot(details?.isClubbedPlot !== null ? details?.isClubbedPlot : {});
-    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : {});
+    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : true);
     setIsPropertyAvailable(details?.isPropertyAvailable !== null ? details?.isPropertyAvailable : {});
     setZoneNumber(details?.zonenumber || "");
     setKhasraNumber(details?.khasraNumber || "");
@@ -392,10 +396,11 @@ useEffect(() => {
     if (!validate()) return;
 
     const userInfo = Digit.UserService.getUser()
+    const isArchitect = userInfo?.info?.roles?.some((role) => role?.code?.includes("BPA_ARCHITECT"));
     const applicationType = data?.appliactionType || "";
     const serviceType = data?.applicationSubType || "";
     let architectName = sessionStorage.getItem("BPA_ARCHITECT_NAME")
-    const typeOfArchitect = architectName ? JSON.parse(architectName) : "ARCHITECT"
+    const typeOfArchitect = isArchitect ? "ARCHITECT" : userInfo?.info?.roles?.find(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId))?.code?.split("_")?.[1] || "" // 
     if(architectName){
       architectName = JSON.parse(architectName)
     }
@@ -408,7 +413,9 @@ useEffect(() => {
     const stakeholderRegistrationNumber= JSON.parse(
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
-    const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
+    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || null;
+    const stakeholderState = userDetails?.user[0]?.correspondenceState
+    const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
     const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid;
     const address = {
@@ -461,11 +468,17 @@ useEffect(() => {
       stakeholderName,
       stakeholderRegistrationNumber,
       stakeholderAddress,
+      stakeholderState,
+      stakeholderDistrict,
       isSelfCertificationRequired,
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       isClubbedPlot: isClubbedPlot?.value,
       isPropertyAvailable: isPropertyAvailable?.value,
       isSelfCertification: isSelfCertification?.value,
+      categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
+      subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
+      categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
+      subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -484,6 +497,8 @@ useEffect(() => {
       materialusedinfloor,
       materialusedinroofs,
       estimatedCost,
+      stakeholderState,
+      stakeholderDistrict,
       area: data?.planDetail?.planInformation?.plotArea?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
@@ -503,6 +518,10 @@ useEffect(() => {
       isClubbedPlot: isClubbedPlot?.value,
       isPropertyAvailable: isPropertyAvailable?.value,
       isSelfCertification: isSelfCertification?.value,
+      categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
+      subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
+      categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
+      subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -694,7 +713,7 @@ useEffect(() => {
             <CardLabelError>{errors["isClubbedPlot"]}</CardLabelError>
           )}
           
-          {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A") &&
+          {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code?.includes("A") &&
             <React.Fragment>
               <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
               <Dropdown
@@ -749,7 +768,7 @@ useEffect(() => {
                      
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading} />}
           </ActionBar>
         </FormStep>
       </div>

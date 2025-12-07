@@ -11,7 +11,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
   console.log(formData, "MAIN FORM DATA");
   const index = window.location.href?.split("/").pop();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   const { pathname } = useLocation();
   let currentPath = pathname.split("/").pop();
@@ -86,7 +86,7 @@ console.log("validTo",validTo);
   //   qualificationError = {};
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(stateId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
 
-  const { data: EmployeeStatusData } = Digit.Hooks.useCustomMDMS(stateId, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
+  const { data: EmployeeStatusData } = Digit.Hooks.useCustomMDMS(tenantId, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
 
   // console.log("EmployeeStatusData", EmployeeStatusData);
 

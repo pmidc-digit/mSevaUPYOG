@@ -40,6 +40,10 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     tenantId,
     {
       roles: uniqueRoles?.map(role=>({code:role})),
+      zones: applicationData?.additionalDetails?.zonenumber,
+      categories: applicationData?.additionalDetails?.categories,
+      subcategories: applicationData?.additionalDetails?.subcategories,
+      assignedtenattids: applicationData?.tenantId,
       isActive: true,
     },
     { enabled: !action?.isTerminateState }

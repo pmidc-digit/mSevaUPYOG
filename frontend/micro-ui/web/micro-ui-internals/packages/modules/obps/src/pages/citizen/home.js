@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
+import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
   const userInfo = Digit.UserService.getUser();
@@ -237,7 +238,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
             {data.name === "employeeCard" ? (
               <EmployeeModuleCard {...data} />
             ) : (
-              <CitizenHomeCard header={data.title} links={data.links} Icon={() => data.Icon} />
+              <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
             )}
           </div>
         );

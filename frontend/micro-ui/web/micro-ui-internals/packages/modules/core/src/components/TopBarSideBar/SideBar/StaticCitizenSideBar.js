@@ -324,7 +324,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             position: isMobile ? "static" : "fixed",
             top: isMobile ? "auto" : "0",
             left: isMobile ? "auto" : "0",
-            width: isMobile ? "100%" : "260px",
+            width: isMobile ? "100%" : "350px",
             overflowY: isMobile ? "auto" : "hidden",
           }}
         >

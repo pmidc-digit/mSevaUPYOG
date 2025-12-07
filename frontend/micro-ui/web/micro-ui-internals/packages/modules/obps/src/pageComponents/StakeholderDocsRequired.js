@@ -40,7 +40,7 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
     let license = data;
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
-    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentCity;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
     const permanentAddress = address
     const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim().split(/\s+/);
 
@@ -93,7 +93,7 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
           Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
           dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
           SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
-          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
           PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
         },
         LicneseType: {

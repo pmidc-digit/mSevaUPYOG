@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-core",
-  "version": "1.0.55",
+  "version": "1.0.57",
   "license": "MIT",
   "description": "Digit App Core Module contains all core components",
   "main": "dist/index.js",

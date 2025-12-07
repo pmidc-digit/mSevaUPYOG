@@ -4,17 +4,15 @@ import { TickMark } from "@mseva/digit-ui-react-components";
 
 const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList = [] }) => {
   const { t } = useTranslation();
-  const stepStyle = (isActive) => ({
+  const stepStyle = (isActive, isLast) => ({
     display: "flex",
-    //flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-end",
-    flex: 1,
-    // position: "relative",
-    color: isActive ? "#3f51b5" : "#ccc",
-    padding: "10px 10px",
+    flex: "0 0 auto",
+    color: isActive ? "#0D43A7" : "#9CA3AF",
+    padding: "14px 12px",
     width: "260px",
-    // margin:"25px",
+    marginBottom: isLast ? "6px" : "18px",
   });
 
   // const circleStyle = (isActive) => ({
@@ -31,44 +29,40 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   // });
 
   const circleStyle = (stepNumber) => {
-    let backgroundColor;
-    if (stepNumber <= currentStep) {
-      backgroundColor = "#0D43A7"; // Completed steps
-    } else {
-      backgroundColor = "#FFFFFF"; // Incomplete steps
-    }
-
+    const completed = stepNumber <= currentStep;
     return {
-      width: "60px",
-      height: "60px",
+      width: "56px",
+      height: "56px",
       borderRadius: "50%",
-      backgroundColor,
-      color: stepNumber <= currentStep ? "white" : "black",
+      background: completed ? "linear-gradient(135deg,#2563eb,#7c3aed)" : "#ffffff",
+      color: completed ? "#ffffff" : "#0f172a",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      marginBottom: "10px", // Add spacing
-      fontWeight: "normal",
+      marginBottom: "8px",
+      fontWeight: 600,
       fontSize: "18px",
-      border: stepNumber > currentStep ? "1px solid black" : "",
-      position: "relative", // Allow absolute positioning for the line
+      border: completed ? "none" : "1px solid rgba(15,23,42,0.08)",
+      boxShadow: completed ? "0 6px 18px rgba(37,99,235,0.18)" : "0 2px 6px rgba(2,6,23,0.04)",
+      position: "relative",
     };
   };
 
   const labelStyle = {
-    fontSize: "18px",
-    color: "#1E1E1E",
-    fontWeight: "500",
-    fontFamily: "Noto Sans,sans-serif",
-    marginRight: "6px",
+    fontSize: "16px",
+    color: "#0f172a",
+    fontWeight: 600,
+    fontFamily: "Noto Sans, sans-serif",
+    marginRight: "8px",
+    textAlign: "right",
   };
 
   const stepNumberStyle = {
-    fontSize: "18px",
-    color: "#263238",
-    fontWeight: "400",
-    fontFamily: "Noto Sans,sans-serif",
-    margin: "0px 6px 0px 0px",
+    fontSize: "14px",
+    color: "#6b7280",
+    fontWeight: 500,
+    fontFamily: "Noto Sans, sans-serif",
+    margin: "0 6px 0 0",
   };
 
   const buttonStyle = {
@@ -90,50 +84,42 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   };
 
   const lineStyle = {
-    // content: '""',
-    // position: 'absolute',
-    // top: '50%',
-    // right: '-50%',
-    // width: '100%',
-    // height: '2px',
-    // backgroundColor: 'black',
-    // zIndex: -1,
-    // width: "0.5px",
-    // height: "133px",
-    // backgroundColor: "grey",
-    // position: "absolute",
-    // top: "364px", /* Adjust based on your design */
-    // left: "347px"/* Center the line under the circle */
-    // borderLeft: "6px solid black",
-    // height: "40px",
-    // position: "absolute",
-    // left: "32.5%",
-    // marginLeft: "-3px",
-    // top: "378px"
-
     position: "absolute",
-    width: "2px", // Adjust the line thickness
-    height: "50px", // Length of the connecting line
-    backgroundColor: "grey", // Line color
-    left: "50%", // Center it horizontally
-    top: "100%", // Position the line below the circle
-    transform: "translateX(-50%)", // Center alignment
+    width: "3px",
+    height: "56px",
+    backgroundColor: "rgba(15,23,42,0.06)",
+    left: "50%",
+    top: "100%",
+    transform: "translateX(-50%)",
+    borderRadius: "2px",
   };
   const isMobile = window.Digit.Utils.browser.isMobile();
   const totalSteps = stepsList.length;
   return (
-    <div className="stepper" style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "top", justifyContent: "flex-start" }}>
+    <div
+      className="stepper"
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
+        gap: "24px",
+      }}
+    >
       <div
         className="stepper-navigation-bar"
         style={{
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          //width: "30%",
-          height: "50%",
-          //maxWidth: "1500px",
-          //minWidth: "650px",
-          //marginRight: "auto",
+          alignItems: "center",
+          padding: "18px",
+          background: "linear-gradient(180deg, #ffffff, #f8fafc)",
+          border: "1px solid rgba(15,23,42,0.04)",
+          boxShadow: "0 8px 20px rgba(2,6,23,0.06)",
+          borderRadius: "12px",
+          minWidth: "120px",
+          maxWidth: "320px",
           marginBottom: "20px",
         }}
       >
@@ -172,8 +158,8 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
         className="stepper-body"
         style={{
           width: "100%",
-          //maxWidth: "1500px",
           marginBottom: "20px",
+          background: "transparent",
         }}
       >
         {children}

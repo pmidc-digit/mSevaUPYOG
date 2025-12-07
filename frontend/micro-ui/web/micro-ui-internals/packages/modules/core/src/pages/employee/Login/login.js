@@ -150,7 +150,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
             component: (props, customProps) => (
               <Dropdown
                 option={cities}
-                className="cityCss"
+
                 optionKey="i18nKey"
                 select={(d) => props.onChange(d)}
                 t={t}

@@ -124,18 +124,27 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
 CREATE TABLE IF NOT EXISTS eg_rl_allotment_scheduler(
  id CHARACTER VARYING(128) NOT NULL,
  allotment_id CHARACTER VARYING(128) NOT NULL,
+ application_number CHARACTER VARYING(128) NOT NULL,
+ tenant_id CHARACTER VARYING(128) NOT NULL,
  status int NOT NULL, --> 1-Active,0-inActive
+ payment_success_id CHARACTER VARYING(128),
+ demand_id CHARACTER VARYING(128) NOT NULL,
 
  --> scheduler details section
+ current_notification_date bigint NOT NULL,
  next_cycle CHARACTER VARYING(128) NOT NULL, --> monthly
  next_notification_date CHARACTER VARYING(128) NOT NULL,
  notification_type CHARACTER VARYING(128) NOT NULL, --> 1-sms,2-email,3-both
  notification_status int NOT NULL, --> 1-sent,2-failed,3-pending
+ notification_count_for_current_cycle int NOT NULL,
 
  notification_message CHARACTER VARYING(256) NOT NULL,
  payment_link CHARACTER VARYING(256) NOT NULL,
- audit_details JSONB NOT NULL,
-
+ created_time bigint NOT NULL,
+ created_by character varying(128)  NOT NULL,
+ lastmodified_time bigint,
+ lastmodified_by character varying(128),
+    
 CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
 CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id) REFERENCES eg_rl_allotment(id)
 );

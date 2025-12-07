@@ -1,6 +1,27 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 import { areSlotsEqual } from "../utils";
+import {
+  modalOverlay,
+  modalContent,
+  modalHeader,
+  modalTitle,
+  modalCloseButton,
+  modalFooter,
+  primaryButton,
+  lightButton,
+  disabledButton,
+  checkboxInput,
+  disabledCheckbox,
+  statusBadgeAvailable,
+  statusBadgeBooked,
+  statusBadgeInCart,
+  modalTableContainer,
+  modalLoadingMessage,
+  tableCellStyle,
+  headerTextWarning,
+  headerTextInfo,
+} from "../styles/commonStyles";
 
 const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, cartSlots, onRemoveSlot }) => {
   const [selectedSlots, setSelectedSlots] = useState([]);
@@ -46,12 +67,19 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   )?.slots || [];
 
 
-  // Header note: all booked
-  const allBooked = slots?.length > 0 && slots?.every((s) => s?.slotStaus !== "AVAILABLE");
-  // Find slots already in cart for this ad
+  // Check if a slot is in the user's cart
+  const isSlotInCart = (slot) => {
+    return existingForAd?.some((s) => s?.bookingDate === slot?.bookingDate);
+  };
+
+  // Slots that are either available OR already in user's cart
+  const selectableSlots = slots?.filter((s) => s?.slotStaus === "AVAILABLE" || isSlotInCart(s));
 
   // All available slots for this ad/date range
   const allAvailableSlots = slots?.filter((s) => s?.slotStaus === "AVAILABLE");
+
+  // Check if all slots are booked by OTHERS (not by this user)
+  const allBookedByOthers = slots?.length > 0 && slots?.every((s) => s?.slotStaus !== "AVAILABLE" && !isSlotInCart(s));
 
   // True if every available slot is already in the cart
   const allInCart =
@@ -61,8 +89,8 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
-      const allAvailable = slots?.filter((s) => s?.slotStaus === "AVAILABLE");
-      setSelectedSlots(allAvailable);
+      // Select all slots that are either available OR in cart
+      setSelectedSlots(selectableSlots);
     } else {
       setSelectedSlots([]);
     }
@@ -117,33 +145,23 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         <input
           type="checkbox"
           checked={selectAll}
-          disabled={allBooked}
-          // checked={selectAll}
+          disabled={allBookedByOthers}
           onChange={(e) => handleSelectAll(e.target.checked)}
-          style={{
-            cursor: allBooked ? "not-allowed" : "pointer",
-            width: "18px",
-            height: "18px",
-            accentColor: "#0b74de",
-          }}
+          style={allBookedByOthers ? disabledCheckbox : checkboxInput}
         />
       ),
       accessor: "select",
       Cell: ({ row }) => {
         const slot = row?.original;
-        // const isChecked = allInCart || (selectAll && slot?.slotStaus === "AVAILABLE");
-        const isChecked = selectAll && slot?.slotStaus === "AVAILABLE";
+        const isInCart = isSlotInCart(slot);
+        const isSelectable = slot?.slotStaus === "AVAILABLE" || isInCart;
+        const isChecked = selectAll && isSelectable;
         return (
           <input
             type="checkbox"
             checked={isChecked}
-            disabled={true} // always disabled
-            style={{
-              cursor: "not-allowed",
-              width: "18px",
-              height: "18px",
-              accentColor: "#0b74de",
-            }}
+            disabled={true}
+            style={disabledCheckbox}
           />
         );
       },
@@ -163,22 +181,22 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       Header: t("ADS_STATUS"),
       accessor: "slotStaus",
       Cell: ({ row }) => {
-        const status = row?.original?.slotStaus;
+        const slot = row?.original;
+        const status = slot?.slotStaus;
+        const isInCart = isSlotInCart(slot);
         const isAvailable = status === "AVAILABLE";
+        
+        // If slot is in cart, show as "IN CART" with blue badge
+        if (isInCart) {
+          return (
+            <span style={statusBadgeInCart}>
+              {t("ADS_IN_CART") || "IN CART"}
+            </span>
+          );
+        }
+        
         return (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "5px 14px",
-              borderRadius: "20px",
-              fontSize: "12px",
-              fontWeight: 600,
-              color: isAvailable ? "#155724" : "#721c24",
-              backgroundColor: isAvailable ? "#d4edda" : "#f8d7da",
-              border: `1px solid ${isAvailable ? "#c3e6cb" : "#f5c6cb"}`,
-              textTransform: "capitalize",
-            }}
-          >
+          <span style={isAvailable ? statusBadgeAvailable : statusBadgeBooked}>
             {status}
           </span>
         );
@@ -187,75 +205,29 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   ];
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "70px",
-        left: 0,
-        width: "100vw",
-        height: "calc(100vh - 70px)",
-        background: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 2000,
-      }}
-    >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: "1100px",
-          height: "70vh",
-          background: "#fff",
-          borderRadius: "12px",
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-        }}
-      >
+    <div style={modalOverlay}>
+      <div style={modalContent}>
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            borderBottom: "1px solid #eee",
-            paddingBottom: "8px",
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>
+        <div style={modalHeader}>
+          <h2 style={modalTitle}>
             {t("ADS_AVAILIBILITY_FOR")} {ad?.name}{" "}
-            {allBooked && <span style={{ color: "#c62828", fontSize: "14px", marginLeft: "8px" }}>{t("ADS_ALL_SLOTS_BOOKED")}</span>}
+            {allBookedByOthers && <span style={headerTextWarning}>{t("ADS_ALL_SLOTS_BOOKED")}</span>}
+            {existingForAd?.length > 0 && !allBookedByOthers && <span style={headerTextInfo}>({existingForAd.length} in cart)</span>}
           </h2>
           <button
             onClick={onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-            }}
+            style={modalCloseButton}
           >
             ✖
           </button>
         </div>
 
         {/* Table */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        >
+        <div style={modalTableContainer}>
           {isLoading ? (
-            <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_LOADING_SLOTS")}</div>
+            <div style={modalLoadingMessage}>{t("ADS_LOADING_SLOTS")}</div>
           ) : slots?.length === 0 ? (
-            <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_NO_SLOTS_AVAILABLE")}</div>
+            <div style={modalLoadingMessage}>{t("ADS_NO_SLOTS_AVAILABLE")}</div>
           ) : (
             <Table
               t={t}
@@ -264,52 +236,24 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
               disableSort={true}
               isPaginationRequired={false}
               getCellProps={(cell) => ({
-                style: {
-                  padding: "12px 14px",
-                  fontSize: "14px",
-                  borderBottom: "1px solid #f0f0f0",
-                  textAlign: "left",
-                  backgroundColor: cell.row.index % 2 === 0 ? "#fafafa" : "#fff",
-                },
+                style: tableCellStyle(cell.row.index % 2 === 0),
               })}
             />
           )}
         </div>
 
         {/* Footer */}
-        <div
-          style={{
-            marginTop: "12px",
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-          }}
-        >
+        <div style={modalFooter}>
           <button
             onClick={onClose}
-            style={{
-              padding: "10px 18px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              background: "#f5f5f5",
-              cursor: "pointer",
-            }}
+            style={lightButton}
           >
             {t ? t("Cancel") : "Cancel"}
           </button>
           <button
             onClick={handleAddToCart}
             disabled={!hasChanges}
-            style={{
-              padding: "10px 18px",
-              borderRadius: "6px",
-              border: "none",
-              background: hasChanges ? "#2947a3" : "#ccc",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: hasChanges ? "pointer" : "not-allowed",
-              transition: "background 0.2s",
-            }}
+            style={hasChanges ? primaryButton : disabledButton}
           >
             🛒 {existingForAd?.length > 0 ? t("COMMON_REMOVE_LABEL") : t("ADS_ADD_TO_CART")}
           </button>

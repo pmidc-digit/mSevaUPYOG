@@ -8,6 +8,18 @@ import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
 // import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
 import {getScheduleMessage, validateSchedule } from "../utils";
+import {
+  primaryButton,
+  warningBanner,
+  flexRowEnd,
+  mandatoryIndicator,
+  fullWidth,
+  errorStyle,
+  spanMarginRight,
+  cardsGrid,
+  showMoreContainer,
+  showMoreButton,
+} from "../styles/commonStyles";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
@@ -94,9 +106,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   useEffect(() => {
     const seeded = adsForLocation.map(() => ({
       startDate: "",
-      startTime: "",
       endDate: "",
-      endTime: "",
     }));
     setValue("ads", seeded, { shouldValidate: false, shouldDirty: false });
   }, [adsForLocation, setValue]);
@@ -109,8 +119,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [showToast]);
 
-  const handleViewAvailability = (ad, { startDate, endDate, startTime, endTime }) => {
-    const err = validateSchedule({ startDate, endDate, startTime, endTime, scheduleType });
+  const handleViewAvailability = (ad, { startDate, endDate }) => {
+    const err = validateSchedule({ startDate, endDate, scheduleType });
     if (err) {
       setShowToast({ label: err, error: true });
       return;
@@ -118,7 +128,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
     const locationName = location.find((loc) => loc.code === ad?.locationCode);
     setSelectedAd({ ...ad, locationName, startDate, endDate });
-    setDateRange({ startDate, endDate, startTime, endTime });
+    setDateRange({ startDate, endDate });
     setShowModal(true);
   };
 
@@ -145,8 +155,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       ...s,
       bookingStartDate: s?.bookingDate,
       bookingEndDate: dateRange?.endDate,
-      bookingFromTime: dateRange?.startTime,
-      bookingToTime: dateRange?.endTime,
+      bookingFromTime: "06:00",
+      bookingToTime: "05:59",
     }));
 
     const existing = prev.find(
@@ -218,28 +228,20 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [currentStepData, locationOptions]);
 
-  const errorStyle = { marginTop: "-18px", color: "red" };
-  const mandatoryStyle = { color: "red" };
+  const errorStyleLocal = errorStyle;
+  const mandatoryStyle = mandatoryIndicator;
 
   const guidance = getScheduleMessage(scheduleType, t);
 
   return (
     <React.Fragment>
       {cartSlots?.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "end" }}>
+        <div style={flexRowEnd}>
           <button
-            style={{
-              marginLeft: "12px",
-              padding: "8px 16px",
-              background: "#2947a3",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
+            style={{ ...primaryButton, marginLeft: "12px" }}
             onClick={() => setShowCart(true)}
           >
-            <span style={{ marginRight: 6 }}>🛒</span>
+            <span style={spanMarginRight(6)}>🛒</span>
             {t("ADS_VIEW_CART")} ({cartSlots?.length})
           </button>
         </div>
@@ -249,7 +251,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         <CardLabel>
           {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
-        <div style={{width:"100%"}}>
+        <div style={fullWidth}>
           {isCitizen && (
             <style>
               {`
@@ -294,25 +296,13 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
         {guidance && adsForLocation?.length > 0 && (
-          <div
-            style={{
-              background: "#fff3cd",
-              border: "1px solid #ffeeba",
-              color: "#856404",
-              padding: "6px 10px",
-              borderRadius: "6px",
-              fontSize: "14px",
-              marginBottom: "8px",
-              width: "100%",
-              maxWidth: "545px",
-            }}
-          >
+          <div style={warningBanner}>
             ⚠️ {guidance}
           </div>
         )}
         {/* Cards grid with see more */}
         {adsForLocation?.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          <div style={cardsGrid}>
             {adsForLocation?.slice(0, visibleCount)?.map((ad, idx) => (
               <AdCard
                 key={ad.id || idx}
@@ -331,11 +321,11 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         )}
 
         {adsForLocation?.length > 6 && (
-          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <div style={showMoreContainer}>
             {visibleCount < adsForLocation.length ? (
               <button
                 type="button"
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+                style={showMoreButton}
                 onClick={() => setVisibleCount((v) => v + 6)}
               >
                 {t("ADS_SHOW_MORE")}
@@ -343,7 +333,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             ) : (
               <button
                 type="button"
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+                style={showMoreButton}
                 onClick={() => setVisibleCount(6)}
               >
                 {t("SHOW_LESS")}

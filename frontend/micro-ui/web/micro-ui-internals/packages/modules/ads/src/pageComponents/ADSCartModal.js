@@ -1,5 +1,23 @@
 import React, { useState } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
+import {
+  modalOverlay,
+  modalContent,
+  modalHeader,
+  modalTitle,
+  modalCloseButton,
+  noItemsMessage,
+  cartItemContainer,
+  cartAdHeader,
+  removeButton,
+  tableContainer,
+  tableCellNowrap,
+  statusBadgeAvailable,
+  statusBadgeBooked,
+  cartListContainer,
+  cartAdTitle,
+  expandIcon,
+} from "../styles/commonStyles";
 
 const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
   // Track which ads are expanded
@@ -33,17 +51,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
         const isAvailable = status === "AVAILABLE";
         return (
           <span
-            style={{
-              display: "inline-block",
-              padding: "5px 14px",
-              borderRadius: "20px",
-              fontSize: "12px",
-              fontWeight: 600,
-              color: isAvailable ? "#155724" : "#721c24",
-              backgroundColor: isAvailable ? "#d4edda" : "#f8d7da",
-              border: `1px solid ${isAvailable ? "#c3e6cb" : "#f5c6cb"}`,
-              textTransform: "capitalize",
-            }}
+            style={isAvailable ? statusBadgeAvailable : statusBadgeBooked}
           >
             {status}
           </span>
@@ -53,63 +61,23 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
   ];
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "70px",
-        left: 0,
-        width: "100vw",
-        height: "calc(100vh - 70px)",
-        background: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 2000,
-      }}
-    >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: "1100px",
-          height: "70vh",
-          background: "#fff",
-          borderRadius: "12px",
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-        }}
-      >
+    <div style={modalOverlay}>
+      <div style={modalContent}>
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            borderBottom: "1px solid #eee",
-            paddingBottom: "8px",
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>{t("ADS_YOUR_CART")}</h2>
+        <div style={modalHeader}>
+          <h2 style={modalTitle}>{t("ADS_YOUR_CART")}</h2>
           <button
             onClick={onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-            }}
+            style={modalCloseButton}
           >
             ✖
           </button>
         </div>
 
         {/* Cart grouped by Ad */}
-        <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={cartListContainer}>
           {cartSlots?.length === 0 ? (
-            <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ITEMS_IN_CART")}</p>
+            <p style={noItemsMessage}>{t("ADS_NO_ITEMS_IN_CART")}</p>
           ) : (
             cartSlots?.map((item, idx) => {
               // const isOpen = expanded?.includes(item.ad.id);
@@ -118,31 +86,15 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
               return (
                 <div
                   key={key}
-                  style={{
-                    marginBottom: "16px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                  }}
+                  style={cartItemContainer}
                 >
                   {/* Ad Header (clickable + remove button) */}
-                  <div
-                    style={{
-                      background: "#f9f9f9",
-                      padding: "10px 14px",
-                      fontWeight: 600,
-                      fontSize: "14px",
-                      borderBottom: "1px solid #ddd",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div onClick={() => toggleExpand(key)} style={{ cursor: "pointer", flex: 1 }}>
+                  <div style={cartAdHeader}>
+                    <div onClick={() => toggleExpand(key)} style={cartAdTitle}>
                       {item?.ad?.name}
                       {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
                       {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
-                      <span style={{ fontSize: "18px", marginLeft: "8px" }}>{isOpen ? "▾" : "▸"}</span>
+                      <span style={expandIcon}>{isOpen ? "▾" : "▸"}</span>
                     </div>
                     <button
                       onClick={() =>
@@ -151,16 +103,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                           endDate: item?.ad?.bookingEndDate,
                         })
                       }
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        border: "none",
-                        background: "#dc3545",
-                        color: "#fff",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        marginLeft: "10px",
-                      }}
+                      style={removeButton}
                     >
                       {t("ADS_REMOVE")}
                     </button>
@@ -168,7 +111,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
 
                   {/* Slots Table (collapsible) */}
                   {isOpen && (
-                    <div style={{ overflowX: "auto" }}>
+                    <div style={tableContainer}>
                       <Table
                         t={t}
                         data={item?.slots}
@@ -176,13 +119,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                         disableSort={true}
                         isPaginationRequired={false}
                         getCellProps={(cell) => ({
-                          style: {
-                            padding: "12px 14px",
-                            fontSize: "14px",
-                            borderBottom: "1px solid #f0f0f0",
-                            textAlign: "left",
-                            whiteSpace: "nowrap",
-                          },
+                          style: tableCellNowrap,
                         })}
                       />
                     </div>

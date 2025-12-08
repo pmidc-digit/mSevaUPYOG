@@ -151,17 +151,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     }
   };
 
-  useEffect(() => {
-    const applicantsData = currentStepData?.applicantDetails?.applicants || [];
-    const ownershipTypeData = currentStepData?.applicantDetails?.ownershipType || "";
-
-    if (Array.isArray(applicantsData) && applicantsData.length > 0) {
-      reset({
-        ownershipType: ownershipTypeData, // 👈 restore select box
-        applicants: applicantsData, // 👈 restore applicants
-      });
-    }
-  }, [currentStepData, reset]);
+  
 
   const getErrorMessage = (fieldName, index) => {
     const error = errors?.applicants?.[index]?.[fieldName];
@@ -222,6 +212,19 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       }
     }
   }, [watch("ownershipType")]);
+
+  useEffect(() => {
+    const applicantsData = currentStepData?.applicantDetails?.applicants || [];
+    console.log('applicantsData', applicantsData)
+    const ownershipTypeData = currentStepData?.applicantDetails?.ownershipType || "";
+
+    if (Array.isArray(applicantsData) && applicantsData.length > 0) {
+      reset({
+        ownershipType: ownershipTypeData, // 👈 restore select box
+        applicants: applicantsData, // 👈 restore applicants
+      });
+    }
+  }, [currentStepData, reset]);
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };

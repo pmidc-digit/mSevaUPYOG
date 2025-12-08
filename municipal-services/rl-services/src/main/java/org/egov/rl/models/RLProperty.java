@@ -84,11 +84,14 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("securityDeposit")
 	private String securityDeposit;
 	
-	@JsonProperty("tax_applicable")
-	private String taxApplicable;
+	@JsonProperty("taxApplicable")
+	private boolean taxApplicable;
 
-	@JsonProperty("refund_applicable_on_discontinuation")
-	private String refundApplicableOnDiscontinuation;
+	@JsonProperty("refundApplicableOnDiscontinuation")
+	private boolean refundApplicableOnDiscontinuation;
+	
+	@JsonProperty("cowCessApplicable")
+	private boolean cowCessApplicable;
 	
 	@JsonProperty("penaltyType")
 	private String penaltyType;
@@ -115,8 +118,7 @@ public class RLProperty {// extends PropertyInfo {
 //	@JsonProperty("gst_applicable")
 //	private boolean gstApplicable;
 //
-//	@JsonProperty("cow_cess_applicable")
-//	private boolean cowCessApplicable;
+
 //	
 //	@JsonProperty("security_amount")
 //	private String securityAmount;;

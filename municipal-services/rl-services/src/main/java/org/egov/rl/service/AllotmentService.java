@@ -1,18 +1,23 @@
 package org.egov.rl.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.catalina.mapper.Mapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
+import org.egov.rl.models.PropertyReportSearchRequest;
+import org.egov.rl.models.RLProperty;
+import org.egov.rl.models.SearchProperty;
 import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.models.user.User;
 import org.egov.rl.models.user.UserDetailResponse;
@@ -27,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class AllotmentService {
@@ -36,6 +42,9 @@ public class AllotmentService {
 
 	@Autowired
 	private RentLeaseConfiguration config;
+	
+	@Autowired
+	private ObjectMapper mapper;
 
 	@Autowired
 	private AllotmentEnrichmentService allotmentEnrichmentService;
@@ -183,11 +192,15 @@ public class AllotmentService {
 			allotmentCriteria.setMobileNumber(null);
 			System.out.println("DEBUG: Set ownerUuids in criteria: " + allotmentCriteria.getOwnerIds());
 		}
-
+	    final List<RLProperty> rlList=boundaryService.allPropertyList(AllotmentRequest.builder().requestInfo(requestInfo).allotment(AllotmentDetails.builder().tenantId(allotmentCriteria.getTenantId()).build()).build());
+		System.out.println("rl================"+rlList);
 		List<AllotmentDetails> applications = allotmentRepository.getAllotedApplications(allotmentCriteria);
 		applications=applications.stream().map(d->{
+		JsonNode additionalDetails = mapper.valueToTree(rlList.stream().filter(a->a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
 		d.setDocuments(allotmentRepository.getDocumentListByAllotmentId(d.getId()));
 		d.setOwnerInfo(allotmentRepository.getOwnerInfoListByAllotmentId(d.getId()));
+		d.setAdditionalDetails(additionalDetails);
+		
 		return d;}).collect(Collectors.toList());
 		if (CollectionUtils.isEmpty(applications))
 			return new ArrayList<>();

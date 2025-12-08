@@ -235,6 +235,51 @@ public class BoundaryService {
 		}
 		return amount;
 	}
+	public List<RLProperty> allPropertyList(AllotmentRequest allotementRequest) {
+		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
+		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
+		JsonNode body = null;
+		List<RLProperty> propertyList =null;
+//		System.out.println("propertyId---"+propertyId+"-------------"+tenantId);
+		try {
+			MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
+			mdmsCriteriaReq.setRequestInfo(allotementRequest.getRequestInfo()); // from your context
+			MdmsCriteria mdmsCriteria = new MdmsCriteria();
+			mdmsCriteria.setTenantId(tenantId);
+			ModuleDetail moduleDetail = new ModuleDetail();
+			moduleDetail.setModuleName("rentAndLease");
+			MasterDetail masterDetail = new MasterDetail();
+			masterDetail.setName("RLProperty");
+			if(propertyId!=null) {
+			 masterDetail.setFilter("$.[?(@.propertyId=='"+propertyId+"')]");
+			}
+			moduleDetail.setMasterDetails(Arrays.asList(masterDetail));
+			mdmsCriteria.setModuleDetails(Arrays.asList(moduleDetail));
+			mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
 
+			String mdmsUrl = configs.getMdmsHost() + configs.getMdmsEndpoint();// "http://<mdms-host>/egov-mdms-service/v1/_search";
+			ResponseEntity<JsonNode> response = restTemplate.postForEntity(mdmsUrl, mdmsCriteriaReq, JsonNode.class);
+			body = response.getBody();
+			JsonNode propertyArrayNode = body.get("MdmsRes").get("rentAndLease").get("RLProperty");
+			if (propertyArrayNode.isArray()) {
+				propertyList = mapper.convertValue(propertyArrayNode, new TypeReference<List<RLProperty>>() {
+					
+			});
+
+			}
+			if (body.isEmpty()) {
+				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
+						"propertyId cannot be wrong, please provide the valid propertyId and tenentId information");
+			}
+		}catch(CustomException e) {
+			throw e;	
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CustomException("PROPERTY LOADING ERROR", "property loading error from mdms ,please provide valid tenantId information");
+//			throw e;
+
+		}
+		return propertyList;
+	}
 
 }

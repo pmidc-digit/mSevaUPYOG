@@ -59,7 +59,7 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 					.createdTime(rs.getLong("created_time"))
 					.createdBy(rs.getString("created_by"))
 					.auditDetails(auditDetails)
-					.additionalDetails(getAdditionalDetails(rs.getObject("additional_details"))).build());
+					.additionalDetails(null).build());
 		}
 
 		return currentAllotment;

@@ -11,7 +11,7 @@
   box-shadow: 0 12px 32px rgba(30, 58, 138, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 
 
   .card-header {
@@ -140,7 +140,7 @@
   box-shadow: 0 12px 32px rgba(30, 58, 138, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+   overflow: visible !important;
 
 
 

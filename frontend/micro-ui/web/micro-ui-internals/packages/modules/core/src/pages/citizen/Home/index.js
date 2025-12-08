@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StandaloneSearchBar,
   Loader,
@@ -34,6 +34,10 @@ import DashboardFooter from "./DashboardFooter";
 const Home = () => {
   const { t } = useTranslation()
   const history = useHistory()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredServices, setFilteredServices] = useState([])
+  const [showAllCards, setShowAllCards] = useState(false)
+  
   const citizenInfoString = window.localStorage.getItem("user-info")
   const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null
   const UserType = citizenInfo?.type === "CITIZEN"
@@ -122,6 +126,38 @@ const Home = () => {
     }
   }
 
+  // Handle search and filter services
+  const handleSearchChange = (e) => {
+    const query = e.target.value.toLowerCase()
+    setSearchQuery(query)
+    
+    if (query.trim() === "") {
+      setFilteredServices([])
+      return
+    }
+
+    const allServices = UserType && UserRole
+      ? [
+          {
+            name: t(citizenServicesObj?.props?.[5]?.label),
+            Icon: <ComplaintIcon />,
+            onClick: () => history.push(citizenServicesObj?.props?.[5]?.navigationUrl),
+          },
+        ]
+      : citizenServicesObj?.props
+          ?.filter((item) => item?.enabled)
+          ?.map((item) => ({
+            name: t(item.label),
+            Icon: getIconForService(item.code),
+            onClick: () => history.push(item.navigationUrl),
+          })) || []
+
+    const filtered = allServices.filter((service) =>
+      service.name.toLowerCase().includes(query)
+    )
+    setFilteredServices(filtered)
+  }
+
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
     sideOption: {
@@ -198,14 +234,74 @@ const Home = () => {
             <input
               type="text"
               placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER") || "Search for services..."}
-             
+              value={searchQuery}
+              onChange={handleSearchChange}
               className="searchInputStyles"
             />
           </div>
+
+          {/* Display filtered services when user is typing */}
+          {searchQuery.trim() !== "" && filteredServices.length > 0 && (
+            <div style={{ marginTop: "24px" }}>
+              <div style={{ color: "#ffffff", fontSize: "18px", fontWeight: "600", marginBottom: "16px" }}>
+                {t("Search Results")}
+              </div>
+              <CardBasedOptions
+                header=""
+                sideOption={{
+                  name: t(citizenServicesObj?.sideOption?.name),
+                  onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
+                }}
+                options={filteredServices}
+                styles={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" }}
+              />
+            </div>
+          )}
+
+          {/* Show no results message */}
+          {searchQuery.trim() !== "" && filteredServices.length === 0 && (
+            <div style={{ marginTop: "24px", padding: "20px", textAlign: "center", color: "#999" }}>
+              <p>{t("No services found matching") || "No services found matching"} "{searchQuery}"</p>
+            </div>
+          )}
         </div>
 
         <div className="ServicesSection" style={{ marginTop: "40px" }}>
-          <CardBasedOptions {...allCitizenServicesProps} />
+          <CardBasedOptions 
+            {...allCitizenServicesProps}
+            options={showAllCards ? allCitizenServicesProps.options : allCitizenServicesProps.options?.slice(0, 4)}
+          />
+          {allCitizenServicesProps.options?.length > 4 && (
+            <div style={{ marginTop: "24px", textAlign: "center", justifyContent: "center", display: "flex", width: "100%" }}>
+              <button
+                onClick={() => setShowAllCards(!showAllCards)}
+                style={{
+                  padding: "12px 32px",
+                  backgroundColor: "#2563eb",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#1d4ed8";
+                  e.currentTarget.style.boxShadow = "0 6px 16px rgba(37, 99, 235, 0.4)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#2563eb";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                {showAllCards ? "Show Less" : "Show More"}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* WhatsApp Banner Section */}

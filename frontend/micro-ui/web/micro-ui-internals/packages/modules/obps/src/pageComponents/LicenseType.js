@@ -682,23 +682,86 @@ console.log("validTo",validTo);
               )} */}
           </FormStep>
           <div
-           
+            style={{
+              marginTop: "32px",
+              backgroundColor: "#f8f9fa",
+              borderRadius: "12px",
+              padding: "24px",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+            }}
           >
             <h1
-             
+              style={{
+                fontSize: "20px",
+                fontWeight: "700",
+                color: "#1f2937",
+                marginBottom: "16px",
+                marginTop: "0",
+              }}
             >
               {t("BPA_COMPETENCIES")}
             </h1>
             <ul
-             
+              style={{
+                listStyle: "none",
+                padding: "0",
+                margin: "0",
+              }}
             >
               {LicenseType &&
                 CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.map((point, index) => (
-                  <li key={index} >
+                  <li 
+                    key={index}
+                    style={{
+                      padding: "12px 0",
+                      paddingLeft: "28px",
+                   
+                      fontSize: "14px",
+                      color: "#374151",
+                    
+                      borderBottom: index < (CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.length - 2) ? "1px solid #e5e7eb" : "none",
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: "0",
+                        top: "12px",
+                        width: "6px",
+                        height: "6px",
+                        backgroundColor: "#2563eb",
+                        borderRadius: "50%",
+                      }}
+                    />
                     {point.trim()}
                   </li>
                 ))}
-                <li>
+                <li
+                  style={{
+                    padding: "0 0",
+                    paddingLeft: "28px",
+                    position: "relative",
+                    fontSize: "13px",
+                    color: "#666666",
+                    fontStyle: "italic",
+                    lineHeight: "1.6",
+                    marginTop: "8px",
+                    paddingTop: "16px",
+                    borderTop: "1px solid #fff",
+                  }}
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: "0",
+                      top: "16px",
+                      width: "6px",
+                      height: "6px",
+                      backgroundColor: "#f59e0b",
+                      borderRadius: "50%",
+                    }}
+                  />
                   {`*NOTE: Registration Fees as per Council norms is ${LicenseType?.applicationFee || 0} INR and Renewal Fees is ${LicenseType?.renewalFee || 0} INR.`}
                 </li>
             </ul>

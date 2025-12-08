@@ -6,6 +6,22 @@
     margin-top: 0.5em;
   }
 }
+.document-required-options{
+  display: flex;
+  .document-index{
+    min-width:20px;
+    text-align: right;
+    padding: 5px;
+  }
+  .document-description{
+    flex-grow:1;
+    word-break: break-word;
+    padding: 5px;
+    
+
+  }
+}
+
 .accordion-item {
   overflow: hidden;
   transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);

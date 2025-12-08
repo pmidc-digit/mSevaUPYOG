@@ -72,8 +72,11 @@
 
 /* Login Card */
 .employee-login-card {
-padding: 20px;
-width: 650px;
+  padding: 20px;
+  width: 650px;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 /* Form Styles */
@@ -97,14 +100,13 @@ width: 650px;
   
   outline: none;
   border-color: #5243e9;
-  box-shadow: 0 0 0 3px rgba(82, 67, 233, 0.1);
   transition: all 0.2s ease;
 }
 
 .employee-login-form input:focus {
   outline: none;
   border-color: #5243e9;
-  box-shadow: 0 0 0 3px rgba(82, 67, 233, 0.1);
+
 }
 
 .employee-city-dropdown {

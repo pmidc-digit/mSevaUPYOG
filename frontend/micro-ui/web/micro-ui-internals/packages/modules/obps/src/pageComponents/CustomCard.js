@@ -43,7 +43,7 @@ const CustomCard = ({ children, style, className, onClick }) => {
       <table style={tableStyle}>
         <tbody>
           <tr>
-            <td style={{ width: "100%", padding: 0 }}>
+            <td style={{ width: "100%", padding: 0, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               {children}
             </td>
           </tr>

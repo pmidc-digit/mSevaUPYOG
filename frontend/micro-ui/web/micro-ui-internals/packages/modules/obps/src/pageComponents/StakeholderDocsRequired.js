@@ -164,9 +164,9 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
             {data?.StakeholderRegistraition?.TradeTypetoRoleMapping?.[0]?.docTypes?.map((doc, index) => (
               <div>
                 <div key={index}>
-                  <div >
-                    <div >{`${index + 1}.`}&nbsp;</div>
-                    <div>{` ${t(`BPAREG_HEADER_${doc?.code.replace('.', '_')}`)}`}</div>
+                  <div className="document-required-options" style={{display:"flex"}} >
+                    <div className="document-index" >{`${index + 1}.`}&nbsp;</div>
+                    <div className="document-description">{` ${t(`BPAREG_HEADER_${doc?.code.replace('.', '_')}`)}`}</div>
                   </div>
                 </div>
                 <div >

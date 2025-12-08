@@ -21,7 +21,7 @@ const LayoutSearchFormFields = ({ registerRef, searchFormState, searchFieldCompo
             >
               <SearchField>
                 <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
-                <TextInput name="applicationNo" inputRef={registerRef({})} />
+                <TextInput name="applicationNumber" inputRef={registerRef({})} />
               </SearchField>
               <SearchField>
                 <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>
@@ -40,7 +40,7 @@ const LayoutSearchFormFields = ({ registerRef, searchFormState, searchFieldCompo
     <React.Fragment>
       <SearchField>
         <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
-        <TextInput name="applicationNo" inputRef={registerRef({})} />
+        <TextInput name="applicationNumber" inputRef={registerRef({})} />
       </SearchField>
       <SearchField>
         <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>

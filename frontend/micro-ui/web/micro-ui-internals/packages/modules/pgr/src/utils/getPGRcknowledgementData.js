@@ -41,8 +41,6 @@ import { ComplaintDetails } from "../pages/employee/ComplaintDetails";
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 const getPGRcknowledgementData = async ({complaintDetails,tenantInfo, t}) => {
-    console.log("complaintDetails",complaintDetails.complaints?.response?.ServiceWrappers[0]?.service?.serviceRequestId)
-    console.log("complaintDetails",complaintDetails.complaints.response.ServiceWrappers?.serviceRequestId)
       return {
         t: t,
         tenantId: tenantInfo?.code,

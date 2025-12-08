@@ -10,9 +10,11 @@ import {
   BreadCrumb,
   BackButton,
   Loader,
-  DatePicker
+  DatePicker,
+  TextArea,
+  CheckBox
 } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import UploadDrawer from "./ImageUpload/UploadDrawer";
@@ -71,14 +73,31 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [errors, setErrors] = React.useState({});
   const isMobile = window.Digit.Utils.browser.isMobile();
+  const [PermanentAddress, setPermanentAddress] = useState()
+  const [selectedState, setSelectedState] = useState();
+  const [selectedDistrict, setSelectedDistrict] = useState();
+  const [pinCode, setPinCode] = useState();
+  const [isAddressSame, setIsAddressSame] = useState();
+  const [correspondenceAddress, setCorrespondenceAddress] = useState()
+  const [selectedCorrespondentState, setSelectedCorrespondentState] = useState()
+  const [selectedCorrespondentDistrict, setSelectedCorrespondentDistrict] = useState()
+  const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState()
+  const isUserArchitect = window.location.href.includes("citizen") && userInfo?.roles?.some((role) => role.code.includes("BPA_ARCHITECT"));
 
   const getUserInfo = async () => {
     const uuid = userInfo?.uuid;
     if (uuid) {
-      const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+      const selectedTenantId = window.location.href.includes("citizen") ? stateId : tenant
+      setLoading(true);
+      const usersResponse = await Digit.UserService.userSearch(selectedTenantId, { uuid: [uuid] }, {});
       usersResponse && usersResponse.user && usersResponse.user.length && setUserDetails(usersResponse.user[0]);
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    console.log("userDetails",userDetails)
+  }, [userDetails])
 
   React.useEffect(() => {
     window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
@@ -86,6 +105,61 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       window.removeEventListener("resize", () => setWindowWidth(window.innerWidth));
     };
   });
+
+  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster"}]);
+  const uniqueDistricts = useMemo(() => {
+      if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
+  
+      return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedState?.state_code);
+        
+    }, [isLoading, districtList, selectedState]);
+
+    // const { data: districtListCorrespondent, isLoading: isLoadingCorrespondent} = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster"}], );
+    const uniqueDistrictsCorrespondent = useMemo(() => {
+      if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
+  
+      return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedCorrespondentState?.state_code);
+    }, [isLoading, districtList, selectedCorrespondentState]);
+
+    const { data: StateData, isLoading: isStateLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{name:"StateMaster"}]);
+    const stateOptions = useMemo(() => {
+      if(StateData?.["common-masters"]?.StateMaster?.length > 0){
+        return StateData?.["common-masters"].StateMaster;
+      }else{
+        return [];
+      }
+    }, [StateData, isStateLoading]);
+
+    console.log("uniqueDistricts", uniqueDistrictsCorrespondent, selectedCorrespondentState)
+
+    useEffect(() => {
+      if(typeof selectedState === "string" && stateOptions?.length>0){
+        const state = stateOptions.find((state) => state.state_name === selectedState);
+        console.log("stateData", stateOptions, state, selectedState)
+        setSelectedState(state)
+      }
+      // refetchDistricts();
+    },[selectedState, stateOptions])
+    useEffect(() => {
+      if(typeof selectedCorrespondentState === "string" && stateOptions?.length>0){
+        const state = stateOptions.find((state) => state.state_name === selectedCorrespondentState);
+        setSelectedCorrespondentState(state)
+      }
+      // refetchDistrictsCor()
+    },[selectedCorrespondentState, stateOptions])
+    useEffect(() => {
+      if(typeof selectedCorrespondentDistrict === "string" && uniqueDistrictsCorrespondent?.length>0){
+        const state = uniqueDistrictsCorrespondent.find((state) => state.district_name_english === selectedCorrespondentDistrict);
+        setSelectedCorrespondentDistrict(state)
+      }      
+    },[selectedCorrespondentDistrict, uniqueDistrictsCorrespondent])
+    useEffect(() => {
+      if(typeof selectedDistrict === "string" && uniqueDistricts?.length>0){
+        const state = uniqueDistricts.find((state) => state.district_name_english === selectedDistrict);
+        setSelectedDistrict(state)
+      }
+    },[selectedDistrict, uniqueDistricts])
+  
 
   useEffect(() => {
     setLoading(true);
@@ -97,6 +171,19 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       code: userDetails?.gender,
       value: userDetails?.gender,
     });
+    setDob(userDetails?.dob)
+    setPermanentAddress(userDetails?.permanentAddress)
+    setSelectedDistrict(userDetails?.permanentDistrict)
+    setPinCode(userDetails?.permanentPinCode)
+    setPinCodeCorrespondent(userDetails?.correspondencePinCode)
+    setSelectedCorrespondentDistrict(userDetails?.correspondenceDistrict)
+    setCorrespondenceAddress(userDetails?.correspondenceAddress)
+    setSelectedCorrespondentState(userDetails?.correspondenceState)    
+    setSelectedState(userDetails?.permanentState)
+    
+    if(userDetails?.isAddressSame){
+      setIsAddressSame(userDetails?.isAddressSame)
+    }
 
     const thumbs = userDetails?.photo?.split(",");
     setProfileImg(thumbs?.at(0));
@@ -190,12 +277,21 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     setLoading(true);
     try {
       const requestData = {
-        ...userInfo,
+        ...userDetails,
         name,
         dob: dob!== undefined ? dob.split("-").reverse().join("/") : "",
         gender: gender?.value,
         emailId: email,
         photo: profilePic,
+        permanentAddress: PermanentAddress,
+        permanentDistrict: selectedDistrict?.district_name_english,
+        permanentPinCode: pinCode,
+        correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+        correspondenceDistrict: isAddressSame ? selectedDistrict?.district_name_english : selectedCorrespondentDistrict?.district_name_english,
+        correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+        correspondenceState: isAddressSame ? selectedState?.state_name : selectedCorrespondentState?.state_name,
+        permanentState: selectedState?.state_name,
+        isAddressSame: isAddressSame
       };
 
       if (!new RegExp(/^([a-zA-Z ])*$/).test(name) || name === "" || name.length > 50 || name.length < 1) {
@@ -206,7 +302,78 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PROFILE_MOBILE_NUMBER_INVALID") });
       }
 
-      if (email.length && !(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
+      if (userType === "citizen") {
+
+        if (!requestData.name || typeof requestData.name !== "string" || !/^[A-Za-z ]{2,50}$/.test(requestData.name)) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_NAME_INVALID") });
+        }
+
+        if (!requestData.dob) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_DOB_REQUIRED") });
+        } else {
+          console.log("requestData.dob",requestData.dob)
+          const [dd, mm, yyyy] = requestData.dob.split("/");
+          const dobDate = new Date(`${yyyy}-${mm}-${dd}`);
+          const today = new Date();
+
+          let age = today.getFullYear() - dobDate.getFullYear();
+          const m = today.getMonth() - dobDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) age--;
+
+          if (age < 18) {
+            throw JSON.stringify({ type: "error", message: t("CORE_COMMON_DOB_MIN_AGE") });
+          } else if (age > 150) {
+            throw JSON.stringify({ type: "error", message: t("CORE_COMMON_DOB_MAX_AGE") });
+          }
+        }
+
+        if (!requestData.gender) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_GENDER_REQUIRED") });
+        }
+
+        if (!requestData.emailId || !Digit.Utils.getPattern("Email").test(requestData.emailId)) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_EMAIL_INVALID") });
+        }
+
+        if (!requestData.permanentAddress || typeof requestData.permanentAddress !== "string") {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_ADDRESS_REQUIRED") });
+        }
+
+        if (!requestData.permanentDistrict || typeof requestData.permanentDistrict !== "string") {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_CITY_REQUIRED") });
+        }
+
+        if (!requestData.permanentPinCode) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_PINCODE_REQUIRED") });
+        }
+
+        if (!Digit.Utils.getPattern("Pincode").test(requestData.permanentPinCode)) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_PINCODE_INVALID") });
+        }
+
+        if (!requestData.permanentState) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_STATE_REQUIRED") });
+        }
+
+        if (!requestData.isAddressSame && !Digit.Utils.getPattern("Pincode").test(requestData.correspondencePinCode)) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_CORRESPONDENCE_PINCODE_INVALID") });
+        }
+
+        if (!requestData.isAddressSame && (!requestData.correspondenceDistrict || typeof requestData.correspondenceDistrict !== "string")) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_CORRESPONDENCE_CITY_REQUIRED") });
+        }
+
+        if (!requestData.isAddressSame && (!requestData.correspondenceAddress || typeof requestData.correspondenceAddress !== "string")) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_CORRESPONDENCE_ADDRESS_REQUIRED") });
+        }
+
+        if (!requestData.isAddressSame && (!requestData.correspondenceState || typeof requestData.correspondenceState !== "string")) {
+          throw JSON.stringify({ type: "error", message: t("CORE_COMMON_CORRESPONDENCE_STATE_REQUIRED") });
+        }
+
+      }
+
+      if (email?.length && !(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
         throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PROFILE_EMAIL_INVALID") });
       }     
 
@@ -301,6 +468,48 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
 
     closeFileUploadDrawer();
   };
+
+  function selectPermanentAddress(e) {
+    setPermanentAddress(e.target.value);
+  }
+
+  function SelectState(e) {
+    setSelectedState(e);
+  }
+
+  function SelectDistrict(e) {
+    setSelectedDistrict(e);
+  }
+
+  function SelectPincode(e) {
+    const value = e.target.value;
+    if (/^[0-9]*$/.test(value) && value.length <= 6) {
+      setPinCode(value);
+    }
+  }
+
+  function handleAddressSame(e) {
+    const checked = e.target.checked;
+    setIsAddressSame(checked);
+  }
+
+  function SelectCorrespondentState(e) {
+    setSelectedCorrespondentState(e);
+  }
+
+  function SelectCorrespondentDistrict(e) {
+    setSelectedCorrespondentDistrict(e);
+  }
+
+  function SelectPincodeCorrespondent(e) {
+    const value = e.target.value;
+    if (/^[0-9]*$/.test(value) && value.length <= 6) {
+      setPinCodeCorrespondent(value);
+    }
+  }
+
+
+
 
   const getThumbnails = async (ids, tenantId) => {
     const res = await Digit.UploadServices.Filefetch(ids, tenantId);
@@ -423,9 +632,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                       type: "tel",
                       title: t("CORE_COMMON_PROFILE_NAME_ERROR_MESSAGE"),
                     })}
-                    disable={editScreen}
+                    disable={editScreen || isUserArchitect}
                   />
-                  {errors?.userName && <CardLabelError> {errors?.userName?.message} </CardLabelError>}
                 </div>
               </LabelFieldPair>
 
@@ -447,8 +655,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
               <LabelFieldPair>
                 <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("CORE_COMMON_PROFILE_DOB")}`}*</CardLabel>
                 <div style={{ width: "100%", maxWidth:"960px" }}>
-                <DatePicker date={dob || dateOfBirth} onChange={setUserDOB} disable={true} />
-                  {errors?.userName && <CardLabelError> {errors?.userName?.message} </CardLabelError>}
+                <DatePicker date={dob || dateOfBirth} min="1900-01-01" onChange={setUserDOB} disable={true} max={new Date().toISOString().split("T")[0]} />                  
                 </div>
               </LabelFieldPair>
                <LabelFieldPair>
@@ -465,10 +672,147 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     onChange={(e)=>setUserEmailAddress(e.target.value)}
                     disable={editScreen}
                   />
-                  {errors?.emailAddress && <CardLabelError> {errors?.emailAddress?.message} </CardLabelError>}
                 </div>
               </LabelFieldPair> 
+
+              <LabelFieldPair>
+                <CardLabel>{`${t("BPA_PERMANANT_ADDRESS_LABEL")}*`}</CardLabel>
+                <TextArea
+                  t={t}
+                  isMandatory={false}
+                  type={"text"}
+                  optionKey="i18nKey"
+                  name="PermanentAddress"
+                  onChange={selectPermanentAddress}
+                  value={PermanentAddress}
+                  disable={editScreen}
+                />
+              </LabelFieldPair> 
+
+              <LabelFieldPair>
+                <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
+                <div>
+                  <Dropdown
+                    t={t}
+                    optionKey="state_name"
+                    // isMandatory={config.isMandatory}
+                    option={stateOptions}
+                    selected={selectedState}
+                    select={SelectState}
+                    disable={editScreen}
+                  // disable={!isCitizenEditable}
+                  />
+                </div>
+              </LabelFieldPair>
+
+              <div>
+                {" "}
+                <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
+                <Dropdown
+                  t={t}
+                  optionKey="district_name_english"
+                  // isMandatory={config.isMandatory}
+                  // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                  option={uniqueDistricts}
+                  selected={selectedDistrict}
+                  select={SelectDistrict}
+                  disable={editScreen}
+                // disable={!isCitizenEditable}
+                />
+              </div>
               
+              <div>
+                <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
+                <TextInput
+                  t={t}
+                  type={"text"}
+                  isMandatory={false}
+                  optionKey="i18nKey"
+                  name="Pcode"
+                  minLength="6"
+                  value={pinCode}
+                  onChange={SelectPincode}
+                  // disable={name && !isOpenLinkFlow ? true : false}
+                  disable={editScreen}
+                  {...(validation = {
+                    isRequired: true,
+                    pattern: "^[0-9]{6}$",
+                    type: "number",
+                    title: t("BPA_PINCODE_ERROR_MESSAGE"),
+                  })}
+                />
+              </div>
+
+              <CheckBox
+                label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
+                onChange={handleAddressSame}
+                checked={isAddressSame}
+                style={{ paddingBottom: "10px", paddingTop: "10px" }}
+                disable={editScreen}
+              />
+
+              <CardLabel>{t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}</CardLabel>
+              <TextArea
+                t={t}
+                isMandatory={false}
+                type={"text"}
+                name="correspondenceAddress"
+                value={isAddressSame ? PermanentAddress : correspondenceAddress}
+                onChange={(e) => setCorrespondenceAddress(e.target.value)}
+                disable={editScreen || isAddressSame}
+              />
+
+              <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
+              <div>
+                <Dropdown
+                  t={t}
+                  optionKey="state_name"
+                  // isMandatory={config.isMandatory}
+                  option={stateOptions}
+                  selected={isAddressSame ? selectedState : selectedCorrespondentState}
+                  select={SelectCorrespondentState}
+                  disable={editScreen || isAddressSame}
+                // disable={!isCitizenEditable}
+                />
+              </div>
+
+              <div>
+                {" "}
+                <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
+                <Dropdown
+                  t={t}
+                  optionKey="district_name_english"
+                  // isMandatory={config.isMandatory}
+                  // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                  option={uniqueDistrictsCorrespondent}
+                  selected={isAddressSame ? selectedDistrict : selectedCorrespondentDistrict}
+                  select={SelectCorrespondentDistrict}
+                  disable={editScreen || isAddressSame}
+                // disable={!isCitizenEditable}
+                />
+              </div>
+
+              <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
+              <TextInput
+                t={t}
+                type={"text"}
+                isMandatory={false}
+                optionKey="i18nKey"
+                name="Pcode"
+                minLength="6"
+                value={isAddressSame ? pinCode : pinCodeCorrespondent}
+                onChange={SelectPincodeCorrespondent}
+                // disable={name && !isOpenLinkFlow ? true : false}
+                disable={editScreen || isAddressSame}
+                {...(validation = {
+                  isRequired: true,
+                  pattern: "^[0-9]{6}$",
+                  type: "number",
+                  title: t("BPA_PINCODE_ERROR_MESSAGE"),
+                })}
+              />
+
+
               <button
                 onClick={updateProfile}
                 style={{

@@ -313,7 +313,8 @@ useEffect(() => {
           filtData?.action === "FORWARD_L4" ||
           filtData?.action === "FORWARD_L5" ||
           filtData?.action === "FORWARD_L6" ||
-          filtData?.action === "FORWARD_L7"
+          filtData?.action === "FORWARD_L7" ||
+          filtData?.action === "SENDBACKTOPROFESSIONAL"
         ) {
           console.log("We are calling employee response page");
           history.replace({

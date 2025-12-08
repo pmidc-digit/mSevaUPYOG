@@ -48,6 +48,7 @@ import { Link } from "react-router-dom"
 import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
+import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 
 
 const BpaApplicationDetail = () => {
@@ -101,11 +102,12 @@ const BpaApplicationDetail = () => {
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
 
-  
+
+
+
   // const { data: datafromAPI, isLoadingScrutiny, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, data?.applicationData?.edcrNumber, {
   //   enabled: data?.applicationData?.edcrNumber && tenantId ? true : false,
   // });
-
 console.log('cities', cities)
 let ulbType,districtCode,ulbCode, subjectLine = "";
 const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.districtName;
@@ -263,8 +265,11 @@ console.log("building category here: & fileNo", usage,fileno);
       enabled: !!data,
     },
   })
+  const userInfo = Digit.UserService.getUser();
+console.log('userInfo', userInfo)
+  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.info?.mobileNumber;
 
-  console.log("datata=====", workflowDetails, data)
+  console.log("datata=====", workflowDetails, data, isArchitect)
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
@@ -330,7 +335,36 @@ console.log("building category here: & fileNo", usage,fileno);
   const handleMobileNumberChange = (e) => {
     setMobileNumber(e.target.value)
   }
+  const requestor = userInfo?.info?.mobileNumber;
+console.log(requestor); 
 
+    const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
+
+
+  console.log('LicenseData', LicenseData)
+
+  let stakeholderAddress="";
+
+if (!LicenseDataLoading && requestor) {
+  const matchedLicense = LicenseData?.Licenses?.find(
+    lic => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor
+  );
+
+  console.log('matchedLicense', matchedLicense)
+  if (matchedLicense) {
+    const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
+
+stakeholderAddress = [
+  owner?.permanentAddress,
+  owner?.permanentCity,
+  owner?.permanentDistrict,
+  owner?.permanentPinCode
+]
+.filter(Boolean) 
+.join(", ");
+
+console.log(stakeholderAddress,"stakeholderAddress");  }
+}
   const handleGetOTPClick = async () => {
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
@@ -657,11 +691,10 @@ useEffect(() => {
   }
 
   async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-    const currentDate = new Date()
-    data.applicationData.additionalDetails.runDate = convertDateToEpoch(
-      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate(),
-    )
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno}
+const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+
+    console.log('nowIST', nowIST)
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST}
     console.log('requestData', requestData)
     let count = 0
 
@@ -677,13 +710,16 @@ useEffect(() => {
         count = 1
       }
     }
+    if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+      requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+    }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
       requestData.additionalDetails.permitData =
         "The plot has been officially regularized under No. " +
         requestData?.additionalDetails?.NocNumber +
         "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn +  " , registered in the name of "+  requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
-        state +
+        requestData?.additionalDetails?.UlbName +
         ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData =
@@ -1338,7 +1374,7 @@ useEffect(() => {
     }
   }
 
-  if (isLoading || isEnableLoader || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees || apiLoading) {
+  if (isLoading || isEnableLoader ||LicenseDataLoading || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees || apiLoading) {
     return <Loader />
   }
 
@@ -1980,7 +2016,8 @@ useEffect(() => {
                   <Card>
                     <Fragment>
                       <div id="timeline">
-                        <BPAApplicationTimeline application={data?.applicationData} id={id} />
+                        {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
+                        <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
                         {!workflowDetails?.isLoading &&
                           workflowDetails?.data?.newNextAction?.length > 0 &&
                           !isFromSendBack &&
@@ -1997,7 +2034,8 @@ useEffect(() => {
                             />
                           )}
                       </div>
-                      {!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
+                      {((workflowDetails?.data?.actionState?.applicationStatus === "CITIZEN_APPROVAL_INPROCESS" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_SANC_FEE_PAYMENT" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_APPL_FEE") && !isArchitect) &&
+                        <div>{!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
                         //removed this styles to fix the action button in application details UM-5347
                         <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                         >
@@ -2046,6 +2084,59 @@ useEffect(() => {
                           </div>
                         </ActionBar>
                       )}
+                      </div>}
+                      {(workflowDetails?.data?.actionState?.applicationStatus != "CITIZEN_APPROVAL_INPROCESS" && isArchitect) &&
+                        <div>{!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
+                        //removed this styles to fix the action button in application details UM-5347
+                        <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
+                        >
+                          <div style={{ width: "100%" }}>
+                            {displayMenu && workflowDetails?.data?.newNextAction ? (
+                              <Menu
+                                style={{minWidth: "310px" }}
+                                localeKeyPrefix={"WF_BPA_ACTION"}
+                                options={workflowDetails?.data?.newNextAction.map((action) => action.action)}
+                                t={t}
+                                onSelect={onActionSelect}
+                              />
+                            ) : null}
+                            <SubmitBar
+                            /*style={{ width: "100%" }}*/ disabled={
+                                false
+                                // Original condition commented out:
+                                // checkForSubmitDisable(isFromSendBack, isTocAccepted) ||
+                                // (workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING"
+                                //   ? !agree || !isOTPVerified || !citizenvalidations
+                                //   : false)
+                              }
+                              label={t("ES_COMMON_TAKE_ACTION")}
+                              onSubmit={() => setDisplayMenu(!displayMenu)}
+                            />
+                          </div>
+                        </ActionBar>
+                      )}
+                      {!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length == 1 && (
+                        //removed this style to fix the action button in application details UM-5347
+                        <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
+                        >
+                          <div style={{ width: "100%" }}>
+                            <button
+                              style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
+                              className="submit-bar"
+                              disabled={false}
+                              name={workflowDetails?.data?.newNextAction?.[0]?.action}
+                              value={workflowDetails?.data?.newNextAction?.[0]?.action}
+                              onClick={(e) => {
+                                onActionSelect(e.target.value)
+                              }}
+                            >
+                              {t(`WF_BPA_${workflowDetails?.data?.newNextAction?.[0]?.action}`)}
+                            </button>
+                          </div>
+                        </ActionBar>
+                      )}
+                        </div>
+                      }
                     </Fragment>
                   </Card>
                 )}

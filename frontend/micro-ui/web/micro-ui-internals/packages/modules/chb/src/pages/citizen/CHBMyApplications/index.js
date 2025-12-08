@@ -51,17 +51,17 @@ export const CHBMyApplications = () => {
     <React.Fragment>
       <Header>{`${t("CHB_MY_APPLICATION_HEADER")} (${filteredApplications.length})`}</Header>
       <div>
-        {filteredApplications.length > 0 &&
-          filteredApplications.map((application, index) => (
+        {filteredApplications?.length > 0 &&
+          filteredApplications?.map((application, index) => (
             <div key={index}>
               <ChbApplication application={application} tenantId={tenantId} buttonLabel={t("CHB_SUMMARY")} />
             </div>
           ))}
-        {filteredApplications.length === 0 && !isLoading && (
+        {filteredApplications?.length === 0 && !isLoading && (
           <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>
         )}
 
-        {filteredApplications.length !== 0 && data?.count > t1 && (
+        {filteredApplications?.length !== 0 && data?.count > t1 && (
           <div style={{ marginLeft: "16px", marginTop: "16px" }}>
             <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}

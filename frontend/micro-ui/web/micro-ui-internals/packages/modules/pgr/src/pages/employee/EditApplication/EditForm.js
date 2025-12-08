@@ -13,7 +13,6 @@ const EditForm = ({ applicationData, details ,complaintDetails}) => {
   complaintDetails.workflow.assignes =  null;
   complaintDetails.workflow.comments = null;
   complaintDetails.workflow.verificationDocuments= [];
-  console.log("complaintDetails_inside_edit",complaintDetails)
   const { t } = useTranslation();
   const history = useHistory();
   const [canSubmit, setSubmitValve] = useState(true);

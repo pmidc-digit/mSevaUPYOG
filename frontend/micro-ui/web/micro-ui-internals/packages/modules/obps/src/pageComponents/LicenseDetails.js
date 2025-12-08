@@ -8,7 +8,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   // const userInfo = Digit.UserService.getUser();
   const userInfo = Digit.UserService.getUser();
   let validation = {};
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("Citizen.tenant-id");
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
   const [disable, setDisable] = useState({
@@ -30,7 +30,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     return nameParts.length ? nameParts : "";
   });
 
-  console.log("disable state", disable);
+  console.log("disable state", disable, userDetails, tenantId);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);

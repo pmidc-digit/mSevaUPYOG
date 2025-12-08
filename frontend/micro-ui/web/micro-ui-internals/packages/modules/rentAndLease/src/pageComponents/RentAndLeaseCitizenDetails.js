@@ -72,16 +72,17 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       // Document: [],
       ownerInfo: applicants?.map((a) => {
         return {
-          firstName: a?.name,
-          lastName: a?.name,
-          middleName: a?.name,
+          // firstName: a?.name,
+          // middleName: a?.name,
+          // lastName: a?.name,
           // gender: a?.gender || "male", // default if not captured
-          mobileNo: a?.mobileNumber,
-          emailId: a?.emailId,
           // isPrimaryOwner: true,
           // ownerType: a.ownerType || "INDIVIDUAL",
           // ownershipPercentage: Math?.floor(100 / applicants.length),
           // relationship: a?.relationship || "SELF",
+          name: a?.name,
+          mobileNo: a?.mobileNumber,
+          emailId: a?.emailId,
           correspondenceAddress: {
             pinCode: a?.pincode,
             city: a?.city || "",
@@ -129,7 +130,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     try {
       // Call create API
       const response = await Digit.RentAndLeaseService.create({ allotmentDetails: payload }, tenantId);
-     
+
       const status = response?.responseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
@@ -182,9 +183,11 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       const user = userData?.user?.[0] || {};
+      console.log("user", user);
       setValue(`applicants.${index}.name`, user.name || "", { shouldValidate: true });
       setValue(`applicants.${index}.emailId`, user.emailId || "", { shouldValidate: true });
-      setValue(`applicants.${index}.address`, user.permanentAddress || "", { shouldValidate: true });
+      setValue(`applicants.${index}.address`, user.permanentAddress || user?.correspondenceAddress || "", { shouldValidate: true });
+      setValue(`applicants.${index}.pincode`, user.permanentPinCode || user?.correspondencePinCode || "", { shouldValidate: true });
     } catch (error) {
       console.error(error);
     } finally {
@@ -308,6 +311,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                   render={({ value, onChange, onBlur }) => (
                     <TextInput
                       value={value}
+                      disabled={Boolean(value)}
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={(e) => {
                         onBlur(e);
@@ -335,6 +339,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                     <TextInput
                       value={value}
                       onChange={(e) => onChange(e.target.value)}
+                      disabled={Boolean(value)}
                       onBlur={(e) => {
                         onBlur(e);
                         trigger(`applicants.${index}.emailId`);
@@ -360,6 +365,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                   render={({ value, onChange, onBlur }) => (
                     <TextArea
                       value={value}
+                      disabled={Boolean(value)}
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={(e) => {
                         onBlur(e);
@@ -392,6 +398,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                   render={({ value, onChange, onBlur }) => (
                     <TextInput
                       value={value}
+                      disabled={Boolean(value)}
                       maxlength={6}
                       onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
                       onBlur={(e) => {

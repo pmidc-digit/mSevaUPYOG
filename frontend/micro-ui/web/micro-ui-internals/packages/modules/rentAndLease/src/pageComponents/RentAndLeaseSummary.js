@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardLabel } from "@mseva/digit-ui-react-components";
+import { Card, CardLabel, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useSelector } from "react-redux";
-import RentAndLeaseDocument from "./RentAndLeaseDocument";
+import RALDocuments from "../components/RALDocument";
 
 function RentAndLeaseSummary({ t }) {
   const formData = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {});
@@ -12,6 +12,7 @@ function RentAndLeaseSummary({ t }) {
     : [];
 
   const property = formData?.propertyDetails || {};
+  console.log('property', property)
   const docs = formData?.documents?.documents?.documents || [];
 
   const sectionStyle = {
@@ -76,10 +77,10 @@ function RentAndLeaseSummary({ t }) {
     // propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
     propertyId: t("RENT_LEASE_PROPERTY_ID"),
     propertyName: t("RAL_LEASE_SELECTED_PROPERTY"),
-    usageCategory: t("RAL_LEASE_USAGE_CATEGORY"),
+    allotmentType: t("RAL_LEASE_USAGE_CATEGORY"),
     propertySizeOrArea: t("RAL_LEASE_PROPERTY_AREA"),
     address: t("RAL_LEASE_PROPERTY_ADDRESS"),
-    propertySpecific: t("RENT_LEASE_PROPERTY_SPECIFIC"),
+    propertyType: t("RENT_LEASE_PROPERTY_SPECIFIC"),
     locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
     securityDeposit: t("SECURITY_DEPOSIT"),
@@ -148,16 +149,12 @@ function RentAndLeaseSummary({ t }) {
           </div>
 
           <div>
-            {Array.isArray(docs) && docs.length > 0 ? (
+            {Array.isArray(docs) && docs?.length > 0 ? (
               <div style={documentsContainerStyle}>
-                {docs.map((doc, index) => (
+                {docs?.map((doc, index) => (
                   <div key={index} style={documentCardStyle}>
-                    <RentAndLeaseDocument
-                      applicationdetail={{
-                        documents: [doc],
-                        applicationNumber: formData?.CreatedResponse?.applicationNumber || formData?.responseData?.[0]?.applicationNumber,
-                      }}
-                    />
+                     <RALDocuments value={formData?.documents} Code={doc?.documentType} index={index} />
+                     <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
                   </div>
                 ))}
               </div>

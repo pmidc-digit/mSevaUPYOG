@@ -17,9 +17,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+
   const currentStepData = useSelector(function (state) {
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   });
+
+   const applicationNumber =  currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber
+
 
   console.log("currentStepDataINFourth", currentStepData);
 
@@ -77,14 +81,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             onGoToRentAndLease();
           }, 1000);
         } else {
-          console.log("res", res);
-          // history.replace(
-          //   `/digit-ui/${isCitizen ? "citizen" : "employee"}/rent-and-lease/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
-          //   { applicationData: currentStepData?.CreatedResponse }
-          // );
+          history.replace(
+            `/digit-ui/${isCitizen ? "citizen" : "employee"}/rentandlease/response/${applicationNumber}`,
+            { applicationData: currentStepData?.CreatedResponse }
+          );
         }
       } else {
-        triggerToast(res?.Errors?.message || "Update failed", false);
+        triggerToast(res?.Errors?.message || "Update failed", true);
       }
     } catch (error) {
       triggerToast(error?.message || "Update failed", true);
@@ -119,7 +122,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     // Adapt this to your actual service call
     const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: formData }, tenantId);
     console.log("response", response);
-    if (response?.ResponseInfo?.status === "successful") {
+    if (response?.responseInfo?.status === "successful") {
       return { isSuccess: true, response };
     } else {
       return { isSuccess: false, response };
@@ -140,13 +143,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
-   const businessService = "RENT-N-LEASE";
-   const appNumber =  currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber
+   const businessService = "RENT_N_LEASE_NEW";
    console.log( currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber," currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber")
   // Adapt workflow details hook for RentAndLease
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
-    id: appNumber,
+    id: applicationNumber,
     moduleCode: businessService,
   });
 

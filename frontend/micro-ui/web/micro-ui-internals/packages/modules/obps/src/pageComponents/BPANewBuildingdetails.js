@@ -1,12 +1,14 @@
 
 
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker, Toast } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
+import { EmployeeData, getNOCSanctionLetter } from "../utils";
+import { set } from "lodash";
 
 
 
@@ -105,6 +107,10 @@ useEffect(() => {
     });
 }, [])
 
+useEffect(() => {
+  console.log("loader",loader)
+}, [loader])
+
 useEffect(()=>{
   if(UlbName === "" && currentStepData?.LocationDetails?.selectedCity?.city?.name){
     setUlbName(currentStepData?.LocationDetails?.selectedCity?.city?.name)
@@ -142,9 +148,14 @@ useEffect(()=>{
       newErrors.nameofApprovedcolony = t("Approved Colony Name is required")
     }
 
-    if (approvedColony?.code === "NO" && !NocNumber && !uploadedFile) {
-      newErrors.NocNumber = t("NOC Number or NOC Document is required")
-    }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName.trim() === ""){
+    if (approvedColony?.code === "NO" && !NocNumber) {
+      newErrors.NocNumber = t("NOC Number is required")
+    }
+    
+    if(approvedColony?.code === "NO" && !uploadedFile){
+      newErrors.NocDocument = t("NOC Document is required")
+    }
+    if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName.trim() === ""){
       newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Required")
     }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName && !nameRegex.test(applicantOwnerOrFirmName.trim())){
       newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Invalid")
@@ -203,12 +214,15 @@ if (anyYes && !ecbcCertificateFile) {
   const file = e.target.files[0];
   if (file) {
     try {
+      setLoader(true)
       const response = await Digit.UploadServices.Filestorage("OBPS", file, Digit.ULBService.getStateId());
+      setLoader(false)
       if (response?.data?.files?.length > 0) {
         setEcbcCertificateFile(response.data.files[0].fileStoreId); // ✅ fileStoreId
         setEcbcCertificateFileObj(file); // optional for preview
       }
     } catch (err) {
+      setLoader(false)
       console.error("File upload failed", err);
     }
   }
@@ -236,10 +250,8 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (file && file?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, file: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (file.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, file: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
+        if (file.size >= 2000000) {
+          setErrors((prev) => ({ ...prev, NocDocument: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
           try {
@@ -252,7 +264,7 @@ if (anyYes && !ecbcCertificateFile) {
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, file: t("PT_FILE_UPLOAD_ERROR") }))
+              setErrors((prev) => ({ ...prev, NocDocument: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {
             setLoader(false);
@@ -265,10 +277,8 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (files && files?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${files?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, files: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (files.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, files: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
+        if (files.size >= 2000000) {
+          setErrors((prev) => ({ ...prev, greenuploadedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
           try {            
@@ -281,7 +291,7 @@ if (anyYes && !ecbcCertificateFile) {
             if (response?.data?.files?.length > 0) {
               setGreenUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, files: t("PT_FILE_UPLOAD_ERROR") }))
+              setErrors((prev) => ({ ...prev, greenuploadedFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {
             setLoader(false);
@@ -294,9 +304,7 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (ecbcElectricalLoadFileObj && ecbcElectricalLoadFileObj?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${ecbcElectricalLoadFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (ecbcElectricalLoadFileObj.size >= 2000000) {
+        if (ecbcElectricalLoadFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
@@ -323,9 +331,7 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (ecbcDemandLoadFileObj && ecbcDemandLoadFileObj?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${ecbcDemandLoadFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (ecbcDemandLoadFileObj.size >= 2000000) {
+        if (ecbcDemandLoadFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
@@ -352,9 +358,7 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (ecbcAirConditionedFileObj && ecbcAirConditionedFileObj?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${ecbcAirConditionedFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (ecbcAirConditionedFileObj.size >= 2000000) {
+        if (ecbcAirConditionedFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
@@ -778,6 +782,27 @@ console.log("appDate", nocApprovedOn);
     setErrors((prev) => ({ ...prev, file: "" }))
   }
 
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, applicationDetails, ...params }) {
+    const application = applicationDetails?.Noc?.[0];
+    try {
+      if (!application) {
+        throw new Error("Noc Application data is missing");
+      }
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );
+
+      let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
+    setUploadedFile(response?.filestoreIds[0]);
+    setLoader(false);
+    // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    // window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      setLoader(false);
+      console.error("Sanction Letter download error:", error);
+    }
+    
+  }
+
   async function onClick(e) {
     if(!NocNumber || NocNumber === ""){
       alert(t("NOC NUMBER IS REQUIRED BEFORE SEARCH"));
@@ -811,6 +836,15 @@ console.log("appDate", nocApprovedOn);
             setNocApprovedOn(`${y1}-${m1}-${d1}`)
           }          
         }
+        setLoader(true);
+        let EmpData = await EmployeeData(tenantId, NocNumber);
+        console.log("Employee Data", EmpData);
+
+        const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
+        if(reciept_data?.Payments?.length > 0){
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        }
+        setLoader(false);
         return;
       }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
         alert(t("NOC NOT APPROVED"));
@@ -1156,6 +1190,7 @@ console.log("appDate", nocApprovedOn);
                 <SearchIcon />
               </div>
             </div>
+            {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
             <CardLabel>{`${t("BPA_NOC_APPLICANT_NAME")} *`}</CardLabel>
             <TextInput
                 t={t}
@@ -1217,7 +1252,6 @@ console.log("appDate", nocApprovedOn);
                 {errors.nocApprovedOn && <ErrorMessage error={errors.nocApprovedOn} />}
               </div>         
             
-            <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
             <div style={{marginBottom: "15px"}}>
             <CustomUploadFile
               id={"noc-doc"}
@@ -1229,8 +1263,9 @@ console.log("appDate", nocApprovedOn);
               uploadedFile={uploadedFile}
               message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.file}
+              accept="image/*,.pdf"
             />
-            {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
+            {errors.NocDocument && <ErrorMessage error={errors.NocDocument} />}
             </div>
           </React.Fragment>
         )}
@@ -1359,7 +1394,9 @@ console.log("appDate", nocApprovedOn);
               uploadedFile={greenuploadedFile}
               message={greenuploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.files}
+              accept="image/*,.pdf"
             />
+            {errors.greenuploadedFile && <ErrorMessage error={errors.greenuploadedFile} />}
             <br />
 
             <CardLabel>{`${t("BPA_SELECT_RATINGS")} *`}</CardLabel>
@@ -1503,8 +1540,7 @@ console.log("appDate", nocApprovedOn);
           </div>
         )}
       </div>
-    </FormStep>
-    {(loader) && <LoaderNew page={true} />}
+    </FormStep>    
 
     <ActionBar>
         <SubmitBar
@@ -1519,6 +1555,7 @@ console.log("appDate", nocApprovedOn);
         />
       <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading}/>
     </ActionBar>
+    {loader && <LoaderNew page={true} />}
   </div>
   )
 }

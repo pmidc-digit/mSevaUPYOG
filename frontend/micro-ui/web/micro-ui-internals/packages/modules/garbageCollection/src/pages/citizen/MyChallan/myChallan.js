@@ -13,79 +13,53 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
+  const [filters, setFilters] = useState(null);
+  const [getCount, setCount] = useState();
 
-  let result;
+  let filter = window.location.href.split("/").pop();
+  let t1;
+  let off;
+  if (!isNaN(parseInt(filter))) {
+    off = filter;
+    t1 = parseInt(filter) + 50;
+  } else {
+    t1 = 4;
+  }
 
-  const fetchChallans = async (filters) => {
+  let initialFilters = !isNaN(parseInt(filter))
+    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
+    : { limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
+
+  useEffect(() => {
+    setFilters(initialFilters);
+  }, [filter, tenantId]);
+
+  const fetchChallans = async () => {
     setLoader(true);
     try {
-      const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("result", responseData);
-      setChallanData(responseData?.challans);
+      const responseData = await Digit.GCService.search({ tenantId, filters });
+      setCount(responseData?.TotalCount);
+      setChallanData(responseData?.GarbageConnection);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
 
   useEffect(() => {
-    const filters = {};
-    filters.mobileNumber = userInfo?.info?.mobileNumber;
-    fetchChallans(filters);
-  }, []);
-
-  const onSubmit = (data) => {
-    history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
-  };
-
-  const payment = {};
-
-  function getBillingPeriod(fromPeriod, toPeriod) {
-    if (fromPeriod && toPeriod) {
-      let from =
-        new Date(fromPeriod).getDate() +
-        " " +
-        Digit.Utils.date.monthNames[new Date(fromPeriod).getMonth()] +
-        " " +
-        new Date(fromPeriod).getFullYear();
-      let to =
-        new Date(toPeriod).getDate() + " " + Digit.Utils.date.monthNames[new Date(toPeriod).getMonth()] + " " + new Date(toPeriod).getFullYear();
-      return from + " - " + to;
-    } else return "N/A";
-  }
-
-  /* paymentDetails?.data?.Bill?.forEach((element) => {
-    if (element?.consumerCode) {
-      payment[element?.consumerCode] = {
-        total_due: element?.totalAmount,
-        bil_due__date: new Date(element?.billDate).toDateString(),
-      };
-    }
-  }); */
-
-  // const searchResults = getChallanData?.map((bill) => {
-  //   return {
-  //     businesService: bill?.businessService,
-  //     total_due: bill?.amount ? bill?.amount : 0,
-  //     OwnerName: bill.citizen?.name || t("CS_NA"),
-  //     status: bill.applicationStatus,
-  //     // BillingPeriod: getBillingPeriod(bill.billDetails[0].fromPeriod, bill.billDetails[0].toPeriod),
-  //     //bil_due__date: bill.billDetails[0].expiryDate || 0,
-  //     // bil_due__date: `${
-  //     //   new Date(bill.billDetails[0].expiryDate).getDate().toString() +
-  //     //   "/" +
-  //     //   (new Date(bill.billDetails[0].expiryDate).getMonth() + 1).toString() +
-  //     //   "/" +
-  //     //   new Date(bill.billDetails[0].expiryDate).getFullYear().toString()
-  //     // }`,
-  //     ChannelNo: bill?.challanNo || t("CS_NA"),
-  //     // ServiceCategory: bill.businessService ? bill.businessService.split(".")[bill.businessService.split(".").length - 1] : t("CS_NA"),
-  //   };
-  // });
+    if (filters) fetchChallans();
+  }, [filters]);
 
   const handleMakePayment = (id) => {
-    history.push(`/digit-ui/citizen/payment/collect/Challan_Generation/${id}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
+  };
+
+  const handleLoadMore = () => {
+    setFilters((prev) => ({
+      ...prev,
+      // offset: prev.offset + 5, // 🔹 Add 5 more each click
+      limit: Number(prev.limit) + 5, // Load next 5 items only
+    }));
   };
 
   return (
@@ -100,14 +74,9 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         {getChallanData?.map((bill, index) => {
           return (
             <Card key={index}>
-              <KeyNote
-                keyValue={t("CHALLAN_AMOUNT")}
-                // note={bill?.amount ? bill?.amount?.[0]?.amount || bill?.challanAmount : 0}
-                note={Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0)}
-              />
-              <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
-              <KeyNote keyValue={t("STATUS")} note={t(bill.challanStatus)} />
-              <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
+              <KeyNote keyValue={t("GC_APPLICATION_NO")} note={bill?.applicationNo || t("CS_NA")} />
+              <KeyNote keyValue={t("STATUS")} note={t(bill.applicationStatus)} />
+              <KeyNote keyValue={t("GC_CONNECTION_TYPE")} note={t(`${bill.connectionCategory || t("CS_NA")}`)} />
               <div
                 style={{
                   display: "flex",
@@ -115,32 +84,28 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                 }}
               >
                 {
-                  <Link to={`/digit-ui/citizen/challangeneration/application/${bill?.challanNo}/${bill?.tenantId}`}>
-                    <SubmitBar
-                      label={t("CS_VIEW_DETAILS")}
-                      //  label={CS_VIEW_DETAILS}
-                    />
+                  <Link to={`/digit-ui/citizen/garbagecollection/application/${bill?.applicationNo}/${bill?.tenantId}`}>
+                    <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
-                {bill.applicationStatus == "ACTIVE" && (
-                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.challanNo)} />
+                {bill.applicationStatus == "PENDING_FOR_PAYMENT" && (
+                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.applicationNo)} />
                 )}
               </div>
             </Card>
           );
         })}
 
-        {/* <div>
-          <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel} onSubmit={onSubmit} />
-        </div> */}
-      </div>
+        {getChallanData?.length === 0 && !loader && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>}
 
-      {/* <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
-        <p>{t("CHALLAN_NOT_ABLE_TO_FIND_BILL_MSG")} </p>
-        <p className="link">
-          <Link to="/digit-ui/citizen/mcollect/search">{t("UC_CLICK_HERE_TO_SEARCH_LINK")}</Link>
-        </p>
-      </div> */}
+        {getChallanData?.length !== 0 && getCount > t1 && (
+          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
+            <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
+              {t("CHB_LOAD_MORE_MSG")}
+            </span>
+          </div>
+        )}
+      </div>
       {loader && <Loader page={true} />}
     </div>
   );

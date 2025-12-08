@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Loader, SubmitBar, Table, Dropdown, SearchField, Card } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 
 const ActiveAndOpenSurveys = (props) => {
+  const tableWrapperRef = useRef(null);
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
@@ -47,6 +48,16 @@ const ActiveAndOpenSurveys = (props) => {
   });
   const formValues = watch();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  useEffect(() => {
+    // wait for Digit Table to render DOM
+    const el = tableWrapperRef.current?.querySelector(".table");
+    if (el) {
+      el.style.overflowX = "auto";
+      el.style.overflowY = "hidden";
+      el.style.WebkitOverflowScrolling = "touch";
+    }
+  }, []);
 
   const columns = useMemo(() => {
     return [
@@ -139,6 +150,10 @@ const ActiveAndOpenSurveys = (props) => {
     });
   };
 
+  let isMobile = Digit.Utils.browser.isMobile();
+
+  console.log("isMobile", isMobile);
+
   return (
     <div>
       {tenantId === "pb.punjab" && window.location.href.includes("/employee") ? (
@@ -179,31 +194,73 @@ const ActiveAndOpenSurveys = (props) => {
           </form>
         </Card>
       ) : null}
-      <Table
-        t={t}
-        data={data}
-        totalRecords={count}
-        columns={columns}
-        getCellProps={(cellInfo) => {
-          return {
-            style: {
-              minWidth: "300px", //cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-            },
-          };
-        }}
-        noResultsMessage="No Questions found"
-        inboxStyles={{ overflowX: "scroll", overflowY: "hidden" }}
-        // onPageSizeChange={onPageSizeChange}
-        // currentPage={getValues("offset") / getValues("limit")}
-        // onNextPage={nextPage}
-        // onPrevPage={previousPage}
-        // pageSizeLimit={getValues("limit")}
-        // onSort={onSort}
-        // disableSort={false}
-        // sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-      />
+      <div>
+        {isMobile ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {data?.length > 0 ? (
+              data?.map((survey, index) => (
+                <Card
+                  key={index}
+                  style={{
+                    padding: "12px",
+                    borderRadius: "8px",
+                    boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{survey?.surveyTitle}</h3>
+
+                  <p style={{ margin: "4px 0" }}>
+                    <b>Start:</b> {survey?.startDate ? format(new Date(survey?.startDate), "dd/MM/yyyy") : "NA"}
+                  </p>
+
+                  <p style={{ margin: "4px 0" }}>
+                    <b>End:</b> {survey?.endDate ? format(new Date(survey?.endDate), "dd/MM/yyyy") : "NA"}
+                  </p>
+
+                  <SubmitBar label={t("Start Survey")} onSubmit={() => handleStartSurvey(survey)} />
+                </Card>
+              ))
+            ) : (
+              <Card>{t("No Questions found")}</Card>
+            )}
+          </div>
+        ) : (
+          <Table
+            t={t}
+            data={data}
+            totalRecords={count}
+            columns={columns}
+            getCellProps={(cellInfo) => {
+              return {
+                style: {
+                  minWidth: "300px",
+                  padding: "20px 18px",
+                  fontSize: "16px",
+                },
+              };
+            }}
+            noResultsMessage="No Questions found"
+          />
+        )}
+      </div>
+      {/* <div>
+        <Table
+          t={t}
+          data={data}
+          totalRecords={count}
+          columns={columns}
+          getCellProps={(cellInfo) => {
+            return {
+              style: {
+                minWidth: "300px", //cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                padding: "20px 18px",
+                fontSize: "16px",
+              },
+            };
+          }}
+          noResultsMessage="No Questions found"
+        />
+      </div> */}
       {loading && <Loader />}
     </div>
   );

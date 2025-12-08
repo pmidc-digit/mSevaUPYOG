@@ -1,5 +1,4 @@
 import {
-  Header,
   Row,
   StatusTable,
   Card,
@@ -8,73 +7,21 @@ import {
   SubmitBar,
   Menu,
   Toast,
-  ConnectingCheckPoints,
-  CheckPoint,
-  TLTimeLine,
-  DisplayPhotos,
-  StarRated,
   FilterFormField,
   RadioButtons,
   CardLabel,
   TextInput,
-  LabelFieldPair,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NDCDocument from "../../../pageComponents/NDCDocument";
-import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { Loader } from "../../../components/Loader";
+import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
 
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
-
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
-
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
 
 const availableOptions = [
   { code: "yes", name: "Yes" },
@@ -135,7 +82,6 @@ const ApplicationOverview = () => {
     role: "EMPLOYEE",
   });
 
-  console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -613,26 +559,8 @@ const ApplicationOverview = () => {
           )}
         </div>
       </Card>
-
-      {workflowDetails?.data?.timeline && (
-        <Card>
-          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-          {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-          ) : (
-            <ConnectingCheckPoints>
-              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                <CheckPoint
-                  keyValue={index}
-                  isCompleted={index === 0}
-                  label={t(checkpoint.status)}
-                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                />
-              ))}
-            </ConnectingCheckPoints>
-          )}
-        </Card>
-      )}
+      <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+       <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (
         <ActionBar>

@@ -200,12 +200,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       incrementApplicable: "",
       incrementPercentage: "",
       incrementCycle: "",
-      gstApplicable: false,
-      cowCessApplicable: false,
-      termsAndConditions: "",
-      amountToBeRefunded: "",
       selectedProperty: null,
       duration: "", // 👈 new field
+      // taxApplicable: false,
+      // cowCessApplicable: false,
+      // termsAndConditions: "",
+      // amountToBeRefunded: "",
       // address: "",
       // geoLocation: null,
       // propertyImage: "",
@@ -224,9 +224,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     if (mdmsPropertyData) {
       // Start with all properties from MDMS
       let properties = mdmsPropertyData;
-
-      console.log("selectedPropertyType", selectedPropertyType, selectedPropertySpecific, selectedLocationType);
-
       if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
         properties = properties.filter(
           (p) =>
@@ -239,20 +236,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       setFilteredProperties(properties);
     }
   }, [mdmsPropertyData, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
-
-  // useEffect(() => {
-  //   if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
-  //     const filtered = mockProperties.filter(
-  //       (p) =>
-  //         p.propertyType === selectedPropertyType?.code &&
-  //         p.propertySpecific === selectedPropertySpecific?.code &&
-  //         p.locationType === selectedLocationType?.code
-  //     );
-  //     setFilteredProperties(filtered);
-  //   } else {
-  //     setFilteredProperties(filteredProperties);
-  //   }
-  // }, [selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
   const todayISO = new Date().toISOString().split("T")[0];
 
@@ -273,6 +256,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       "penaltyType",
       "latePayment",
       "refundApplicableOnDiscontinuation",
+      // "cowCessApplicable",
+      // "taxApplicable"
     ];
 
     setValue("selectedProperty", property);
@@ -355,9 +340,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };
-  const checkStyles = { marginBottom: "15px" };
-  const radioStyles = { width: "18px", height: "18px", cursor: "pointer" };
-  const wrapper = { display: "flex", alignItems: "center", gap: "10px", margin: "10px 0px 20px 0px" };
+  // const checkStyles = { marginBottom: "15px" };
+  // const radioStyles = { width: "18px", height: "18px", cursor: "pointer" };
+  // const wrapper = { display: "flex", alignItems: "center", gap: "10px", margin: "10px 0px 20px 0px" };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -630,7 +615,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {errors.latePayment && <CardLabelError style={errorStyle}>{getErrorMessage("latePayment")}</CardLabelError>}
 
       {/* Terms & Conditions */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>
           {t("TERMS_AND_CONDITIONS")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
@@ -643,10 +628,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.termsAndConditions && <CardLabelError style={errorStyle}>{getErrorMessage("termsAndConditions")}</CardLabelError>}
+      {errors.termsAndConditions && <CardLabelError style={errorStyle}>{getErrorMessage("termsAndConditions")}</CardLabelError>} */}
 
       {/* Refund Applicable */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>
           {t("REFUND_APPLICABLE")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
@@ -666,46 +651,30 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       </LabelFieldPair>
       {errors.refundApplicableOnDiscontinuation && (
         <CardLabelError style={errorStyle}>{getErrorMessage("refundApplicableOnDiscontinuation")}</CardLabelError>
-      )}
+      )} */}
 
-      {/* Amount to be Refunded */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("AMOUNT_TO_BE_REFUNDED")}
-          {/* <span style={mandatoryStyle}>*</span> */}
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="amountToBeRefunded"
-            // rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
-          />
-        </div>
-      </LabelFieldPair>
+      
 
       {/* GST Applicable */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>
           {t("GST_APPLICABLE")}
-          {/* <span style={mandatoryStyle}>*</span> */}
         </CardLabel>
         <div className="form-field" style={{ checkStyles }}>
           <Controller
             control={control}
-            name="gstApplicable"
+            name="taxApplicable"
             render={({ value, onChange }) => (
               <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} style={radioStyles} />
             )}
           />
         </div>
-      </LabelFieldPair>
+      </LabelFieldPair> */}
 
       {/* Cow Cess Applicable */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>
           {t("COW_CESS_APPLICABLE")}
-          {/* <span style={mandatoryStyle}>*</span> */}
         </CardLabel>
         <div className="form-field" style={{ checkStyles }}>
           <Controller
@@ -716,13 +685,29 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             )}
           />
         </div>
-      </LabelFieldPair>
+      </LabelFieldPair> */}
 
-      {/* Increment Applicable */}
+      {/* Amount to be Refunded */}
+       {/* 
       <LabelFieldPair>
         <CardLabel>
+          {t("AMOUNT_TO_BE_REFUNDED")}
+        </CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="amountToBeRefunded"
+            // rules={{ required: t("PTR_FIELD_REQUIRED") }}
+            render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
+          />
+        </div>
+      </LabelFieldPair>
+      */}
+
+      {/* Increment Applicable */}
+      {/* <LabelFieldPair>
+        <CardLabel>
           {t("INCREMENT_APPLICABLE")}
-          {/* <span style={mandatoryStyle}>*</span> */}
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -737,10 +722,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             )}
           />
         </div>
-      </LabelFieldPair>
+      </LabelFieldPair> */}
 
       {/* Increment Percentage */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>{t("INCREMENT_PERCENTAGE")}</CardLabel>
         <div className="form-field">
           <Controller
@@ -755,10 +740,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
           />
         </div>
-      </LabelFieldPair>
+      </LabelFieldPair> */}
 
       {/* Increment Cycle */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>{t("INCREMENT_CYCLE")}</CardLabel>
         <Controller
           control={control}
@@ -767,7 +752,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
             <Dropdown className="form-field" option={incrementCycleOptions} optionKey="name" selected={value} select={onChange} t={t} />
           )}
         />
-      </LabelFieldPair>
+      </LabelFieldPair> */}
 
       {/* Notification Preferences */}
       {/* <LabelFieldPair>

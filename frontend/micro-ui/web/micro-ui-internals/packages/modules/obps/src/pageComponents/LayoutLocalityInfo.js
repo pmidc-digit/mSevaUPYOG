@@ -67,6 +67,7 @@ useEffect(() => {
               defaultValue={currentStepData?.siteDetails?.layoutAreaType || null}
               render={(props) => (
                 <Dropdown 
+                t={t}
                   className="form-field" 
                   select={(e)=>{
                     props.onChange(e);
@@ -75,6 +76,7 @@ useEffect(() => {
                   selected={props.value} 
                   option={areaTypeOptions}
                   optionKey="name" />
+                  
               )}
             />
           )}
@@ -90,7 +92,7 @@ useEffect(() => {
             <Controller
               control={control}
               name="layoutSchemeName"
-               defaultValue={currentStepData?.siteDetails?.schemeType || ""}
+              defaultValue={currentStepData?.siteDetails?.schemeType.name || ""}
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
@@ -162,6 +164,7 @@ useEffect(() => {
                   selected={props.value}
                   option={nonSchemeTypeOptions}
                   optionKey="name"
+                  t={t}
                   />
                 )}
                />

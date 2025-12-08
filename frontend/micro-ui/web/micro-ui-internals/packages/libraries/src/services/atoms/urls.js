@@ -139,7 +139,7 @@ const Urls = {
   rentAndLease: {
     create: "/rl-services/allotment/_create",
     update: "/rl-services/allotment/_update",
-    search: "/rl-services/v1/_search",
+    search: "/rl-services/allotment/v1/_search",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
     search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",

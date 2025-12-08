@@ -63,7 +63,7 @@ function CLUSummary({ currentStepData: formData, t }) {
     <div style={pageStyle}>
       <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
       <div style={sectionStyle}>
-        <CLUImageView documents={formData?.documents?.documents?.documents} />
+        <CLUImageView documents={formData?.documents?.documents?.documents} ownerName={formData?.applicationDetails?.applicantOwnerOrFirmName} />
       </div>
 
       <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>

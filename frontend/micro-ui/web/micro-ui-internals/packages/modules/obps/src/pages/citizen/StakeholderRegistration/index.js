@@ -99,8 +99,8 @@ const StakeholderRegistration = () => {
     //   return;
     // }
 
-    const getDocsFin = JSON.parse(sessionStorage.getItem("FinalDataDoc"));
-    const finalDocVal = getDocsFin?.result?.Licenses?.[0];
+    const getDocsFin = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
+    const finalDocVal = getDocsFin?.value?.result?.Licenses?.[0];
 
     let setselectedAction;
 

@@ -11,7 +11,6 @@ export const ComplaintsList = (props) => {
   const mobileNumber = User.mobileNumber || User?.info?.mobileNumber || User?.info?.userInfo?.mobileNumber;
   //const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
   const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId ;
-  //console.log("tenantId in  ComplaintList of PGR: " , tenantId);
   const { t } = useTranslation();
   const { path, url } = useRouteMatch();
   let { isLoading, error, data, revalidate } = Digit.Hooks.pgr.useComplaintsListByMobile(tenantId, mobileNumber);
@@ -37,7 +36,8 @@ export const ComplaintsList = (props) => {
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} 
+            className="Pgr-complaintList-error">
               {text}
             </p>
           ))}
@@ -49,7 +49,8 @@ export const ComplaintsList = (props) => {
         {t(LOCALE.NO_COMPLAINTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} 
+            className="Pgr-complaintList-noComplaints">
               {text}
             </p>
           ))}

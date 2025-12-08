@@ -399,7 +399,7 @@ const jsPdfGeneratorBPAREG = async ({
         height: 842,
       },
     ],
-    margin: [20, 20, 20, 20],
+    margin: [10, 10, 10, 10],
 
     header: {},
 
@@ -421,7 +421,92 @@ const jsPdfGeneratorBPAREG = async ({
     ],
     defaultStyle: {
       font: "Hind",
-      margin: [20, 10, 20, 10],
+      margin: [20, 5, 20, 5],
+    },
+  };
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+};
+
+
+const jsPdfGeneratorNewBPAREG = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  t = (text) => text,
+  imageURL,
+}) => {
+  const emailLeftMargin =
+    email?.length <= 15
+      ? 190
+      : email?.length <= 20
+      ? 150
+      : email?.length <= 25
+      ? 130
+      : email?.length <= 30
+      ? 90
+      : email?.length <= 35
+      ? 50
+      : email?.length <= 40
+      ? 10
+      : email?.length <= 45
+      ? 0
+      : email?.length <= 50
+      ? -20
+      : email?.length <= 55
+      ? -70
+      : email?.length <= 60
+      ? -100
+      : -60;
+
+  const baseUrl = window.location.origin;
+  
+  const module = applicationNumber.split("-")[1];
+  const splitURL = imageURL.split("filestore")?.[1];
+
+  const base64Image = await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`);
+
+  const dd = {
+    background: [
+      {
+        image: AcknowledgmentPage,
+        width: 595,
+        height: 842,
+      },
+    ],
+    margin: [10, 10, 10, 10],
+
+    header: {},
+
+    footer: function (currentPage, pageCount) {
+      return {
+        columns: [{ text: `Page ${currentPage}`, alignment: "right", margin: [0, -17, 50, 0], fontSize: 11, color: "#6f777c", font: "Hind" }],
+      };
+    },
+    content: [
+      ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createContent(details, applicationNumber, base64Image, phoneNumber, logo, tenantId, breakPageLimit),
+      {
+        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+        font: "Hind",
+        fontSize: 11,
+        color: "#6f777c",
+        margin: [10, 10],
+      },
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 0, 20, 0],
     },
   };
   pdfMake.vfs = Fonts;
@@ -637,6 +722,7 @@ export default {
   generate: jsPdfGenerator,
   generateNDC: jsPdfGeneratorNDC,
   generateBPAREG: jsPdfGeneratorBPAREG,
+  generateNewBPAREG: jsPdfGeneratorNewBPAREG,
   generatev1: jsPdfGeneratorv1,
   generateModifyPdf: jsPdfGeneratorForModifyPDF,
   generateBillAmendPDF,
@@ -1394,6 +1480,8 @@ function createHeader(headerDetails, logo, tenantId) {
 function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId, phoneNumber, breakPageLimit = null) {
   const detailsHeaders = [];
   let counter = 1;
+  console.log("details here are: ",details)
+  console.log("createcontent func here")
   details.forEach((detail, index) => {
     if (detail?.values?.length > 0) {
       const headerBody = [
@@ -1403,7 +1491,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
           color: "#454545",
           style: "header",
           fontSize: 14,
-          bold: true,
+          bold: true
         },
       ];
 
@@ -1415,7 +1503,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
               stack: [
                 {
                   style: "tableExample",
-                  margin: [10, 20, 10, 0],
+                  margin: [10, 5, 5, 0],
                   layout: "noBorders",
                   table: {
                     widths: counter === 1 ? ["70%", "30%"] : ["101.8%", "*"],
@@ -1431,7 +1519,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
                     image: qrCodeDataUrl,
                     width: 70,
                     alignment: "right",
-                    margin: [0, 10, 10, 0],
+                    margin: [0, 5, 5, 0],
                   },
                 ]
               : []),
@@ -1440,10 +1528,10 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
       } else {
         detailsHeaders.push({
           style: "tableExample",
-          margin: [10, 20, 10, 0],
+          margin: [10, 0, 5, 0],
           layout: "noBorders",
           table: {
-            widths: ["101.8%", "*"],
+            widths: [220, "*"],
             body: [[headerBody]],
           },
         });
@@ -1451,11 +1539,11 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
 
       counter++;
     }
-    if (detail?.isAttachments && detail.values) {
+    if (detail?.isAttachments && detail?.values) {
       detailsHeaders.push({
         style: "tableExample",
 
-        margin: [10, 0, 10, 0],
+        margin: [10, 0, 5, -5],
         table: {
           widths: ["40%", "*"],
           body: [
@@ -1472,33 +1560,31 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
         },
       });
     } else {
-      detail?.values?.map((indData, index) => {
+      if (detail?.values?.length > 0) {
+        const valueRows = detail.values.map(indData => [
+          {
+            text: indData?.title,
+            style: "header",
+            fontSize: 9,
+            margin: [10, -2, 0, -2]
+          },
+          {
+            text: indData?.value && indData?.value?.trim() !== "" ? `: ${indData?.value}` : "",
+            fontSize: 9,
+            margin: [6, -2, 0, -2] 
+          }
+        ]);
+
         detailsHeaders.push({
           style: "tableExample",
           layout: "noBorders",
-          margin: [10, 0, 10, 0],
+          margin: [10, 0, 5, 0],
           table: {
-            widths: ["40%", "*"],
-            body: [
-              [
-                {
-                  text: indData?.title,
-                  style: "header",
-                  fontSize: 10,
-                  //border:  index< detail?.values?.length-1  ?  [true, false, false,false]:index===detail?.values?.length-1 ? [true, false, false, true]:[] ,
-                },
-
-                {
-                  text: `:  ${indData?.value}`,
-                  //border: index< detail?.values?.length-1    ?  [false, false, true, false]:index===detail?.values?.length-1? [false, false, true, true] :[],
-                  //borderColor:borderColor,
-                  fontSize: 10,
-                },
-              ],
-            ],
-          },
+            widths: [220, "*"], 
+            body: valueRows        
+          }
         });
-      });
+      }
     }
   });
 

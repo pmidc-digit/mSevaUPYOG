@@ -6,7 +6,7 @@ import { useHistory, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Loader } from "../../../components/Loader";
 
-const MyChallanResult = ({ template, header, actionButtonLabel }) => {
+const MyProperties = ({ template, header, actionButtonLabel }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const userInfo = Digit.UserService.getUser();
@@ -14,15 +14,14 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
 
-
-  console.log("copming here",getChallanData);
+  console.log("copming here", getChallanData);
 
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
       const responseData = await Digit.RentAndLeaseService.search({ tenantId, filters });
       console.log("result", responseData);
-      setChallanData(responseData?.challans);
+      setChallanData(responseData?.AllotmentDetails);
       setLoader(false);
     } catch (error) {
       console.log("error", error);
@@ -101,10 +100,14 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         {getChallanData?.map((bill, index) => {
           return (
             <Card key={index}>
-              <KeyNote keyValue={t("CHALLAN_AMOUNT")} note={bill?.amount ? bill?.amount?.[0]?.amount : 0} />
-              <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
-              <KeyNote keyValue={t("STATUS")} note={t(bill.applicationStatus)} />
-              <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
+              <KeyNote keyValue={t("RAL_PROPERTY_AMOUNT")} note={bill?.amount ? bill?.amount?.[0]?.amount : 0} />
+              <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={bill?.applicationNumber || t("CS_NA")} />
+              <KeyNote keyValue={t("STATUS")} note={t(bill.status)} />
+              <KeyNote
+                keyValue={t("UC_OWNER_NAME_LABEL")}
+                note={bill?.OwnerInfo && bill?.OwnerInfo.length > 0 ? bill?.OwnerInfo.map((o) => o.name || t("CS_NA")).join(", ") : t("CS_NA")}
+              />
+
               <div
                 style={{
                   display: "flex",
@@ -112,14 +115,14 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                 }}
               >
                 {
-                  <Link to={`/digit-ui/citizen/rentandlease/property/${bill?.challanNo}/${bill?.tenantId}`}>
+                  <Link to={`/digit-ui/citizen/rentandlease/property/${bill?.applicationNumber}/${bill?.tenantId}`}>
                     <SubmitBar
                       label={t("CS_VIEW_DETAILS")}
                       //  label={CS_VIEW_DETAILS}
                     />
                   </Link>
                 }
-                {bill.applicationStatus == "ACTIVE" && (
+                {bill?.applicationStatus == "ACTIVE" && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.challanNo)} />
                 )}
               </div>
@@ -143,16 +146,16 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   );
 };
 
-MyChallanResult.propTypes = {
+MyProperties.propTypes = {
   template: PropTypes.any,
   header: PropTypes.string,
   actionButtonLabel: PropTypes.string,
 };
 
-MyChallanResult.defaultProps = {
+MyProperties.defaultProps = {
   template: [],
   header: null,
   actionButtonLabel: null,
 };
 
-export default MyChallanResult;
+export default MyProperties;

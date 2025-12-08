@@ -27,7 +27,7 @@ const RALResponse = (props) => {
           // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
           message={t("PTR_HEADER")}
           applicationNumber={RALCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`PTR__APPROVAL_NUMBER`)}
+          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`PTR_APPROVAL_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
@@ -35,7 +35,7 @@ const RALResponse = (props) => {
 
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          <SubmitBar label={t("CORE_COMMON_GO_TO_PTR")} onSubmit={onGoToPTR} />
+          <SubmitBar label={t("CORE_COMMON_GO_TO_RAL")} onSubmit={onGoToPTR} />
         </ActionBar>
       </Card>
     </div>

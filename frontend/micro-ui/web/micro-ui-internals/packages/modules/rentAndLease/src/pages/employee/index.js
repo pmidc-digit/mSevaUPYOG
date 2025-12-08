@@ -94,7 +94,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
           <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} />
-          <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
+          <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
           <PrivateRoute path={`${path}/response/:applicationNumber`} component={RALResponse} />
           <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />

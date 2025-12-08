@@ -9,7 +9,7 @@ import AddressDetails from "./pageComponents/AddressDetails";
 import ConsumerDetails from "./pageComponents/ConsumerDetails";
 import ServiceDetails from "./pageComponents/ServiceDetails";
 import CitizenApp from "./pages/citizen";
-import MyChallanResultsComponent from "./pages/citizen/MyChallan";
+import MyChallanResultsComponent from "./pages/citizen/MyProperties";
 import SearchChallanComponent from "./pages/citizen/SearchChallan";
 import SearchResultsComponent from "./pages/citizen/SearchResults";
 import EmployeeApp from "./pages/employee";
@@ -34,6 +34,7 @@ import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
 import CustomDatePicker from "./pageComponents/CustomDatePicker";
 import RALApplicationDetails from "./pages/citizen/RALApplicationDetails"
 import RALResponse from "./pageComponents/Reponse"
+import MyProperties from "./pages/citizen/MyProperties/myProperties"
 
 export const RentAndLeaseReducers = getRootReducer;
 
@@ -112,6 +113,7 @@ const componentsToRegister = {
   MCollectSearchChallanComponent: SearchChallanComponent,
   MCollectSearchResultsComponent: SearchResultsComponent,
   MCollectMyChallanResultsComponent: MyChallanResultsComponent,
+  MyProperties,
   SearchReceipt,
   SearchChallan,
   SearchBill,

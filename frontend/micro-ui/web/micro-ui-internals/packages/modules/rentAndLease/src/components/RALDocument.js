@@ -1,7 +1,7 @@
 import { Loader } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { pdfDocumentName, pdfDownloadLink } from "../utils";
+import { pdfDownloadLink } from "../utils";
 
 const PDFSvg = ({ width = 20, height = 20, style }) => (
   <svg style={style} xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 20 20" fill="gray">
@@ -9,10 +9,9 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
   </svg>
 );
 
-function RALDocument({ value = {}, Code, index }) {
+function RALDocuments({ value = {}, Code, index }) {
   const { t } = useTranslation();
-  const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
-  console.log("dataInNDCDocument", data);
+  const { isLoading,  data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
 
   const documents = value?.documents
     ? value.documents.documents
@@ -45,4 +44,4 @@ function RALDocument({ value = {}, Code, index }) {
   );
 }
 
-export default RALDocument;
+export default RALDocuments;

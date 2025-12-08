@@ -37,12 +37,12 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     try {
       const res = await onSubmit(currentStepData, actionStatus); // wait for the API response
       // Check if the API call was successful
-      const id = res?.response?.hallsBookingApplication?.[0]?.bookingNo;
+      const id = res?.response?.GarbageConnection?.[0]?.applicationNo;
       if (res?.isSuccess) {
         if (isCitizen) {
-          history.push("/digit-ui/citizen/chb/response/" + id);
+          history.push("/digit-ui/citizen/garbagecollection/response/" + id);
         } else {
-          history.push("/digit-ui/employee/chb/response/" + id);
+          history.push("/digit-ui/employee/garbagecollection/response/" + id);
         }
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
@@ -53,55 +53,28 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // onGoNext();
   };
 
-  function mapToNDCPayload(inputData, actionStatus) {
-    // Pick the source of truth for the application
-    const baseApplication = inputData?.venueDetails?.[0] || {};
-    const hallInfo = currentStepData?.ownerDetails?.hallsBookingApplication || {};
-
-    // Clone and modify workflow action
-    const updatedApplication = {
-      ...baseApplication,
-      ...hallInfo,
-      purpose: {
-        purpose: hallInfo?.purpose?.purpose?.code,
-      },
-      // purpose: hallInfo?.purpose?.purpose?.name,
-      workflow: {
-        ...baseApplication?.workflow,
-        action: actionStatus,
-      },
-      documents: [], // We'll populate below
-    };
-
-    (inputData?.documents?.documents?.documents || [])?.forEach((doc) => {
-      updatedApplication.documents.push({
-        documentdetailid: doc?.documentUid,
-        documentType: doc?.documentType,
-        fileStoreId: doc?.filestoreId,
-      });
-    });
-
-    // Final payload matches update API structure
-    const payload = {
-      hallsBookingApplication: updatedApplication,
-    };
-
-    return payload;
-  }
-
   const onSubmit = async (data, actionStatus) => {
-    const finalPayload = mapToNDCPayload(data, actionStatus);
     setLoader(true);
 
-    // return;
+    const payload = {
+      GarbageConnection: {
+        ...data?.venueDetails,
+        processInstance: {
+          ...data?.venueDetails?.processInstance,
+          action: actionStatus,
+        },
+      },
+    };
+
     try {
-      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
+      const response = await Digit.GCService.update(payload);
       setLoader(false);
       dispatch(RESET_GarbageAPPLICATION_FORM());
-      if (response?.responseInfo?.status == "SUCCESSFUL") {
-        return { isSuccess: true, response };
+      const id = response?.GarbageConnection?.[0]?.applicationNo;
+      if (isCitizen) {
+        history.push("/digit-ui/citizen/garbagecollection/response/" + id);
       } else {
-        return { isSuccess: false, response };
+        history.push("/digit-ui/employee/garbagecollection/response/" + id);
       }
     } catch (error) {
       setLoader(false);

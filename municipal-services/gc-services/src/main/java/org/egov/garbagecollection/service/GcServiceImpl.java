@@ -787,7 +787,7 @@ public GarbageConnectionRequest updateConnectionStatusBasedOnActionDisconnection
 	private List<GarbageConnection> getAllWaterApplications(GarbageConnectionRequest waterConnectionRequest) {
 		GarbageConnection waterConnection = waterConnectionRequest.getGarbageConnection();
 		SearchCriteria criteria = SearchCriteria.builder()
-				.connectionNumber(Stream.of(waterConnection.getConnectionNo().toString()).collect(Collectors.toSet()))
+				.applicationNumber(Stream.of(waterConnection.getApplicationNo().toString()).collect(Collectors.toSet()))
 				.build();
 		if (waterConnectionRequest.isDisconnectRequest() || !StringUtils.isEmpty(waterConnection.getConnectionNo()))
 			criteria.setIsInternalCall(true);

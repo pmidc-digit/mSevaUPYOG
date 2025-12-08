@@ -34,16 +34,16 @@ public class GcFieldValidator implements GcActionValidator {
 	private void handleDisconnectionRequest(GarbageConnectionRequest garbageConnectionRequest, Map<String, String> errorMap) {
 		if (GCConstants.EXECUTE_DISCONNECTION
 				.equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionType())) {
-				errorMap.put("INVALID_GARBAGE_CONNECTION_TYPE", "Connection type should not be empty");
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionType())) {
+//				errorMap.put("INVALID_GARBAGE_CONNECTION_TYPE", "Connection type should not be empty");
+//			}
 //			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection())) {
 //				errorMap.put("INVALID_WATER_SOURCE", "WaterConnection cannot be created  without water source");
 //			}
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()) ||
-					garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate().equals(GCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
-				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()) ||
+//					garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate().equals(GCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
+//				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
+//			}
 		}
 	}
 
@@ -72,9 +72,9 @@ public class GcFieldValidator implements GcActionValidator {
 		if (GCConstants.ACTIVATE_CONNECTION_CONST
 				.equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
 
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionType())) {
-				errorMap.put("INVALID_WATER_CONNECTION_TYPE", "Connection type should not be empty");
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionType())) {
+//				errorMap.put("INVALID_WATER_CONNECTION_TYPE", "Connection type should not be empty");
+//			}
 
 //			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getWaterSource())) {
 //				errorMap.put("INVALID_WATER_SOURCE", "WaterConnection cannot be created  without water source");
@@ -93,11 +93,11 @@ public class GcFieldValidator implements GcActionValidator {
 //				}
 //			}
 
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate())
-					|| garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()
-							.equals(GCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
-				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate())
+//					|| garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()
+//							.equals(GCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
+//				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
+//			}
 		}
 
 		if (GCConstants.APPROVE_CONNECTION_CONST
@@ -126,16 +126,16 @@ public class GcFieldValidator implements GcActionValidator {
 				.equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())
 				|| GCConstants.ACTION_INITIATE
 				.equals(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionType())) {
-				errorMap.put("INVALID_WATER_CONNECTION_TYPE", "Connection type should not be empty");
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionType())) {
+//				errorMap.put("INVALID_WATER_CONNECTION_TYPE", "Connection type should not be empty");
+//			}
 //			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getWaterSource())) {
 //				errorMap.put("INVALID_WATER_SOURCE", "WaterConnection cannot be created  without water source");
 //			}
-			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()) ||
-					garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate().equals(GCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
-				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
-			}
+//			if (StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate()) ||
+//					garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate().equals(GCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
+//				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
+//			}
 		}
 		if (GCConstants.SUBMIT_APPLICATION_CONST
 				.equals(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())
@@ -152,14 +152,14 @@ public class GcFieldValidator implements GcActionValidator {
 				//if (System.currentTimeMillis() > garbageConnectionRequest.getGarbageConnection().getDateEffectiveFrom()) {
 				//	errorMap.put("DATE_EFFECTIVE_FROM_IN_PAST", "Date effective from cannot be past");
 				//}
-				if ((garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate() != null)
-						&& (garbageConnectionRequest.getGarbageConnection()
-						.getConnectionExecutionDate() > garbageConnectionRequest.getGarbageConnection()
-						.getDateEffectiveFrom())) {
-
-					errorMap.put("DATE_EFFECTIVE_FROM_LESS_THAN_EXCECUTION_DATE",
-							"Date effective from cannot be before connection execution date");
-				}
+//				if ((garbageConnectionRequest.getGarbageConnection().getConnectionExecutionDate() != null)
+//						&& (garbageConnectionRequest.getGarbageConnection()
+//						.getConnectionExecutionDate() > garbageConnectionRequest.getGarbageConnection()
+//						.getDateEffectiveFrom())) {
+//
+//					errorMap.put("DATE_EFFECTIVE_FROM_LESS_THAN_EXCECUTION_DATE",
+//							"Date effective from cannot be before connection execution date");
+//				}
 //				if ((garbageConnectionRequest.getGarbageConnection().getMeterInstallationDate() != null)
 //						&& (garbageConnectionRequest.getGarbageConnection()
 //						.getMeterInstallationDate() > garbageConnectionRequest.getGarbageConnection()

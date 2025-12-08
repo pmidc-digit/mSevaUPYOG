@@ -249,25 +249,25 @@ const HRMSEMPMAPDetails = () => {
           </span>
         ),
       },
-      {
-        Header: t("HR_WARD_LABEL"),
-        accessor: "ward",
-        Cell: ({ value }) => (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              backgroundColor: "#D1FAE5",
-              color: "#047857",
-              borderRadius: "12px",
-              fontSize: "13px",
-              fontWeight: "500",
-            }}
-          >
-            {value}
-          </span>
-        ),
-      },
+      // {
+      //   Header: t("HR_WARD_LABEL"),
+      //   accessor: "ward",
+      //   Cell: ({ value }) => (
+      //     <span
+      //       style={{
+      //         display: "inline-block",
+      //         padding: "4px 12px",
+      //         backgroundColor: "#D1FAE5",
+      //         color: "#047857",
+      //         borderRadius: "12px",
+      //         fontSize: "13px",
+      //         fontWeight: "500",
+      //       }}
+      //     >
+      //       {value}
+      //     </span>
+      //   ),
+      // },
       {
         Header: t("HR_ZONE_LABEL"),
         accessor: "zone",
@@ -341,7 +341,7 @@ const HRMSEMPMAPDetails = () => {
                 text={
                   data?.Employees?.[0]?.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error">{t("INACTIVE")}</div>
                 }
-                textStyle={{ fontWeight: "bold", maxWidth: "6.5rem" }}
+                textStyle={{ fontWeight: "bold", maxWidth: "7.5rem" }}
               />
             </StatusTable>
             <CardSubHeader className="card-section-header">{t("HR_PERSONAL_DETAILS_FORM_HEADER")} </CardSubHeader>
@@ -365,7 +365,7 @@ const HRMSEMPMAPDetails = () => {
 
             {/* Employee Mapping Table */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "30px", marginBottom: "15px" }}>
-              <CardSubHeader className="card-section-header">{t("HR_EMPLOYEE_CATEGORY_WARD_MAPPING")}</CardSubHeader>
+              <CardSubHeader className="card-section-header">{t("HR_EMPLOYEE_CATEGORY_ZONE_MAPPING")}</CardSubHeader>
               
               {/* Page Size Selector */}
               {mappingData.length > 0 && (
@@ -501,7 +501,7 @@ const HRMSEMPMAPDetails = () => {
         />
       )}
       
-      <ActionBar>
+      {/* <ActionBar>
         {displayMenu && data ? (
           <Menu
             localeKeyPrefix="HR"
@@ -511,7 +511,7 @@ const HRMSEMPMAPDetails = () => {
           />
         ) : null}
         <SubmitBar label={t("HR_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-      </ActionBar>
+      </ActionBar> */}
     </React.Fragment>
   );
 };

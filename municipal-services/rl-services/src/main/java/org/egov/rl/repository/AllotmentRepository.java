@@ -15,11 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
 //import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder;
 import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder2;
 import org.egov.rl.repository.builder.AllotmentQueryBuilder;
 import org.egov.rl.repository.rowmapper.AllotmentRowMapper;
+import org.egov.rl.repository.rowmapper.DocumentRowMapper;
 import org.egov.rl.repository.rowmapper.OwnerInfoRowMapper;
 import org.egov.rl.repository.rowmapper.SearchRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,9 @@ public class AllotmentRepository {
 	
 	@Autowired
 	OwnerInfoRowMapper ownerInfoRowMapper;
+	
+	@Autowired
+	DocumentRowMapper documentRowMapper;
 //	
 //
 //	@Autowired
@@ -107,5 +112,12 @@ public class AllotmentRepository {
 				
 			String query = queryBuilder.createdOwnerInfoQuery(propertyId, preparedStmtList);
 			return jdbcTemplate.query(query, preparedStmtList.toArray(), ownerInfoRowMapper);
-		}
+	 }
+	 
+	 public List<Document> getDocumentListByAllotmentId(String propertyId) {
+		 List<Object> preparedStmtList = new ArrayList<>();
+				
+			String query = queryBuilder.createdDocumentsQuery(propertyId, preparedStmtList);
+			return jdbcTemplate.query(query, preparedStmtList.toArray(), documentRowMapper);
+	 }
 }

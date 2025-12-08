@@ -14,7 +14,7 @@ public class RLConstants {
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
 
-	public static final String RL_MASTER_MODULE_NAME = "RlService";
+	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
 
 	public static final String RL_SERVICE_NAME = "rl-service";
 

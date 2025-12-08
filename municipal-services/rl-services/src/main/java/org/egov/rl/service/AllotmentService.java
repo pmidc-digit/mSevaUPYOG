@@ -1,6 +1,5 @@
 package org.egov.rl.service;
 
-import java.security.acl.Owner;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -187,6 +186,7 @@ public class AllotmentService {
 
 		List<AllotmentDetails> applications = allotmentRepository.getAllotedApplications(allotmentCriteria);
 		applications=applications.stream().map(d->{
+		d.setDocuments(allotmentRepository.getDocumentListByAllotmentId(d.getId()));
 		d.setOwnerInfo(allotmentRepository.getOwnerInfoListByAllotmentId(d.getId()));
 		return d;}).collect(Collectors.toList());
 		if (CollectionUtils.isEmpty(applications))

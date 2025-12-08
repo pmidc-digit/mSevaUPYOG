@@ -43,13 +43,22 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 		AuditDetails auditDetails = null;
 		while (rs.next()) {
 			auditDetails = getAuditDetail(rs, "allotment");
-			currentAllotment.add(AllotmentDetails.builder().id(rs.getString("id"))
-					.propertyId(rs.getString("property_id")).tenantId(rs.getString("tenant_id"))
+			currentAllotment.add(AllotmentDetails.builder()
+					.id(rs.getString("id"))
+					.propertyId(rs.getString("property_id"))
+					.tenantId(rs.getString("tenant_id"))
+					.applicationNumber(rs.getString("application_number"))
+					.status(rs.getString("status"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
-					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
-					.endDate(rs.getLong("end_date")).termAndCondition(rs.getString("term_and_condition"))
-					.ownerInfo(null).penaltyType(rs.getString("penalty_type")).createdTime(rs.getLong("created_time"))
-					.createdBy(rs.getString("created_by")).auditDetails(auditDetails)
+					.applicationType(rs.getString("application_type"))
+					.startDate(rs.getLong("start_date"))
+					.endDate(rs.getLong("end_date"))
+					.termAndCondition(rs.getString("term_and_condition"))
+					.ownerInfo(null)
+					.penaltyType(rs.getString("penalty_type"))
+					.createdTime(rs.getLong("created_time"))
+					.createdBy(rs.getString("created_by"))
+					.auditDetails(auditDetails)
 					.additionalDetails(getAdditionalDetails(rs.getObject("additional_details"))).build());
 		}
 

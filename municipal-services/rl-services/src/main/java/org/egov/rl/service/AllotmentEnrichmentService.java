@@ -17,6 +17,7 @@ import org.egov.rl.models.AuditDetails;
 import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.enums.Status;
+import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.repository.AllotmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class AllotmentEnrichmentService {
 
 	@Autowired
 	private AllotmentRepository allotmentRepository;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -115,7 +116,8 @@ public class AllotmentEnrichmentService {
 		id.add(allotmentRequest.getAllotment().getId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
-		AllotmentDetails allotmentDbDetails = searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria).stream().findFirst().orElse(null);
+		AllotmentDetails allotmentDbDetails = searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria)
+				.stream().findFirst().orElse(null);
 
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
 		auditDetails.setCreatedBy(allotmentDbDetails.getCreatedBy());
@@ -136,7 +138,7 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
 		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
 		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
-		
+
 		allotmentRequest.setAllotment(allotmentDbDetails);
 
 		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
@@ -252,7 +254,7 @@ public class AllotmentEnrichmentService {
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
 	}
-	
+
 	private void updateIdgenIds(AllotmentRequest allotmentRequest) {
 
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
@@ -270,52 +272,55 @@ public class AllotmentEnrichmentService {
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
 	}
-	
-	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> applications, RequestInfo requestInfo) {
-		for (AllotmentDetails application : applications) {
-			application.getOwnerInfo().stream().forEach(owner->{
-			
-			if (owner != null && owner.getUserUuid() != null) {
+
+	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> allotmentDetails, RequestInfo requestInfo) {
+		allotmentDetails.stream().map(d -> {
+			return d.getOwnerInfo().stream().map(ownerInfo -> {
 				try {
 					// Fetch user details from user service using the stored UUID
-					org.egov.rl.models.user.UserSearchRequest userSearchRequest = 
-						userService.getBaseUserSearchRequest(application.getTenantId(), requestInfo);
-					userSearchRequest.setUuid(java.util.Collections.singleton(owner.getUserUuid()));
-					
-					org.egov.rl.models.user.UserDetailResponse userDetailResponse = 
-						userService.getUser(userSearchRequest);
-					
+					org.egov.rl.models.user.UserSearchRequest userSearchRequest = userService
+							.getBaseUserSearchRequest(d.getTenantId(), requestInfo);
+					userSearchRequest.setUuid(java.util.Collections.singleton(ownerInfo.getUserUuid()));
+
+					org.egov.rl.models.user.UserDetailResponse userDetailResponse = userService
+							.getUser(userSearchRequest);
+
 					if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
 						org.egov.rl.models.user.User user = userDetailResponse.getUser().get(0);
-						
+//System.out.println("============="+user.getName());
 						// Populate owner with complete user details
 //						owner.setId(user.getId());
-						owner.setUserUuid(user.getUuid());
-//						owner.setUserName(user.getUserName());
+						ownerInfo.setUserUuid(user.getUuid());
+//						ownerInfo.setUserName(user.getUserName());
 //						owner.setPassword(user.getPassword());
 //						owner.setSalutation(user.getSalutation());
-						owner.setName(user.getName());
-						owner.setGender(user.getGender());
-						owner.setMobileNo(user.getMobileNumber());
-						owner.setEmailId(user.getEmailId());
+						ownerInfo.setName(user.getName());
+//						ownerInfo.setGender(user.getGender());
+						ownerInfo.setMobileNo(user.getMobileNumber());
+						ownerInfo.setEmailId(user.getEmailId());
 //						owner.setAltContactNumber(user.getAltContactNumber());
-						owner.setPanCard(user.getPan());
-						owner.setAadharCard(user.getAadhaarNumber());
-//						owner.setPermanentAddress(user.getPermanentAddress());
+//						ownerInfo.setPanCard(user.getPan());
+//						ownerInfo.setAadharCard(user.getAadhaarNumber());
+
+						ownerInfo.setPermanentAddress(Address.builder().addressId(user.getPermanentAddress())
+								.pincode(user.getPermanentPincode()).addressLine1(null).city(user.getPermanentCity())
+								.build());
 //						owner.setPermanentCity(user.getPermanentCity());
 //						owner.setPermanentPincode(user.getPermanentPincode());
-//						owner.setCorrespondenceCity(user.getCorrespondenceCity());
+						ownerInfo.setCorrespondenceAddress(Address.builder().addressId(user.getCorrespondenceAddress())
+								.pincode(user.getCorrespondencePincode()).addressLine1(null)
+								.city(user.getCorrespondenceCity()).build());
 //						owner.setCorrespondencePincode(user.getCorrespondencePincode());
 //						owner.setCorrespondenceAddress(user.getCorrespondenceAddress());
 //						owner.setActive(user.getActive());
-						owner.setDob(user.getDob());
+//						owner.setDob(user.getDob());
 //						owner.setPwdExpiryDate(user.getPwdExpiryDate());
 //						owner.setLocale(user.getLocale());
 //						owner.setType(user.getType());
 //						owner.setSignature(user.getSignature());
 //						owner.setAccountLocked(user.getAccountLocked());
 //						owner.setRoles(user.getRoles());
-						owner.setFatherOrHusbandName(user.getFatherOrHusbandName());
+//						ownerInfo.setFatherOrHusbandName(user.getFatherOrHusbandName());
 //						owner.setBloodGroup(user.getBloodGroup());
 //						owner.setIdentificationMark(user.getIdentificationMark());
 //						owner.setPhoto(user.getPhoto());
@@ -323,19 +328,18 @@ public class AllotmentEnrichmentService {
 //						owner.setCreatedDate(user.getCreatedDate());
 //						owner.setLastModifiedBy(user.getLastModifiedBy());
 //						owner.setLastModifiedDate(user.getLastModifiedDate());
-						owner.setTenantId(user.getTenantId());
-						
+						ownerInfo.setTenantId(user.getTenantId());
+
 						// Populate father name in the application from user service
 //						application.setFatherName(user.getFatherOrHusbandName());
 					}
 				} catch (Exception e) {
 					// Log error but don't fail the search
-					System.err.println("Error fetching user details for owner: " + owner.getUserUuid() + ", Error: " + e.getMessage());
+					System.err.println("Error fetching user details for owner: " + ownerInfo.getUserUuid() + ", Error: "
+							+ e.getMessage());
 				}
-			}
-			
-			});
-		}
+				return ownerInfo;
+			}).collect(Collectors.toList());
+		}).collect(Collectors.toList());
 	}
-
 }

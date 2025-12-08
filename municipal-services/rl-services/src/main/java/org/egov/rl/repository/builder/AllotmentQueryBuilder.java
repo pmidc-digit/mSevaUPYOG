@@ -20,6 +20,8 @@ public class AllotmentQueryBuilder {
 	private static final String SEARCH_BASE_QUERY = "SELECT * FROM eg_rl_allotment ";
 
 	private static final String OWNER_INFO_QUERY = "SELECT * FROM eg_rl_owner_info ";
+	
+	private static final String DOCUMENT_QUERY = "SELECT * FROM eg_rl_document ";
 
 	private static final String BASE_QUERY = "SELECT\r\n" + "    al.*,\r\n" + "    ap.*,\r\n" + "    doc.*,\r\n"
 			+ "    doc_count.documentCount,\r\n" + "    ap_count.applicantCount,\r\n"
@@ -125,6 +127,27 @@ public class AllotmentQueryBuilder {
 			subQueryParams.add(allotmentId);
 		}
 		StringBuilder mainQuery = new StringBuilder(OWNER_INFO_QUERY);
+		mainQuery.append(subQuery);
+
+		// Add all subquery parameters to the main prepared statement list
+		preparedStmtList.addAll(subQueryParams);
+
+		// Order the final result
+		return mainQuery.toString();
+
+	}
+	
+	public String createdDocumentsQuery(String allotmentId,List<Object> preparedStmtList) {
+		
+		StringBuilder subQuery = new StringBuilder("");
+		List<Object> subQueryParams = new ArrayList<>();
+
+		if (!ObjectUtils.isEmpty(allotmentId)) {
+			addClauseIfRequired(subQuery, subQueryParams);
+			subQuery.append(" allotment_id= ? ");
+			subQueryParams.add(allotmentId);
+		}
+		StringBuilder mainQuery = new StringBuilder(DOCUMENT_QUERY);
 		mainQuery.append(subQuery);
 
 		// Add all subquery parameters to the main prepared statement list

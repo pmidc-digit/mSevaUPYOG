@@ -61,7 +61,7 @@ public class AllotmentController {
     @PostMapping("/_update")
     public ResponseEntity<AllotmentResponse> update(@Valid @RequestBody AllotmentRequest allotmentRequest) {
     	AllotmentDetails allotmentDetails =allotmentService.allotmentUpdate(allotmentRequest);
-        ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), false);
+        ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
         AllotmentResponse response = AllotmentResponse.builder()
                 .allotment(allotmentDetails)
                 .responseInfo(resInfo)

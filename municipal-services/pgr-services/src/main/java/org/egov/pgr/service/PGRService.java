@@ -64,7 +64,7 @@ public class PGRService {
         Object mdmsData = mdmsUtils.mDMSCall(request);
         validator.validateCreate(request, mdmsData);
         enrichmentService.enrichCreateRequest(request);
-     //   workflowService.updateWorkflowStatus(request);
+        workflowService.updateWorkflowStatus(request);
         producer.push(config.getCreateTopic(),request);
         producer.push(config.getSaveForDgrTopic(),request);
 

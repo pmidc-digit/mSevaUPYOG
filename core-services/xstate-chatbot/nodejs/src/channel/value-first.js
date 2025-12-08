@@ -269,7 +269,27 @@ class ValueFirstWhatsAppProvider {
         }
         //console.log("Filestore URL", url)
         let response = await fetch(url,options);
+
+        if (!response.ok) {
+        console.error('Filestore API returned error status:', response.status);
+        throw new Error(`Filestore API error: ${response.status}`);
+        }
+
         response = await(response).json();
+
+        console.log('Filestore API Response:', JSON.stringify(response));
+
+    // Add validation here
+    if (!response || !response.fileStoreIds || response.fileStoreIds.length === 0) {
+        console.error('Error: fileStoreIds not found in response for fileStoreId:', filestoreId);
+        console.error('Response:', JSON.stringify(response));
+        throw new Error('Failed to retrieve file from filestore');
+    }
+    if (!response.fileStoreIds[0].url) {
+        console.error('Error: URL not found in fileStoreIds[0]');
+        throw new Error('File URL not found in filestore response');
+    }
+
         //console.log("getFileForFileStoreId Response", response);
         var fileURL = response['fileStoreIds'][0]['url'].split(",");
         /*var fileName = geturl.parse(fileURL[0]);
@@ -332,25 +352,57 @@ class ValueFirstWhatsAppProvider {
 
                 messageBody['@TEMPLATEINFO'] = combinedStringForTemplateInfo;
             }     
-            else {
-                // TODO for non-textual messages
-                let fileStoreId;
-                if(message)
-                    fileStoreId = message;
-                console.log("getTransformedResponse type for non-textual ",type)
-                console.log("getTransformedResponse message for non-textual ",message)
-                var fileURL = await this.getFileForFileStoreId(fileStoreId);
-                var uniqueImageMessageId = uuid();
-                messageBody = JSON.parse(imageMessageBody);
-                if(type === 'pdf'){
-                    messageBody['@TYPE'] = "document";
-                    messageBody['@CONTENTTYPE'] = 'application/pdf';
-                    messageBody['@CAPTION'] = extraInfo.fileName+'-'+Date.now();
-                }
-                messageBody['@MEDIADATA'] = fileURL;
-                messageBody['@ID'] = uniqueImageMessageId;
+            else 
+            // {
+            //     // TODO for non-textual messages
+            //     let fileStoreId;
+            //     if(message)
+            //         fileStoreId = message;
+            //     var fileURL = await this.getFileForFileStoreId(fileStoreId);
+            //     var uniqueImageMessageId = uuid();
+            //     messageBody = JSON.parse(imageMessageBody);
+            //     if(type === 'pdf'){
+            //         messageBody['@TYPE'] = "document";
+            //         messageBody['@CONTENTTYPE'] = 'application/pdf';
+            //         messageBody['@CAPTION'] = extraInfo.fileName+'-'+Date.now();
+            //     }
+            //     messageBody['@MEDIADATA'] = fileURL;
+            //     messageBody['@ID'] = uniqueImageMessageId;
 
-            }
+            // }
+            {
+            // Handle non-textual messages with error handling
+                try {
+                    let fileStoreId;
+                    if(message)
+                        fileStoreId = message;
+                    
+                    var fileURL = await this.getFileForFileStoreId(fileStoreId);
+                    var uniqueImageMessageId = uuid();
+                    messageBody = JSON.parse(imageMessageBody);
+                    
+                    if(type === 'pdf'){
+                        messageBody['@TYPE'] = "document";
+                        messageBody['@CONTENTTYPE'] = 'application/pdf';
+                        messageBody['@CAPTION'] = extraInfo.fileName+'-'+Date.now();
+                    }
+                    messageBody['@MEDIADATA'] = fileURL;
+                    messageBody['@ID'] = uniqueImageMessageId;
+                    
+                } 
+                catch (error) {
+                    console.error('============================================');
+                    console.error('ERROR: Failed to fetch file from filestore');
+                    console.error('FileStoreId:', message);
+                    console.error('Error:', error.message);
+                    console.error('============================================');
+                    
+                    // Send a user-friendly fallback text message
+                    messageBody = JSON.parse(textMessageBody);
+                    let fallbackMessage = 'Sorry, unable to load the image/document at this time. Please try again later.';
+                    messageBody['@TEXT'] = urlencode(fallbackMessage, 'utf8');
+                }
+           }
             messageBody["ADDRESS"][0]["@FROM"] = fromMobileNumber;
             messageBody["ADDRESS"][0]["@TO"] = '91' + userMobile;
 

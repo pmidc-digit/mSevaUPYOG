@@ -59,6 +59,9 @@ public class LayoutSearchCriteria {
     @JsonProperty("limit")
     private Integer limit;
 
+    @JsonProperty("createdBy")
+    private String createdBy;
+
     @JsonIgnore
     private List<String> ownerIds;
 

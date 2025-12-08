@@ -204,6 +204,13 @@ public class LayoutQueryBuilder {
                         builder.append(" layout.status IN (").append(createQuery(status)).append(")");
                         addToPreparedStatement(preparedStmtList, status);
                 }
+		if(criteria.getCreatedBy()!=null || !criteria.getCreatedBy().isEmpty())
+		{
+			addClauseIfRequired(builder);
+			builder.append(" layout.createdby=? ");
+			preparedStmtList.add(criteria.getCreatedBy());
+			log.info(criteria.getCreatedBy());
+		}
 
 		builder.append(" GROUP BY layout.id, layout.tenantid, layout.lastModifiedTime, layout.createdBy, ")
 				.append("layout.lastModifiedBy, layout.createdTime, layout.applicationNo, layout.layoutNo, layout.layoutType,details.id, details.layoutid, details.additionalDetails ");

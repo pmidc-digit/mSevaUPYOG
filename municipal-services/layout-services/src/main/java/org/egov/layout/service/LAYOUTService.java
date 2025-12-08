@@ -278,7 +278,7 @@ public class LAYOUTService {
 		List<Layout> nocs = new ArrayList<Layout>();
 
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
-
+		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
 
 		if (criteria.getMobileNumber() != null) {
 //			StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())

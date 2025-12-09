@@ -195,3 +195,99 @@ export const businessServiceList = (isCode = false) => {
 
   return newAvailableBusinessServices;
 };
+
+export const getAcknowledgementData = async (application, tenantInfo, t) => {
+  console.log("application in getAcknowledgement", application);
+
+  const details = [];
+
+  // Application Details
+  details.push({
+    title: t("CS_APPLICATION_DETAILS"),
+    values: [
+      {
+        title: t("CS_APPLICATION_NUMBER"),
+        value: application?.applicationNo || "NA",
+      }
+    ],
+  });
+
+  // License Details
+  
+  details.push({
+      title: "Owner Details",
+      values: [
+        {
+          title: t("CORE_COMMON_NAME"),
+          value: application?.connectionHolders?.[0]?.name || t("CS_NA"),
+        },
+        {
+          title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
+          value: application?.connectionHolders?.[0]?.mobileNumber || t("CS_NA"),
+        },
+        {
+          title: t("CORE_EMAIL_ID"),
+          value: application?.connectionHolders?.[0]?.emailId || t("CS_NA"),
+        }
+      ],
+    });
+  
+  
+
+    // Licensee Details
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
+
+
+
+
+  // Documents
+  // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
+  const docDetails = application?.documents?.map((doc, index) => ({
+    title: t(`${doc.documentType}`) || "NA",
+    value: " ",
+    link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+  }));
+
+  details.push({
+    title: t("BPA_APPLICATION_DOCUMENTS"),
+    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
+  });
+
+  const imageURL = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values?.find(doc => doc?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.url || null;
+  // console.log("imageURL", imageURL);
+  return {
+    t: t,
+    tenantId: tenantInfo?.code,
+    name: t("Acknowledgment letter for Garbage Collection"),
+    email: tenantInfo?.emailId,
+    phoneNumber: tenantInfo?.contactNumber,
+    heading: t("LOCAL_GOVERNMENT_PUNJAB"),
+    applicationNumber: application?.applicationNo || "NA",
+    details,
+    imageURL
+  };
+};

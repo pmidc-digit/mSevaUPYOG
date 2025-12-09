@@ -6,8 +6,10 @@ import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
 const Inbox = ({
+  useNewInboxAPI,
   parentRoute,
-  businessService = "PT",
+  moduleCode = "RAL",
+  businessService = "RENT_N_LEASE_NEW",
   initialStates = {},
   filterComponent,
   isInbox,
@@ -24,28 +26,56 @@ const Inbox = ({
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  const { isLoading, data: countData } = Digit.Hooks.mcollect.useMCollectCount(tenantId);
+  // const { isLoading, data: countData } = Digit.Hooks.mcollect.useMCollectCount(tenantId);
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
   const [isLoader, setIsLoader] = useState(false);
+    const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const paginationParams = isMobile
     ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" };
 
-  const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
+  // const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
 
-  const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
-    tenantId,
-    filters: { ...searchParams, ...paginationParams },
-    isMcollectAppChanged,
-  });
+  // const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
+  //   tenantId,
+  //   filters: { ...searchParams, ...paginationParams },
+  //   isMcollectAppChanged,
+  // });
+
+
+   const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
+    ? Digit.Hooks.useNewInboxGeneral({
+        tenantId,
+        ModuleCode: moduleCode,
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
+        config: { staleTime: 0, refetchOnMount: "always" },
+      })
+    : Digit.Hooks.useInboxGeneral({
+        tenantId,
+        businessService: businessService,
+        isInbox,
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
+        rawWfHandler,
+        rawSearchHandler,
+        combineResponse,
+        wfConfig,
+        searchConfig: { ...enableSarch, ...searchConfig },
+        middlewaresWf,
+        middlewareSearch,
+        config: { staleTime: 0, refetchOnMount: "always" },
+      });
 
   // useEffect(() => {
   //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
   //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
-  // }, [hookLoading, data]);
+  // }, [hookLoading, data]);'
+
+  console.log('dataXXXXXX', data)
 
   useEffect(() => {
     async function fetchBills() {
@@ -121,7 +151,7 @@ const Inbox = ({
 
   //Todo : do for propert Number 
   const getSearchFields = () => [
-    { label: t("UC_CHALLAN_NO"), name: "challanNo" },
+    { label: t("APPLICATION_NUMBER"), name: "applicationNumber" },
     {
       label: t("UC_MOBILE_NO_LABEL"),
       name: "mobileNumber",
@@ -130,7 +160,6 @@ const Inbox = ({
       title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
       componentInFront: "+91",
     },
-    { label: t("UC_RECEPIT_NO_LABEL"), name: "receiptNumber" },
   ];
 
   if (rest?.data?.length !== null) {
@@ -158,7 +187,7 @@ const Inbox = ({
           {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
           <DesktopInbox
             businessService={businessService}
-            data={formedData}
+            data={data}
             tableConfig={rest?.tableConfig}
             isLoading={hookLoading}
             defaultSearchParams={initialStates.searchParams}

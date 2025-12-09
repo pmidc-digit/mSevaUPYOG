@@ -51,7 +51,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     name: "applicants",
   });
 
-  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null, isAutoRenewal = false }) => {
+  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null}) => {
     const startDateEpoch = propertyDetails?.startDate ? new Date(propertyDetails?.startDate).getTime() : null;
     const endDateEpoch = propertyDetails?.endDate ? new Date(propertyDetails?.endDate).getTime() : null;
 
@@ -59,10 +59,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       propertyId: propertyDetails.propertyId,
       tenantId,
       previousApplicationNumber,
-      isAutoRenewal,
       startDate: startDateEpoch,
       endDate: endDateEpoch,
-      termAndCondition: propertyDetails.termsAndConditions,
       penaltyType: propertyDetails.penaltyType,
       workflow: {
         action: "INITIATE",
@@ -120,12 +118,14 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     });
 
     // ✅ If booking already exists, skip slot_search & create
-    const existingPropertyAlloted = currentStepData?.CreatedResponse?.allotmentNumber;
+    const existingPropertyAlloted = currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber;
     if (existingPropertyAlloted) {
       goNext(data);
       return;
     }
 
+
+    console.log('payload', payload)
     triggerLoader(true);
     try {
       // Call create API
@@ -150,8 +150,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       triggerLoader(false);
     }
   };
-
-  
 
   const getErrorMessage = (fieldName, index) => {
     const error = errors?.applicants?.[index]?.[fieldName];
@@ -215,7 +213,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
   useEffect(() => {
     const applicantsData = currentStepData?.applicantDetails?.applicants || [];
-    console.log('applicantsData', applicantsData)
+    console.log("applicantsData", applicantsData);
     const ownershipTypeData = currentStepData?.applicantDetails?.ownershipType || "";
 
     if (Array.isArray(applicantsData) && applicantsData.length > 0) {

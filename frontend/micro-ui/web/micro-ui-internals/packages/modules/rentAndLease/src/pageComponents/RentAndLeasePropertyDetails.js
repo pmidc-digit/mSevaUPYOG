@@ -549,7 +549,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Rent Amount */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RENT_AMOUNT")} <span style={mandatoryStyle}>*</span>
+          {t("RAL_RENT_AMOUNT")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller

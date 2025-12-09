@@ -16,13 +16,22 @@ const EmployeeApp = ({ path, url, userType }) => {
   const mobileView = innerWidth <= 640;
 
   console.log("her here here here");
-  const inboxInitialState = {
+  // const inboxInitialState = {
+  //   searchParams: {
+  //     // uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+  //     // services: ["PT.CREATE"],
+  //     status: [],
+  //     businessService: [],
+  //     // locality: [],
+  //   },
+  // };
+
+   const inboxInitialState = {
     searchParams: {
-      // uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
-      // services: ["PT.CREATE"],
-      status: [],
-      businessService: [],
-      // locality: [],
+      uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+      services: ["RENT_N_LEASE_NEW"],
+      applicationStatus: [],
+      locality: [],
     },
   };
 
@@ -78,8 +87,9 @@ const EmployeeApp = ({ path, url, userType }) => {
             path={`${path}/inbox`}
             component={() => (
               <Inbox
+               useNewInboxAPI={true}
                 parentRoute={path}
-                businessService="PT"
+                businessService="RENT_N_LEASE_NEW"
                 filterComponent="MCOLLECT_INBOX_FILTER"
                 initialStates={inboxInitialState}
                 isInbox={true}

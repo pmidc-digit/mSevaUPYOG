@@ -201,6 +201,9 @@ function RentAndLeaseSelectDocument({
   const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
   const mandatoryStyle = { color: "red" };
 
+
+  console.log('doc', doc)
+
   return (
     <div style={{ marginBottom: "24px" }}>
       {loading && <Loader />}

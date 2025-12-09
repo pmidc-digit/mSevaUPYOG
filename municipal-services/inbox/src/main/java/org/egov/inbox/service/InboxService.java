@@ -179,6 +179,9 @@ public class InboxService {
     @Autowired
     private GarbageInboxFilterService garbageInboxFilterService;
 
+    @Autowired
+    private RLInboxFilterService rlInboxFilterService;
+
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
@@ -462,6 +465,13 @@ public class InboxService {
 
             case "gc-services":
                 applicationNumbers = garbageInboxFilterService.fetchApplicationNumbersFromSearcher(
+                        criteria, statusIdNameStringMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put("applicationNumber", applicationNumbers);
+                break;
+
+            case "rl-services":
+                applicationNumbers = rlInboxFilterService.fetchApplicationNumbersFromSearcher(
                         criteria, statusIdNameStringMap, requestInfo);
                 if (!CollectionUtils.isEmpty(applicationNumbers))
                     moduleSearchCriteria.put("applicationNumber", applicationNumbers);

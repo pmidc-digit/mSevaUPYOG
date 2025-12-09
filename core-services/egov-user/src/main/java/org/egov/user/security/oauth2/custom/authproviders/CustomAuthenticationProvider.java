@@ -130,7 +130,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 		 */
         
         
-        userService.removeTokensByUser(user);
+     //   userService.removeTokensByUser(user);
 
 
         if (user.getActive() == null || !user.getActive()) {

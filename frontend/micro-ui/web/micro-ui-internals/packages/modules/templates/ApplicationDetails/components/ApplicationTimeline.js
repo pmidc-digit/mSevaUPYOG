@@ -99,6 +99,12 @@ const HEADER_FIELDS = [
 /* ===== Memoized Caption Component ===== */
 const TimelineCaption = React.memo(({ checkpoint, t }) => (
   <div className="timeline-card">
+    <button>Download</button>
+    <div className="timeline-note">
+      <span className="timeline-label">{t("CM_TIMELINE_NOTE")}:</span>
+      <div className="note-box">{checkpoint?.comment || t("CM_TIMELINE_NO_COMMENTS")}</div>
+    </div>
+
     <div className="timeline-header">
       {HEADER_FIELDS?.map(({ label, key }) => (
         <div key={key} className="timeline-header-item">
@@ -108,10 +114,7 @@ const TimelineCaption = React.memo(({ checkpoint, t }) => (
       ))}
     </div>
 
-    <div className="timeline-note">
-      <span className="timeline-label">{t("CM_TIMELINE_NOTE")}:</span>
-      <div className="note-box">{checkpoint?.comment || t("CM_TIMELINE_NO_COMMENTS")}</div>
-    </div>
+    
 
     {checkpoint?.documents?.length > 0 && (
       <div className="timeline-docs">

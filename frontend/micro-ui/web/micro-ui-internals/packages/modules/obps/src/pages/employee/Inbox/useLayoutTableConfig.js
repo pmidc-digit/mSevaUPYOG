@@ -23,7 +23,7 @@ const useLayoutTableConfig = ({
     return [
            {
                  Header: t("BPA_APPLICATION_NUMBER_LABEL"),
-                 accessor: "applicationNo",
+                 accessor: "applicationId",
                  disableSortBy: true,
                  Cell: ({ row }) => {
                  return (

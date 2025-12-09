@@ -267,7 +267,7 @@ console.log("building category here: & fileNo", usage,fileno);
   })
   const userInfo = Digit.UserService.getUser();
 console.log('userInfo', userInfo)
-  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.mobileNumber;
+  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.info?.mobileNumber;
 
   console.log("datata=====", workflowDetails, data, isArchitect)
 

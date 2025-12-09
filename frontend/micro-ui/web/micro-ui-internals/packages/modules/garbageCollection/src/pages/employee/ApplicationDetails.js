@@ -16,7 +16,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import NDCDocumentTimline from "../../components/ChallanDocument";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
 import { ChallanData } from "../../utils/index";
@@ -73,19 +73,15 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const { acknowledgementIds, id } = useParams();
   const [showToast, setShowToast] = useState(false);
   const [getLable, setLable] = useState(false);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  const [showOptions, setShowOptions] = useState(false);
-  const { data: storeData } = Digit.Hooks.useStore.getInitData();
-  const { tenants } = storeData || {};
   const [loader, setLoader] = useState(false);
   const [getChallanData, setChallanData] = useState();
-  const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
-  const [printing, setPrinting] = useState(false);
   const [error, setError] = useState("");
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -106,7 +102,6 @@ const ChallanApplicationDetails = () => {
       setLoader(false);
     }
   };
-  let challanEmpData = ChallanData(tenantId, id);
 
   useEffect(() => {
     if (id) {
@@ -143,6 +138,12 @@ const ChallanApplicationDetails = () => {
   const closeToast = () => {
     setShowToast(null);
   };
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -191,6 +192,7 @@ const ChallanApplicationDetails = () => {
 
   const submitAction = async (modalData) => {
     console.log("modalData", modalData?.Licenses);
+    setLoader(true);
 
     const payload = {
       GarbageConnection: {

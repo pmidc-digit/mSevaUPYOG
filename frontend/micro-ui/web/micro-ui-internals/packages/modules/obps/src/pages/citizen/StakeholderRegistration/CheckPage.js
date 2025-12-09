@@ -501,7 +501,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
 
 
  
-      <div style={sectionStyle}>
+      {result?.Licenses?.[0]?.applicationType != "UPGRADE" && <div style={sectionStyle}>
 
         <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
 
@@ -558,7 +558,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
 
 
 
-      </div>
+      </div>}
 
 
       {actions && actions.length > 0 ? (

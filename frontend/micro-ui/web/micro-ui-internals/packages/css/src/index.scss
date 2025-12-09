@@ -962,7 +962,6 @@ input[type="number"] {
   overflow-y: hidden;
 }
 
-/* ❌ Disable overflow on Mobile */
 @media screen and (max-width: 768px) {
   .engagement-citizen-wrapper {
     overflow: hidden;

@@ -129,12 +129,12 @@ public class LayoutQueryBuilder {
 			addToPreparedStatement(preparedStmtList, ids);
 		}
 
-		List<String> ownerIds = criteria.getOwnerIds();
-		if (!CollectionUtils.isEmpty(ownerIds)) {
-			addClauseIfRequired(builder);
-			builder.append(" (layout.accountId IN (").append(createQuery(ownerIds)).append(")) ");
-			addToPreparedStatement(preparedStmtList, ownerIds);
-		}
+//		List<String> ownerIds = criteria.getOwnerIds();
+//		if (!CollectionUtils.isEmpty(ownerIds)) {
+//			addClauseIfRequired(builder);
+//			builder.append(" (layout.accountId IN (").append(createQuery(ownerIds)).append(")) ");
+//			addToPreparedStatement(preparedStmtList, ownerIds);
+//		}
 
 
 		String applicationNo = criteria.getApplicationNo();
@@ -204,12 +204,40 @@ public class LayoutQueryBuilder {
                         builder.append(" layout.status IN (").append(createQuery(status)).append(")");
                         addToPreparedStatement(preparedStmtList, status);
                 }
-		if(criteria.getCreatedBy()!=null || !criteria.getCreatedBy().isEmpty())
-		{
+//		if(criteria.getCreatedBy()!=null || !criteria.getCreatedBy().isEmpty())
+//		{
+//			addClauseIfRequired(builder);
+//			builder.append(" layout.createdby=? ");
+//			preparedStmtList.add(criteria.getCreatedBy());
+//			log.info(criteria.getCreatedBy());
+//		}
+
+
+		List<String> ownerIds = criteria.getOwnerIds(); // mapped to clu.accountId
+		String createdBy = criteria.getCreatedBy();
+
+		boolean hasOwnerIds  = (ownerIds != null && !ownerIds.isEmpty());
+		boolean hasCreatedBy = (createdBy != null && !createdBy.isEmpty());
+
+		if (hasOwnerIds || hasCreatedBy) {
 			addClauseIfRequired(builder);
-			builder.append(" layout.createdby=? ");
-			preparedStmtList.add(criteria.getCreatedBy());
-			log.info(criteria.getCreatedBy());
+			builder.append(" ( ");
+
+			boolean wroteOne = false;
+
+			if (hasOwnerIds) {
+				builder.append(" layout.accountId IN (").append(createQuery(ownerIds)).append(") ");
+				addToPreparedStatement(preparedStmtList, ownerIds);
+				wroteOne = true;
+			}
+
+			if (hasCreatedBy) {
+				if (wroteOne) builder.append(" OR ");
+				builder.append(" layout.createdby = ? ");
+				preparedStmtList.add(createdBy);
+			}
+
+			builder.append(" ) ");
 		}
 
 		builder.append(" GROUP BY layout.id, layout.tenantid, layout.lastModifiedTime, layout.createdBy, ")

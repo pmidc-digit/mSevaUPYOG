@@ -21,9 +21,9 @@ export const useCLUCitizenSearchApplication = (params, tenantId, config = {}, t)
       // console.log("applications in hook", applications);
 
       const mappedData = applications?.map((owner) => ({
-        NOC_APPLICATION_NUMBER : owner?.applicationNo,
+        BPA_APPLICATION_NUMBER_LABEL : owner?.applicationNo,
         // TL_LOCALIZATION_OWNER_NAME: owner?.owners[0]?.name,
-        TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL: owner?.applicationStatus,
+        TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL: `BPA_STATUS_${owner?.applicationStatus}`,
 
         Applications: owner,
       }));

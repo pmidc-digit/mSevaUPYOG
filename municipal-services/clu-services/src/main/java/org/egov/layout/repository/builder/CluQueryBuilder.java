@@ -221,7 +221,7 @@ public class CluQueryBuilder {
 		boolean hasOwnerIds  = (ownerIds != null && !ownerIds.isEmpty());
 		boolean hasCreatedBy = (createdBy != null && !createdBy.isEmpty());
 
-		if (hasOwnerIds || hasCreatedBy) {
+		if ((hasOwnerIds || hasCreatedBy) && criteria.getApplicationNo()==null) {
 			addClauseIfRequired(builder);
 			builder.append(" ( ");
 

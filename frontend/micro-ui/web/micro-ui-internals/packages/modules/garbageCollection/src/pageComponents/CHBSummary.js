@@ -118,7 +118,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       <div style={sectionStyle}>
         <CardSubHeader style={{ fontSize: "24px" }}>{t("PT_DETAILS")}</CardSubHeader>
         {renderLabel(t("NDC_MSG_PROPERTY_LABEL"), formData?.venueDetails?.propertyId)}
-        {renderLabel(t("NDC_MSG_PROPERTY_TYPE_LABEL"), formData?.venueDetails?.propertyType?.name)}
+        {renderLabel(t("NDC_MSG_PROPERTY_TYPE_LABEL"), formData?.venueDetails?.propertyType)}
         {renderLabel(t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE"), formData?.venueDetails?.plotSize)}
         {renderLabel(t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_ADDRESS"), formData?.venueDetails?.location)}
       </div>

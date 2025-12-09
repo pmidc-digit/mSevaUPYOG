@@ -133,7 +133,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
 
         {getChallanData?.map((bill, index) => {
           const connectionCount = connectionCountMap[bill?.connectionNo] || 0;
-
+          console.log("bill", bill);
           const showDiscontinueButton = bill.applicationStatus === "CONNECTION_ACTIVATED" && connectionCount === 1; // ✅ ONLY IF UNIQUE
           return (
             <Card key={index}>
@@ -151,9 +151,17 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                     <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
-                {/* {bill.applicationStatus == "CONNECTION_ACTIVATED" && (
-                  <SubmitBar style={{ width: "200px" }} label={t("GC_DISCONTINUE_SERVICE")} onSubmit={() => handleDiscontinue(bill)} />
-                )} */}
+
+                {(bill.applicationStatus == "PENDING_FOR_CITIZEN_ACTION" || bill.applicationStatus == "INITIATED") && (
+                  <SubmitBar
+                    label={t("WF_GC_EDIT")}
+                    onSubmit={() => {
+                      history.push(`/digit-ui/citizen/garbagecollection/create-application/${bill?.applicationNo}`);
+                      //  handleEdit(bill?.applicationNo)
+                    }}
+                  />
+                )}
+
                 {/* ✅ SHOW ONLY ONCE PER UNIQUE connectionNo */}
                 {showDiscontinueButton && (
                   <SubmitBar

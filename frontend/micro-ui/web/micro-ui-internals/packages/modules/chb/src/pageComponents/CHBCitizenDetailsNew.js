@@ -14,6 +14,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const [loader, setLoader] = useState(false);
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [getModalData, setModalData] = useState();
+  const [getUser, setUser] = useState(null);
+  const [getDisable, setDisable] = useState({ name: false, email: false, address: false });
 
   const {
     control,
@@ -21,6 +23,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     setValue,
     formState: { errors },
     getValues,
+    watch,
   } = useForm({
     defaultValues: {
       name: (isCitizen && user?.info?.name) || "",
@@ -110,16 +113,102 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       setValue("mobileNumber", formattedData?.applicantDetail?.applicantMobileNo);
       setValue("name", formattedData?.applicantDetail?.applicantName);
     }
-    // if (formattedData) {
-    //   Object.entries(formattedData).forEach(([key, value]) => {
-    //     setValue(key, value);
-    //   });
-    // }
   }, [currentStepData, setValue]);
+
+  const updateUser = async () => {
+    const checkData = getValues();
+    setLoader(true);
+    console.log("checkData", checkData);
+    // let payload = {
+    //   name: checkData.name,
+    //   username: checkData.mobileNumber,
+    //   tenantId: `pb`,
+    //   // permanentCity: formData.city.code,
+    // };
+    const payload = {
+      tenantId: "pb",
+
+      // BASIC INFO
+      name: checkData?.name || null,
+      userName: checkData?.mobileNumber || null,
+      mobileNumber: checkData?.mobileNumber || null,
+      emailId: checkData?.email || null,
+      gender: checkData?.gender || "MALE", // default if not present
+
+      // FAMILY INFO
+      fatherOrHusbandName: checkData?.fatherOrHusbandName || null,
+
+      // ADDRESS INFO
+      permanentCity: checkData?.permanentCity || null,
+      correspondenceCity: checkData?.correspondenceCity || null,
+      permanentDistrict: checkData?.permanentDistrict || null,
+      permanentState: checkData?.permanentState || null,
+      correspondenceState: checkData?.correspondenceState || null,
+      correspondenceDistrict: checkData?.correspondenceDistrict || null,
+
+      // DEFAULT VALUES REQUIRED BY API
+      type: "CITIZEN",
+      isPrimaryOwner: true,
+      ownerType: "NONE",
+      status: true,
+      active: true,
+      accountLocked: false,
+
+      // OPTIONAL FIELDS
+      correspondenceAddress: null,
+      permanentAddress: null,
+      permanentPinCode: null,
+      correspondencePinCode: null,
+      ownerId: null,
+      ownerShipPercentage: null,
+      institutionId: null,
+      documents: null,
+      relationship: null,
+      pan: null,
+      aadhaarNumber: null,
+      dob: null,
+      pwdExpiryDate: null,
+      locale: null,
+      signature: null,
+      bloodGroup: null,
+      identificationMark: null,
+      photo: null,
+
+      // ROLES
+      roles: [
+        {
+          code: "CITIZEN",
+          name: "CITIZEN",
+          tenantId: "pb",
+        },
+      ],
+
+      // AUDIT FIELDS
+      createdBy: "0",
+      lastModifiedBy: "0",
+      createdDate: null,
+      lastModifiedDate: null,
+      otpReference: null,
+    };
+
+    try {
+      const response = await Digit.UserService.createUser(payload, tenantId);
+      setLoader(false);
+      console.log("response", response);
+    } catch (err) {
+      setLoader(false);
+      console.log(err);
+    }
+  };
 
   const handleModalData = (e) => {
     console.log("currentStepData", currentStepData);
     console.log("getvalues", getValues());
+
+    if (!getUser) {
+      updateUser();
+      // alert("first update user");
+    }
     const mapData = currentStepData?.ownerDetails?.hallsBookingApplication;
 
     const payload = {
@@ -147,12 +236,12 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       console.log("userData", userData);
-      if (userData?.user?.[0]?.name) {
-        setValue("name", userData.user[0].name); // ✅ populate name
-        setValue("emailId", userData.user[0].emailId); // ✅ populate name
-        setValue("address", userData.user[0].permanentAddress); // ✅ populate name
-        clearErrors("name"); // ✅ remove validation error if any
-        clearErrors("emailId"); // ✅ remove validation error if any
+      setUser(userData?.user?.[0]);
+      if (userData?.user?.[0]) {
+        setValue("name", userData.user[0].name);
+        setValue("emailId", userData.user[0].emailId);
+        setValue("address", userData.user[0].permanentAddress);
+        clearErrors(["name", "emailId"]);
       }
       setLoader(false);
     } catch (error) {
@@ -225,6 +314,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   onBlur={(e) => {
                     props.onBlur(e);
                   }}
+                  disabled={getUser?.name}
                   t={t}
                 />
               )}
@@ -257,6 +347,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   onBlur={(e) => {
                     props.onBlur(e);
                   }}
+                  disabled={getUser?.emailId}
                   t={t}
                 />
               )}
@@ -286,6 +377,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   onBlur={(e) => {
                     props.onBlur(e);
                   }}
+                  disabled={getUser?.permanentAddress}
                   t={t}
                 />
               )}

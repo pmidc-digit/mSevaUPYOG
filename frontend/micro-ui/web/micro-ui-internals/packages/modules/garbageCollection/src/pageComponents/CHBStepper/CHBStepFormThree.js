@@ -31,27 +31,28 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
-    console.log("checkFormData", checkFormData);
-    setLoader(true);
-    const payload = {
-      GarbageConnection: {
-        ...checkFormData?.venueDetails,
-        documents: checkFormData?.documents?.documents?.documents,
-        processInstance: {
-          ...checkFormData?.venueDetails?.processInstance,
-          action: "DRAFT",
-        },
-      },
-    };
-    try {
-      const response = await Digit.GCService.update(payload);
-      console.log("response", response);
-      setLoader(false);
-      dispatch(UPDATE_GarbageApplication_FORM("venueDetails", response?.GarbageConnection?.[0]));
-      onGoNext();
-    } catch (error) {
-      setLoader(false);
-    }
+    onGoNext();
+    // console.log("checkFormData", checkFormData);
+    // setLoader(true);
+    // const payload = {
+    //   GarbageConnection: {
+    //     ...checkFormData?.venueDetails,
+    //     documents: checkFormData?.documents?.documents?.documents,
+    //     processInstance: {
+    //       ...checkFormData?.venueDetails?.processInstance,
+    //       action: "DRAFT",
+    //     },
+    //   },
+    // };
+    // try {
+    //   const response = await Digit.GCService.update(payload);
+    //   console.log("response", response);
+    //   setLoader(false);
+    //   dispatch(UPDATE_GarbageApplication_FORM("venueDetails", response?.GarbageConnection?.[0]));
+    //   onGoNext();
+    // } catch (error) {
+    //   setLoader(false);
+    // }
   };
 
   function validation(formData) {

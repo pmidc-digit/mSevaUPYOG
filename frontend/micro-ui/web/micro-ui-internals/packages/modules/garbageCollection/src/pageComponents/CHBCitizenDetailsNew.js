@@ -1,10 +1,26 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { TextInput, CardLabel, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { UPDATE_GarbageApplication_FORM } from "../../redux/action/GarbageApplicationActions";
+
+import { Loader } from "../components/Loader";
 
 const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
+  const dispatch = useDispatch();
   const isCitizen = window.location.href.includes("citizen");
   const user = Digit.UserService.getUser();
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+  const history = useHistory();
+  const [loader, setLoader] = useState(false);
+
+  const pathname = history?.location?.pathname || "";
+  const applicationNumber = pathname?.split("/").pop(); // ✅ Extracts the last segment
+
+  console.log("applicationNumber", applicationNumber);
 
   const {
     control,
@@ -21,6 +37,30 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     },
   });
 
+  const fetchChallans = async (filters) => {
+    setLoader(true);
+    try {
+      const responseData = await Digit.GCService.search({ tenantId, filters });
+      console.log("search ", responseData);
+      dispatch(UPDATE_GarbageApplication_FORM("apiResponseData", responseData?.GarbageConnection?.[0]));
+      // setChallanData(responseData?.GarbageConnection?.[0]);
+      setLoader(false);
+    } catch (error) {
+      console.log("error", error);
+      setLoader(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log("tes===", applicationNumber);
+    if (applicationNumber) {
+      console.log("here");
+      const filters = {};
+      filters.applicationNumber = applicationNumber;
+      fetchChallans(filters);
+    }
+  }, [applicationNumber]);
+
   const onSubmit = async (data) => {
     console.log("data===", data);
     goNext(data);
@@ -29,11 +69,18 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   useEffect(() => {
     console.log("currentStepData", currentStepData);
     const formattedData = currentStepData?.ownerDetails;
+    const apiRes = currentStepData?.apiResponseData;
     if (formattedData) {
       setValue("address", formattedData?.address);
       setValue("emailId", formattedData?.emailId);
       setValue("mobileNumber", formattedData?.mobileNumber);
       setValue("name", formattedData?.name);
+    }
+    if (apiRes) {
+      setValue("address", apiRes?.connectionHolders?.[0]?.permanentAddress);
+      setValue("emailId", apiRes?.connectionHolders?.[0]?.emailId);
+      setValue("mobileNumber", apiRes?.connectionHolders?.[0]?.mobileNumber);
+      setValue("name", apiRes?.connectionHolders?.[0]?.name);
     }
   }, [currentStepData, setValue]);
 
@@ -161,6 +208,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
+      {loader && <Loader page={true} />}
     </React.Fragment>
   );
 };

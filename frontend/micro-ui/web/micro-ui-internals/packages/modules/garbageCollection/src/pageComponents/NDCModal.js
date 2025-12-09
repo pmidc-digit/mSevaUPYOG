@@ -37,6 +37,8 @@ const NDCModal = ({
   getEmployees,
   tenantId,
   businessService,
+  loader,
+  setLoader,
 }) => {
   const [config, setConfig] = useState({});
   const [getAmount, setAmount] = useState();
@@ -45,7 +47,6 @@ const NDCModal = ({
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [error, setError] = useState(null);
-  const [loader, setLoader] = useState(false);
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
@@ -106,6 +107,7 @@ const NDCModal = ({
   function submit(data) {
     console.log("data", data);
     console.log("selectedApprover", selectedApprover);
+
     const payload = {
       action: action?.action,
       comment: data?.comments,

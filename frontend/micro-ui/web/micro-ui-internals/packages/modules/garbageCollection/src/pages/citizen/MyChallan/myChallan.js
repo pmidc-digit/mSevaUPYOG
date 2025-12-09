@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Header, ResponseComposer, Card, KeyNote, SubmitBar } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect, useMemo } from "react";
+import { Header, Card, KeyNote, SubmitBar } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
-import Axios from "axios";
 import { useHistory, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Loader } from "../../../components/Loader";
@@ -12,7 +11,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const userInfo = Digit.UserService.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const [loader, setLoader] = useState(false);
-  const [getChallanData, setChallanData] = useState();
+  const [getChallanData, setChallanData] = useState([]);
   const [filters, setFilters] = useState(null);
   const [getCount, setCount] = useState();
 
@@ -62,6 +61,67 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
     }));
   };
 
+  const handleDiscontinue = async (data) => {
+    console.log("data", data);
+    setLoader(true);
+    const payload = {
+      GarbageConnection: {
+        ...data,
+        applicationType: "DISCONNECT_GARBAGE_CONNECTION",
+        processInstance: {
+          ...data?.processInstance,
+          action: "INITIATE",
+        },
+      },
+      disconnectRequest: true,
+    };
+    console.log("payload===", payload);
+
+    try {
+      const response = await Digit.GCService.create(payload);
+      console.log("response", response);
+      updateApplication(response?.GarbageConnection[0]);
+      // setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const updateApplication = async (response) => {
+    console.log("uddated response", response);
+    // return;
+    // setLoader(true);
+    const payload = {
+      GarbageConnection: {
+        ...response,
+        processInstance: {
+          ...response?.processInstance,
+          action: "SUBMIT_APPLICATION",
+        },
+      },
+    };
+    console.log("payload===", payload);
+    try {
+      const response = await Digit.GCService.update(payload);
+      console.log("response", response);
+      await fetchChallans();
+      // setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  // ✅ COUNT HOW MANY TIMES EACH connectionNo APPEARS
+  const connectionCountMap = useMemo(() => {
+    const map = {};
+    getChallanData?.forEach((item) => {
+      if (item?.connectionNo) {
+        map[item.connectionNo] = (map[item.connectionNo] || 0) + 1;
+      }
+    });
+    return map;
+  }, [getChallanData]);
+
   return (
     <div style={{ marginTop: "16px" }}>
       <div>
@@ -72,6 +132,9 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         )}
 
         {getChallanData?.map((bill, index) => {
+          const connectionCount = connectionCountMap[bill?.connectionNo] || 0;
+
+          const showDiscontinueButton = bill.applicationStatus === "CONNECTION_ACTIVATED" && connectionCount === 1; // ✅ ONLY IF UNIQUE
           return (
             <Card key={index}>
               <KeyNote keyValue={t("GC_APPLICATION_NO")} note={bill?.applicationNo || t("CS_NA")} />
@@ -88,6 +151,19 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                     <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
+                {/* {bill.applicationStatus == "CONNECTION_ACTIVATED" && (
+                  <SubmitBar style={{ width: "200px" }} label={t("GC_DISCONTINUE_SERVICE")} onSubmit={() => handleDiscontinue(bill)} />
+                )} */}
+                {/* ✅ SHOW ONLY ONCE PER UNIQUE connectionNo */}
+                {showDiscontinueButton && (
+                  <SubmitBar
+                    style={{ width: "200px" }}
+                    label={t("GC_DISCONTINUE_SERVICE")}
+                    onSubmit={() => handleDiscontinue(bill)}
+                    disabled={loader}
+                  />
+                )}
+
                 {bill.applicationStatus == "PENDING_FOR_PAYMENT" && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.applicationNo)} />
                 )}

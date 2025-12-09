@@ -32,7 +32,7 @@
     "@mseva/upyog-ui-module-asset": "1.1.14",
     "@mseva/upyog-ui-module-pgrai": "1.1.4",
     "@mseva/digit-ui-module-challangeneration": "1.0.25",
-    "@mseva/digit-ui-module-garbagecollection": "1.0.22",
+    "@mseva/digit-ui-module-garbagecollection": "1.0.23",
     "@mseva/digit-ui-module-rentandlease": "1.0.4",
     "@mseva/digit-ui-module-ndc": "1.0.56",
     "http-proxy-middleware": "^1.0.5",

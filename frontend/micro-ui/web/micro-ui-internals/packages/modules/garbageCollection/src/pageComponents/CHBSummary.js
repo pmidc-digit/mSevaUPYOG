@@ -123,6 +123,14 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         {renderLabel(t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_ADDRESS"), formData?.venueDetails?.location)}
       </div>
 
+      <div style={sectionStyle}>
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+        {renderLabel(t("GC_CONNECTION_TYPE"), formData?.venueDetails?.connectionCategory)}
+        {renderLabel(t("GC_FREQUENCY"), formData?.venueDetails?.frequency)}
+        {renderLabel(t("GC_WASTE_TYPE"), formData?.venueDetails?.typeOfWaste)}
+        {renderLabel(t("GC_LOCATION"), formData?.venueDetails?.location)}
+      </div>
+
       <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
         <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>

@@ -18,11 +18,12 @@ export const ModalConfig = ({
   console.log("uploadedFile=====", uploadedFile);
   let checkCondtions = true;
   if (
-    action?.action == "SENDBACKTOCITIZEN" ||
-    action?.action == "APPROVE" ||
-    action?.action == "NOT_VERIFIED" ||
+    action?.action == "SEND_BACK_TO_CITIZEN" ||
+    action?.action == "ACTIVATE_CONNECTION" ||
+    action?.action == "REJECT" ||
     action?.action == "SENDBACK" ||
-    action?.action == "VERIFIED"
+    action?.action == "VERIFIED" ||
+    action?.action == "SEND_BACK_FOR_DOCUMENT_VERIFICATION"
   )
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;

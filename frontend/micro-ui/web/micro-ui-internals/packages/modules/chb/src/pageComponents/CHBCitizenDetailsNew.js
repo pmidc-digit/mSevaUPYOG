@@ -142,10 +142,67 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     if (e.target.checked) setShowTermsPopup(true);
   };
 
+  const handleMobileChange = async (value) => {
+    setLoader(true);
+    try {
+      const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+      console.log("userData", userData);
+      if (userData?.user?.[0]?.name) {
+        setValue("name", userData.user[0].name); // ✅ populate name
+        setValue("emailId", userData.user[0].emailId); // ✅ populate name
+        setValue("address", userData.user[0].permanentAddress); // ✅ populate name
+        clearErrors("name"); // ✅ remove validation error if any
+        clearErrors("emailId"); // ✅ remove validation error if any
+      }
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div style={{ width: "50%" }}>
+          {/* mobile number */}
+          <div style={{ marginBottom: "20px" }}>
+            <CardLabel>
+              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="mobileNumber"
+              rules={{
+                required: "Mobile number is required",
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: "Enter a valid 10-digit mobile number",
+                },
+              }}
+              render={(props) => (
+                <MobileNumber
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  onChange={(e) => {
+                    console.log("eee", e);
+                    props.onChange(e);
+                    setValue("name", "");
+                    setValue("emailId", "");
+                    // ✅ updates react-hook-form
+                    if (e.length === 10) {
+                      handleMobileChange(e); // 🔥 only then fire API
+                    }
+                    // debouncedHandleMobileChange(e);
+                  }}
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+          </div>
+
+          {/* name */}
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -175,6 +232,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
           </div>
 
+          {/* email */}
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -204,33 +262,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
               )}
             />
             {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
-          </div>
-
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
-              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="mobileNumber"
-              rules={{
-                required: "Mobile number is required",
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: "Enter a valid 10-digit mobile number",
-                },
-              }}
-              render={(props) => (
-                <MobileNumber
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  onChange={props.onChange} // ✅ don't wrap it
-                  onBlur={props.onBlur}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
           </div>
 
           <div style={{ marginBottom: "20px" }}>

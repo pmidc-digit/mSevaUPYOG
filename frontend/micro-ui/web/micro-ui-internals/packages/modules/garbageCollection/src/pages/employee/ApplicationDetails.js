@@ -181,6 +181,10 @@ const ChallanApplicationDetails = () => {
       Licenses: [action],
     };
 
+    if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
+    }
+
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
@@ -191,7 +195,24 @@ const ChallanApplicationDetails = () => {
   }
 
   const submitAction = async (modalData) => {
-    console.log("modalData", modalData?.Licenses);
+    const action = modalData?.Licenses[0];
+
+    if (
+      !action?.assignes &&
+      action.action !== "SEND_BACK_TO_CITIZEN" &&
+      action.action !== "ACTIVATE_CONNECTION" &&
+      action.action !== "REJECT" &&
+      action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION"
+    ) {
+      setErrorOne("Assignee is Mandatory");
+      setShowErrorToastt(true);
+      return;
+    } else if (!action?.comment) {
+      setErrorOne("Comment is Mandatory");
+      setShowErrorToastt(true);
+      return;
+    }
+
     setLoader(true);
 
     const payload = {
@@ -204,15 +225,12 @@ const ChallanApplicationDetails = () => {
       },
     };
 
-    console.log("payload", payload);
-
     try {
       const response = await Digit.GCService.update(payload);
-      console.log("response", response);
       setLoader(false);
       setShowModal(false);
       // ✅ Show success first
-      setLable("Challan is Settled");
+      setLable("Status is Updated");
       setError(false);
       setShowToast(true);
 
@@ -223,54 +241,6 @@ const ChallanApplicationDetails = () => {
       }, 2000);
     } catch (error) {
       setLoader(false);
-    }
-    return;
-    if (!modalData?.amount) {
-      setErrorOne(`Please Enter Amount`);
-      setShowErrorToastt(true);
-    } else {
-      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
-      if (modalData?.amount > finalAmount) {
-        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
-        setShowErrorToastt(true);
-        setError(`Amount must be less than or equal to ${finalAmount}`);
-      } else {
-        console.log("nothing");
-
-        setLoader(true);
-
-        const payload = {
-          Challan: {
-            ...getChallanData,
-            workflow: {
-              action: "SETTLED",
-            },
-            feeWaiver: modalData?.amount,
-          },
-        };
-
-        console.log("payload", payload);
-        try {
-          const response = await Digit.ChallanGenerationService.update(payload);
-          setLoader(false);
-          setShowModal(false);
-          // ✅ Show success first
-          // setShowToast({ key: "success", message: "Successfully updated the status" });
-          setLable("Challan is Settled");
-          setError(false);
-          setShowToast(true);
-
-          // ✅ Delay navigation so toast shows
-          setTimeout(() => {
-            history.push("/digit-ui/employee/challangeneration/inbox");
-            window.location.reload();
-          }, 2000);
-
-          // history.push(`/digit-ui/employee/challangeneration/inbox`);
-        } catch (error) {
-          setLoader(false);
-        }
-      }
     }
   };
 
@@ -366,6 +336,8 @@ const ChallanApplicationDetails = () => {
           closeToastOne={closeToastOne}
           getLable={getLable}
           getChallanData={getChallanData}
+          loader={loader}
+          setLoader={setLoader}
         />
       ) : null}
 

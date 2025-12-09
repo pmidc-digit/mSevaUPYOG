@@ -228,8 +228,7 @@ const ChallanStepperForm = () => {
   );
 
   const handleRates = (val) => {
-    console.log("val==", val);
-    const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
+    const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
   };
 

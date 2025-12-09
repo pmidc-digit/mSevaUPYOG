@@ -144,7 +144,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   useEffect(() => {
     const formattedData = currentStepData?.ownerDetails?.hallsBookingApplication;
-
+    console.log("formattedData", formattedData);
     // Restore siteId and trigger hall filtering
     if (formattedData) {
       const communityHallsOptions = CHBLocations.CHB.CommunityHalls || [];
@@ -154,7 +154,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const discReasonOptions = CHBReason?.CHB?.DiscountReason;
 
       const selectedCommHall = communityHallsOptions?.find((item) => item?.communityHallId == formattedData?.communityHallCode);
-      const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose);
+      const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose?.code);
       const selectedSpecialCat = specialCategoryOptions?.find((item) => item?.code == formattedData?.specialCategory?.category);
       const selectHallCode = hallCodeOptions?.find((item) => item?.HallCode == formattedData?.bookingSlotDetails?.[0]?.hallCode);
       const selectReason = discReasonOptions?.find((item) => item?.reasonName == formattedData?.additionalDetails?.reason);

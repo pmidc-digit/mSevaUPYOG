@@ -150,15 +150,12 @@ const ActiveAndOpenSurveys = (props) => {
     });
   };
 
+  let isMobile = Digit.Utils.browser.isMobile();
+
+  console.log("isMobile", isMobile);
+
   return (
-    <div
-      style={{
-        overflowX: "auto",
-        overflowY: "hidden",
-        width: "100%",
-        WebkitOverflowScrolling: "touch",
-      }}
-    >
+    <div>
       {tenantId === "pb.punjab" && window.location.href.includes("/employee") ? (
         <Card style={{ marginTop: "16px", marginBottom: "16px", backgroundColor: "white", maxWidth: "99%" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -198,6 +195,55 @@ const ActiveAndOpenSurveys = (props) => {
         </Card>
       ) : null}
       <div>
+        {isMobile ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {data?.length > 0 ? (
+              data?.map((survey, index) => (
+                <Card
+                  key={index}
+                  style={{
+                    padding: "12px",
+                    borderRadius: "8px",
+                    boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{survey?.surveyTitle}</h3>
+
+                  <p style={{ margin: "4px 0" }}>
+                    <b>Start:</b> {survey?.startDate ? format(new Date(survey?.startDate), "dd/MM/yyyy") : "NA"}
+                  </p>
+
+                  <p style={{ margin: "4px 0" }}>
+                    <b>End:</b> {survey?.endDate ? format(new Date(survey?.endDate), "dd/MM/yyyy") : "NA"}
+                  </p>
+
+                  <SubmitBar label={t("Start Survey")} onSubmit={() => handleStartSurvey(survey)} />
+                </Card>
+              ))
+            ) : (
+              <Card>{t("No Questions found")}</Card>
+            )}
+          </div>
+        ) : (
+          <Table
+            t={t}
+            data={data}
+            totalRecords={count}
+            columns={columns}
+            getCellProps={(cellInfo) => {
+              return {
+                style: {
+                  minWidth: "300px",
+                  padding: "20px 18px",
+                  fontSize: "16px",
+                },
+              };
+            }}
+            noResultsMessage="No Questions found"
+          />
+        )}
+      </div>
+      {/* <div>
         <Table
           t={t}
           data={data}
@@ -213,17 +259,8 @@ const ActiveAndOpenSurveys = (props) => {
             };
           }}
           noResultsMessage="No Questions found"
-          // inboxStyles={{ overflowX: "scroll", overflowY: "hidden" }}
-          // onPageSizeChange={onPageSizeChange}
-          // currentPage={getValues("offset") / getValues("limit")}
-          // onNextPage={nextPage}
-          // onPrevPage={previousPage}
-          // pageSizeLimit={getValues("limit")}
-          // onSort={onSort}
-          // disableSort={false}
-          // sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
         />
-      </div>
+      </div> */}
       {loading && <Loader />}
     </div>
   );

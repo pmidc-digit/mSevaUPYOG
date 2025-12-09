@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   CardLabel,
   Dropdown,
@@ -23,7 +23,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   const [documents, setDocuments] = useState(
     formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ||formData?.documents?.documents ||  []
   );
-  console.log("check formData", formData);
+  console.log("check formData", formData, documents);
   const [error, setError] = useState(null);
   const [loader, setLoader] = useState(false);
   const [bpaTaxDocuments, setBpaTaxDocuments] = useState([]);
@@ -33,6 +33,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   let isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
   const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;
+  const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))
 
   if (isopenlink)
     window.onunload = function () {
@@ -40,7 +41,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     };
 
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(selectedTenantId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
-  console.log("data in StakeholderDocsRequired", data);
+  console.log("data in StakeholderDocsRequired", documents);
 
   useEffect(() => {
     let filtredBpaDocs = [];
@@ -57,6 +58,12 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     console.log("documentsList here", documentsList, filtredBpaDocs);
     setBpaTaxDocuments(documentsList);
   }, [!isLoading]);
+
+  useEffect(() => {
+    if(JSON.stringify(sessionData?.value?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments) != JSON.stringify(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments)){
+      setDocuments(sessionData?.value?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments);
+    }
+  }, [formData]);
 
   const handleSubmit = async () => {
     let document = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ? {
@@ -87,7 +94,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
           // comment: typeof selectedAction === "object" ? selectedAction.comment : null,
           tradeLicenseDetail: {
             ...licenseData.tradeLicenseDetail,
-            applicationDocuments: documentStep?.documents,
+            applicationDocuments: documents,
           },
         },
       ],
@@ -97,10 +104,16 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     try {
       const response = await Digit.OBPSService.BPAREGupdate(payload, tenantId);
       let data = {
-        result: response,
+        ...sessionData,
+        value: {
+          ...sessionData?.value,
+          result: {
+            ...response
+          }
+        }
       };
-      console.log("check data", data);
-      sessionStorage.setItem("FinalDataDoc", JSON.stringify(data));
+
+      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(data));
       setLoader(false);
       console.log("UPDATE response:", response);
     } catch (error) {

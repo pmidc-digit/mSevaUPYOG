@@ -1,14 +1,13 @@
 
-
-import React, { useEffect, useMemo } from "react"
-import { Loader, Table } from "@mseva/digit-ui-react-components"
-import { useTranslation } from "react-i18next"
-import useLayoutFeeCalculator from "@mseva/digit-ui-libraries/src/hooks/obps/useLayoutFeeCalculator"
+import React, { useEffect, useState, useMemo } from "react";
+import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+import _ from "lodash";
 
 
 const LayoutFeeEstimationDetails = ({ formData }) => {
   const { t } = useTranslation()
-
+console.log(formData, "IIIIIIII");
     const payload = useMemo(
     () => ({
       CalculationCriteria: [
@@ -23,11 +22,11 @@ const LayoutFeeEstimationDetails = ({ formData }) => {
                 ...formData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails,
                 // Spread updated data to preserve full objects (no .code or .name extraction)
                 applicationDetails: {
-                  ...formData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+                 
                   ...formData?.applicationDetails,
                 },
                 siteDetails: {
-                  ...formData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+                  
                   ...formData?.siteDetails,
                 },
               },
@@ -52,9 +51,15 @@ const LayoutFeeEstimationDetails = ({ formData }) => {
     },
   )
 
+    const [prevSiteDetails, setPrevSiteDetails] = useState(null);
+  
   useEffect(() => {
-    revalidate()
+   if (!_.isEqual(prevSiteDetails, formData?.siteDetails)) {
+     revalidate();
+     setPrevSiteDetails(formData?.siteDetails);
+   }
   }, [formData?.siteDetails])
+  
 
   const applicationFeeDataWithTotal = useMemo(() => {
     if (!data?.Calculation?.[0]?.totalAmount) return []

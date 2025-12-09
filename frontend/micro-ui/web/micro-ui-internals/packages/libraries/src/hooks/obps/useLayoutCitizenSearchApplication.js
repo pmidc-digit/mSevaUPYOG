@@ -1,17 +1,19 @@
 import { useQuery, useQueryClient } from "react-query"
 
 
-// const useLayoutSearch = (searchParams, tenantId) => {
-//   return async () => {
-//     const data = await Digit.OBPSService.Layoutsearch({ searchParams, tenantId })
-//     return { data }
-//   }
-// }
 
 const useLayoutSearch= (params, tenantId, config) => {  
   return async () => {
     // <CHANGE> Fixed method name from Layoutsearch to LayoutSearch and updated parameters to match service signature
-    const data = await Digit.OBPSService.LayoutSearch(tenantId, {}, params);
+    // Clean up empty values from params to avoid sending empty search criteria
+    const cleanParams = {};
+    for (const [key, value] of Object.entries(params || {})) {
+      if (value !== null && value !== undefined && value !== "") {
+        cleanParams[key] = value;
+      }
+    }
+    const data = await Digit.OBPSService.LayoutSearch(tenantId, {}, cleanParams, { includeMobileNumber: false });
+    console.log("((((((((((((");
     return { data };
   }
 }

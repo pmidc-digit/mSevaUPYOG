@@ -15,8 +15,7 @@ const MyApplication = () => {
   const [finalData, setFinalData] = useState([]);
   const [labelMessage, setLableMessage] = useState(false);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-    const [layoutData, setLayoutData] = useState([])
-  const [isLayoutLoading, setIsLayoutLoading] = useState(true)
+    // Layout state removed: this page no longer uses layout search
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   // const userInfo = Digit.UserService.getUser();
@@ -84,21 +83,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     mobileNumber:""
   };
 
-const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(
-  {
-    ...searchListDefaultValues,
-    mobileNumber: userInfoforLayout?.mobileNumber || ""
-  },
-  tenantId
-);
-
-
-
-    useEffect(() => {
-      if(datalayout){
-        datalayout.revalidate();
-      }
-    }, []);
+// useLayoutCitizenSearchApplication removed from this page; layout data won't be fetched here
 
   const getBPAREGFormData = (data) => {
     console.log("data in getBPAREGFormData", data);
@@ -106,7 +91,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
     const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
-    const permanentAddress = address
+    const permanentAddress = address;
     const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
 
     let name = "";
@@ -114,14 +99,11 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
     let lastName = "";
 
     if (nameParts.length === 1) {
-  // Single name
       name = nameParts[0];
     } else if (nameParts.length === 2) {
-      // Two names → first is name, second is lastName
       name = nameParts[0];
       lastName = nameParts[1];
     } else if (nameParts.length > 2) {
-      // More than two names → first = name, last = lastName, middle = rest
       name = nameParts[0];
       lastName = nameParts[nameParts.length - 1];
       middleName = nameParts.slice(1, -1).join(" ");
@@ -141,7 +123,6 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
         LicneseDetails: {
           PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
           PermanentAddress: permanentAddress,
-
           email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
           gender: {
             code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
@@ -300,7 +281,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
   // }, [requestor])
 
   useEffect(() => {
-    if (!isLoading && !isBpaSearchLoading && !isLoadinglayout) {
+    if (!isLoading && !isBpaSearchLoading) {
       let searchConvertedArray = [];
       let sortConvertedArray = [];
       if (data?.Licenses?.length) {
@@ -339,18 +320,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
         });
       }
 
-    // <CHANGE> Accessing layout data from the correct property: datalayout.data instead of datalayout.Layout
-     // <CHANGE> Accessing the nested Applications object from layout data
-      if (datalayout?.data?.length) {
-        datalayout.data.forEach((layoutWrapper) => {
-          // <CHANGE> Extract the actual application from Applications property
-          const layout = layoutWrapper.Applications;
-          layout.sortNumber = 0
-          layout.modifiedTime = layout.auditDetails?.lastModifiedTime || null
-          layout.type = "LAYOUT"
-          searchConvertedArray.push(layout)
-        })
-      }        
+      // Layout results are intentionally excluded from aggregation on this page
 
       sortConvertedArray = [].slice.call(searchConvertedArray).sort(function (a, b) {
         return new Date(b.modifiedTime) - new Date(a.modifiedTime) || a.sortNumber - b.sortNumber;
@@ -360,9 +330,9 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, isLoadinglayout, bpaData, data, layoutData]);
+  }, [isLoading, isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
 
-  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isLoadinglayout) {
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading) {
     return <Loader />;
   }
 
@@ -377,9 +347,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
       count = count + bpaDataLength;
     }
 
-    if (typeof layoutDataLength == "number") {
-        count = count + layoutDataLength;
-      }
+    // layout counts removed as layout search isn't used on this page
 
     if (count > 0) return `(${count})`;
     else return "";
@@ -404,7 +372,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
   return (
     <Fragment>
   
-      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length, datalayout?.data?.length)}`}</Header>
+      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
       <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
         <span className="link">

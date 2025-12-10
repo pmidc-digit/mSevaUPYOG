@@ -12,7 +12,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, t) => {
   const businessService = processInstances?.[0]?.businessService || "N/A";
   const moduleName = processInstances?.[0]?.moduleName || "N/A";
 
-  // Transform timeline entries into table rows
+  // Transform timeline entries into detailed rows (maintaining original order - latest first)
   const timelineRows = timeline.map((item, index) => {
     const createdDate = item?.auditDetails?.created || "N/A";
     const timing = item?.auditDetails?.timing || "N/A";
@@ -22,49 +22,54 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, t) => {
     const action = item?.performedAction || "N/A";
     const status = item?.status || item?.state || "N/A";
     const comment = item?.wfComment?.[0] || "-";
+    const documents = item?.wfDocuments || [];
 
     return {
-      sNo: timeline.length - index, // Reverse order (latest first becomes 1)
+      sNo: index + 1,
       action: t ? t(action) : action,
       status: t ? t(status) : status,
       assignerName,
       assignerType,
       mobileNumber,
+      designation: assignerType, // For government document style
       date: createdDate,
       time: timing,
+      dateTime: `${createdDate} ${timing !== "N/A" ? timing : ""}`.trim(),
       comment,
+      documents: documents.map(doc => ({
+        name: doc?.fileName || doc?.documentType || "Document",
+        type: doc?.documentType || "Document",
+        fileStoreId: doc?.fileStoreId
+      })),
+      hasDocuments: documents.length > 0
     };
   });
-
-  // Reverse to show chronological order (oldest first)
-  const chronologicalRows = [...timelineRows].reverse();
 
   return {
     t,
     tenantId: tenantInfo?.code || "",
+    tenantName: tenantInfo?.name || tenantInfo?.i18nKey || "Government Department",
     name: t ? t("TIMELINE_PDF_TITLE") : "Application Timeline",
-    heading: t ? t("TIMELINE_PDF_HEADING") : "Workflow Timeline Report",
+    heading: t ? t("TIMELINE_PDF_HEADING") : "File Movement Report",
     businessId,
     businessService: t ? t(`CS_COMMON_${businessService?.toUpperCase()}`) : businessService,
     moduleName,
-    currentStatus: timeline?.[0]?.status || timeline?.[0]?.state || "N/A",
+    currentStatus: t ? t(timeline?.[0]?.status || timeline?.[0]?.state || "N/A") : (timeline?.[0]?.status || timeline?.[0]?.state || "N/A"),
     generatedDate: new Date().toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "long",
       year: "numeric",
     }),
-    timelineRows: chronologicalRows,
-    tableHeaders: [
-      { label: t ? t("CM_TIMELINE_SL_NO") : "S.No", key: "sNo" },
-      { label: t ? t("CM_TIMELINE_ACTION_TAKEN") : "Action", key: "action" },
-      { label: t ? t("CM_TIMELINE_STATUS") : "Status", key: "status" },
-      { label: t ? t("CM_TIMELINE_NAME") : "Performed By", key: "assignerName" },
-      { label: t ? t("CM_TIMELINE_USER_TYPE") : "User Type", key: "assignerType" },
-      { label: t ? t("CM_TIMELINE_MOBILE") : "Mobile", key: "mobileNumber" },
-      { label: t ? t("CM_TIMELINE_DATE") : "Date", key: "date" },
-      { label: t ? t("CM_TIMELINE_TIME") : "Time", key: "time" },
-      { label: t ? t("CM_TIMELINE_REMARKS") : "Remarks", key: "comment" },
-    ],
+    generatedDateTime: new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    }),
+    timelineRows,
+    totalSteps: timelineRows.length,
   };
 };
 

@@ -722,108 +722,216 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
  * Generate Timeline PDF using pdfMake
  * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
  */
+/**
+ * Generate Timeline PDF using pdfMake - eOffice Government Style
+ * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
+ */
 const generateTimelinePDF = async (data) => {
-  const { t, tenantId, name, heading, businessId, businessService, currentStatus, generatedDate, timelineRows, tableHeaders } = data;
+  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps } = data;
 
-  // Build table body: header row + data rows
-  const tableBody = [
-    // Header row
-    tableHeaders.map(header => ({
-      text: header.label,
-      style: 'tableHeader',
-      fillColor: '#a82227',
-      color: '#FFFFFF',
-      bold: true,
-      fontSize: 9,
-    })),
-    // Data rows
-    ...timelineRows.map((row, index) => 
-      tableHeaders.map(header => ({
-        text: String(row[header.key] || '-'),
-        fontSize: 8,
-        fillColor: index % 2 === 0 ? '#f9f9f9' : '#FFFFFF',
-      }))
-    ),
-  ];
+  // Build content for each timeline entry in eOffice style
+  const buildTimelineEntries = () => {
+    const entries = [];
+    
+    timelineRows.forEach((row, index) => {
+      // Note header with number - Styled better
+      entries.push({
+        text: [{ text: 'NOTE # ', color: '#a82227', bold: true }, { text: String(row.sNo), color: '#333', bold: true }],
+        fontSize: 12,
+        margin: [0, index === 0 ? 0 : 25, 0, 5],
+      });
+
+      // Main content box with light green background (#ccffcc)
+      entries.push({
+        table: {
+          widths: ['*'],
+          body: [
+            [{
+              stack: [
+                // Header: Action & Status with background pill effect
+                {
+                  table: {
+                    widths: ['auto', '*', 'auto'],
+                    body: [[
+                      { text: [{ text: 'Action: ', bold: true, color: '#555' }, { text: row.action || 'N/A', color: '#000', bold: true }], fontSize: 10, border: [false, false, false, false] },
+                      { text: '', border: [false, false, false, false] }, // Spacer
+                      { text: [{ text: 'Status: ', bold: true, color: '#555' }, { text: row.status || 'N/A', color: '#a82227', bold: true }], fontSize: 10, alignment: 'right', border: [false, false, false, false] }
+                    ]]
+                  },
+                  layout: 'noBorders',
+                  margin: [0, 0, 0, 8]
+                },
+                
+                // Divider line
+                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: '#99cc99' }] },
+                
+                // Comment/Remarks section
+                {
+                  text: row.comment && row.comment !== '-' ? row.comment : 'No Comments',
+                  fontSize: 11,
+                  color: row.comment && row.comment !== '-' ? '#222' : '#777',
+                  margin: [0, 12, 0, 12],
+                  lineHeight: 1.5,
+                },
+                
+                // Documents section (if any)
+                ...(row.hasDocuments ? [
+                  {
+                    text: 'Attachments:',
+                    fontSize: 9,
+                    bold: true,
+                    color: '#555',
+                    margin: [0, 5, 0, 2],
+                  },
+                  {
+                    ul: row.documents.map(doc => ({
+                      text: doc.name,
+                      fontSize: 10,
+                      color: '#0056b3',
+                      decoration: 'underline',
+                    })),
+                    margin: [0, 0, 0, 10],
+                  }
+                ] : []),
+
+                // Footer: Date/Time & Signatory
+                {
+                  columns: [
+                    // Left: Date & Time
+                    {
+                      stack: [
+                         { text: 'Date & Time:', fontSize: 8, color: '#777', bold: true },
+                         { text: `${row.date} | ${row.time}`, fontSize: 9, color: '#333', bold: true, margin: [0, 2, 0, 0] }
+                      ],
+                      width: 'auto',
+                      alignment: 'left'
+                    },
+                    // Right: Signatory
+                    {
+                      stack: [
+                        { text: row.assignerName?.toUpperCase() || 'N/A', fontSize: 10, bold: true, alignment: 'right', color: '#000' },
+                        { text: row.designation || row.assignerType || 'N/A', fontSize: 9, color: '#444', alignment: 'right' },
+                        { text: row.mobileNumber !== 'N/A' ? `+91 ${row.mobileNumber}` : '', fontSize: 9, color: '#666', alignment: 'right', margin: [0, 2, 0, 0] }
+                      ],
+                      width: '*',
+                      alignment: 'right'
+                    }
+                  ],
+                  margin: [0, 10, 0, 0],
+                },
+              ],
+              fillColor: '#ccffcc', // Requested light green background
+              margin: [15, 12, 15, 12],
+              border: [true, true, true, true],
+              borderColor: ['#99cc99', '#99cc99', '#99cc99', '#99cc99']
+            }],
+          ],
+        },
+        layout: {
+          hLineWidth: () => 1,
+          vLineWidth: () => 1,
+          hLineColor: () => '#99cc99',
+          vLineColor: () => '#99cc99',
+        },
+      });
+    });
+
+    return entries;
+  };
 
   const dd = {
-    pageMargins: [20, 60, 20, 40],
-    pageOrientation: 'landscape',
+    pageMargins: [40, 80, 40, 60],
+    pageOrientation: 'portrait',
     header: {
-      columns: [
+      stack: [
         {
-          text: heading,
-          style: 'header',
-          margin: [20, 20, 0, 0],
+          columns: [
+            {
+              text: tenantName || 'Government Department',
+              fontSize: 14,
+              bold: true,
+              color: '#a82227',
+              width: '*',
+            },
+            {
+              text: generatedDateTime,
+              fontSize: 9,
+              color: '#666666',
+              alignment: 'right',
+              width: 'auto',
+            },
+          ],
+          margin: [40, 20, 40, 5],
+        },
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, lineColor: '#a82227' }],
+          margin: [40, 0, 40, 0],
         },
       ],
     },
     footer: (currentPage, pageCount) => ({
       columns: [
-        { text: `Generated on: ${generatedDate}`, alignment: 'left', margin: [20, 0, 0, 0], fontSize: 8 },
-        { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', margin: [0, 0, 20, 0], fontSize: 8 },
+        { text: `File No: ${businessId}`, alignment: 'left', fontSize: 9, color: '#666666' },
+        { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', fontSize: 9, color: '#666666' },
       ],
+      margin: [40, 20, 40, 0],
     }),
     defaultStyle: {
       font: 'Hind',
     },
     styles: {
-      header: {
-        fontSize: 16,
-        bold: true,
-        color: '#a82227',
-      },
-      subheader: {
+      noteHeader: {
         fontSize: 12,
-        bold: true,
-        margin: [0, 10, 0, 5],
-      },
-      tableHeader: {
-        bold: true,
-        fontSize: 9,
-        color: 'white',
-      },
-      infoLabel: {
-        fontSize: 10,
         bold: true,
         color: '#333333',
       },
-      infoValue: {
+      fileInfo: {
         fontSize: 10,
-        color: '#555555',
+        color: '#333333',
       },
     },
     content: [
-      // Application Info Section
-      {
-        columns: [
-          { text: t ? t('CM_TIMELINE_APPLICATION_ID') : 'Application ID: ', style: 'infoLabel', width: 'auto' },
-          { text: businessId, style: 'infoValue', margin: [5, 0, 20, 0] },
-          { text: t ? t('CM_TIMELINE_SERVICE') : 'Service: ', style: 'infoLabel', width: 'auto' },
-          { text: businessService, style: 'infoValue', margin: [5, 0, 20, 0] },
-          { text: t ? t('CM_TIMELINE_CURRENT_STATUS') : 'Status: ', style: 'infoLabel', width: 'auto' },
-          { text: currentStatus, style: 'infoValue' },
-        ],
-        margin: [0, 0, 0, 15],
-      },
-      // Timeline Table
-      {
-        text: t ? t('CM_TIMELINE_WORKFLOW_HISTORY') : 'Workflow History',
-        style: 'subheader',
-      },
+      // File Reference Header
       {
         table: {
-          headerRows: 1,
-          widths: ['auto', 'auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', '*'],
-          body: tableBody,
+          widths: ['auto', '*'],
+          body: [
+            [
+              { text: 'File No:', bold: true, fontSize: 11, border: [false, false, false, false] },
+              { text: businessId, fontSize: 11, color: '#a82227', bold: true, border: [false, false, false, false] },
+            ],
+            [
+              { text: 'Service:', bold: true, fontSize: 10, border: [false, false, false, false] },
+              { text: businessService, fontSize: 10, border: [false, false, false, false] },
+            ],
+            [
+              { text: 'Current Status:', bold: true, fontSize: 10, border: [false, false, false, false] },
+              { text: currentStatus, fontSize: 10, color: '#228B22', bold: true, border: [false, false, false, false] },
+            ],
+            [
+              { text: 'Total Actions:', bold: true, fontSize: 10, border: [false, false, false, false] },
+              { text: String(totalSteps), fontSize: 10, border: [false, false, false, false] },
+            ],
+          ],
         },
-        layout: {
-          hLineWidth: () => 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#dddddd',
-          vLineColor: () => '#dddddd',
-        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 20],
       },
+      // Divider
+      {
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, lineColor: '#cccccc' }],
+        margin: [0, 0, 0, 15],
+      },
+      // Section Title
+      {
+        text: t ? t('CM_TIMELINE_WORKFLOW_HISTORY') : 'File Movement History',
+        fontSize: 14,
+        bold: true,
+        color: '#a82227',
+        margin: [0, 0, 0, 15],
+      },
+      // Timeline Entries
+      ...buildTimelineEntries(),
     ],
   };
 
@@ -832,7 +940,7 @@ const generateTimelinePDF = async (data) => {
   let Hind = pdfFonts[locale] || pdfFonts['Hind'];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
-  downloadPDFFileUsingBase64(generatedPDF, `timeline_${businessId}.pdf`);
+  downloadPDFFileUsingBase64(generatedPDF, `file_movement_${businessId}.pdf`);
 };
 
 export default {

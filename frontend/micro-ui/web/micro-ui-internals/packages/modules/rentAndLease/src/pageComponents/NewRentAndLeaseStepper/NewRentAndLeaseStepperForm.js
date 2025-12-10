@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig, employeeConfig } from "../../config/Create/citizenStepperConfig";
-import { SET_RENTANDLEASE_NEW_APPLICATION_STEP, RESET_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
+import { SET_RENTANDLEASE_NEW_APPLICATION_STEP, RESET_RENTANDLEASE_NEW_APPLICATION_FORM, UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
 
@@ -134,9 +134,8 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   const step = formState?.step || 1;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const pathParts = window.location.pathname.split("/");
-  const id = pathParts.find((part) => part.startsWith("UC-RL-"));
-  const shouldEnableSearch = Boolean(id && id.startsWith("UC-RL-"));
+  const { id } = useParams();
+
   const triggerToast = (labelKey, isError = false) => {
     setShowToast({ label: labelKey, key: isError });
   };
@@ -145,18 +144,118 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
     setLoading(status);
   };
 
-  // If you have a search hook for RentAndLease, use it here
-  // const { isLoading, data: applicationData } = Digit.Hooks.rentAndLease?.useRentAndLeaseSearch({
-  //   tenantId,
-  //   filters: { applicationNumber: id },
-  //   enabled: shouldEnableSearch,
-  // });
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: id } })
+        .then((result) => {
+          if (result?.AllotmentDetails?.length > 0) {
+            const allotmentDetails = result?.AllotmentDetails?.[0];
+            console.log("allotmentDetails", allotmentDetails);
+            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("responseData", allotmentDetails));
+            
+            // ✅ Set CreatedResponse to prevent "create" API call in Step 2
+            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", { AllotmentDetails: allotmentDetails }));
 
-  // useEffect(() => {
-  //   if (id && applicationData?.RentAndLeaseApplications?.length) {
-  //     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("responseData", applicationData.RentAndLeaseApplications));
-  //   }
-  // }, [applicationData, id, dispatch]);
+            // --- Map Property Details ---
+            const apiAdditionalDetails = allotmentDetails?.additionalDetails || {};
+            
+            // Create a NEW object for the form, merging root fields and additionalDetails
+            const formPropertyDetails = {
+                ...apiAdditionalDetails,
+                startDate: allotmentDetails?.startDate,
+                endDate: allotmentDetails?.endDate,
+                penaltyType: allotmentDetails?.penaltyType || apiAdditionalDetails?.penaltyType,
+                latePayment: allotmentDetails?.latePayment || "2%",
+                // Add other root fields if they are missing in additionalDetails but needed in form
+            };
+
+            // Define Options for Dropdown Mapping
+            const propertyTypeOptions = [
+                { name: t("ON_RENT"), code: "rent", i18nKey: "rent" },
+                { name: t("ON_LEASE"), code: "lease", i18nKey: "lease" },
+            ];
+            const propertySpecificOptions = [
+                { name: t("COMMERCIAL"), code: "Commercial", i18nKey: "Commercial" },
+                { name: t("RESIDENTIAL"), code: "Residential", i18nKey: "Residential" },
+            ];
+            const locationTypeOptions = [
+                { name: t("PRIME"), code: "Prime", i18nKey: "Prime" },
+                { name: t("NON_PRIME"), code: "Non-Prime", i18nKey: "Non-Prime" },
+            ];
+
+            // Map Dropdowns: API String -> Form Object
+            
+            // 1. allotmentType (API) -> propertyType (Form)
+            if (apiAdditionalDetails.allotmentType) {
+                const matchedOption = propertyTypeOptions.find(opt => opt.code === apiAdditionalDetails.allotmentType);
+                formPropertyDetails.propertyType = matchedOption || { code: apiAdditionalDetails.allotmentType, name: apiAdditionalDetails.allotmentType };
+            }
+
+            // 2. propertyType (API) -> propertySpecific (Form)
+            if (apiAdditionalDetails.propertyType) {
+                const matchedOption = propertySpecificOptions.find(opt => opt.code === apiAdditionalDetails.propertyType);
+                formPropertyDetails.propertySpecific = matchedOption || { code: apiAdditionalDetails.propertyType, name: apiAdditionalDetails.propertyType };
+            }
+
+            // 3. locationType (API) -> locationType (Form)
+            if (apiAdditionalDetails.locationType) {
+                const matchedOption = locationTypeOptions.find(opt => opt.code === apiAdditionalDetails.locationType);
+                formPropertyDetails.locationType = matchedOption || { code: apiAdditionalDetails.locationType, name: apiAdditionalDetails.locationType };
+            }
+
+            // Format Dates (Timestamp -> YYYY-MM-DD)
+            if (formPropertyDetails.startDate) {
+                 formPropertyDetails.startDate = new Date(formPropertyDetails.startDate).toISOString().split('T')[0];
+            }
+            if (formPropertyDetails.endDate) {
+                 formPropertyDetails.endDate = new Date(formPropertyDetails.endDate).toISOString().split('T')[0];
+            }
+
+            console.log("Mapped formPropertyDetails", formPropertyDetails);
+            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", formPropertyDetails));
+
+
+            // --- Map Applicant Details ---
+            const owners = allotmentDetails?.OwnerInfo || [];
+            const applicants = owners.map(owner => ({
+                name: owner?.name,
+                mobileNumber: owner?.mobileNo,
+                emailId: owner?.emailId,
+                pincode: owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode,
+                address: owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || "", 
+            }));
+
+            const ownershipType = applicants.length > 1 ? "MULTIPLE" : "SINGLE";
+            
+            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("applicantDetails", {
+                applicants,
+                ownershipType
+            }));
+
+            // --- Map Document Details ---
+            if (allotmentDetails?.Document?.length > 0) {
+                const documents = allotmentDetails.Document.map(doc => ({
+                    documentType: doc.documentType,
+                    fileStoreId: doc.fileStoreId,
+                    documentUid: doc.documentUid,
+                    id: doc.id
+                }));
+                dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("documents", {
+                    documents: {
+                        documents: documents
+                    }
+                }));
+            }
+          }
+        })
+        .catch((e) => {
+          console.error("Error fetching application details", e);
+          triggerToast("CS_COMMON_ERROR", true);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, tenantId, dispatch, t]);
 
   const config = userType === "employee" ? createEmployeeConfig : createApplicationConfig;
 

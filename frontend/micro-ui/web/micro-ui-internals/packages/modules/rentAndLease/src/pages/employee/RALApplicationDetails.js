@@ -138,6 +138,7 @@ const RALApplicationDetails = () => {
     };
 
     console.log("action", action);
+    history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
     const filterNexState = (action?.actions ?? action?.state?.actions)?.filter((item) => item.action === action?.action);
 
@@ -151,6 +152,8 @@ const RALApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}`);
+    } else if (action?.action === "EDIT") {
+      history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);

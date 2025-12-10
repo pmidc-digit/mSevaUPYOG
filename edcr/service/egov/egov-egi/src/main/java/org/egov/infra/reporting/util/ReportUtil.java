@@ -91,7 +91,7 @@ public final class ReportUtil {
     private static final EnumMap<ReportFormat, String> CONTENT_TYPES;
     
     @Value("${internal.edcr.service.url}")
-    private static boolean edcr_internal_service_url;
+    private static String edcr_internal_service_url;
     
     static {
         CONTENT_TYPES = new EnumMap<>(ReportFormat.class);

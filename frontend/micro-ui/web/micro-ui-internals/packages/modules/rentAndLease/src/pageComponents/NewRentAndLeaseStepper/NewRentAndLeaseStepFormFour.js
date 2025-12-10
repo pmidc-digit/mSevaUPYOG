@@ -75,8 +75,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         const action = res?.response?.RentAndLeaseApplications?.[0]?.workflow?.action;
         if (action == "CANCEL") {
           onGoToRentAndLease();
-        } else if (action == "SAVEASDRAFT") {
-          triggerToast("Successfully saved as draft");
+        } else if (action == "SAVEASDRAFT" || action == "SAVEDRAFT") {
+          triggerToast(t("RAL_SAVEDASDRAPT_MESSAGE"));
           setTimeout(() => {
             onGoToRentAndLease();
           }, 1000);
@@ -87,10 +87,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           );
         }
       } else {
-        triggerToast(res?.Errors?.message || "Update failed", true);
+        triggerToast(t(res?.Errors?.message || "Update failed"), true);
       }
     } catch (error) {
-      triggerToast(error?.message || "Update failed", true);
+      triggerToast(t(error?.message || "Update failed"), true);
     }
   }
 
@@ -167,6 +167,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     goNext(action);
   }
 
+  console.log('actions', actions)
+
   return (
     <React.Fragment>
       <FormComposer
@@ -186,8 +188,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         />
 
         {displayMenu && actions && actions.length > 0 ? (
-          <Menu options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
-        ) : // <Menu localeKeyPrefix={t(`WF_CITIZEN_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+          // <Menu options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+          <Menu localeKeyPrefix={t(`WF_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+        ) : 
 
         null}
 

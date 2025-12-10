@@ -316,6 +316,7 @@ const PTRWFApplicationTimeline = (props) => {
         */}
         {/* =================================================================== */}
 
+ <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline
           workflowDetails={workflowDetails}
           t={t}

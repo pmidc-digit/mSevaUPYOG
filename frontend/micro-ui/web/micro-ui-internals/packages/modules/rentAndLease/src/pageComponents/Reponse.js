@@ -25,9 +25,9 @@ const RALResponse = (props) => {
       <Card>
         <Banner
           // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          message={t("PTR_HEADER")}
+          message={t("RAL_SUCCESS_HEADER")}
           applicationNumber={RALCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`PTR_APPROVAL_NUMBER`)}
+          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`RAL_ALLOTMENT_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}

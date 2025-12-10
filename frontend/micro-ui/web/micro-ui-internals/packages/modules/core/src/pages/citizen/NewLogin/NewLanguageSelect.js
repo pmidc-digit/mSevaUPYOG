@@ -20,23 +20,45 @@ const LanguageSelect = ({ onLanguageChange }) => {
     }),
     [languages, selectedLanguage, onLanguageChange]
   );
-  
-  const style = {
-    languageWrapper: {
-      width: '100%',
-      maxWidth: '260px',
-    },
+
+
+    const handleLanguageSelect = (language) => {
+    Digit.LocalizationService.changeLanguage(language.value, stateInfo.code)
+    onLanguageChange && onLanguageChange(language.value)
   }
   return (
-    // <PageBasedInput texts={{}} onSubmit={() => {}} isDisabled={true} >
-    <div className="language-wrapper" style={style.languageWrapper}>
-      <div className="label">
+    // <div className="language-wrapper" style={style.languageWrapper}>
+    //   <div className="label">
+    //     {t("CS_COMMON_CHOOSE_LANGUAGE")}
+    //     <span> *</span>
+    //   </div>
+    //   {!isLoading && <RadioButtons {...languagesProps} style={{ display: "flex", gap: "20px" }} />}
+    // </div>
+
+ <div className="newLoginlanguageWrapper">
+      <div className="newLoginlabel">
         {t("CS_COMMON_CHOOSE_LANGUAGE")}
-        <span> *</span>
+        <span className="newLoginrequired"> *</span>
       </div>
-      {!isLoading && <RadioButtons {...languagesProps} style={{ display: "flex", gap: "20px" }} />}
+
+      {!isLoading && (
+        <div className="newLoginlanguageButtonContainer">
+          {languages?.map((language) => {
+            const isSelected = selectedLanguage === language.value;
+            return (
+              <button
+                key={language.value}
+                onClick={() => handleLanguageSelect(language)}
+                // className={`${newLoginlanguageButton} ${isSelected ? newLoginSelected : ""}`}
+                className={`newLoginlanguageButton ${isSelected ? "selected" : ""}`}
+              >
+                {language.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
-    // </PageBasedInput>
   );
 };
 

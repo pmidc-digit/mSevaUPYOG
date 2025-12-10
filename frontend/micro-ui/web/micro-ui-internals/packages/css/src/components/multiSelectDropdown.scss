@@ -4,26 +4,37 @@
         @apply relative border border-solid border-input-border h-10 w-full;
         input[type=text]{
             @apply absolute top-0 left-0 p-sm pl-sm min-h-full min-w-full opacity-0;
+            color: #1f2937 !important;
             &:focus{
                 @apply outline-none;
+                color: #1f2937 !important;
+            }
+            &::placeholder {
+                color: #9ca3af !important;
             }
         }
         .label{
             @apply flex justify-between p-sm w-full h-full;
+            color: #1f2937;
             svg{
                 @apply h-6 w-6;
             }
         }
 
         &:hover{
-            @apply border-2 border-solid border-primary-main;
+            @apply border-2 border-solid border-input-border;
         }
     }
 
     .master-active{
-        @apply border-2 border-primary-main;
+        @apply border-2 border-input-border;
         input[type=text]{
             @apply opacity-100;
+            color: #1f2937 !important;
+            &:focus {
+                color: #1f2937 !important;
+                border-color: #d1d5db !important;
+            }
         }
         .label{
             @apply hidden;
@@ -32,7 +43,7 @@
 
     .server{
 
-        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         top:40px;
 
         max-height:20vmax;
@@ -41,7 +52,8 @@
         div{
             @apply flex w-full bg-white;
             &:hover{
-                @apply bg-grey-mid;
+                @apply bg-grey-light;
+                background-color: #f3f4f6;
             }
             input{
                 height: 44px;
@@ -50,18 +62,22 @@
             p{
                 padding: 12px;
                 @apply text-form-field text-text-primary;
+                color: #1f2937;
             }
             .custom-checkbox{
                 height: 28px;
                 width: 28px;
                 @apply border border-solid border-input-border m-sm;
+                background-color: #ffffff;
                 svg{
                     @apply opacity-0 z-10;
                 }
             }
             input:checked ~ .custom-checkbox,
             input:hover ~ .custom-checkbox {
-                @apply border-2 border-primary-main;
+                @apply border-2 border-solid;
+                border-color: #d1d5db;
+                background-color: #ffffff;
             }
 
             input:checked ~ .custom-checkbox svg {

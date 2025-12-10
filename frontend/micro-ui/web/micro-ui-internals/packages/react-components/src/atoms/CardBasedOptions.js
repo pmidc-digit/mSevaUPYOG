@@ -1,67 +1,68 @@
-import React from "react";
-const CardBasedOptionsMainChildOption = {
-    display: 'flex',
-    flexDirection: 'column',
-    margin: '3rem',
-    background: '#8773e4ff',
-    borderRadius: '8px',
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign : "center"
-}
-const cardHeader = {
-  textAlign: "center",
-  textTransform: "uppercase",
-  paddingBottom: "5px"
-}
-const Option = ({ name, Icon, onClick, className }) => {
+import React from "react"
+
+  const cardColors = [
+    { bg: "#EBF3FE", iconBg: "#2B6FED", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#E8F8F5", iconBg: "#0FA76F", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#F3EBFF", iconBg: "#8B5CF6", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#FEF3E8", iconBg: "#F97316", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#FCE8F3", iconBg: "#EC4899", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#E0F2FE", iconBg: "#0EA5E9", icon: "#FFFFFF", textColor: "#1a202c" },
+  ]
+
+const Option = ({ name, Icon, onClick, className, colorIndex = 0 }) => {
+  const [isCardHovered, setIsCardHovered] = React.useState(false)
+  const colors = cardColors[colorIndex % cardColors.length]
+
   return (
-    // <div className={className || `CardBasedOptionsMainChildOption`} onClick={onClick}>
-    // <div style={CardBasedOptionsMainChildOption} onClick={onClick}>
-    //   <div className="ChildOptionImageWrapper">{Icon}</div>
-    //   <p className="ChildOptionName">{name}</p>
-    // </div>
-
-    <div class="cardService wallet" onClick={onClick}>
-       <div class="overlayService"></div>
-        <div class="circleService">
-           {Icon}
-        </div>
-      <p>{name}</p>
+    <div
+      className="new-card-option"
+      style={{
+        background: isCardHovered ? colors.bg : "#ffffff",
+        border: isCardHovered ? "2px solid transparent" : "2px solid #e2e8f0",
+        transition: "all 0.25s ease",
+      }}
+      onClick={onClick}
+      onMouseEnter={() => setIsCardHovered(true)}
+      onMouseLeave={() => setIsCardHovered(false)}
+    >
+      <div className="new-card-icon" style={{ background: colors.iconBg, color: colors.icon }}>
+        {Icon}
+      </div>
+      <div className="new-card-service-name" style={{ color: colors.textColor }}>{name}</div>
+      <div className="new-card-access" style={{ color: isCardHovered ? colors.textColor : "#4a5568" }}>
+        <span>Access service</span>
+        <span className="new-card-arrow">→</span>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-const CardBasedOptions = ({ header, sideOption, options, styles = {}, style={} }) => {
+const CardBasedOptions = ({ header, sideOption, options, styles = {}, style = {} }) => {
+  const [isHovered, setIsHovered] = React.useState(false)
+
   return (
-    <div className="" style={{width:"100%"}}>
-       {/* <div className="employeeCustomCard" style={{ width: "100%", height: "80%", position: "relative",display:"flex",fontSize:"1.2rem",fontWeight:"700" }}> */}
-            {/* <h2 style={{width:"70%",padding:"20px",height:"fit-content",color:"white"}}>{header}</h2> */}
-            {/* <p onClick={sideOption.onClick}></p> */}
-            {/* <button type="button" class="inboxButton" onClick={sideOption.onClick}>
-            {sideOption.name}
-                      </button> */}
-            {/* <div className="employee-card-banner"> */}
-          {/* <div className="body" style={{ margin: "0px", padding: "0px",height:"100%" }}> */}
-          <div className="card-header">
-              <h1>{header}</h1>
-              <p onClick={sideOption.onClick}></p>
-               <button type="button" class="inboxButton" onClick={sideOption.onClick}>
-            {sideOption.name}
-                      </button>
-          </div>
-          <div className="mainContent citizenAllServiceGrid" style={{display:"flex", flexWrap : "wrap", borderRadius : '8px', marginTop: "1rem", justifyContent : "center"}}>
-            
-            {options.map( (props, index) => 
-                <Option key={index} {...props} />
-            )}
-        </div>
-          {/* </div> */}
+    <div className="new-card-root" style={{ width: "100%", ...style }}>
 
-        {/* </div> */}
-        {/* </div> */}
+      <div className="new-card-header-section" >
+        <h2 className="new-card-header-title" >{header}</h2>
+        <button
+          type="button"
+           className="new-card-view-button"
+          onClick={sideOption.onClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {sideOption.name}
+          <span>→</span>
+        </button>
+      </div>
+      <div className="new-card-cards-grid" >
+        {options.map((props, index) => (
+          <Option key={index} {...props} colorIndex={index} />
+        ))}
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default CardBasedOptions;
+export default CardBasedOptions

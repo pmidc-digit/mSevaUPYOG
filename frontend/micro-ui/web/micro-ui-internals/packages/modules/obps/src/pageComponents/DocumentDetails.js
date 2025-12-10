@@ -216,16 +216,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
             .map((document, index) => {
               return (
                 <div
-                  style={{
-                    background: "#FAFAFA",
-                    border: "1px solid #D6D5D4",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    maxWidth: "600px",
-                    minWidth: "280px",
-                    marginBottom: "15px",
-                    paddingTop: "15px",
-                  }}
+                
                 >
                   <SelectDocument
                     key={index}
@@ -253,12 +244,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       <ActionBar>
         <SubmitBar
           label="Back"
-          style={{
-            border: "1px solid",
-            background: "transparent",
-            color: "#2947a3",
-            marginRight: "5px",
-          }}
+        
           onSubmit={onGoBack}
         />
         {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading}/>}
@@ -421,13 +407,13 @@ function SelectDocument({
 
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div>
       <LabelFieldPair>
         {/* {console.log("doc", doc)} */}
-        <CardLabel style={{ width: "100%" }} className="card-label-smaller">
+        <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
-        <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
+        <div className="field">
           <CustomUploadFile
             id={"tl-doc"}
             onUpload={selectfile}

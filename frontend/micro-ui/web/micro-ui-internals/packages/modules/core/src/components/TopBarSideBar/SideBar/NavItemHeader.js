@@ -69,7 +69,7 @@ const NavItemHeader = props => {
         onClick={onExpandChange}
         style={item?.elementStyle ? {...item?.elementStyle,display:"flex"}:{display:"flex"}}
       >
-         <div className={`sidebar-link ${expanded ? "active": ""}`} style={{width:item?.nested ?"240px":"260px",overflow:"auto"}}>{!item?.nested && leftIcon}
+         <div className={`sidebar-link ${expanded ? "active": ""}`} style={{width:item?.nested ?"240px":"350px",overflow:"auto"}}>{!item?.nested && leftIcon}
          <div className='actions' style={{padding:"0px",marginRight:"auto"}}>
          <div data-tip="React-tooltip" data-for={`jk-side-${getModuleName}`}>
         <span style={{color:expanded ? "#a82227":""}}>{trimModuleName}</span>

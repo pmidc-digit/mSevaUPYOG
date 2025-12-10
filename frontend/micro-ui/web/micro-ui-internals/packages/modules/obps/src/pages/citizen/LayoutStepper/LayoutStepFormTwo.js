@@ -10,11 +10,12 @@ import { useParams } from "react-router-dom";
 
 const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
+  const { id } = useParams();
+  const isEditApplication = Boolean(id);
+  console.log("LOOK IN STEER",isEditApplication);
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
-  const { id } = useParams();
-  const isEditApplication = Boolean(id);
   console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
 
   const {

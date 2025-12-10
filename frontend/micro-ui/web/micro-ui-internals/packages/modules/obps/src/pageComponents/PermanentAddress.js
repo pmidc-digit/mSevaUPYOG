@@ -790,8 +790,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   };
   return (
     <React.Fragment>
-      <div className={isopenlink ? "OpenlinkContainer" : ""} style={{paddingBottom: "30px"}}>
-        {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+      <div className={isopenlink ? "OpenlinkContainer" : ""}>
+        {isopenlink && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep
           config={config}
@@ -809,7 +809,26 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             name="PermanentAddress"
             onChange={selectPermanentAddress}
             value={PermanentAddress}
-            disable={!isEditable}
+            // disable={!isCitizenEditable}
+          />
+
+          <CheckBox
+            label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
+            onChange={handleAddressSame}
+            checked={isAddressSame}
+           
+            //  disable={!isCitizenEditable}
+          />
+
+          <CardLabel>{t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}</CardLabel>
+          <TextArea
+            t={t}
+            isMandatory={false}
+            type={"text"}
+            name="correspondenceAddress"
+            value={correspondenceAddress}
+            onChange={(e) => setCorrespondenceAddress(e.target.value)}
+            // disable={isAddressSame}
           />
 
           <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>

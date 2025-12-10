@@ -44,7 +44,7 @@ public class AllotmentService {
 
 	@Autowired
 	private RentLeaseConfiguration config;
-	
+
 	@Autowired
 	private ObjectMapper mapper;
 
@@ -65,15 +65,16 @@ public class AllotmentService {
 
 	@Autowired
 	UserService userService;
-	
+
 	@Autowired
 	AllotmentRepository allotmentRepository;
-	
+
 	@Autowired
 	private DemandService demandService;
 
 	@Autowired
 	private NotificationService notificationService;
+
 	/**
 	 * Enriches the Request and pushes to the Queue
 	 *
@@ -119,20 +120,29 @@ public class AllotmentService {
 		} else {
 			allotmentRequest.getAllotment().setStatus("ACTIVE");
 		}
-		String demandId=null;
+		String demandId = null;
 		boolean isApprove = allotmentRequest.getAllotment().getWorkflow().getAction().equals("APPROVE");
-		if(isApprove&&allotmentDetails.getApplicationType().equals(RLConstants.NEW_RL_APPLICATION)){
-			demandId =	demandService.createDemand(true, allotmentRequest).get(0).getId();
+		if (isApprove && allotmentDetails.getApplicationType().equals(RLConstants.NEW_RL_APPLICATION)) {
 			try {
-			    notificationService.sendNotificationForAllotment(allotmentRequest);
-			}catch (Exception e) {
+				demandId = demandService.createDemand(true, allotmentRequest).get(0).getId();
+			} catch (Exception e) {
 				// TODO: handle exception
 			}
-		}else if(isApprove) {
-			demandId =	demandService.createDemand(false, allotmentRequest).get(0).getId();
+			try {
+				notificationService.sendNotificationForAllotment(allotmentRequest);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		} else if (isApprove) {
+			try {
+				demandId = demandService.createDemand(false, allotmentRequest).get(0).getId();
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+
 		}
 		allotmentRequest.getAllotment().setDemandId(demandId);
-		
+
 		producer.push(config.getUpdateRLAllotmentTopic(), allotmentRequest);
 		allotmentRequest.getAllotment().setWorkflow(null);
 		return allotmentRequest.getAllotment();
@@ -195,9 +205,8 @@ public class AllotmentService {
 		if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
 			System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
 
-			List<String> userUuids1 = userService.getUserUuidsByMobileNumber(
-					allotmentCriteria.getMobileNumber(), allotmentCriteria.getTenantId(),
-					requestInfo);
+			List<String> userUuids1 = userService.getUserUuidsByMobileNumber(allotmentCriteria.getMobileNumber(),
+					allotmentCriteria.getTenantId(), requestInfo);
 			Set<String> userUuidSet = new HashSet<>(userUuids1);
 			System.out.println("DEBUG: Found user UUIDs: " + userUuidSet);
 
@@ -212,16 +221,20 @@ public class AllotmentService {
 			allotmentCriteria.setMobileNumber(null);
 			System.out.println("DEBUG: Set ownerUuids in criteria: " + allotmentCriteria.getOwnerIds());
 		}
-	    final List<RLProperty> rlList=boundaryService.allPropertyList(AllotmentRequest.builder().requestInfo(requestInfo).allotment(AllotmentDetails.builder().tenantId(allotmentCriteria.getTenantId()).build()).build());
-		System.out.println("rl================"+rlList);
+		final List<RLProperty> rlList = boundaryService.allPropertyList(AllotmentRequest.builder()
+				.requestInfo(requestInfo)
+				.allotment(AllotmentDetails.builder().tenantId(allotmentCriteria.getTenantId()).build()).build());
+		System.out.println("rl================" + rlList);
 		List<AllotmentDetails> applications = allotmentRepository.getAllotedApplications(allotmentCriteria);
-		applications=applications.stream().map(d->{
-		JsonNode additionalDetails = mapper.valueToTree(rlList.stream().filter(a->a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
-		d.setDocuments(allotmentRepository.getDocumentListByAllotmentId(d.getId()));
-		d.setOwnerInfo(allotmentRepository.getOwnerInfoListByAllotmentId(d.getId()));
-		d.setAdditionalDetails(additionalDetails);
-		
-		return d;}).collect(Collectors.toList());
+		applications = applications.stream().map(d -> {
+			JsonNode additionalDetails = mapper.valueToTree(
+					rlList.stream().filter(a -> a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
+			d.setDocuments(allotmentRepository.getDocumentListByAllotmentId(d.getId()));
+			d.setOwnerInfo(allotmentRepository.getOwnerInfoListByAllotmentId(d.getId()));
+			d.setAdditionalDetails(additionalDetails);
+
+			return d;
+		}).collect(Collectors.toList());
 		if (CollectionUtils.isEmpty(applications))
 			return new ArrayList<>();
 		allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, requestInfo);

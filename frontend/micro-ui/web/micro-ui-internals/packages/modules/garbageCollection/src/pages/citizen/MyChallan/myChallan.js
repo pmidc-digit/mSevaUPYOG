@@ -16,8 +16,6 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const [filters, setFilters] = useState(null);
   const [getCount, setCount] = useState();
 
-  console.log("userInfo", userInfo);
-
   let filter = window.location.href.split("/").pop();
   let t1;
   let off;
@@ -37,27 +35,23 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   }, [filter, tenantId]);
 
   const fetchChallans = async () => {
-    console.log("filters", filters);
     setLoader(true);
     try {
       const responseData = await Digit.GCService.search({ tenantId, filters });
-      console.log("result", responseData);
       setCount(responseData?.TotalCount);
       setChallanData(responseData?.GarbageConnection);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
 
   useEffect(() => {
-    console.log("filters", filters);
     if (filters) fetchChallans();
   }, [filters]);
 
   const handleMakePayment = (id) => {
-    history.push(`/digit-ui/citizen/payment/collect/Challan_Generation/${id}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
   const handleLoadMore = () => {
@@ -94,8 +88,8 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                     <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
-                {bill.applicationStatus == "ACTIVE" && (
-                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.challanNo)} />
+                {bill.applicationStatus == "PENDING_FOR_PAYMENT" && (
+                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.applicationNo)} />
                 )}
               </div>
             </Card>

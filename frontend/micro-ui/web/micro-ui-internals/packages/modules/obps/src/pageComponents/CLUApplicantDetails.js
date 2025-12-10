@@ -106,7 +106,7 @@ const CLUApplicantDetails = (_props) => {
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
-          <div className="field">
+          <div style={{display:"flex"}} className="field">
             <Controller
               control={control}
               name="applicantMobileNumber"
@@ -132,11 +132,12 @@ const CLUApplicantDetails = (_props) => {
                 />
               )}
             />
-          </div>
-          <div className="search-icon" onClick={isEdit ? null : getOwnerDetails} >
+             <div style={{marginTop:"17px"}} className="search-icon" onClick={isEdit ? null : getOwnerDetails} >
             {" "}
             <SearchIcon />{" "}
           </div>
+          </div>
+         
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 

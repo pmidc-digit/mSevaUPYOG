@@ -194,6 +194,9 @@ import useHRMSCreate from "./hrms/useHRMScreate";
 import useHRMSUpdate from "./hrms/useHRMSUpdate";
 import useHRMSCount from "./hrms/useHRMSCount";
 import useHRMSGenderMDMS from "./hrms/useHRMSGender";
+import useOBPSRoles from "./hrms/useOBPSRoles";
+import useEmployeeList from "./hrms/useEmployeeList";
+import useZones from "./hrms/useZones";
 
 import useReceiptsSearch from "./receipts/useReceiptsSearch";
 import useReceiptsMDMS from "./receipts/useReceiptsMDMS";
@@ -568,6 +571,9 @@ const hrms = {
   useHRMSUpdate,
   useHRMSCount,
   useHRMSGenderMDMS,
+  useOBPSRoles,
+  useEmployeeList,
+  useZones,
 };
 const tl = {
   useTenants: useTenantsTL,

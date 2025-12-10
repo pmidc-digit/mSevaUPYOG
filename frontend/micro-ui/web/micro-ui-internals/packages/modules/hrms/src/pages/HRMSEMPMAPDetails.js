@@ -5,6 +5,34 @@ import { useHistory, useParams } from "react-router-dom";
 import ActionModal from "../components/Modal";
 import { convertEpochFormateToDate, pdfDownloadLink } from "../components/Utils";
 
+// Constants
+const OBPS_GROUP_ID = "025";
+
+// Utility: Fetch OBPS roles from sessionStorage or MDMS
+const getOBPSRoles = async (stateId) => {
+  try {
+    const cachedRoles = sessionStorage.getItem('OBPS_ROLES');
+    if (cachedRoles) {
+      return JSON.parse(cachedRoles);
+    }
+
+    const response = await Digit.MDMSService.getMultipleTypes(stateId, "ACCESSCONTROL-ROLES", ["roles"]);
+    const allRoles = response?.['ACCESSCONTROL-ROLES']?.roles || [];
+    const obpsRoles = allRoles.filter(role => role.groupId === OBPS_GROUP_ID);
+    const obpsRoleMap = {};
+    obpsRoles.forEach(role => {
+      obpsRoleMap[role.code] = role.name;
+    });
+
+    const cacheData = { codes: obpsRoles.map(r => r.code), map: obpsRoleMap };
+    sessionStorage.setItem('OBPS_ROLES', JSON.stringify(cacheData));
+    return cacheData;
+  } catch (error) {
+    console.error("Error fetching OBPS roles:", error);
+    return { codes: [], map: {} };
+  }
+};
+
 const HRMSEMPMAPDetails = () => {
   const activeworkflowActions = ["DEACTIVATE_EMPLOYEE_HEAD", "COMMON_EDIT_EMPLOYEE_HEADER"];
   const deactiveworkflowActions = ["ACTIVATE_EMPLOYEE_HEAD"];
@@ -27,26 +55,30 @@ const HRMSEMPMAPDetails = () => {
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [obpsRoleMap, setObpsRoleMap] = useState({});
+  const stateId = Digit.ULBService.getStateId();
 
   useEffect(() => {
     setMutationHappened(false);
     clearSuccessData();
     clearError();
+    
+    // Load OBPS roles on mount
+    const loadRoles = async () => {
+      const roles = await getOBPSRoles(stateId);
+      setObpsRoleMap(roles.map);
+    };
+    loadRoles();
   }, []);
 
   // Fetch mapping data with pagination
   const fetchMappingData = async () => {
-    console.log("userUUID from params:", userUUID);
-    console.log("tenantId:", tenantId);
-    
     if (!userUUID) {
-      console.log("No userUUID, skipping fetch");
       return;
     }
     
     try {
       setMappingLoading(true);
-      console.log("Calling EmpMapDetails API with userUUID:", userUUID);
       
       const response = await Digit.HRMSService.EmpMapDetails(tenantId, {
         userUUID: userUUID,
@@ -54,11 +86,17 @@ const HRMSEMPMAPDetails = () => {
         offset: pageOffset,
       });
       
-      // console.log("EmpMapDetails API response:", response);
-      
       if (response?.Employees) {
         const transformedData = response.Employees.map((emp, index) => {
-          console.log("Employee mapping record:+++", emp);
+          // Get employee's OBPS roles from main data object
+          let roleNames = "No OBPS Roles";
+          if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
+            const empRoles = data.Employees[0].user.roles
+              .filter(role => obpsRoleMap[role.code])
+              .map(role => obpsRoleMap[role.code]);
+            roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
+          }
+          
           return {
             id: emp.uuid || emp.id,
             displayId: String(pageOffset + index + 1),
@@ -68,9 +106,9 @@ const HRMSEMPMAPDetails = () => {
             subCategory: emp.subcategory || "N/A",
             ward: emp.assignedTenantId || "N/A",
             zone: emp.zone || "N/A",
+            roles: roleNames,
           };
         });
-        console.log("Transformed mapping data:", transformedData);
         setMappingData(transformedData);
         
         // Since API doesn't return total count, handle pagination based on fetched data
@@ -82,7 +120,6 @@ const HRMSEMPMAPDetails = () => {
           setTotalRecords(pageOffset + transformedData.length + 1);
         }
       } else {
-        console.log("No Employees in response");
         setMappingData([]);
         setTotalRecords(0);
       }
@@ -94,8 +131,10 @@ const HRMSEMPMAPDetails = () => {
   };
 
   useEffect(() => {
-    fetchMappingData();
-  }, [userUUID, tenantId, pageOffset, pageSize]);
+    if (data && Object.keys(obpsRoleMap).length > 0) {
+      fetchMappingData();
+    }
+  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap]);
 
   function onActionSelect(action) {
     setSelectedAction(action);
@@ -143,8 +182,6 @@ const HRMSEMPMAPDetails = () => {
             uuid: mapping.employeeUUID, // Use each mapping's UUID
           })),
         };
-
-        console.log("Deleting all mappings with payload:", payload);
         
         // Call DELETE API for each mapping
         const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
@@ -183,8 +220,6 @@ const HRMSEMPMAPDetails = () => {
             },
           ],
         };
-
-        console.log("Deleting mapping with payload:", payload);
         
         // Call DELETE API using service
         const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
@@ -286,6 +321,36 @@ const HRMSEMPMAPDetails = () => {
             {value}
           </span>
         ),
+      },
+      {
+        Header: t("HR_ROLES_LABEL") || "Role(s)",
+        accessor: "roles",
+        Cell: ({ value }) => {
+          if (!value || value === "No OBPS Roles") {
+            return <span style={{ color: "#666", fontSize: "13px" }}>{value || "No OBPS Roles"}</span>;
+          }
+          const roleArray = value.split(", ");
+          return (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+              {roleArray.map((role, idx) => (
+                <span
+                  key={idx}
+                  style={{
+                    display: "inline-block",
+                    padding: "4px 12px",
+                    backgroundColor: "#E9D5FF",
+                    color: "#7C3AED",
+                    borderRadius: "12px",
+                    fontSize: "13px",
+                    fontWeight: "500",
+                  }}
+                >
+                  {role}
+                </span>
+              ))}
+            </div>
+          );
+        },
       },
        {
         Header: t("HR_ACTIONS_LABEL"),

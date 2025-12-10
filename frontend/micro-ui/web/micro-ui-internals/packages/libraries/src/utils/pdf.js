@@ -718,6 +718,123 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
   downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
 };
 
+/**
+ * Generate Timeline PDF using pdfMake
+ * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
+ */
+const generateTimelinePDF = async (data) => {
+  const { t, tenantId, name, heading, businessId, businessService, currentStatus, generatedDate, timelineRows, tableHeaders } = data;
+
+  // Build table body: header row + data rows
+  const tableBody = [
+    // Header row
+    tableHeaders.map(header => ({
+      text: header.label,
+      style: 'tableHeader',
+      fillColor: '#a82227',
+      color: '#FFFFFF',
+      bold: true,
+      fontSize: 9,
+    })),
+    // Data rows
+    ...timelineRows.map((row, index) => 
+      tableHeaders.map(header => ({
+        text: String(row[header.key] || '-'),
+        fontSize: 8,
+        fillColor: index % 2 === 0 ? '#f9f9f9' : '#FFFFFF',
+      }))
+    ),
+  ];
+
+  const dd = {
+    pageMargins: [20, 60, 20, 40],
+    pageOrientation: 'landscape',
+    header: {
+      columns: [
+        {
+          text: heading,
+          style: 'header',
+          margin: [20, 20, 0, 0],
+        },
+      ],
+    },
+    footer: (currentPage, pageCount) => ({
+      columns: [
+        { text: `Generated on: ${generatedDate}`, alignment: 'left', margin: [20, 0, 0, 0], fontSize: 8 },
+        { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', margin: [0, 0, 20, 0], fontSize: 8 },
+      ],
+    }),
+    defaultStyle: {
+      font: 'Hind',
+    },
+    styles: {
+      header: {
+        fontSize: 16,
+        bold: true,
+        color: '#a82227',
+      },
+      subheader: {
+        fontSize: 12,
+        bold: true,
+        margin: [0, 10, 0, 5],
+      },
+      tableHeader: {
+        bold: true,
+        fontSize: 9,
+        color: 'white',
+      },
+      infoLabel: {
+        fontSize: 10,
+        bold: true,
+        color: '#333333',
+      },
+      infoValue: {
+        fontSize: 10,
+        color: '#555555',
+      },
+    },
+    content: [
+      // Application Info Section
+      {
+        columns: [
+          { text: t ? t('CM_TIMELINE_APPLICATION_ID') : 'Application ID: ', style: 'infoLabel', width: 'auto' },
+          { text: businessId, style: 'infoValue', margin: [5, 0, 20, 0] },
+          { text: t ? t('CM_TIMELINE_SERVICE') : 'Service: ', style: 'infoLabel', width: 'auto' },
+          { text: businessService, style: 'infoValue', margin: [5, 0, 20, 0] },
+          { text: t ? t('CM_TIMELINE_CURRENT_STATUS') : 'Status: ', style: 'infoLabel', width: 'auto' },
+          { text: currentStatus, style: 'infoValue' },
+        ],
+        margin: [0, 0, 0, 15],
+      },
+      // Timeline Table
+      {
+        text: t ? t('CM_TIMELINE_WORKFLOW_HISTORY') : 'Workflow History',
+        style: 'subheader',
+      },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['auto', 'auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', '*'],
+          body: tableBody,
+        },
+        layout: {
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#dddddd',
+          vLineColor: () => '#dddddd',
+        },
+      },
+    ],
+  };
+
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get('locale') || 'en_IN';
+  let Hind = pdfFonts[locale] || pdfFonts['Hind'];
+  pdfMake.fonts = { Hind: { ...Hind } };
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, `timeline_${businessId}.pdf`);
+};
+
 export default {
   generate: jsPdfGenerator,
   generateNDC: jsPdfGeneratorNDC,
@@ -726,6 +843,7 @@ export default {
   generatev1: jsPdfGeneratorv1,
   generateModifyPdf: jsPdfGeneratorForModifyPDF,
   generateBillAmendPDF,
+  generateTimelinePDF,
 };
 
 const createBodyContentBillAmend = (table, t) => {

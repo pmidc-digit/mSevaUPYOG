@@ -22,6 +22,7 @@ const NewRegistration = ({ stateCode }) => {
   const [user, setUser] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   const [selectedCity, setSelectedCity] = useState(location.state?.selectedCity || null);
+  const [dob, setDob] = useState("");
 
   useEffect(() => {
     let to;
@@ -68,6 +69,8 @@ const NewRegistration = ({ stateCode }) => {
     try {
       setCanSubmit(false);
       setRegistrationData(formData);
+      const [yyyy, mm, dd] = formData?.dob?.split("-");
+      setDob(`${dd}/${mm}/${yyyy}`);
       const data = {
         mobileNumber: formData?.mobileNumber,
         name: formData?.name,
@@ -116,6 +119,7 @@ const NewRegistration = ({ stateCode }) => {
         emailId: registrationData?.emailId,
         username: registrationData?.mobileNumber,
         otpReference: otp,
+        dob: dob,
         tenantId: stateCode,
       };
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.registerUser(requestData, stateCode);

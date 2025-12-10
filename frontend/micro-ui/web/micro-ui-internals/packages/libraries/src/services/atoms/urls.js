@@ -93,6 +93,7 @@ const Urls = {
     cfsearch: "/service-request/service/v1/_search",
     defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
     getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
+    ludhianaSearch: "/property-services/api/fetch"
   },
 
   dss: {

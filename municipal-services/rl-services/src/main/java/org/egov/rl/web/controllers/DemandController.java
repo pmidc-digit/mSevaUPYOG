@@ -2,6 +2,10 @@ package org.egov.rl.web.controllers;
 
 import io.swagger.annotations.ApiParam;
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.rl.models.AllotmentDetails;
+import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.AllotmentResponse;
+import org.egov.rl.models.Demand;
 import org.egov.rl.models.DemandResponse;
 import org.egov.rl.models.collection.GetBillCriteria;
 import org.egov.rl.service.DemandService;
@@ -27,9 +31,13 @@ public class DemandController {
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 
-	@PostMapping("/_update")
-	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
-													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
-		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
-	}
+    @PostMapping("/_create")
+    public ResponseEntity<List<Demand>> create(@Valid @RequestBody AllotmentRequest allotmentRequest) {
+
+    	List<Demand> demand =demandService.createDemand(true,allotmentRequest);
+       
+        return new ResponseEntity<>(demand, HttpStatus.CREATED);
+    }
+
+
 }

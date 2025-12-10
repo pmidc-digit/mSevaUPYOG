@@ -46,12 +46,6 @@ public class RLProperty {// extends PropertyInfo {
 
 	@JsonProperty("propertyName")
 	private String propertyName;
-
-//	@JsonProperty("propertyDetail")
-//	private String propertyDetail;
-	
-//	@JsonProperty("usageCategory")
-//	private String usageCategory;  /// Rent or Rease
 	
 	@JsonProperty("allotmentType")
 	private String allotmentType;  /// Rent or Rease
@@ -84,6 +78,12 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("securityDeposit")
 	private String securityDeposit;
 	
+	@JsonProperty("financialYear")
+	private String financialYear;
+	
+	@JsonProperty("type")
+	private String type;
+	
 	@JsonProperty("taxApplicable")
 	private boolean taxApplicable;
 
@@ -92,12 +92,12 @@ public class RLProperty {// extends PropertyInfo {
 	
 	@JsonProperty("cowCessApplicable")
 	private boolean cowCessApplicable;
-	
-	@JsonProperty("penaltyType")
-	private String penaltyType;
-	
-	@JsonProperty("latePayment")
-	private String latePayment;
+//	
+//	@JsonProperty("penaltyType")
+//	private String penaltyType;
+//	
+//	@JsonProperty("latePayment")
+//	private String latePayment;
 //	
 //	
 //	

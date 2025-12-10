@@ -9,6 +9,7 @@ import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.BreedType;
 import org.egov.rl.models.DemandDetail;
+import org.egov.rl.models.RLProperty;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.util.CommonUtils;
 import org.egov.rl.util.FeeCalculationUtil;
@@ -44,29 +45,37 @@ public class CalculationService {
 	 *                               applications.
 	 * @return A list of DemandDetail objects representing the calculated demand.
 	 */
-	public List<DemandDetail> calculateDemand(AllotmentRequest allotmentRequest) {
+	public List<DemandDetail> calculateDemand(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
 		String tenantId = allotmentRequest.getAllotment().getTenantId();
 
-		List<BreedType> calculationTypes =  mdmsUtil.getcalculationType(allotmentRequest.getRequestInfo(),
+		List<RLProperty> calculationTypes =  mdmsUtil.getCalculateAmount(
+				 allotmentRequest.getAllotment().getPropertyId()
+				,allotmentRequest.getRequestInfo(),
 				tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 
-		return processCalculationForDemandGeneration(tenantId, calculationTypes, allotmentRequest);
+		return processCalculationForDemandGeneration(true,tenantId, calculationTypes, allotmentRequest);
 	}
 
-	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
-																	 List<BreedType> calculationTypes, AllotmentRequest allotmentRequest) {
+	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposite,String tenantId,
+																	 List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
 
 		String applicationType = allotmentRequest.getAllotment().getApplicationType();
-		BigDecimal baseRegistrationFee = BigDecimal.ZERO;
+		BigDecimal fee = BigDecimal.ZERO;
 		List<DemandDetail> demandDetails = new ArrayList<>();
-
-		// Step 1: Calculate base registration fee
-		for (BreedType type : calculationTypes) {
+		// Step 1: Calculate base fee
+		for (RLProperty amount : calculateAmount) {
 			if (applicationType.equalsIgnoreCase("NEW")) {
-				baseRegistrationFee = type.getNewapplication();
+				if(isSecurityDeposite) {					
+				DemandDetail securityDemandDetail = DemandDetail.builder()
+						.taxAmount(new BigDecimal(amount.getSecurityDeposit()))
+						.taxHeadMasterCode(RLConstants.SECURITY_DOPOSITE_FEE_RL_APPLICATION)
+						.tenantId(tenantId)
+						.build();
+				demandDetails.add(securityDemandDetail);
+				}
 				DemandDetail baseDemandDetail = DemandDetail.builder()
-						.taxAmount(baseRegistrationFee)
-						.taxHeadMasterCode(type.getFeeType())
+						.taxAmount(new BigDecimal(amount.getBaseRent()))
+						.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)
 						.tenantId(tenantId)
 						.build();
 				demandDetails.add(baseDemandDetail);
@@ -74,10 +83,10 @@ public class CalculationService {
 			}
 
 			if (applicationType.equalsIgnoreCase("RENEWAL")) {
-				baseRegistrationFee = type.getRenewapplication();
+				fee = new BigDecimal(isSecurityDeposite?amount.getSecurityDeposit():amount.getBaseRent());
 				DemandDetail baseDemandDetail = DemandDetail.builder()
-						.taxAmount(baseRegistrationFee)
-						.taxHeadMasterCode(type.getFeeType())
+						.taxAmount(fee)
+						.taxHeadMasterCode(RLConstants.SECURITY_DOPOSITE_FEE_RL_APPLICATION)
 						.tenantId(tenantId)
 						.build();
 				demandDetails.add(baseDemandDetail);
@@ -86,8 +95,7 @@ public class CalculationService {
 		}
 
 		// Step 2: Calculate additional fees (ServiceCharge, PenaltyFee, InterestAmount)
-//		calculateAdditionalFees(al, tenantId, baseRegistrationFee, demandDetails);
-
+//		calculateAdditionalFees(allotmentRequest, tenantId, fee, demandDetails);
 		return demandDetails;
 	}
 
@@ -96,7 +104,7 @@ public class CalculationService {
 //	 * Flexible method that can handle any number of fee types from MDMS
 //	 */
 //	private void calculateAdditionalFees(AllotmentRequest allotmentRequest, String tenantId, 
-//										BigDecimal baseRegistrationFee, List<DemandDetail> demandDetails) {
+//										BigDecimal fee, List<DemandDetail> demandDetails) {
 //		
 //		String currentFY = feeCalculationUtil.getCurrentFinancialYear();
 //		AllotmentDetails application = allotmentRequest.getAllotment();

@@ -18,6 +18,7 @@ import org.egov.rl.models.Demand;
 import org.egov.rl.models.DemandDetail;
 import org.egov.rl.models.DemandResponse;
 import org.egov.rl.models.Owner;
+import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.collection.GetBillCriteria;
 import org.egov.rl.models.user.User;
 import org.egov.rl.repository.DemandRepository;
@@ -53,19 +54,16 @@ public class DemandService {
 	@Autowired
 	private CalculationService calculationService;
 
-	public List<Demand> createDemand(AllotmentRequest allotmentRequest) {
+	public List<Demand> createDemand(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
 		String tenantId = allotmentRequest.getAllotment().getTenantId();
 		String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
 
-//		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-		org.egov.common.contract.request.User user=allotmentRequest.getRequestInfo().getUserInfo();
-		Owner payerUser = Owner.builder().name(user.getName()).emailId(user.getEmailId())
-				.mobileNumber(user.getMobileNumber()).tenantId(user.getTenantId()).build();
-		//.permanentAddress(user.getAddressId())
-		List<DemandDetail> demandDetails = calculationService.calculateDemand(allotmentRequest);
+		OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId()).uuid(ownerInfo.getUserUuid())
+				.mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId()).build();
+		List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite,allotmentRequest);
 		BigDecimal amountPayable = new BigDecimal(0);
 		String applicationType = allotmentRequest.getAllotment().getApplicationType();
-
 
 		amountPayable = demandDetails.stream()
 				.map(DemandDetail::getTaxAmount)
@@ -85,7 +83,6 @@ public class DemandService {
 
 		List<Demand> demands = new ArrayList<>();
 		demands.add(demand);
-
 		return demandRepository.saveDemand(allotmentRequest.getRequestInfo(), demands);
 	}
 

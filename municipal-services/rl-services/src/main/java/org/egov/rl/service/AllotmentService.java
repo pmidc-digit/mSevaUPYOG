@@ -14,6 +14,7 @@ import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.Demand;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.PropertyReportSearchRequest;
 import org.egov.rl.models.RLProperty;
@@ -24,6 +25,7 @@ import org.egov.rl.models.user.UserDetailResponse;
 import org.egov.rl.producer.PropertyProducer;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
+import org.egov.rl.util.RLConstants;
 import org.egov.rl.validator.AllotmentValidator;
 import org.egov.rl.workflow.AllotmentWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +68,9 @@ public class AllotmentService {
 	
 	@Autowired
 	AllotmentRepository allotmentRepository;
+	
+	@Autowired
+	private DemandService demandService;
 
 	/**
 	 * Enriches the Request and pushes to the Queue
@@ -112,7 +117,15 @@ public class AllotmentService {
 		} else {
 			allotmentRequest.getAllotment().setStatus("ACTIVE");
 		}
-
+		String demandId=null;
+		boolean isApprove = allotmentRequest.getAllotment().getWorkflow().getAction().equals("APPROVE");
+		if(isApprove&&allotmentDetails.getApplicationType().equals(RLConstants.NEW_RL_APPLICATION)){
+			demandId =	demandService.createDemand(true, allotmentRequest).get(0).getId();
+		}else if(isApprove) {
+			demandId =	demandService.createDemand(false, allotmentRequest).get(0).getId();
+		}
+		allotmentRequest.getAllotment().setDemandId(demandId);
+		
 		producer.push(config.getUpdateRLAllotmentTopic(), allotmentRequest);
 		allotmentRequest.getAllotment().setWorkflow(null);
 		return allotmentRequest.getAllotment();

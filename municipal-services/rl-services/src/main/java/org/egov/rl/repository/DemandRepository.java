@@ -48,7 +48,7 @@ public class DemandRepository {
 		DemandRequest request = new DemandRequest(requestInfo, demand);
 		System.out.println("Request object for fetchResult: " + request);
 		System.out.println("URL for fetchResult: " + url);
-		Object result = serviceRequestRepository.fetchResult(url, request);
+		Object result = serviceRequestRepository.fetchResult(url, request).get();
 		System.out.println("Result from fetchResult method: " + result);
 		DemandResponse response = null;
 		try {

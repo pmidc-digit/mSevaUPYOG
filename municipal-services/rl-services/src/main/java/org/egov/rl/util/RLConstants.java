@@ -16,8 +16,15 @@ public class RLConstants {
 
 	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
 
-	public static final String RL_SERVICE_NAME = "rl-service";
+	public static final String RL_SERVICE_NAME = "rl-services";
 
+	public static final String SECURITY_DOPOSITE_FEE_RL_APPLICATION = "SECURITY_DOPOSITE_FEE";
+
+	public static final String RENT_LEASE_FEE_RL_APPLICATION = "RENT_LEASE_FEE";
+
+	public static final String COWCASS_FEE_RL_APPLICATION = "SECURITY_DOPOSITE_FEE";
+
+	public static final String PANALITY_RL_APPLICATION = "RENT_LEASE_FEE";
 	
 	
 

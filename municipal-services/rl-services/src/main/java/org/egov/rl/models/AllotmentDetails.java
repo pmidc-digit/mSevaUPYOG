@@ -44,6 +44,10 @@ public class AllotmentDetails {
 
 	@JsonProperty("tenantId")
 	private String tenantId;
+
+	@JsonProperty("demandId")
+	private String demandId;
+
 	
 //	@JsonProperty("isAutoRenewal")
 //	private boolean isAutoRenewal; // default false

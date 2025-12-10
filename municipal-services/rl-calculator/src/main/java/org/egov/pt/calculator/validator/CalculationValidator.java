@@ -19,6 +19,8 @@ import org.egov.pt.calculator.web.models.property.Property;
 import org.egov.pt.calculator.web.models.property.PropertyDetail;
 import org.egov.pt.calculator.web.models.property.RequestInfoWrapper;
 import org.egov.pt.calculator.web.models.propertyV2.PropertyV2;
+import org.egov.pt.calculator.web.models.rl.model.AllotmentDetails;
+import org.egov.pt.calculator.web.models.rl.model.RLProperty;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,20 +45,20 @@ public class CalculationValidator {
 	 * 
 	 * @param detail property detail
 	 */
-	public void validatePropertyForCalculation (PropertyDetail detail) {
+	public void validatePropertyForCalculation (AllotmentDetails detail) {
 		
 		Map<String, String> error = new HashMap<>();
+		RLProperty rlp=detail.getRlProperty();
+        boolean isRent = RL_ALLOTMENT_TYPE_RENT.equalsIgnoreCase(rlp.getAllotmentType());
+  
+        if (isRent && null == rlp.getBaseRent()) {
+            error.put(RL_ESTIMATE_BASE_RENT_NULL, RL_ESTIMATE_BASE_RENT_NULL_MSG);
+        }else if (!isRent && null == rlp.getBaseRent())  {
+        	error.put(RL_ESTIMATE_BASE_LEASE_NULL, RL_ESTIMATE_BASE_LEASE_NULL_MSG);
+        }
 
-        boolean isVacantLand = PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType());
-
-        if(null == detail.getLandArea() && null == detail.getBuildUpArea())
-        	error.put(PT_ESTIMATE_AREA_NULL, PT_ESTIMATE_AREA_NULL_MSG);
-        
-        if (isVacantLand && null == detail.getLandArea())
-            error.put(PT_ESTIMATE_VACANT_LAND_NULL, PT_ESTIMATE_VACANT_LAND_NULL_MSG);
-
-        if (!isVacantLand && CollectionUtils.isEmpty(detail.getUnits()))
-            error.put(PT_ESTIMATE_NON_VACANT_LAND_UNITS, PT_ESTIMATE_NON_VACANT_LAND_UNITS_MSG);
+        if (!isRent && null == rlp.getSecurityDeposit())
+            error.put(RL_ESTIMATE_SECURITY_AMOUNT, RL_ESTIMATE_SECURITY_AMOUNT_MSG);
 
         if (!CollectionUtils.isEmpty(error))
             throw new CustomException(error);
@@ -121,7 +123,7 @@ public class CalculationValidator {
 	public void getCarryForwardAndCancelOldDemand(BigDecimal newTax, CalculationCriteria criteria, RequestInfo requestInfo
 			, Demand demand) {
 
-		Property property = criteria.getProperty();
+		AllotmentDetails property = criteria.getAllotmentDetails();
 
 		BigDecimal oldTaxAmt = BigDecimal.ZERO;
 
@@ -134,7 +136,7 @@ public class CalculationValidator {
 		if(null == demand) return ;
 
 		for (DemandDetail detail : demand.getDemandDetails()) {
-			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.PT_TAX))
+			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.RL_TAX))
 				oldTaxAmt = oldTaxAmt.add(detail.getTaxAmount());
 		}
 

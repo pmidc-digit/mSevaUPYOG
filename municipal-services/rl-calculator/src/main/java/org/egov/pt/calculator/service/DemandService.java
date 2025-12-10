@@ -2,10 +2,10 @@ package org.egov.pt.calculator.service;
 
 import static org.egov.pt.calculator.util.CalculatorConstants.BILLINGSLAB_KEY;
 import static org.egov.pt.calculator.util.CalculatorConstants.FINANCIALYEAR_MASTER_KEY;
-import static org.egov.pt.calculator.util.CalculatorConstants.PT_ROUNDOFF;
-import static org.egov.pt.calculator.util.CalculatorConstants.PT_TIME_INTEREST;
-import static org.egov.pt.calculator.util.CalculatorConstants.PT_TIME_PENALTY;
-import static org.egov.pt.calculator.util.CalculatorConstants.PT_TIME_REBATE;
+import static org.egov.pt.calculator.util.CalculatorConstants.RL_ROUNDOFF;
+import static org.egov.pt.calculator.util.CalculatorConstants.RL_TIME_INTEREST;
+import static org.egov.pt.calculator.util.CalculatorConstants.RL_TIME_PENALTY;
+import static org.egov.pt.calculator.util.CalculatorConstants.RL_TIME_REBATE;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -54,6 +54,8 @@ import org.egov.pt.calculator.web.models.property.OwnerInfo;
 import org.egov.pt.calculator.web.models.property.Property;
 import org.egov.pt.calculator.web.models.property.PropertyDetail;
 import org.egov.pt.calculator.web.models.property.RequestInfoWrapper;
+import org.egov.pt.calculator.web.models.rl.model.AllotmentDetails;
+import org.egov.pt.calculator.web.models.rl.model.RLProperty;
 import org.egov.tracer.model.CustomException;
 import org.egov.tracer.model.ServiceCallException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +82,6 @@ public class DemandService {
 	@Autowired
 	private Configurations configs;
 
-	@Autowired
-	private AssessmentService assessmentService;
 
 	@Autowired
 	private CalculatorUtils utils;
@@ -122,11 +122,11 @@ public class DemandService {
 
 		List<CalculationCriteria> criterias = request.getCalculationCriteria();
 		List<Demand> demands = new ArrayList<>();
-		List<String> lesserAssessments = new ArrayList<>();
+		List<String> lesserAllotments = new ArrayList<>();
 		Map<String, String> consumerCodeFinYearMap = new HashMap<>();
 		Map<String,Object> masterMap = mDataService.getMasterMap(request);
 	for (CalculationCriteria criteria : criterias) {
-		String finanicialYear=	criteria.getProperty().getPropertyDetails().get(0).getFinancialYear();
+		String finanicialYear=	criteria.getAllotmentDetails().getRlProperty().getFinancialYear();
 	        Map<String,Map<String, Object>>finicialYears=(Map<String, Map<String, Object>>) masterMap.get(FINANCIALYEAR_MASTER_KEY);
 	        Long startingDateForFinicialYear=  Long.valueOf(finicialYears.get(finanicialYear).get("startingDate").toString());
 	        log.info("starting date is" +startingDateForFinicialYear);
@@ -138,18 +138,18 @@ public class DemandService {
 		Map<String, Calculation> propertyCalculationMap = estimationService.getEstimationPropertyMap(request,masterMap);
 		for (CalculationCriteria criteria : criterias) {
 
-			Property property = criteria.getProperty();
+			RLProperty propertyDetails = criteria.getAllotmentDetails().getRlProperty();
 
-			PropertyDetail detail = property.getPropertyDetails().get(0);
+//			PropertyDetail detail = property.getPropertyDetails().get(0);
 
-			Calculation calculation = propertyCalculationMap.get(property.getPropertyDetails().get(0).getAssessmentNumber());
+			Calculation calculation = propertyCalculationMap.get(criteria.getApplicationNumber());
 
-			String assessmentNumber = detail.getAssessmentNumber();
+			String applicationNumber = criteria.getApplicationNumber();
 
 			// pt_tax for the new assessment
 			BigDecimal newTax =  BigDecimal.ZERO;
-			Optional<TaxHeadEstimate> advanceCarryforwardEstimate = propertyCalculationMap.get(assessmentNumber).getTaxHeadEstimates()
-			.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CalculatorConstants.PT_TAX))
+			Optional<TaxHeadEstimate> advanceCarryforwardEstimate = propertyCalculationMap.get(applicationNumber).getTaxHeadEstimates()
+			.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CalculatorConstants.RL_TAX))
 				.findAny();
 			if(advanceCarryforwardEstimate.isPresent())
 				newTax = advanceCarryforwardEstimate.get().getEstimateAmount();
@@ -162,23 +162,23 @@ public class DemandService {
 
 			if (carryForwardCollectedAmount.doubleValue() >= 0.0) {
 
-				Demand demand = prepareDemand(property, calculation ,oldDemand);
+				Demand demand = prepareDemand(criteria.getAllotmentDetails(), calculation ,oldDemand,request.getRequestInfo());
 
 				// Add billingSLabs in demand additionalDetails as map with key calculationDescription
-				demand.setAdditionalDetails(Collections.singletonMap(BILLINGSLAB_KEY, calculation.getBillingSlabIds()));
+//				demand.setAdditionalDetails(Collections.singletonMap(BILLINGSLAB_KEY, calculation.getBillingSlabIds()));
 
 				demands.add(demand);
-				consumerCodeFinYearMap.put(demand.getConsumerCode(), detail.getFinancialYear());
+				consumerCodeFinYearMap.put(demand.getConsumerCode(), propertyDetails.getFinancialYear());
 
 			}else {
-				lesserAssessments.add(assessmentNumber);
+//				lesserAppplicationNumber.add(applicationNumber);
 			}
 		}
 		
-		if (!CollectionUtils.isEmpty(lesserAssessments)) {
-			throw new CustomException(CalculatorConstants.EG_PT_DEPRECIATING_ASSESSMENT_ERROR,
-					CalculatorConstants.EG_PT_DEPRECIATING_ASSESSMENT_ERROR_MSG + lesserAssessments);
-		}
+//		if (!CollectionUtils.isEmpty(lesserAssessments)) {
+//			throw new CustomException(CalculatorConstants.EG_PT_DEPRECIATING_ASSESSMENT_ERROR,
+//					CalculatorConstants.EG_PT_DEPRECIATING_ASSESSMENT_ERROR_MSG + lesserAssessments);
+//		}
 		
 		DemandRequest dmReq = DemandRequest.builder().demands(demands).requestInfo(request.getRequestInfo()).build();
 		String url = new StringBuilder().append(configs.getBillingServiceHost())
@@ -451,12 +451,12 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	protected BigDecimal getCarryForwardAndCancelOldDemand(BigDecimal newTax, CalculationCriteria criteria, RequestInfo requestInfo
 			,Demand demand, boolean cancelDemand) {
 
-		Property property = criteria.getProperty();
+		AllotmentDetails allotmentDetails = criteria.getAllotmentDetails();
 
 		BigDecimal carryForward = BigDecimal.ZERO;
 		BigDecimal oldTaxAmt = BigDecimal.ZERO;
 
-		if(null == property.getPropertyId()) return carryForward;
+		if(null == allotmentDetails.getApplicationNumber()) return carryForward;
 
 	//	Demand demand = getLatestDemandForCurrentFinancialYear(requestInfo, property);
 		
@@ -465,7 +465,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		carryForward = utils.getTotalCollectedAmountAndPreviousCarryForward(demand);
 		
 		for (DemandDetail detail : demand.getDemandDetails()) {
-			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.PT_TAX))
+			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.RL_TAX))
 				oldTaxAmt = oldTaxAmt.add(detail.getTaxAmount());
 		}			
 
@@ -545,35 +545,35 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	 * @param calculation
 	 * @return
 	 */
-	private Demand prepareDemand(Property property, Calculation calculation,Demand demand) {
+	private Demand prepareDemand(AllotmentDetails allotmentDetails, Calculation calculation,Demand demand,RequestInfo requestInfo) {
 
-		String tenantId = property.getTenantId();
-		PropertyDetail detail = property.getPropertyDetails().get(0);
+		String tenantId = allotmentDetails.getTenantId();
+		RLProperty detail = allotmentDetails.getRlProperty();
 		String propertyType = detail.getPropertyType();
-		String consumerCode = property.getPropertyId();
+		String consumerCode = allotmentDetails.getApplicationNumber();
 
-		OwnerInfo owner = null;
+//		OwnerInfo owner = null;
 
-		for(OwnerInfo ownerInfo : detail.getOwners()){
-			if(ownerInfo.getStatus().toString().equalsIgnoreCase(OwnerInfo.OwnerStatus.ACTIVE.toString())){
-				owner = ownerInfo;
-				break;
-			}
-		}	
+//		for(OwnerInfo ownerInfo : allotmentDetails.getOwnerInfo()){
+//			if(ownerInfo.getStatus().toString().equalsIgnoreCase(OwnerInfo.OwnerStatus.ACTIVE.toString())){
+//				owner = ownerInfo;
+//				break;
+//			}
+//		}	
 
 		/*if (null != detail.getCitizenInfo())
 			owner = detail.getCitizenInfo();
 		else
 			owner = detail.getOwners().iterator().next();*/
 		
-	//	Demand demand = getLatestDemandForCurrentFinancialYear(requestInfo, property);
+//		Demand demand = getLatestDemandForCurrentFinancialYear(requestInfo, property);
 
 		List<DemandDetail> details = new ArrayList<>();
 
 		details = getAdjustedDemandDetails(tenantId,calculation,demand);
 
 		return Demand.builder().tenantId(tenantId).businessService(configs.getPtModuleCode()).consumerType(propertyType)
-				.consumerCode(consumerCode).payer(owner.toCommonUser()).taxPeriodFrom(calculation.getFromDate())
+				.consumerCode(consumerCode).payer(requestInfo.getUserInfo()).taxPeriodFrom(calculation.getFromDate())
 				.taxPeriodTo(calculation.getToDate()).status(Demand.DemandStatusEnum.ACTIVE)
 				.minimumAmountPayable(BigDecimal.valueOf(configs.getPtMinAmountPayable())).demandDetails(details)
 				.build();
@@ -628,14 +628,13 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		}
 
 
-		Map<String, BigDecimal> rebatePenaltyEstimates = payService.applyPenaltyRebateAndInterest(taxAmt,collectedPtTax,
-                taxPeriod.getFinancialYear(), timeBasedExmeptionMasterMap,payments,taxPeriod,demand);
+		Map<String, BigDecimal> rebatePenaltyEstimates = payService.applyPenaltyRebateAndInterestAndCowCass(taxAmt,collectedPtTax,taxPeriod.getFinancialYear(), timeBasedExmeptionMasterMap,payments,taxPeriod,demand);
 		
 		if(null == rebatePenaltyEstimates) return isCurrentDemand;
 		
-		BigDecimal rebate = rebatePenaltyEstimates.get(PT_TIME_REBATE);
-		BigDecimal penalty = rebatePenaltyEstimates.get(CalculatorConstants.PT_TIME_PENALTY);
-		BigDecimal interest = rebatePenaltyEstimates.get(CalculatorConstants.PT_TIME_INTEREST);
+		BigDecimal rebate = rebatePenaltyEstimates.get(RL_TIME_REBATE);
+		BigDecimal penalty = rebatePenaltyEstimates.get(CalculatorConstants.RL_TIME_PENALTY);
+		BigDecimal interest = rebatePenaltyEstimates.get(CalculatorConstants.RL_TIME_INTEREST);
 
 		DemandDetailAndCollection latestPenaltyDemandDetail,latestInterestDemandDetail;
 
@@ -645,7 +644,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	        int month = zdt.getMonthValue();
 		BigDecimal oldRebate = BigDecimal.ZERO;
 		for(DemandDetail demandDetail : details) {
-			if(demandDetail.getTaxHeadMasterCode().equalsIgnoreCase(PT_TIME_REBATE)){
+			if(demandDetail.getTaxHeadMasterCode().equalsIgnoreCase(RL_TIME_REBATE)){
 				oldRebate = oldRebate.add(demandDetail.getTaxAmount());
 				if (month>13) 
 				{
@@ -674,14 +673,14 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		if (!isRebateUpdated)
 			{if(rebate.compareTo(oldRebate)!=0){
 				details.add(DemandDetail.builder().taxAmount(rebate.subtract(oldRebate))
-						.taxHeadMasterCode(PT_TIME_REBATE).demandId(demandId).tenantId(tenantId)
+						.taxHeadMasterCode(RL_TIME_REBATE).demandId(demandId).tenantId(tenantId)
 						.build());
 				
 		}}
 	
 
 		if(interest.compareTo(BigDecimal.ZERO)!=0){
-			latestInterestDemandDetail = utils.getLatestDemandDetailByTaxHead(PT_TIME_INTEREST,details);
+			latestInterestDemandDetail = utils.getLatestDemandDetailByTaxHead(RL_TIME_INTEREST,details);
 			if(latestInterestDemandDetail!=null){
 				updateTaxAmount(interest,latestInterestDemandDetail);
 				isInterestUpdated = true;
@@ -689,7 +688,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		}
 
 		if(penalty.compareTo(BigDecimal.ZERO)!=0){
-			latestPenaltyDemandDetail = utils.getLatestDemandDetailByTaxHead(PT_TIME_PENALTY,details);
+			latestPenaltyDemandDetail = utils.getLatestDemandDetailByTaxHead(RL_TIME_PENALTY,details);
 			if(latestPenaltyDemandDetail!=null){
 				updateTaxAmount(penalty,latestPenaltyDemandDetail);
 				isPenaltyUpdated = true;
@@ -698,11 +697,11 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 
 		
 		if (!isPenaltyUpdated && penalty.compareTo(BigDecimal.ZERO) > 0)
-			details.add(DemandDetail.builder().taxAmount(penalty).taxHeadMasterCode(CalculatorConstants.PT_TIME_PENALTY)
+			details.add(DemandDetail.builder().taxAmount(penalty).taxHeadMasterCode(CalculatorConstants.RL_TIME_PENALTY)
 					.demandId(demandId).tenantId(tenantId).build());
 		if (!isInterestUpdated && interest.compareTo(BigDecimal.ZERO) > 0)
 			details.add(
-					DemandDetail.builder().taxAmount(interest).taxHeadMasterCode(CalculatorConstants.PT_TIME_INTEREST)
+					DemandDetail.builder().taxAmount(interest).taxHeadMasterCode(CalculatorConstants.RL_TIME_INTEREST)
 							.demandId(demandId).tenantId(tenantId).build());
 		
 		return isCurrentDemand;
@@ -734,7 +733,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		BigDecimal totalRoundOffAmount = BigDecimal.ZERO;
 		for (DemandDetail detail : demand.getDemandDetails()) {
 
-			if(!detail.getTaxHeadMasterCode().equalsIgnoreCase(PT_ROUNDOFF)){
+			if(!detail.getTaxHeadMasterCode().equalsIgnoreCase(RL_ROUNDOFF)){
 				taxAmount = taxAmount.add(detail.getTaxAmount());
 			}
 			else{
@@ -825,7 +824,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 			BigDecimal taxAmount= demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 			BigDecimal collectionAmount= demandDetails.stream().map(DemandDetail::getCollectionAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 			BigDecimal netAmount = collectionAmount.subtract(taxAmount);
-			if(demandDetails!=null && demandDetails.size()>0 && !demandDetails.get(0).getTaxHeadMasterCode().equalsIgnoreCase(PT_ROUNDOFF)) {
+			if(demandDetails!=null && demandDetails.size()>0 && !demandDetails.get(0).getTaxHeadMasterCode().equalsIgnoreCase(RL_ROUNDOFF)) {
 			details.add(DemandDetail.builder().taxHeadMasterCode(entry.getKey())
 					.taxAmount(netAmount)
 					.collectionAmount(BigDecimal.ZERO)

@@ -15,7 +15,7 @@ import static org.egov.pt.calculator.util.CalculatorConstants.RECEIPT_END_DATE_P
 import static org.egov.pt.calculator.util.CalculatorConstants.RECEIPT_START_DATE_PARAM;
 import static org.egov.pt.calculator.util.CalculatorConstants.SEPARATER;
 import static org.egov.pt.calculator.util.CalculatorConstants.SERVICE_FIELD_FOR_SEARCH_URL;
-import static org.egov.pt.calculator.util.CalculatorConstants.SERVICE_FIELD_VALUE_PT;
+import static org.egov.pt.calculator.util.CalculatorConstants.SERVICE_FIELD_VALUE_RL;
 import static org.egov.pt.calculator.util.CalculatorConstants.STATUS_FIELD_FOR_SEARCH_URL;
 import static org.egov.pt.calculator.util.CalculatorConstants.TAXES_TO_BE_CONSIDERD;
 import static org.egov.pt.calculator.util.CalculatorConstants.TENANT_ID_FIELD_FOR_SEARCH_URL;
@@ -61,11 +61,11 @@ import org.egov.pt.calculator.web.models.collections.PaymentDetail;
 import org.egov.pt.calculator.web.models.collections.PaymentSearchCriteria;
 import org.egov.pt.calculator.web.models.demand.*;
 import org.egov.pt.calculator.web.models.property.AuditDetails;
-import org.egov.pt.calculator.web.models.property.OwnerInfo;
 import org.egov.pt.calculator.web.models.property.Property;
 import org.egov.pt.calculator.web.models.property.PropertyRequest;
 import org.egov.pt.calculator.web.models.property.PropertyResponse;
 import org.egov.pt.calculator.web.models.property.RequestInfoWrapper;
+import org.egov.pt.calculator.web.models.rl.model.OwnerInfo;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,10 +110,11 @@ public class CalculatorUtils {
 
         if (null == taxHeadApportionPriorityMap) {
             Map<String, Integer> map = new HashMap<>();
-            map.put(CalculatorConstants.PT_TAX, 3);
-            map.put(CalculatorConstants.PT_TIME_PENALTY, 1);
-            map.put(CalculatorConstants.PT_FIRE_CESS, 2);
-            map.put(CalculatorConstants.PT_TIME_INTEREST, 0);
+            map.put(CalculatorConstants.RL_TAX, 3);
+            map.put(CalculatorConstants.RL_TIME_PENALTY, 1);
+            map.put(CalculatorConstants.RL_TIME_COWCASS, 1);
+//            map.put(CalculatorConstants.RL_FIRE_CESS, 2);
+            map.put(CalculatorConstants.RL_TIME_INTEREST, 0);
             map.put(CalculatorConstants.MAX_PRIORITY_VALUE, 100);
         }
         return taxHeadApportionPriorityMap;
@@ -126,10 +127,10 @@ public class CalculatorUtils {
      * @param assesmentYear
      * @return
      */
-    public MdmsCriteriaReq getFinancialYearRequest(RequestInfo requestInfo, String assesmentYear, String tenantId) {
+    public MdmsCriteriaReq getFinancialYearRequest(RequestInfo requestInfo, String applicationYear, String tenantId) {
 
         MasterDetail mstrDetail = MasterDetail.builder().name(CalculatorConstants.FINANCIAL_YEAR_MASTER)
-                .filter("[?(@." + CalculatorConstants.FINANCIAL_YEAR_RANGE_FEILD_NAME + " IN [" + assesmentYear + "])]")
+                .filter("[?(@." + CalculatorConstants.FINANCIAL_YEAR_RANGE_FEILD_NAME + " IN [" + applicationYear + "])]")
                 .build();
         ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(CalculatorConstants.FINANCIAL_MODULE)
                 .masterDetails(Arrays.asList(mstrDetail)).build();
@@ -145,12 +146,12 @@ public class CalculatorUtils {
      * @param assesmentYears
      * @return
      */
-    public MdmsCriteriaReq getFinancialYearRequest(RequestInfo requestInfo, Set<String> assesmentYears, String tenantId) {
+    public MdmsCriteriaReq getFinancialYearRequest(RequestInfo requestInfo, Set<String> allotmentYears, String tenantId) {
 
-        String assessmentYearStr = StringUtils.join(assesmentYears, ",");
+        String allotmentYearStr = StringUtils.join(allotmentYears, ",");
         MasterDetail mstrDetail = MasterDetail.builder().name(CalculatorConstants.FINANCIAL_YEAR_MASTER)
-                .filter("[?(@." + CalculatorConstants.FINANCIAL_YEAR_RANGE_FEILD_NAME + " IN [" + assessmentYearStr + "]" +
-                        " && @.module== '" + SERVICE_FIELD_VALUE_PT + "')]")
+                .filter("[?(@." + CalculatorConstants.FINANCIAL_YEAR_RANGE_FEILD_NAME + " IN [" + allotmentYearStr + "]" +
+                        " && @.module== '" + SERVICE_FIELD_VALUE_RL + "')]")
                 .build();
         ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(CalculatorConstants.FINANCIAL_MODULE)
                 .masterDetails(Arrays.asList(mstrDetail)).build();
@@ -163,23 +164,27 @@ public class CalculatorUtils {
      * Methods provides all the usage category master for property tax module
      */
     public MdmsCriteriaReq getPropertyModuleRequest(RequestInfo requestInfo, String tenantId) {
-
+        
         List<MasterDetail> details = new ArrayList<>();
-
-        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_MAJOR_MASTER).build());
-        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_MINOR_MASTER).build());
-        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_SUB_MINOR_MASTER).build());
-        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_DETAIL_MASTER).build());
+        
+//        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_MAJOR_MASTER).build());
+//        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_MINOR_MASTER).build());
+//        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_SUB_MINOR_MASTER).build());
+//        details.add(MasterDetail.builder().name(CalculatorConstants.USAGE_DETAIL_MASTER).build());
         details.add(MasterDetail.builder().name(CalculatorConstants.OWNER_TYPE_MASTER).build());
         details.add(MasterDetail.builder().name(CalculatorConstants.REBATE_MASTER).build());
         details.add(MasterDetail.builder().name(CalculatorConstants.PENANLTY_MASTER).build());
-        details.add(MasterDetail.builder().name(CalculatorConstants.FIRE_CESS_MASTER).build());
-        details.add(MasterDetail.builder().name(CalculatorConstants.CANCER_CESS_MASTER).build());
+        details.add(MasterDetail.builder().name(CalculatorConstants.COWCASS_MASTER).build());
+//        details.add(MasterDetail.builder().name(CalculatorConstants.FIRE_CESS_MASTER).build());
+//        details.add(MasterDetail.builder().name(CalculatorConstants.CANCER_CESS_MASTER).build());
         details.add(MasterDetail.builder().name(CalculatorConstants.INTEREST_MASTER).build());
         ModuleDetail mdDtl = ModuleDetail.builder().masterDetails(details)
                 .moduleName(CalculatorConstants.PROPERTY_TAX_MODULE).build();
-        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(mdDtl)).tenantId(tenantId)
-                .build();
+        MdmsCriteria mdmsCriteria = MdmsCriteria
+        		.builder()
+        		.moduleDetails(Arrays.asList(mdDtl))
+        		.tenantId(tenantId)
+        		.build();
         return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
     }
 
@@ -205,7 +210,7 @@ public class CalculatorUtils {
                 .append(configurations.getTaxheadsSearchEndpoint()).append(URL_PARAMS_SEPARATER)
                 .append(TENANT_ID_FIELD_FOR_SEARCH_URL).append(tenantId)
                 .append(SEPARATER).append(SERVICE_FIELD_FOR_SEARCH_URL)
-                .append(SERVICE_FIELD_VALUE_PT);
+                .append(SERVICE_FIELD_VALUE_RL);
     }
 
     /**
@@ -221,7 +226,7 @@ public class CalculatorUtils {
                 .append(configurations.getTaxPeriodSearchEndpoint()).append(URL_PARAMS_SEPARATER)
                 .append(TENANT_ID_FIELD_FOR_SEARCH_URL).append(tenantId)
                 .append(SEPARATER).append(SERVICE_FIELD_FOR_SEARCH_URL)
-                .append(SERVICE_FIELD_VALUE_PT);
+                .append(SERVICE_FIELD_VALUE_RL);
     }
 
     /**
@@ -638,7 +643,7 @@ public class CalculatorUtils {
 		List<BillAccountDetail> billAccountDetails = new LinkedList<>();
         if(payment!=null) {
 		payment.getPaymentDetails().forEach(paymentDetail -> {
-			if (paymentDetail.getBusinessService().equalsIgnoreCase(SERVICE_FIELD_VALUE_PT)) {
+			if (paymentDetail.getBusinessService().equalsIgnoreCase(SERVICE_FIELD_VALUE_RL)) {
 				paymentDetail.getBill().getBillDetails().forEach(billDetail -> {
 					if (billDetail.getFromPeriod().equals(taxPeriod.getFromDate())
 							&& billDetail.getToPeriod().equals(taxPeriod.getToDate())) {
@@ -673,7 +678,7 @@ public class CalculatorUtils {
         List<BillAccountDetail> billAccountDetails = new LinkedList<>();
         if(payment!=null) {
             payment.getPaymentDetails().forEach(paymentDetail -> {
-                if (paymentDetail.getBusinessService().equalsIgnoreCase(SERVICE_FIELD_VALUE_PT)) {
+                if (paymentDetail.getBusinessService().equalsIgnoreCase(SERVICE_FIELD_VALUE_RL)) {
                     paymentDetail.getBill().getBillDetails().forEach(billDetail -> {
                         if (billDetail.getFromPeriod().equals(taxPeriod.getFromDate())
                                 && billDetail.getToPeriod().equals(taxPeriod.getToDate())) {
@@ -742,7 +747,7 @@ public class CalculatorUtils {
 		criteria.setFromDate(calculationCriteria.getFromDate());
 		criteria.setToDate(calculationCriteria.getToDate());
 		criteria.setTenantId(calculationCriteria.getTenantId());
-		criteria.setPropertyId(calculationCriteria.getProperty().getPropertyId());
+		criteria.setPropertyId(calculationCriteria.getApplicationNumber());
 
 		DemandResponse res = mapper.convertValue(
 				repository.fetchResult(getDemandSearchUrl(criteria), new RequestInfoWrapper(requestInfo)),
@@ -784,7 +789,7 @@ public class CalculatorUtils {
 		criteria.setFromDate(calculationCriteria.getFromDate());
 		criteria.setToDate(calculationCriteria.getToDate());
 		criteria.setTenantId(calculationCriteria.getTenantId());
-		criteria.setPropertyId(calculationCriteria.getProperty().getPropertyId());
+		criteria.setPropertyId(calculationCriteria.getApplicationNumber());
 
 		DemandResponse res = mapper.convertValue(
 				repository.fetchResult(getDemandSearchUrl(criteria), new RequestInfoWrapper(requestInfo)),
@@ -814,7 +819,7 @@ public class CalculatorUtils {
         criteria.setFromDate(calculationCriteria.getFromDate());
         criteria.setToDate(calculationCriteria.getToDate());
         criteria.setTenantId(calculationCriteria.getTenantId());
-        criteria.setPropertyId(calculationCriteria.getProperty().getPropertyId());
+        criteria.setPropertyId(calculationCriteria.getApplicationNumber());
 
         DemandResponse res = mapper.convertValue(
                 repository.fetchResult(getDemandSearchUrl(criteria), new RequestInfoWrapper(requestInfo)),
@@ -864,7 +869,7 @@ public class CalculatorUtils {
         request.getProperties().forEach(property -> {
             CalculationCriteria criteria = new CalculationCriteria();
             criteria.setTenantId(tenantId);
-            criteria.setProperty(property);
+            criteria.setAllotmentDetails(null);
             calculationCriterias.add(criteria);
         });
 
@@ -923,14 +928,13 @@ public class CalculatorUtils {
     public User getCommonContractUser(OwnerInfo owner){
         org.egov.common.contract.request.User user = new org.egov.common.contract.request.User();
         user.setTenantId(owner.getTenantId());
-        user.setId(owner.getId());
+        user.setId(owner.getUserId());
         user.setName(owner.getName());
-        user.setType(owner.getType());
-        user.setMobileNumber(owner.getMobileNumber());
+        user.setType(owner.getOwnerType());
+        user.setMobileNumber(owner.getMobileNo());
         user.setEmailId(owner.getEmailId());
-        user.setRoles(addRoles(owner.getRoles()));
-        user.setUuid(owner.getUuid());
-
+//        user.setRoles(addRoles(owner.getRoles()));
+        user.setUuid(owner.getOwnerId());
         return user;
     }
 
@@ -951,7 +955,7 @@ public class CalculatorUtils {
         if (payment == null)
             return false;
         for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
-            if (paymentDetail.getBusinessService().equalsIgnoreCase(SERVICE_FIELD_VALUE_PT)) {
+            if (paymentDetail.getBusinessService().equalsIgnoreCase(SERVICE_FIELD_VALUE_RL)) {
                 for (BillDetail billDetail : paymentDetail.getBill().getBillDetails()) {
                     if (billDetail.getFromPeriod().equals(taxPeriod.getFromDate())
                             && billDetail.getToPeriod().equals(taxPeriod.getToDate())) {

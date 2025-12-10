@@ -22,6 +22,7 @@ import org.egov.pt.calculator.web.models.collections.PaymentSearchCriteria;
 import org.egov.pt.calculator.web.models.demand.Demand;
 import org.egov.pt.calculator.web.models.property.Property;
 import org.egov.pt.calculator.web.models.property.RequestInfoWrapper;
+import org.egov.pt.calculator.web.models.rl.model.AllotmentDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -65,10 +66,10 @@ public class PaymentService {
      * @param requestInfoWrapper
      * @return
      */	
-    public List<Payment> getPaymentsFromProperty(Property property, RequestInfoWrapper requestInfoWrapper) {
+    public List<Payment> getPaymentsFromProperty(AllotmentDetails allotmentDetails, RequestInfoWrapper requestInfoWrapper) {
         PaymentSearchCriteria criteria = new PaymentSearchCriteria();
-        criteria.setTenantId(property.getTenantId());
-        criteria.setConsumerCodes(Collections.singleton(property.getPropertyId()));
+        criteria.setTenantId(allotmentDetails.getTenantId());
+        criteria.setConsumerCodes(Collections.singleton(allotmentDetails.getApplicationNumber()));
         List<Payment> payments = getPayments(criteria, requestInfoWrapper);
         if(!CollectionUtils.isEmpty(payments))
             payments.sort(Comparator.comparing(payment -> payment.getTransactionDate()));

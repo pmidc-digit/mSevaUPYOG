@@ -4,6 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.egov.pt.calculator.web.models.property.Property;
+import org.egov.pt.calculator.web.models.rl.model.AllotmentDetails;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,14 +31,14 @@ public class CalculationCriteria   {
 	
 		@Valid
 		@NotNull
-        @JsonProperty("property")
-        private Property property;
+        @JsonProperty("allotmentDetails")
+        private AllotmentDetails allotmentDetails;
 
-        @JsonProperty("assessmentNumber")
-        private String assessmentNumber;
+        @JsonProperty("applicationNumber")
+        private String applicationNumber;
 
-        @JsonProperty("oldAssessmentNumber")
-        private String oldAssessmentNumber;
+        @JsonProperty("oldApplicationNumber")
+        private String oldApplicationNumber;
 
         @NotNull
         @JsonProperty("tenantId")

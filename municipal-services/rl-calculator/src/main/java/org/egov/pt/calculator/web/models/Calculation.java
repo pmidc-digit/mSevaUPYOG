@@ -43,6 +43,9 @@ public class Calculation   {
 
         @JsonProperty("penalty")
         private BigDecimal penalty;
+        
+        @JsonProperty("cowCass")
+        private BigDecimal cowCass;
 
         @JsonProperty("exemption")
         private BigDecimal exemption;
@@ -52,7 +55,7 @@ public class Calculation   {
 
         List<TaxHeadEstimate> taxHeadEstimates;
 
-        @JsonProperty("billingSlabIds")
-        private List<String> billingSlabIds;
+//        @JsonProperty("billingSlabIds")
+//        private List<String> billingSlabIds;
 }
 

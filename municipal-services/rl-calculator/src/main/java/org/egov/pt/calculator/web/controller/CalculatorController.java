@@ -61,10 +61,10 @@ public class CalculatorController {
 		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
 	}
 	
-	@PostMapping("/mutation/_calculate")
-	public ResponseEntity<Map<String, Calculation>> mutationCalculator(@RequestBody @Valid PropertyRequestV2 request) {
-		return new ResponseEntity<>(calculatorService.mutationCalculator(request.getProperty(), request.getRequestInfo()), HttpStatus.OK);
-	}
+//	@PostMapping("/mutation/_calculate")
+//	public ResponseEntity<Map<String, Calculation>> mutationCalculator(@RequestBody @Valid PropertyRequestV2 request) {
+//		return new ResponseEntity<>(calculatorService.mutationCalculator(request.getProperty(), request.getRequestInfo()), HttpStatus.OK);
+//	}
 	
 	@PostMapping("/_updatedemandForAssessmentCancel")
 	public ResponseEntity<DemandResponse> updateDemandForAssessmentCancel(@RequestBody BillCriteriaReq billCriteriaReq) {

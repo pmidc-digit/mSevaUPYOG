@@ -51,7 +51,7 @@ public class PayService {
 	 * @return
 	 */
 	
-	public Map<String, BigDecimal> applyPenaltyRebateAndInterest(BigDecimal taxAmt,BigDecimal collectedPtTax,
+	public Map<String, BigDecimal> applyPenaltyRebateAndInterestAndCowCass(BigDecimal taxAmt,BigDecimal collectedPtTax,
 			 String assessmentYear, Map<String, JSONArray> timeBasedExmeptionMasterMap,List<Payment> payments,TaxPeriod taxPeriod) {
 
 		if (BigDecimal.ZERO.compareTo(taxAmt) >= 0)
@@ -59,9 +59,8 @@ public class PayService {
 
 		Map<String, BigDecimal> estimates = new HashMap<>();
 
-		BigDecimal rebate = getRebate(taxAmt, assessmentYear,
-				timeBasedExmeptionMasterMap.get(CalculatorConstants.REBATE_MASTER));
-
+		BigDecimal rebate = getRebate(taxAmt, assessmentYear,timeBasedExmeptionMasterMap.get(CalculatorConstants.REBATE_MASTER));
+		BigDecimal cowCass = getRebate(taxAmt, assessmentYear,timeBasedExmeptionMasterMap.get(CalculatorConstants.COWCASS_MASTER));
 		BigDecimal penalty = BigDecimal.ZERO;
 		BigDecimal interest = BigDecimal.ZERO;
 
@@ -70,14 +69,14 @@ public class PayService {
 			interest = getInterest(taxAmt, assessmentYear, timeBasedExmeptionMasterMap.get(CalculatorConstants.INTEREST_MASTER),
 					payments,taxPeriod);
 		}
-
-		estimates.put(CalculatorConstants.PT_TIME_REBATE, rebate.setScale(2, 0).negate());
-		estimates.put(CalculatorConstants.PT_TIME_PENALTY, penalty.setScale(2, 0));
-		estimates.put(CalculatorConstants.PT_TIME_INTEREST, interest.setScale(2, 0));
+		estimates.put(CalculatorConstants.RL_TIME_COWCASS, cowCass.setScale(2, 0).negate());
+		estimates.put(CalculatorConstants.RL_TIME_REBATE, rebate.setScale(2, 0).negate());
+		estimates.put(CalculatorConstants.RL_TIME_PENALTY, penalty.setScale(2, 0));
+		estimates.put(CalculatorConstants.RL_TIME_INTEREST, interest.setScale(2, 0));
 		return estimates;
 	}
-	public Map<String, BigDecimal> applyPenaltyRebateAndInterest(BigDecimal taxAmt,BigDecimal collectedPtTax,
-			String assessmentYear, Map<String, JSONArray> timeBasedExmeptionMasterMap, List<Payment> payments,
+	public Map<String, BigDecimal> applyPenaltyRebateAndInterestAndCowCass(BigDecimal taxAmt,BigDecimal collectedPtTax,
+			String applicationYear, Map<String, JSONArray> timeBasedExmeptionMasterMap, List<Payment> payments,
 			TaxPeriod taxPeriod, Demand demand) {
 
 		if (BigDecimal.ZERO.compareTo(taxAmt) >= 0)
@@ -85,77 +84,91 @@ public class PayService {
 
 		Map<String, BigDecimal> estimates = new HashMap<>();
 
-		BigDecimal rebate = getRebate(taxAmt, assessmentYear,
-				timeBasedExmeptionMasterMap.get(CalculatorConstants.REBATE_MASTER));
-
+		BigDecimal rebate = getRebate(taxAmt, applicationYear,timeBasedExmeptionMasterMap.get(CalculatorConstants.REBATE_MASTER));
 		BigDecimal penaltyCalculated = BigDecimal.ZERO;
+		BigDecimal cowCaseCalculated = BigDecimal.ZERO;
 		BigDecimal interestCalculated = BigDecimal.ZERO;
 
 		if (rebate.compareTo(BigDecimal.ZERO) == 0) {
-			penaltyCalculated = getPenalty(taxAmt, assessmentYear,
-					timeBasedExmeptionMasterMap.get(CalculatorConstants.PENANLTY_MASTER));
-			interestCalculated = getInterest(taxAmt, assessmentYear,
-					timeBasedExmeptionMasterMap.get(CalculatorConstants.INTEREST_MASTER), payments, taxPeriod);
+			penaltyCalculated = getPenalty(taxAmt, applicationYear,timeBasedExmeptionMasterMap.get(CalculatorConstants.PENANLTY_MASTER));
+			interestCalculated = getInterest(taxAmt, applicationYear,timeBasedExmeptionMasterMap.get(CalculatorConstants.INTEREST_MASTER), payments, taxPeriod);
 		}
 
 		if (demand != null) {
-			BigDecimal oldTaxAmount = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal collectionAmount = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal oldTaxAmount = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal collectionAmount = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+			
 			if (oldTaxAmount.compareTo(collectionAmount) == 0) {
 				BigDecimal oldCollectedTaxAmount = demand.getDemandDetails().stream()
 						.filter(demanddetail -> Stream
-								.of(CalculatorConstants.PT_TAX, CalculatorConstants.PT_OWNER_EXEMPTION,
-										CalculatorConstants.PT_UNIT_USAGE_EXEMPTION)
+								.of(CalculatorConstants.RL_TAX, CalculatorConstants.RL_USAGE_EXEMPTION,
+										CalculatorConstants.RL_USAGE_EXEMPTION)
 								.anyMatch(demanddetail.getTaxHeadMasterCode()::equalsIgnoreCase))
 						.map(DemandDetail::getCollectionAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 				List<DemandDetail> demanddetailList = demand.getDemandDetails().stream()
 						.filter(demanddetail -> demanddetail.getTaxHeadMasterCode()
-								.equalsIgnoreCase(CalculatorConstants.PT_TIME_REBATE))
+								.equalsIgnoreCase(CalculatorConstants.RL_TIME_REBATE))
 						.collect(Collectors.toList());
+				
 				BigDecimal rebateamount = demanddetailList.stream().map(DemandDetail::getCollectionAmount)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				
 				List<DemandDetail> penalityList = demand.getDemandDetails().stream().filter(demanddetail -> demanddetail
-						.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.PT_TIME_PENALTY))
+						.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.RL_TIME_PENALTY))
 						.collect(Collectors.toList());
+				
 				BigDecimal penaltyAmount = penalityList.stream().map(DemandDetail::getCollectionAmount)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
 
+				List<DemandDetail> cowCassList = demand.getDemandDetails().stream().filter(demanddetail -> demanddetail
+						.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.RL_TIME_COWCASS))
+						.collect(Collectors.toList());
+				BigDecimal cowCassAmount = cowCassList.stream().map(DemandDetail::getCollectionAmount)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				
 				List<DemandDetail> interestList = demand.getDemandDetails().stream().filter(demanddetail -> demanddetail
-						.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.PT_TIME_INTEREST))
+						.getTaxHeadMasterCode().equalsIgnoreCase(CalculatorConstants.RL_TIME_INTEREST))
 						.collect(Collectors.toList());
 				BigDecimal intersetAmount = interestList.stream().map(DemandDetail::getCollectionAmount)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				
 				if (taxAmt.compareTo(oldCollectedTaxAmount) >0 && rebate.compareTo(BigDecimal.ZERO)==0) {
-					estimates.put(CalculatorConstants.PT_TIME_REBATE, rebateamount.abs());
+					estimates.put(CalculatorConstants.RL_TIME_REBATE, rebateamount.abs());
 				}
 				else if (taxAmt.compareTo(oldCollectedTaxAmount) >0 && rebate.compareTo(BigDecimal.ZERO) > 0 ) {
-					estimates.put(CalculatorConstants.PT_TIME_REBATE, rebate.setScale(2, 0).negate());
-				}
-				else 
-					estimates.put(CalculatorConstants.PT_TIME_REBATE, rebateamount);
+					estimates.put(CalculatorConstants.RL_TIME_REBATE, rebate.setScale(2, 0).negate());
+				}else 
+					estimates.put(CalculatorConstants.RL_TIME_REBATE, rebateamount);
+				
 				if (taxAmt.compareTo(oldCollectedTaxAmount) == 0) {
-					estimates.put(CalculatorConstants.PT_TIME_PENALTY, penaltyAmount);
+					estimates.put(CalculatorConstants.RL_TIME_PENALTY, penaltyAmount);
 				} else {
-					estimates.put(CalculatorConstants.PT_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
+					estimates.put(CalculatorConstants.RL_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
 				}
+				
 				if (taxAmt.compareTo(oldCollectedTaxAmount) == 0) {
-					estimates.put(CalculatorConstants.PT_TIME_INTEREST, intersetAmount);
-		}
-
-				else {
-					estimates.put(CalculatorConstants.PT_TIME_INTEREST, interestCalculated.setScale(2, 0));
+					estimates.put(CalculatorConstants.RL_TIME_COWCASS, cowCassAmount);
+				} else {
+					estimates.put(CalculatorConstants.RL_TIME_COWCASS, cowCaseCalculated.setScale(2, 0));
 				}
+				
+				if (taxAmt.compareTo(oldCollectedTaxAmount) == 0) {
+					estimates.put(CalculatorConstants.RL_TIME_INTEREST, intersetAmount);
+		        }else {
+					estimates.put(CalculatorConstants.RL_TIME_INTEREST, interestCalculated.setScale(2, 0));
+				}
+				
 			} else {
-				estimates.put(CalculatorConstants.PT_TIME_REBATE, rebate.setScale(2, 0).negate());
-				estimates.put(CalculatorConstants.PT_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
-				estimates.put(CalculatorConstants.PT_TIME_INTEREST, interestCalculated.setScale(2, 0));
+				estimates.put(CalculatorConstants.RL_TIME_REBATE, rebate.setScale(2, 0).negate());
+				estimates.put(CalculatorConstants.RL_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
+				estimates.put(CalculatorConstants.RL_TIME_COWCASS, cowCaseCalculated.setScale(2, 0));
+				estimates.put(CalculatorConstants.RL_TIME_INTEREST, interestCalculated.setScale(2, 0));
 			}
 		} else {
-		estimates.put(CalculatorConstants.PT_TIME_REBATE, rebate.setScale(2, 0).negate());
-			estimates.put(CalculatorConstants.PT_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
-			estimates.put(CalculatorConstants.PT_TIME_INTEREST, interestCalculated.setScale(2, 0));
+		    estimates.put(CalculatorConstants.RL_TIME_REBATE, rebate.setScale(2, 0).negate());
+			estimates.put(CalculatorConstants.RL_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
+			estimates.put(CalculatorConstants.RL_TIME_COWCASS, cowCaseCalculated.setScale(2, 0));
+			estimates.put(CalculatorConstants.RL_TIME_INTEREST, interestCalculated.setScale(2, 0));
 		}
 		return estimates;
 	}
@@ -200,6 +213,37 @@ public class PayService {
 		return rebateAmt;
 	}
 
+	public BigDecimal getCowCass(BigDecimal taxAmt, String applicationYear, JSONArray cowCassMasterList) {
+
+		BigDecimal cowCassAmt = BigDecimal.ZERO;
+		Map<String, Object> cowcass = mDService.getApplicableMaster(applicationYear, cowCassMasterList);
+		log.info("Cowcass Object---->" + cowcass);
+		
+		if (null == cowcass){
+			log.info("cowCass config not found for the FY" + applicationYear);
+			return cowCassAmt;
+		} else {
+			String configYear = ((String) cowcass.get(CalculatorConstants.FROMFY_FIELD_NAME)).split("-")[0];
+
+			if (configYear.compareTo(applicationYear.split("-")[0]) != 0) {
+				log.info("FY from cowcass config :" + configYear);
+				log.info("FY from cowcass  :" + applicationYear);
+				return cowCassAmt;
+			}
+
+		}
+
+		String[] time = ((String) cowcass.get(CalculatorConstants.ENDING_DATE_APPLICABLES)).split("/");
+		Calendar cal = Calendar.getInstance();
+		setDateToCalendar(applicationYear, time, cal);
+
+		if (cal.getTimeInMillis() > System.currentTimeMillis())
+			cowCassAmt = mDService.calculateApplicables(taxAmt, cowcass);
+
+		return cowCassAmt;
+	}
+
+	
 	/**
 	 * Returns the Amount of penalty that has to be applied on the given tax amount for the given period
 	 * 
@@ -232,16 +276,16 @@ public class PayService {
 	 * @param assessmentYear
 	 * @return
 	 */
-	public BigDecimal getInterest(BigDecimal taxAmt, String assessmentYear, JSONArray interestMasterList,
+	public BigDecimal getInterest(BigDecimal taxAmt, String applicationYear, JSONArray interestMasterList,
 								  List<Payment> payments, TaxPeriod taxPeriod) {
 
 		BigDecimal interestAmt = BigDecimal.ZERO;
-		Map<String, Object> interestMap = mDService.getApplicableMaster(assessmentYear, interestMasterList);
+		Map<String, Object> interestMap = mDService.getApplicableMaster(applicationYear, interestMasterList);
 		if (null == interestMap)
 			return interestAmt;
 
-		String[] time = getStartTime(assessmentYear, interestMap);
-		String[] endTime=getEndTime(assessmentYear, interestMap); // will return null if endingDay attribute is not present in mdms
+		String[] time = getStartTime(applicationYear, interestMap);
+		String[] endTime=getEndTime(applicationYear, interestMap); // will return null if endingDay attribute is not present in mdms
 
 		Calendar cal = Calendar.getInstance();
 		setDateToCalendar(time, cal);
@@ -531,10 +575,10 @@ public class PayService {
 
 		if (roundOffPos.doubleValue() > 0)
 			return TaxHeadEstimate.builder().estimateAmount(roundOffPos)
-					.taxHeadCode(CalculatorConstants.PT_ROUNDOFF).build();
+					.taxHeadCode(CalculatorConstants.RL_ROUNDOFF).build();
 		else if (roundOffNeg.doubleValue() < 0)
 			return TaxHeadEstimate.builder().estimateAmount(roundOffNeg)
-					.taxHeadCode(CalculatorConstants.PT_ROUNDOFF).build();
+					.taxHeadCode(CalculatorConstants.RL_ROUNDOFF).build();
 		else
 			return null;
 	}
@@ -557,7 +601,7 @@ public class PayService {
 
 		if (roundOff.doubleValue() != 0)
 			return TaxHeadEstimate.builder().estimateAmount(roundOff)
-					.taxHeadCode(CalculatorConstants.PT_ROUNDOFF).build();
+					.taxHeadCode(CalculatorConstants.RL_ROUNDOFF).build();
 		else
 			return null;
 	}

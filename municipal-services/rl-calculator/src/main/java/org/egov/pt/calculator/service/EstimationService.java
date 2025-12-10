@@ -18,7 +18,6 @@ import org.egov.pt.calculator.util.CalculatorUtils;
 import org.egov.pt.calculator.util.Configurations;
 import org.egov.pt.calculator.util.PBFirecessUtils;
 import org.egov.pt.calculator.validator.CalculationValidator;
-import org.egov.pt.calculator.web.models.*;
 import org.egov.pt.calculator.web.models.BillingSlabSearchCriteria;
 import org.egov.pt.calculator.web.models.collections.Payment;
 import org.egov.pt.calculator.web.models.demand.*;
@@ -26,13 +25,17 @@ import org.egov.pt.calculator.web.models.Calculation;
 import org.egov.pt.calculator.web.models.CalculationCriteria;
 import org.egov.pt.calculator.web.models.CalculationReq;
 import org.egov.pt.calculator.web.models.CalculationRes;
+import org.egov.pt.calculator.web.models.MutationBillingSlabSearchCriteria;
 import org.egov.pt.calculator.web.models.TaxHeadEstimate;
 import org.egov.pt.calculator.web.models.demand.Category;
 import org.egov.pt.calculator.web.models.demand.TaxHeadMaster;
-import org.egov.pt.calculator.web.models.property.*;
+import org.egov.pt.calculator.web.models.property.RequestInfoWrapper;
 import org.egov.pt.calculator.web.models.propertyV2.AssessmentRequestV2;
 import org.egov.pt.calculator.web.models.propertyV2.AssessmentResponseV2;
 import org.egov.pt.calculator.web.models.propertyV2.PropertyV2;
+import org.egov.pt.calculator.web.models.rl.model.AllotmentDetails;
+import org.egov.pt.calculator.web.models.rl.model.OwnerInfo;
+import org.egov.pt.calculator.web.models.rl.model.RLProperty;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,10 +84,7 @@ public class EstimationService {
 
 	@Autowired
     private EnrichmentService enrichmentService;
-
-	@Autowired
-	private AssessmentService assessmentService;
-
+	
 	@Autowired
 	private CalculatorUtils utils;
 	
@@ -135,14 +135,14 @@ public class EstimationService {
 		List<CalculationCriteria> criteriaList = request.getCalculationCriteria();
 		Map<String, Calculation> calculationPropertyMap = new HashMap<>();
 		for (CalculationCriteria criteria : criteriaList) {
-			Property property = criteria.getProperty();
-			PropertyDetail detail = property.getPropertyDetails().get(0);
-			calcValidator.validatePropertyForCalculation(detail);
-			String assessmentNumber = detail.getAssessmentNumber();
+			AllotmentDetails allotmentDetails = criteria.getAllotmentDetails();
+//			PropertyDetail detail = allotmentDetails.getPropertyDetails().get(0);
+			calcValidator.validatePropertyForCalculation(allotmentDetails);
+			String applicationNumber = criteria.getApplicationNumber();
 			Demand demand=utils.getLatestDemandForCurrentFinancialYear(requestInfo,criteria);
 			Calculation calculation = getCalculation(requestInfo, criteria,demand,masterMap);
-			calculation.setServiceNumber(property.getPropertyId());
-			calculationPropertyMap.put(assessmentNumber, calculation);
+			calculation.setServiceNumber(applicationNumber);
+			calculationPropertyMap.put(applicationNumber, calculation);
 		}
 		return calculationPropertyMap;
 	}
@@ -157,28 +157,27 @@ public class EstimationService {
 	  @SuppressWarnings("unchecked")
 	public CalculationRes getTaxCalculation(CalculationReq request,AssessmentRequestV2 assessmentRequestV2) {
 
-        CalculationCriteria criteria = request.getCalculationCriteria().get(0);
-        Property property = criteria.getProperty();
-        PropertyDetail detail = property.getPropertyDetails().get(0);
-        calcValidator.validatePropertyForCalculation(detail);
-        Map<String,Object> masterMap = mDataService.getMasterMap(request);
-        if(assessmentRequestV2!=null){
-        Map<String,Map<String, Object>>finicialYears=(Map<String, Map<String, Object>>) masterMap.get(FINANCIALYEAR_MASTER_KEY);
-        Long startingDateForFinicialYear=  Long.valueOf(finicialYears.get(assessmentRequestV2.getAssessment().getFinancialYear()).get("startingDate").toString());
-        log.info("starting date is" +startingDateForFinicialYear);
-        criteria.setFromDate(startingDateForFinicialYear); 
-        Long endingDateForFinicialYear=  Long.valueOf(finicialYears.get(assessmentRequestV2.getAssessment().getFinancialYear()).get("endingDate").toString());
-        criteria.setToDate(endingDateForFinicialYear);
-        }
-        Demand demand=utils.getLatestDemandForCurrentFinancialYear(request.getRequestInfo(),request.getCalculationCriteria().get(0));
-        return new CalculationRes(new ResponseInfo(), Collections.singletonList(getCalculation(request.getRequestInfo(), criteria,demand, masterMap)));
-    }
+//        CalculationCriteria criteria = request.getCalculationCriteria().get(0);
+//        Property property = criteria.getProperty();
+//        PropertyDetail detail = property.getPropertyDetails().get(0);
+//        calcValidator.validatePropertyForCalculation(detail);
+//        Map<String,Object> masterMap = mDataService.getMasterMap(request);
+//        if(assessmentRequestV2!=null){
+//        Map<String,Map<String, Object>>finicialYears=(Map<String, Map<String, Object>>) masterMap.get(FINANCIALYEAR_MASTER_KEY);
+//        Long startingDateForFinicialYear=  Long.valueOf(finicialYears.get(assessmentRequestV2.getAssessment().getFinancialYear()).get("startingDate").toString());
+//        log.info("starting date is" +startingDateForFinicialYear);
+//        criteria.setFromDate(startingDateForFinicialYear); 
+//        Long endingDateForFinicialYear=  Long.valueOf(finicialYears.get(assessmentRequestV2.getAssessment().getFinancialYear()).get("endingDate").toString());
+//        criteria.setToDate(endingDateForFinicialYear);
+//        }
+//        Demand demand=utils.getLatestDemandForCurrentFinancialYear(request.getRequestInfo(),request.getCalculationCriteria().get(0));
+//        return new CalculationRes(new ResponseInfo(), Collections.singletonList(getCalculation(request.getRequestInfo(), criteria,demand, masterMap)));
+       return null;
+	  }
     public CalculationRes getTaxCalculation(CalculationReq request) {
 
         CalculationCriteria criteria = request.getCalculationCriteria().get(0);
-        Property property = criteria.getProperty();
-        PropertyDetail detail = property.getPropertyDetails().get(0);
-        calcValidator.validatePropertyForCalculation(detail);
+        calcValidator.validatePropertyForCalculation(criteria.getAllotmentDetails());
         Map<String,Object> masterMap = mDataService.getMasterMap(request);
         return new CalculationRes(new ResponseInfo(), Collections.singletonList(getCalculation(request.getRequestInfo(), criteria, masterMap)));
     }
@@ -196,258 +195,149 @@ public class EstimationService {
 		BigDecimal taxAmt = BigDecimal.ZERO;
 		BigDecimal commercialTaxAmt=BigDecimal.ZERO;
 		BigDecimal usageExemption = BigDecimal.ZERO;
-		Property property = criteria.getProperty();
-		PropertyDetail detail = property.getPropertyDetails().get(0);
-		String assessmentYear = detail.getFinancialYear();
-		String tenantId = property.getTenantId();
+		AllotmentDetails allotmentDetails = criteria.getAllotmentDetails();
+		RLProperty propertyDetail = allotmentDetails.getRlProperty();
+		String applicationYears = propertyDetail.getFinancialYear();
+		String tenantId = allotmentDetails.getTenantId();
 
 		if(criteria.getFromDate()==null || criteria.getToDate()==null)
-            enrichmentService.enrichDemandPeriod(criteria,assessmentYear,masterMap);
-
-        List<BillingSlab> filteredBillingSlabs = getSlabsFiltered(property, requestInfo);
+            enrichmentService.enrichDemandPeriod(criteria,applicationYears,masterMap);
 
 		Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap = new HashMap<>();
 		Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
 		mDataService.setPropertyMasterValues(requestInfo, tenantId, propertyBasedExemptionMasterMap,
 				timeBasedExemptionMasterMap);
 
-		List<String> billingSlabIds = new LinkedList<>();
-		HashMap<Unit, BillingSlab> unitSlabMapping = new HashMap<>();
-		List<Unit> groundFloorUnits = new LinkedList<>();
 
-		/*
-		 * by default land should get only one slab from database per tenantId
-		 */
-		if (PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType()) && filteredBillingSlabs.size() != 1)
-			throw new CustomException(PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANCT,PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANT_MSG
-					.replace("{count}",String.valueOf(filteredBillingSlabs.size())));
 
-		else if (PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType())) {
-			taxAmt = taxAmt.add(BigDecimal.valueOf(filteredBillingSlabs.get(0).getUnitRate() * detail.getLandArea()));
-		} else {
-
-			double unBuiltRate = 0.0;
-			int groundUnitsCount = 0;
-			Double groundUnitsArea = 0.0;
-			int i = 0;
-            List<Unit> activeUnits=detail.getUnits().stream().filter(unit->unit.getActive()==true)
-            		.collect(Collectors.toList());
-            
-			for (Unit unit : activeUnits) {
-				BillingSlab slab = getSlabForCalc(filteredBillingSlabs, unit);
-				BigDecimal currentUnitTax = getTaxForUnit(slab, unit,assessmentYear);
-				
-				billingSlabIds.add(slab.getId()+"|"+i);
-				unitSlabMapping.put(unit, slab);
-				log.info(tenantId+" Occupency type  "+unit.getOccupancyType()+" OccupancyType() " +unit.getOccupancyType()+"AdditionalDetails"+unit.getAdditionalDetails());
-				if((unit.getOccupancyType().equalsIgnoreCase("RENTED") || unit.getOccupancyType().equalsIgnoreCase("PG")) && unit.getAdditionalDetails() != null && unit.getAdditionalDetails().has("rentedformonths"))
-				{ 	
-					
-					BigDecimal  noofmonths=BigDecimal.valueOf(Double.parseDouble(unit.getAdditionalDetails().get("rentedformonths").toString()));
-					log.info(noofmonths+" noofmonths  ");
-					if(noofmonths.compareTo(BigDecimal.valueOf(12)) < 0 )
-					{
-					String occ=unit.getAdditionalDetails().has("usageForDueMonths")?unit.getAdditionalDetails().get("usageForDueMonths").toString():"SELFOCCUPIED";
-					unit.setOccupancyType(occ.substring(1).substring(0,occ.length()-2));
-					BigDecimal restMonths=	BigDecimal.valueOf(12).subtract(noofmonths);
-					slab = getSlabForCalc(filteredBillingSlabs, unit);
-					BigDecimal tax=BigDecimal.valueOf(Math.round(getTaxForUnit(slab, unit,assessmentYear).doubleValue()));
-					BigDecimal addTax=tax.multiply(restMonths).divide(BigDecimal.valueOf(12),2, RoundingMode.HALF_UP);
-					currentUnitTax =currentUnitTax.add(addTax);
-					billingSlabIds.add(slab.getId()+"|"+i);
-					unitSlabMapping.put(unit, slab);
-					}		
-				}	/*
-								 * counting the number of units & total area in ground floor for unbuilt area
-				 * tax calculation
-				 */
-				if (unit.getFloorNo().equalsIgnoreCase("0")) {
-					groundUnitsCount += 1;
-					groundUnitsArea += unit.getUnitArea();
-					groundFloorUnits.add(unit);
-					if (null != slab.getUnBuiltUnitRate())
-						unBuiltRate += slab.getUnBuiltUnitRate();
-				}
-				taxAmt = taxAmt.add(currentUnitTax);
-				if(unit.getUsageCategoryMajor().startsWith("RESIDENTIAL")==false) // if unit is NONRESIDENTIAL
-					commercialTaxAmt=commercialTaxAmt.add(currentUnitTax);
-				
-				
-				usageExemption = usageExemption
-						.add(getExemption(unit, currentUnitTax, assessmentYear, propertyBasedExemptionMasterMap));
-				i++;
-			}	
-			/*
-			 * making call to get unbuilt area tax estimate
-			 */
-			//taxAmt = taxAmt.add(getUnBuiltRate(detail, unBuiltRate, groundUnitsCount, groundUnitsArea));
-			HashMap<Unit, BigDecimal> unBuiltRateCalc = getUnBuiltRate(assessmentYear,detail, unitSlabMapping, groundFloorUnits, groundUnitsArea);
-
-			/*
-			 * making call to get unbuilt area tax estimate
-			 */
-			// all unbuilt area taxAmt
-			BigDecimal unBuiltTax=unBuiltRateCalc.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-			taxAmt = taxAmt.add(unBuiltTax);
-		
-			// unBuiltRateCalc contains map with unbuiltareas of units where as we are need commercial unbuilt unit tax also for FireCess
-			BigDecimal commercialUnbuiltTax=BigDecimal.ZERO;			
-			Iterator <Map.Entry<Unit, BigDecimal>> entries =unBuiltRateCalc.entrySet().iterator();
-			while (entries.hasNext()) {
-			    Map.Entry<Unit, BigDecimal> entry = entries.next();
-			    if(entry.getKey().getUsageCategoryMajor().startsWith("RESIDENTIAL")==false )
-			    	commercialUnbuiltTax=commercialUnbuiltTax.add(entry.getValue());
-			}
-			
-			
-			
-		//	->(((Unit)k.getUsageCategoryDetail().startsWith("RESIDENTIAL"))==false?(commercialUnbuiltTax= commercialUnbuiltTax.add(v)):"");
-			// Now commercial Unbuilt Tax is present in commercialUnbuiltTax 
-			
-			commercialTaxAmt=commercialTaxAmt.add(commercialUnbuiltTax).setScale(2,BigDecimal.ROUND_HALF_UP); // complete Commercial Tax Amount
-			
-			/*
-			 * special case to handle property with one unit
-			 */
-//			if (detail.getUnits().size() == 1)
-//				usageExemption = getExemption(detail.getUnits().get(0), taxAmt, assessmentYear,
-//						propertyBasedExemptionMasterMap);
-			
-			for (Map.Entry<Unit,BigDecimal> e: unBuiltRateCalc.entrySet()) {
-				BigDecimal ue = getExemption(e.getKey(), e.getValue(), assessmentYear, propertyBasedExemptionMasterMap);
-				usageExemption = usageExemption.add(ue);
-			}
-		}
-
-		List<TaxHeadEstimate> taxHeadEstimates =  getEstimatesForTax(requestInfo,taxAmt, usageExemption, property, propertyBasedExemptionMasterMap,
+		List<TaxHeadEstimate> taxHeadEstimates =  getEstimatesForTax(requestInfo,taxAmt, usageExemption, criteria.getAllotmentDetails(), propertyBasedExemptionMasterMap,
 				timeBasedExemptionMasterMap,masterMap,demand,commercialTaxAmt);
 
 		
-		//Add Additional Rebate (if given in application.Properties for given FY)
-		
-				String additional_rebate=null;
-				String aditional_rebate_upto_fy=null;
-				try
-				{
-				Resource resource = new ClassPathResource("/application.properties");
-			    Properties props = PropertiesLoaderUtils.loadProperties(resource);
-			    additional_rebate= props.containsKey("ADDITIONAL_REBATE_PERCENT")?props.getProperty("ADDITIONAL_REBATE_PERCENT"):null;
-			    aditional_rebate_upto_fy= props.containsKey("ADDITIONAL_REBATE_UPTO_FY") ? props.getProperty("ADDITIONAL_REBATE_UPTO_FY"):null;
-				}
-				catch(Exception ex)
-				{
-					additional_rebate=null;
-					aditional_rebate_upto_fy=null;
-				}
-				
-				if(additional_rebate!=null && (aditional_rebate_upto_fy!=null?assessmentYear.compareTo(aditional_rebate_upto_fy)<=0:true) ) //if additionalRebate is to be given and (if additionaRebate to be given uptoFY and assessmentYear is less than uptoFY)  
-					{
-					// additional Rebate to be given on nettax payable (sum of all taxes excluding FireCess and CancerCess)
-					   BigDecimal nettax=new BigDecimal(0);
-					   for (TaxHeadEstimate t : taxHeadEstimates)
-						if(!t.getTaxHeadCode().equals("PT_FIRE_CESS") && !t.getTaxHeadCode().equals("PT_CANCER_CESS"))
-						   nettax=nettax.add(t.getEstimateAmount());
-					   
-					   BigDecimal AdditionalRebateAmount=nettax.multiply(new BigDecimal(additional_rebate).divide(new BigDecimal(100.0))).setScale(2,BigDecimal.ROUND_UP);
-					   //updating TaxHeadCode with key "PT_TIME_REBATE" to add AdditionalRebate
-					   
-					   //List<TaxHeadEstimate>  c= taxHeadEstimates.stream().map(i -> (i.getTaxHeadCode()==""?i.setEstimateAmount(i.getEstimateAmount().add(AdditionalRebateAmount)):i.setEstimateAmount(i.getEstimateAmount()));
-					   for (TaxHeadEstimate t : taxHeadEstimates)
-						   if(t.getTaxHeadCode().equals("PT_TIME_REBATE"))
-							   t.setEstimateAmount(t.getEstimateAmount().subtract(AdditionalRebateAmount));
-						   		
-					   
-					}
+//		//Add Additional Rebate (if given in application.Properties for given FY)
+//		
+//				String additional_rebate=null;
+//				String aditional_rebate_upto_fy=null;
+//				try
+//				{
+//				Resource resource = new ClassPathResource("/application.properties");
+//			    Properties props = PropertiesLoaderUtils.loadProperties(resource);
+//			    additional_rebate= props.containsKey("ADDITIONAL_REBATE_PERCENT")?props.getProperty("ADDITIONAL_REBATE_PERCENT"):null;
+//			    aditional_rebate_upto_fy= props.containsKey("ADDITIONAL_REBATE_UPTO_FY") ? props.getProperty("ADDITIONAL_REBATE_UPTO_FY"):null;
+//				}
+//				catch(Exception ex)
+//				{
+//					additional_rebate=null;
+//					aditional_rebate_upto_fy=null;
+//				}
+//				
+//				if(additional_rebate!=null && (aditional_rebate_upto_fy!=null?assessmentYear.compareTo(aditional_rebate_upto_fy)<=0:true) ) //if additionalRebate is to be given and (if additionaRebate to be given uptoFY and assessmentYear is less than uptoFY)  
+//					{
+//					// additional Rebate to be given on nettax payable (sum of all taxes excluding FireCess and CancerCess)
+//					   BigDecimal nettax=new BigDecimal(0);
+//					   for (TaxHeadEstimate t : taxHeadEstimates)
+//						if(!t.getTaxHeadCode().equals("PT_FIRE_CESS") && !t.getTaxHeadCode().equals("PT_CANCER_CESS"))
+//						   nettax=nettax.add(t.getEstimateAmount());
+//					   
+//					   BigDecimal AdditionalRebateAmount=nettax.multiply(new BigDecimal(additional_rebate).divide(new BigDecimal(100.0))).setScale(2,BigDecimal.ROUND_UP);
+//					   //updating TaxHeadCode with key "PT_TIME_REBATE" to add AdditionalRebate
+//					   
+//					   //List<TaxHeadEstimate>  c= taxHeadEstimates.stream().map(i -> (i.getTaxHeadCode()==""?i.setEstimateAmount(i.getEstimateAmount().add(AdditionalRebateAmount)):i.setEstimateAmount(i.getEstimateAmount()));
+//					   for (TaxHeadEstimate t : taxHeadEstimates)
+//						   if(t.getTaxHeadCode().equals("PT_TIME_REBATE"))
+//							   t.setEstimateAmount(t.getEstimateAmount().subtract(AdditionalRebateAmount));
+//						   		
+//					   
+//					}
 		
 		Map<String,List> estimatesAndBillingSlabs = new HashMap<>();
 		estimatesAndBillingSlabs.put("estimates",taxHeadEstimates);
-		estimatesAndBillingSlabs.put("billingSlabIds",billingSlabIds);
+//		estimatesAndBillingSlabs.put("billingSlabIds",billingSlabIds);
 
 		return estimatesAndBillingSlabs;
-
 	}
 
 	private Map<String,List> getEstimationMap(CalculationCriteria criteria, RequestInfo requestInfo, Map<String, Object> masterMap) {
 
-		BigDecimal taxAmt = BigDecimal.ZERO;
-		BigDecimal usageExemption = BigDecimal.ZERO;
-		Property property = criteria.getProperty();
-		PropertyDetail detail = property.getPropertyDetails().get(0);
-		String assessmentYear = detail.getFinancialYear();
-		String tenantId = property.getTenantId();
-
-		if(criteria.getFromDate()==null || criteria.getToDate()==null)
-            enrichmentService.enrichDemandPeriod(criteria,assessmentYear,masterMap);
-
-        List<BillingSlab> filteredBillingSlabs = getSlabsFiltered(property,criteria.getFinancialYear(),requestInfo);
-
-		Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap = new HashMap<>();
-		Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
-		mDataService.setPropertyMasterValues(requestInfo, tenantId, propertyBasedExemptionMasterMap,
-				timeBasedExemptionMasterMap);
-
-		List<String> billingSlabIds = new LinkedList<>();
-
-		/*
-		 * by default land should get only one slab from database per tenantId
-		 */
-		if (PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType()) && filteredBillingSlabs.size() != 1)
-			throw new CustomException(PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANCT,PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANT_MSG
-					.replace("{count}",String.valueOf(filteredBillingSlabs.size())));
-
-		else if (PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType())) {
-			taxAmt = taxAmt.add(BigDecimal.valueOf(filteredBillingSlabs.get(0).getUnitRate() * detail.getLandArea()));
-		} else {
-
-			double unBuiltRate = 0.0;
-			int groundUnitsCount = 0;
-			Double groundUnitsArea = 0.0;
-			int i = 0;
-
-			for (Unit unit : detail.getUnits()) {
-
-				BillingSlab slab = getSlabForCalc(filteredBillingSlabs, unit);
-				BigDecimal currentUnitTax = getTaxForUnit(slab, unit);
-				billingSlabIds.add(slab.getId()+"|"+i);
-
-				/*
-				 * counting the number of units & total area in ground floor for unbuilt area
-				 * tax calculation
-				 */
-				if (unit.getFloorNo().equalsIgnoreCase("0")) {
-					groundUnitsCount += 1;
-					groundUnitsArea += unit.getUnitArea();
-					if (null != slab.getUnBuiltUnitRate())
-						unBuiltRate += slab.getUnBuiltUnitRate();
-				}
-				taxAmt = taxAmt.add(currentUnitTax);
-				usageExemption = usageExemption
-						.add(getExemption(unit, currentUnitTax, assessmentYear, propertyBasedExemptionMasterMap));
-				i++;
-			}
-			/*
-			 * making call to get unbuilt area tax estimate
-			 */
-			taxAmt = taxAmt.add(getUnBuiltRate(detail, unBuiltRate, groundUnitsCount, groundUnitsArea));
-
-			/*
-			 * special case to handle property with one unit
-			 */
-			if (detail.getUnits().size() == 1)
-				usageExemption = getExemption(detail.getUnits().get(0), taxAmt, assessmentYear,
-						propertyBasedExemptionMasterMap);
-		}
-
-		List<TaxHeadEstimate> taxHeadEstimates =  getEstimatesForTax(requestInfo,taxAmt, usageExemption, property, propertyBasedExemptionMasterMap,
-				timeBasedExemptionMasterMap,masterMap);
-
-
-		Map<String,List> estimatesAndBillingSlabs = new HashMap<>();
-		estimatesAndBillingSlabs.put("estimates",taxHeadEstimates);
-		estimatesAndBillingSlabs.put("billingSlabIds",billingSlabIds);
-
-		return estimatesAndBillingSlabs;
-
+//		BigDecimal taxAmt = BigDecimal.ZERO;
+//		BigDecimal usageExemption = BigDecimal.ZERO;
+//		Property property = criteria.getProperty();
+//		PropertyDetail detail = property.getPropertyDetails().get(0);
+//		String assessmentYear = detail.getFinancialYear();
+//		String tenantId = property.getTenantId();
+//
+//		if(criteria.getFromDate()==null || criteria.getToDate()==null)
+//            enrichmentService.enrichDemandPeriod(criteria,assessmentYear,masterMap);
+//
+//        List<BillingSlab> filteredBillingSlabs = getSlabsFiltered(property,criteria.getFinancialYear(),requestInfo);
+//
+//		Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap = new HashMap<>();
+//		Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
+//		mDataService.setPropertyMasterValues(requestInfo, tenantId, propertyBasedExemptionMasterMap,
+//				timeBasedExemptionMasterMap);
+//
+//		List<String> billingSlabIds = new LinkedList<>();
+//
+//		/*
+//		 * by default land should get only one slab from database per tenantId
+//		 */
+//		if (PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType()) && filteredBillingSlabs.size() != 1)
+//			throw new CustomException(PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANCT,PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANT_MSG
+//					.replace("{count}",String.valueOf(filteredBillingSlabs.size())));
+//
+//		else if (PT_TYPE_VACANT_LAND.equalsIgnoreCase(detail.getPropertyType())) {
+//			taxAmt = taxAmt.add(BigDecimal.valueOf(filteredBillingSlabs.get(0).getUnitRate() * detail.getLandArea()));
+//		} else {
+//
+//			double unBuiltRate = 0.0;
+//			int groundUnitsCount = 0;
+//			Double groundUnitsArea = 0.0;
+//			int i = 0;
+//
+//			for (Unit unit : detail.getUnits()) {
+//
+//				BillingSlab slab = getSlabForCalc(filteredBillingSlabs, unit);
+//				BigDecimal currentUnitTax = getTaxForUnit(slab, unit);
+//				billingSlabIds.add(slab.getId()+"|"+i);
+//
+//				/*
+//				 * counting the number of units & total area in ground floor for unbuilt area
+//				 * tax calculation
+//				 */
+//				if (unit.getFloorNo().equalsIgnoreCase("0")) {
+//					groundUnitsCount += 1;
+//					groundUnitsArea += unit.getUnitArea();
+//					if (null != slab.getUnBuiltUnitRate())
+//						unBuiltRate += slab.getUnBuiltUnitRate();
+//				}
+//				taxAmt = taxAmt.add(currentUnitTax);
+//				usageExemption = usageExemption
+//						.add(getExemption(unit, currentUnitTax, assessmentYear, propertyBasedExemptionMasterMap));
+//				i++;
+//			}
+//			/*
+//			 * making call to get unbuilt area tax estimate
+//			 */
+//			taxAmt = taxAmt.add(getUnBuiltRate(detail, unBuiltRate, groundUnitsCount, groundUnitsArea));
+//
+//			/*
+//			 * special case to handle property with one unit
+//			 */
+//			if (detail.getUnits().size() == 1)
+//				usageExemption = getExemption(detail.getUnits().get(0), taxAmt, assessmentYear,
+//						propertyBasedExemptionMasterMap);
+//		}
+//
+//		List<TaxHeadEstimate> taxHeadEstimates =  getEstimatesForTax(requestInfo,taxAmt, usageExemption, property, propertyBasedExemptionMasterMap,
+//				timeBasedExemptionMasterMap,masterMap);
+//
+//
+//		Map<String,List> estimatesAndBillingSlabs = new HashMap<>();
+//		estimatesAndBillingSlabs.put("estimates",taxHeadEstimates);
+//		estimatesAndBillingSlabs.put("billingSlabIds",billingSlabIds);
+//
+//		return estimatesAndBillingSlabs;
+  return null;
 	}
 
 	/**
@@ -469,20 +359,20 @@ public class EstimationService {
 	 * @param groundUnitsArea Sum of ground floor units area
 	 * @return calculated tax for un-built area in the property detail.
 	 */
-	private BigDecimal getUnBuiltRate(PropertyDetail detail, double unBuiltRate, int groundUnitsCount, Double groundUnitsArea) {
-
-        BigDecimal unBuiltAmt = BigDecimal.ZERO;
-        if (0.0 < unBuiltRate && null != detail.getLandArea() && groundUnitsCount > 0) {
-
-            double diffArea = null != detail.getBuildUpArea() ? detail.getLandArea() - detail.getBuildUpArea()
-                    : detail.getLandArea() - groundUnitsArea;
-            // ignoring if land Area is lesser than buildUpArea/groundUnitsAreaSum in estimate instead of throwing error
-            // since property service validates the same for calculation
-            diffArea = diffArea < 0.0 ? 0.0 : diffArea;
-            unBuiltAmt = unBuiltAmt.add(BigDecimal.valueOf((unBuiltRate / groundUnitsCount) * (diffArea)));
-        }
-			return unBuiltAmt;
-    }
+//	private BigDecimal getUnBuiltRate(PropertyDetail detail, double unBuiltRate, int groundUnitsCount, Double groundUnitsArea) {
+//
+//        BigDecimal unBuiltAmt = BigDecimal.ZERO;
+//        if (0.0 < unBuiltRate && null != detail.getLandArea() && groundUnitsCount > 0) {
+//
+//            double diffArea = null != detail.getBuildUpArea() ? detail.getLandArea() - detail.getBuildUpArea()
+//                    : detail.getLandArea() - groundUnitsArea;
+//            // ignoring if land Area is lesser than buildUpArea/groundUnitsAreaSum in estimate instead of throwing error
+//            // since property service validates the same for calculation
+//            diffArea = diffArea < 0.0 ? 0.0 : diffArea;
+//            unBuiltAmt = unBuiltAmt.add(BigDecimal.valueOf((unBuiltRate / groundUnitsCount) * (diffArea)));
+//        }
+//			return unBuiltAmt;
+//    }
 
 	/**
 	 * Returns Tax amount value for the unit from the list of slabs passed
@@ -501,83 +391,83 @@ public class EstimationService {
 	 * @param unit the unit for which tax should be calculated.
 	 * @return calculated tax amount for the incoming unit
 	 */
-	 	private BigDecimal getTaxForUnit(BillingSlab slab, Unit unit,String assessmentYear) {
-
-		boolean isUnitCommercial = unit.getUsageCategoryMajor().equalsIgnoreCase(configs.getUsageMajorNonResidential());
-		boolean isUnitRented = unit.getOccupancyType().equalsIgnoreCase(configs.getOccupancyTypeRented());
-		
-		boolean isUnitResidential = unit.getUsageCategoryMajor().equalsIgnoreCase(configs.getUsageMajorResidential());
-		boolean isUnitPG = unit.getOccupancyType().equalsIgnoreCase(configs.getOccupancyTypePG());
-		BigDecimal currentUnitTax;
-
-        if (null == slab) {
-            String msg = BILLING_SLAB_MATCH_ERROR_MESSAGE
-                    .replace(BILLING_SLAB_MATCH_AREA, unit.getUnitArea().toString())
-                    .replace(BILLING_SLAB_MATCH_FLOOR, unit.getFloorNo())
-                    .replace(BILLING_SLAB_MATCH_USAGE_DETAIL,
-                     null != unit.getUsageCategoryDetail() ? unit.getUsageCategoryDetail() : "nill");
-            throw new CustomException(BILLING_SLAB_MATCH_ERROR_CODE, msg);
-        }
-
-		if ((isUnitCommercial && isUnitRented) || (isUnitResidential && isUnitPG)) {
-
-			if (unit.getArv() == null)
-                throw new CustomException(EG_PT_ESTIMATE_ARV_NULL, EG_PT_ESTIMATE_ARV_NULL_MSG);
-
-			BigDecimal multiplier;
-			if (null != slab.getArvPercent())
-				multiplier = BigDecimal.valueOf(slab.getArvPercent() / 100);
-			else
-				multiplier = BigDecimal.valueOf(configs.getArvPercent() / 100);
-			
-				currentUnitTax = unit.getArv().multiply(multiplier); }
-		 else {
-	
-			currentUnitTax = BigDecimal.valueOf(unit.getUnitArea() * slab.getUnitRate());
-			if(assessmentYear.startsWith("2021-") )
-				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.05"));
-			else if (assessmentYear.startsWith("2022-"))
-				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.1025"));
-			else if (assessmentYear.startsWith("2023-"))
-				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.157625"));
-			else if (assessmentYear.startsWith("2024-")  || assessmentYear.compareTo("2024-") > 0)  // applicable for assessmentyear 2024-25 and onwards
-				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.215506"));
-			
-		}
-		
-		return currentUnitTax;
-	}
-	private BigDecimal getTaxForUnit(BillingSlab slab, Unit unit) {
-
-		boolean isUnitCommercial = unit.getUsageCategoryMajor().equalsIgnoreCase(configs.getUsageMajorNonResidential());
-		boolean isUnitRented = unit.getOccupancyType().equalsIgnoreCase(configs.getOccupancyTypeRented());
-		BigDecimal currentUnitTax;
-
-        if (null == slab) {
-            String msg = BILLING_SLAB_MATCH_ERROR_MESSAGE
-                    .replace(BILLING_SLAB_MATCH_AREA, unit.getUnitArea().toString())
-                    .replace(BILLING_SLAB_MATCH_FLOOR, unit.getFloorNo())
-                    .replace(BILLING_SLAB_MATCH_USAGE_DETAIL,
-                     null != unit.getUsageCategoryDetail() ? unit.getUsageCategoryDetail() : "nill");
-            throw new CustomException(BILLING_SLAB_MATCH_ERROR_CODE, msg);
-        }
-
-		if (isUnitCommercial && isUnitRented) {
-
-			if (unit.getArv() == null)
-                throw new CustomException(EG_PT_ESTIMATE_ARV_NULL, EG_PT_ESTIMATE_ARV_NULL_MSG);
-
-			BigDecimal multiplier;
-			if (null != slab.getArvPercent())
-				multiplier = BigDecimal.valueOf(slab.getArvPercent() / 100);
-			else
-				multiplier = BigDecimal.valueOf(configs.getArvPercent() / 100);
-			currentUnitTax = unit.getArv().multiply(multiplier);
-		} else {
-			currentUnitTax = BigDecimal.valueOf(unit.getUnitArea() * slab.getUnitRate());
-		}
-		return currentUnitTax;
-	}
+//	 	private BigDecimal getTaxForUnit(BillingSlab slab, Unit unit,String assessmentYear) {
+//
+//		boolean isUnitCommercial = unit.getUsageCategoryMajor().equalsIgnoreCase(configs.getUsageMajorNonResidential());
+//		boolean isUnitRented = unit.getOccupancyType().equalsIgnoreCase(configs.getOccupancyTypeRented());
+//		
+//		boolean isUnitResidential = unit.getUsageCategoryMajor().equalsIgnoreCase(configs.getUsageMajorResidential());
+//		boolean isUnitPG = unit.getOccupancyType().equalsIgnoreCase(configs.getOccupancyTypePG());
+//		BigDecimal currentUnitTax;
+//
+//        if (null == slab) {
+//            String msg = BILLING_SLAB_MATCH_ERROR_MESSAGE
+//                    .replace(BILLING_SLAB_MATCH_AREA, unit.getUnitArea().toString())
+//                    .replace(BILLING_SLAB_MATCH_FLOOR, unit.getFloorNo())
+//                    .replace(BILLING_SLAB_MATCH_USAGE_DETAIL,
+//                     null != unit.getUsageCategoryDetail() ? unit.getUsageCategoryDetail() : "nill");
+//            throw new CustomException(BILLING_SLAB_MATCH_ERROR_CODE, msg);
+//        }
+//
+//		if ((isUnitCommercial && isUnitRented) || (isUnitResidential && isUnitPG)) {
+//
+//			if (unit.getArv() == null)
+//                throw new CustomException(EG_PT_ESTIMATE_ARV_NULL, EG_PT_ESTIMATE_ARV_NULL_MSG);
+//
+//			BigDecimal multiplier;
+//			if (null != slab.getArvPercent())
+//				multiplier = BigDecimal.valueOf(slab.getArvPercent() / 100);
+//			else
+//				multiplier = BigDecimal.valueOf(configs.getArvPercent() / 100);
+//			
+//				currentUnitTax = unit.getArv().multiply(multiplier); }
+//		 else {
+//	
+//			currentUnitTax = BigDecimal.valueOf(unit.getUnitArea() * slab.getUnitRate());
+//			if(assessmentYear.startsWith("2021-") )
+//				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.05"));
+//			else if (assessmentYear.startsWith("2022-"))
+//				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.1025"));
+//			else if (assessmentYear.startsWith("2023-"))
+//				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.157625"));
+//			else if (assessmentYear.startsWith("2024-")  || assessmentYear.compareTo("2024-") > 0)  // applicable for assessmentyear 2024-25 and onwards
+//				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.215506"));
+//			
+//		}
+//		
+//		return currentUnitTax;
+//	}
+//	private BigDecimal getTaxForUnit(BillingSlab slab, Unit unit) {
+//
+//		boolean isUnitCommercial = unit.getUsageCategoryMajor().equalsIgnoreCase(configs.getUsageMajorNonResidential());
+//		boolean isUnitRented = unit.getOccupancyType().equalsIgnoreCase(configs.getOccupancyTypeRented());
+//		BigDecimal currentUnitTax;
+//
+//        if (null == slab) {
+//            String msg = BILLING_SLAB_MATCH_ERROR_MESSAGE
+//                    .replace(BILLING_SLAB_MATCH_AREA, unit.getUnitArea().toString())
+//                    .replace(BILLING_SLAB_MATCH_FLOOR, unit.getFloorNo())
+//                    .replace(BILLING_SLAB_MATCH_USAGE_DETAIL,
+//                     null != unit.getUsageCategoryDetail() ? unit.getUsageCategoryDetail() : "nill");
+//            throw new CustomException(BILLING_SLAB_MATCH_ERROR_CODE, msg);
+//        }
+//
+//		if (isUnitCommercial && isUnitRented) {
+//
+//			if (unit.getArv() == null)
+//                throw new CustomException(EG_PT_ESTIMATE_ARV_NULL, EG_PT_ESTIMATE_ARV_NULL_MSG);
+//
+//			BigDecimal multiplier;
+//			if (null != slab.getArvPercent())
+//				multiplier = BigDecimal.valueOf(slab.getArvPercent() / 100);
+//			else
+//				multiplier = BigDecimal.valueOf(configs.getArvPercent() / 100);
+//			currentUnitTax = unit.getArv().multiply(multiplier);
+//		} else {
+//			currentUnitTax = BigDecimal.valueOf(unit.getUnitArea() * slab.getUnitRate());
+//		}
+//		return currentUnitTax;
+//	}
 
 	/**
 	 * Return an Estimate list containing all the required tax heads
@@ -591,13 +481,13 @@ public class EstimationService {
 	 * @param timeBasedExemeptionMasterMap masters with period based exemption values
 	 * @param masterMap
 	 */
-	 	private List<TaxHeadEstimate> getEstimatesForTax(RequestInfo requestInfo,BigDecimal taxAmt, BigDecimal usageExemption, Property property,
+	 	private List<TaxHeadEstimate> getEstimatesForTax(RequestInfo requestInfo,BigDecimal taxAmt, BigDecimal usageExemption, AllotmentDetails allotmentDetails,
 			Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap,
 			Map<String, JSONArray> timeBasedExemeptionMasterMap,Map<String, Object> masterMap, Demand demand,BigDecimal commercialTaxAmt) {
 
 
 
-		PropertyDetail detail = property.getPropertyDetails().get(0);
+		RLProperty propertyDetails = allotmentDetails.getRlProperty();
 		BigDecimal payableTax = taxAmt.setScale(2, 2);
 		// To find Percentage Share of Commecial Tax ( to be used for firecess) after subtracting exemptions) = commercialTax/TaxPayable*100
 		
@@ -611,54 +501,59 @@ public class EstimationService {
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
 		//PropertyDetail detail = property.getPropertyDetails().get(0);
-		String assessmentYear = detail.getFinancialYear();
+		String applicationYear = propertyDetails.getFinancialYear();
 		// taxes
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TAX).estimateAmount(taxAmt.setScale(2, 2)).build());
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TAX).estimateAmount(taxAmt.setScale(2, 2)).build());
 
 		
 		// usage exemption
 		 usageExemption = usageExemption.setScale(2, 2).negate();
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_UNIT_USAGE_EXEMPTION).estimateAmount(
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_USAGE_EXEMPTION).estimateAmount(
 		        usageExemption).build());
 		payableTax = payableTax.add(usageExemption);
 
-		// owner exemption
-		BigDecimal userExemption = getExemption(detail.getOwners(), payableTax, assessmentYear,
+//		// owner exemption
+		BigDecimal userExemption = getExemption(allotmentDetails.getOwnerInfo().get(0), payableTax, applicationYear,
 				propertyBasedExemptionMasterMap).setScale(2, 2).negate();
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_OWNER_EXEMPTION).estimateAmount(userExemption).build());
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_OWNER_EXEMPTION).estimateAmount(userExemption).build());
 		payableTax = payableTax.add(userExemption);
 
 		//FIRECESS on commercialTaxAmt with percentratio (ratio for commercial share) as commercialTaxAmtRatioPercent
-		BigDecimal FireCessTaxableAmount=payableTax.multiply(commercialTaxAmtRatioPercent).divide(new BigDecimal(100.00)).setScale(2,BigDecimal.ROUND_HALF_UP);
+//		BigDecimal FireCessTaxableAmount=payableTax.multiply(commercialTaxAmtRatioPercent).divide(new BigDecimal(100.00)).setScale(2,BigDecimal.ROUND_HALF_UP);
 		
 		
-		// Fire cess
-		List<Object> fireCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.FIRE_CESS_MASTER);
-		BigDecimal fireCess;
+//		// Fire cess
+//		List<Object> fireCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.FIRE_CESS_MASTER);
+//		BigDecimal fireCess;
+//
+//		//FireCess should be calculated only on commercialTaxAmt (Tax payable for NonResidential units only)
+//		if (usePBFirecessLogic) {
+//			//fireCess = firecessUtils.getPBFireCess(payableTax, assessmentYear, fireCessMasterList, detail);
+//			fireCess = firecessUtils.getPBFireCess(FireCessTaxableAmount, assessmentYear, fireCessMasterList, detail);
+//			estimates.add(
+//					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
+//		} else {
+//			//fireCess = mDataService.getCess(payableTax, assessmentYear, fireCessMasterList);
+//			fireCess = mDataService.getCess(FireCessTaxableAmount, assessmentYear, fireCessMasterList);
+//			estimates.add(
+//					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
+//
+//		}
 
-		//FireCess should be calculated only on commercialTaxAmt (Tax payable for NonResidential units only)
-		if (usePBFirecessLogic) {
-			//fireCess = firecessUtils.getPBFireCess(payableTax, assessmentYear, fireCessMasterList, detail);
-			fireCess = firecessUtils.getPBFireCess(FireCessTaxableAmount, assessmentYear, fireCessMasterList, detail);
-			estimates.add(
-					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
-		} else {
-			//fireCess = mDataService.getCess(payableTax, assessmentYear, fireCessMasterList);
-			fireCess = mDataService.getCess(FireCessTaxableAmount, assessmentYear, fireCessMasterList);
-			estimates.add(
-					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
+//		// Cancer cess
+//		List<Object> cancerCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.CANCER_CESS_MASTER);
+//		BigDecimal cancerCess = mDataService.getCess(payableTax, assessmentYear, cancerCessMasterList);
+//		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_CANCER_CESS).estimateAmount(cancerCess.setScale(2, 2)).build());
 
-		}
+		// Cow cess
+		List<Object> cowCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.COW_CESS_MASTER);
+		BigDecimal cancerCess = mDataService.getCowCass(payableTax, applicationYear, cowCessMasterList);
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_COW_CESS).estimateAmount(cancerCess.setScale(2, 2)).build());
 
-		// Cancer cess
-		List<Object> cancerCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.CANCER_CESS_MASTER);
-		BigDecimal cancerCess = mDataService.getCess(payableTax, assessmentYear, cancerCessMasterList);
-		estimates.add(
-				TaxHeadEstimate.builder().taxHeadCode(PT_CANCER_CESS).estimateAmount(cancerCess.setScale(2, 2)).build());
-
+				
 		Map<String, Map<String, Object>> financialYearMaster = (Map<String, Map<String, Object>>) masterMap.get(FINANCIALYEAR_MASTER_KEY);
 
-		Map<String, Object> finYearMap = financialYearMaster.get(assessmentYear);
+		Map<String, Object> finYearMap = financialYearMaster.get(applicationYear);
 		Long fromDate = (Long) finYearMap.get(FINANCIAL_YEAR_STARTING_DATE);
 		Long toDate = (Long) finYearMap.get(FINANCIAL_YEAR_ENDING_DATE);
 
@@ -667,23 +562,26 @@ public class EstimationService {
 
 		List<Payment> payments = new LinkedList<>();
 
-		if(!StringUtils.isEmpty(property.getPropertyId()) && !StringUtils.isEmpty(property.getTenantId())){
-			payments = paymentService.getPaymentsFromProperty(property, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+		if(!StringUtils.isEmpty(allotmentDetails.getApplicationNumber()) && !StringUtils.isEmpty(allotmentDetails.getTenantId())){
+			payments = paymentService.getPaymentsFromProperty(allotmentDetails, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 		}
 
 
 		// get applicable rebate and penalty
-		Map<String, BigDecimal> rebatePenaltyMap = payService.applyPenaltyRebateAndInterest(payableTax, BigDecimal.ZERO,
-				 assessmentYear, timeBasedExemeptionMasterMap,payments,taxPeriod,demand);
+		Map<String, BigDecimal> rebatePenaltyMap = payService.applyPenaltyRebateAndInterestAndCowCass(payableTax, BigDecimal.ZERO,
+				 applicationYear, timeBasedExemeptionMasterMap,payments,taxPeriod,demand);
 
 		if (null != rebatePenaltyMap) {
 
-			BigDecimal rebate = rebatePenaltyMap.get(PT_TIME_REBATE);
-			BigDecimal penalty = rebatePenaltyMap.get(PT_TIME_PENALTY);
-			BigDecimal interest = rebatePenaltyMap.get(PT_TIME_INTEREST);
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_REBATE).estimateAmount(rebate).build());
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_PENALTY).estimateAmount(penalty).build());
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_INTEREST).estimateAmount(interest).build());
+			BigDecimal rebate = rebatePenaltyMap.get(RL_TIME_REBATE);
+			BigDecimal penalty = rebatePenaltyMap.get(RL_TIME_PENALTY);
+			BigDecimal cowCass = rebatePenaltyMap.get(RL_TIME_COWCASS);
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TIME_COWCASS).estimateAmount(penalty).build());
+		
+			BigDecimal interest = rebatePenaltyMap.get(RL_TIME_INTEREST);
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TIME_REBATE).estimateAmount(rebate).build());
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TIME_PENALTY).estimateAmount(penalty).build());
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TIME_INTEREST).estimateAmount(interest).build());
 			if(rebate==null){
 				rebate=BigDecimal.ZERO;
 			}
@@ -695,75 +593,84 @@ public class EstimationService {
 			if(interest==null){
 				interest=BigDecimal.ZERO;
 			}
-			payableTax = payableTax.add(rebate).add(penalty).add(interest);
+			payableTax = payableTax
+					.add(rebate)
+					.add(cowCass)
+					.add(penalty)
+					.add(interest);
 		}
 
 		// AdHoc Values (additional rebate or penalty manually entered by the employee)
-		if (null != detail.getAdhocPenalty())
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_PENALTY)
-					.estimateAmount(detail.getAdhocPenalty()).build());
-
-		if (null != detail.getAdhocExemption() && detail.getAdhocExemption().compareTo(payableTax.add(fireCess)) <= 0) {
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_REBATE)
-					.estimateAmount(detail.getAdhocExemption().negate()).build());
-		}
-		else if (null != detail.getAdhocExemption()) {
-			throw new CustomException(PT_ADHOC_REBATE_INVALID_AMOUNT, PT_ADHOC_REBATE_INVALID_AMOUNT_MSG + taxAmt);
-		}
+//		if (null != detail.getAdhocPenalty())
+//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_PENALTY)
+//					.estimateAmount(detail.getAdhocPenalty()).build());
+//
+//		if (null != detail.getAdhocExemption() && detail.getAdhocExemption().compareTo(payableTax.add(fireCess)) <= 0) {
+//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_REBATE)
+//					.estimateAmount(detail.getAdhocExemption().negate()).build());
+//		}
+//		else if (null != detail.getAdhocExemption()) {
+//			throw new CustomException(PT_ADHOC_REBATE_INVALID_AMOUNT, PT_ADHOC_REBATE_INVALID_AMOUNT_MSG + taxAmt);
+//		}
 		return estimates;
 	}
 
-	private List<TaxHeadEstimate> getEstimatesForTax(RequestInfo requestInfo,BigDecimal taxAmt, BigDecimal usageExemption, Property property,
+	private List<TaxHeadEstimate> getEstimatesForTax(RequestInfo requestInfo,BigDecimal taxAmt, BigDecimal usageExemption, AllotmentDetails allotmentDetails,
 			Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap,
 			Map<String, JSONArray> timeBasedExemeptionMasterMap,Map<String, Object> masterMap) {
 
 
 
-		PropertyDetail detail = property.getPropertyDetails().get(0);
+		RLProperty propertyDetail = allotmentDetails.getRlProperty();
 		BigDecimal payableTax = taxAmt;
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
 		//PropertyDetail detail = property.getPropertyDetails().get(0);
-		String assessmentYear = detail.getFinancialYear();
+		String applicationYear = propertyDetail.getFinancialYear();
+		
 		// taxes
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TAX).estimateAmount(taxAmt.setScale(2, 2)).build());
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TAX).estimateAmount(taxAmt.setScale(2, 2)).build());
 
 		// usage exemption
-		 usageExemption = usageExemption.setScale(2, 2).negate();
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_UNIT_USAGE_EXEMPTION).estimateAmount(
+		usageExemption = usageExemption.setScale(2, 2).negate();
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_USAGE_EXEMPTION).estimateAmount(
 		        usageExemption).build());
 		payableTax = payableTax.add(usageExemption);
 
 		// owner exemption
-		BigDecimal userExemption = getExemption(detail.getOwners(), payableTax, assessmentYear,
+		BigDecimal userExemption = getExemption(allotmentDetails.getOwnerInfo().get(0), payableTax, applicationYear,
 				propertyBasedExemptionMasterMap).setScale(2, 2).negate();
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_OWNER_EXEMPTION).estimateAmount(userExemption).build());
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_OWNER_EXEMPTION).estimateAmount(userExemption).build());
 		payableTax = payableTax.add(userExemption);
 
 		// Fire cess
-		List<Object> fireCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.FIRE_CESS_MASTER);
-		BigDecimal fireCess;
+//		List<Object> fireCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.FIRE_CESS_MASTER);
+//		BigDecimal fireCess;
+//
+//		if (usePBFirecessLogic) {
+//			fireCess = firecessUtils.getPBFireCess(payableTax, assessmentYear, fireCessMasterList, detail);
+//			estimates.add(
+//					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
+//		} else {
+//			fireCess = mDataService.getCess(payableTax, assessmentYear, fireCessMasterList);
+//			estimates.add(
+//					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
+//
+//		}
+		
+		// Cow cess
+		List<Object> cancerCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.COW_CESS_MASTER);
+		BigDecimal cancerCess = mDataService.getCowCass(payableTax, applicationYear, cancerCessMasterList);
+		estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_COW_CESS).estimateAmount(cancerCess.setScale(2, 2)).build());
 
-		if (usePBFirecessLogic) {
-			fireCess = firecessUtils.getPBFireCess(payableTax, assessmentYear, fireCessMasterList, detail);
-			estimates.add(
-					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
-		} else {
-			fireCess = mDataService.getCess(payableTax, assessmentYear, fireCessMasterList);
-			estimates.add(
-					TaxHeadEstimate.builder().taxHeadCode(PT_FIRE_CESS).estimateAmount(fireCess.setScale(2, 2)).build());
-
-		}
-
-		// Cancer cess
-		List<Object> cancerCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.CANCER_CESS_MASTER);
-		BigDecimal cancerCess = mDataService.getCess(payableTax, assessmentYear, cancerCessMasterList);
-		estimates.add(
-				TaxHeadEstimate.builder().taxHeadCode(PT_CANCER_CESS).estimateAmount(cancerCess.setScale(2, 2)).build());
+//		// Cancer cess
+//		List<Object> cancerCessMasterList = timeBasedExemeptionMasterMap.get(CalculatorConstants.CANCER_CESS_MASTER);
+//		BigDecimal cancerCess = mDataService.getCess(payableTax, applicationYear, cancerCessMasterList);
+//		estimates.add(
+//				TaxHeadEstimate.builder().taxHeadCode(PT_CANCER_CESS).estimateAmount(cancerCess.setScale(2, 2)).build());
 
 		Map<String, Map<String, Object>> financialYearMaster = (Map<String, Map<String, Object>>) masterMap.get(FINANCIALYEAR_MASTER_KEY);
-
-		Map<String, Object> finYearMap = financialYearMaster.get(assessmentYear);
+		Map<String, Object> finYearMap = financialYearMaster.get(applicationYear);
 		Long fromDate = (Long) finYearMap.get(FINANCIAL_YEAR_STARTING_DATE);
 		Long toDate = (Long) finYearMap.get(FINANCIAL_YEAR_ENDING_DATE);
 
@@ -772,38 +679,46 @@ public class EstimationService {
 
 		List<Payment> payments = new LinkedList<>();
 
-		if(!StringUtils.isEmpty(property.getPropertyId()) && !StringUtils.isEmpty(property.getTenantId())){
-			payments = paymentService.getPaymentsFromProperty(property, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+		if(!StringUtils.isEmpty(allotmentDetails.getApplicationNumber()) && !StringUtils.isEmpty(allotmentDetails.getApplicationNumber())){
+			payments = paymentService.getPaymentsFromProperty(allotmentDetails, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 		}
 
 
 		// get applicable rebate and penalty
-		Map<String, BigDecimal> rebatePenaltyMap = payService.applyPenaltyRebateAndInterest(payableTax, BigDecimal.ZERO,
-				 assessmentYear, timeBasedExemeptionMasterMap,payments,taxPeriod);
+		Map<String, BigDecimal> rebatePenaltyMap = payService.applyPenaltyRebateAndInterestAndCowCass(payableTax, BigDecimal.ZERO,
+				 applicationYear, timeBasedExemeptionMasterMap,payments,taxPeriod);
 
 		if (null != rebatePenaltyMap) {
 
-			BigDecimal rebate = rebatePenaltyMap.get(PT_TIME_REBATE);
-			BigDecimal penalty = rebatePenaltyMap.get(PT_TIME_PENALTY);
-			BigDecimal interest = rebatePenaltyMap.get(PT_TIME_INTEREST);
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_REBATE).estimateAmount(rebate).build());
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_PENALTY).estimateAmount(penalty).build());
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_INTEREST).estimateAmount(interest).build());
-			payableTax = payableTax.add(rebate).add(penalty).add(interest);
+//			BigDecimal rebate = rebatePenaltyMap.get(PT_TIME_REBATE);
+			BigDecimal penalty = rebatePenaltyMap.get(RL_TIME_PENALTY);
+//			BigDecimal interest = rebatePenaltyMap.get(PT_TIME_INTEREST);
+
+			BigDecimal cowCass = rebatePenaltyMap.get(RL_TIME_COWCASS);
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TIME_COWCASS).estimateAmount(penalty).build());
+			
+//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_REBATE).estimateAmount(rebate).build());
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(RL_TIME_PENALTY).estimateAmount(penalty).build());
+//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_TIME_INTEREST).estimateAmount(interest).build());
+			payableTax = payableTax
+//					.add(rebate)
+					.add(cowCass)
+					.add(penalty);
+//					.add(interest);
 		}
 
 		// AdHoc Values (additional rebate or penalty manually entered by the employee)
-		if (null != detail.getAdhocPenalty())
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_PENALTY)
-					.estimateAmount(detail.getAdhocPenalty()).build());
+//		if (null != detail.getAdhocPenalty())
+//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_PENALTY)
+//					.estimateAmount(detail.getAdhocPenalty()).build());
 
-		if (null != detail.getAdhocExemption() && detail.getAdhocExemption().compareTo(payableTax.add(fireCess)) <= 0) {
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_REBATE)
-					.estimateAmount(detail.getAdhocExemption().negate()).build());
-		}
-		else if (null != detail.getAdhocExemption()) {
-			throw new CustomException(PT_ADHOC_REBATE_INVALID_AMOUNT, PT_ADHOC_REBATE_INVALID_AMOUNT_MSG + taxAmt);
-		}
+//		if (null != detail.getAdhocExemption() && detail.getAdhocExemption().compareTo(payableTax.add(fireCess)) <= 0) {
+//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(PT_ADHOC_REBATE)
+//					.estimateAmount(detail.getAdhocExemption().negate()).build());
+//		}
+//		else if (null != detail.getAdhocExemption()) {
+//			throw new CustomException(PT_ADHOC_REBATE_INVALID_AMOUNT, PT_ADHOC_REBATE_INVALID_AMOUNT_MSG + taxAmt);
+//		}
 		return estimates;
 	}
 
@@ -821,23 +736,25 @@ public class EstimationService {
         Map<String,List> estimatesAndBillingSlabs = getEstimationMap(criteria, requestInfo,masterMap,demand);
 
 		List<TaxHeadEstimate> estimates = estimatesAndBillingSlabs.get("estimates");
-		List<String> billingSlabIds = estimatesAndBillingSlabs.get("billingSlabIds");
+//		List<String> billingSlabIds = estimatesAndBillingSlabs.get("billingSlabIds");
 
-        Property property = criteria.getProperty();
-        PropertyDetail detail = property.getPropertyDetails().get(0);
-        String assessmentYear = detail.getFinancialYear();
-        String assessmentNumber = null != detail.getAssessmentNumber() ? detail.getAssessmentNumber() : criteria.getAssessmentNumber();
-        String tenantId = null != property.getTenantId() ? property.getTenantId() : criteria.getTenantId();
+        RLProperty propertyDetails = criteria.getAllotmentDetails().getRlProperty();
+//        PropertyDetail detail = property.getPropertyDetails().get(0);
+        String applicationYear = propertyDetails.getFinancialYear();
+        String applicationNumber = null != criteria.getApplicationNumber() ? criteria.getApplicationNumber() : criteria.getApplicationNumber();
+        String tenantId = null != criteria.getAllotmentDetails().getTenantId() ? criteria.getAllotmentDetails().getTenantId() : criteria.getTenantId();
 
-
+System.out.println("-------------masterMapmasterMapmasterMap---------"+masterMap);
 		Map<String, Category> taxHeadCategoryMap = ((List<TaxHeadMaster>)masterMap.get(TAXHEADMASTER_MASTER_KEY)).stream()
 				.collect(Collectors.toMap(TaxHeadMaster::getCode, TaxHeadMaster::getCategory));
+		
 		log.info("inside getCalculation line number 832" +taxHeadCategoryMap.toString());
 		BigDecimal taxAmt = BigDecimal.ZERO;
+		BigDecimal cowCass = BigDecimal.ZERO;
 		BigDecimal penalty = BigDecimal.ZERO;
 		BigDecimal exemption = BigDecimal.ZERO;
 		BigDecimal rebate = BigDecimal.ZERO;
-		BigDecimal ptTax = BigDecimal.ZERO;
+		BigDecimal rlTax = BigDecimal.ZERO;
 
 		for (TaxHeadEstimate estimate : estimates) {
 
@@ -845,33 +762,38 @@ public class EstimationService {
 
 			switch (estimate.getTaxHeadCode().toString()) {
 
-			case PT_TAX:
+			case RL_TAX:
 				taxAmt = taxAmt.add(estimate.getEstimateAmount());
-				if(estimate.getTaxHeadCode().equalsIgnoreCase(PT_TAX))
-					ptTax = ptTax.add(estimate.getEstimateAmount());
+				if(estimate.getTaxHeadCode().equalsIgnoreCase(RL_TAX))
+					rlTax = rlTax.add(estimate.getEstimateAmount());
 				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
 				//payService.checkRebateForAssessment(requestInfo,property);
 				break;
 
-			case PT_TIME_PENALTY:
+			case RL_TIME_PENALTY:
 				penalty = penalty.add(estimate.getEstimateAmount());
 				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
 				break;
+				
+     		case RL_TIME_COWCASS:
+     			cowCass = cowCass.add(estimate.getEstimateAmount());
+				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
+				break;
 
-			case PT_TIME_REBATE:
+			case RL_TIME_REBATE:
 				rebate = rebate.add(estimate.getEstimateAmount());
 				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
 				break;
 
-			case PT_UNIT_USAGE_EXEMPTION:
-				exemption = exemption.add(estimate.getEstimateAmount());
-				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
-				break;
+//			case PT_UNIT_USAGE_EXEMPTION:
+//				exemption = exemption.add(estimate.getEstimateAmount());
+//				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
+//				break;
 				
-			case PT_OWNER_EXEMPTION:
-				exemption = exemption.add(estimate.getEstimateAmount());
-				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
-				break;
+//			case PT_OWNER_EXEMPTION:
+//				exemption = exemption.add(estimate.getEstimateAmount());
+//				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
+//				break;
 				
 
 			default:
@@ -880,7 +802,8 @@ public class EstimationService {
 			}
 		}
 		TaxHeadEstimate decimalEstimate = payService.roundOfDecimals(taxAmt.add(penalty), rebate.add(exemption));
-        if (null != decimalEstimate) {
+        
+		if (null != decimalEstimate) {
 			decimalEstimate.setCategory(taxHeadCategoryMap.get(decimalEstimate.getTaxHeadCode()));
             estimates.add(decimalEstimate);
             if (decimalEstimate.getEstimateAmount().compareTo(BigDecimal.ZERO)>=0)
@@ -889,18 +812,20 @@ public class EstimationService {
                 rebate = rebate.add(decimalEstimate.getEstimateAmount());
         }
 
-		BigDecimal totalAmount = taxAmt.add(penalty).add(rebate).add(exemption);
+		BigDecimal totalAmount = taxAmt.add(penalty)
+				.add(rebate).add(exemption)
+				.add(cowCass);
 		// false in the argument represents that the demand shouldn't be updated from this call
 		Demand oldDemand = utils.getLatestDemandForCurrentFinancialYear(requestInfo,criteria);
-		BigDecimal collectedAmtForOldDemand = demandService.getCarryForwardAndCancelOldDemand(ptTax, criteria, requestInfo,oldDemand, false);
+		BigDecimal collectedAmtForOldDemand = demandService.getCarryForwardAndCancelOldDemand(rlTax, criteria, requestInfo,oldDemand, false);
 		log.info("inside getCalculation line number 892" +collectedAmtForOldDemand.toString());
 
-if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
-			estimates.add(TaxHeadEstimate.builder()
-					.taxHeadCode(PT_ADVANCE_CARRYFORWARD)
-					.estimateAmount(collectedAmtForOldDemand).build());
-		else if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) < 0)
-			throw new CustomException(EG_PT_DEPRECIATING_ASSESSMENT_ERROR, EG_PT_DEPRECIATING_ASSESSMENT_ERROR_MSG_ESTIMATE);
+//if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
+//			estimates.add(TaxHeadEstimate.builder()
+//					.taxHeadCode(PT_ADVANCE_CARRYFORWARD)
+//					.estimateAmount(collectedAmtForOldDemand).build());
+//		else if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) < 0)
+//			throw new CustomException(EG_PT_DEPRECIATING_ASSESSMENT_ERROR, EG_PT_DEPRECIATING_ASSESSMENT_ERROR_MSG_ESTIMATE);
 
 		return Calculation.builder()
 				.totalAmount(totalAmount.subtract(collectedAmtForOldDemand))
@@ -911,85 +836,87 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				.fromDate(criteria.getFromDate())
 				.toDate(criteria.getToDate())
 				.tenantId(tenantId)
-				.serviceNumber(property.getPropertyId())
+				.serviceNumber(criteria.getApplicationNumber())
 				.taxHeadEstimates(estimates)
-				.billingSlabIds(billingSlabIds)
+//				.billingSlabIds(billingSlabIds)
 				.build();
 	}
 
 	/**
 	 * method to do a first level filtering on the slabs based on the values present in Property detail
 	 */
-	private List<BillingSlab> getSlabsFiltered(Property property, RequestInfo requestInfo) {
-
-		PropertyDetail detail = property.getPropertyDetails().get(0);
-		String tenantId = property.getTenantId();
-		BillingSlabSearchCriteria slabSearchCriteria = BillingSlabSearchCriteria.builder().tenantId(tenantId).build();
-		List<BillingSlab> billingSlabs = billingSlabService.searchBillingSlabs(requestInfo, slabSearchCriteria)
-				.getBillingSlab();
-
-		log.debug(" the slabs count : " + billingSlabs.size());
-		final String all = configs.getSlabValueAll();
-
-		Double plotSize = null != detail.getLandArea() ? detail.getLandArea() : detail.getBuildUpArea();
-
-		final String dtlPtType = detail.getPropertyType();
-		final String dtlPtSubType = detail.getPropertySubType();
-		final String dtlOwnerShipCat = detail.getOwnershipCategory();
-		final String dtlSubOwnerShipCat = detail.getSubOwnershipCategory();
-		final String dtlAreaType = property.getAddress().getLocality().getArea();
-		final Boolean dtlIsMultiFloored = detail.getNoOfFloors() > 1;
-
-		return billingSlabs.stream().filter(slab -> {
-
-			Boolean slabMultiFloored = slab.getIsPropertyMultiFloored();
-			String  slabAreaType = slab.getAreaType();
-			String  slabPropertyType = slab.getPropertyType();
-			String  slabPropertySubType = slab.getPropertySubType();
-			String  slabOwnerShipCat = slab.getOwnerShipCategory();
-			String  slabSubOwnerShipCat = slab.getSubOwnerShipCategory();
-			Double  slabAreaFrom = slab.getFromPlotSize();
-			Double  slabAreaTo = slab.getToPlotSize();
-
-			boolean isPropertyMultiFloored = slabMultiFloored.equals(dtlIsMultiFloored);
-
-			boolean isAreaMatching = slabAreaType.equalsIgnoreCase(dtlAreaType) || all.equalsIgnoreCase(slab.getAreaType());
-
-			boolean isPtTypeMatching = slabPropertyType.equalsIgnoreCase(dtlPtType);
-
-			boolean isPtSubTypeMatching = slabPropertySubType.equalsIgnoreCase(dtlPtSubType)
-					|| all.equalsIgnoreCase(slabPropertySubType);
-
-			boolean isOwnerShipMatching = slabOwnerShipCat.equalsIgnoreCase(dtlOwnerShipCat)
-					|| all.equalsIgnoreCase(slabOwnerShipCat);
-
-			boolean isSubOwnerShipMatching = slabSubOwnerShipCat.equalsIgnoreCase(dtlSubOwnerShipCat)
-					|| all.equalsIgnoreCase(slabSubOwnerShipCat);
-
-			boolean isPlotMatching = false;
-
-			if (plotSize == 0.0)
-				isPlotMatching = slabAreaFrom <= plotSize && slabAreaTo >= plotSize;
-			else
-				isPlotMatching = slabAreaFrom < plotSize && slabAreaTo >= plotSize;
-
-			return isPtTypeMatching && isPtSubTypeMatching && isOwnerShipMatching && isSubOwnerShipMatching
-					&& isPlotMatching && isAreaMatching && isPropertyMultiFloored;
-
-		}).collect(Collectors.toList());
-	}
+//	private List<BillingSlab> getSlabsFiltered(AllotmentDetails allotmentDetails, RequestInfo requestInfo) {
+//		
+//		RLProperty propertyDetails=allotmentDetails.getRlProperty();
+//
+//		String tenantId = allotmentDetails.getTenantId();
+//		BillingSlabSearchCriteria slabSearchCriteria = BillingSlabSearchCriteria.builder().tenantId(tenantId).build();
+//		
+//		List<BillingSlab> billingSlabs = billingSlabService.searchBillingSlabs(requestInfo, slabSearchCriteria)
+//				.getBillingSlab();
+//
+//		log.debug(" the slabs count : " + billingSlabs.size());
+//		final String all = configs.getSlabValueAll();
+//
+//		Double plotSize = null != detail.getLandArea() ? detail.getLandArea() : detail.getBuildUpArea();
+//
+//		final String dtlPtType = detail.getPropertyType();
+//		final String dtlPtSubType = detail.getPropertySubType();
+//		final String dtlOwnerShipCat = detail.getOwnershipCategory();
+//		final String dtlSubOwnerShipCat = detail.getSubOwnershipCategory();
+//		final String dtlAreaType = property.getAddress().getLocality().getArea();
+//		final Boolean dtlIsMultiFloored = detail.getNoOfFloors() > 1;
+//
+//		return billingSlabs.stream().filter(slab -> {
+//
+//			Boolean slabMultiFloored = slab.getIsPropertyMultiFloored();
+//			String  slabAreaType = slab.getAreaType();
+//			String  slabPropertyType = slab.getPropertyType();
+//			String  slabPropertySubType = slab.getPropertySubType();
+//			String  slabOwnerShipCat = slab.getOwnerShipCategory();
+//			String  slabSubOwnerShipCat = slab.getSubOwnerShipCategory();
+//			Double  slabAreaFrom = slab.getFromPlotSize();
+//			Double  slabAreaTo = slab.getToPlotSize();
+//
+//			boolean isPropertyMultiFloored = slabMultiFloored.equals(dtlIsMultiFloored);
+//
+//			boolean isAreaMatching = slabAreaType.equalsIgnoreCase(dtlAreaType) || all.equalsIgnoreCase(slab.getAreaType());
+//
+//			boolean isPtTypeMatching = slabPropertyType.equalsIgnoreCase(dtlPtType);
+//
+//			boolean isPtSubTypeMatching = slabPropertySubType.equalsIgnoreCase(dtlPtSubType)
+//					|| all.equalsIgnoreCase(slabPropertySubType);
+//
+//			boolean isOwnerShipMatching = slabOwnerShipCat.equalsIgnoreCase(dtlOwnerShipCat)
+//					|| all.equalsIgnoreCase(slabOwnerShipCat);
+//
+//			boolean isSubOwnerShipMatching = slabSubOwnerShipCat.equalsIgnoreCase(dtlSubOwnerShipCat)
+//					|| all.equalsIgnoreCase(slabSubOwnerShipCat);
+//
+//			boolean isPlotMatching = false;
+//
+//			if (plotSize == 0.0)
+//				isPlotMatching = slabAreaFrom <= plotSize && slabAreaTo >= plotSize;
+//			else
+//				isPlotMatching = slabAreaFrom < plotSize && slabAreaTo >= plotSize;
+//
+//			return isPtTypeMatching && isPtSubTypeMatching && isOwnerShipMatching && isSubOwnerShipMatching
+//					&& isPlotMatching && isAreaMatching && isPropertyMultiFloored;
+//
+//		}).collect(Collectors.toList());
+//	}
     private Calculation getCalculation(RequestInfo requestInfo, CalculationCriteria criteria,Map<String,Object> masterMap) {
 
         Map<String,List> estimatesAndBillingSlabs = getEstimationMap(criteria, requestInfo,masterMap);
 
 		List<TaxHeadEstimate> estimates = estimatesAndBillingSlabs.get("estimates");
-		List<String> billingSlabIds = estimatesAndBillingSlabs.get("billingSlabIds");
+//		List<String> billingSlabIds = estimatesAndBillingSlabs.get("billingSlabIds");
 
-        Property property = criteria.getProperty();
-        PropertyDetail detail = property.getPropertyDetails().get(0);
-        String assessmentYear = detail.getFinancialYear();
-        String assessmentNumber = null != detail.getAssessmentNumber() ? detail.getAssessmentNumber() : criteria.getAssessmentNumber();
-        String tenantId = null != property.getTenantId() ? property.getTenantId() : criteria.getTenantId();
+        RLProperty propertyDetails = criteria.getAllotmentDetails().getRlProperty();
+//        PropertyDetail detail = property.getPropertyDetails().get(0);
+        String applicationYear = propertyDetails.getFinancialYear();
+        String applicationNumber = null != criteria.getAllotmentDetails().getApplicationNumber() ? criteria.getAllotmentDetails().getApplicationNumber() : criteria.getApplicationNumber();
+        String tenantId = null != criteria.getAllotmentDetails().getTenantId() ? criteria.getAllotmentDetails().getTenantId() : criteria.getTenantId();
 
 
 		Map<String, Category> taxHeadCategoryMap = ((List<TaxHeadMaster>)masterMap.get(TAXHEADMASTER_MASTER_KEY)).stream()
@@ -997,9 +924,10 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 
 		BigDecimal taxAmt = BigDecimal.ZERO;
 		BigDecimal penalty = BigDecimal.ZERO;
+		BigDecimal cowCass = BigDecimal.ZERO;
 		BigDecimal exemption = BigDecimal.ZERO;
 		BigDecimal rebate = BigDecimal.ZERO;
-		BigDecimal ptTax = BigDecimal.ZERO;
+		BigDecimal rlTax = BigDecimal.ZERO;
 
 		for (TaxHeadEstimate estimate : estimates) {
 
@@ -1010,12 +938,16 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 
 			case TAX:
 				taxAmt = taxAmt.add(estimate.getEstimateAmount());
-				if(estimate.getTaxHeadCode().equalsIgnoreCase(PT_TAX))
-					ptTax = ptTax.add(estimate.getEstimateAmount());
+				if(estimate.getTaxHeadCode().equalsIgnoreCase(RL_TAX))
+					rlTax = rlTax.add(estimate.getEstimateAmount());
 				break;
 
 			case PENALTY:
 				penalty = penalty.add(estimate.getEstimateAmount());
+				break;
+
+			case COWCASS:
+				cowCass = cowCass.add(estimate.getEstimateAmount());
 				break;
 
 			case REBATE:
@@ -1044,7 +976,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 		BigDecimal totalAmount = taxAmt.add(penalty).add(rebate).add(exemption);
 		// false in the argument represents that the demand shouldn't be updated from this call
 		Demand oldDemand = utils.getLatestDemandForCurrentFinancialYear(requestInfo,criteria);
-		BigDecimal collectedAmtForOldDemand = demandService.getCarryForwardAndCancelOldDemand(ptTax, criteria, requestInfo,oldDemand, false);
+		BigDecimal collectedAmtForOldDemand = demandService.getCarryForwardAndCancelOldDemand(rlTax, criteria, requestInfo,oldDemand, false);
 
 		if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			estimates.add(TaxHeadEstimate.builder()
@@ -1057,82 +989,83 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				.totalAmount(totalAmount.subtract(collectedAmtForOldDemand))
 				.taxAmount(taxAmt)
 				.penalty(penalty)
+				.cowCass(cowCass)
 				.exemption(exemption)
 				.rebate(rebate)
 				.fromDate(criteria.getFromDate())
 				.toDate(criteria.getToDate())
 				.tenantId(tenantId)
-				.serviceNumber(property.getPropertyId())
+				.serviceNumber(criteria.getAllotmentDetails().getApplicationNumber())
 				.taxHeadEstimates(estimates)
-				.billingSlabIds(billingSlabIds)
+//				.billingSlabIds(billingSlabIds)
 				.build();
 	}
 
 	/**
 	 * method to do a first level filtering on the slabs based on the values present in Property detail
 	 */
-	private List<BillingSlab> getSlabsFiltered(Property property, String financialYear,RequestInfo requestInfo) {
-
-		PropertyDetail detail = property.getPropertyDetails().get(0);
-		log.info("financial Year in Criteria is" + financialYear);
-		
-		String tenantId = property.getTenantId();
-		String validFrom=financialYear.split("-")[0]+"-04-01";
-		String validTo="20"+financialYear.split("-")[1]+"-03-31";
-		BillingSlabSearchCriteria slabSearchCriteria = BillingSlabSearchCriteria.builder().tenantId(tenantId).validFrom(validFrom).validTo(validTo).build();
-		List<BillingSlab> billingSlabs = billingSlabService.searchBillingSlabs(requestInfo, slabSearchCriteria)
-				.getBillingSlab();
-
-		log.debug(" the slabs count : " + billingSlabs.size());
-		final String all = configs.getSlabValueAll();
-
-		Double plotSize = null != detail.getLandArea() ? detail.getLandArea() : detail.getBuildUpArea();
-
-		final String dtlPtType = detail.getPropertyType();
-		final String dtlPtSubType = detail.getPropertySubType();
-		final String dtlOwnerShipCat = detail.getOwnershipCategory();
-		final String dtlSubOwnerShipCat = detail.getSubOwnershipCategory();
-		final String dtlAreaType = property.getAddress().getLocality().getArea();
-		final Boolean dtlIsMultiFloored = detail.getNoOfFloors() > 1;
-
-		return billingSlabs.stream().filter(slab -> {
-
-			Boolean slabMultiFloored = slab.getIsPropertyMultiFloored();
-			String  slabAreaType = slab.getAreaType();
-			String  slabPropertyType = slab.getPropertyType();
-			String  slabPropertySubType = slab.getPropertySubType();
-			String  slabOwnerShipCat = slab.getOwnerShipCategory();
-			String  slabSubOwnerShipCat = slab.getSubOwnerShipCategory();
-			Double  slabAreaFrom = slab.getFromPlotSize();
-			Double  slabAreaTo = slab.getToPlotSize();
-
-			boolean isPropertyMultiFloored = slabMultiFloored.equals(dtlIsMultiFloored);
-
-			boolean isAreaMatching = slabAreaType.equalsIgnoreCase(dtlAreaType) || all.equalsIgnoreCase(slab.getAreaType());
-
-			boolean isPtTypeMatching = slabPropertyType.equalsIgnoreCase(dtlPtType);
-
-			boolean isPtSubTypeMatching = slabPropertySubType.equalsIgnoreCase(dtlPtSubType)
-					|| all.equalsIgnoreCase(slabPropertySubType);
-
-			boolean isOwnerShipMatching = slabOwnerShipCat.equalsIgnoreCase(dtlOwnerShipCat)
-					|| all.equalsIgnoreCase(slabOwnerShipCat);
-
-			boolean isSubOwnerShipMatching = slabSubOwnerShipCat.equalsIgnoreCase(dtlSubOwnerShipCat)
-					|| all.equalsIgnoreCase(slabSubOwnerShipCat);
-
-			boolean isPlotMatching = false;
-
-			if (plotSize == 0.0)
-				isPlotMatching = slabAreaFrom <= plotSize && slabAreaTo >= plotSize;
-			else
-				isPlotMatching = slabAreaFrom < plotSize && slabAreaTo >= plotSize;
-
-			return isPtTypeMatching && isPtSubTypeMatching && isOwnerShipMatching && isSubOwnerShipMatching
-					&& isPlotMatching && isAreaMatching && isPropertyMultiFloored;
-
-		}).collect(Collectors.toList());
-	}
+//	private List<BillingSlab> getSlabsFiltered(Property property, String financialYear,RequestInfo requestInfo) {
+//
+//		PropertyDetail detail = property.getPropertyDetails().get(0);
+//		log.info("financial Year in Criteria is" + financialYear);
+//		
+//		String tenantId = property.getTenantId();
+//		String validFrom=financialYear.split("-")[0]+"-04-01";
+//		String validTo="20"+financialYear.split("-")[1]+"-03-31";
+//		BillingSlabSearchCriteria slabSearchCriteria = BillingSlabSearchCriteria.builder().tenantId(tenantId).validFrom(validFrom).validTo(validTo).build();
+//		List<BillingSlab> billingSlabs = billingSlabService.searchBillingSlabs(requestInfo, slabSearchCriteria)
+//				.getBillingSlab();
+//
+//		log.debug(" the slabs count : " + billingSlabs.size());
+//		final String all = configs.getSlabValueAll();
+//
+//		Double plotSize = null != detail.getLandArea() ? detail.getLandArea() : detail.getBuildUpArea();
+//
+//		final String dtlPtType = detail.getPropertyType();
+//		final String dtlPtSubType = detail.getPropertySubType();
+//		final String dtlOwnerShipCat = detail.getOwnershipCategory();
+//		final String dtlSubOwnerShipCat = detail.getSubOwnershipCategory();
+//		final String dtlAreaType = property.getAddress().getLocality().getArea();
+//		final Boolean dtlIsMultiFloored = detail.getNoOfFloors() > 1;
+//
+//		return billingSlabs.stream().filter(slab -> {
+//
+//			Boolean slabMultiFloored = slab.getIsPropertyMultiFloored();
+//			String  slabAreaType = slab.getAreaType();
+//			String  slabPropertyType = slab.getPropertyType();
+//			String  slabPropertySubType = slab.getPropertySubType();
+//			String  slabOwnerShipCat = slab.getOwnerShipCategory();
+//			String  slabSubOwnerShipCat = slab.getSubOwnerShipCategory();
+//			Double  slabAreaFrom = slab.getFromPlotSize();
+//			Double  slabAreaTo = slab.getToPlotSize();
+//
+//			boolean isPropertyMultiFloored = slabMultiFloored.equals(dtlIsMultiFloored);
+//
+//			boolean isAreaMatching = slabAreaType.equalsIgnoreCase(dtlAreaType) || all.equalsIgnoreCase(slab.getAreaType());
+//
+//			boolean isPtTypeMatching = slabPropertyType.equalsIgnoreCase(dtlPtType);
+//
+//			boolean isPtSubTypeMatching = slabPropertySubType.equalsIgnoreCase(dtlPtSubType)
+//					|| all.equalsIgnoreCase(slabPropertySubType);
+//
+//			boolean isOwnerShipMatching = slabOwnerShipCat.equalsIgnoreCase(dtlOwnerShipCat)
+//					|| all.equalsIgnoreCase(slabOwnerShipCat);
+//
+//			boolean isSubOwnerShipMatching = slabSubOwnerShipCat.equalsIgnoreCase(dtlSubOwnerShipCat)
+//					|| all.equalsIgnoreCase(slabSubOwnerShipCat);
+//
+//			boolean isPlotMatching = false;
+//
+//			if (plotSize == 0.0)
+//				isPlotMatching = slabAreaFrom <= plotSize && slabAreaTo >= plotSize;
+//			else
+//				isPlotMatching = slabAreaFrom < plotSize && slabAreaTo >= plotSize;
+//
+//			return isPtTypeMatching && isPtSubTypeMatching && isOwnerShipMatching && isSubOwnerShipMatching
+//					&& isPlotMatching && isAreaMatching && isPropertyMultiFloored;
+//
+//		}).collect(Collectors.toList());
+//	}
 
 	/**
 	 * Second level filtering to get the matching billing slab for the respective unit
@@ -1141,47 +1074,47 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param billingSlabs slabs filtered with property detail related values
 	 * @param unit unit of the property for which the tax has be calculated
 	 */
-	private BillingSlab getSlabForCalc(List<BillingSlab> billingSlabs, Unit unit) {
-
-		final String all = configs.getSlabValueAll();
-
-		List<BillingSlab> matchingList = new ArrayList<>();
-
-		for (BillingSlab billSlb : billingSlabs) {
-
-			Double floorNo = Double.parseDouble(unit.getFloorNo());
-
-			boolean isMajorMatching = billSlb.getUsageCategoryMajor().equalsIgnoreCase(unit.getUsageCategoryMajor())
-					|| (billSlb.getUsageCategoryMajor().equalsIgnoreCase(all));
-
-			boolean isMinorMatching = billSlb.getUsageCategoryMinor().equalsIgnoreCase(unit.getUsageCategoryMinor())
-					|| (billSlb.getUsageCategoryMinor().equalsIgnoreCase(all));
-
-			boolean isSubMinorMatching = billSlb.getUsageCategorySubMinor().equalsIgnoreCase(
-					unit.getUsageCategorySubMinor()) || (billSlb.getUsageCategorySubMinor().equalsIgnoreCase(all));
-
-			boolean isDetailsMatching = billSlb.getUsageCategoryDetail().equalsIgnoreCase(unit.getUsageCategoryDetail())
-					|| (billSlb.getUsageCategoryDetail().equalsIgnoreCase(all));
-
-			boolean isFloorMatching = billSlb.getFromFloor() <= floorNo && billSlb.getToFloor() >= floorNo;
-
-			boolean isOccupancyTypeMatching = billSlb.getOccupancyType().equalsIgnoreCase(unit.getOccupancyType())
-					|| (billSlb.getOccupancyType().equalsIgnoreCase(all));
-
-			if (isMajorMatching && isMinorMatching && isSubMinorMatching && isDetailsMatching && isFloorMatching
-					&& isOccupancyTypeMatching) {
-
-				matchingList.add(billSlb);
-				log.debug(" The Id of the matching slab : " + billSlb.getId());
-			}
-		}
-		if (matchingList.size() == 1)
-			return matchingList.get(0);
-		else if (matchingList.size() == 0)
-			return null;
-		else throw new CustomException(PT_ESTIMATE_BILLINGSLABS_UNMATCH, PT_ESTIMATE_BILLINGSLABS_UNMATCH_MSG
-					.replace(PT_ESTIMATE_BILLINGSLABS_UNMATCH_replace_id, matchingList.toString()) + unit);
-	}
+//	private BillingSlab getSlabForCalc(List<BillingSlab> billingSlabs, Unit unit) {
+//
+//		final String all = configs.getSlabValueAll();
+//
+//		List<BillingSlab> matchingList = new ArrayList<>();
+//
+//		for (BillingSlab billSlb : billingSlabs) {
+//
+//			Double floorNo = Double.parseDouble(unit.getFloorNo());
+//
+//			boolean isMajorMatching = billSlb.getUsageCategoryMajor().equalsIgnoreCase(unit.getUsageCategoryMajor())
+//					|| (billSlb.getUsageCategoryMajor().equalsIgnoreCase(all));
+//
+//			boolean isMinorMatching = billSlb.getUsageCategoryMinor().equalsIgnoreCase(unit.getUsageCategoryMinor())
+//					|| (billSlb.getUsageCategoryMinor().equalsIgnoreCase(all));
+//
+//			boolean isSubMinorMatching = billSlb.getUsageCategorySubMinor().equalsIgnoreCase(
+//					unit.getUsageCategorySubMinor()) || (billSlb.getUsageCategorySubMinor().equalsIgnoreCase(all));
+//
+//			boolean isDetailsMatching = billSlb.getUsageCategoryDetail().equalsIgnoreCase(unit.getUsageCategoryDetail())
+//					|| (billSlb.getUsageCategoryDetail().equalsIgnoreCase(all));
+//
+//			boolean isFloorMatching = billSlb.getFromFloor() <= floorNo && billSlb.getToFloor() >= floorNo;
+//
+//			boolean isOccupancyTypeMatching = billSlb.getOccupancyType().equalsIgnoreCase(unit.getOccupancyType())
+//					|| (billSlb.getOccupancyType().equalsIgnoreCase(all));
+//
+//			if (isMajorMatching && isMinorMatching && isSubMinorMatching && isDetailsMatching && isFloorMatching
+//					&& isOccupancyTypeMatching) {
+//
+//				matchingList.add(billSlb);
+//				log.debug(" The Id of the matching slab : " + billSlb.getId());
+//			}
+//		}
+//		if (matchingList.size() == 1)
+//			return matchingList.get(0);
+//		else if (matchingList.size() == 0)
+//			return null;
+//		else throw new CustomException(PT_ESTIMATE_BILLINGSLABS_UNMATCH, PT_ESTIMATE_BILLINGSLABS_UNMATCH_MSG
+//					.replace(PT_ESTIMATE_BILLINGSLABS_UNMATCH_replace_id, matchingList.toString()) + unit);
+//	}
 
 	/**
 	 * Usage based exemptions applied on unit.
@@ -1189,10 +1122,17 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * The exemption discount will be applied based on the exemption rate of the
 	 * usage master types.
 	 */
-	private BigDecimal getExemption(Unit unit, BigDecimal currentUnitTax, String financialYear,
+	private BigDecimal getExemption(OwnerInfo ownerInfo, BigDecimal currentUnitTax, String financialYear,
 			Map<String, Map<String, List<Object>>> propertyMasterMap) {
 
-		Map<String, Object> exemption = getExemptionFromUsage(unit, financialYear, propertyMasterMap);
+		Map<String, Object> exemption = getExemptionFromUsage(ownerInfo, financialYear, propertyMasterMap);
+		return mDataService.calculateApplicables(currentUnitTax, exemption);
+	}
+	
+	private BigDecimal getExemptionUser(OwnerInfo ownerInfo, BigDecimal currentUnitTax, String financialYear,
+			Map<String, Map<String, List<Object>>> propertyMasterMap) {
+
+		Map<String, Object> exemption = getExemptionFromUsage(ownerInfo, financialYear, propertyMasterMap);
 		return mDataService.calculateApplicables(currentUnitTax, exemption);
 	}
 
@@ -1205,7 +1145,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 		Map<String, List<Object>> ownerTypeMap = propertyMasterMap.get(OWNER_TYPE_MASTER);
 		BigDecimal userExemption = BigDecimal.ZERO;
 		final long userCount = owners.stream()
-				.filter(owner -> OWNER_STATUS_ACTIVE.equalsIgnoreCase(owner.getStatus().toString())).count();
+				.filter(owner -> OWNER_STATUS_ACTIVE.equalsIgnoreCase(owner.getStatus())).count();
 
 		BigDecimal share;
 		
@@ -1251,8 +1191,42 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param unit unit for which usage exemption will be applied
 	 * @param financialYear year for which calculation is being done
 	 */
+//	@SuppressWarnings("unchecked")
+//	private Map<String, Object> getExemptionFromUsage(Unit unit, String financialYear,
+//			Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap) {
+//
+//		Map<String, List<Object>> usageDetails = propertyBasedExemptionMasterMap.get(USAGE_DETAIL_MASTER);
+//		Map<String, List<Object>> usageSubMinors = propertyBasedExemptionMasterMap.get(USAGE_SUB_MINOR_MASTER);
+//		Map<String, List<Object>> usageMinors = propertyBasedExemptionMasterMap.get(USAGE_MINOR_MASTER);
+//		Map<String, List<Object>> usageMajors = propertyBasedExemptionMasterMap.get(USAGE_MAJOR_MASTER);
+//
+//		Map<String, Object> applicableUsageMasterExemption = null;
+//
+//		if (null != usageDetails.get(unit.getUsageCategoryDetail()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageDetails.get(unit.getUsageCategoryDetail()));
+//
+//		if (isExemptionNull(applicableUsageMasterExemption)
+//				&& null != usageSubMinors.get(unit.getUsageCategorySubMinor()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageSubMinors.get(unit.getUsageCategorySubMinor()));
+//
+//		if (isExemptionNull(applicableUsageMasterExemption) && null != usageMinors.get(unit.getUsageCategoryMinor()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageMinors.get(unit.getUsageCategoryMinor()));
+//
+//		if (isExemptionNull(applicableUsageMasterExemption) && null != usageMajors.get(unit.getUsageCategoryMajor()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageMajors.get(unit.getUsageCategoryMajor()));
+//
+//		if (null != applicableUsageMasterExemption)
+//			applicableUsageMasterExemption = (Map<String, Object>) applicableUsageMasterExemption.get(EXEMPTION_FIELD_NAME);
+//
+//		return applicableUsageMasterExemption;
+//	}
+
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> getExemptionFromUsage(Unit unit, String financialYear,
+	private Map<String, Object> getExemptionFromUsage(OwnerInfo ownerInfo, String financialYear,
 			Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap) {
 
 		Map<String, List<Object>> usageDetails = propertyBasedExemptionMasterMap.get(USAGE_DETAIL_MASTER);
@@ -1262,22 +1236,22 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 
 		Map<String, Object> applicableUsageMasterExemption = null;
 
-		if (null != usageDetails.get(unit.getUsageCategoryDetail()))
-			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
-					usageDetails.get(unit.getUsageCategoryDetail()));
-
-		if (isExemptionNull(applicableUsageMasterExemption)
-				&& null != usageSubMinors.get(unit.getUsageCategorySubMinor()))
-			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
-					usageSubMinors.get(unit.getUsageCategorySubMinor()));
-
-		if (isExemptionNull(applicableUsageMasterExemption) && null != usageMinors.get(unit.getUsageCategoryMinor()))
-			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
-					usageMinors.get(unit.getUsageCategoryMinor()));
-
-		if (isExemptionNull(applicableUsageMasterExemption) && null != usageMajors.get(unit.getUsageCategoryMajor()))
-			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
-					usageMajors.get(unit.getUsageCategoryMajor()));
+//		if (null != usageDetails.get(ownerInfo.getUsageCategoryDetail()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageDetails.get(unit.getUsageCategoryDetail()));
+//
+//		if (isExemptionNull(applicableUsageMasterExemption)
+//				&& null != usageSubMinors.get(unit.getUsageCategorySubMinor()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageSubMinors.get(unit.getUsageCategorySubMinor()));
+//
+//		if (isExemptionNull(applicableUsageMasterExemption) && null != usageMinors.get(unit.getUsageCategoryMinor()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageMinors.get(unit.getUsageCategoryMinor()));
+//
+//		if (isExemptionNull(applicableUsageMasterExemption) && null != usageMajors.get(unit.getUsageCategoryMajor()))
+//			applicableUsageMasterExemption = mDataService.getApplicableMaster(financialYear,
+//					usageMajors.get(unit.getUsageCategoryMajor()));
 
 		if (null != applicableUsageMasterExemption)
 			applicableUsageMasterExemption = (Map<String, Object>) applicableUsageMasterExemption.get(EXEMPTION_FIELD_NAME);
@@ -1285,6 +1259,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 		return applicableUsageMasterExemption;
 	}
 
+	
 	private boolean isExemptionNull(Map<String, Object> applicableUsageMasterExemption) {
 
 		return !(null != applicableUsageMasterExemption
@@ -1292,18 +1267,18 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	}
 	
 	
-	public Map<String, Calculation> mutationCalculator(PropertyV2 property, RequestInfo requestInfo) {
+	public Map<String, Calculation> mutationCalculator(AllotmentDetails allotmentDetails, RequestInfo requestInfo) {
 		Map<String, Calculation> feeStructure = new HashMap<>();
-		Map<String,Object> additionalDetails = mapper.convertValue(property.getAdditionalDetails(),Map.class);
+		Map<String,Object> additionalDetails = mapper.convertValue(allotmentDetails.getAdditionalDetails(),Map.class);
 		calcValidator.validatePropertyForMutationCalculation(additionalDetails);
 		Calculation calculation = new Calculation();
-		calculation.setTenantId(property.getTenantId());
-		setTaxperiodForCalculation(requestInfo,property.getTenantId(),calculation);
-		BigDecimal fee = getFeeFromSlabs(property, calculation, requestInfo,additionalDetails);
-		calculation.setTaxAmount(fee);
-		postProcessTheFee(requestInfo,property,calculation,additionalDetails);
-		feeStructure.put(property.getAcknowldgementNumber(), calculation);
-		searchDemand(requestInfo,property,calculation,feeStructure);
+		calculation.setTenantId(allotmentDetails.getTenantId());
+		setTaxperiodForCalculation(requestInfo,allotmentDetails.getTenantId(),calculation);
+//		BigDecimal fee = getFeeFromSlabs(property, calculation, requestInfo,additionalDetails);
+//		calculation.setTaxAmount(fee);
+		postProcessTheFee(requestInfo,allotmentDetails,calculation,additionalDetails);
+		feeStructure.put(allotmentDetails.getApplicationNumber(), calculation);
+		searchDemand(requestInfo,allotmentDetails,calculation,feeStructure);
 
 		return feeStructure;
 	}
@@ -1337,48 +1312,48 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 		return res.getTaxPeriods();
 	}
 
-	/**
-	 * Fetch Billing Slab for mutation and calculate the mutation fees
-	 * @param property
-	 * @param calculation
-	 * @param requestInfo
-	 * @param additionalDetails
-	 * @return
-	 */
-	private BigDecimal getFeeFromSlabs(PropertyV2 property, Calculation calculation, RequestInfo requestInfo,Map<String,Object> additionalDetails) {
-		List<String> slabIds = new ArrayList<>();
-		BigDecimal fees=null;
-
-		MutationBillingSlabSearchCriteria billingSlabSearchCriteria = new MutationBillingSlabSearchCriteria();
-		Double marketValue =Double.parseDouble(String.valueOf(additionalDetails.get(MARKET_VALUE)));
-		enrichBillingsalbSearchCriteria(billingSlabSearchCriteria,property,marketValue);
-		MutationBillingSlabRes billingSlabRes = mutationService.searchBillingSlabs(requestInfo, billingSlabSearchCriteria);
-		if (CollectionUtils.isEmpty(billingSlabRes.getBillingSlab()) || billingSlabRes.getBillingSlab() == null){
-			throw new CustomException(BILLING_SLAB_SEARCH_FAILED,BILLING_SLAB_SEARCH_FAILED_MSG);
-		}
-
-		if(billingSlabRes.getBillingSlab().get(0).getType().equals(MutationBillingSlab.TypeEnum.FLAT)){
-			fees = BigDecimal.valueOf(billingSlabRes.getBillingSlab().get(0).getFixedAmount());
-		}
-		if(billingSlabRes.getBillingSlab().get(0).getType().equals(MutationBillingSlab.TypeEnum.RATE)){
-			BigDecimal rate = BigDecimal.valueOf(billingSlabRes.getBillingSlab().get(0).getRate());
-			BigDecimal marketValuefess = BigDecimal.valueOf(billingSlabSearchCriteria.getMarketValue());
-			fees= marketValuefess.multiply(rate.divide(CalculatorConstants.HUNDRED));
-		}
-		slabIds.add(billingSlabRes.getBillingSlab().get(0).getId());
-		calculation.setBillingSlabIds(slabIds);
-
-
-		if(additionalDetails.get(ADHOC_REBATE) != null) {
-			int adhocRebate = (int) additionalDetails.get(ADHOC_REBATE);
-			fees = fees.subtract(BigDecimal.valueOf(adhocRebate));
-		}
-		if(additionalDetails.get(ADHOC_PENALTY) != null) {
-			int adhocPenalty = (int) additionalDetails.get(ADHOC_PENALTY);
-			fees = fees.add(BigDecimal.valueOf(adhocPenalty));
-		}
-		return fees;
-	}
+//	/**
+//	 * Fetch Billing Slab for mutation and calculate the mutation fees
+//	 * @param property
+//	 * @param calculation
+//	 * @param requestInfo
+//	 * @param additionalDetails
+//	 * @return
+//	 */
+//	private BigDecimal getFeeFromSlabs(PropertyV2 property, Calculation calculation, RequestInfo requestInfo,Map<String,Object> additionalDetails) {
+//		List<String> slabIds = new ArrayList<>();
+//		BigDecimal fees=null;
+//
+//		MutationBillingSlabSearchCriteria billingSlabSearchCriteria = new MutationBillingSlabSearchCriteria();
+//		Double marketValue =Double.parseDouble(String.valueOf(additionalDetails.get(MARKET_VALUE)));
+//		enrichBillingsalbSearchCriteria(billingSlabSearchCriteria,property,marketValue);
+//		MutationBillingSlabRes billingSlabRes = mutationService.searchBillingSlabs(requestInfo, billingSlabSearchCriteria);
+//		if (CollectionUtils.isEmpty(billingSlabRes.getBillingSlab()) || billingSlabRes.getBillingSlab() == null){
+//			throw new CustomException(BILLING_SLAB_SEARCH_FAILED,BILLING_SLAB_SEARCH_FAILED_MSG);
+//		}
+//
+//		if(billingSlabRes.getBillingSlab().get(0).getType().equals(MutationBillingSlab.TypeEnum.FLAT)){
+//			fees = BigDecimal.valueOf(billingSlabRes.getBillingSlab().get(0).getFixedAmount());
+//		}
+//		if(billingSlabRes.getBillingSlab().get(0).getType().equals(MutationBillingSlab.TypeEnum.RATE)){
+//			BigDecimal rate = BigDecimal.valueOf(billingSlabRes.getBillingSlab().get(0).getRate());
+//			BigDecimal marketValuefess = BigDecimal.valueOf(billingSlabSearchCriteria.getMarketValue());
+//			fees= marketValuefess.multiply(rate.divide(CalculatorConstants.HUNDRED));
+//		}
+////		slabIds.add(billingSlabRes.getBillingSlab().get(0).getId());
+////		calculation.setBillingSlabIds(slabIds);
+//
+//
+//		if(additionalDetails.get(ADHOC_REBATE) != null) {
+//			int adhocRebate = (int) additionalDetails.get(ADHOC_REBATE);
+//			fees = fees.subtract(BigDecimal.valueOf(adhocRebate));
+//		}
+//		if(additionalDetails.get(ADHOC_PENALTY) != null) {
+//			int adhocPenalty = (int) additionalDetails.get(ADHOC_PENALTY);
+//			fees = fees.add(BigDecimal.valueOf(adhocPenalty));
+//		}
+//		return fees;
+//	}
 
 	/**
 	 * Calculate the rebate and penalty for mutation
@@ -1387,22 +1362,25 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param calculation
 	 * @param additionalDetails
 	 */
-	private void postProcessTheFee(RequestInfo requestInfo,PropertyV2 property, Calculation calculation,Map<String,Object> additionalDetails) {
+	private void postProcessTheFee(RequestInfo requestInfo,AllotmentDetails allotmentDetails, Calculation calculation,Map<String,Object> additionalDetails) {
 		Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap = new HashMap<>();
 		Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
-		mDataService.setPropertyMasterValues(requestInfo, property.getTenantId(), propertyBasedExemptionMasterMap,
+		mDataService.setPropertyMasterValues(requestInfo, allotmentDetails.getTenantId(), propertyBasedExemptionMasterMap,
 				timeBasedExemptionMasterMap);
 
 		Long docDate =  Long.valueOf(String.valueOf(additionalDetails.get(DOCUMENT_DATE)));
 		BigDecimal taxAmt = calculation.getTaxAmount();
 		BigDecimal rebate = getRebate(taxAmt, timeBasedExemptionMasterMap.get(CalculatorConstants.REBATE_MASTER), docDate);
+		BigDecimal cowcass = getRebate(taxAmt, timeBasedExemptionMasterMap.get(CalculatorConstants.COWCASS_MASTER), docDate);
 		BigDecimal penalty = BigDecimal.ZERO;
+		
 		if (rebate.equals(BigDecimal.ZERO)) {
 			penalty = getPenalty(taxAmt,timeBasedExemptionMasterMap.get(CalculatorConstants.PENANLTY_MASTER),docDate);
 		}
 
 		calculation.setRebate(rebate.setScale(2, 2).negate());
 		calculation.setPenalty(penalty.setScale(2, 2));
+		calculation.setCowCass(penalty.setScale(2, 2));
 		calculation.setExemption(BigDecimal.ZERO);
 
 		
@@ -1419,19 +1397,19 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param calculation
 	 * @param feeStructure
 	 */
-	private void searchDemand(RequestInfo requestInfo,PropertyV2 property,Calculation calculation,Map<String, Calculation> feeStructure){
+	private void searchDemand(RequestInfo requestInfo,AllotmentDetails allotmentDetails,Calculation calculation,Map<String, Calculation> feeStructure){
 		String url = new StringBuilder().append(configs.getBillingServiceHost())
 				.append(configs.getDemandSearchEndPoint()).append(URL_PARAMS_SEPARATER)
-				.append(TENANT_ID_FIELD_FOR_SEARCH_URL).append(property.getTenantId())
+				.append(TENANT_ID_FIELD_FOR_SEARCH_URL).append(allotmentDetails.getTenantId())
 				.append(SEPARATER).append(BUSINESSSERVICE_FIELD_FOR_SEARCH_URL).append(configs.getPtMutationBusinessCode())
-				.append(SEPARATER).append(CONSUMER_CODE_SEARCH_FIELD_NAME).append(property.getAcknowldgementNumber()).toString();
+				.append(SEPARATER).append(CONSUMER_CODE_SEARCH_FIELD_NAME).append(allotmentDetails.getApplicationNumber()).toString();
 		DemandResponse res = new DemandResponse();
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		res = restTemplate.postForObject(url, requestInfoWrapper, DemandResponse.class);
 		if(CollectionUtils.isEmpty(res.getDemands()) || res.getDemands() == null)
-			generateDemandsFroMutationFee(property, feeStructure, requestInfo);
+			generateDemandsFroMutationFee(allotmentDetails, feeStructure, requestInfo);
 		else
-			updateDemand(property,requestInfo,res,calculation);
+			updateDemand(allotmentDetails,requestInfo,res,calculation);
 
 	}
 
@@ -1441,14 +1419,14 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param response
 	 * @param calculation
 	 */
-	private void updateDemand(PropertyV2 property,RequestInfo requestInfo,DemandResponse response,Calculation calculation){
+	private void updateDemand(AllotmentDetails allotmentDetails,RequestInfo requestInfo,DemandResponse response,Calculation calculation){
 		List<Demand> demands = response.getDemands();
 		User payer=null;
 		for(int i = 0; i < demands.size(); i++ ){
 			demands.get(i).setTaxPeriodFrom(calculation.getFromDate());
 			demands.get(i).setTaxPeriodTo(calculation.getToDate());
 			if(demands.get(i).getPayer() == null){
-				OwnerInfo owner = getActiveOwner(property.getOwners());
+				OwnerInfo owner = getActiveOwner(allotmentDetails.getOwnerInfo());
 				payer = utils.getCommonContractUser(owner);
 				demands.get(i).setPayer(payer);
 			}
@@ -1484,7 +1462,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param feeStructure
 	 * @param requestInfo
 	 */
-	private void generateDemandsFroMutationFee(PropertyV2 property, Map<String, Calculation> feeStructure, RequestInfo requestInfo) {
+	private void generateDemandsFroMutationFee(AllotmentDetails allotmentDetails, Map<String, Calculation> feeStructure, RequestInfo requestInfo) {
 		List<Demand> demands = new ArrayList<>();
 		for(String key: feeStructure.keySet()) {
 			List<DemandDetail> details = new ArrayList<>();
@@ -1507,8 +1485,8 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 						.taxHeadMasterCode(configs.getPtMutationExemptionTaxHead()).tenantId(calculation.getTenantId()).build();
 				details.add(demandDetail);
 			}
-			OwnerInfo owner = getActiveOwner(property.getOwners());
-			User payer = utils.getCommonContractUser(owner);
+			OwnerInfo owner = getActiveOwner(allotmentDetails.getOwnerInfo());
+			User payer = null;// utils.getCommonContractUser(allotmentDetails.getOwnerInfo().get(0));
 
 			Demand demand = Demand.builder().auditDetails(null).additionalDetails(null).businessService(configs.getPtMutationBusinessCode())
 					.consumerCode(key).consumerType(" ").demandDetails(details).id(null).minimumAmountPayable(configs.getPtMutationMinPayable()).payer(payer).status(null)
@@ -1570,6 +1548,20 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 		if (deadlineDate > System.currentTimeMillis())
 			rebateAmt = mDataService.calculateApplicables(taxAmt, rebate);
 		return rebateAmt;
+	}
+
+	public BigDecimal getCowCass(BigDecimal taxAmt, JSONArray cowCassMasterList, Long docDate) {
+
+		BigDecimal cowCassAmt = BigDecimal.ZERO;
+		Map<String, Object> cowCass = getApplicableMaster(cowCassMasterList);
+
+		if (null == cowCass) return cowCassAmt;
+		Integer mutationPaymentPeriodInMonth = Integer.parseInt(String.valueOf(cowCass.get(MUTATION_PAYMENT_PERIOD_IN_MONTH)));
+		Long deadlineDate = getDeadlineDate(docDate,mutationPaymentPeriodInMonth);
+
+		if (deadlineDate > System.currentTimeMillis())
+			cowCassAmt = mDataService.calculateApplicables(taxAmt, cowCass);
+		return cowCassAmt;
 	}
 
 	/**
@@ -1759,57 +1751,57 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	 * @param groundUnitsArea Sum of ground floor units area
 	 * @return calculated tax for un-built area in the property detail.
 	 */
-	private HashMap<Unit, BigDecimal> getUnBuiltRate(String assessmentYear,PropertyDetail detail, HashMap<Unit, BillingSlab> unitSlabMapping, List<Unit> groundUnits, Double groundUnitsArea) {
-
-        BigDecimal unBuiltAmt = BigDecimal.ZERO;
-		HashMap<Unit, BigDecimal>  unBuiltRateCalc = new HashMap<>();
-
-        if (null != detail.getLandArea() && groundUnits.size() > 0) {
-           
-        	if(detail.getBuildUpArea()==null)
-        		detail.setBuildUpArea(0.0);
-        	
-			double diffArea = detail.getBuildUpArea() >0   ? detail.getLandArea() - detail.getBuildUpArea()
-					: detail.getLandArea() - groundUnitsArea;
-			// ignoring if land Area is lesser than buildUpArea/groundUnitsAreaSum in estimate instead of throwing error
-			// since property service validates the same for calculation
-			diffArea = diffArea < 0.0 ? 0.0 : diffArea;
-
-			for (Unit unit : groundUnits) {
-
-				BillingSlab slab = unitSlabMapping.get(unit);
-				if (slab.getUnBuiltUnitRate() == null) {
-					unBuiltRateCalc.put(unit, BigDecimal.ZERO);
-				} else {
-					if (unBuiltAreaProrated) {
-						if(assessmentYear.startsWith("2021-") ) 
-						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.05));
-						else if( assessmentYear.startsWith("2022-"))
-						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.1025));
-						else if( assessmentYear.startsWith("2023-")) 
-						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.157625));
-						else if( assessmentYear.startsWith("2024-") || assessmentYear.compareTo("2024-") > 0)  // applicable for assessment year 2024-25 and onwards
-							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.215506));
-						else
-						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)));
-					}
-						else {  
-						if(assessmentYear.startsWith("2021-") ) 
-							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.05));
-						else if(assessmentYear.startsWith("2022-"))
-							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.1025));
-						else if(assessmentYear.startsWith("2023-") )
-							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.157625));
-						else if(assessmentYear.startsWith("2024-") || assessmentYear.compareTo("2024-") > 0)    // applicable for assessmenrtyear 2024-25 and onwards
-							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.215506));
-						else
-						    unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)));
-					}
-				}
-			}
-
-		}
-      
-        return unBuiltRateCalc;
-    }
+//	private HashMap<Unit, BigDecimal> getUnBuiltRate(String assessmentYear,PropertyDetail detail, HashMap<Unit, BillingSlab> unitSlabMapping, List<Unit> groundUnits, Double groundUnitsArea) {
+//
+//        BigDecimal unBuiltAmt = BigDecimal.ZERO;
+//		HashMap<Unit, BigDecimal>  unBuiltRateCalc = new HashMap<>();
+//
+//        if (null != detail.getLandArea() && groundUnits.size() > 0) {
+//           
+//        	if(detail.getBuildUpArea()==null)
+//        		detail.setBuildUpArea(0.0);
+//        	
+//			double diffArea = detail.getBuildUpArea() >0   ? detail.getLandArea() - detail.getBuildUpArea()
+//					: detail.getLandArea() - groundUnitsArea;
+//			// ignoring if land Area is lesser than buildUpArea/groundUnitsAreaSum in estimate instead of throwing error
+//			// since property service validates the same for calculation
+//			diffArea = diffArea < 0.0 ? 0.0 : diffArea;
+//
+//			for (Unit unit : groundUnits) {
+//
+//				BillingSlab slab = unitSlabMapping.get(unit);
+//				if (slab.getUnBuiltUnitRate() == null) {
+//					unBuiltRateCalc.put(unit, BigDecimal.ZERO);
+//				} else {
+//					if (unBuiltAreaProrated) {
+//						if(assessmentYear.startsWith("2021-") ) 
+//						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.05));
+//						else if( assessmentYear.startsWith("2022-"))
+//						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.1025));
+//						else if( assessmentYear.startsWith("2023-")) 
+//						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.157625));
+//						else if( assessmentYear.startsWith("2024-") || assessmentYear.compareTo("2024-") > 0)  // applicable for assessment year 2024-25 and onwards
+//							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.215506));
+//						else
+//						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)));
+//					}
+//						else {  
+//						if(assessmentYear.startsWith("2021-") ) 
+//							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.05));
+//						else if(assessmentYear.startsWith("2022-"))
+//							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.1025));
+//						else if(assessmentYear.startsWith("2023-") )
+//							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.157625));
+//						else if(assessmentYear.startsWith("2024-") || assessmentYear.compareTo("2024-") > 0)    // applicable for assessmenrtyear 2024-25 and onwards
+//							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.215506));
+//						else
+//						    unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)));
+//					}
+//				}
+//			}
+//
+//		}
+//      
+//        return unBuiltRateCalc;
+//    }
 }

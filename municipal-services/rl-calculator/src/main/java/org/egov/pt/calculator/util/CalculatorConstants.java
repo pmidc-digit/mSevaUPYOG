@@ -18,40 +18,45 @@ public class CalculatorConstants {
 	 * property type constants
 	 */
 	
-	public static final String PT_TYPE_VACANT_LAND = "VACANT"; 
+	public static final String RL_ALLOTMENT_TYPE_RENT = "RENT";
+	public static final String RL_ALLOTMENT_TYPE_LEASE = "LEASE";
 	
 	/*
 	 * tax head codes constants
 	 */
 	public static final String MAX_PRIORITY_VALUE = "MAX_PRIORITY_VALUE";
 
-	public static final String PT_TAX = "PT_TAX";
+	public static final String RL_TAX = "RL_TAX";
 
-	public static final String PT_UNIT_USAGE_EXEMPTION = "PT_UNIT_USAGE_EXEMPTION";
+	public static final String RL_USAGE_EXEMPTION = "RL_USAGE_EXEMPTION";
 
-	public static final String PT_OWNER_EXEMPTION = "PT_OWNER_EXEMPTION";
+	public static final String RL_OWNER_EXEMPTION = "RL_OWNER_EXEMPTION";
 
-	public static final String PT_TIME_REBATE = "PT_TIME_REBATE";
+	public static final String RL_TIME_REBATE = "RL_TIME_REBATE";
 
-	public static final String PT_TIME_PENALTY = "PT_TIME_PENALTY";
+	public static final String RL_TIME_PENALTY = "RL_TIME_PENALTY";
+	
+	public static final String RL_TIME_COWCASS = "RL_TIME_COWCASS";
 
-	public static final String PT_TIME_INTEREST = "PT_TIME_INTEREST";
+	public static final String RL_TIME_INTEREST = "RL_TIME_INTEREST";
 
 	public static final String PT_ADVANCE_CARRYFORWARD = "PT_ADVANCE_CARRYFORWARD";
 
 	public static final String PT_FIRE_CESS = "PT_FIRE_CESS";
 
 	public static final String PT_CANCER_CESS = "PT_CANCER_CESS";
+	
+	public static final String RL_COW_CESS = "RL_COW_CESS";
 
-	public static final String PT_ADHOC_PENALTY = "PT_ADHOC_PENALTY";
+	public static final String RL_ADHOC_PENALTY = "RL_ADHOC_PENALTY";
 
-	public static final String PT_ADHOC_REBATE = "PT_ADHOC_REBATE";
+	public static final String RL_ADHOC_REBATE = "RL_ADHOC_REBATE";
 
 //	public static final String PT_DECIMAL_CEILING_CREDIT = "PT_DECIMAL_CEILING_CREDIT";
 	
 //	public static final String PT_DECIMAL_CEILING_DEBIT = "PT_DECIMAL_CEILING_DEBIT";
 
-	public static final String PT_ROUNDOFF = "PT_ROUNDOFF";
+	public static final String RL_ROUNDOFF = "RL_ROUNDOFF";
 
 	public static final String ADHOC_PENALTY_KEY = "adhocPenalty";
 
@@ -64,21 +69,21 @@ public class CalculatorConstants {
 	public static final String ALLOWED_RECEIPT_STATUS = "DEPOSITED,NEW,APPROVED,REMITTED";
 
 	public static final List<String> TAXES_TO_BE_CONSIDERD_WHEN_CALUCLATING_REBATE_AND_PENALTY = Collections.unmodifiableList(Arrays
-			.asList(PT_TAX));
+			.asList(RL_TAX));
 	
 	public static final List<String> TAXES_TO_BE_SUBTRACTED_WHEN_CALCULATING_REBATE_AND_PENALTY = Collections.unmodifiableList(Arrays
-			.asList(PT_OWNER_EXEMPTION, PT_UNIT_USAGE_EXEMPTION ));
+			.asList(RL_OWNER_EXEMPTION, RL_USAGE_EXEMPTION ));
 
 	public static final List<String> TAXES_TO_BE_CONSIDERD = Collections.unmodifiableList(Arrays
-			.asList(PT_TAX,PT_OWNER_EXEMPTION, PT_UNIT_USAGE_EXEMPTION ));
+			.asList(RL_TAX,RL_OWNER_EXEMPTION, RL_USAGE_EXEMPTION ));
 	/*
 	 * these lists has to be updated with every new additional taxes which will be applied on the principle tax(PT_TAX)  
 	 */
 	public static final List<String> ADDITIONAL_TAXES = Collections.unmodifiableList(Arrays
-			.asList(PT_FIRE_CESS, PT_ADHOC_PENALTY, PT_CANCER_CESS));
+			.asList(PT_FIRE_CESS, RL_ADHOC_PENALTY, PT_CANCER_CESS));
 					
 	public static final List<String> ADDITIONAL_DEBITS = Collections.unmodifiableList(Arrays
-							.asList( PT_ADHOC_REBATE));					
+							.asList( RL_ADHOC_REBATE));					
 
 	/*
 	 * Mdms constants
@@ -101,17 +106,24 @@ public class CalculatorConstants {
 	public static final String OWNER_TYPE_MASTER = "OwnerType";
 
 	public static final String REBATE_MASTER = "Rebate";
+	
+	public static final String COWCASS_MASTER = "CowCass";
 
 	public static final String PENANLTY_MASTER = "Penalty";
 
 	public static final String FIRE_CESS_MASTER = "FireCess";
 
 	public static final String CANCER_CESS_MASTER = "CancerCess";
+	
+	public static final String COW_CESS_MASTER = "CowcerCess";
 
 	public static final String INTEREST_MASTER = "Interest";
 
-	public static final List<String> PROPERTY_BASED_EXEMPTION_MASTERS = Collections.unmodifiableList(Arrays.asList(
-			USAGE_MAJOR_MASTER, USAGE_MINOR_MASTER, USAGE_SUB_MINOR_MASTER, USAGE_DETAIL_MASTER, OWNER_TYPE_MASTER));
+//	public static final List<String> PROPERTY_BASED_EXEMPTION_MASTERS = Collections.unmodifiableList(Arrays.asList(
+//			USAGE_MAJOR_MASTER, USAGE_MINOR_MASTER, USAGE_SUB_MINOR_MASTER, USAGE_DETAIL_MASTER, OWNER_TYPE_MASTER));
+	public static final List<String> PROPERTY_BASED_EXEMPTION_MASTERS = 
+			Collections.unmodifiableList(Arrays.asList(PENANLTY_MASTER,REBATE_MASTER,COWCASS_MASTER,INTEREST_MASTER,OWNER_TYPE_MASTER));
+	
 	
 	public static final List<Category> DEBIT_CATEGORIES = Collections.unmodifiableList(Arrays.asList(Category.REBATE, Category.EXEMPTION));
 
@@ -121,7 +133,7 @@ public class CalculatorConstants {
 
 	public static final String FINANCIAL_MODULE = "egf-master";
 
-	public static final String PROPERTY_TAX_MODULE = "PropertyTax";
+	public static final String PROPERTY_TAX_MODULE = "RentLeaseTax";
 
 	/*
 	 * data field names
@@ -198,7 +210,7 @@ public class CalculatorConstants {
 
 	public static final String STATUS_FIELD_FOR_SEARCH_URL = "status=";
 
-	public static final String SERVICE_FIELD_VALUE_PT = "PT";
+	public static final String SERVICE_FIELD_VALUE_RL = "RL";
 
 	public static final String SERVICE_FIELD_VALUE_PT_MUTATION = "PT.MUTATION";
 
@@ -279,8 +291,11 @@ public class CalculatorConstants {
 	public static final String PT_ESTIMATE_GROUND_AREA_ZERO_MSG = "Ground floor units must be present in the absence of proper buildup area";
 
 
-	public static final String PT_ESTIMATE_VACANT_LAND_NULL = "PT_ESTIMATE_VACANT_LAND_AREA_NULL";
-	public static final String PT_ESTIMATE_VACANT_LAND_NULL_MSG = "landArea is mandatory for vacant land";
+	public static final String RL_ESTIMATE_BASE_RENT_NULL = "RL_ESTIMATE_BASE_RENT_NULL";
+	public static final String RL_ESTIMATE_BASE_RENT_NULL_MSG = "BaseRent is mandatory for the Rent property";
+
+	public static final String RL_ESTIMATE_BASE_LEASE_NULL = "RL_ESTIMATE_BASE_LEASE_NULL";
+	public static final String RL_ESTIMATE_BASE_LEASE_NULL_MSG = "BaseRent is mandatory for the Lease property";
 
 	
 	public static final String PT_ESTIMATE_BILLINGSLABS_UNMATCH_VACANCT = "PT_ESTIMATE_BILLINGSLABS_UNMATCH";
@@ -290,8 +305,8 @@ public class CalculatorConstants {
 	public static final String PT_ESTIMATE_BILLINGSLABS_UNMATCH_MSG = "more than one billing slab with ids : {ids} has been found for the given unit : ";
 	public static final String PT_ESTIMATE_BILLINGSLABS_UNMATCH_replace_id = "{ids}";
 
-	public static final String PT_ESTIMATE_NON_VACANT_LAND_UNITS = "PT_ESTIMATE_NON_VACANT_LAND_UNITS";
-	public static final String PT_ESTIMATE_NON_VACANT_LAND_UNITS_MSG = "unit is mandatory for non vacant land properties";
+	public static final String RL_ESTIMATE_SECURITY_AMOUNT = "RL_ESTIMATE_SECURITY_AMOUNT";
+	public static final String RL_ESTIMATE_SECURITY_AMOUNT_MSG = "Security amount is mandatory for the Rent and Lease properties";
 	
 	public static final String PT_GET_BILL_ARREAR_DEMAND = "PT_GET_BILL_ARREAR_DEMAND";
 	public static final String PT_GET_BILL_ARREAR_DEMAND_MSG = "Partial Payment is not allowed for arrear payments, please make the complete payment";
@@ -299,8 +314,8 @@ public class CalculatorConstants {
 	public static final String EG_PT_ESTIMATE_ARV_NULL = "EG_PT_ESTIMATE_ARV_NULL";
 	public static final String EG_PT_ESTIMATE_ARV_NULL_MSG = "Arv field is required for Commercial plus Rented properties";
 
-	public static final String EG_PT_FINANCIAL_MASTER_NOT_FOUND = "EG_PT_FINANCIAL_MASTER_NOT_FOUND";
-	public static final String EG_PT_FINANCIAL_MASTER_NOT_FOUND_MSG = "No Financial Year data is available for the given year value of : ";
+	public static final String EG_RL_FINANCIAL_MASTER_NOT_FOUND = "EG_RL_FINANCIAL_MASTER_NOT_FOUND";
+	public static final String EG_RL_FINANCIAL_MASTER_NOT_FOUND_MSG = "No Financial Year data is available for the given year value of : ";
 	
 	public static final String EG_PT_INVALID_DEMAND_ERROR = "EG_PT_INVALID_DEMAND_ERROR";
 	public static final String EG_PT_INVALID_DEMAND_ERROR_MSG = " Bill cannot be generated for previous assessments in a year, please use the latest assesmment to pay";

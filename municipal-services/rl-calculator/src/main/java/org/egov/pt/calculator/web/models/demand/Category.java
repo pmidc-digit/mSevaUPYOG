@@ -20,6 +20,8 @@ public enum Category {
 
 	PENALTY("PENALTY"),
 
+	COWCASS("COWCASS"),
+
 	FINES("FINES"),
 	
 	CHARGES("CHARGES");

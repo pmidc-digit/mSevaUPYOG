@@ -54,7 +54,7 @@ const GCResponseCitizen = (props) => {
       const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
       const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
       Digit.Utils.pdf.generate(acknowldgementDataAPI);
-    };
+  };
   
 
   const closeToast = () => {

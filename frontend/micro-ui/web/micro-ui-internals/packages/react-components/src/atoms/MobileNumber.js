@@ -15,12 +15,22 @@ const MobileNumber = (props) => {
   return (
     <React.Fragment>
       <div className="field-container">
-        {!props.hideSpan ? (
-          <span style={{ maxWidth: "50px", marginTop: "unset", ...props.labelStyle }} className="citizen-card-input citizen-card-input--front">
-            +91
-          </span>
-        ) : null}
-        <div className={`text-input ${user_type === "employee"? "" : "text-mobile-input-width"} ${props.className}`}>
+        <div className={`text-input ${user_type === "EMPLOYEE"? "" : "text-mobile-input-width"} ${props.className}`} style={{ position: "relative" }}>
+          {!props.hideSpan && (
+            <span style={{ 
+              position: "absolute", 
+              left: "12px", 
+              top: "34%", 
+              transform: "translateY(-50%)",
+              fontSize: "16px",
+              fontWeight: "500",
+              color: "#666",
+              pointerEvents: "none",
+              zIndex: 1
+            }}>
+              +91
+            </span>
+          )}
           <input
             type={"text"}
             name={props.name}
@@ -30,8 +40,10 @@ const MobileNumber = (props) => {
             onChange={onChange}
             ref={props.inputRef}
             value={props.value}
-            style={{ ...props.style }}
-            // defaultValue={props.defaultValue || ""}
+            style={{ 
+              ...props.style,
+              paddingLeft: !props.hideSpan ? "45px" : "12px"
+            }}
             minLength={props.minlength}
             maxLength={props.maxlength}
             max={props.max}

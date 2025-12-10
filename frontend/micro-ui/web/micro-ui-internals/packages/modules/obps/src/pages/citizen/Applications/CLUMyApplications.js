@@ -12,7 +12,7 @@ const CLUMyApplications = ({ view }) => {
 
   const searchListDefaultValues = {
     sortBy: "createdTime",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    // limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
     mobileNumber:""
@@ -22,7 +22,6 @@ const CLUMyApplications = ({ view }) => {
     {...searchListDefaultValues,
      mobileNumber:userInfo?.mobileNumber || ""
     },
-    // { mobileNumber: userInfo.mobileNumber }
     tenantId);
 
   console.log("data herein CLU==>", data);

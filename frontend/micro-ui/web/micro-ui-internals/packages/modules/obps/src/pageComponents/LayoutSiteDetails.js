@@ -12,6 +12,7 @@ import {
   CardLabelError,
   UploadFile,
 } from "@mseva/digit-ui-react-components";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 const LayoutSiteDetails = (_props) => {
   let tenantId;
@@ -32,6 +33,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
   const [netArea, setNetArea] = useState("0.00");
   const NetPlotArea = watch("netPlotAreaAfterWidening");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening");
+
+  console.log("STEPERDFATA", currentStepData);
+
+  console.log(isEditMode, "LOOK EDIT");
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00");
@@ -200,18 +205,13 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                 control={control}
                 name="plotNo"
                 defaultValue=""
-                rules={{
-                required: t("REQUIRED_FIELD"),
-                // <CHANGE> Add pattern validation for numeric values
-                pattern: {
-                  value: /^[0-9]*\.?[0-9]+$/,
-                  message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                },
-                maxLength: {
-                  value: 200,
-                  message: t("MAX_200_CHARACTERS_ALLOWED"),
-                },
-              }}
+                 rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 200,
+                    message: t("MAX_200_CHARACTERS_ALLOWED"),
+                  },
+                }}
                 render={(props) => (
                   <TextInput
                     className="form-field"

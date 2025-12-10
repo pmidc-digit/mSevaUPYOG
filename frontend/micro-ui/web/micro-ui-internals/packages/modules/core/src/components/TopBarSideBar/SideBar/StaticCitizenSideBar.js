@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import LogoutDialog from "../../Dialog/LogoutDialog";
 import ChangeCity from "../../ChangeCity";
+import SidebarProfile from "./SidebarProfile";
 
 const defaultImage =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAO4AAADUCAMAAACs0e/bAAAAM1BMVEXK0eL" +
@@ -147,92 +148,112 @@ const IconsObject = {
   LoginIcon: <LoginIcon className="icon" />,
 };
 const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
-  const { t } = useTranslation();
-  const history = useHistory();
-  const location = useLocation();
-  const { pathname } = location;
-  const { data: storeData, isFetched } = Digit.Hooks.useStore.getInitData();
-  const { stateInfo } = storeData || {};
-  const user = Digit.UserService.getUser();
-  let isMobile = window.Digit.Utils.browser.isMobile();
-
-  const [isEmployee, setisEmployee] = useState(false);
-  const [isSidebarOpen, toggleSidebar] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
+  const { t } = useTranslation()
+  const history = useHistory()
+  const location = useLocation()
+  const { pathname } = location
+  const { data: storeData, isFetched } = Digit.Hooks.useStore.getInitData()
+  const { stateInfo } = storeData || {}
+  const user = Digit.UserService.getUser()
+  const isMobile = window.Digit.Utils.browser.isMobile()
+  const [isEmployee, setisEmployee] = useState(false)
+  const [isSidebarOpen, toggleSidebar] = useState(false)
+  const [showDialog, setShowDialog] = useState(false)
 
   const handleLogout = () => {
-    toggleSidebar(false);
-    setShowDialog(true);
-  };
+    toggleSidebar(false)
+    setShowDialog(true)
+  }
+
   const handleOnSubmit = () => {
-    Digit.UserService.logout();
-    setShowDialog(false);
-  };
+    Digit.UserService.logout()
+    setShowDialog(false)
+  }
+
   const handleOnCancel = () => {
-    setShowDialog(false);
-  };
+    setShowDialog(false)
+  }
 
   if (islinkDataLoading || !isFetched) {
-    return <Loader />;
+    return <Loader />
   }
 
   const redirectToLoginPage = () => {
-    // localStorage.clear();
-    // sessionStorage.clear();
-    history.push("/digit-ui/citizen/login");
-  };
+    history.push("/digit-ui/citizen/login")
+  }
+
   const redirectToScrutinyPage = () => {
-    // localStorage.clear();
-    // sessionStorage.clear();
-    history.push("/digit-ui/citizen/core/edcr/scrutiny");
-  };
+    history.push("/digit-ui/citizen/core/edcr/scrutiny")
+  }
+
   const showProfilePage = () => {
-    history.push("/digit-ui/citizen/user/profile");
-  };
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant();
-  const filteredTenantContact = storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
+    history.push("/digit-ui/citizen/user/profile")
+  }
 
-  let menuItems = [...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage, isEmployee, storeData, tenantId)];
+  const tenantId = Digit.ULBService.getCitizenCurrentTenant()
+  const filteredTenantContact =
+    storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber
 
-  menuItems = menuItems.filter((item) => item.element !== "LANGUAGE");
+  let menuItems = [
+    ...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage, isEmployee, storeData, tenantId),
+  ]
+  menuItems = menuItems.filter((item) => item.element !== "LANGUAGE")
 
   const MenuItem = ({ item }) => {
-    const leftIconArray = item?.icon || item.icon?.type?.name;
-    const leftIcon = leftIconArray ? IconsObject[leftIconArray] : IconsObject.BillsIcon;
-    let itemComponent;
+    const leftIconArray = item?.icon || item.icon?.type?.name
+    const leftIcon = leftIconArray ? IconsObject[leftIconArray] : IconsObject.BillsIcon
+    const isActive = pathname === item?.link || pathname === item?.sidebarURL
+
+    let itemComponent
     if (item.type === "component") {
-      itemComponent = item.action;
+      itemComponent = item.action
     } else {
-      itemComponent = item.text;
+      itemComponent = item.text
     }
+
     const Item = () => (
-      <span className="menu-item" {...item.populators}>
-        {leftIcon}
+      <span
+        className="menu-item"
+        {...item.populators}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          color: isActive ? "#4f46e5" : "#374151",
+          cursor: "pointer",
+          textDecoration: "none",
+          fontSize: "0.9375rem",
+          fontWeight: isActive ? "500" : "400",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", minWidth: "20px" }}>{leftIcon}</span>
         <div className="menu-label">{itemComponent}</div>
       </span>
-    );
+    )
+
     if (item.type === "external-link") {
       return (
-        <a href={item.link}>
+        <a href={item.link} style={{ textDecoration: "none" }}>
           <Item />
         </a>
-      );
+      )
     }
+
     if (item.type === "link") {
       return (
-        <Link to={item?.link}>
+        <Link to={item?.link} style={{ textDecoration: "none" }}>
           <Item />
         </Link>
-      );
+      )
     }
 
-    return <Item />;
-  };
-  let profileItem;
+    return <Item />
+  }
 
+  let profileItem
   if (isFetched && user && user.access_token) {
-    profileItem = <Profile info={user?.info} stateName={stateInfo?.name} t={t} />;
-    menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "help-line");
+    profileItem = <SidebarProfile info={user?.info} stateName={stateInfo?.name} t={t} />
+    menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "help-line")
     menuItems = [
       ...menuItems,
       {
@@ -263,8 +284,9 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
         element: "Helpline",
         icon: "Phone",
       },
-    ];
+    ]
   }
+
   Object.keys(linkData)
     ?.sort((x, y) => y.localeCompare(x))
     ?.map((key) => {
@@ -275,9 +297,9 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           links: linkData[key],
           icon: linkData[key][0]?.leftIcon,
           link: linkData[key][0]?.sidebarURL,
-        });
+        })
       }
-    });
+    })
 
   return (
     <React.Fragment>
@@ -288,30 +310,86 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             width: "100%",
             top: "0px",
             backgroundColor: "rgba(0, 0, 0, 0.54)",
-            pointerzevents: "auto",
+            pointerEvents: "auto",
           }}
         ></div>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            height: isMobile ? "calc(100vh - 56px)" : "auto",
+            height: isMobile ? "100vh" : "auto",
+            paddingTop: isMobile ? "0" : "60px",
             zIndex: "99",
+            backgroundColor: "#ffffff",
+            position: isMobile ? "static" : "fixed",
+            top: isMobile ? "auto" : "0",
+            left: isMobile ? "auto" : "0",
+            width: isMobile ? "100%" : "350px",
+            overflowY: isMobile ? "auto" : "hidden",
           }}
         >
           {profileItem}
-          <div className="drawer-desktop" style={{ backgroundColor: "white" }}>
-            {menuItems?.map((item, index) => (
-              <div className={`sidebar-list ${pathname === item?.link || pathname === item?.sidebarURL ? "active" : ""}`} key={index}>
-                <MenuItem item={item} />
+          <div
+            className="drawer-desktop"
+            style={{
+              backgroundColor: "white",
+              flex: 1,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              {menuItems?.map((item, index) => (
+                <div
+                  className={`sidebar-list ${pathname === item?.link || pathname === item?.sidebarURL ? "active" : ""}`}
+                  key={index}
+                  style={{
+                    backgroundColor:
+                      pathname === item?.link || pathname === item?.sidebarURL ? "#eef2ff" : "transparent",
+                    borderLeft:
+                      pathname === item?.link || pathname === item?.sidebarURL
+                        ? "3px solid #4f46e5"
+                        : "3px solid transparent",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (pathname !== item?.link && pathname !== item?.sidebarURL) {
+                      e.currentTarget.style.backgroundColor = "#f9fafb"
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (pathname !== item?.link && pathname !== item?.sidebarURL) {
+                      e.currentTarget.style.backgroundColor = "transparent"
+                    }
+                  }}
+                >
+                  <MenuItem item={item} />
+                </div>
+              ))}
+            </div>
+            <div
+              className="sidebar-footer"
+              style={{
+                borderTop: "1px solid #e5e7eb",
+                backgroundColor: "#f9fafb",
+              }}
+            >
+              <div style={{ fontSize: "0.75rem", color: "#6b7280", textAlign: "center" }}>
+                <p style={{ margin: "0 0 0.5rem 0" }}>© 2025 mSeva Punjab</p>
+                <p style={{ margin: "0" }}>Powered by UPMCGCL</p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
-        <div>{showDialog && <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel}></LogoutDialog>}</div>
+        <div>
+          {showDialog && (
+            <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel}></LogoutDialog>
+          )}
+        </div>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
 export default StaticCitizenSideBar;

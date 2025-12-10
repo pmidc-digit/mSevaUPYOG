@@ -305,7 +305,7 @@ console.log(isCitizenEditable, "EDIT");
               />
               {errorMessage?.dateOfBirth?.length>0 && (
                   <div
-                    style={errorStyle}
+                   
                   >
                     {errorMessage?.dateOfBirth}
                   </div>
@@ -347,7 +347,7 @@ console.log(isCitizenEditable, "EDIT");
 
                 {errorMessage?.gender?.length>0 && (
                   <div
-                    style={errorStyle}
+                  
                   >
                     {errorMessage?.gender}
                   </div>
@@ -385,7 +385,7 @@ console.log(isCitizenEditable, "EDIT");
               />
               {errorMessage?.email?.length>0 && (
                   <div
-                    style={errorStyle}
+                   
                   >
                     {errorMessage?.email}
                   </div>

@@ -47,9 +47,15 @@ public class ConsumerConfigurations {
     @Value("${kafka.consumer.config.auto_offset_reset}")
     private String autoOffsetReset;
 
+    @Value("${kafka.consumer.config.heartbeat_interval}")
+    private String heartbeatInterval;
+
+    @Value("${kafka.consumer.config.max_poll_interval}")
+    private String maxPollInterval;
+
     @Value("${spring.kafka.consumer.value-deserializer}")
-    private String valueDeserializer; 
-    
+    private String valueDeserializer;
+
     @Value("${spring.kafka.consumer.key-deserializer}")
     private String keyDeserializer;
 
@@ -63,6 +69,9 @@ public class ConsumerConfigurations {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverConfig);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sessionTimeout);
+        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, heartbeatInterval);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, maxPollInterval);
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 

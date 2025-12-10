@@ -131,7 +131,8 @@ const ChallanApplicationDetails = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "NewGC",
+    moduleCode: getChallanData?.processInstance?.businessService,
+    // moduleCode: "DisconnectGCConnection",
     role: "EMPLOYEE",
   });
 
@@ -153,6 +154,8 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
+  console.log("workflowDetails", workflowDetails);
+
   let user = Digit.UserService.getUser();
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -165,16 +168,22 @@ const ChallanApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+  console.log("action===", actions);
+
   useEffect(() => {
     let WorkflowService = null;
     (async () => {
-      setLoader(true);
-      WorkflowService = await Digit.WorkflowService.init(tenantId, "NewGC");
-      setLoader(false);
-      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      if (getChallanData) {
+        const service = getChallanData?.processInstance?.businessService;
+        setLoader(true);
+        WorkflowService = await Digit.WorkflowService.init(tenantId, service);
+        console.log("WorkflowService", WorkflowService);
+        setLoader(false);
+        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      }
       // setComplaintStatus(applicationStatus);
     })();
-  }, [tenantId]);
+  }, [tenantId, getChallanData]);
 
   function onActionSelect(action) {
     const payload = {
@@ -187,6 +196,12 @@ const ChallanApplicationDetails = () => {
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+
+    console.log("getWorkflowService", getWorkflowService);
+
+    console.log("filterNexState", filterNexState);
+
+    console.log("filterRoles", filterRoles);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -202,7 +217,8 @@ const ChallanApplicationDetails = () => {
       action.action !== "SEND_BACK_TO_CITIZEN" &&
       action.action !== "ACTIVATE_CONNECTION" &&
       action.action !== "REJECT" &&
-      action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION"
+      action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION" &&
+      action.action !== "APPROVE"
     ) {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);
@@ -307,12 +323,24 @@ const ChallanApplicationDetails = () => {
           </Card>
         )}
 
-        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
+        {getChallanData?.applicationStatus != "INITIATED" && actions && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu localeKeyPrefix={`WF_GC`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
+
+        {getChallanData?.applicationStatus == "INITIATED" && (
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = getChallanData?.applicationNo;
+                history.push(`/digit-ui/employee/garbagecollection/create-application/${id}`);
+              }}
+            />
           </ActionBar>
         )}
       </div>

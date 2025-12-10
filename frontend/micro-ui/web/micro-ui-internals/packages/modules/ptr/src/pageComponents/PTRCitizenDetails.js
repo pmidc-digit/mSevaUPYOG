@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   CardLabel,
@@ -12,6 +12,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
+import { Loader } from "../components/Loader";
 
 const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -20,6 +21,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   console.log("userInfo?.info", userInfo?.info);
   const { mobileNumber, emailId, name } = userInfo?.info;
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
+  const [loader, setLoader] = useState(false);
 
   // Split full name into firstName (all but last word) and lastName (last word)
   // const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
@@ -31,6 +33,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     setValue,
     formState: { errors },
     trigger,
+    clearErrors,
   } = useForm({
     defaultValues: isCitizen
       ? {
@@ -84,10 +87,64 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
+  const handleMobileChange = async (value) => {
+    setLoader(true);
+    try {
+      const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+      console.log("userData", userData);
+      if (userData?.user?.[0]) {
+        setValue("name", userData.user[0].name);
+        setValue("emailId", userData.user[0].emailId);
+        setValue("address", userData.user[0].permanentAddress);
+        clearErrors(["name", "emailId"]);
+      }
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardSectionHeader className="card-section-header">{t("PTR_CITIZEN_DETAILS")}</CardSectionHeader>
+
+        {/* Mobile Number */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="mobileNumber"
+              rules={{
+                required: t("PTR_MOBILE_REQUIRED"),
+                pattern: {
+                  value: /^[6-9][0-9]{9}$/,
+                  message: t("PTR_MOBILE_INVALID"),
+                },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <MobileNumber
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e);
+                    setValue("name", "");
+                    // ✅ updates react-hook-form
+                    if (e.length === 10) {
+                      handleMobileChange(e); // 🔥 only then fire API
+                    }
+                  }}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    // trigger("mobileNumber");
+                  }}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
 
         {/* First Name */}
         <LabelFieldPair>
@@ -121,38 +178,6 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         </LabelFieldPair>
         {errors.name && <CardLabelError style={errorStyle}>{getErrorMessage("name")}</CardLabelError>}
 
-        {/* Last Name */}
-        {/* <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NDC_LAST_NAME")}`} *</CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              name="lastName"
-              rules={{
-                required: t("PTR_LAST_NAME_REQUIRED"),
-                pattern: {
-                  value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
-                  message: t("PTR_FIRST_NAME_INVALID"),
-                },
-                maxLength: { value: 100, message: "Maximum 100 characters" },
-                minLength: { value: 2, message: "Minimum 2 characters" },
-              }}
-              render={({ value, onChange, onBlur }) => (
-                <TextInput
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  onBlur={(e) => {
-                    onBlur(e);
-                    trigger("lastName");
-                  }}
-                  t={t}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors.lastName && <CardLabelError style={errorStyle}>{getErrorMessage("lastName")}</CardLabelError>} */}
-
         {/* Email */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`} *</CardLabel>
@@ -183,38 +208,6 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
           </div>
         </LabelFieldPair>
         {errors.emailId && <CardLabelError style={errorStyle}>{getErrorMessage("emailId")}</CardLabelError>}
-
-        {/* Mobile Number */}
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              name="mobileNumber"
-              rules={{
-                required: t("PTR_MOBILE_REQUIRED"),
-                pattern: {
-                  value: /^[6-9][0-9]{9}$/,
-                  message: t("PTR_MOBILE_INVALID"),
-                },
-                minLength: { value: 10, message: t("PTR_MOBILE_MIN_LENGTH") },
-                maxLength: { value: 10, message: t("PTR_MOBILE_MAX_LENGTH") },
-              }}
-              render={({ value, onChange, onBlur }) => (
-                <MobileNumber
-                  value={value}
-                  onChange={onChange}
-                  onBlur={(e) => {
-                    onBlur(e);
-                    trigger("mobileNumber");
-                  }}
-                  t={t}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
 
         {/* Father/Husband Name */}
         <LabelFieldPair>
@@ -315,6 +308,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
           <SubmitBar label={t("Next")} submit="submit" />
         </ActionBar>
       </form>
+      {loader && <Loader page={true} />}
     </React.Fragment>
   );
 };

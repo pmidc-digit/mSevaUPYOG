@@ -2,13 +2,55 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { Dropdown, Loader } from "@mseva/digit-ui-react-components";
-import { useRouteMatch, useHistory } from "react-router-dom";
+import { useRouteMatch, useHistory,useLocation } from "react-router-dom";
 import { useQueryClient } from "react-query";
 
 import { FormComposer } from "../../../components/FormComposer";
 import { createComplaint } from "../../../redux/actions/index";
 
 export const CreateComplaint = ({ parentUrl }) => {
+
+   const location = useLocation();
+  
+  // Add this useEffect at the top, after all your state declarations
+  useEffect(() => {
+    // Clear sessionStorage
+    sessionStorage.removeItem("complaintType");
+    sessionStorage.removeItem("subType");
+    sessionStorage.removeItem("PriorityLevel");
+    
+    // Reset all local state to ensure blank form
+    setComplaintType({});
+    setSubType({});
+    setPriorityLevel({});
+    setSelectedLocality(null);
+    setPincode("");
+    setDescription("");
+    setSubTypeMenu([]);
+    setSubmitted(false);
+    setSubmitValve(false);
+    setPincodeNotValid(false);
+    
+    // Reset geolocation to default
+    setGeoLocation({
+      location: {
+        latitude: 30.730048,
+        longitude: 76.76504,
+      },
+      val: "",
+      place: "",
+    });
+    
+    // Reset image upload ref
+    imageUploaded.current = {
+      uploadedImages: null,
+    };
+    
+    // Reset city to first city (optional - depends on your UX preference)
+    setSelectedCity(getCities()[0] || null);
+    
+  }, [location.pathname]);
+
   const cities = Digit.Hooks.pgr.useTenants();
   const { t } = useTranslation();
 

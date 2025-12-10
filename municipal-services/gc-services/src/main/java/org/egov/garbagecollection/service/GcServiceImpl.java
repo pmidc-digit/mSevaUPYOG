@@ -302,6 +302,23 @@ public class GcServiceImpl implements GcService {
 			criteria.setUserIds(Collections.singleton(requestInfo.getUserInfo().getUuid()));
 		}
 		garbageConnectionList = getGarbageConnectionsList(criteria, requestInfo);
+
+
+		for (GarbageConnection gc : garbageConnectionList) {
+			if (gc == null || gc.getProcessInstance() == null) {
+				continue; // skip safely
+			}
+
+			String applicationType = gc.getApplicationType();
+			if ("NEW_GARBAGE_CONNECTION".equals(applicationType)) {
+				gc.getProcessInstance().setBusinessService("NewGC");
+			} else if ("DISCONNECT_GARBAGE_CONNECTION".equals(applicationType)) {
+				gc.getProcessInstance().setBusinessService("DisconnectGCConnection");
+			}
+		}
+
+
+
 		log.info("Garbage Connection List Inside Search API call ::" + garbageConnectionList);
 		log.info("Search Criteria ::" + criteria);
 		if (!StringUtils.isEmpty(criteria.getSearchType())

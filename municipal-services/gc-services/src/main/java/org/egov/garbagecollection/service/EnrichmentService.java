@@ -345,14 +345,28 @@ public class EnrichmentService {
 		garbageConnectionRequest.getGarbageConnection().setAuditDetails(auditDetails);
 		GarbageConnection connection = garbageConnectionRequest.getGarbageConnection();
 		if (!CollectionUtils.isEmpty(connection.getDocuments())) {
-			connection.getDocuments().forEach(document -> {
-				if (document.getId() == null) {
-					document.setId(UUID.randomUUID().toString());
-					document.setApplicationId(garbageConnectionRequest.getGarbageConnection().getId());
-					document.setStatus(Status.ACTIVE);
-				}
-				document.setAuditDetails(auditDetails);
-			});
+			if(garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase("DISCONNECT_GARBAGE_CONNECTION") && garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction().equalsIgnoreCase("SUBMIT_APPLICATION")){
+				connection.getDocuments().forEach(document -> {
+
+						document.setId(UUID.randomUUID().toString());
+						document.setApplicationId(garbageConnectionRequest.getGarbageConnection().getId());
+						document.setStatus(Status.ACTIVE);
+
+					document.setAuditDetails(auditDetails);
+				});
+
+			}else {
+
+
+				connection.getDocuments().forEach(document -> {
+					if (document.getId() == null) {
+						document.setId(UUID.randomUUID().toString());
+						document.setApplicationId(garbageConnectionRequest.getGarbageConnection().getId());
+						document.setStatus(Status.ACTIVE);
+					}
+					document.setAuditDetails(auditDetails);
+				});
+			}
 		}
 //		if (!CollectionUtils.isEmpty(connection.getPlumberInfo())) {
 //			connection.getPlumberInfo().forEach(plumberInfo -> {

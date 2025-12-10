@@ -89,10 +89,7 @@ public final class ReportUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportUtil.class);
     private static final EnumMap<ReportFormat, String> CONTENT_TYPES;
-    
-    @Value("${internal.edcr.service.url}")
-    private static String edcr_internal_service_url;
-    
+   
     static {
         CONTENT_TYPES = new EnumMap<>(ReportFormat.class);
         CONTENT_TYPES.put(ReportFormat.PDF, "application/pdf");
@@ -115,12 +112,9 @@ public final class ReportUtil {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(IMAGES_BASE_PATH + imageName);
     }
 
-//    public static String getImageURL(String imagePathWithContextRoot) {
-//        return getDomainURL() + imagePathWithContextRoot;
-//    }    
     public static String getImageURL(String imagePathWithContextRoot) {
-      return edcr_internal_service_url + imagePathWithContextRoot;
-  }
+        return getDomainURL() + imagePathWithContextRoot;
+    }
     
     public static String getCityName() {
         return getMunicipalityName();

@@ -110,9 +110,9 @@ const LayoutStepperForm = () => {
   console.log("  LayoutStepperForm - formData:", formData);
 console.log("  LayoutStepperForm - step:", step);
   return (
-    <div className="card">
-      <CardHeader divider={true}>
-        {t("BPA_LAYOUT_REGISTRATION_APPLICATION")}
+    <div className="pageCard">
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("Layout Application")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} formData={formData} />
       {showToast && (

@@ -276,6 +276,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     selected={props.value}
                     option={ulbListOptions}
                     optionKey="displayName"
+                    t={t}
                      disable={currentStepData?.apiData?.applicationNo ? true: false}
                   />
                 )}
@@ -346,10 +347,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                 defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                   pattern: {
-                  value: /^[0-9]*\.?[0-9]+$/,
-                  message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                },
+                  
                 maxLength: {
                   value: 200,
                   message: t("MAX_200_CHARACTERS_ALLOWED"),
@@ -382,7 +380,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   required: t("REQUIRED_FIELD"),
                 }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" />
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
                 )}
               />
             )}
@@ -553,6 +551,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     option={buildingType}
                     optionKey="name"
                     disable={isEditMode}
+                    t={t}
                   />
                 )}
               />
@@ -578,6 +577,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     selected={props.value}
                     option={buildingCategory}
                     optionKey="name"
+                    t={t}
                     disable={currentStepData?.apiData?.Clu?.applicationNo ? true: false}
                   />
                 )}
@@ -861,6 +861,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     selected={props.value}
                     option={schemeTypeOptions}
                     optionKey="name"
+                    t={t}
                     disable={isEditMode}
                   />
                 )}
@@ -889,6 +890,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     selected={props.value}
                     option={options}
                     optionKey="i18nKey"
+                    t={t}
                   />
                 )}
               />

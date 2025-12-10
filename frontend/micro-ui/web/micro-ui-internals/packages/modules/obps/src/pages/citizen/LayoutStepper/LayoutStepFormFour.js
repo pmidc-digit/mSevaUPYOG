@@ -182,7 +182,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           businessService: layoutFormData?.apiData?.Layout?.[0]?.layoutDetails.additionalDetails?.siteDetails?.businessService,
           ...layoutFormData?.siteDetails,
           ulbName: layoutFormData?.siteDetails?.ulbName?.name || "",
-          roadType: layoutFormData?.siteDetails?.roadType?.name || "",
+          roadType: layoutFormData?.siteDetails?.roadType|| "",
           buildingStatus: layoutFormData?.siteDetails?.buildingStatus?.name || "",
           isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
           district: layoutFormData?.siteDetails?.district?.name || "",

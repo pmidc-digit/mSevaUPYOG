@@ -45,6 +45,7 @@ export const LayoutModalConfig = ({
                 id="fieldInspector"
                 select={setSelectedApprover}
                 selected={selectedApprover}
+                 t={t}
               />
             ),
           },

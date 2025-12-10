@@ -55,7 +55,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const isEqual = data?.netTotalArea === data?.specificationPlotArea || false
 
     if (!isEqual) {
-      setShowToast({ key: "true", error: true, message: "BPA_PLOT_AREA_MUST_MATCH_NET_TOTAL_AREA" })
+      setShowToast({ key: "true", error: true, message: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)" })
       return
     }
 
@@ -79,7 +79,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const transformedSiteDetails = {
       ...formData?.siteDetails,
       ulbName: formData?.siteDetails?.ulbName?.name || "",
-      roadType: formData?.siteDetails?.roadType?.name || "",
+      roadType: formData?.siteDetails?.roadType || "",
       buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
       isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
       district: formData?.siteDetails?.district?.name || "",

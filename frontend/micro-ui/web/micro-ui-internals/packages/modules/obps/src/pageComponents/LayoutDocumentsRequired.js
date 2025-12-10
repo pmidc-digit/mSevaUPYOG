@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
 import { UPDATE_LayoutNewApplication_CoOrdinates } from "../redux/actions/LayoutNewApplicationActions";
 import { useParams } from "react-router-dom";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 
 
@@ -129,7 +130,7 @@ const LayoutDocumentsRequired = ({
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {filteredDocuments?.map((document, index) => {
             return (
-              <PTRSelectDocument
+              <LayoutSelectDocument
                 key={index}
                 document={document}
                 t={t}
@@ -155,7 +156,7 @@ const LayoutDocumentsRequired = ({
   )
 }
 
-function PTRSelectDocument({
+function LayoutSelectDocument({
   t,
   document: doc,
   setDocuments,
@@ -366,74 +367,42 @@ function PTRSelectDocument({
   return (
     <div style={{ marginBottom: "24px" }}>
       {getLoading && <Loader />}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t(doc?.code.replaceAll(".", "_"))}
-          {doc?.required && <span style={{ color: "red" }}> *</span>}
-        </CardLabel>
-      </LabelFieldPair>
-      <LabelFieldPair>
-        {doc?.code === "OWNER.OWNERPHOTO" ||
-        doc?.code === "OWNER.SITEPHOTOGRAPHONE" ||
-        doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
-          <UploadFile
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"} 
+          </CardLabel>
+
+      <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
+        {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
+          <CustomUploadFile
+            id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null)
+              setUploadedFile(null);
             }}
-            id={id}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
             accept=".jpg, .jpeg, .png"
-            buttonType="button"
-            error={!uploadedFile}
           />
-        ) : (
-          <UploadFile
+        ):(
+          <CustomUploadFile
+            id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null)
+              setUploadedFile(null);
             }}
-            id={id}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
             accept=".pdf, .jpeg, .jpg, .png"
-            buttonType="button"
-            error={!uploadedFile}
           />
         )}
 
-        {previewLink &&  (
-          <div
-            style={{ cursor: "pointer", padding: "10px", marginLeft: "25px" }}
-            onClick={(e) => {
-              e.preventDefault()
-              window.open(previewLink, "_blank")
-            }}
-          >
-            <ViewsIcon />
+            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
+            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
           </div>
-        )}
 
-        {doc?.code === "OWNER.SITEPHOTOGRAPHONE" && geocoordinates?.Latitude1 && geocoordinates?.Longitude1 && (
-          <CardLabel>
-            <div style={{ paddingLeft: "30px" }}>
-              <p>Latitude: {geocoordinates.Latitude1}</p>
-              <p>Longitude: {geocoordinates.Longitude1}</p>
-            </div>
-          </CardLabel>
-        )}
-
-        {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" && geocoordinates?.Latitude2 && geocoordinates?.Longitude2 && (
-          <CardLabel>
-            <div style={{ paddingLeft: "30px" }}>
-              <p>Latitude: {geocoordinates.Latitude2}</p>
-              <p>Longitude: {geocoordinates.Longitude2}</p>
-            </div>
-          </CardLabel>
-        )}
       </LabelFieldPair>
     </div>
   )

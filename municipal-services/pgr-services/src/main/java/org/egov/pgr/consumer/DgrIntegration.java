@@ -318,6 +318,8 @@ public class DgrIntegration {
         String citizenMobile = safeValue(userInfo != null ? userInfo.getMobileNumber() : null, constants.DEFAULT_CITIZEN_MOBILE);
 
         Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("Referrence_ID", serviceReqRequest.getService().getServiceRequestId());
+
         requestBody.put("Citizen_Name", citizenName);
         requestBody.put("Citizen_Email", citizenEmail);
         requestBody.put("Citizen_Mobile_No", citizenMobile);

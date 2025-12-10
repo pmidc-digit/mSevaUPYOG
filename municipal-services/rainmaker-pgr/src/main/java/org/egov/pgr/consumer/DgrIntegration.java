@@ -322,6 +322,7 @@ public class DgrIntegration {
             requestBody.put("Citizen_Municipality", municipalityName);
             requestBody.put("Citizen_State", constants.STATE_NAME);
             requestBody.put("Citizen_State_ID", stateId);
+            requestBody.put("Referrence_ID", serviceReqRequest.getServices().get(0).getServiceRequestId());
 
             requestBody.put("Application_Department", constants.DEPARTMENT_ID);
             requestBody.put("locationtype", "2");

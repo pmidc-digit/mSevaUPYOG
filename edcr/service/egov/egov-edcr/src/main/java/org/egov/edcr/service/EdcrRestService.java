@@ -231,6 +231,11 @@ public class EdcrRestService {
                     ? edcrRequest.getRequestInfo().getUserInfo().getUuid()
                     : edcrRequest.getRequestInfo().getUserInfo().getId());
             String tenantId = "";
+            LOG.info("ApplicationThreadLocals.getTenantID() ---> " + ApplicationThreadLocals.getTenantID());
+            if(edcrRequest.getTenantId()!=null) {
+            	 LOG.info("edcrRequest tenant id  ---> " +  edcrRequest.getTenantId() );
+            }
+           
             if (StringUtils.isNotBlank(edcrRequest.getTenantId())) {
                 String[] tenantArr = edcrRequest.getTenantId().split("\\.");
                 String tenantFromReq;
@@ -238,6 +243,7 @@ public class EdcrRestService {
                     tenantFromReq = tenantArr[0];
                 else
                     tenantFromReq = tenantArr[1];
+                LOG.info("tenantFromReq : " + tenantFromReq);
                 if (tenantFromReq.equalsIgnoreCase(ApplicationThreadLocals.getTenantID()))
                     tenantId = edcrRequest.getTenantId();
             }
@@ -249,6 +255,8 @@ public class EdcrRestService {
             } else if (StringUtils.isBlank(tenantId)) {
                 tenantId = ApplicationThreadLocals.getTenantID();
             }
+            // setting setThirdPartyUserTenant
+            LOG.info("ThirdPartyUserTenant : " + tenantId);
             edcrApplication.setThirdPartyUserTenant(tenantId);
         }
 
@@ -414,11 +422,36 @@ public class EdcrRestService {
         if (edcrApplnDtl.getApplication().getServiceType() != null)
             edcrDetail.setApplicationSubType(edcrApplnDtl.getApplication().getServiceType());
         String tenantId;
-        String[] tenantArr = edcrApplnDtl.getApplication().getThirdPartyUserTenant().split("\\.");
-        if (tenantArr.length == 1)
+//        String[] tenantArr = edcrApplnDtl.getApplication().getThirdPartyUserTenant().split("\\.");
+//        if (tenantArr.length == 1)
+//            tenantId = tenantArr[0];
+//        else
+//            tenantId = tenantArr[1];
+        String thirdPartyTenant = edcrApplnDtl.getApplication().getThirdPartyUserTenant();
+        LOG.info("Third party tenant received: {}", thirdPartyTenant);
+
+        // Split tenant string
+        String[] tenantArr = thirdPartyTenant.split("\\.");
+
+        LOG.info("tenantArr length = {}", tenantArr.length);
+
+        // Print each array value
+        for (int i = 0; i < tenantArr.length; i++) {
+            LOG.info("tenantArr[{}] = {}", i, tenantArr[i]);
+        }
+
+        // Resolve tenantId
+        if (tenantArr.length == 1) {
             tenantId = tenantArr[0];
-        else
+            LOG.info("Resolved tenantId from tenantArr[0]: {}", tenantId);
+        } else {
             tenantId = tenantArr[1];
+            LOG.info("Resolved tenantId from tenantArr[1]: {}", tenantId);
+        }
+
+        // Final print
+        LOG.info("Final tenantId after resolution: {}", tenantId);
+
         if (edcrApplnDtl.getDxfFileId() != null)
             edcrDetail.setDxfFile(format(getFileDownloadUrl(edcrApplnDtl.getDxfFileId().getFileStoreId(), tenantId)));
 

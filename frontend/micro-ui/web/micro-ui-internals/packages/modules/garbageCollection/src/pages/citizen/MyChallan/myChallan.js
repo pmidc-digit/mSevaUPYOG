@@ -138,7 +138,9 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
           return (
             <Card key={index}>
               <KeyNote keyValue={t("GC_APPLICATION_NO")} note={bill?.applicationNo || t("CS_NA")} />
-              <KeyNote keyValue={t("STATUS")} note={t(bill.applicationStatus)} />
+              {bill?.connectionNo && <KeyNote keyValue={t("GC_CONNECTION_NO")} note={bill?.connectionNo || t("CS_NA")} />}
+              <KeyNote keyValue={t("APPLICATION_STATUS")} note={t(bill.applicationStatus)} />
+              <KeyNote keyValue={t("STATUS")} note={t(bill.status)} />
               <KeyNote keyValue={t("GC_CONNECTION_TYPE")} note={t(`${bill.connectionCategory || t("CS_NA")}`)} />
               <div
                 style={{

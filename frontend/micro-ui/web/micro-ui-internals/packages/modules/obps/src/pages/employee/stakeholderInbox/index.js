@@ -136,6 +136,7 @@ const Inbox = ({ parentRoute }) => {
   }
 
   const onFilterFormSubmit = (data) => {
+    console.log("onFilterFormSubmitData", data)
     data.hasOwnProperty("") && delete data?.[""] ;
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateFilterForm", data })

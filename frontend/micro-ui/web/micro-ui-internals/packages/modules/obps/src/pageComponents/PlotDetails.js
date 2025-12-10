@@ -22,6 +22,7 @@ import { PropertySearch } from "./PropertySearch";
 import { PropertySearchModal } from "./PropertySearchModal";
 import { useDispatch, useSelector } from "react-redux";
 import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions";
+import { PropertySearchLudhiana } from "./PropertySearchLudhiana";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -67,6 +68,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(state, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
   const dispatch = useDispatch();
+  const LUDHIANA_TENANT = "pb.ludhiana";
   const common = [
     {
       code: "YES",
@@ -126,7 +128,7 @@ console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?
   }, [])
 
   useEffect(() => {
-    if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid){
+    if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid && tenantId !== LUDHIANA_TENANT){
       fetchPropertyDetails(currentStepData?.createdResponse?.additionalDetails?.propertyuid);
     }
   }, [currentStepData]);
@@ -300,8 +302,10 @@ console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?
 // }, [menuList, currentStepData?.cpt?.details?.address?.locality]);
 
 // useEffect(() => {
-//   if (currentStepData?.cpt?.zonalMapping?.zone && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
+//   if (currentStepData?.cpt?.zonalMapping?.zone?.code && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
 //     setZoneNumber(currentStepData?.cpt?.zonalMapping?.zone?.code || "");
+//   }else if(currentStepData?.cpt?.zonalMapping?.zone && typeof currentStepData?.cpt?.zonalMapping?.zone === "string" && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
+//     setZoneNumber(currentStepData?.cpt?.zonalMapping?.zone);
 //   }
 // }, [currentStepData?.cpt?.zonalMapping?.zone]);
 
@@ -309,7 +313,12 @@ useEffect(() => {
   if (currentStepData?.cpt?.zonalMapping?.ward) {
     setWardNumber(currentStepData?.cpt?.zonalMapping?.ward?.code || "");
   }
-}, [currentStepData?.cpt?.zonalMapping?.ward]);
+  if(currentStepData?.cpt?.details?.address && !currentStepData?.createdResponse?.additionalDetails?.registrationDetails && !registrationDetails){
+    const { doorNo, plotNo, buildingName, street, city, district, state} = currentStepData?.cpt?.details?.address
+    const address = [doorNo, plotNo, buildingName, street, city, district, state]?.filter(Boolean)?.join(" ,");
+    if(address) setRegistrationDetails(address);
+  }
+}, [currentStepData?.cpt]);
 
 
 
@@ -704,7 +713,14 @@ useEffect(() => {
           {errors["isPropertyAvailable"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isPropertyAvailable"]}</CardLabelError>
           )}
-          {/* {isPropertyAvailable?.value && <PropertySearch  formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>} */}
+          {!isPropertyAvailable?.value && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
+          {tenantId === LUDHIANA_TENANT && <div>
+            {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {errors["propertyuid"] && (
+              <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
+            )}
+          </div>}
+          {tenantId != LUDHIANA_TENANT && <div>
           {isPropertyAvailable?.value && <SubmitBar style={{marginBottom:"1rem"}} label={t("PT_SEARCH_PROPERTY")} onSubmit={() => {setShowModal(true)}} />}
           {showModal &&           
           <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>}
@@ -720,6 +736,7 @@ useEffect(() => {
               text={currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid || "NA"}
             />
           </StatusTable>}
+          </div>}
 
           <CardLabel>{`${t("BPA_IS_CLUBBED_PLOT_LABEL")} *`}</CardLabel>
           <Dropdown

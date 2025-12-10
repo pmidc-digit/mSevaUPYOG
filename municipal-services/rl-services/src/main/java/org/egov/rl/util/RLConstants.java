@@ -180,7 +180,7 @@ public class RLConstants {
 	
 	public static final String WF_STATUS_CANCELLED = "CANCELLED";
 	
-	public static final String WF_STATUS_APPROVED = "APPROVED";
+	public static final String WF_STATUS_APPROVED = "APPROVE";
 	
 	public static final String WF_STATUS_OPEN = "OPEN";
 	
@@ -284,7 +284,7 @@ public class RLConstants {
     public static final String MUTATION_BUSINESSSERVICE = "PT.MUTATION";
 
 
-    public static final String NOTIFICATION_PROPERTYID = "{PROPERTYID}";
+    public static final String NOTIFICATION_APPLICATIONNUMBER = "{applicationNumber}";
     
     public static final String PT_OWNER_NAME = "{ownername}";
     

@@ -72,6 +72,8 @@ public class AllotmentService {
 	@Autowired
 	private DemandService demandService;
 
+	@Autowired
+	private NotificationService notificationService;
 	/**
 	 * Enriches the Request and pushes to the Queue
 	 *
@@ -121,6 +123,11 @@ public class AllotmentService {
 		boolean isApprove = allotmentRequest.getAllotment().getWorkflow().getAction().equals("APPROVE");
 		if(isApprove&&allotmentDetails.getApplicationType().equals(RLConstants.NEW_RL_APPLICATION)){
 			demandId =	demandService.createDemand(true, allotmentRequest).get(0).getId();
+			try {
+			    notificationService.sendNotificationForAllotment(allotmentRequest);
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
 		}else if(isApprove) {
 			demandId =	demandService.createDemand(false, allotmentRequest).get(0).getId();
 		}

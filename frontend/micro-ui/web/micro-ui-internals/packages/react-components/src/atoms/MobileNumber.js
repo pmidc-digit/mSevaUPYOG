@@ -20,9 +20,9 @@ const MobileNumber = (props) => {
             <span style={{ 
               position: "absolute", 
               left: "12px", 
-              top: "50%", 
+              top: "34%", 
               transform: "translateY(-50%)",
-              fontSize: "15px",
+              fontSize: "16px",
               fontWeight: "500",
               color: "#666",
               pointerEvents: "none",

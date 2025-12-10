@@ -1,22 +1,37 @@
-import React from "react";
+import React from "react"
 
+  const cardColors = [
+    { bg: "#EBF3FE", iconBg: "#2B6FED", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#E8F8F5", iconBg: "#0FA76F", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#F3EBFF", iconBg: "#8B5CF6", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#FEF3E8", iconBg: "#F97316", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#FCE8F3", iconBg: "#EC4899", icon: "#FFFFFF", textColor: "#1a202c" },
+    { bg: "#E0F2FE", iconBg: "#0EA5E9", icon: "#FFFFFF", textColor: "#1a202c" },
+  ]
 
 const Option = ({ name, Icon, onClick, className, colorIndex = 0 }) => {
-  const [isHovered, setIsHovered] = React.useState(false)
+  const [isCardHovered, setIsCardHovered] = React.useState(false)
   const colors = cardColors[colorIndex % cardColors.length]
 
   return (
-    <div className="new-card-option"
-     
+    <div
+      className="new-card-option"
+      style={{
+        background: isCardHovered ? colors.bg : "#ffffff",
+        border: isCardHovered ? "2px solid transparent" : "2px solid #e2e8f0",
+        transition: "all 0.25s ease",
+      }}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setIsCardHovered(true)}
+      onMouseLeave={() => setIsCardHovered(false)}
     >
-      <div className="new-card-icon" >{Icon}</div>
-      <div className="new-card-service-name" >{name}</div>
-      <div className="new-card-access" >
+      <div className="new-card-icon" style={{ background: colors.iconBg, color: colors.icon }}>
+        {Icon}
+      </div>
+      <div className="new-card-service-name" style={{ color: colors.textColor }}>{name}</div>
+      <div className="new-card-access" style={{ color: isCardHovered ? colors.textColor : "#4a5568" }}>
         <span>Access service</span>
-        <span className="new-card-arrow" >→</span>
+        <span className="new-card-arrow">→</span>
       </div>
     </div>
   )
@@ -32,8 +47,7 @@ const CardBasedOptions = ({ header, sideOption, options, styles = {}, style = {}
         <h2 className="new-card-header-title" >{header}</h2>
         <button
           type="button"
-          className="new-card-view-button"
-         
+           className="new-card-view-button"
           onClick={sideOption.onClick}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}

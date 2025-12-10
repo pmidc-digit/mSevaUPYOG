@@ -205,18 +205,13 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                 control={control}
                 name="plotNo"
                 defaultValue=""
-                rules={{
-                required: t("REQUIRED_FIELD"),
-                // <CHANGE> Add pattern validation for numeric values
-                pattern: {
-                  value: /^[0-9]*\.?[0-9]+$/,
-                  message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                },
-                maxLength: {
-                  value: 200,
-                  message: t("MAX_200_CHARACTERS_ALLOWED"),
-                },
-              }}
+                 rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 200,
+                    message: t("MAX_200_CHARACTERS_ALLOWED"),
+                  },
+                }}
                 render={(props) => (
                   <TextInput
                     className="form-field"

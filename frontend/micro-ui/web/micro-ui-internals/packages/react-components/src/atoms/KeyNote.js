@@ -6,8 +6,6 @@ const KeyNote = ({ keyValue, note, caption, noteStyle, children, privacy }) => {
   const isMobile = window.innerWidth < 768;
   
   const containerStyle = {
-    display: "flex",
-    alignItems: "center",
     gap: "12px",
     width: "100%",
     flexWrap: "wrap",

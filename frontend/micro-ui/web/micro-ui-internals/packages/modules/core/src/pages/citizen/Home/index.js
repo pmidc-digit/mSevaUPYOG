@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   StandaloneSearchBar,
   Loader,
-  CardBasedOptions,
+
   ComplaintIcon,
   PTIcon,
   CaseIcon,
@@ -28,6 +28,7 @@ import { useHistory } from "react-router-dom";
 import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import DashboardFooter from "./DashboardFooter";
+import CardBasedOptions from "../CardBasedOptions";
 
 
 
@@ -267,7 +268,7 @@ const Home = () => {
         </div>
 
         <div className="ServicesSection" style={{ marginTop: "40px" }}>
-          <CardBasedOptions 
+          <CardBasedOptions
             {...allCitizenServicesProps}
             options={showAllCards ? allCitizenServicesProps.options : allCitizenServicesProps.options?.slice(0, 4)}
           />

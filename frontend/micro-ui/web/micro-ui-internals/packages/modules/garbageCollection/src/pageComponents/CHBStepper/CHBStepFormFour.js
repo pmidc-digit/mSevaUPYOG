@@ -55,6 +55,19 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data, actionStatus) => {
     setLoader(true);
+    console.log("data", data);
+    const apiDocs = data?.apiResponseData?.documents || [];
+    const formDocs = data?.documents?.documents?.documents || [];
+
+    // Extract existing fileStoreIds from API
+    const existingFileStoreIds = apiDocs?.map((doc) => doc.fileStoreId);
+
+    // Filter out documents that already exist in API
+    const newDocuments = formDocs.filter((doc) => !existingFileStoreIds?.includes(doc.fileStoreId));
+
+    console.log("NEW DOCUMENTS TO SEND:", newDocuments);
+
+    // return;
 
     const payload = {
       GarbageConnection: {
@@ -63,8 +76,19 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           ...data?.venueDetails?.processInstance,
           action: actionStatus,
         },
+        documents: newDocuments,
       },
     };
+
+    // (currentStepData?.documents?.documents?.documents || [])?.forEach((doc) => {
+    //   payload.documents.push({
+    //     documentdetailid: doc?.documentUid,
+    //     documentType: doc?.documentType,
+    //     fileStoreId: doc?.filestoreId,
+    //   });
+    // });
+
+    // currentStepData?.documents?.documents?.documents
 
     try {
       const response = await Digit.GCService.update(payload);

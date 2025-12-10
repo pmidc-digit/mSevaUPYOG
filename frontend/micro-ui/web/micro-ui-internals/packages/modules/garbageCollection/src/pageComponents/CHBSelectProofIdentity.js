@@ -5,18 +5,19 @@ import { Loader } from "../components/Loader";
 
 const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
-  const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
+  const checkFormData = useSelector((state) => state.gc.GarbageApplicationFormReducer.formData || {});
   const stateId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (checkFormData?.responseData?.[0]?.Documents?.length && documents.length === 0) {
+    console.log("checkFormData", checkFormData);
+    if (checkFormData?.venueDetails?.documents?.length && documents.length === 0) {
       // Map API response into the structure your UploadFile expects
-      const apiDocs = checkFormData?.responseData?.[0]?.Documents?.map((doc) => ({
+      const apiDocs = checkFormData?.venueDetails?.documents?.map((doc) => ({
         documentType: doc?.documentType,
-        fileStoreId: doc?.documentAttachment, // 👈 key mapping
-        documentUid: doc?.documentAttachment, // 👈 key mapping
+        fileStoreId: doc?.fileStoreId, // 👈 key mapping
+        documentUid: doc?.fileStoreId, // 👈 key mapping
       }));
 
       setDocuments(apiDocs);
@@ -28,6 +29,9 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const ndcDocuments = data?.["gc-services-masters"]?.Documents;
 
   const goNext = () => {
+    console.log("here stop");
+    console.log("formData", formData);
+    // return
     onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
   };
 
@@ -65,7 +69,7 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   );
 };
 
-function SelectDocument({ t, document: doc, setDocuments, setError, documents, setFormError, config, formState }) {
+function SelectDocument({ t, document: doc, setDocuments, setError, documents, setFormError, config, formState, formData }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [getLoader, setLoader] = useState(false);
@@ -84,6 +88,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
   }, [filteredDocument]);
 
   useEffect(() => {
+    console.log("here come", documents);
     if (uploadedFile) {
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);

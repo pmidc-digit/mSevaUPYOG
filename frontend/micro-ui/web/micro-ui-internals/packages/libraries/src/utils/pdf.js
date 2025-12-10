@@ -1760,52 +1760,41 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
       colSpan: 2,
       alignment: "left",
       fillColor: "#ffffff",
-      border: [false, false, false, false]
+      border: [true, true, true, false] // top + left/right borders
     },
     {}
   ];
 
-  const valueRows = detail.values.map(indData => [
-    {
-      text: indData?.title,
-      style: "header",
-      fontSize: 9,
-      margin: [10, 5, 0, 5],
-      border: [false, false, false, false]
-    },
-    {
-      text: indData?.value && String(indData.value).trim() !== ""
-        ? `${indData.value}`
-        : "",
-      fontSize: 9,
-      margin: [6, 5, 0, 5],
-      border: [false, false, false, false]
-    }
-  ]);
+  const valueRows = detail.values.map((indData, i, arr) => {
+    const isLast = i === arr.length - 1;
+    return [
+      {
+        text: indData?.title,
+        style: "header",
+        fontSize: 9,
+        margin: [10, 5, 0, 5],
+        border: isLast ? [true, false, false, true] : [true, false, false, false]
+        // left border always true, bottom border true only for last row
+      },
+      {
+        text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
+        fontSize: 9,
+        margin: [0, 5, 0, 5],
+        border: isLast ? [false, false, true, true] : [false, false, true, false]
+        // right border always true, bottom border true only for last row
+      }
+    ];
+  });
 
-  const innerTable = {
+  detailsHeaders.push({
     table: {
-      widths: ["*", "*"], // stretch columns
+      widths: [225, 250], // absolute widths
       body: [headerRow, ...valueRows]
     },
     layout: {
       fillColor: function (rowIndex) {
         return rowIndex > 0 && rowIndex % 2 === 1 ? "#f5f5f5" : null;
-      }
-    }
-  };
-
-  // Outer wrapper table
-  detailsHeaders.push({
-    table: {
-      widths: ["*"], // single column full width
-      body: [
-        [
-          innerTable // ✅ put inner table directly, not inside stack
-        ]
-      ]
-    },
-    layout: {
+      },
       hLineWidth: () => 1,
       vLineWidth: () => 1,
       hLineColor: () => "#cccccc",
@@ -1814,6 +1803,7 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
     margin: [10, 10, 10, 10]
   });
 }
+
 
 
 

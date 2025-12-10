@@ -312,17 +312,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             </div>
           </LabelFieldPair>
 
-          <div
-            onClick={() => {
-              const currentStartDate = getValues("startDate");
-              const currentEndDate = getValues("endDate");
-              console.log("currentStartDate", currentStartDate, currentEndDate);
-              console.log("errors", errors);
-            }}
-          >
-            check date
-          </div>
-
           {/* HALL_CODE */}
           <div style={{ marginTop: "20px" }}>
             <CardLabel>

@@ -129,12 +129,12 @@ public class NocQueryBuilder {
 			addToPreparedStatement(preparedStmtList, ids);
 		}
 
-		List<String> ownerIds = criteria.getOwnerIds();
-		if (!CollectionUtils.isEmpty(ownerIds)) {
-			addClauseIfRequired(builder);
-			builder.append(" (noc.accountId IN (").append(createQuery(ownerIds)).append(")) ");
-			addToPreparedStatement(preparedStmtList, ownerIds);
-		}
+//		List<String> ownerIds = criteria.getOwnerIds();
+//		if (!CollectionUtils.isEmpty(ownerIds)) {
+//			addClauseIfRequired(builder);
+//			builder.append(" (noc.accountId IN (").append(createQuery(ownerIds)).append(")) ");
+//			addToPreparedStatement(preparedStmtList, ownerIds);
+//		}
 
 
 		String applicationNo = criteria.getApplicationNo();
@@ -204,6 +204,34 @@ public class NocQueryBuilder {
                         builder.append(" noc.status IN (").append(createQuery(status)).append(")");
                         addToPreparedStatement(preparedStmtList, status);
                 }
+
+		List<String> ownerIds = criteria.getOwnerIds(); // mapped to clu.accountId
+		String createdBy = criteria.getCreatedBy();
+
+		boolean hasOwnerIds  = (ownerIds != null && !ownerIds.isEmpty());
+		boolean hasCreatedBy = (createdBy != null && !createdBy.isEmpty());
+
+		if ((hasOwnerIds || hasCreatedBy) && criteria.getApplicationNo()==null){
+			addClauseIfRequired(builder);
+			builder.append(" ( ");
+
+			boolean wroteOne = false;
+
+			if (hasOwnerIds) {
+				builder.append(" noc.accountId IN (").append(createQuery(ownerIds)).append(") ");
+				addToPreparedStatement(preparedStmtList, ownerIds);
+				wroteOne = true;
+			}
+
+			if (hasCreatedBy) {
+				if (wroteOne) builder.append(" OR ");
+				builder.append(" noc.createdby = ? ");
+				preparedStmtList.add(createdBy);
+			}
+
+			builder.append(" ) ");
+		}
+
 
 		builder.append(" GROUP BY noc.id, noc.tenantid, noc.lastModifiedTime, noc.createdBy, ")
 				.append("noc.lastModifiedBy, noc.createdTime, noc.applicationNo, noc.nocNo, noc.nocType,details.id, details.nocid, details.additionalDetails ");

@@ -396,7 +396,7 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            <PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t}}/>
+            {bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t}}/>}
 
             {/* <div style={{ overflowX: "auto" }}>
                 <CardSubHeader style={{ fontSize: "20px", color: "#3f4351", marginTop: "24px" }}>

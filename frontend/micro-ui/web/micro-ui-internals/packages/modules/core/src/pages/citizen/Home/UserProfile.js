@@ -82,6 +82,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const [selectedCorrespondentState, setSelectedCorrespondentState] = useState()
   const [selectedCorrespondentDistrict, setSelectedCorrespondentDistrict] = useState()
   const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState()
+  const isUserArchitect = window.location.href.includes("citizen") && userInfo?.roles?.some((role) => role.code.includes("BPA_ARCHITECT"));
 
   const getUserInfo = async () => {
     const uuid = userInfo?.uuid;
@@ -105,31 +106,59 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     };
   });
 
-  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState?.code, "BPA", [{ name: "Ulb" }]);
+  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster"}]);
   const uniqueDistricts = useMemo(() => {
-      if (isLoading || !districtList?.BPA?.Ulb?.length) return [];
+      if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
   
-      return [...new Set(districtList.BPA.Ulb.map((item) => item.Districts?.trim()))]
-        .filter(Boolean) // remove null/undefined/empty
-        .sort((a, b) => a.localeCompare(b))
-        .map((district) => ({
-          name: district,
-          code: district,
-        }));
-    }, [isLoading, districtList]);
+      return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedState?.state_code);
+        
+    }, [isLoading, districtList, selectedState]);
 
-    const { data: districtListCorrespondent, isLoading: isLoadingCorrespondent } = Digit.Hooks.useCustomMDMS(selectedState?.code, "BPA", [{ name: "Ulb" }]);
+    // const { data: districtListCorrespondent, isLoading: isLoadingCorrespondent} = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster"}], );
     const uniqueDistrictsCorrespondent = useMemo(() => {
-      if (isLoadingCorrespondent || !districtListCorrespondent?.BPA?.Ulb?.length) return [];
+      if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
   
-      return [...new Set(districtListCorrespondent.BPA.Ulb.map((item) => item.Districts?.trim()))]
-        .filter(Boolean) // remove null/undefined/empty
-        .sort((a, b) => a.localeCompare(b))
-        .map((district) => ({
-          name: district,
-          code: district,
-        }));
-    }, [isLoadingCorrespondent, districtListCorrespondent]);
+      return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedCorrespondentState?.state_code);
+    }, [isLoading, districtList, selectedCorrespondentState]);
+
+    const { data: StateData, isLoading: isStateLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{name:"StateMaster"}]);
+    const stateOptions = useMemo(() => {
+      if(StateData?.["common-masters"]?.StateMaster?.length > 0){
+        return StateData?.["common-masters"].StateMaster;
+      }else{
+        return [];
+      }
+    }, [StateData, isStateLoading]);
+
+    console.log("uniqueDistricts", uniqueDistrictsCorrespondent, selectedCorrespondentState)
+
+    useEffect(() => {
+      if(typeof selectedState === "string" && stateOptions?.length>0){
+        const state = stateOptions.find((state) => state.state_name === selectedState);
+        console.log("stateData", stateOptions, state, selectedState)
+        setSelectedState(state)
+      }
+      // refetchDistricts();
+    },[selectedState, stateOptions])
+    useEffect(() => {
+      if(typeof selectedCorrespondentState === "string" && stateOptions?.length>0){
+        const state = stateOptions.find((state) => state.state_name === selectedCorrespondentState);
+        setSelectedCorrespondentState(state)
+      }
+      // refetchDistrictsCor()
+    },[selectedCorrespondentState, stateOptions])
+    useEffect(() => {
+      if(typeof selectedCorrespondentDistrict === "string" && uniqueDistrictsCorrespondent?.length>0){
+        const state = uniqueDistrictsCorrespondent.find((state) => state.district_name_english === selectedCorrespondentDistrict);
+        setSelectedCorrespondentDistrict(state)
+      }      
+    },[selectedCorrespondentDistrict, uniqueDistrictsCorrespondent])
+    useEffect(() => {
+      if(typeof selectedDistrict === "string" && uniqueDistricts?.length>0){
+        const state = uniqueDistricts.find((state) => state.district_name_english === selectedDistrict);
+        setSelectedDistrict(state)
+      }
+    },[selectedDistrict, uniqueDistricts])
   
 
   useEffect(() => {
@@ -144,23 +173,14 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     });
     setDob(userDetails?.dob)
     setPermanentAddress(userDetails?.permanentAddress)
-    setSelectedDistrict({
-      name: userDetails?.permanentCity,
-      code: userDetails?.permanentCity
-    })
+    setSelectedDistrict(userDetails?.permanentDistrict)
     setPinCode(userDetails?.permanentPinCode)
     setPinCodeCorrespondent(userDetails?.correspondencePinCode)
-    setSelectedCorrespondentDistrict({
-      name: userDetails?.correspondenceCity,
-      code: userDetails?.correspondenceCity,
-    })
+    setSelectedCorrespondentDistrict(userDetails?.correspondenceDistrict)
     setCorrespondenceAddress(userDetails?.correspondenceAddress)
-    if(userDetails?.correspondenceState){
-      setSelectedCorrespondentState(userDetails?.correspondenceState)
-    }
-    if(userDetails?.permanentState){
-      setSelectedState(userDetails?.permanentState)
-    }
+    setSelectedCorrespondentState(userDetails?.correspondenceState)    
+    setSelectedState(userDetails?.permanentState)
+    
     if(userDetails?.isAddressSame){
       setIsAddressSame(userDetails?.isAddressSame)
     }
@@ -264,13 +284,13 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         emailId: email,
         photo: profilePic,
         permanentAddress: PermanentAddress,
-        permanentCity: selectedDistrict?.name,
+        permanentDistrict: selectedDistrict?.district_name_english,
         permanentPinCode: pinCode,
         correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-        correspondenceCity: isAddressSame ? selectedDistrict?.name : selectedCorrespondentDistrict?.name,
+        correspondenceDistrict: isAddressSame ? selectedDistrict?.district_name_english : selectedCorrespondentDistrict?.district_name_english,
         correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-        correspondenceState: isAddressSame ? selectedState?.name : selectedCorrespondentState?.name,
-        permanentState: selectedState?.name,
+        correspondenceState: isAddressSame ? selectedState?.state_name : selectedCorrespondentState?.state_name,
+        permanentState: selectedState?.state_name,
         isAddressSame: isAddressSame
       };
 
@@ -319,7 +339,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_ADDRESS_REQUIRED") });
         }
 
-        if (!requestData.permanentCity || typeof requestData.permanentCity !== "string") {
+        if (!requestData.permanentDistrict || typeof requestData.permanentDistrict !== "string") {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PERMANENT_CITY_REQUIRED") });
         }
 
@@ -339,7 +359,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_CORRESPONDENCE_PINCODE_INVALID") });
         }
 
-        if (!requestData.isAddressSame && (!requestData.correspondenceCity || typeof requestData.correspondenceCity !== "string")) {
+        if (!requestData.isAddressSame && (!requestData.correspondenceDistrict || typeof requestData.correspondenceDistrict !== "string")) {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_CORRESPONDENCE_CITY_REQUIRED") });
         }
 
@@ -488,21 +508,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     }
   }
 
-  const stateOptions = useMemo(() => {
-      return [{ code: "pb", name: "Punjab", i18Code: "Punjab" }];
-  }, []);
 
-  useEffect(() => {
-    if(stateOptions?.length > 0){
-      setSelectedState(stateOptions?.[0])
-    }
-  }, [stateOptions])
 
-  useEffect(() => {
-    if(stateOptions?.length > 0){
-      setSelectedCorrespondentState(stateOptions?.[0])
-    }
-  }, [stateOptions])
 
   const getThumbnails = async (ids, tenantId) => {
     const res = await Digit.UploadServices.Filefetch(ids, tenantId);
@@ -625,7 +632,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                       type: "tel",
                       title: t("CORE_COMMON_PROFILE_NAME_ERROR_MESSAGE"),
                     })}
-                    disable={editScreen}
+                    disable={editScreen || isUserArchitect}
                   />
                 </div>
               </LabelFieldPair>
@@ -687,7 +694,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 <div>
                   <Dropdown
                     t={t}
-                    optionKey="code"
+                    optionKey="state_name"
                     // isMandatory={config.isMandatory}
                     option={stateOptions}
                     selected={selectedState}
@@ -703,7 +710,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
                 <Dropdown
                   t={t}
-                  optionKey="code"
+                  optionKey="district_name_english"
                   // isMandatory={config.isMandatory}
                   // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
                   option={uniqueDistricts}
@@ -759,7 +766,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
               <div>
                 <Dropdown
                   t={t}
-                  optionKey="code"
+                  optionKey="state_name"
                   // isMandatory={config.isMandatory}
                   option={stateOptions}
                   selected={isAddressSame ? selectedState : selectedCorrespondentState}
@@ -774,7 +781,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
                 <Dropdown
                   t={t}
-                  optionKey="code"
+                  optionKey="district_name_english"
                   // isMandatory={config.isMandatory}
                   // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
                   option={uniqueDistrictsCorrespondent}

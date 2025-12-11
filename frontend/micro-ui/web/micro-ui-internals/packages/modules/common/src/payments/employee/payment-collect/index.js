@@ -23,6 +23,7 @@ export const CollectPayment = (props) => {
 
   const { path: currentPath } = useRouteMatch();
   let { consumerCode, businessService } = useParams();
+  console.log("businessService", businessService);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const search = useLocation().search;
   if (window.location.href.includes("ISWSAPP")) consumerCode = new URLSearchParams(search).get("applicationNumber");
@@ -30,6 +31,9 @@ export const CollectPayment = (props) => {
 
   const { data: paymentdetails, isLoading } = Digit.Hooks.useFetchPayment({ tenantId: tenantId, consumerCode, businessService });
   const bill = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
+
+  console.log("bill===", bill);
+
   const { data: applicationData } = Digit.Hooks.fsm.useSearch(
     tenantId,
     { applicationNos: consumerCode },
@@ -333,14 +337,18 @@ export const CollectPayment = (props) => {
     payerName: bill?.payerName || formState?.payerName || "",
   });
 
+  console.log("ModuleWorkflow", ModuleWorkflow);
+
   const getFormConfig = () => {
+    const isGCService = businessService?.startsWith("GC");
+
     if (
       BillDetailsFormConfig({ consumerCode, businessService }, t)[
         ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
       ] ||
       ModuleWorkflow ||
       businessService === "TL" ||
-      businessService.includes("ONE_TIME_FEE")
+      (businessService.includes("ONE_TIME_FEE") && !bill?.totalAmount)
     ) {
       config.splice(0, 1);
     }

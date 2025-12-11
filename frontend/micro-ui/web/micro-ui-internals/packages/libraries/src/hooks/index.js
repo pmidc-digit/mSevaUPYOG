@@ -417,6 +417,7 @@ import useGCInbox from "./gc/useInbox";
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
 import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile } from "./obps/useCLUSearchApplication";
 import useCLUInbox from "./obps/useCLUInbox";
+import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
 
 const pgr = {
   useComplaintDetails,
@@ -541,6 +542,7 @@ const pt = {
   useGenericViewProperty,
   useRatingAndFeedbackMDMS,
   useServiceSearchCF,
+  useLudhianaPropertSearch
 };
 const dss = {
   useMDMS: useDssMdms,

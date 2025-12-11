@@ -105,9 +105,9 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
     let license = data;
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
-    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentCity;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
     const permanentAddress = address
-    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim().split(/\s+/);
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
 
     let name = "";
     let middleName = "";
@@ -158,13 +158,13 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
           Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
           dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
           SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
-          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
           PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
         },
         LicneseType: {
           LicenseType: {
-            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.split(".")[0]}`,
-            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.split(".")[0]}`],
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
             tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
           },
           ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
@@ -197,9 +197,9 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
     let license = data;
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
-    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentCity;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
     const permanentAddress = address
-    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim().split(/\s+/);
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
 
     let name = "";
     let middleName = "";
@@ -250,13 +250,13 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
           Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
           dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
           SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
-          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceCity,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
           PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
         },
         LicneseType: {
           LicenseType: {
-            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.split(".")[0]}`,
-            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.split(".")[0]}`],
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
             tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
           },
           ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
@@ -423,7 +423,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
                 keyValue={t("BPA_LICENSE_TYPE")}
                 note={t(`TRADELICENSE_TRADETYPE_${application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`)}
               />
-              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") && (
+              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT") && (
                 <KeyNote keyValue={t("BPA_COUNCIL_OF_ARCH_NO_LABEL")} note={application?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo} />
               )}
               <KeyNote keyValue={t("BPA_APPLICANT_NAME_LABEL")} note={application?.tradeLicenseDetail?.owners?.[0]?.name} />
@@ -468,7 +468,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
                   />
                 )}
 
-                {application.status === "APPROVED" ? (
+                {(application.status === "APPROVED" && !application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT")) ? (
                   <React.Fragment>
                     {/* <SubmitBar
                       label={t("BPA_PROFESSIONAL_UPDATE")}

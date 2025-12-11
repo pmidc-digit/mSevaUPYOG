@@ -432,6 +432,91 @@ const jsPdfGeneratorBPAREG = async ({
   downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
 };
 
+
+const jsPdfGeneratorNewBPAREG = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  t = (text) => text,
+  imageURL,
+}) => {
+  const emailLeftMargin =
+    email?.length <= 15
+      ? 190
+      : email?.length <= 20
+      ? 150
+      : email?.length <= 25
+      ? 130
+      : email?.length <= 30
+      ? 90
+      : email?.length <= 35
+      ? 50
+      : email?.length <= 40
+      ? 10
+      : email?.length <= 45
+      ? 0
+      : email?.length <= 50
+      ? -20
+      : email?.length <= 55
+      ? -70
+      : email?.length <= 60
+      ? -100
+      : -60;
+
+  const baseUrl = window.location.origin;
+  
+  const module = applicationNumber.split("-")[1];
+  const splitURL = imageURL.split("filestore")?.[1];
+
+  const base64Image = await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`);
+
+  const dd = {
+    background: [
+      {
+        image: AcknowledgmentPage,
+        width: 595,
+        height: 842,
+      },
+    ],
+    margin: [10, 10, 10, 10],
+
+    header: {},
+
+    footer: function (currentPage, pageCount) {
+      return {
+        columns: [{ text: `Page ${currentPage}`, alignment: "right", margin: [0, -17, 50, 0], fontSize: 11, color: "#6f777c", font: "Hind" }],
+      };
+    },
+    content: [
+      ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createContent(details, applicationNumber, base64Image, phoneNumber, logo, tenantId, breakPageLimit),
+      {
+        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+        font: "Hind",
+        fontSize: 11,
+        color: "#6f777c",
+        margin: [10, 10],
+      },
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 0, 20, 0],
+    },
+  };
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+};
+
 /**
  * Util function that can be used
  * to download WS connection acknowledgement pdfs
@@ -637,6 +722,7 @@ export default {
   generate: jsPdfGenerator,
   generateNDC: jsPdfGeneratorNDC,
   generateBPAREG: jsPdfGeneratorBPAREG,
+  generateNewBPAREG: jsPdfGeneratorNewBPAREG,
   generatev1: jsPdfGeneratorv1,
   generateModifyPdf: jsPdfGeneratorForModifyPDF,
   generateBillAmendPDF,
@@ -1479,13 +1565,13 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
           {
             text: indData?.title,
             style: "header",
-            fontSize: 10,
-            margin: [10, 0, 0, 0]
+            fontSize: 9,
+            margin: [10, -2, 0, -2]
           },
           {
             text: indData?.value && indData?.value?.trim() !== "" ? `: ${indData?.value}` : "",
-            fontSize: 10,
-            margin: [6, 0, 0, 0] 
+            fontSize: 9,
+            margin: [6, -2, 0, -2] 
           }
         ]);
 

@@ -37,6 +37,7 @@ const Urls = {
 
   UserSearch: "/user/_search",
   UserLogout: "/user/_logout",
+  UserCreate: "/user/users/_createnovalidate",
 
   Shortener: "/egov-url-shortening/shortener",
 
@@ -93,6 +94,7 @@ const Urls = {
     cfsearch: "/service-request/service/v1/_search",
     defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
     getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
+    ludhianaSearch: "/property-services/api/fetch"
   },
 
   dss: {

@@ -143,13 +143,13 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
     console.log("window.innerWidth", window.innerWidth)
 
     useEffect(() => {
-        if (menuList && formData?.cpt?.details?.address?.locality
+        if (menuList && propertyDetails?.Properties?.[0]?.address?.locality
             //  && !formData?.createdResponse?.additionalDetails
         ) {
             const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
             let ward = {}
             const zone = boundary?.children?.find(item => item?.children?.some((children) => {
-                if (children?.children?.some(child => child?.code === formData?.cpt?.details?.address?.locality?.code)) {
+                if (children?.children?.some(child => child?.code === propertyDetails?.Properties?.[0]?.address?.locality?.code)) {
                     ward = children
                     return true
                 } else {
@@ -158,15 +158,30 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
             }));
             dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], zonalMapping: { zone, ward } }));
         }
-    }, [menuList, formData?.cpt?.details?.address?.locality]);
+    }, [menuList, propertyDetails?.Properties?.[0]?.address?.locality]);
 
     
     useEffect(() => {
-        if(propertyDetails?.Properties?.length > 0){
-            dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails?.Properties?.[0], id: propertyDetails?.Properties?.[0]?.propertyId }));
-            closeModal();
+        if (menuList && (propertyDetails?.Properties?.length > 0)) {
+            if (propertyDetails?.Properties?.[0]?.address?.locality) {
+                const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
+                let ward = {}
+                const zone = boundary?.children?.find(item => item?.children?.some((children) => {
+                    if (children?.children?.some(child => child?.code === propertyDetails?.Properties?.[0]?.address?.locality?.code)) {
+                        ward = children
+                        return true
+                    } else {
+                        return false
+                    }
+                }));
+                dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails?.Properties?.[0], id: propertyDetails?.Properties?.[0]?.propertyId, zonalMapping: { zone, ward } }));
+                closeModal();
+            } else {
+                dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails?.Properties?.[0], id: propertyDetails?.Properties?.[0]?.propertyId }));
+                closeModal();
+            }
         }
-    }, [propertyDetails]);
+    }, [menuList, propertyDetails]);
 
 
     const searchProperty = async () => {        

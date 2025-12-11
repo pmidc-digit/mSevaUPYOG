@@ -109,8 +109,9 @@ module.exports = function (app) {
     "/layout-services",
     "/adv-services",
     "/clu-services",
-    "/clu-calculator",,
-    "/layout-calculator"
+    "/clu-calculator",
+    "/layout-calculator",
+    "/gc-services",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

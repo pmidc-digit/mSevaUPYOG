@@ -45,6 +45,9 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
 
 
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: null});
+  // React.useEffect(() => {
+  //   setFilterFormValue("assignee", "ASSIGNED_TO_ME");
+  // }, []);
   return <>
     <FilterFormField>
       <Controller

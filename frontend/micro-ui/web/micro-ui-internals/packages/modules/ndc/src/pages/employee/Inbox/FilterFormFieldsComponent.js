@@ -39,7 +39,6 @@ const FilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTyp
     }
   };
 
-  console.log("status===", statuses);
   return (
     <>
       <FilterFormField>

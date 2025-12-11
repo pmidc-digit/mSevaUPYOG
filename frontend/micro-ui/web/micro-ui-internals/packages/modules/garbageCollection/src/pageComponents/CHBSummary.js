@@ -18,33 +18,19 @@ import { useTranslation } from "react-i18next";
 import CHBDocument from "../components/ChallanDocument";
 
 function CHBSummary({ formData, goNext, onGoBack }) {
-  const { pathname: url } = useLocation();
   const { t } = useTranslation();
-  const history = useHistory();
   const menuRef = useRef();
-  const dispatch = useDispatch();
-  const mutateScreen = url.includes("/property-mutate/");
   let user = Digit.UserService.getUser();
-
-  const columns = [
-    { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
-    { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
-    { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
-    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
-    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
-  ];
-
   let docs = formData?.documents?.documents?.documents;
 
-  const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.[0]?.bookingNo;
+  console.log("formData", formData);
+
+  const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.applicationNo;
 
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
-  const isCitizen = window.location.href.includes("citizen");
-
-  const [getData, setData] = useState();
   const [displayMenu, setDisplayMenu] = useState(false);
 
   const closeMenu = () => {
@@ -56,7 +42,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: appId,
-    moduleCode: "chb-services",
+    moduleCode: "NewGC",
   });
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -107,23 +93,6 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     color: "#333",
   };
 
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-  };
-
-  const documentCardStyle = {
-    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
-    minWidth: "200px", // keeps it from shrinking too small
-    maxWidth: "250px", // prevents oversized stretching on big screens
-    backgroundColor: "#fdfdfd",
-    padding: "0.75rem",
-    border: "1px solid #e0e0e0",
-    borderRadius: "6px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-  };
-
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
@@ -133,15 +102,6 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     </div>
   );
 
-  const slotlistRows =
-    formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
-      communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
-      hallName: formData?.venueDetails?.[0]?.communityHallName,
-      hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate,
-      bookingStatus: t(`WF_CHB_${slot?.status}`),
-    })) || [];
-
   return (
     <div style={pageStyle}>
       <h2 style={headingStyle}>{t("Application Summary")}</h2>
@@ -149,60 +109,27 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       {/* Property Details Section */}
       <div style={sectionStyle}>
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
-
-        {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
-        {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
-        {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
-        {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.venueDetails?.[0]?.address?.addressLine1)}
+        {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.ownerDetails?.name)}
+        {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.ownerDetails?.mobileNumber)}
+        {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.ownerDetails?.emailId)}
+        {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.ownerDetails?.address)}
       </div>
 
-      {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
-      <StatusTable>
-        <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={formData?.venueDetails?.[0]?.specialCategory?.category || t("CS_NA")} />
-        <Row className="border-none" label={t("CHB_PURPOSE")} text={formData?.venueDetails?.[0]?.purpose?.purpose || t("CS_NA")} />
-        <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={formData?.venueDetails?.[0]?.purposeDescription || t("CS_NA")} />
-      </StatusTable> */}
-
       <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
-
-        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.ownerDetails?.hallsBookingApplication?.specialCategory?.category)}
-        {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose?.name)}
-        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.ownerDetails?.hallsBookingApplication?.purposeDescription)}
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("PT_DETAILS")}</CardSubHeader>
+        {renderLabel(t("NDC_MSG_PROPERTY_LABEL"), formData?.venueDetails?.propertyId)}
+        {renderLabel(t("NDC_MSG_PROPERTY_TYPE_LABEL"), formData?.venueDetails?.propertyType)}
+        {renderLabel(t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE"), formData?.venueDetails?.plotSize)}
+        {renderLabel(t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_ADDRESS"), formData?.venueDetails?.location)}
       </div>
 
-      {/* Documents Section */}
-      {/* Documents Section */}
-      {/* <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
       <div style={sectionStyle}>
-        {docs?.length > 0 ? (
-          <div style={documentsContainerStyle}>
-            {docs?.map((doc, index) => (
-              <div key={index} style={documentCardStyle}>
-                <CHBDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-        )}
-      </div> */}
-
-      <ApplicationTable
-        t={t}
-        data={slotlistRows}
-        columns={columns}
-        getCellProps={(cellInfo) => ({
-          style: {
-            minWidth: "150px",
-            padding: "10px",
-            fontSize: "16px",
-            paddingLeft: "20px",
-          },
-        })}
-        isPaginationRequired={false}
-        totalRecords={slotlistRows.length}
-      />
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+        {renderLabel(t("GC_CONNECTION_TYPE"), formData?.venueDetails?.connectionCategory)}
+        {renderLabel(t("GC_FREQUENCY"), formData?.venueDetails?.frequency)}
+        {renderLabel(t("GC_WASTE_TYPE"), formData?.venueDetails?.typeOfWaste)}
+        {renderLabel(t("GC_LOCATION"), formData?.venueDetails?.location)}
+      </div>
 
       <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
@@ -222,7 +149,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       <ActionBar>
         <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
         {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"GC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>

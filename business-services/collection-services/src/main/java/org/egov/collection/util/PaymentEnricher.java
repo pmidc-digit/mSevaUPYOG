@@ -197,10 +197,15 @@ public class PaymentEnricher {
 		Payment payment = paymentRequest.getPayment();
 		String paymentMode = payment.getPaymentMode().toString();
 
-		if (paymentMode.equalsIgnoreCase(CASH.name()) ||paymentMode.equalsIgnoreCase(BBPS.name()) ) {
+		if (paymentMode.equalsIgnoreCase(CASH.name())  ) {
 			String transactionId = idGenRepository.generateTransactionNumber(paymentRequest.getRequestInfo(),
 					payment.getTenantId());
 			payment.setTransactionNumber(transactionId);
+		}
+		
+		if (paymentMode.equalsIgnoreCase(BBPS.name())  ) {
+			payment.setInstrumentNumber(paymentRequest.getPayment().getInstrumentNumber());
+			payment.setInstrumentDate(paymentRequest.getPayment().getInstrumentDate());;
 		}
 		if (paymentMode.equalsIgnoreCase(ONLINE.name()) || paymentMode.equalsIgnoreCase(CARD.name()) ||
 				paymentMode.equalsIgnoreCase(ONLINE_NEFT.name()) || paymentMode.equalsIgnoreCase(ONLINE_RTGS.name()))

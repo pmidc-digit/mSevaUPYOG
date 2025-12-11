@@ -113,9 +113,12 @@ public class CalculationService {
 			if (taxList.contains(t.getTaxType()) && t.isActive()) {
 				if (t.getType().equals("%")) {
 					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
+					System.out.println("-%-amout:--"+amount);
 				} else if(!t.getTaxType().equals(RLConstants.PENALTY_FEE_RL_APPLICATION)) {
 					amount = new BigDecimal(t.getAmount());
+					System.out.println("-v-amout:--"+amount);
 				}
+				System.out.println("--amout:--"+amount);
 				if (!amount.equals(BigDecimal.ZERO)) {
 					demandDetails.add(DemandDetail.builder().taxAmount(amount)
 							.taxHeadMasterCode(t.getTaxType()).tenantId(tenantId)
@@ -123,6 +126,6 @@ public class CalculationService {
 				}
 			}
 		});
-		System.out.println("aaaaaaaaaaaaaaaa----------"+demandDetails.size());
+		System.out.println("--d-----------------------"+demandDetails.size());
 	}
 }

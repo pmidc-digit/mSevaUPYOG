@@ -25,7 +25,7 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 
 	private static final String SEARCH_BASE_QUERY = "SELECT * FROM eg_rl_allotment ";
 
-	private static final String BASE_QUERY = "SELECT * "
+	private static final String BASE_QUERY = "SELECT al.* "
 	        + "FROM eg_rl_allotment al\r\n"
 			+ "INNER JOIN eg_rl_owner_info ap ON al.id = ap.allotment_id\r\n";
 	
@@ -78,7 +78,7 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 //			 GROUP BY al.id ORDER BY al.created_time DESC
 			long limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), config.getMaxSearchLimit()) : config.getDefaultLimit();
 			long offset = criteria.getOffset() != null ? criteria.getOffset() : config.getDefaultOffset();
-
+			subQuery.append(GROUPBY_QUERY);
 			subQuery.append(" LIMIT ? OFFSET ? ");
 			subQueryParams.add(limit);
 			subQueryParams.add(offset);

@@ -111,10 +111,11 @@ public class CalculationService {
 			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;
 			if (taxList.contains(t.getTaxType()) && t.isActive()) {
-				if (t.getType().equals("%")) {
+				System.out.println("t.getType().contains(\"%\")"+t.getType());
+				if (t.getType().contains("%")&&!(t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION))) {
 					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
 					System.out.println("-%-amout:--"+amount);
-				} else if(!t.getTaxType().equals(RLConstants.PENALTY_FEE_RL_APPLICATION)) {
+				} else if(!t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION)) {
 					amount = new BigDecimal(t.getAmount());
 					System.out.println("-v-amout:--"+amount);
 				}

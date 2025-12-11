@@ -121,8 +121,8 @@ public class AllotmentService {
 			allotmentRequest.getAllotment().setStatus("ACTIVE");
 		}
 		String demandId = null;
-		boolean isApprove = allotmentRequest.getAllotment().getWorkflow().getAction().equals("APPROVE");
-		if (isApprove && allotmentDetails.getApplicationType().equals(RLConstants.NEW_RL_APPLICATION)) {
+		boolean isApprove = allotmentRequest.getAllotment().getWorkflow().getAction().contains(RLConstants.APPROVED_RL_APPLICATION);
+		if (isApprove && allotmentDetails.getApplicationType().contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
 				demandId = demandService.createDemand(true, allotmentRequest).get(0).getId();
 			} catch (Exception e) {

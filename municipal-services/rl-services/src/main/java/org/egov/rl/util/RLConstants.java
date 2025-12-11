@@ -11,6 +11,8 @@ public class RLConstants {
     public static final String NEW_RL_APPLICATION = "NEW";
 
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";
+	
+    public static final String APPROVED_RL_APPLICATION = "APPROVE";
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
 

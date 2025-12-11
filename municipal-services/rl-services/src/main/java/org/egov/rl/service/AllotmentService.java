@@ -109,7 +109,8 @@ public class AllotmentService {
 	}
 
 	public AllotmentDetails allotmentUpdate(AllotmentRequest allotmentRequest) {
-
+        String action=allotmentRequest.getAllotment().getWorkflow().getAction();
+        String applicationType=allotmentRequest.getAllotment().getApplicationType();
 		allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
 		userService.createUser(allotmentRequest);
@@ -121,8 +122,8 @@ public class AllotmentService {
 			allotmentRequest.getAllotment().setStatus("ACTIVE");
 		}
 		String demandId = null;
-		boolean isApprove = allotmentRequest.getAllotment().getWorkflow().getAction().contains(RLConstants.APPROVED_RL_APPLICATION);
-		if (isApprove && allotmentDetails.getApplicationType().contains(RLConstants.NEW_RL_APPLICATION)) {
+		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
+		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
 				demandId = demandService.createDemand(true, allotmentRequest).get(0).getId();
 			} catch (Exception e) {

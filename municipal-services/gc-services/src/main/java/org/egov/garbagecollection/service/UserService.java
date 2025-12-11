@@ -1,5 +1,8 @@
 package org.egov.garbagecollection.service;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -45,50 +48,249 @@ public class UserService {
 	 * @param request WaterConnectionRequest
 	 */
 
+
+
+// Mask check
+	private boolean isMasked(String s) {
+		return s != null && s.contains("*");
+	}
+
+	// Skip set: identity & audit fields ko touch na karo
+
+	private static final Set<String> NON_UPDATABLE = new HashSet<>(Arrays.asList(
+			"id", "uuid", "tenantId", "userName",
+			"createdBy", "createdDate", "lastModifiedBy", "lastModifiedDate"
+	));
+
+
+	// Generic copy: incoming -> target; only non-null, non-masked, and different values
+	private void copyNonNullNonMasked(Object incoming, Object target) {
+		for (Field field : incoming.getClass().getDeclaredFields()) {
+			int mod = field.getModifiers();
+			if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) continue;
+			if (NON_UPDATABLE.contains(field.getName())) continue;
+
+			field.setAccessible(true);
+			try {
+				Object newValue = field.get(incoming);
+				Object oldValue = field.get(target);
+
+				// Ignore nulls and masked strings
+				if (newValue == null) continue;
+				if (newValue instanceof String && isMasked((String) newValue)) continue;
+
+				// Only set if changed
+				if (!Objects.equals(newValue, oldValue)) {
+					field.set(target, newValue);
+				}
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException("Field access error: " + field.getName(), e);
+			}
+		}
+	}
+
+
+	private List<Role> cloneRoles(List<Role> src) {
+		if (src == null) return null;
+		List<Role> copy = new ArrayList<>(src.size());
+		for (Role r : src) {
+			if (r == null) {
+				copy.add(null);
+			} else {
+				Role rc = new Role();
+				rc.setCode(r.getCode());
+				rc.setName(r.getName());
+				copy.add(rc);
+			}
+		}
+		return copy;
+	}
+
+	private OwnerInfo cloneOwnerInfo(OwnerInfo src) {
+		if (src == null) return null;
+
+		OwnerInfo copy = new OwnerInfo();
+
+		// Primitive & String fields (shallow copy is fine for Strings)
+		copy.setId(src.getId());
+		copy.setUuid(src.getUuid());
+		copy.setTenantId(src.getTenantId());
+		copy.setUserName(src.getUserName());
+
+		copy.setName(src.getName());
+		copy.setMobileNumber(src.getMobileNumber());
+		copy.setEmailId(src.getEmailId());
+		copy.setFatherOrHusbandName(src.getFatherOrHusbandName());
+		copy.setRelationship(src.getRelationship());
+
+		copy.setType(src.getType());
+		copy.setStatus(src.getStatus());
+		copy.setActive(src.getActive());
+
+		// Nested object: deep clone
+		copy.setCorrespondenceAddress(src.getCorrespondenceAddress());
+
+		// Roles: deep copy list & elements (defensive copy)
+		copy.setRoles(cloneRoles(src.getRoles()));
+
+		// Audit fields (if present) — usually server-managed; copy only if needed
+		// copy.setCreatedBy(src.getCreatedBy());
+		// copy.setCreatedDate(src.getCreatedDate());
+		// copy.setLastModifiedBy(src.getLastModifiedBy());
+		// copy.setLastModifiedDate(src.getLastModifiedDate());
+
+		// If OwnerInfo has other nested fields (documents, etc.), clone them similarly.
+
+		return copy;
+	}
+
+
+
+	// Roles: ensure CITIZEN present without dropping existing roles
+	private void ensureCitizenRole(OwnerInfo user, Role citizenRole) {
+		List<Role> roles = user.getRoles();
+		if (roles == null) {
+			user.setRoles(new ArrayList<>(Collections.singletonList(citizenRole)));
+			return;
+		}
+		boolean hasCitizen = roles.stream().anyMatch(r -> r.getCode().equalsIgnoreCase(citizenRole.getCode()));
+		if (!hasCitizen) roles.add(citizenRole);
+	}
+
+
+
 	public void createUser(GarbageConnectionRequest request) {
-		Role role = getCitizenRole(request.getGarbageConnection().getTenantId());
+		Role citizen = getCitizenRole(request.getGarbageConnection().getTenantId());
+
 		if (request.getGarbageConnection().getConnectionHolders() == null) {
 			throw new CustomException("INVALID USER", "The applications owners list is empty");
 		}
-		request.getGarbageConnection().getConnectionHolders().forEach(owner ->
-		{
+
+		request.getGarbageConnection().getConnectionHolders().forEach(owner -> {
+
 			if (owner.getUuid() == null) {
-				addUserDefaultFields(request.getGarbageConnection().getTenantId(), role, owner);
+				// CREATE defaults only on create
+				addUserDefaultFields(request.getGarbageConnection().getTenantId(), citizen, owner);
 
 				UserDetailResponse existingUserResponse = userExists(owner, request.getRequestInfo());
 
 				if (!existingUserResponse.getUser().isEmpty()) {
+					// ---------- EXISTING USER FOUND: DO UPDATE ----------
 					OwnerInfo existingUser = existingUserResponse.getUser().get(0);
-					log.info("User already exists with UUID: " + existingUser.getUuid());
+
+					// Preserve identifiers
 					owner.setUuid(existingUser.getUuid());
-					setOwnerFields(owner, existingUserResponse, request.getRequestInfo());
+					owner.setId(existingUser.getId());
+
+					// Build merged object: start from existing, overlay incoming (non-null & non-masked)
+					OwnerInfo merged = cloneOwnerInfo(existingUser); // or use existingUser directly
+					copyNonNullNonMasked(owner, merged);
+					ensureCitizenRole(merged, citizen); // don’t drop roles
+
+					// Update call
+					StringBuilder updateUri = new StringBuilder(configuration.getUserHost())
+							.append(configuration.getUserContextPath())
+							.append(configuration.getUserUpdateEndPoint());
+
+					UserDetailResponse updateResp =
+							userCall(new CreateUserRequest(request.getRequestInfo(), merged), updateUri);
+
+					if (updateResp.getUser().get(0).getUuid() == null) {
+						throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");
+					}
+
+					log.info("User updated --> " + updateResp.getUser().get(0).getUuid());
+					setOwnerFields(owner, updateResp, request.getRequestInfo());
+
 				} else {
-//						  UserResponse userResponse = userExists(owner,requestInfo);
-					StringBuilder uri = new StringBuilder(configuration.getUserHost())
-							.append(configuration.getUserContextPath()).append(configuration.getUserCreateEndPoint());
-					setUserName(owner);
-					UserDetailResponse userResponse = userCall(new CreateUserRequest(request.getRequestInfo(), owner), uri);
-					if (userResponse.getUser().get(0).getUuid() == null) {
+					// ---------- CREATE ----------
+					StringBuilder createUri = new StringBuilder(configuration.getUserHost())
+							.append(configuration.getUserContextPath())
+							.append(configuration.getUserCreateEndPoint());
+
+					setUserName(owner); // use mobile or UUID fallback
+					UserDetailResponse createResp =
+							userCall(new CreateUserRequest(request.getRequestInfo(), owner), createUri);
+
+					if (createResp.getUser().get(0).getUuid() == null) {
 						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
 					}
-					log.info("owner created --> " + userResponse.getUser().get(0).getUuid());
-					setOwnerFields(owner, userResponse, request.getRequestInfo());
+
+					log.info("Owner created --> " + createResp.getUser().get(0).getUuid());
+					setOwnerFields(owner, createResp, request.getRequestInfo());
 				}
+
 			} else {
+				// ---------- UPDATE BY UUID ----------
 				UserDetailResponse userResponse = userExists(owner, request.getRequestInfo());
 				if (userResponse.getUser().isEmpty())
 					throw new CustomException("INVALID USER", "The uuid " + owner.getUuid() + " does not exists");
-				StringBuilder uri = new StringBuilder(configuration.getUserHost())
-						.append(configuration.getUserContextPath()).append(configuration.getUserUpdateEndPoint());
-				OwnerInfo ownerInfo = new OwnerInfo();
-				ownerInfo.addUserDetail(owner);
-				addNonUpdatableFields(ownerInfo, userResponse.getUser().get(0));
-				userResponse = userCall(new CreateUserRequest(request.getRequestInfo(), ownerInfo), uri);
-				setOwnerFields(owner, userResponse, request.getRequestInfo());
+
+				OwnerInfo existingUser = userResponse.getUser().get(0);
+
+				// Merge incoming fields
+				OwnerInfo merged = cloneOwnerInfo(existingUser); // optional helper; or use existingUser directly
+				copyNonNullNonMasked(owner, merged);
+				ensureCitizenRole(merged, citizen);
+
+				StringBuilder updateUri = new StringBuilder(configuration.getUserHost())
+						.append(configuration.getUserContextPath())
+						.append(configuration.getUserUpdateEndPoint());
+
+				UserDetailResponse updateResp =
+						userCall(new CreateUserRequest(request.getRequestInfo(), merged), updateUri);
+
+				setOwnerFields(owner, updateResp, request.getRequestInfo());
 			}
 		});
-
 	}
+
+
+
+//	public void createUser(GarbageConnectionRequest request) {
+//		Role role = getCitizenRole(request.getGarbageConnection().getTenantId());
+//		if (request.getGarbageConnection().getConnectionHolders() == null) {
+//			throw new CustomException("INVALID USER", "The applications owners list is empty");
+//		}
+//		request.getGarbageConnection().getConnectionHolders().forEach(owner ->
+//		{
+//			if (owner.getUuid() == null) {
+//				addUserDefaultFields(request.getGarbageConnection().getTenantId(), role, owner);
+//
+//				UserDetailResponse existingUserResponse = userExists(owner, request.getRequestInfo());
+//
+//				if (!existingUserResponse.getUser().isEmpty()) {
+//					OwnerInfo existingUser = existingUserResponse.getUser().get(0);
+//					log.info("User already exists with UUID: " + existingUser.getUuid());
+//					owner.setUuid(existingUser.getUuid());
+//					setOwnerFields(owner, existingUserResponse, request.getRequestInfo());
+//				} else {
+////						  UserResponse userResponse = userExists(owner,requestInfo);
+//					StringBuilder uri = new StringBuilder(configuration.getUserHost())
+//							.append(configuration.getUserContextPath()).append(configuration.getUserCreateEndPoint());
+//					setUserName(owner);
+//					UserDetailResponse userResponse = userCall(new CreateUserRequest(request.getRequestInfo(), owner), uri);
+//					if (userResponse.getUser().get(0).getUuid() == null) {
+//						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
+//					}
+//					log.info("owner created --> " + userResponse.getUser().get(0).getUuid());
+//					setOwnerFields(owner, userResponse, request.getRequestInfo());
+//				}
+//			} else {
+//				UserDetailResponse userResponse = userExists(owner, request.getRequestInfo());
+//				if (userResponse.getUser().isEmpty())
+//					throw new CustomException("INVALID USER", "The uuid " + owner.getUuid() + " does not exists");
+//				StringBuilder uri = new StringBuilder(configuration.getUserHost())
+//						.append(configuration.getUserContextPath()).append(configuration.getUserUpdateEndPoint());
+//				OwnerInfo ownerInfo = new OwnerInfo();
+//				ownerInfo.addUserDetail(owner);
+//				addNonUpdatableFields(ownerInfo, userResponse.getUser().get(0));
+//				userResponse = userCall(new CreateUserRequest(request.getRequestInfo(), ownerInfo), uri);
+//				setOwnerFields(owner, userResponse, request.getRequestInfo());
+//			}
+//		});
+//
+//	}
 
 	private void addNonUpdatableFields(User user, User userFromSearchResult){
 		user.setUserName(userFromSearchResult.getUserName());

@@ -106,20 +106,15 @@ public class CalculationService {
 				RLConstants.RL_MASTER_MODULE_NAME);
 		List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION,
 				RLConstants.PENALTY_FEE_RL_APPLICATION, RLConstants.COWCASS_FEE_RL_APPLICATION);
-
 		taxRate.stream().forEach(t -> {
 			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;
-			if (taxList.contains(t.getTaxType()) && t.isActive()) {
-				System.out.println("t.getType().contains(\"%\")"+t.getType());
+			if (taxList.stream().anyMatch(d->d.equals(t.getTaxType())) && t.isActive()) {
 				if (t.getType().contains("%")&&!(t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION))) {
 					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
-					System.out.println("-%-amout:--"+amount);
 				} else if(!t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION)) {
 					amount = new BigDecimal(t.getAmount());
-					System.out.println("-v-amout:--"+amount);
 				}
-				System.out.println("--amout:--"+amount);
 				if (!amount.equals(BigDecimal.ZERO)) {
 					demandDetails.add(DemandDetail.builder().taxAmount(amount)
 							.taxHeadMasterCode(t.getTaxType()).tenantId(tenantId)

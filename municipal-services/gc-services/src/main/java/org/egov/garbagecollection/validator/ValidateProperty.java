@@ -29,7 +29,7 @@ public class ValidateProperty {
 	 */
 	public void validatePropertyFields(Property property, RequestInfo requestInfo) {
 		if (StringUtils.isEmpty(property.getPropertyId())) {
-			throw new CustomException("INVALID_PROPERTY", "WaterConnection cannot be updated without property Id");
+			throw new CustomException("INVALID_PROPERTY", "GarbageConnection cannot be updated without property Id");
 		}
 
 		JSONObject mdmsResponse=getWnsPTworkflowConfig(requestInfo,property.getTenantId());

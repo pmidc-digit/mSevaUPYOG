@@ -55,7 +55,7 @@ public class ActionValidator {
 		Map<String, String> errorMap = new HashMap<>();
 		if (!workflowService.isStateUpdatable(applicationStatus, businessService)) {
 			if (connection.getId() == null)
-				errorMap.put("INVALID_UPDATE", "Id of waterConnection cannot be null");
+				errorMap.put("INVALID_UPDATE", "Id of garbageConnection cannot be null");
 			if (!CollectionUtils.isEmpty(connection.getDocuments())) {
 				connection.getDocuments().forEach(document -> {
 					if (document.getId() == null)

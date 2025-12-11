@@ -317,7 +317,7 @@ public class EnrichmentService {
 		if (applicationNumbers.size() != 1) {
 			Map<String, String> errorMap = new HashMap<>();
 			errorMap.put("IDGEN_ERROR",
-					"The Id of WaterConnection returned by IdGen is not equal to number of WaterConnection");
+					"The Id of GarbageConnection returned by IdGen is not equal to number of GarbageConnection");
 			throw new CustomException(errorMap);
 		}
 		waterConnection.setApplicationNo(applicationNumbers.get(0));
@@ -439,7 +439,7 @@ public class EnrichmentService {
 				config.getGarbageConnectionIdGenName(), config.getGarbageConnectionIdGenFormat());
 		if (connectionNumbers.size() != 1) {
 			throw new CustomException("IDGEN_ERROR",
-					"The Id of WaterConnection returned by IdGen is not equal to number of WaterConnection");
+					"The Id of GarbageConnection returned by IdGen is not equal to number of GarbageConnection");
 		}
 		request.getGarbageConnection().setConnectionNo(connectionNumbers.get(0));
 	}

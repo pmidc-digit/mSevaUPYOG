@@ -113,7 +113,7 @@ public class PaymentUpdateService {
 							paymentRequest.getRequestInfo());
 					if (CollectionUtils.isEmpty(garbageConnections)) {
 						throw new CustomException("INVALID_RECEIPT",
-								"No waterConnection found for the consumerCode " + criteria.getApplicationNumber());
+								"No garbageConnection found for the consumerCode " + criteria.getApplicationNumber());
 					}
 					Optional<GarbageConnection> connections = garbageConnections.stream().findFirst();
 					GarbageConnection connection = connections.get();
@@ -213,7 +213,7 @@ public class PaymentUpdateService {
 							paymentRequest.getRequestInfo());
 					if (CollectionUtils.isEmpty(waterConnections)) {
 						throw new CustomException("INVALID_RECEIPT",
-								"No waterConnection found for the consumerCode " + paymentDetail.getBill().getConsumerCode());
+								"No garbageConnection found for the consumerCode " + paymentDetail.getBill().getConsumerCode());
 					}
 					Collections.sort(waterConnections, Comparator.comparing(wc -> wc.getAuditDetails().getLastModifiedTime()));
 					long count = waterConnections.stream().count();

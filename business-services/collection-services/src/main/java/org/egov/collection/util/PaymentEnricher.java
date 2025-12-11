@@ -197,7 +197,7 @@ public class PaymentEnricher {
 		Payment payment = paymentRequest.getPayment();
 		String paymentMode = payment.getPaymentMode().toString();
 
-		if (paymentMode.equalsIgnoreCase(CASH.name())  ) {
+		if (paymentMode.equalsIgnoreCase(CASH.name()) ||paymentMode.equalsIgnoreCase(BBPS.name()) ) {
 			String transactionId = idGenRepository.generateTransactionNumber(paymentRequest.getRequestInfo(),
 					payment.getTenantId());
 			payment.setTransactionNumber(transactionId);

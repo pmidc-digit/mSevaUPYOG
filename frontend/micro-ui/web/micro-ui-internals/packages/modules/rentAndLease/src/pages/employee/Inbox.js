@@ -30,7 +30,7 @@ const Inbox = ({
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
   const [isLoader, setIsLoader] = useState(false);
-    const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
+  const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const paginationParams = isMobile
@@ -45,8 +45,7 @@ const Inbox = ({
   //   isMcollectAppChanged,
   // });
 
-
-   const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
+  const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
     ? Digit.Hooks.useNewInboxGeneral({
         tenantId,
         ModuleCode: moduleCode,
@@ -75,7 +74,7 @@ const Inbox = ({
   //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
   // }, [hookLoading, data]);'
 
-  console.log('dataXXXXXX', data)
+  console.log("dataXXXXXX", data);
 
   useEffect(() => {
     async function fetchBills() {
@@ -148,8 +147,9 @@ const Inbox = ({
 
   const handlePageSizeChange = (e) => setPageSize(Number(e.target.value));
 
+  const totalCount = data?.[0]?.totalCount;
 
-  //Todo : do for propert Number 
+  //Todo : do for propert Number
   const getSearchFields = () => [
     { label: t("APPLICATION_NUMBER"), name: "applicationNumber" },
     {
@@ -182,10 +182,19 @@ const Inbox = ({
         />
       );
     } else {
+      console.log("Inbox Render - isInbox:", isInbox);
+      console.log("Inbox Render - data:", data);
+      console.log("Inbox Render - totalCount:", data?.totalCount);
       return (
         <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
+          {isInbox && (
+            <Header>
+              {t("ES_COMMON_INBOX")}
+              {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+            </Header>
+          )}
           <DesktopInbox
+            moduleCode={moduleCode}
             businessService={businessService}
             data={data}
             tableConfig={rest?.tableConfig}
@@ -210,6 +219,8 @@ const Inbox = ({
             totalRecords={data?.totalCount}
             filterComponent={filterComponent}
             isLoader={isLoader}
+            useNewInboxAPI={useNewInboxAPI}
+            EmptyResultInboxComp={"RALEmptyResultInbox"}
           />
         </div>
       );

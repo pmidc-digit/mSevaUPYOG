@@ -8,11 +8,17 @@ import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
 
 const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
-  const { data } = props;
+  const { data, useNewInboxAPI } = props;
   console.log("data", data);
-  console.log('props', props)
+  console.log("props", props);
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
+  const [EmptyInboxComp, setEmptyInboxComp] = useState(() => {
+    const com = Digit.ComponentRegistryService?.getComponent(props.EmptyResultInboxComp);
+    console.log("DesktopInbox - EmptyResultInboxComp prop:", props.EmptyResultInboxComp);
+    console.log("DesktopInbox - Resolved Component:", com);
+    return com;
+  });
 
   // challans, workFlowData
 
@@ -43,11 +49,15 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
     {
       Header: t("APPLICATION_NUMBER"),
       Cell: ({ row }) => {
-        console.log('row', row)
+        console.log("row", row);
         return (
           <div>
             <span className="link">
-              <Link to={`${props.parentRoute}/property/` + row.original?.searchData?.["applicationNumber"] + "/" + row.original?.searchData?.["tenantId"]} >{row.original?.searchData?.["applicationNumber"]}</Link>
+              <Link
+                to={`${props.parentRoute}/property/` + row.original?.searchData?.["applicationNumber"] + "/" + row.original?.searchData?.["tenantId"]}
+              >
+                {row.original?.searchData?.["applicationNumber"]}
+              </Link>
             </span>
           </div>
         );
@@ -134,8 +144,8 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   let result;
   if (props.isLoading || props.isLoader) {
     result = <Loader />;
-  } else if (data?.length === 0) {
-    result = (
+  } else if (data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty)) {
+    result = (EmptyInboxComp && <EmptyInboxComp data={data} />) || (
       <Card style={{ marginTop: 20 }}>
         {/* TODO Change localization key */}
         {t("CS_MYAPPLICATIONS_NO_APPLICATION")

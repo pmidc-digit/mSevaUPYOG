@@ -17,13 +17,11 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
-
   const currentStepData = useSelector(function (state) {
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   });
 
-   const applicationNumber =  currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber
-
+  const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber;
 
   console.log("currentStepDataINFourth", currentStepData);
 
@@ -81,10 +79,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             onGoToRentAndLease();
           }, 1000);
         } else {
-          history.replace(
-            `/digit-ui/${isCitizen ? "citizen" : "employee"}/rentandlease/response/${applicationNumber}`,
-            { applicationData: currentStepData?.CreatedResponse }
-          );
+          history.replace(`/digit-ui/${isCitizen ? "citizen" : "employee"}/rentandlease/response/${applicationNumber}`, {
+            applicationData: currentStepData?.CreatedResponse,
+          });
         }
       } else {
         triggerToast(t(res?.Errors?.message || "Update failed"), true);
@@ -109,6 +106,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         return {
           documentType: doc?.documentType || originalDoc?.documentType || "",
           filestoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+          docId: doc?.docId || originalDoc?.docId || "",
+          allotmentId: doc?.allotmentId || originalDoc?.allotmentId || "",
         };
       }),
       workflow: {
@@ -143,8 +142,11 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
-   const businessService = "RENT_N_LEASE_NEW";
-   console.log( currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber," currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber")
+  const businessService = "RENT_N_LEASE_NEW";
+  console.log(
+    currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber,
+    " currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber"
+  );
   // Adapt workflow details hook for RentAndLease
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
@@ -167,7 +169,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     goNext(action);
   }
 
-  console.log('actions', actions)
+  console.log("actions", actions);
 
   return (
     <React.Fragment>
@@ -190,9 +192,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         {displayMenu && actions && actions.length > 0 ? (
           // <Menu options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           <Menu localeKeyPrefix={t(`WF_${"RENTANDLEASE"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
-        ) : 
-
-        null}
+        ) : null}
 
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>

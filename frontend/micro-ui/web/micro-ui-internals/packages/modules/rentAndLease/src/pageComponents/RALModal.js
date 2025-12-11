@@ -55,6 +55,9 @@ const RALModal = ({
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
+
+  console.log("action123", action);
+
   console.log("allRolesNew", allRolesNew);
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
@@ -98,7 +101,7 @@ const RALModal = ({
         })
       );
     }
-  }, [approverData]);
+  }, [approverData, EmployeeStatusData]);
 
   function selectFile(e) {
     setFile(e.target.files[0]);
@@ -135,7 +138,7 @@ const RALModal = ({
 
     if (action?.isTerminateState) checkCommentsMandatory = true;
 
-    let checkAssigneeMandatory = action?.action === "SENDBACKTOVERIFIER" || action?.action === "VERIFY" || action?.action === "FORWARD";
+    let checkAssigneeMandatory = action?.action === "SENDBACKTOVERIFIER" || action?.action === "VERIFY" || action?.action === "FORWARD" || action?.action === "FORWARDFORFIELDINSPECTION";
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 
     if (checkAssigneeMandatory && !selectedApprover?.uuid) {

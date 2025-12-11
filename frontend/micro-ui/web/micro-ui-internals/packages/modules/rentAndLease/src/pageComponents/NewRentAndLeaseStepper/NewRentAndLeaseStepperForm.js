@@ -4,7 +4,11 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig, employeeConfig } from "../../config/Create/citizenStepperConfig";
-import { SET_RENTANDLEASE_NEW_APPLICATION_STEP, RESET_RENTANDLEASE_NEW_APPLICATION_FORM, UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
+import {
+  SET_RENTANDLEASE_NEW_APPLICATION_STEP,
+  RESET_RENTANDLEASE_NEW_APPLICATION_FORM,
+  UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM,
+} from "../../redux/action/RentAndLeaseNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
 
@@ -153,99 +157,113 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
             const allotmentDetails = result?.AllotmentDetails?.[0];
             console.log("allotmentDetails", allotmentDetails);
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("responseData", allotmentDetails));
-            
+
             // ✅ Set CreatedResponse to prevent "create" API call in Step 2
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", { AllotmentDetails: allotmentDetails }));
 
             // --- Map Property Details ---
             const apiAdditionalDetails = allotmentDetails?.additionalDetails || {};
-            
+
             // Create a NEW object for the form, merging root fields and additionalDetails
             const formPropertyDetails = {
-                ...apiAdditionalDetails,
-                startDate: allotmentDetails?.startDate,
-                endDate: allotmentDetails?.endDate,
-                penaltyType: allotmentDetails?.penaltyType || apiAdditionalDetails?.penaltyType,
-                latePayment: allotmentDetails?.latePayment || "2%",
-                // Add other root fields if they are missing in additionalDetails but needed in form
+              ...apiAdditionalDetails,
+              startDate: allotmentDetails?.startDate,
+              endDate: allotmentDetails?.endDate,
+              penaltyType: allotmentDetails?.penaltyType || apiAdditionalDetails?.penaltyType,
+              latePayment: allotmentDetails?.latePayment || "2%",
+              // Add other root fields if they are missing in additionalDetails but needed in form
             };
 
             // Define Options for Dropdown Mapping
             const propertyTypeOptions = [
-                { name: t("ON_RENT"), code: "rent", i18nKey: "rent" },
-                { name: t("ON_LEASE"), code: "lease", i18nKey: "lease" },
+              { name: t("ON_RENT"), code: "rent", i18nKey: "rent" },
+              { name: t("ON_LEASE"), code: "lease", i18nKey: "lease" },
             ];
             const propertySpecificOptions = [
-                { name: t("COMMERCIAL"), code: "Commercial", i18nKey: "Commercial" },
-                { name: t("RESIDENTIAL"), code: "Residential", i18nKey: "Residential" },
+              { name: t("COMMERCIAL"), code: "Commercial", i18nKey: "Commercial" },
+              { name: t("RESIDENTIAL"), code: "Residential", i18nKey: "Residential" },
             ];
             const locationTypeOptions = [
-                { name: t("PRIME"), code: "Prime", i18nKey: "Prime" },
-                { name: t("NON_PRIME"), code: "Non-Prime", i18nKey: "Non-Prime" },
+              { name: t("PRIME"), code: "Prime", i18nKey: "Prime" },
+              { name: t("NON_PRIME"), code: "Non-Prime", i18nKey: "Non-Prime" },
             ];
 
             // Map Dropdowns: API String -> Form Object
-            
+
             // 1. allotmentType (API) -> propertyType (Form)
             if (apiAdditionalDetails.allotmentType) {
-                const matchedOption = propertyTypeOptions.find(opt => opt.code === apiAdditionalDetails.allotmentType);
-                formPropertyDetails.propertyType = matchedOption || { code: apiAdditionalDetails.allotmentType, name: apiAdditionalDetails.allotmentType };
+              const matchedOption = propertyTypeOptions.find((opt) => opt.code === apiAdditionalDetails.allotmentType);
+              formPropertyDetails.propertyType = matchedOption || {
+                code: apiAdditionalDetails.allotmentType,
+                name: apiAdditionalDetails.allotmentType,
+              };
             }
 
             // 2. propertyType (API) -> propertySpecific (Form)
             if (apiAdditionalDetails.propertyType) {
-                const matchedOption = propertySpecificOptions.find(opt => opt.code === apiAdditionalDetails.propertyType);
-                formPropertyDetails.propertySpecific = matchedOption || { code: apiAdditionalDetails.propertyType, name: apiAdditionalDetails.propertyType };
+              const matchedOption = propertySpecificOptions.find((opt) => opt.code === apiAdditionalDetails.propertyType);
+              formPropertyDetails.propertySpecific = matchedOption || {
+                code: apiAdditionalDetails.propertyType,
+                name: apiAdditionalDetails.propertyType,
+              };
             }
 
             // 3. locationType (API) -> locationType (Form)
             if (apiAdditionalDetails.locationType) {
-                const matchedOption = locationTypeOptions.find(opt => opt.code === apiAdditionalDetails.locationType);
-                formPropertyDetails.locationType = matchedOption || { code: apiAdditionalDetails.locationType, name: apiAdditionalDetails.locationType };
+              const matchedOption = locationTypeOptions.find((opt) => opt.code === apiAdditionalDetails.locationType);
+              formPropertyDetails.locationType = matchedOption || {
+                code: apiAdditionalDetails.locationType,
+                name: apiAdditionalDetails.locationType,
+              };
             }
 
             // Format Dates (Timestamp -> YYYY-MM-DD)
             if (formPropertyDetails.startDate) {
-                 formPropertyDetails.startDate = new Date(formPropertyDetails.startDate).toISOString().split('T')[0];
+              formPropertyDetails.startDate = new Date(formPropertyDetails.startDate).toISOString().split("T")[0];
             }
             if (formPropertyDetails.endDate) {
-                 formPropertyDetails.endDate = new Date(formPropertyDetails.endDate).toISOString().split('T')[0];
+              formPropertyDetails.endDate = new Date(formPropertyDetails.endDate).toISOString().split("T")[0];
             }
 
             console.log("Mapped formPropertyDetails", formPropertyDetails);
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", formPropertyDetails));
 
-
             // --- Map Applicant Details ---
             const owners = allotmentDetails?.OwnerInfo || [];
-            const applicants = owners.map(owner => ({
-                name: owner?.name,
-                mobileNumber: owner?.mobileNo,
-                emailId: owner?.emailId,
-                pincode: owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode,
-                address: owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || "", 
+            const applicants = owners.map((owner) => ({
+              name: owner?.name,
+              mobileNumber: owner?.mobileNo,
+              emailId: owner?.emailId,
+              pincode: owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode,
+              address: owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || "",
             }));
 
             const ownershipType = applicants.length > 1 ? "MULTIPLE" : "SINGLE";
-            
-            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("applicantDetails", {
+
+            dispatch(
+              UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("applicantDetails", {
                 applicants,
-                ownershipType
-            }));
+                ownershipType,
+              })
+            );
 
             // --- Map Document Details ---
             if (allotmentDetails?.Document?.length > 0) {
-                const documents = allotmentDetails.Document.map(doc => ({
-                    documentType: doc.documentType,
-                    fileStoreId: doc.fileStoreId,
-                    documentUid: doc.documentUid,
-                    id: doc.id
-                }));
-                dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("documents", {
-                    documents: {
-                        documents: documents
-                    }
-                }));
+              const documents = allotmentDetails.Document.map((doc) => ({
+                documentType: doc.documentType,
+                fileStoreId: doc.fileStoreId,
+                documentUid: doc.documentUid,
+                id: doc.id,
+                docId: doc?.docId,
+                allotmentId: doc?.allotmentId,
+              }));
+              dispatch(
+                UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("documents", {
+                  documents: {
+                    documents: documents,
+                  },
+                })
+              );
             }
           }
         })

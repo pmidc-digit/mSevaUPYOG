@@ -35,6 +35,7 @@ import CustomDatePicker from "./pageComponents/CustomDatePicker";
 import RALApplicationDetails from "./pages/citizen/RALApplicationDetails"
 import RALResponse from "./pageComponents/Reponse"
 import MyProperties from "./pages/citizen/MyProperties/myProperties"
+import RALEmptyResultInbox from "./components/RALEmptyResultInbox";
 
 export const RentAndLeaseReducers = getRootReducer;
 
@@ -132,6 +133,7 @@ const componentsToRegister = {
   RentAndLeaseDocument,
   RALResponse,
   CustomDatePicker,
+  RALEmptyResultInbox,
 };
 
 export const initRentAndLeaseComponents = () => {

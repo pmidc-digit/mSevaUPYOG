@@ -138,7 +138,7 @@ const RALApplicationDetails = () => {
     };
 
     console.log("action", action);
-    history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
+    // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
     const filterNexState = (action?.actions ?? action?.state?.actions)?.filter((item) => item.action === action?.action);
 
@@ -170,11 +170,22 @@ const RALApplicationDetails = () => {
       workflow: {},
     };
 
-    const filtData = data?.Licenses?.[0];
+    let filtData = {};
+    if (data?.action) {
+      filtData = {
+        action: data.action[0].action,
+        assignee: [],
+        comment: "",
+        wfDocuments: null,
+      };
+    } else {
+      filtData = data?.Licenses?.[0];
+    }
+
     console.log("filtData", filtData);
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData.action === "SENDBACKTOCITIZEN" ? [props.application?.auditDetails?.createdBy] : filtData?.assignee,
+      assignes: filtData.action === "SENDBACKTOCITIZEN" ? [applicationData?.auditDetails?.createdBy] : filtData?.assignee,
       comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };

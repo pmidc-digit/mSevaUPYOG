@@ -92,7 +92,7 @@ const EmployeeApp = ({ path, url, userType }) => {
                 businessService="RENT_N_LEASE_NEW"
                 filterComponent="MCOLLECT_INBOX_FILTER"
                 initialStates={inboxInitialState}
-                isInbox={true}
+               isInbox={true}
               />
             )}
           />{" "}

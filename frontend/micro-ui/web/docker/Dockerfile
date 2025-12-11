@@ -9,7 +9,7 @@ RUN yarn add @mseva/digit-ui-module-mcollect@1.0.8
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.13
 RUN yarn add @mseva/digit-ui-module-noc@1.0.30
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.30
-RUN yarn add @mseva/digit-ui-module-hrms@1.0.6
+RUN yarn add @mseva/digit-ui-module-hrms@1.0.8
 RUN yarn add @mseva/digit-ui-module-core@1.0.59
 RUN yarn add @mseva/digit-ui-module-common@1.1.57
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15

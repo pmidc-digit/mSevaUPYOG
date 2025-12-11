@@ -1,12 +1,4 @@
-import {
-  ActionLinks,
-  CardSectionHeader,
-  CloseSvg,
-  SubmitBar,
-  ActionBar,
-  Menu,
-  Toast,
-} from "@mseva/digit-ui-react-components";
+import { ActionLinks, CardSectionHeader, CloseSvg, SubmitBar, ActionBar, Menu, Toast } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
@@ -44,7 +36,7 @@ const PTRWFApplicationTimeline = (props) => {
     // config: { staleTime: 0, refetchOnMount: "always" },
   });
 
-  console.log('workflowDetails', workflowDetails)
+  console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -282,12 +274,6 @@ const PTRWFApplicationTimeline = (props) => {
   return (
     <React.Fragment>
       <Fragment>
-        {workflowDetails?.data?.timeline?.length > 0 && (
-          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-            {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
-          </CardSectionHeader>
-        )}
-
         {/* ===== OLD TIMELINE IMPLEMENTATION (Commented out for reference) ===== */}
         {/* 
         {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
@@ -316,10 +302,7 @@ const PTRWFApplicationTimeline = (props) => {
         */}
         {/* =================================================================== */}
 
-        <ApplicationTimeline
-          workflowDetails={workflowDetails}
-          t={t}
-        />
+        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
           <ActionBar>
@@ -330,7 +313,7 @@ const PTRWFApplicationTimeline = (props) => {
                 optionKey={"action"}
                 t={t}
                 onSelect={onActionSelect}
-              // style={MenuStyle}
+                // style={MenuStyle}
               />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

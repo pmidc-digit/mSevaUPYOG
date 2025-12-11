@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useCallback } from "react";
-import { CheckPoint, ConnectingCheckPoints, Loader } from "@mseva/digit-ui-react-components";
+import { CheckPoint, ConnectingCheckPoints, Loader, CardSubHeader } from "@mseva/digit-ui-react-components";
 import getTimelineAcknowledgementData from "../getTimelineAcknowledgementData";
 
 /* ===== Optimized Date Parser ===== */
@@ -51,13 +51,13 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   if (isLoading) return <Loader />;
 
   return (
-    <div style={{ marginTop: "10px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+    <div className="timeline-docs-wrapper">
       {documents?.map((document, idx) => {
         const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
         if (!documentLink) return null;
         return (
-          <a key={idx} target="_blank" rel="noopener noreferrer" href={documentLink} style={{ minWidth: "100px" }}>
-            <PDFSvg style={{ background: "#f6f6f6", padding: "8px" }} />
+          <a key={idx} target="_blank" rel="noopener noreferrer" href={documentLink} className="timeline-doc-link">
+            <PDFSvg className="timeline-doc-icon" />
           </a>
         );
       })}
@@ -100,12 +100,6 @@ const HEADER_FIELDS = [
 /* ===== Memoized Caption Component ===== */
 const TimelineCaption = React.memo(({ checkpoint, t, onDownloadPDF }) => (
   <div className="timeline-card">
-    <button onClick={onDownloadPDF} style={{ marginBottom: '10px', cursor: 'pointer' }}>Download PDF</button>
-    <div className="timeline-note">
-      <span className="timeline-label">{t("CM_TIMELINE_NOTE")}:</span>
-      <div className="note-box">{checkpoint?.comment || t("CM_TIMELINE_NO_COMMENTS")}</div>
-    </div>
-
     <div className="timeline-header">
       {HEADER_FIELDS?.map(({ label, key }) => (
         <div key={key} className="timeline-header-item">
@@ -114,8 +108,10 @@ const TimelineCaption = React.memo(({ checkpoint, t, onDownloadPDF }) => (
         </div>
       ))}
     </div>
-
-    
+    <div className="timeline-note">
+      <span className="timeline-label">{t("CM_TIMELINE_NOTE")}:</span>
+      <div className="note-box">{checkpoint?.comment || t("CM_TIMELINE_NO_COMMENTS")}</div>
+    </div>
 
     {checkpoint?.documents?.length > 0 && (
       <div className="timeline-docs">
@@ -131,7 +127,7 @@ const TimelineCaption = React.memo(({ checkpoint, t, onDownloadPDF }) => (
 /* ===== Main Application Timeline Component ===== */
 export const ApplicationTimeline = ({ workflowDetails, t }) => {
   // ✅ Normalize input: handle both { data: { timeline } } and { timeline }
-  const details = workflowDetails?.data || workflowDetails
+  const details = workflowDetails?.data || workflowDetails;
   const timeline = useMemo(() => normalizeTimeline({ data: details }), [details]);
   const currentState = workflowDetails?.data?.timeline?.[0]?.state;
 
@@ -146,8 +142,18 @@ export const ApplicationTimeline = ({ workflowDetails, t }) => {
 
   return (
     <div className="timeline-hoc-container">
+      <div className="timeline-header-wrapper">
+        <CardSubHeader className="timeline-subheader">{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <span onClick={handleDownloadPDF} className="download-button">
+          {t("CS_COMMON_DOWNLOAD")}
+        </span>
+      </div>
       {timeline?.length === 1 ? (
-        <CheckPoint isCompleted={true} label={t(timeline?.[0]?.state)} customChild={<TimelineCaption checkpoint={timeline?.[0]} t={t} onDownloadPDF={handleDownloadPDF} />} />
+        <CheckPoint
+          isCompleted={true}
+          label={t(timeline?.[0]?.state)}
+          customChild={<TimelineCaption checkpoint={timeline?.[0]} t={t} onDownloadPDF={handleDownloadPDF} />}
+        />
       ) : (
         <ConnectingCheckPoints>
           {timeline?.map((checkpoint) => (

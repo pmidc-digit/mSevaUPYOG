@@ -884,7 +884,7 @@ input[type="number"] {
 .timeline-hoc-container .checkpoint-done header {
   flex: 1;
   background: #ccffcc;
-  padding: 0px 8px;
+  padding: 4px 8px;
 }
 
 .timeline-hoc-container .checkpoint-connect-wrap {
@@ -973,4 +973,48 @@ input[type="number"] {
   .engagement-citizen-wrapper {
     overflow: hidden;
   }
+}
+
+/* Application Timeline Styles */
+.timeline-header-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 20px 8px;
+  gap: 16px;
+}
+
+.download-button {
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  padding: 8px;
+  border: 1px solid #0d43a7;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+  font-size: 16px;
+  display: inline-block;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.timeline-docs-wrapper {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.timeline-doc-link {
+  min-width: 100px;
+}
+
+.timeline-doc-icon {
+  background: #f6f6f6;
+  padding: 8px;
+}
+
+.timeline-subheader {
+  margin-bottom: 0px !important;
 }

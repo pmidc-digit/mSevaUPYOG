@@ -22,10 +22,13 @@ public class RLConstants {
 
 	public static final String RENT_LEASE_FEE_RL_APPLICATION = "RENT_LEASE_FEE";
 
-	public static final String COWCASS_FEE_RL_APPLICATION = "SECURITY_DOPOSITE_FEE";
+	public static final String COWCASS_FEE_RL_APPLICATION = "COWCASS_FEE";
 
-	public static final String PANALITY_RL_APPLICATION = "RENT_LEASE_FEE";
+	public static final String PENALTY_FEE_RL_APPLICATION = "PENALTY_FEE";
 	
+	public static final String SGST_FEE_RL_APPLICATION = "SGST_FEE";
+
+	public static final String CGST_FEE_RL_APPLICATION = "CGST_FEE";
 	
 
     public static final String MDMS_RL_MOD_NAME = "rentAndLease";

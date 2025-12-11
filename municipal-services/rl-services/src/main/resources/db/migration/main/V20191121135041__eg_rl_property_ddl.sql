@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
 	is_cow_cess_applicable boolean DEFAULT true,
     is_refund_applicable_on_discontinuation boolean DEFAULT true,
 	penalty_type character varying(128) COLLATE pg_catalog."default",
-	term_and_condition character varying(256) COLLATE pg_catalog."default" NOT NULL,
+	term_and_condition character varying(256) COLLATE pg_catalog."default",
     created_time bigint NOT NULL,
     created_by character varying(128) COLLATE pg_catalog."default" NOT NULL,
     lastmodified_time bigint,

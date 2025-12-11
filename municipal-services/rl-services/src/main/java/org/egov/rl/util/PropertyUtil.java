@@ -32,6 +32,7 @@ import org.egov.rl.models.BreedType;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.ProcessInstance;
 import org.egov.rl.models.RLProperty;
+import org.egov.rl.models.TaxRate;
 import org.egov.rl.models.collection.GetBillCriteria;
 import org.egov.rl.models.enums.CreationReason;
 import org.egov.rl.models.workflow.ProcessInstanceRequest;
@@ -89,13 +90,41 @@ public class PropertyUtil extends CommonUtils {
 				calculateAmount = mapper.readValue(jsonArray.toJSONString(),
 						mapper.getTypeFactory().constructCollectionType(List.class, RLProperty.class));
 			} catch (JsonProcessingException e) {
-				log.info("Exception occured while converting calculation type  for pet registration: " + e);
+				log.info("Exception occured while converting amount for allotment " + e);
 			}
 
 			return calculateAmount;
 
 		}
 
+		public List<TaxRate> getHeadTaxAmount(RequestInfo requestInfo, String tenantId, String moduleName) {
+
+			List<TaxRate> calculateAmount = new ArrayList<TaxRate>();
+			StringBuilder uri = new StringBuilder();
+			uri.append(config.getMdmsHost()).append(config.getMdmsEndpoint());
+
+			MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHead(requestInfo, tenantId, moduleName);
+
+			Object o = restRepo.fetchResult(uri, mdmsCriteriaReq).get();
+		
+			MdmsResponse mdmsResponse = mapper.convertValue(o , MdmsResponse.class);
+			if (mdmsResponse.getMdmsRes().get(RL_MASTER_MODULE_NAME) == null) {
+				throw new CustomException("FEE_NOT_AVAILABLE", "Property tax fee is not available.");
+			}
+			JSONArray jsonArray = mdmsResponse.getMdmsRes().get(RLConstants.RL_MASTER_MODULE_NAME).get("TaxRates");
+
+			try {
+				calculateAmount = mapper.readValue(jsonArray.toJSONString(),
+						mapper.getTypeFactory().constructCollectionType(List.class, TaxRate.class));
+			} catch (JsonProcessingException e) {
+				log.info("Exception occured while converting amount for allotment: " + e);
+			}
+
+			return calculateAmount;
+
+		}
+
+		
 		/**
 		 * Fetches ServiceCharge configuration from MDMS
 		 */
@@ -244,6 +273,27 @@ public class PropertyUtil extends CommonUtils {
 			return mdmsCriteriaReq;
 			
 		}
+		
+       private MdmsCriteriaReq getMdmsRequestTaxHead(RequestInfo requestInfo, String tenantId, String moduleName) {
+			
+			MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
+			mdmsCriteriaReq.setRequestInfo(requestInfo); // from your context
+			
+			MdmsCriteria mdmsCriteria = new MdmsCriteria();
+			mdmsCriteria.setTenantId(tenantId);
+			
+			ModuleDetail moduleDetail = new ModuleDetail();
+			moduleDetail.setModuleName("rentAndLease");
+			MasterDetail masterDetail = new MasterDetail();
+			masterDetail.setName("TaxRates");
+//			masterDetail.setFilter("$.[?(@.propertyId == '"+propertyId+"')]");
+			moduleDetail.setMasterDetails(Arrays.asList(masterDetail));
+			mdmsCriteria.setModuleDetails(Arrays.asList(moduleDetail));
+			mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);			
+			return mdmsCriteriaReq;
+			
+		}
+
 		public StringBuilder getDemandSearchUrl(GetBillCriteria getBillCriteria) {
 			StringBuilder builder = new StringBuilder();
 			if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes())) {

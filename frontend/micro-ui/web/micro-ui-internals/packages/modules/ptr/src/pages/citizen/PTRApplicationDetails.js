@@ -979,17 +979,6 @@ const PTRApplicationDetails = () => {
             )}
           </div>
 
-          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && isCitizen && (
-            <ActionBar>
-              <SubmitBar
-                label={t("COMMON_EDIT")}
-                onSubmit={() => {
-                  history.push(`/digit-ui/citizen/ptr/petservice/new-application/${applicationNumber}`);
-                }}
-              />
-            </ActionBar>
-          )}
-
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast

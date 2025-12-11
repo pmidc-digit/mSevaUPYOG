@@ -85,7 +85,7 @@ public class SearchRepository {
 	        String url = searchCriteria != null ? (String) searchCriteria.get("url") : null;
 
 	        // 1️⃣ Count
-	        if (url != null && url.toLowerCase().contains("count")) {
+	        if (url != null && (url.toLowerCase().contains("saskipropertycount")||url.toLowerCase().contains("saskitotalpercentagecount"))) {
 	            log.info("URL contains 'count': " + url);
 	            String count = namedParameterJdbcTemplate.queryForObject(query, preparedStatementValues, String.class);
 	            return count;
@@ -98,7 +98,7 @@ public class SearchRepository {
 	        } 
 
 	        // 3️⃣ Saski / Property search
-	        else if (url != null && url.toLowerCase().contains("saski")) {
+	        else if (url != null && url.toLowerCase().contains("saskipropertysearch")) {
 	            log.info("URL contains 'saski': " + url);
 	            propertySearchResult = namedParameterJdbcTemplate.query(query, preparedStatementValues, saskiMapper);
 	            return propertySearchResult;

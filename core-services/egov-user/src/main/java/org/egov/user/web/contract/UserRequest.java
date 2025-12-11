@@ -78,6 +78,17 @@ public class UserRequest {
    // @Pattern(regexp = UserServiceConstants.PATTERN_CITY)
     @Size(max = 50)
     private String permanentCity;
+
+    @SafeHtml
+    // @Pattern(regexp = UserServiceConstants.PATTERN_CITY)
+    @Size(max = 50)
+    private String permanentState;
+
+
+    @SafeHtml
+    // @Pattern(regexp = UserServiceConstants.PATTERN_CITY)
+    @Size(max = 50)
+    private String permanentDistrict;
     
     @Size(max = 10)
     private String clientId;
@@ -94,6 +105,15 @@ public class UserRequest {
     //@Pattern(regexp = UserServiceConstants.PATTERN_CITY)
     @Size(max = 50)
     private String correspondenceCity;
+
+    //@Pattern(regexp = UserServiceConstants.PATTERN_CITY)
+    @Size(max = 50)
+    private String correspondenceState;
+
+    @Size(max = 50)
+    private String correspondenceDistrict;
+
+
 
     //@Pattern(regexp = UserServiceConstants.PATTERN_PINCODE)
    // @Size(max = 10)
@@ -203,6 +223,8 @@ public class UserRequest {
             this.correspondenceAddress = user.getCorrespondenceAddress().getAddress();
             this.correspondenceCity = user.getCorrespondenceAddress().getCity();
             this.correspondencePinCode = user.getCorrespondenceAddress().getPinCode();
+            this.correspondenceDistrict = user.getCorrespondenceAddress().getDistrict();
+            this.correspondenceState = user.getCorrespondenceAddress().getState();
         }
     }
 
@@ -211,6 +233,8 @@ public class UserRequest {
             this.permanentAddress = user.getPermanentAddress().getAddress();
             this.permanentCity = user.getPermanentAddress().getCity();
             this.permanentPinCode = user.getPermanentAddress().getPinCode();
+            this.permanentDistrict = user.getPermanentAddress().getDistrict();
+            this.permanentState = user.getPermanentAddress().getState();
         }
     }
 
@@ -287,6 +311,8 @@ public class UserRequest {
                 .type(AddressType.PERMANENT)
                 .city(permanentCity)
                 .pinCode(permanentPinCode)
+                .state(permanentState)
+                .district(permanentDistrict)
                 .address(permanentAddress)
                 .build();
     }
@@ -296,6 +322,8 @@ public class UserRequest {
                 .type(AddressType.CORRESPONDENCE)
                 .city(correspondenceCity)
                 .pinCode(correspondencePinCode)
+                .state(correspondenceState)
+                .district(correspondenceDistrict)
                 .address(correspondenceAddress)
                 .build();
     }

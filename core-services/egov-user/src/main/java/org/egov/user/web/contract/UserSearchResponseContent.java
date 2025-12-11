@@ -39,6 +39,12 @@ public class UserSearchResponseContent {
     private String correspondencePinCode;
     private String alternatemobilenumber;
 
+    private String permanentState;
+    private String permanentDistrict;
+    private String correspondenceState;
+    private String correspondenceDistrict;
+
+
     @JsonIgnore
     private Set<Address> addresses;
 
@@ -111,6 +117,8 @@ public class UserSearchResponseContent {
             this.correspondenceAddress = user.getCorrespondenceAddress().getAddress();
             this.correspondenceCity = user.getCorrespondenceAddress().getCity();
             this.correspondencePinCode = user.getCorrespondenceAddress().getPinCode();
+            this.correspondenceDistrict = user.getCorrespondenceAddress().getDistrict();
+            this.correspondenceState = user.getCorrespondenceAddress().getState();
         }
     }
 
@@ -119,6 +127,8 @@ public class UserSearchResponseContent {
             this.permanentAddress = user.getPermanentAddress().getAddress();
             this.permanentCity = user.getPermanentAddress().getCity();
             this.permanentPinCode = user.getPermanentAddress().getPinCode();
+            this.permanentDistrict = user.getPermanentAddress().getDistrict();
+            this.permanentState = user.getPermanentAddress().getState();
         }
     }
 

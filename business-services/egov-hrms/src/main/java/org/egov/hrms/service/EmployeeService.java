@@ -51,6 +51,7 @@ import org.egov.hrms.model.AuditDetails;
 import org.egov.hrms.model.Employee;
 import org.egov.hrms.model.EmployeeWithWard;
 import org.egov.hrms.model.EmployeewardResponse;
+import org.egov.hrms.model.ObpasEmployee;
 import org.egov.hrms.model.enums.UserType;
 import org.egov.hrms.producer.HRMSProducer;
 import org.egov.hrms.repository.EmployeeRepository;
@@ -129,6 +130,182 @@ public class EmployeeService {
 		notificationService.sendNotification(employeeRequest, pwdMap);
 		return generateResponse(employeeRequest);
 	}
+	
+	
+	public ObpassEmployeeResponse create(ObpasEmployeeRequest employeeRequest) {
+
+	    RequestInfo requestInfo = employeeRequest.getRequestInfo();
+
+	    for (ObpasEmployee employee : employeeRequest.getEmployees()) {
+
+	        // 1️⃣ Check if user exists in HRMS using UUID
+	        Map<String, Object> userSearchCriteria = new HashMap<>();
+	        userSearchCriteria.put("tenantId", employee.getTenantId());
+	        userSearchCriteria.put("uuid", Collections.singletonList(employee.getUserUUID())); // ✅ wrap in list
+
+	        UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+
+	        if (CollectionUtils.isEmpty(userResponse.getUser())) {
+	            throw new RuntimeException(
+	                "User with UUID " + employee.getUserUUID() +
+	                " does not exist in tenant " + employee.getTenantId()
+	            );
+	        }
+	        enrichObpasCreateRequest(employee, requestInfo);
+	    }
+
+	    // 4️⃣ Push to Kafka
+	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), employeeRequest);
+
+	    // 5️⃣ Generate response
+	    return generateObpassResponse(employeeRequest);
+	}
+
+	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {
+
+	    RequestInfo requestInfo = deleteRequest.getRequestInfo();
+	    List<ObpasEmployee> employeesToDelete = new ArrayList<>();
+
+	    for (ObpasEmployee criteria : deleteRequest.getEmployees()) {
+
+	        // 1️⃣ tenantId must always be present
+	        if (StringUtils.isEmpty(criteria.getTenantId())) {
+	            throw new CustomException(
+	                    ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_CODE,
+	                    ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_MSG
+	            );
+	        }
+
+	        // -------------------------
+	        // VALIDATION LOGIC
+	        // -------------------------
+
+	        // 2️⃣ If uuid is present → either accept UUID only OR UUID + all other fields
+	        if (!StringUtils.isEmpty(criteria.getUuid())) {
+
+	            boolean anyOtherFieldPresent =
+	                    !StringUtils.isEmpty(criteria.getUserUUID()) ||
+	                    !StringUtils.isEmpty(criteria.getCategory()) ||
+	                    !StringUtils.isEmpty(criteria.getSubcategory()) ||
+	                    !StringUtils.isEmpty(criteria.getZone()) ||
+	                    !StringUtils.isEmpty(criteria.getAssignedTenantId());
+
+	            boolean anyOtherFieldMissing =
+	                    StringUtils.isEmpty(criteria.getUserUUID()) ||
+	                    StringUtils.isEmpty(criteria.getCategory()) ||
+	                    StringUtils.isEmpty(criteria.getSubcategory()) ||
+	                    StringUtils.isEmpty(criteria.getZone()) ||
+	                    StringUtils.isEmpty(criteria.getAssignedTenantId());
+
+	            // ❌ invalid mix: some fields present, some missing
+	            if (anyOtherFieldPresent && anyOtherFieldMissing) {
+	                throw new CustomException(
+	                        "OBPAS_INVALID_DELETE_CRITERIA",
+	                        "When uuid is provided, either provide NO other fields or ALL fields together."
+	                );
+	            }
+
+	            // uuid case is valid → proceed
+	        }
+
+	        // 3️⃣ If uuid is NOT present → all other fields mandatory INCLUDING userUUID
+	        else {
+	            if (StringUtils.isEmpty(criteria.getUserUUID()) ||
+	                StringUtils.isEmpty(criteria.getCategory()) ||
+	                StringUtils.isEmpty(criteria.getSubcategory()) ||
+	                StringUtils.isEmpty(criteria.getZone()) ||
+	                StringUtils.isEmpty(criteria.getAssignedTenantId())) {
+
+	                throw new CustomException(
+	                        "OBPAS_INVALID_DELETE_CRITERIA",
+	                        "Either provide uuid OR provide userUUID, category, subcategory, zone, and assignedTenantId for tenant "
+	                                + criteria.getTenantId()
+	                );
+	            }
+	        }
+
+	        // -------------------------
+	        // BUILD SEARCH CRITERIA
+	        // -------------------------
+
+	        ObpasEmployeeSearchCriteria searchCriteria = new ObpasEmployeeSearchCriteria();
+	        searchCriteria.setTenantId(criteria.getTenantId());
+
+	        // If uuid is present → search only by uuid + tenantId
+	        if (!StringUtils.isEmpty(criteria.getUuid())) {
+	            searchCriteria.setUuid(criteria.getUuid());
+	        } 
+	        else {
+	            // search by full criteria
+	            searchCriteria.setUserUUID(criteria.getUserUUID());
+	            searchCriteria.setCategory(criteria.getCategory());
+	            searchCriteria.setSubcategory(criteria.getSubcategory());
+	            searchCriteria.setZone(criteria.getZone());
+	            searchCriteria.setAssignedTenantId(criteria.getAssignedTenantId());
+	        }
+
+	        // -------------------------
+	        // SEARCH EMPLOYEES
+	        // -------------------------
+
+	        ObpassEmployeeResponse searchResponse = obpasSearch(searchCriteria, requestInfo);
+
+	        if (CollectionUtils.isEmpty(searchResponse.getEmployees())) {
+	            throw new CustomException(
+	                    "EMPLOYEE_NOT_FOUND",
+	                    "No employee found for the given criteria in tenant " + criteria.getTenantId()
+	            );
+	        }
+
+	        // -------------------------
+	        // BUILD DELETE LIST
+	        // -------------------------
+
+	        for (ObpasEmployee emp : searchResponse.getEmployees()) {
+
+	            ObpasEmployee empToDelete = new ObpasEmployee();
+	            empToDelete.setUuid(emp.getUuid());               // required for delete
+	            empToDelete.setTenantId(emp.getTenantId());       // required for delete
+	            empToDelete.setUserUUID(emp.getUserUUID());       // optional but useful
+
+	            employeesToDelete.add(empToDelete);
+	        }
+	    }
+
+	 
+	    Map<String, Object> kafkaPayload = new HashMap<>();
+	    kafkaPayload.put("Employees", employeesToDelete);
+
+	    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), kafkaPayload);
+
+	    return ObpassEmployeeResponse.builder()
+	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))
+	            .employees(employeesToDelete)
+	            .build();
+
+	}
+
+	
+
+	  
+	private void enrichObpasCreateRequest(ObpasEmployee employee, RequestInfo requestInfo) {
+	    if (requestInfo == null || requestInfo.getUserInfo() == null || requestInfo.getUserInfo().getUuid() == null) {
+	        throw new IllegalArgumentException("RequestInfo or UserInfo UUID cannot be null");
+	    }
+
+	    String userId = requestInfo.getUserInfo().getUuid();
+	    long now = new Date().getTime();
+
+	    AuditDetails auditDetails = AuditDetails.builder()
+	            .createdBy(userId)
+	            .createdDate(now)
+	            .lastModifiedBy(userId)
+	            .lastModifiedDate(now)
+	            .build();
+
+	    employee.setAuditDetails(auditDetails);
+	}
+
 	
 	/**
 	 * Searches employees on a given criteria.
@@ -213,7 +390,26 @@ public class EmployeeService {
 				.employees(employees).build();
 	}
 	
-	
+	public ObpassEmployeeResponse obpasSearch(ObpasEmployeeSearchCriteria criteria, RequestInfo requestInfo) {
+
+	    Map<String, String> errorMap = new HashMap<>();
+
+	    // Validate tenantId
+	    if (criteria == null || StringUtils.isEmpty(criteria.getTenantId())) {
+	        errorMap.put(ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_CODE,
+	                     ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_MSG);
+	        throw new CustomException(errorMap);
+	    }
+
+	    // Fetch results
+	    List<ObpasEmployee> employees = repository.fetchObpasEmployees(criteria, requestInfo);
+
+	    return ObpassEmployeeResponse.builder()
+	            .responseInfo(factory.createResponseInfoFromRequestInfo(requestInfo, true))
+	            .employees(employees)
+	            .build();
+	}
+
 	
 	
 	
@@ -564,6 +760,14 @@ public class EmployeeService {
 				.responseInfo(factory.createResponseInfoFromRequestInfo(employeeRequest.getRequestInfo(), true))
 				.employees(employeeRequest.getEmployees()).build();
 	}
+	
+	private ObpassEmployeeResponse generateObpassResponse(ObpasEmployeeRequest employeeRequest) {
+	    return ObpassEmployeeResponse.builder()
+	            .responseInfo(factory.createResponseInfoFromRequestInfo(employeeRequest.getRequestInfo(), true))
+	            .employees(employeeRequest.getEmployees())
+	            .build();
+	}
+
 
 	public Map<String,Object> getEmployeeCountResponse(RequestInfo requestInfo, String tenantId){
 		Map<String,Object> response = new HashMap<>();

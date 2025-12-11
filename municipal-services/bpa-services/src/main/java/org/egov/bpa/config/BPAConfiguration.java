@@ -121,8 +121,11 @@ public class BPAConfiguration {
 	@Value("${egov.property.service.context.path}")
 	private String propertyContextPath;
 
-	@Value("${egov.property.endpoint}")
+	@Value("${egov.property.searchendpoint}")
 	private String propertySearchEndpoint;
+	
+	@Value("${egov.property.createendpoint}")
+	private String propertyCreateEndpoint;
 
 	// SMS
 	@Value("${kafka.topics.notification.sms}")
@@ -352,5 +355,12 @@ public class BPAConfiguration {
 
 	@Value("${egov.bpa.application.details.link}")
 	private String applicationDetailsLink;
+	
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
 
 }

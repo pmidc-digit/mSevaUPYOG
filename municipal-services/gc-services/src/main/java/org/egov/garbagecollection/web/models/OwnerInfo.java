@@ -86,10 +86,8 @@ public class OwnerInfo extends User{
 	 * @param user User object obtained from user service
 	 */
 	public void addUserDetail(User user) {
-		this.setLastModifiedDate(user.getLastModifiedDate());
-		this.setLastModifiedBy(user.getLastModifiedBy());
-		this.setCreatedBy(user.getCreatedBy());
-		this.setCreatedDate(user.getCreatedDate());
+		this.setUuid(user.getUuid());
+		this.setId(user.getId());
 		this.setUserName(user.getUserName());
 		this.setPassword(user.getPassword());
 		this.setSalutation(user.getSalutation());

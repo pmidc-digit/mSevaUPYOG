@@ -4,9 +4,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.garbagecollection.web.models.users.CreateUserRequest;
+import org.egov.garbagecollection.web.models.users.User;
 import org.egov.tracer.model.CustomException;
 import org.egov.garbagecollection.config.GCConfiguration;
 import org.egov.garbagecollection.repository.ServiceRequestRepository;
@@ -17,10 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+@Slf4j
 @Service
 public class UserService {
 	@Autowired
@@ -41,64 +44,86 @@ public class UserService {
 	 *
 	 * @param request WaterConnectionRequest
 	 */
+
 	public void createUser(GarbageConnectionRequest request) {
-		if (!CollectionUtils.isEmpty(request.getGarbageConnection().getConnectionHolders())) {
-			Role role = getCitizenRole();
-			Set<String> listOfMobileNumbers = getMobileNumbers(request);
-			request.getGarbageConnection().getConnectionHolders().forEach(holderInfo -> {
-				addUserDefaultFields(request.getGarbageConnection().getTenantId(), role, holderInfo);
-				UserDetailResponse userDetailResponse = userExists(holderInfo, request.getRequestInfo());
-				if (CollectionUtils.isEmpty(userDetailResponse.getUser())) {
-					/*
-					 * Sets userName equal to mobileNumber
-					 *
-					 * If mobileNumber already assigned as user-name for another user
-					 *
-					 * then random uuid is assigned as user-name
-					 */
+		Role role = getCitizenRole(request.getGarbageConnection().getTenantId());
+		if (request.getGarbageConnection().getConnectionHolders() == null) {
+			throw new CustomException("INVALID USER", "The applications owners list is empty");
+		}
+		request.getGarbageConnection().getConnectionHolders().forEach(owner ->
+		{
+			if (owner.getUuid() == null) {
+				addUserDefaultFields(request.getGarbageConnection().getTenantId(), role, owner);
+
+				UserDetailResponse existingUserResponse = userExists(owner, request.getRequestInfo());
+
+				if (!existingUserResponse.getUser().isEmpty()) {
+					OwnerInfo existingUser = existingUserResponse.getUser().get(0);
+					log.info("User already exists with UUID: " + existingUser.getUuid());
+					owner.setUuid(existingUser.getUuid());
+					setOwnerFields(owner, existingUserResponse, request.getRequestInfo());
+				} else {
+//						  UserResponse userResponse = userExists(owner,requestInfo);
 					StringBuilder uri = new StringBuilder(configuration.getUserHost())
 							.append(configuration.getUserContextPath()).append(configuration.getUserCreateEndPoint());
-					setUserName(holderInfo, listOfMobileNumbers);
-
-					ConnectionUserRequest userRequest = ConnectionUserRequest.builder()
-							.requestInfo(request.getRequestInfo()).user(holderInfo).build();
-
-					userDetailResponse = userCall(userRequest, uri);
-
-					if (ObjectUtils.isEmpty(userDetailResponse)) {
-						throw new CustomException("INVALID USER RESPONSE",
-								"The user create has failed for the mobileNumber : " + holderInfo.getUserName());
+					setUserName(owner);
+					UserDetailResponse userResponse = userCall(new CreateUserRequest(request.getRequestInfo(), owner), uri);
+					if (userResponse.getUser().get(0).getUuid() == null) {
+						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
 					}
-
-				} else {
-
-					holderInfo.setId(userDetailResponse.getUser().get(0).getId());
-					holderInfo.setUuid(userDetailResponse.getUser().get(0).getUuid());
-					addUserDefaultFields(request.getGarbageConnection().getTenantId(), role, holderInfo);
-
-					StringBuilder uri = new StringBuilder(configuration.getUserHost())
-							.append(configuration.getUserContextPath()).append(configuration.getUserUpdateEndPoint());
-//					if (userDetailResponse.getUser() != null && holderInfo.getRelationship().contains("*")) {
-//						holderInfo.setRelationship(userDetailResponse.getUser().get(0).getRelationship());
-//					}
-					userDetailResponse = userCall(new ConnectionUserRequest(request.getRequestInfo(), holderInfo), uri);
-					if (userDetailResponse.getUser().get(0).getUuid() == null) {
-						throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");
-					}
+					log.info("owner created --> " + userResponse.getUser().get(0).getUuid());
+					setOwnerFields(owner, userResponse, request.getRequestInfo());
 				}
-				// Assigns value of fields from user got from userDetailResponse to owner object
-				setOwnerFields(holderInfo, userDetailResponse, request.getRequestInfo());
-			});
-		}
+			} else {
+				UserDetailResponse userResponse = userExists(owner, request.getRequestInfo());
+				if (userResponse.getUser().isEmpty())
+					throw new CustomException("INVALID USER", "The uuid " + owner.getUuid() + " does not exists");
+				StringBuilder uri = new StringBuilder(configuration.getUserHost())
+						.append(configuration.getUserContextPath()).append(configuration.getUserUpdateEndPoint());
+				OwnerInfo ownerInfo = new OwnerInfo();
+				ownerInfo.addUserDetail(owner);
+				addNonUpdatableFields(ownerInfo, userResponse.getUser().get(0));
+				userResponse = userCall(new CreateUserRequest(request.getRequestInfo(), ownerInfo), uri);
+				setOwnerFields(owner, userResponse, request.getRequestInfo());
+			}
+		});
+
 	}
 
+	private void addNonUpdatableFields(User user, User userFromSearchResult){
+		user.setUserName(userFromSearchResult.getUserName());
+		user.setId(userFromSearchResult.getId());
+		user.setActive(userFromSearchResult.getActive());
+		user.setPassword(userFromSearchResult.getPassword());
+	}
+
+
+	private void setUserName(OwnerInfo owner){
+		String username;
+		if(StringUtils.isNotBlank(owner.getMobileNumber()))
+			username = owner.getMobileNumber();
+		else
+			username = UUID.randomUUID().toString();
+
+
+
+		owner.setUserName(username);
+
+	}
 	/**
 	 * Create citizen role
 	 *
 	 * @return Role
 	 */
-	private Role getCitizenRole() {
-		return Role.builder().code("CITIZEN").name("Citizen").build();
+	private Role getCitizenRole(String tenantId){
+		Role role = new Role();
+		role.setCode("CITIZEN");
+		role.setName("Citizen");
+		role.setTenantId(getStateLevelTenant(tenantId));
+		return role;
+	}
+	private String getStateLevelTenant(String tenantId){
+		return tenantId.split("\\.")[0];
 	}
 
 	/**
@@ -181,22 +206,15 @@ public class UserService {
 	@SuppressWarnings("unchecked")
 	private UserDetailResponse userCall(Object userRequest, StringBuilder uri) {
 		String dobFormat = null;
-		if (uri.toString().contains(configuration.getUserSearchEndpoint())
-				|| uri.toString().contains(configuration.getUserUpdateEndPoint()))
-			dobFormat = "yyyy-MM-dd";
-		else if (uri.toString().contains(configuration.getUserCreateEndPoint()))
-			dobFormat = "dd/MM/yyyy";
+		log.info(uri.toString());
+		log.info(configuration.getUserSearchEndpoint());
+		dobFormat = "yyyy-MM-dd";
 		try {
-			LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository.fetchResult(uri, userRequest);
-			if (!CollectionUtils.isEmpty(responseMap)) {
-				parseResponse(responseMap, dobFormat);
-				return mapper.convertValue(responseMap, UserDetailResponse.class);
-			} else {
-				return new UserDetailResponse();
-			}
-		}
-		// Which Exception to throw?
-		catch (IllegalArgumentException e) {
+			LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri, userRequest);
+			parseResponse(responseMap, dobFormat);
+			UserDetailResponse userDetailResponse = mapper.convertValue(responseMap, UserDetailResponse.class);
+			return userDetailResponse;
+		} catch (IllegalArgumentException e) {
 			throw new CustomException("IllegalArgumentException", "ObjectMapper not able to convertValue in userCall");
 		}
 	}

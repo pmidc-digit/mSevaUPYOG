@@ -64,30 +64,36 @@ public class UserService {
 
 
 	// Generic copy: incoming -> target; only non-null, non-masked, and different values
+
 	private void copyNonNullNonMasked(Object incoming, Object target) {
-		for (Field field : incoming.getClass().getDeclaredFields()) {
-			int mod = field.getModifiers();
-			if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) continue;
-			if (NON_UPDATABLE.contains(field.getName())) continue;
+		Class<?> cls = incoming.getClass();
+		while (cls != null) { // walk OwnerInfo -> User -> Object
+			for (Field field : cls.getDeclaredFields()) {
+				int mod = field.getModifiers();
+				if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) continue;
+				if (NON_UPDATABLE.contains(field.getName())) continue;
 
-			field.setAccessible(true);
-			try {
-				Object newValue = field.get(incoming);
-				Object oldValue = field.get(target);
+				field.setAccessible(true);
+				try {
+					Object newValue = field.get(incoming);
+					Object oldValue = field.get(target);
 
-				// Ignore nulls and masked strings
-				if (newValue == null) continue;
-				if (newValue instanceof String && isMasked((String) newValue)) continue;
+					// Ignore nulls and masked strings
+					if (newValue == null) continue;
+					if (newValue instanceof String && isMasked((String) newValue)) continue;
 
-				// Only set if changed
-				if (!Objects.equals(newValue, oldValue)) {
-					field.set(target, newValue);
+					// Only set if changed
+					if (!Objects.equals(newValue, oldValue)) {
+						field.set(target, newValue);
+					}
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException("Field access error: " + cls.getSimpleName() + "." + field.getName(), e);
 				}
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException("Field access error: " + field.getName(), e);
 			}
+			cls = cls.getSuperclass();
 		}
 	}
+
 
 
 	private List<Role> cloneRoles(List<Role> src) {
@@ -128,7 +134,7 @@ public class UserService {
 		copy.setActive(src.getActive());
 
 		// Nested object: deep clone
-		copy.setCorrespondenceAddress(src.getCorrespondenceAddress());
+		copy.setPermanentAddress(src.getPermanentAddress());
 
 		// Roles: deep copy list & elements (defensive copy)
 		copy.setRoles(cloneRoles(src.getRoles()));

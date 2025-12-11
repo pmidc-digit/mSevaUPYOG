@@ -34,6 +34,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const isArchitect = formData?.LicneseType?.LicenseType?.code?.includes("Architect") || formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect") || LicneseType?.LicenseType?.code?.includes("Architect");
   
 console.log("FormData in CheckPage", result, formData, safeValue, value);
+
   const status = value?.result?.Licenses?.[0]?.status;  
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
 
@@ -57,7 +58,6 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
   const mainType = tradeTypeVal?.split(".")[0];
   const { data: EmployeeStatusData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(tenant, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
   const formattedData = EmployeeStatusData?.StakeholderRegistraition?.TradeTypetoRoleMapping;
-
   function getLicenseType() {
     const list = [];
     const found = false;

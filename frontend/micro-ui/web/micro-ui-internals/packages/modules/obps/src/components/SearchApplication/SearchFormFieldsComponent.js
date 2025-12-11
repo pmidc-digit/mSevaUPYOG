@@ -187,8 +187,8 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
       {window.location.href.includes("citizen/obps/search/application") && <SearchField></SearchField>}
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
-        <p
-          style={{ marginTop: "24px" }}
+        <p className="obps-search-application-container"
+         
           onClick={() => {
             reset({
               applicationNo: "",

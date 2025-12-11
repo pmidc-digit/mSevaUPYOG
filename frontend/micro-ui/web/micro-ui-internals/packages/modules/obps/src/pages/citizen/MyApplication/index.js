@@ -4,6 +4,7 @@ import { Card, KeyNote, Loader, SubmitBar, Header } from "@mseva/digit-ui-react-
 import { Fragment } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { getBPAFormData } from "../../../utils/index";
+import CustomCard from "../../../pageComponents/CustomCard";
 
 const getServiceType = () => {
   return `BPA_APPLICATIONTYPE_BUILDING_PLAN_SCRUTINY`;
@@ -417,7 +418,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
         if (application.type === "BPAREG") {
           console.log("applicationDataForBPAREG", application)
           return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
               <KeyNote
                 keyValue={t("BPA_LICENSE_TYPE")}
@@ -495,11 +496,11 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
 
               </div>
 
-            </Card>
+            </CustomCard>
           );
         } else if (application.type === "LAYOUT") {
           return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
               <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={t("LAYOUT_APPLICATION")} />
               <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
@@ -517,14 +518,14 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
 
                 <SubmitBar label={t("TL_VIEW_DETAILS")} />
               </Link>
-            </Card>
+            </CustomCard>
           )
         
         
         
          } else {
           return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
               <KeyNote
                 keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")}
@@ -566,7 +567,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
                   </div>
                 </Link>
               ) : null}
-            </Card>
+            </CustomCard>
           );
         }
       })}

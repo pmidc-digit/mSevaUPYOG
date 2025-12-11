@@ -1,47 +1,230 @@
+
 .table {
-  @apply bg-white w-full;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+  width: 100%;
+  table-layout: fixed; /* Force fixed table layout to prevent shrinking */
+  border-radius: 12px;
+  border: 1px solid #e1e8f0;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-collapse: separate;
+  border-spacing: 0;
+  transition: box-shadow 0.3s ease;
+}
 
-  thead {
-    th {
-      padding: 20px 18px;
-      @apply font-bold align-middle text-left;
-      &:first-child {
-        min-width: 100px;
-      }
-      &:nth-child(2) {
-        min-width: 150px;
-      }
-    }
-  }
+.table:hover {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+}
 
-  tbody {
-    border: none;
-    padding: 0;
-    margin: 0;
-    td {
-      @apply border-t border-border text-left align-middle;
-      padding: "20px 18px";
-    }
-  }
+.table thead {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #1e40af 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table thead th {
+  padding: 18px 20px;
+  font-weight: 800;
+  vertical-align: middle;
+  text-align: left;
+  color: #ffffff;
+  font-size: 13px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.table thead th::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+}
+
+.table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #f0f4f8;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+
+
+.table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.04), transparent);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+
+
+.table tbody tr:hover td {
+  color: #1e293b;
+}
+
+.table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.table tbody tr:nth-child(even) {
+  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody td {
+  padding: 16px 20px;
+  color: #475569;
+  vertical-align: middle;
+  font-size: 14px;
+  word-break: break-word;
+  transition: color 0.2s ease;
+  border-right: 1px solid transparent;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table tbody td:last-child {
+  border-right: none;
+}
+
+/* Wrapper for horizontal scroll - prevents body from shrinking */
+.dss-table-wrapper {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+}
+
+.dss-table-wrapper table {
+  width: 100%;
+  min-width: 1200px; /* Minimum width to ensure proper display */
+  border-collapse: collapse;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+}
+
+.dss-table-wrapper table thead {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dss-table-wrapper table thead th {
+  padding: 18px 20px;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dss-table-wrapper table thead th .tooltip {
+  min-width: 80px;
+}
+
+.dss-table-wrapper table tbody tr {
+  border-bottom: 1px solid #e1e8f0;
+  transition: all 0.2s ease;
+}
+
+.dss-table-wrapper table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.04), transparent);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.dss-table-wrapper table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.dss-table-wrapper table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.dss-table-wrapper table tbody td {
+  padding: 16px 20px;
+  color: #475569;
+  border-right: 1px solid transparent;
+  white-space: normal;
+}
+
+.dss-table-wrapper table tbody td span {
+  white-space: pre;
+  min-width: 80px;
+  display: inline-block;
+}
+
+.dss-table-wrapper table tbody td:last-child {
+  border-right: none;
+}
+
+/* Fixed column support with proper width constraints */
+.table-fixed-first-column thead th:first-child {
+  position: sticky;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  left: 0;
+  min-width: 200px; /* Set minimum width for first column */
+  border-right: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-left-radius: 12px;
+  z-index: 11;
+  color: #ffffff;
+}
+
+.table-fixed-first-column tbody td:first-child {
+  position: sticky;
+  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+  left: 0;
+  min-width: 200px; /* Match header width */
+  border-right: 2px solid #e1e8f0;
+  z-index: 5;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .pagination {
   display: flex;
   justify-content: flex-end;
-  background-color: rgba(255, 255, 255, var(--bg-opacity));
-  border-top: 1px solid rgb(214, 213, 212);
-  padding: 20px 40px 20px 0px;
-  color: rgb(80, 90, 95);
-
-  svg {
-    fill: #505a5f;
-    @apply ml-md;
-  }
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+  border-top: 2px solid #e1e8f0;
+  padding: 20px 24px;
+  color: #505a5f;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
-.pagination button:nth-child(1) span::after {
-  content: "\f105";
+.pagination svg {
+  fill: #2563eb;
+  transition: transform 0.2s ease;
+}
+
+.pagination svg:hover {
+  transform: scale(1.1);
+}
+
+.pagination button {
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover {
+  color: #2563eb;
 }
 
 .fullWidth {
@@ -50,129 +233,130 @@
 
 .customTable {
   width: 100%;
-  th {
-    font-weight: bold;
+  table-layout: fixed; /* Force fixed layout */
+  border-radius: 12px;
+  border: 1px solid #e1e8f0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.customTable th {
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 12px;
+}
+
+.customTable th,
+.customTable td {
+  text-align: left;
+  border-bottom: 1px solid #e1e8f0;
+  padding: 14px 16px;
+}
+
+.customTable tr {
+  transition: all 0.2s ease;
+}
+
+.customTable tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.customTable tr:nth-child(even) {
+  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.customTable tr:hover {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.06), transparent);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.customTable thead tr:first-child {
+  background-color: unset;
+}
+
+/* ============================================
+   RESPONSIVE TABLE STYLES
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .table thead th,
+  .customTable thead th,
+  .dss-table-wrapper table thead th {
+    padding: 14px 16px;
+    font-size: 12px;
   }
 
-  th,
-  td {
-    text-align: left;
-    border-bottom: 1px solid #b1b4b6;
-    padding: 15px 10px;
+  .table tbody td,
+  .customTable tbody td,
+  .dss-table-wrapper table tbody td {
+    padding: 12px 14px;
+    font-size: 13px;
   }
 
-  tr:nth-child(odd) {
-    background-color: #eeeeee;
-  }
-  tr:nth-child(even) {
-    background-color: #fff;
-  }
-
-  thead {
-    tr:first-child {
-      background-color: unset;
-    }
+  .dss-table-wrapper table {
+    min-width: 900px;
   }
 }
 
-.table-fixed-first-column {
-  thead {
-    th:first-child {
-      position: sticky;
-      background: #fff;
-      left: 0;
-      border-right: 1px solid #b1b4b6;
-      border-top-left-radius: 4px;
-    }
+@media (max-width: 768px) {
+  .table thead th,
+  .customTable thead th {
+    padding: 12px 14px;
+    font-size: 11px;
   }
-  tbody {
-    td:first-child {
-      position: sticky;
-      background: #fff;
-      left: 0;
-      border-right: 1px solid #b1b4b6;
-    }
+
+  .table tbody td,
+  .customTable tbody td {
+    padding: 10px 12px;
+    font-size: 12px;
   }
-}
-.table-fixed-column-common-pay {
-  thead {
-    th:first-child {
-      position: sticky;
-      background: rgb(238, 238, 238);
-      left: 0;
-      border-top-left-radius: 4px;
-    }
-    th:last-child {
-      position: sticky;
-      background: rgb(238, 238, 238);
-      right: 0;
-      border-top-left-radius: 4px;
-    }
+
+  .dss-table-wrapper table {
+    min-width: 700px;
   }
-  tbody {
-    td:first-child {
-      position: sticky;
-      background: rgb(238, 238, 238);
-      left: 0;
-    }
-    td:last-child {
-      position: sticky;
-      background: rgb(238, 238, 238);
-      right: 0;
-    }
+
+  .pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
   }
 }
 
-.table-fixed-first-second-column {
-  thead {
-    th:nth-child(2) {
-      position: sticky;
-      left: 0;
-      background-color: white;
-    }
+@media (max-width: 520px) {
+  .table.table-card-view thead,
+  .customTable.table-card-view thead {
+    display: none;
   }
-  tbody {
-    td:nth-child(2) {
-      position: sticky;
-      left: 0;
-      background-color: inherit;
-    }
-  }
-}
-.table-border-style {
-  border: 1px solid #b1b4b6;
-  border-radius: 4px;
-  border-spacing: 0;
-  border-collapse: separate;
-}
-.dss-table-wrapper {
-  width: 100%;
-  display: block;
-  overflow-x: auto;
-  table {
-    th {
-      .tooltip {
-        min-width: 80px;
-      }
-    }
-    tr {
-      td {
-        span {
-          white-space: pre;
-          min-width: 80px;
-        }
-      }
-    }
-  }
-}
 
-.reports-table {
-  margin-top: 2rem;
-  thead {
-    th {      
-      &:first-child {
-        min-width: unset;
-      }
-    }
+  .table.table-card-view tbody tr,
+  .customTable.table-card-view tbody tr {
+    display: block;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(30, 58, 138, 0.12);
+    overflow: hidden;
+    border: none;
+    background: #ffffff;
+  }
+
+  .table.table-card-view tbody tr td,
+  .customTable.table-card-view tbody tr td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    border: none;
+    border-bottom: 1px solid #f0f4f8;
+    font-weight: 500;
+  }
+
+  .table.table-card-view tbody tr td:last-child,
+  .customTable.table-card-view tbody tr td:last-child {
+    border-bottom: none;
   }
 }

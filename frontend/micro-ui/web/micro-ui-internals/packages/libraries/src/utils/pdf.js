@@ -224,6 +224,54 @@ const jsPdfGenerator = async ({
   downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
 };
 
+const jsPdfGeneratorFormatted = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  t = (text) => text,
+}) => {
+
+  const dd = {
+    
+background: [
+      {
+        image: AcknowledgmentPage,
+        width: 595,
+        height: 842,
+      },
+    ],
+    margin: [0, 0, 0, 0],
+
+    header: {},
+    content: [
+      ...createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
+      {
+        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+        font: "Hind",
+        fontSize: 11,
+        color: "#6f777c",
+        margin: [10, 10],
+      }
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+  };
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+};
 const jsPdfGeneratorNDC = async ({
   breakPageLimit = null,
   tenantId,
@@ -726,6 +774,7 @@ export default {
   generatev1: jsPdfGeneratorv1,
   generateModifyPdf: jsPdfGeneratorForModifyPDF,
   generateBillAmendPDF,
+  generateFormatted: jsPdfGeneratorFormatted
 };
 
 const createBodyContentBillAmend = (table, t) => {
@@ -1374,6 +1423,107 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
   return headerData;
 }
 
+function createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType) {
+  const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
+  let headerData = [];
+  headerData.push({
+    style: "tableExample",
+    layout: "noBorders",
+    margin: [0, 0, 0, 0],
+    table: {
+      widths: ["25%", "50%", "25%"], // left, center, right
+      body: [
+        [
+          // Left: Logo
+          {
+            image: logo || getBase64Image(tenantId) || localGovLogo,
+            width: 78,
+            margin: [10, 10],
+            alignment: "left",
+          },
+
+          // Center: Heading + Name stacked
+          {
+            stack: [
+              {
+                text: heading,
+                bold: true,
+                fontSize: 19,
+                alignment: "center",
+                decoration: "underline",
+                margin: [0, 15, 0, 4],
+              },
+              {
+                text: ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`,
+                fontSize: 11,
+                alignment: "center",
+              },
+              {
+                text: name ? name :"No Dues Certificate",
+                fontSize: 11,
+                alignment: "center",
+              },
+            ],
+            alignment: "center",
+          },
+
+          // Right: QR code (if available)
+          qrCodeDataUrl
+            ? {
+                image: qrCodeDataUrl,
+                width: 78,
+                margin: [10, 10],
+                alignment: "right",
+              }
+            : {},
+        ],
+      ],
+    },
+  });
+
+  //   headerData.push({
+  //     style : 'tableExample',
+  //     layout: "noBorders",
+  //     margin: [420, -135, 0, 20],
+  //     table:{
+  //       widths: ['40%', '*', '20%'],
+  //       body:[
+  //         [
+  //           {
+  //             image: logo|| getBase64Image(tenantId) || defaultLogo,
+  //             width: 65,
+  //             margin: [10, 10],
+  //             // fit:[50,50]
+  //           },
+
+  //       ]
+  //       ]
+  //     }
+  // })
+  // headerData.push({
+  //   style : 'tableExample',
+  //   layout: "noBorders",
+  //   margin:[0,-20,7,0],
+
+  //   table:{
+  //     widths:['100%'],
+  //     body:[
+  //       [
+  //         {
+
+  //           text: `Application Number: ${applicationNumber}`,
+  //           alignment:"right",
+  //           fontSize: 9,
+  //           //bold: true
+  //         },
+  //       ]
+  //     ]
+  //   }
+  // })
+
+  return headerData;
+}
+
 function createHeader(headerDetails, logo, tenantId) {
   let headerData = [];
   headerData.push({
@@ -1569,10 +1719,13 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
             margin: [10, -2, 0, -2]
           },
           {
-            text: indData?.value && indData?.value?.trim() !== "" ? `: ${indData?.value}` : "",
+            text: indData?.value != null && String(indData.value).trim() !== ""
+              ? `: ${indData.value}`
+              : "",
             fontSize: 9,
-            margin: [6, -2, 0, -2] 
+            margin: [6, -2, 0, -2]
           }
+
         ]);
 
         detailsHeaders.push({
@@ -1587,6 +1740,76 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
       }
     }
   });
+
+  return detailsHeaders;
+}
+
+function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+  const detailsHeaders = [];
+  console.log("details here are: ",details)
+  console.log("createcontent func here")
+  details.forEach((detail) => {
+  if (detail?.values?.length > 0) {
+  const headerRow = [
+    {
+      text: detail?.title,
+      color: "#454545",
+      style: "header",
+      fontSize: 14,
+      bold: true,
+      colSpan: 2,
+      alignment: "left",
+      fillColor: "#ffffff",
+      border: [true, true, true, false] // top + left/right borders
+    },
+    {}
+  ];
+
+  const valueRows = detail.values.map((indData, i, arr) => {
+    const isLast = i === arr.length - 1;
+    return [
+      {
+        text: indData?.title,
+        style: "header",
+        fontSize: 9,
+        margin: [10, 5, 0, 5],
+        border: isLast ? [true, false, false, true] : [true, false, false, false]
+        // left border always true, bottom border true only for last row
+      },
+      {
+        text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
+        fontSize: 9,
+        margin: [0, 5, 0, 5],
+        border: isLast ? [false, false, true, true] : [false, false, true, false]
+        // right border always true, bottom border true only for last row
+      }
+    ];
+  });
+
+  detailsHeaders.push({
+    table: {
+      widths: [225, 250], // absolute widths
+      body: [headerRow, ...valueRows]
+    },
+    layout: {
+      fillColor: function (rowIndex) {
+        return rowIndex > 0 && rowIndex % 2 === 1 ? "#f5f5f5" : null;
+      },
+      hLineWidth: () => 1,
+      vLineWidth: () => 1,
+      hLineColor: () => "#cccccc",
+      vLineColor: () => "#cccccc"
+    },
+    margin: [10, 10, 10, 10]
+  });
+}
+
+
+
+
+
+});
+
 
   return detailsHeaders;
 }

@@ -52,7 +52,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
     switch (nextAction?.action) {
       case "PAY":
         return (
-          <div style={{ marginTop: "24px" }} className="action-bar-wrap">
+          <div className="action-bar-wrap">
             <Link
               to={{ pathname: `/digit-ui/citizen/payment/collect/${data?.processInstances?.[0]?.moduleName}/${data?.processInstances?.[0]?.businessId}/${data?.processInstances?.[0]?.tenantId}?tenantId=${data?.processInstances?.[0]?.tenantId}`,
               state: { tenantId: data?.processInstances?.[0]?.tenantId },}}
@@ -63,7 +63,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
         );
       case "SUBMIT_FEEDBACK":
         return (
-          <div style={{ marginTop: "24px" }}>
+          <div className="obps-timeline-submit-feedback" >
             <Link to={`/digit-ui/citizen/fsm/rate/${props.id}`}>
               <SubmitBar label={t("CS_APPLICATION_DETAILS_RATE")} />
             </Link>

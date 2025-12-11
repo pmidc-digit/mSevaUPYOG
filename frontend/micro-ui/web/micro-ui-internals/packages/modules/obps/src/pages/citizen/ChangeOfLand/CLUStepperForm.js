@@ -99,8 +99,8 @@ const CLUStepperForm = () => {
 
   // console.log("formState: ",formState);
   return (
-    <div className="pageCard">
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+    <div className="card">
+      <CardHeader divider={true}>
         {t("BPA_CHANGE_OF_LAND_REGISTRATION_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

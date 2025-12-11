@@ -500,7 +500,7 @@ console.log("validTo",validTo);
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "60px" }}>
       <div style={{ flex: 1, marginRight: "20px" }}>
         <div className={isopenlink ? "OpenlinkContainer" : ""}>
-          {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+          {isopenlink && <BackButton >{t("CS_COMMON_BACK")}</BackButton>}
           {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
 
           <FormStep
@@ -565,12 +565,7 @@ console.log("validTo",validTo);
                 />
                 {errorMessage && (
                   <div
-                    style={{
-                      color: "#d32f2f",
-                      fontSize: "12px",
-                      marginTop: "4px",
-                      marginBottom: "12px",
-                    }}
+                   
                   >
                     {errorMessage}
                   </div>
@@ -654,13 +649,7 @@ console.log("validTo",validTo);
                 />
                 {errorMessage && (
                   <div
-                    style={{
-                      color: "#d32f2f",
-                      fontSize: "12px",
-                      marginTop: "4px",
-                      marginBottom: "12px",
-                      fontStyle: "italic",
-                    }}
+                   
                   >
                     {errorMessage}
                   </div>
@@ -694,45 +683,85 @@ console.log("validTo",validTo);
           </FormStep>
           <div
             style={{
-              flex: "0 0 30%",
-              border: "1px solid #dcdcdc",
-              backgroundColor: "#f9f9f9",
-              borderRadius: "8px",
-              padding: "20px",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              marginTop: "20px",
+              marginTop: "32px",
+              backgroundColor: "#f8f9fa",
+              borderRadius: "12px",
+              padding: "24px",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
             }}
           >
             <h1
               style={{
-                fontSize: "22px",
-                fontWeight: "600",
-                color: "#333",
-                marginBottom: "10px",
-                textAlign: "center",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
+                fontSize: "20px",
+                fontWeight: "700",
+                color: "#1f2937",
+                marginBottom: "16px",
+                marginTop: "0",
               }}
             >
               {t("BPA_COMPETENCIES")}
             </h1>
             <ul
               style={{
-                fontSize: "16px",
-                color: "#555",
-                lineHeight: "1.6",
-                textAlign: "justify",
+                listStyle: "none",
+                padding: "0",
                 margin: "0",
-                paddingLeft: "20px",
               }}
             >
               {LicenseType &&
                 CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.map((point, index) => (
-                  <li key={index} style={{ marginBottom: "8px" }}>
+                  <li 
+                    key={index}
+                    style={{
+                      padding: "12px 0",
+                      paddingLeft: "28px",
+                   
+                      fontSize: "14px",
+                      color: "#374151",
+                    
+                      borderBottom: index < (CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.length - 2) ? "1px solid #e5e7eb" : "none",
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: "0",
+                        top: "12px",
+                        width: "6px",
+                        height: "6px",
+                        backgroundColor: "#2563eb",
+                        borderRadius: "50%",
+                      }}
+                    />
                     {point.trim()}
                   </li>
                 ))}
-                <li>
+                <li
+                  style={{
+                    padding: "0 0",
+                    paddingLeft: "28px",
+                    position: "relative",
+                    fontSize: "13px",
+                    color: "#666666",
+                    fontStyle: "italic",
+                    lineHeight: "1.6",
+                    marginTop: "8px",
+                    paddingTop: "16px",
+                    borderTop: "1px solid #fff",
+                  }}
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: "0",
+                      top: "16px",
+                      width: "6px",
+                      height: "6px",
+                      backgroundColor: "#f59e0b",
+                      borderRadius: "50%",
+                    }}
+                  />
                   {`*NOTE: Registration Fees as per Council norms is ${LicenseType?.applicationFee || 0} INR and Renewal Fees is ${LicenseType?.renewalFee || 0} INR.`}
                 </li>
             </ul>

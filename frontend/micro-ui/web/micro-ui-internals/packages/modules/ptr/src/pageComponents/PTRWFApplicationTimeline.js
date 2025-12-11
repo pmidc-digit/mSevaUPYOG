@@ -1,12 +1,4 @@
-import {
-  ActionLinks,
-  CardSectionHeader,
-  CloseSvg,
-  SubmitBar,
-  ActionBar,
-  Menu,
-  Toast,
-} from "@mseva/digit-ui-react-components";
+import { ActionLinks, CardSectionHeader, CloseSvg, SubmitBar, ActionBar, Menu, Toast } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
@@ -44,7 +36,7 @@ const PTRWFApplicationTimeline = (props) => {
     // config: { staleTime: 0, refetchOnMount: "always" },
   });
 
-  console.log('workflowDetails', workflowDetails)
+  console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -316,24 +308,35 @@ const PTRWFApplicationTimeline = (props) => {
         */}
         {/* =================================================================== */}
 
-        <ApplicationTimeline
-          workflowDetails={workflowDetails}
-          t={t}
-        />
+        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-        {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
+        {(props.application?.status != "CITIZENACTIONREQUIRED" || props.application?.status != "INITIATED") &&
+          actions &&
+          actions[0]?.action != "PAY" &&
+          !isCitizen && (
+            <ActionBar>
+              {displayMenu ? (
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                  // style={MenuStyle}
+                />
+              ) : null}
+              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            </ActionBar>
+          )}
+
+        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && (
           <ActionBar>
-            {displayMenu ? (
-              <Menu
-                localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                options={actions}
-                optionKey={"action"}
-                t={t}
-                onSelect={onActionSelect}
-              // style={MenuStyle}
-              />
-            ) : null}
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                history.push(`/digit-ui/employee/ptr/petservice/new-application/${props.application?.applicationNumber}`);
+              }}
+            />
           </ActionBar>
         )}
 

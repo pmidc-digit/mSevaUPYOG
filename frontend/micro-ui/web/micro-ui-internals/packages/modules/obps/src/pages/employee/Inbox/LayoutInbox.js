@@ -18,15 +18,15 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const searchFormDefaultValues = {
     mobileNumber: "",
-    applicationNo: "",
+    applicationNumber: "",
   }
 
   const filterFormDefaultValues = {
-    moduleName: "layout-services",
+    moduleName: "layout-service",
     applicationStatus: [],
     businessService: "Layout_mcUp",
     assignee: "ASSIGNED_TO_ALL",
-    businessServiceArray: businessServiceListLayout(true) || [],
+    // businessServiceArray: businessServiceListLayout(true) || [],
   }
 
   const tableOrderFormDefaultValues = {
@@ -58,14 +58,13 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null)
-    setSearchFormValue("applicationNo", null)
+    setSearchFormValue("applicationNumber", null)
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues })
   }
 
   const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "layout-services")
+    setFilterFormValue("moduleName", "layout-service")
     setFilterFormValue("applicationStatus", "")
-    setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL")
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues })
   }
@@ -143,13 +142,6 @@ const LayoutInbox = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } })
   }
 
-    const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(
-    tenantId,
-    "revenue",
-    {},
-    t
-  );
-
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, searchFieldComponents }) => (
@@ -169,12 +161,11 @@ const LayoutInbox = ({ parentRoute }) => {
           setFilterFormValue,
           filterFormState: formState?.filterForm,
           getFilterFormValue,
-          localitiesForEmployeesCurrentTenant,
-          loadingLocalitiesForEmployeesCurrentTenant,
+
         }}
       />
     ),
-    [statusData, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant],
+    [statusData, isInboxLoading],
   )
 
   const onSearchFormSubmit = (data) => {
@@ -223,10 +214,10 @@ const LayoutInbox = ({ parentRoute }) => {
     logoIcon: <CaseIcon />,
     headerText: "Layout",
     links: [
-      {
-        text: t(""),
-        link: "",
-      },
+      // {
+      //   text: t(""),
+      //   link: "",
+      // },
     ],
   }
 

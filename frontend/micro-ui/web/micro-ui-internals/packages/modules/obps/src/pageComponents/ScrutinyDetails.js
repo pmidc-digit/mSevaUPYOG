@@ -414,7 +414,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
 
   function getusageCategoryAPI(arr) {
     let usageCat = ""
-    arr.map((ob, i) => {
+    arr?.map((ob, i) => {
       usageCat = usageCat + (i !== 0 ? "," : "") + ob.code
     })
     return usageCat

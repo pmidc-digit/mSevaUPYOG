@@ -13,7 +13,12 @@ import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
 import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
 import CHBSummary from "./pageComponents/CHBSummary";
 import getRootReducer from "../redux/reducer";
+import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
+import GCMyApplications from "./pages/citizen/MyChallan";
+import GCApplicationDetails from "./pages/citizen/ChallanApplicationDetails";
+import GCResponseCitizen from "./components/GCResponseCitizen";
+import ApplicationDetails from "./pages/employee/ApplicationDetails";
 
 export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -24,7 +29,6 @@ export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
     return <Loader />;
   }
   const { path, url } = useRouteMatch();
-  console.log("Getting Here CG");
 
   if (userType === "employee") {
     return <EmployeeApp path={path} url={url} userType={userType} />;
@@ -50,8 +54,6 @@ export const GarbageCollectionLinks = ({ matchPath, userType }) => {
     },
   ];
 
-  console.log("matchPath", matchPath);
-
   return <CitizenHomeCard header={t("ACTION_TEST_MCOLLECT")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };
 
@@ -68,6 +70,10 @@ const componentsToRegister = {
   CHBCitizenSecond,
   CHBSelectProofIdentity,
   CHBSummary,
+  GCMyApplications,
+  GCApplicationDetails,
+  GCResponseCitizen,
+  ApplicationDetails,
 };
 
 export const initGarbageCollectionComponents = () => {

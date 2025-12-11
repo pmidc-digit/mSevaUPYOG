@@ -23,7 +23,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
   );
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
-
+console.log('data for ownerconsent', data)
   console.log(params, "UU");
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: data?.tenantId,
@@ -156,22 +156,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
 
   console.log("TimeStamp", params?.additionalDetails?.TimeStamp, TimeStamp);
 
-  const updatedAdditionalDetails = {
-    ...data?.applicationData,
-    TimeStamp: TimeStamp,
-  };
-
-  // Update the entire data object with the new additionalDetails
-  const updatedData = {
-    applicationNo: data?.applicationNo,
-    tenantId: data?.tenantId,
-    applicationData: {
-      ...updatedAdditionalDetails,
-    },
-  };
-
-  console.log(data, "DatA");
-
+  
   // const selfdeclarationform = `
   //   To,
   //   <b>${ulbselection}</b>
@@ -234,7 +219,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;margin-left-5px; text-align:justify;">
-  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${data?.applicationData?.landInfo?.address?.locality?.name?.split("-")?.[0]?.trim() || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
+  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${address || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
@@ -325,6 +310,24 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
         return;
       }
       setIsUploading(true); // Set isUploading to true before starting the upload
+      
+      const TimeStamp=  new Date(timeStamp).toString();
+      const updatedAdditionalDetails = {
+        ...data?.applicationData,
+        TimeStamp,
+      };
+
+      // Update the entire data object with the new additionalDetails
+      const updatedData = {
+        applicationNo: data?.applicationNo,
+        tenantId: data?.tenantId,
+        applicationData: {
+          ...updatedAdditionalDetails
+        },
+      };
+
+      console.log("updatedData", updatedData);
+      console.log(data, "DatA");
 
       let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [updatedData] }, "ownerconsent");
 console.log(result, "RESULT");

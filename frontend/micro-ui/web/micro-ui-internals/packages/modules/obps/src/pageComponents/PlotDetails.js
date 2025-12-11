@@ -20,7 +20,9 @@ import Timeline from "../components/Timeline";
 import { useForm, Controller } from "react-hook-form";
 import { PropertySearch } from "./PropertySearch";
 import { PropertySearchModal } from "./PropertySearchModal";
-import { set } from "lodash";
+import { useDispatch, useSelector } from "react-redux";
+import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions";
+import { PropertySearchLudhiana } from "./PropertySearchLudhiana";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -30,6 +32,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [boundaryWallLength, setBoundaryWallLength] = useState("");
   const [wardnumber, setWardNumber] = useState("");
   const [isClubbedPlot, setIsClubbedPlot] = useState({});
+  const [isSelfCertification, setIsSelfCertification] = useState({}); //sSelfCertificationRequired
   const [isPropertyAvailable, setIsPropertyAvailable] = useState({});
   const [zonenumber, setZoneNumber] = useState("");
   const [khasraNumber, setKhasraNumber] = useState("");
@@ -52,6 +55,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [apiLoading, setApiLoading] = useState(false);
   const tenantId = localStorage.getItem("CITIZEN.CITY")
   const userInfo = Digit.UserService.getUser();
+  const uuid = userInfo?.info?.uuid;
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT")
   const requestor = userInfo?.info?.mobileNumber;
   const queryObject = { 0: { tenantId: state }, 1: {mobileNumber: requestor} };
@@ -60,8 +64,11 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [ptLoading, setPtLoading] = useState(false);
   const [showModal, setShowModal] = useState(false)
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
-  const { data: menuList2, isLoading2 } = Digit.Hooks.useCustomMDMS("pb", "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: menuList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS(state, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(state, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
+  const dispatch = useDispatch();
+  const LUDHIANA_TENANT = "pb.ludhiana";
   const common = [
     {
       code: "YES",
@@ -79,7 +86,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const data = currentStepData?.BasicDetails?.edcrDetails;
   console.log("menuList2",menuList2,zonesOptions)
 
-console.log("sessionStorageData",currentStepData);
+console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -117,8 +124,36 @@ console.log("sessionStorageData",currentStepData);
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });
+    });    
   }, [])
+
+  useEffect(() => {
+    if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid && tenantId !== LUDHIANA_TENANT){
+      fetchPropertyDetails(currentStepData?.createdResponse?.additionalDetails?.propertyuid);
+    }
+  }, [currentStepData]);
+
+  async function fetchPropertyDetails(propertyId){
+    try {
+            const fetchedData = await Digit.PTService.search({
+                tenantId, filters: {
+                    propertyIds: propertyId
+                }
+            })
+            console.log("fetchedData", fetchedData, propertyId);
+            if (fetchedData?.Properties?.length > 0) {
+                setPtLoading(false)
+                dispatch(UPDATE_OBPS_FORM("cpt", {  details: fetchedData?.Properties?.[0], id: fetchedData?.Properties?.[0]?.propertyId }))
+            }else{
+                setPtLoading(false)
+                return;
+            }
+        } catch (err) {
+            setPtLoading(false)
+            console.error("Error fetching property details:", err);
+            return;
+        }
+  }
 
   
   useEffect(() => {
@@ -166,6 +201,19 @@ console.log("sessionStorageData",currentStepData);
           }
         }
   }, [isClubbedPlot, currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot]);
+  
+  useEffect(() => {
+        if (typeof isSelfCertification === "boolean") {
+          const plan = common.find((item) => item.value === isSelfCertification);
+          if (plan) setIsSelfCertification(plan);
+        } else if (isSelfCertification === null) {
+          if (currentStepData?.createdResponse?.additionalDetails?.isSelfCertification) {
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          }else{
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          }
+        }
+  }, [isSelfCertification, currentStepData?.createdResponse?.additionalDetails?.isSelfCertification]);
 
   // useEffect(() => {
   //   const userInfoString = window.localStorage.getItem("user-info");
@@ -217,6 +265,7 @@ console.log("sessionStorageData",currentStepData);
     setBoundaryWallLength(details?.boundaryWallLength || "");
     setWardNumber(details?.wardnumber || "");
     setIsClubbedPlot(details?.isClubbedPlot !== null ? details?.isClubbedPlot : {});
+    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : true);
     setIsPropertyAvailable(details?.isPropertyAvailable !== null ? details?.isPropertyAvailable : {});
     setZoneNumber(details?.zonenumber || "");
     setKhasraNumber(details?.khasraNumber || "");
@@ -253,16 +302,23 @@ console.log("sessionStorageData",currentStepData);
 // }, [menuList, currentStepData?.cpt?.details?.address?.locality]);
 
 // useEffect(() => {
-//   if (currentStepData?.cpt?.zonalMapping?.zone && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
+//   if (currentStepData?.cpt?.zonalMapping?.zone?.code && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
 //     setZoneNumber(currentStepData?.cpt?.zonalMapping?.zone?.code || "");
+//   }else if(currentStepData?.cpt?.zonalMapping?.zone && typeof currentStepData?.cpt?.zonalMapping?.zone === "string" && !currentStepData?.createdResponse?.additionalDetails?.zonenumber) {
+//     setZoneNumber(currentStepData?.cpt?.zonalMapping?.zone);
 //   }
 // }, [currentStepData?.cpt?.zonalMapping?.zone]);
 
 useEffect(() => {
-  if (currentStepData?.cpt?.zonalMapping?.ward && !currentStepData?.createdResponse?.additionalDetails?.wardnumber) {
+  if (currentStepData?.cpt?.zonalMapping?.ward) {
     setWardNumber(currentStepData?.cpt?.zonalMapping?.ward?.code || "");
   }
-}, [currentStepData?.cpt?.zonalMapping?.ward]);
+  if(currentStepData?.cpt?.details?.address && !currentStepData?.createdResponse?.additionalDetails?.registrationDetails && !registrationDetails){
+    const { doorNo, plotNo, buildingName, street, city, district, state} = currentStepData?.cpt?.details?.address
+    const address = [doorNo, plotNo, buildingName, street, city, district, state]?.filter(Boolean)?.join(" ,");
+    if(address) setRegistrationDetails(address);
+  }
+}, [currentStepData?.cpt]);
 
 
 
@@ -273,6 +329,14 @@ useEffect(() => {
       newErrors.registrationDetails = t("BPA_REGISTRATION_DETAILS_REQUIRED");
     }
 
+    if (!isSelfCertification?.code && currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A")) {
+      newErrors.isSelfCertification = t("BPA_IS_SELF_CERTIFICATION_REQUIRED_MESSAGE");
+    }
+
+    if(!isPropertyAvailable?.code){
+      newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
+    }
+    
     if (!isClubbedPlot?.code) {
       newErrors.isClubbedPlot = t("BPA_IS_CLUBBED_PLOT_REQUIRED");
     }
@@ -362,10 +426,11 @@ useEffect(() => {
     if (!validate()) return;
 
     const userInfo = Digit.UserService.getUser()
+    const isArchitect = userInfo?.info?.roles?.some((role) => role?.code?.includes("BPA_ARCHITECT"));
     const applicationType = data?.appliactionType || "";
     const serviceType = data?.applicationSubType || "";
     let architectName = sessionStorage.getItem("BPA_ARCHITECT_NAME")
-    const typeOfArchitect = architectName ? JSON.parse(architectName) : "ARCHITECT"
+    const typeOfArchitect = isArchitect ? "ARCHITECT" : userInfo?.info?.roles?.find(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId))?.code?.split("_")?.[1] || "" // 
     if(architectName){
       architectName = JSON.parse(architectName)
     }
@@ -378,7 +443,9 @@ useEffect(() => {
     const stakeholderRegistrationNumber= JSON.parse(
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
-    const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
+    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || null;
+    const stakeholderState = userDetails?.user[0]?.correspondenceState
+    const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
     const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid;
     const address = {
@@ -431,10 +498,17 @@ useEffect(() => {
       stakeholderName,
       stakeholderRegistrationNumber,
       stakeholderAddress,
+      stakeholderState,
+      stakeholderDistrict,
       isSelfCertificationRequired,
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       isClubbedPlot: isClubbedPlot?.value,
-      isPropertyAvailable: isPropertyAvailable?.value
+      isPropertyAvailable: isPropertyAvailable?.value,
+      isSelfCertification: isSelfCertification?.value,
+      categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
+      subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
+      categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
+      subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -453,6 +527,8 @@ useEffect(() => {
       materialusedinfloor,
       materialusedinroofs,
       estimatedCost,
+      stakeholderState,
+      stakeholderDistrict,
       area: data?.planDetail?.planInformation?.plotArea?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
@@ -470,7 +546,12 @@ useEffect(() => {
       roadType,
       farDetails,
       isClubbedPlot: isClubbedPlot?.value,
-      isPropertyAvailable: isPropertyAvailable?.value
+      isPropertyAvailable: isPropertyAvailable?.value,
+      isSelfCertification: isSelfCertification?.value,
+      categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
+      subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
+      categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
+      subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -582,6 +663,10 @@ useEffect(() => {
   function setClubbedPlot(option) {
     setIsClubbedPlot(option)
   }
+  
+  function setSelfCertificationRequired(option) {
+    setIsSelfCertification(option)
+  }
 
   function setProperyAvailable(option) {
     setIsPropertyAvailable(option)
@@ -590,6 +675,8 @@ useEffect(() => {
   function closeModal() {
     setShowModal(false)
   }
+
+  console.log("currentStepData in plot details", currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code);
 
 
 
@@ -623,7 +710,17 @@ useEffect(() => {
               t={t}
             />
           </div>
-          {/* {isPropertyAvailable?.value && <PropertySearch  formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>} */}
+          {errors["isPropertyAvailable"] && (
+            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isPropertyAvailable"]}</CardLabelError>
+          )}
+          {!isPropertyAvailable?.value && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
+          {tenantId === LUDHIANA_TENANT && <div>
+            {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {errors["propertyuid"] && (
+              <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
+            )}
+          </div>}
+          {tenantId != LUDHIANA_TENANT && <div>
           {isPropertyAvailable?.value && <SubmitBar style={{marginBottom:"1rem"}} label={t("PT_SEARCH_PROPERTY")} onSubmit={() => {setShowModal(true)}} />}
           {showModal &&           
           <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>}
@@ -639,6 +736,7 @@ useEffect(() => {
               text={currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid || "NA"}
             />
           </StatusTable>}
+          </div>}
 
           <CardLabel>{`${t("BPA_IS_CLUBBED_PLOT_LABEL")} *`}</CardLabel>
           <Dropdown
@@ -651,6 +749,24 @@ useEffect(() => {
           />
           {errors["isClubbedPlot"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isClubbedPlot"]}</CardLabelError>
+          )}
+          
+          {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code?.includes("A") &&
+            <React.Fragment>
+              <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
+              <Dropdown
+                placeholder={t("BPA_IS_SELF_CERTIFICATION_REQUIRED")}
+                selected={isSelfCertification}
+                select={setSelfCertificationRequired}
+                option={common}
+                optionKey="i18nKey"
+                t={t}
+                disable={currentStepData?.createdResponse?.applicationNo}
+              />
+            </React.Fragment>
+          }
+          {errors["isSelfCertification"] && (
+            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )}
             
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}
@@ -695,7 +811,7 @@ useEffect(() => {
                       }}
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading} />}
           </ActionBar>
         </FormStep>
       </div>

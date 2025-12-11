@@ -5,19 +5,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
 import LayoutDocumentsView from "./LayoutDocumentsView";
 import LayoutImageView from "./LayoutImageView";
+import LayoutFeeEstimationDetails from "./LayoutFeeEstimationDetails";
+import LayoutDocumentTableView from "./LayoutDocumentsView";
 
 
 function LayoutSummary({ currentStepData: formData, t }) {
-  const { pathname: url } = useLocation()
-  const history = useHistory()
-  const dispatch = useDispatch()
+
 
   console.log("formData in Summary Page", formData)
 
 
-    const coordinates = useSelector(function (state) {
-        return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
-    });
+  const coordinates = useSelector(function (state) {
+    return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
+  });
+
   const sectionStyle = {
     backgroundColor: "#ffffff",
     padding: "1rem 1.5rem",
@@ -52,7 +53,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" }
 
-  const renderLabel = (label, value) => {
+  // const renderLabel = (label, value) => (
+  //   <div style={labelFieldPairStyle}>
+  //     <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+  //     <div>{value || "NA"}</div>
+  //   </div>
+  // );
+
+    const renderLabel = (label, value) => {
     if (!value || value === "NA" || value === "" || value === null || value === undefined) {
       return null;
     }
@@ -64,13 +72,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
       </div>
     );
   }
-
-  // const getFloorLabel = (index) => {
-  //   if (index === 0) return t("BPA_GROUND_FLOOR_AREA_LABEL")
-  //   const suffixes = ["st", "nd", "rd"]
-  //   const suffix = suffixes[((index - 1) % 10) - 1] || "th"
-  //   return `${index}${suffix} ${t("BPA_FLOOR_AREA_LABEL")}`
-  // }
 
   const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -244,14 +245,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+           <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
-        {Array.isArray(formData?.documents?.documents?.documents) &&
-        formData.documents.documents.documents.length > 0 ? (
-          <LayoutDocumentsView value={{ workflowDocs: formData.documents.documents.documents }}></LayoutDocumentsView>
-        ) : (
-          <div>{t("BPA_NO_DOCUMENTS_MSG")}</div>
-        )}
+        {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
+      </div>
+
+      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {formData && <LayoutFeeEstimationDetails formData={formData}/>}
       </div>
     </div>
   )

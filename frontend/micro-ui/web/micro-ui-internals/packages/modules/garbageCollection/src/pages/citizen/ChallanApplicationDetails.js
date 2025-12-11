@@ -11,12 +11,12 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import NDCDocumentTimline from "../../components/NDCDocument";
+import NDCDocumentTimline from "../../components/ChallanDocument";
 import { useParams } from "react-router-dom";
-import CHBDocument from "../../pageComponents/CHBDocument";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
 import { ChallanData } from "../../utils/index";
+import CHBDocument from "../../components/ChallanDocument";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -68,7 +68,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
-  const { acknowledgementIds, tenantId } = useParams();
+  const { acknowledgementIds } = useParams();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const [showOptions, setShowOptions] = useState(false);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -84,12 +85,19 @@ const ChallanApplicationDetails = () => {
 
   // const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
+  // const pathname = window.location.pathname;
+
+  // const afterApplication = pathname.split("/application/")[1];
+  // const parts = afterApplication.split("/");
+
+  // const applicationNumber = parts.slice(0, 4).join("/");
+
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
-      const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
+      const responseData = await Digit.GCService.search({ tenantId, filters });
       console.log("search ", responseData);
-      setChallanData(responseData?.challans?.[0]);
+      setChallanData(responseData?.GarbageConnection?.[0]);
       setLoader(false);
     } catch (error) {
       console.log("error", error);
@@ -101,11 +109,10 @@ const ChallanApplicationDetails = () => {
   useEffect(() => {
     if (acknowledgementIds) {
       const filters = {};
-      // filters.mobileNumber = userInfo?.info?.mobileNumber;
-      filters.challanNo = acknowledgementIds;
+      filters.applicationNumber = acknowledgementIds;
       fetchChallans(filters);
     }
-  }, []);
+  }, [acknowledgementIds]);
 
   // Getting HallsBookingDetails
   // const hallsBookingApplication = get(data, "hallsBookingApplication", []);
@@ -118,9 +125,11 @@ const ChallanApplicationDetails = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: acknowledgementIds,
-    moduleCode: "challan-generation",
+    moduleCode: "NewGC",
     role: "EMPLOYEE",
   });
+
+  console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -207,7 +216,7 @@ const ChallanApplicationDetails = () => {
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("CHALLAN_DETAILS")}</Header>
+          <Header styles={{ fontSize: "32px" }}>{t("GC_APPLICATION_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -218,28 +227,28 @@ const ChallanApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
-            <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
-            {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
-          </StatusTable>
-
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row className="border-none" label={t("CHALLAN_NUMBER")} text={t(getChallanData?.challanNo) || t("CS_NA")} />
-            <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.challanStatus) || t("CS_NA")} />
-            <Row className="border-none" label={t("CHALLAN_OFFENCE_NAME")} text={t(getChallanData?.offenceTypeName) || t("CS_NA")} />
-            <Row className="border-none" label={t("CHALLAN_OFFENCE_TYPE")} text={getChallanData?.offenceCategoryName || t("CS_NA")} />
+            <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.connectionHolders?.[0]?.name || t("CS_NA")} />
             <Row
               className="border-none"
-              label={t("CHALLAN_AMOUNT")}
-              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
+              label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")}
+              text={getChallanData?.connectionHolders?.[0]?.mobileNumber || t("CS_NA")}
             />
-            {getChallanData?.feeWaiver && <Row className="border-none" label={t("COURT_AMOUNT")} text={getChallanData?.feeWaiver} />}
+            <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.connectionHolders?.[0]?.emailId || t("CS_NA")} />
           </StatusTable>
 
-          {/* <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
+            <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
+            <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
+            <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
+            <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
+            <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
               {getChallanData?.documents?.length > 0 ? (
@@ -255,7 +264,7 @@ const ChallanApplicationDetails = () => {
                 <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
               )}
             </Card>
-          </StatusTable> */}
+          </StatusTable>
         </Card>
         {workflowDetails?.data?.timeline && (
           <Card style={{ marginTop: "20px" }}>

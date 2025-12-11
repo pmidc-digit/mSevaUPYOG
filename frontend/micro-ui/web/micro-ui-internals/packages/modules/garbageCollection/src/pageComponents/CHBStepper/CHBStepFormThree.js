@@ -3,15 +3,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_GarbageApplication_FORM } from "../../../redux/action/GarbageApplicationActions";
 import { useState } from "react";
+import { Loader } from "../../components/Loader";
 import _ from "lodash";
 
 const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const [loader, setLoader] = useState(false);
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [{ name: "Documents" }]);
+
   const checkFormData = useSelector((state) => state.gc.GarbageApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {
@@ -20,35 +23,44 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  console.log("currentStepData===", currentStepData);
-  console.log("checkFormData===", checkFormData);
-
-  function goNext(finalData) {
-    console.log("Current Data", finalData);
-    console.log("data?????....=====", docData?.CHB?.Documents);
-
+  const goNext = async (finalData) => {
     const missingFields = validation(finalData);
-
     if (missingFields.length > 0) {
-      setError(`${t("CHB_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
+      setError(`${t("GC_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
     onGoNext();
-  }
+    // console.log("checkFormData", checkFormData);
+    // setLoader(true);
+    // const payload = {
+    //   GarbageConnection: {
+    //     ...checkFormData?.venueDetails,
+    //     documents: checkFormData?.documents?.documents?.documents,
+    //     processInstance: {
+    //       ...checkFormData?.venueDetails?.processInstance,
+    //       action: "DRAFT",
+    //     },
+    //   },
+    // };
+    // try {
+    //   const response = await Digit.GCService.update(payload);
+    //   console.log("response", response);
+    //   setLoader(false);
+    //   dispatch(UPDATE_GarbageApplication_FORM("venueDetails", response?.GarbageConnection?.[0]));
+    //   onGoNext();
+    // } catch (error) {
+    //   setLoader(false);
+    // }
+  };
 
   function validation(formData) {
     if (!isLoading) {
-      const chbDocumentsType = docData?.CHB?.Documents || [];
+      const chbDocumentsType = docData?.["gc-services-masters"]?.Documents || [];
       const uploadedDocs = formData?.documents?.documents || [];
-
-      console.log("chbDocumentsType", chbDocumentsType);
-      console.log("uploadedDocs", uploadedDocs);
-
       // Extract required docs
       const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
-
       // Extract uploaded document codes
       const uploadedDocCodes = uploadedDocs?.map((doc) => doc.documentType);
 
@@ -68,7 +80,6 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_GarbageApplication_FORM(config.key, data));
     }
@@ -90,6 +101,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         onBackClick={onGoBack}
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {(loader || isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

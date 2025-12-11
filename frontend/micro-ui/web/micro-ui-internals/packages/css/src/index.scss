@@ -955,3 +955,15 @@ input[type="number"] {
     padding: 12px;
   }
 }
+
+.engagement-citizen-wrapper {
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+@media screen and (max-width: 768px) {
+  .engagement-citizen-wrapper {
+    overflow: hidden;
+  }
+}

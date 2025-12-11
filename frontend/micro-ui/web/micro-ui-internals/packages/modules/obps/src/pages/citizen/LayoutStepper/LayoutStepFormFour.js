@@ -179,9 +179,10 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           applicantGender: layoutFormData?.applicationDetails?.applicantGender?.code || "",
         },
         siteDetails: {
+          businessService: layoutFormData?.apiData?.Layout?.[0]?.layoutDetails.additionalDetails?.siteDetails?.businessService,
           ...layoutFormData?.siteDetails,
           ulbName: layoutFormData?.siteDetails?.ulbName?.name || "",
-          roadType: layoutFormData?.siteDetails?.roadType?.name || "",
+          roadType: layoutFormData?.siteDetails?.roadType|| "",
           buildingStatus: layoutFormData?.siteDetails?.buildingStatus?.name || "",
           isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
           district: layoutFormData?.siteDetails?.district?.name || "",
@@ -222,12 +223,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("currentStepData in StepFour", currentStepData);
 
   const applicationNo = currentStepData?.apiData?.Layout?.[0]?.applicationNo || "";
+  const businessServiceCode = currentStepData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
   console.log("applicationNo here==>", applicationNo);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNo,
-    moduleCode: "Layout",
+    moduleCode: businessServiceCode,
   });
 
   console.log("workflow Details here layout==>", workflowDetails);

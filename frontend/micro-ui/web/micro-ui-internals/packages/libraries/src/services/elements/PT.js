@@ -171,6 +171,13 @@ export const PTService = {
       params: { ...filters },
       isUserInfo:false
     }),
+    ludhianaSearch: ({ filters }) => 
+    Request({
+      url: Urls.pt.ludhianaSearch,
+      useCache: false,
+      method: "GET",
+      params: { ...filters },
+    })
 };
 
 

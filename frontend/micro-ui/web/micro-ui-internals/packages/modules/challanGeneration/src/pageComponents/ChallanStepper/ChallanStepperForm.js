@@ -228,8 +228,7 @@ const ChallanStepperForm = () => {
   );
 
   const handleRates = (val) => {
-    console.log("val==", val);
-    const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.subCategoryId == val?.id);
+    const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
   };
 
@@ -327,35 +326,6 @@ const ChallanStepperForm = () => {
               {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
             </div>
 
-            {/* offence type */}
-            <LabelFieldPair>
-              <CardLabel>
-                {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
-              </CardLabel>
-              <Controller
-                control={control}
-                name={"offenceType"}
-                defaultValue={null}
-                rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
-                render={(props) => (
-                  <Dropdown
-                    style={{ marginBottom: 0, width: "100%" }}
-                    className="form-field"
-                    // select={props.onChange}
-                    select={(e) => {
-                      props.onChange(e);
-                      handleRates(e);
-                    }}
-                    selected={props.value}
-                    option={OffenceTypeData?.Challan?.OffenceType}
-                    optionKey="name"
-                    t={t}
-                  />
-                )}
-              />
-              {errors.offenceType && <p style={{ color: "red" }}>{errors.offenceType.message}</p>}
-            </LabelFieldPair>
-
             {/* Offence Category */}
             <LabelFieldPair style={{ marginTop: "20px" }}>
               <CardLabel>
@@ -406,6 +376,35 @@ const ChallanStepperForm = () => {
                 )}
               />
               {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
+            </LabelFieldPair>
+
+            {/* offence type */}
+            <LabelFieldPair>
+              <CardLabel>
+                {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
+              </CardLabel>
+              <Controller
+                control={control}
+                name={"offenceType"}
+                defaultValue={null}
+                rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
+                render={(props) => (
+                  <Dropdown
+                    style={{ marginBottom: 0, width: "100%" }}
+                    className="form-field"
+                    // select={props.onChange}
+                    select={(e) => {
+                      props.onChange(e);
+                      handleRates(e);
+                    }}
+                    selected={props.value}
+                    option={OffenceTypeData?.Challan?.OffenceType}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {errors.offenceType && <p style={{ color: "red" }}>{errors.offenceType.message}</p>}
             </LabelFieldPair>
 
             {/* Challan Amount Default */}

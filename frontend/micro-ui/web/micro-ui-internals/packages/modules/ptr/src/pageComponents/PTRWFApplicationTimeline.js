@@ -304,19 +304,33 @@ const PTRWFApplicationTimeline = (props) => {
 
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-        {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
+        {(props.application?.status != "CITIZENACTIONREQUIRED" || props.application?.status != "INITIATED") &&
+          actions &&
+          actions[0]?.action != "PAY" &&
+          !isCitizen && (
+            <ActionBar>
+              {displayMenu ? (
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                  // style={MenuStyle}
+                />
+              ) : null}
+              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            </ActionBar>
+          )}
+
+        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && !isCitizen && (
           <ActionBar>
-            {displayMenu ? (
-              <Menu
-                localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                options={actions}
-                optionKey={"action"}
-                t={t}
-                onSelect={onActionSelect}
-                // style={MenuStyle}
-              />
-            ) : null}
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                history.push(`/digit-ui/employee/ptr/petservice/new-application/${props.application?.applicationNumber}`);
+              }}
+            />
           </ActionBar>
         )}
 

@@ -389,6 +389,13 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         const result = await Digit.OBPSService.update({ BPA: {
           ...currentStepData?.createdResponse,
           landInfo,
+          additionalDetails: {
+            ...currentStepData?.createdResponse?.additionalDetails,
+            permissableFar: data?.planDetail?.farDetails?.permissableFar,
+            achievedFar: data?.planDetail?.farDetails?.providedFar,
+            ecsRequired: data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Required,
+            ecsProvided: data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Provided,
+          },
           workflow: {
             action: workflowAction,
             assignes: [accountId]

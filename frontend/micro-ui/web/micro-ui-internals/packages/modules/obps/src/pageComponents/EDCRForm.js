@@ -244,7 +244,7 @@ useEffect(() => {
           }
         }}
         />
-        <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError>
+        {/* <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError> */}
   
         
 

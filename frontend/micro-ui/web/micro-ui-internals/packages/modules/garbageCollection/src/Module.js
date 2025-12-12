@@ -29,7 +29,6 @@ export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
     return <Loader />;
   }
   const { path, url } = useRouteMatch();
-  console.log("Getting Here CG");
 
   if (userType === "employee") {
     return <EmployeeApp path={path} url={url} userType={userType} />;
@@ -54,8 +53,6 @@ export const GarbageCollectionLinks = ({ matchPath, userType }) => {
       i18nKey: t("GC_CREATE_APPLICATION"),
     },
   ];
-
-  console.log("matchPath", matchPath);
 
   return <CitizenHomeCard header={t("ACTION_TEST_MCOLLECT")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };

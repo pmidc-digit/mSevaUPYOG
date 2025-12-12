@@ -92,7 +92,7 @@ const GCResponseCitizen = (props) => {
           // message={"Community Hall Booking Application Submitted Successfully"}
           message={t("GC_APPLICATION_CREATED")}
           applicationNumber={applicationNumber}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHALLAN_NUMBER`)}
+          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
@@ -111,7 +111,7 @@ const GCResponseCitizen = (props) => {
         </div>
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />
+          {/* <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>
       {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}

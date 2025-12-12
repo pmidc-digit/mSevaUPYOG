@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 public class PlanInfoFeatureExtract extends FeatureExtract {
 	private static final Logger LOG = LogManager.getLogger(PlanInfoFeatureExtract.class);
 	public static final String MSG_ERROR_MANDATORY = "msg.error.mandatory.object.not.defined";
+	public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
 	private String digitsRegex = "[^\\d.]";
 	private static final BigDecimal ONEHUDREDTWENTYFIVE = BigDecimal.valueOf(125);
 	@Autowired
@@ -152,7 +153,9 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			BigDecimal heightExMP = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName1, pl);
 			b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
 
-			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
+//			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
+//				b.getBuilding().setIsHighRise(true);
+			if (height.compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
 				b.getBuilding().setIsHighRise(true);
 		}
 	}

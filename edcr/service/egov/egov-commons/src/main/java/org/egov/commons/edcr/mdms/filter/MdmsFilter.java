@@ -17,5 +17,19 @@ public class MdmsFilter {
     public static final String MIN_PLOT_AREA = "$[0].MasterPlan[0].minPlotArea";
 
     public static final String LIST_FRONT_SETBACK_PATH = "$[0].MasterPlan[0].frontSetBack";
+    
+    public static final String LIST_REAR_SETBACK_PATH = "$[0].MasterPlan[0].rearSetBack";
+    
+    public static final String FRONT_SETBACK_PATH = "$[0].MasterPlan[0].frontSetBack";
+    
+    public static final String REAR_SETBACK_PATH = "$[0].MasterPlan[0].rearSetBack";
+    
+    public static final String NORMAL_FAR = "$[0].MasterPlan[0].NormalFAR";
+    
+    public static final String PURCHASABLE_FAR = "$[0].MasterPlan[0].PurchasableFAR";
+    
+    public static final String MAX_ALLOWED_HEIGHT = "$[0].MasterPlan[0].maxHeight";
+    
+    public static final String MAX_ALLOWED_HEIGHT_WITH_STILT = "$[0].MasterPlan[0].maxHeightWithStilt";
 
 }

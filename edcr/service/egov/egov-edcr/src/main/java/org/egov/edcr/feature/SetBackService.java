@@ -254,7 +254,10 @@ public class SetBackService extends FeatureProcess {
 		            // Process rear yard only if no road reserve rear AND plot area > 200
 		            shouldProcessRearYard = true;
 		        }
+		    }else {
+		    	shouldProcessRearYard = true;
 		    }
+		    
 
 		    // Process rear yard only once if conditions matched
 		    if (shouldProcessRearYard) {

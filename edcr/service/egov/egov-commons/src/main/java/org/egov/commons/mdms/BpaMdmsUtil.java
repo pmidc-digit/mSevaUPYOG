@@ -127,7 +127,7 @@ public class BpaMdmsUtil {
 		MdmsCriteria mdmsCriteria = new MdmsCriteria();
 		mdmsCriteria.setModuleDetails(moduleDetails);
 //		mdmsCriteria.setTenantId(edcrRequest.getTenantId());
-		mdmsCriteria.setTenantId("pb.amritsar");
+		mdmsCriteria.setTenantId("pb");
 		MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
 		mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
 		mdmsCriteriaReq.setRequestInfo(requestInfo);

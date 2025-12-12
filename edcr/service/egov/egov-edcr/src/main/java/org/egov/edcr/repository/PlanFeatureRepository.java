@@ -300,8 +300,8 @@ public class PlanFeatureRepository {
         pf = new PlanFeature(RecreationalSpace.class);
         features.add(pf);
 
-//        pf = new PlanFeature(TravelDistanceToExit.class);
-//        features.add(pf);
+        pf = new PlanFeature(TravelDistanceToExit.class);
+        features.add(pf);
 
         pf = new PlanFeature(AdditionalFeature.class);
         features.add(pf);

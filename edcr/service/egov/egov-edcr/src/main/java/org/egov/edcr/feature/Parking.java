@@ -156,6 +156,18 @@ public class Parking extends FeatureProcess {
     private static final double totalDwellingUnits = 50.0; // Total number of dwelling units in the block
     private static final double averageUnitAreaSqM = 150.0; // Average unit area (total covered area / total DUs) in sq. m
 
+    public static final double AREA_UPPER_100 = 100;
+    public static final double AREA_UPPER_150 = 150;
+    public static final double AREA_UPPER_200 = 200;
+    public static final double AREA_UPPER_300 = 300;
+    public static final double AREA_UPPER_500 = 500;
+    public static final double AREA_UPPER_1000 = 1000;
+
+    // ECS requirements
+    public static final int ECS_TWO_WHEELER = 0; // Up to 100 sq.m (2 two-wheeler = 0 ECS)
+    public static final int ECS_1 = 1;
+    public static final int ECS_2 = 2;
+    public static final int ECS_3 = 3;
 
 
     @Override
@@ -395,19 +407,47 @@ public class Parking extends FeatureProcess {
 //                    }
                 }
         	}else {
-        		if (pl.getPlot() != null) { // Check plot is not null before using plotArea
-                    double area = plotArea.doubleValue();
-                    if (area < 100) {
-                        // requiredCarParkArea += 2.5; // Original logic, commented out in provided code
-                         noOfrequiredParking = 0; // Explicitly setting based on image for plotArea 83.61
-                    } else if (area >= 100 && area <= 150) {
-                        noOfrequiredParking += 1;
-                    } else if (area > 150 && area <= 200) { // Adjusted condition slightly to match common patterns (>=150 was in original)
-                        noOfrequiredParking += 2;
-                    } else if (area > 200) { // Adjusted condition slightly (>=200 was in original)
-                        noOfrequiredParking += 3;
-                    }
-                 }
+        		if (pl.getPlot() != null) {
+
+        		    double area = plotArea.doubleValue();
+
+        		    if (area <= AREA_UPPER_100) { 
+        		        noOfrequiredParking = ECS_TWO_WHEELER;
+
+        		    } else if (area > AREA_UPPER_100 && area <= AREA_UPPER_150) {
+        		        noOfrequiredParking = ECS_1;
+
+        		    } else if (area > AREA_UPPER_150 && area <= AREA_UPPER_200) {
+        		        noOfrequiredParking = ECS_1;
+
+        		    } else if (area > AREA_UPPER_200 && area <= AREA_UPPER_300) {
+        		        noOfrequiredParking = ECS_2;
+
+        		    } else if (area > AREA_UPPER_300 && area <= AREA_UPPER_500) {
+        		        noOfrequiredParking = ECS_3;
+
+        		    } else if (area > AREA_UPPER_500 && area <= AREA_UPPER_1000) {
+        		        noOfrequiredParking = ECS_3;
+
+        		    } else {
+        		        // Optional: for areas above 1000 sq.m (not in table)
+        		        noOfrequiredParking = ECS_3;
+        		    }
+        		}
+
+//        		if (pl.getPlot() != null) { // Check plot is not null before using plotArea
+//                    double area = plotArea.doubleValue();
+//                    if (area < 100) {
+//                        // requiredCarParkArea += 2.5; // Original logic, commented out in provided code
+//                         noOfrequiredParking = 0; // Explicitly setting based on image for plotArea 83.61
+//                    } else if (area >= 100 && area <= 150) {
+//                        noOfrequiredParking += 1;
+//                    } else if (area > 150 && area <= 200) { // Adjusted condition slightly to match common patterns (>=150 was in original)
+//                        noOfrequiredParking += 2;
+//                    } else if (area > 200) { // Adjusted condition slightly (>=200 was in original)
+//                        noOfrequiredParking += 3;
+//                    }
+//                 }
             	
     	//            if (openParkingArea.doubleValue() > 0) {
     	//                requiredCarParkArea += OPEN_ECS * noOfrequiredParking;

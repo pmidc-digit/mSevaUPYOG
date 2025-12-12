@@ -16,6 +16,10 @@ public class DxfFileConstants {
     public static final String G = "G"; // Industrial
     public static final String H = "H"; // Storage
     public static final String I = "I"; // Hazardous
+    public static final String J = "J"; // Petrol Pump
+    public static final String K = "K"; // Hotel / Motel
+    public static final String L = "L"; // Public Building
+    public static final String M = "M"; // Marriage Palace
 
     // sub occupancies code
     public static final String A2 = "A2";// Old Age Home
@@ -27,11 +31,13 @@ public class DxfFileConstants {
     public static final String A_SA = "A-SA";// Service Apartment
     public static final String A_PO = "A-PO";// Professional Office
     public static final String A_AF_GH = "A-AF-GH";
+    public static final String A_AIF = "A-AIF"; // Independent Floor
 
     public static final String B2 = "B2";// Educational HighSchool
     public static final String B_HEI = "B-HEI";// Higher Educational Institute
     public static final String B_PS = "B-PS";// Primary school
 
+    // Sub Occupancy for Hospital or Nursing Home
     public static final String C_MA = "C-MA";// Medical Admin
     public static final String C_MIP = "C-MIP";// Medical IP
     public static final String C_MOP = "C-MOP";// Medical OP
@@ -76,15 +82,32 @@ public class DxfFileConstants {
     public static final String G_IT  = "G-IT";   // Information Technology
     public static final String G_GI  = "G-GI";   // General Industry
     public static final String G_W   = "G-W";    // Warehouse
-
-    
-    
     
     public static final String H_PP = "H-PP"; // Petrol Pump
 
     public static final String I1 = "I-1";// Hazardous (I1)
     public static final String I2 = "I-2";// Hazardous (I2)
 
+    // Sub Occupancy for Petrol Pumps
+    public static final String J_FS = "J-FS";// Filling Station
+    public static final String J_FCSS = "J-FCSS";// Filling Cum Service Station
+    public static final String J_CNG = "J-CNG";// Compressed Natural Gas (CNG) Mother Station
+    
+    // Sub Occupany for Hotel/ Motel
+    public static final String K_H = "K-HM"; // Hotel / Motel
+    
+    // sub Occupany for Public Building
+    public static final String L_GPB= "L-GPB"; // General Public/Semi-public buildings
+    public static final String L_GO= "L-GO"; // Government Offices / Integrated Office Complex
+    public static final String L_EB_NS= "L-EB-NS"; // Educational Buildings - Nursery School
+    public static final String L_EB_PS= "L-EB-PS"; // Educational Buildings - Primary School
+    public static final String L_EB_HSS= "L-EB-HSS"; // Educational Buildings - Higher Secondary School
+    public static final String L_EB_C= "L-EB-C"; // Educational Buildings - College
+    public static final String L_E_RC= "L-E-RC"; //Education & Research Centre (Large Campus)
+    
+    // sub occupany for Marriage Place
+    public static final String M_M = "M-MP"; // Marriage Place
+    
     public static final String M_DFPAB = "M-DFPAB";// Dispensary for pet animals and birds
     public static final String M_OHF = "M-OHF";// Other Health Facilities
     public static final String M_VH = "M-VH";// Veterinary Hospital for pet animals and birds

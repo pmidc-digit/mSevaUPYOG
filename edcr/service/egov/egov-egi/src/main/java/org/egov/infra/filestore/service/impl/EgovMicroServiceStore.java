@@ -93,7 +93,7 @@ public class EgovMicroServiceStore implements FileStoreService {
 
     private static final String FILESTORE_V1_FILES = "filestore/v1/files";
 
-    private static final Logger LOG = getLogger(LocalDiskFileStoreService.class);
+    private static final Logger LOG = getLogger(EgovMicroServiceStore.class);
 
     private String url;
 

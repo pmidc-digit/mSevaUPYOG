@@ -90,10 +90,13 @@ public class FireTenderMovement extends FeatureProcess {
             scrutinyDetail.addColumnHeading(5, STATUS);
             scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Fire Tender Movement");
 
+//            if (block.getBuilding() != null
+//                    && block.getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                            DcrConstants.ROUNDMODE_MEASUREMENTS).compareTo(FIFTEEN) > 0) {
             if (block.getBuilding() != null
-                    && block.getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-                            DcrConstants.ROUNDMODE_MEASUREMENTS).compareTo(FIFTEEN) > 0) {
-                org.egov.common.entity.edcr.FireTenderMovement fireTenderMovement = block.getFireTenderMovement();
+                    && block.getBuilding().getBuildingHeightExcludingMP().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+                            DcrConstants.ROUNDMODE_MEASUREMENTS).compareTo(FIFTEEN) > 0) {    
+            	org.egov.common.entity.edcr.FireTenderMovement fireTenderMovement = block.getFireTenderMovement();
                 if (fireTenderMovement != null) {
                     List<BigDecimal> widths = fireTenderMovement.getFireTenderMovements().stream()
                             .map(fireTenderMovmnt -> fireTenderMovmnt.getWidth()).collect(Collectors.toList());

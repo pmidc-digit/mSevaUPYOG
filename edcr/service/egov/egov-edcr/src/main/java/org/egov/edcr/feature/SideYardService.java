@@ -49,6 +49,7 @@ package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.constants.DxfFileConstants.B;
 import static org.egov.edcr.constants.DxfFileConstants.D;
@@ -66,6 +67,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,6 +81,8 @@ import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.common.entity.edcr.Yard;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -273,6 +277,7 @@ public class SideYardService extends GeneralRule {
                                 if ((occupancy.getTypeHelper().getSubtype() != null
                                         && (A_R.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
                                         || A_AF.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
+                                        || A_AIF.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
                                         || A_PO.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())))
 								/* || F.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode()) */) {
                                 	//Added by Bimal 18-March-2924 to check side yard based on plotarea not on height
@@ -360,16 +365,25 @@ public class SideYardService extends GeneralRule {
 //        BigDecimal side1val = BigDecimal.ZERO;
 //        BigDecimal widthOfPlot = pl.getPlanInformation().getWidthOfPlot();
 
-        if (mostRestrictiveOccupancy.getSubtype() != null && (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
+//        if (mostRestrictiveOccupancy.getSubtype() != null 
+//        		&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
+//        		|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
+//        		|| A_PO.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+//
+//        	processSideYardResidential(pl, blockName, level, min,
+//        			mostRestrictiveOccupancy, rule, subRule, buildingHeight, plotArea, sideYard1Result,sideYard2Result, minDistanceSideYard1, minDistanceSideYard2);
+//        }
+        if (mostRestrictiveOccupancy.getSubtype() != null 
+        		&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
         		|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
         		|| A_PO.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 
-        	processSideYardResidential(pl, blockName, level, min,
+        	processSideYardResidentialAllTypes(pl, blockName, level, min,
         			mostRestrictiveOccupancy, rule, subRule, buildingHeight, plotArea, sideYard1Result,sideYard2Result, minDistanceSideYard1, minDistanceSideYard2);
         }
     }
-    // Added by Bimal 18-March-2924 to check Side yard based on plot are not on height
-    private void processSideYardResidential(Plan pl, String blockName, Integer level, final double min,
+    
+    private void processSideYardResidentialAllTypes(Plan pl, String blockName, Integer level, final double min,
     		final OccupancyTypeHelper mostRestrictiveOccupancy, String rule, String subRule,
     		BigDecimal buildingHeight, BigDecimal plotArea, SideYardResult sideYard1Result, SideYardResult sideYard2Result, 
     		BigDecimal minDistanceSideYard1, BigDecimal minDistanceSideYard2) {
@@ -378,38 +392,63 @@ public class SideYardService extends GeneralRule {
     	// Set minVal based on plot area and buildingHeight
     	BigDecimal minVal = BigDecimal.ZERO;
     	HashMap<String, String> errors = new HashMap<>();
+    	
+    	if(mostRestrictiveOccupancy!=null && (mostRestrictiveOccupancy.getSubtype()!=null
+	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
+	        
+	        if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             
+	             // Extraction 1B: Apply the tiered setback logic
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
 
-    	if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-    		// Plot area is less than zero
-    		errors.put("Plot Area Error:", "Plot area cannot be less than " + MIN_PLOT_AREA);
-    	} else if (plotArea.compareTo(PLOT_AREA_100_SQM) <= 0) {
-    		// Plot area is less than or equal to 100 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	} else if (plotArea.compareTo(PLOT_AREA_150_SQM) <= 0) {
-    		// Plot area is less than or equal to 150 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	} else if (plotArea.compareTo(PLOT_AREA_200_SQM) <= 0) {
-    		// Plot area is less than or equal to 200 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	} else if (plotArea.compareTo(PLOT_AREA_300_SQM) <= 0) {
-    		// Plot area is less than or equal to 300 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	} else if (plotArea.compareTo(PLOT_AREA_500_SQM) <= 0) {
-    		// Plot area is less than or equal to 500 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	} else if (plotArea.compareTo(PLOT_AREA_1000_SQM) <= 0) {
-    		// Plot area is less than or equal to 1000 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	}else if (plotArea.compareTo(PLOT_AREA_1000_SQM) > 0) {
-    		// Plot area is greather than 1000 sqm
-    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
-    	}
+	             requiredSetback.ifPresent(
+	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	             );
+	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	        }	    	
+	    }else {
+//	    	// getting permissible value from mdms
+//			Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
+//			minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
+	        
+			if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+				errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+		        pl.addErrors(errors);			        
+		    }
+			
+			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+
+			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+			            pl.getMdmsMasterData().get("masterMdmsData"),
+			            MdmsFilter.FRONT_SETBACK_PATH,
+			            BigDecimal.class
+			    );
+
+			    if (scOpt.isPresent()) {
+			        BigDecimal mdmsValue = scOpt.get();
+			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
+
+			        BigDecimal oneFifthHeight = buildingHeight.divide(
+			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
+			        );
+
+			        minVal = oneFifthHeight.max(mdmsValue);
+			    }else {
+			    	LOG.error("No value found from mdms for the side setback");
+			    }
+			}
+
+	    }
 
     	minVal = minVal.setScale(2, RoundingMode.HALF_UP);
     	boolean valid = validateMinimumAndMeanValue(BigDecimal.valueOf(min), minVal, plotArea);
     	if(!valid) {
 	    	LOG.info("Side Yard Service: min value validity False: actual/expected :"+min+"/"+minVal);
-	    	errors.put("Minimum and Mean Value Validation", "Side setback values are less than permissible value i.e." + minVal+" /" + " current values are " + min);
+	    	//errors.put("Minimum and Mean Value Validation", "Side setback values are less than permissible value i.e." + minVal+" /" + " current values are " + min);
 	    	
 	    }
 	    else {
@@ -418,6 +457,57 @@ public class SideYardService extends GeneralRule {
     	compareSideYardResult(blockName, minVal, BigDecimal.valueOf(min),
     			mostRestrictiveOccupancy, subRule, rule, valid, level, sideYard1Result, sideYard2Result , minDistanceSideYard1, minDistanceSideYard2);
     }
+    
+    // Added by Bimal 18-March-2924 to check Side yard based on plot are not on height
+//    private void processSideYardResidential(Plan pl, String blockName, Integer level, final double min,
+//    		final OccupancyTypeHelper mostRestrictiveOccupancy, String rule, String subRule,
+//    		BigDecimal buildingHeight, BigDecimal plotArea, SideYardResult sideYard1Result, SideYardResult sideYard2Result, 
+//    		BigDecimal minDistanceSideYard1, BigDecimal minDistanceSideYard2) {
+//    	LOG.info("Processing SideYardResidential:");
+//    	
+//    	// Set minVal based on plot area and buildingHeight
+//    	BigDecimal minVal = BigDecimal.ZERO;
+//    	HashMap<String, String> errors = new HashMap<>();
+//
+//    	if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+//    		// Plot area is less than zero
+//    		errors.put("Plot Area Error:", "Plot area cannot be less than " + MIN_PLOT_AREA);
+//    	} else if (plotArea.compareTo(PLOT_AREA_100_SQM) <= 0) {
+//    		// Plot area is less than or equal to 100 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	} else if (plotArea.compareTo(PLOT_AREA_150_SQM) <= 0) {
+//    		// Plot area is less than or equal to 150 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	} else if (plotArea.compareTo(PLOT_AREA_200_SQM) <= 0) {
+//    		// Plot area is less than or equal to 200 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	} else if (plotArea.compareTo(PLOT_AREA_300_SQM) <= 0) {
+//    		// Plot area is less than or equal to 300 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	} else if (plotArea.compareTo(PLOT_AREA_500_SQM) <= 0) {
+//    		// Plot area is less than or equal to 500 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	} else if (plotArea.compareTo(PLOT_AREA_1000_SQM) <= 0) {
+//    		// Plot area is less than or equal to 1000 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	}else if (plotArea.compareTo(PLOT_AREA_1000_SQM) > 0) {
+//    		// Plot area is greather than 1000 sqm
+//    		minVal = BigDecimal.valueOf(Math.max(buildingHeight.divide(BigDecimal.valueOf(FIVE_MTR)).doubleValue(), TWO_MTR)); // 1/5th of buildingHeight or 2.0 meters, whichever is highest
+//    	}
+//
+//    	minVal = minVal.setScale(2, RoundingMode.HALF_UP);
+//    	boolean valid = validateMinimumAndMeanValue(BigDecimal.valueOf(min), minVal, plotArea);
+//    	if(!valid) {
+//	    	LOG.info("Side Yard Service: min value validity False: actual/expected :"+min+"/"+minVal);
+//	    	errors.put("Minimum and Mean Value Validation", "Side setback values are less than permissible value i.e." + minVal+" /" + " current values are " + min);
+//	    	
+//	    }
+//	    else {
+//	    	LOG.info("Side Yard Service: min value validity True: actual/expected :"+min+"/"+minVal);
+//	    }
+//    	compareSideYardResult(blockName, minVal, BigDecimal.valueOf(min),
+//    			mostRestrictiveOccupancy, subRule, rule, valid, level, sideYard1Result, sideYard2Result , minDistanceSideYard1, minDistanceSideYard2);
+//    }
     
     private Boolean validateMinimumAndMeanValue(final BigDecimal min,  final BigDecimal minval, BigDecimal plotArea) {
         Boolean valid = false;
@@ -513,7 +603,8 @@ public class SideYardService extends GeneralRule {
 			
 			if(sideYard1Result.occupancyCode !=null && (sideYard1Result.occupancyCode.equalsIgnoreCase("A") || 
 					sideYard1Result.occupancyCode.equalsIgnoreCase("A-R")	||
-					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AF")
+					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AF") ||
+					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AIF")
 					)) {
 				permissableValueWithPercentage = sideYard1Result.expectedDistance.toString();
 			    providedValue = sideYard1Result.actualDistance.toString();
@@ -571,6 +662,7 @@ public class SideYardService extends GeneralRule {
     			if(sideYard2Result.occupancyCode !=null && 
     					(sideYard2Result.occupancyCode.equalsIgnoreCase("A") || 
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-R")	||
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AIF")	||
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AF") )) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
     			    providedValue = sideYard2Result.actualDistance.toString();

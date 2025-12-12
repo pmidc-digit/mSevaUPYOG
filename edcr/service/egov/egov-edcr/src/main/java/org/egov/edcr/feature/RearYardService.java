@@ -49,6 +49,7 @@ package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.constants.DxfFileConstants.B;
 import static org.egov.edcr.constants.DxfFileConstants.D;
@@ -219,6 +220,8 @@ public class RearYardService extends GeneralRule {
 										&& (A_R.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_AF.equalsIgnoreCase(
 														occupancy.getTypeHelper().getSubtype().getCode())
+												|| A_AIF.equalsIgnoreCase(
+														occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_PO.equalsIgnoreCase(
 														occupancy.getTypeHelper().getSubtype().getCode()))
 								/* || F.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode()) */)) {
@@ -273,8 +276,9 @@ public class RearYardService extends GeneralRule {
 							
 							
 							if(rearYardResult.occupancyCode.equalsIgnoreCase("A") || 
-									rearYardResult.occupancyCode.equalsIgnoreCase("A-R")	||
-									rearYardResult.occupancyCode.equalsIgnoreCase("A-AF")
+									rearYardResult.occupancyCode.equalsIgnoreCase("A-R") ||
+									rearYardResult.occupancyCode.equalsIgnoreCase("A-AF") ||
+									rearYardResult.occupancyCode.equalsIgnoreCase("A-AIF")
 									) {
 								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
 							    providedValue = rearYardResult.actualMinDistance.toString();
@@ -333,7 +337,7 @@ public class RearYardService extends GeneralRule {
 
 	// Added by Bimal 18-March-2924 to check Rear yard based on plot are not on height
 	private Boolean checkRearYardResidentialCommon(Plan pl, Building building, String blockName, Integer level,
-			Plot plot, String frontYardFieldName, BigDecimal min, BigDecimal mean,
+			Plot plot, String rearYardFieldName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult,
 			HashMap<String, String> errors, BigDecimal buildingHeight) {
 		Boolean valid = false;
@@ -344,45 +348,71 @@ public class RearYardService extends GeneralRule {
 		BigDecimal plotArea = pl.getPlanInformation().getPlotArea();
 
 		// Process only for A_R, A_AF, and A_ occupancy types
+//		if(mostRestrictiveOccupancy.getSubtype() != null
+//				&& (A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+//			valid = processRearYardResidentialAllTypes(blockName, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
+//					valid, subRule, rule, meanVal, depthOfPlot, errors, pl, plotArea, buildingHeight);
+//			
+//		}else if (mostRestrictiveOccupancy.getSubtype() != null
+//				&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())						
+//						|| A_PO.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+//			valid = processRearYardResidential(blockName, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
+//					valid, subRule, rule, meanVal, depthOfPlot, errors, pl, plotArea);
+//		}
+		
 		if(mostRestrictiveOccupancy.getSubtype() != null
-				&& (A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
-			valid = processFrontYardResidentialGroupHousing(blockName, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
+				&& (A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
+						|| A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
+						|| A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+			valid = processRearYardResidentialAllTypes(blockName, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
 					valid, subRule, rule, meanVal, depthOfPlot, errors, pl, plotArea, buildingHeight);
-			
-		}else if (mostRestrictiveOccupancy.getSubtype() != null
-				&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())						
-						|| A_PO.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
-			valid = processRearYardResidential(blockName, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
-					valid, subRule, rule, meanVal, depthOfPlot, errors, pl, plotArea);
 		}
 
 		return valid;
 	}
 	
-	private Boolean processFrontYardResidentialGroupHousing(String blockName, Integer level,  BigDecimal min, BigDecimal mean,
-	        OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult frontYardResult, Boolean valid,
+	private Boolean processRearYardResidentialAllTypes(String blockName, Integer level,  BigDecimal min, BigDecimal mean,
+	        OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, Boolean valid,
 	        String subRule, String rule, BigDecimal meanVal, BigDecimal depthOfPlot,
 	        HashMap<String, String> errors, Plan pl, BigDecimal plotArea, BigDecimal buildingHeight) {
 		
-		LOG.info("Processing FrontYardResult:");
+		LOG.info("Processing RearYardResult:");
 
 	    BigDecimal minVal = BigDecimal.ZERO; 
+	    
+	    if(mostRestrictiveOccupancy!=null && (mostRestrictiveOccupancy.getSubtype()!=null
+	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
+	        
+	        if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             
+	             // Extraction 1B: Apply the tiered setback logic
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
 
-        Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-        		pl.getMdmsMasterData().get("masterMdmsData"), 
-        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
-        
-        if (fullListOpt.isPresent()) {
-             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-             
-             // Extraction 1B: Apply the tiered setback logic
-             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
-
-             requiredSetback.ifPresent(
-                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
-             );
-             minVal = requiredSetback.get().abs().stripTrailingZeros();
-        }
+	             requiredSetback.ifPresent(
+	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	             );
+	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	        }
+	    }else {
+	    	// getting permissible value from mdms
+//	    		Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
+//	    		minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
+	    		        
+	    		if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+	    			errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+	    			pl.addErrors(errors);			        
+	    		}
+	    				
+	    		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+	    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
+	    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
+	    			minVal = scOpt.get();
+	    		}
+	    }        
 
 	    // Validate minimum and mean value
 	    valid = validateMinimumAndMeanValue(min, mean, minVal, mean);
@@ -390,29 +420,23 @@ public class RearYardService extends GeneralRule {
 			valid=true;
 		}
 
-//	    // Add error if plot area is less than or equal to 10
-//	    if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-//	        errors.put("uptoSixteenHeightUptoTenDepthFrontYard",
-//	                "No construction shall be permitted if depth of plot is less than 10 and building height less than 16 having floors upto G+4.");
-//	        pl.addErrors(errors);
-//	    }
 	    if(!valid) {
-	    	LOG.info("Front Yard Service: min value validity False: "+minVal+"/"+min);
-	    	errors.put("Minimum and Mean Value Validation", "Front setback values are less than permissible value i.e." + minVal+" /" + " current values are " + min);
+	    	LOG.info("Rear Yard Service: min value validity False: "+minVal+"/"+min);
+	    	//errors.put("Minimum and Mean Value Validation", "Rear setback values are less than permissible value i.e." + minVal+" /" + " current values are " + min);
 	    	
 	    }
 	    else {
-	    	LOG.info("Front Yard Service: min value validity True: "+minVal+"/"+min);
+	    	LOG.info("Rear Yard Service: min value validity True: "+minVal+"/"+min);
 	    }
 	    pl.addErrors(errors);
-	    compareRearYardResult(blockName, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule, minVal, meanVal, level);
+	    compareRearYardResult(blockName, min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule, rule, minVal, meanVal, level);
 	    
 	    return valid;
 	}
 
 	// Added by Bimal 18-March-2924 to check Rear yard based on plot are not on height
 	private Boolean processRearYardResidential(String blockName, Integer level, BigDecimal min, BigDecimal mean,
-			OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult frontYardResult, Boolean valid, String subRule,
+			OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, Boolean valid, String subRule,
 			String rule, BigDecimal meanVal, BigDecimal depthOfPlot, HashMap<String, String> errors, Plan pl,
 			BigDecimal plotArea) {
 
@@ -465,7 +489,7 @@ public class RearYardService extends GeneralRule {
 			LOG.info("Rear Yard Service: min value validity True: " + minVal+"/"+min);
 		}
 		pl.addErrors(errors);
-		compareRearYardResult(blockName, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule,
+		compareRearYardResult(blockName, min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule, rule,
 				minVal, meanVal, level);
 
 		return valid;

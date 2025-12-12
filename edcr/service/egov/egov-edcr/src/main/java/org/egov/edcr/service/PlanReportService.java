@@ -682,13 +682,13 @@ public class PlanReportService {
         valuesMap.put("blockCount",
                 plan.getBlocks() != null && !plan.getBlocks().isEmpty() ? plan.getBlocks().size() : 0);
         valuesMap.put("surrenderRoadArea", plan.getTotalSurrenderRoadArea());
-        //String imageURL = ReportUtil.getImageURL("/egi/resources/global/images/mseva.png");
-        LOG.info("edcr internal service url : " + edcr_internal_service_url);
+        String imageURL = ReportUtil.getImageURL("/egi/resources/global/images/mseva.png");
+        //LOG.info("edcr internal service url : " + edcr_internal_service_url);
 
-        String imageURL = edcr_internal_service_url +"/egi/resources/global/images/mseva.png";
+        //String imageURL = edcr_internal_service_url +"/egi/resources/global/images/mseva.png";
         valuesMap.put("egovLogo", imageURL);
-        //String domainurl = ReportUtil.getImageURL("/egi/resources/global/images/logo_dep.png");
-        String domainurl = edcr_internal_service_url + "/egi/resources/global/images/logo_dep.png";
+        String domainurl = ReportUtil.getImageURL("/egi/resources/global/images/logo_dep.png");
+        //String domainurl = edcr_internal_service_url + "/egi/resources/global/images/logo_dep.png";
         valuesMap.put("cityLogo", domainurl);
         //new fields added into Plot Details
         valuesMap.put("numberOfFloors", plan.getPlanInformation().getNumberOfFloors());

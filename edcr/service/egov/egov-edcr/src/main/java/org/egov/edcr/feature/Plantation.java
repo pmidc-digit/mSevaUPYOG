@@ -49,6 +49,7 @@ package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
 import static org.egov.edcr.constants.DxfFileConstants.A_SA;
 import static org.egov.edcr.constants.DxfFileConstants.B;
 import static org.egov.edcr.constants.DxfFileConstants.D;
@@ -119,7 +120,7 @@ public class Plantation extends FeatureProcess {
                 plantationPer = totalArea.divide(plotArea, DECIMALDIGITS_MEASUREMENTS, ROUNDMODE_MEASUREMENTS);
                 
                  
-            if ( A.equals(type) ||  A_AF.equals(subType)  || A_SA.equals(subType) || B.equals(type) || D.equals(type) || G.equals(type)) {
+            if ( A.equals(type) ||  A_AF.equals(subType)  ||  A_AIF.equals(subType) || A_SA.equals(subType) || B.equals(type) || D.equals(type) || G.equals(type)) {
             	
 //                if (plantationPer.compareTo(new BigDecimal("0.10")) < 0) {
 //                    details.put(REQUIRED, ">= 10%");

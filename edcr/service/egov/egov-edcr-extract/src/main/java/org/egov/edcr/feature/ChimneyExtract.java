@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Chimney;
 import org.egov.common.entity.edcr.Measurement;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChimneyExtract extends FeatureExtract {
     private static final Logger LOG = LogManager.getLogger(ChimneyExtract.class);
+    public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
     @Autowired
     private LayerNames layerNames;
 
@@ -80,8 +82,10 @@ public class ChimneyExtract extends FeatureExtract {
 
             }
 
-            if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
-                block.getBuilding().setIsHighRise(true);
+//            if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
+//                block.getBuilding().setIsHighRise(true);
+            if (block.getBuilding().getBuildingHeight().compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
+            	block.getBuilding().setIsHighRise(true);
         }
 
         return planDetail;

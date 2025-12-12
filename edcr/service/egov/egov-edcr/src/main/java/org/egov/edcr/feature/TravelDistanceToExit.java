@@ -114,7 +114,7 @@ public class TravelDistanceToExit extends FeatureProcess {
                 }
             }
             String subRule = SUBRULE_42_2;
-            String subRuleDesc = SUBRULE_42_2_DESC;
+            //String subRuleDesc = SUBRULE_42_2_DESC;
             scrutinyDetail = new ScrutinyDetail();
             scrutinyDetail.setKey("Common_Travel Distance To Emergency Exits");
             scrutinyDetail.addColumnHeading(1, RULE_NO);

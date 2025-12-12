@@ -1424,6 +1424,36 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.providedFAR || t("CS_NA")}
                             
                         />}
+                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && <Row
+                            className="border-none"
+                            label={t(`BPA_ALLOWED_PROVIDED_FAR`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.purchasableFAR || t("CS_NA")}
+                            
+                        />}
+                        {currentStepData?.createdResponse?.additionalDetails?.permissableFar && <Row
+                            className="border-none"
+                            label={t(`BPA_PERMISSIBLE_FAR`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.permissableFar || t("CS_NA")}
+                            
+                        />}
+                        {currentStepData?.createdResponse?.additionalDetails?.achievedFar && <Row
+                            className="border-none"
+                            label={t(`BPA_FAR_ACHIEVED`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.achievedFar || t("CS_NA")}
+                            
+                        />}
+                        {currentStepData?.createdResponse?.additionalDetails?.ecsRequired && <Row
+                            className="border-none"
+                            label={t(`BPA_ECS_REQUIRED`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.ecsRequired || t("CS_NA")}
+                            
+                        />}
+                        {currentStepData?.createdResponse?.additionalDetails?.ecsProvided && <Row
+                            className="border-none"
+                            label={t(`BPA_ECS_PROVIDED`)}
+                            text={currentStepData?.createdResponse?.additionalDetails?.ecsProvided || t("CS_NA")}
+                            
+                        />}
                         <Row
                             className="border-none"
                             label={t(`BPA_MASTER_PLAN_LABEL`)}

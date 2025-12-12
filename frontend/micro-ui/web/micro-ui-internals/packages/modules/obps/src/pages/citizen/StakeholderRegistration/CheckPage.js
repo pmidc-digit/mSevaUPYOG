@@ -325,7 +325,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
             result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
           )
         )}
-        {renderLabel(t("BPA_LICENSE_TYPE"), t(LicenseType?.i18nKey))}
+        {renderLabel(t("BPA_LICENSE_TYPE"), t(`TRADELICENSE_TRADETYPE_${result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`))}
         {LicenseType?.i18nKey?.includes("ARCHITECT") &&
           renderLabel(t("BPA_COUNCIL_NUMBER"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
         {LicenseType?.i18nKey?.includes("TOWNPLANNER") &&

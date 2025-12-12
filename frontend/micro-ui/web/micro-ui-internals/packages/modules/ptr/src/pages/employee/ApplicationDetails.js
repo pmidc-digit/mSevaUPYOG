@@ -215,11 +215,13 @@ const ApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
-            <Row
-              className="border-none"
-              label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
-              text={pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
-            />
+            {(pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName) && (
+              <Row
+                className="border-none"
+                label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
+                text={pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
+              />
+            )}
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
             <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
@@ -329,16 +331,7 @@ const ApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
-          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && (
-            <ActionBar>
-              <SubmitBar
-                label={t("COMMON_EDIT")}
-                onSubmit={() => {
-                  history.push(`/digit-ui/employee/ptr/petservice/new-application/${id}`);
-                }}
-              />
-            </ActionBar>
-          )}
+
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast

@@ -226,6 +226,7 @@ const CLUProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />

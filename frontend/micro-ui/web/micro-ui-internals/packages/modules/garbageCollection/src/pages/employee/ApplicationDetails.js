@@ -190,18 +190,14 @@ const ChallanApplicationDetails = () => {
       Licenses: [action],
     };
 
+    console.log("action", action);
+
     if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
     }
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-
-    console.log("getWorkflowService", getWorkflowService);
-
-    console.log("filterNexState", filterNexState);
-
-    console.log("filterRoles", filterRoles);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -218,7 +214,8 @@ const ChallanApplicationDetails = () => {
       action.action !== "ACTIVATE_CONNECTION" &&
       action.action !== "REJECT" &&
       action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION" &&
-      action.action !== "APPROVE"
+      action.action !== "APPROVE" &&
+      action.action !== "APPROVE_FOR_CONNECTION"
     ) {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);
@@ -264,7 +261,7 @@ const ChallanApplicationDetails = () => {
     <React.Fragment>
       <div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.connectionHolders?.[0]?.name || t("CS_NA")} />
             <Row
@@ -275,13 +272,24 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.connectionHolders?.[0]?.emailId || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
             <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("PT_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            <Row className="border-none" label={t("NDC_MSG_PROPERTY_LABEL")} text={getChallanData?.propertyId || t("CS_NA")} />
+            <Row className="border-none" label={t("NDC_MSG_PROPERTY_TYPE_LABEL")} text={getChallanData?.propertyType || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}
+              text={getChallanData?.plotSize || t("CS_NA")}
+            />
             <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
           </StatusTable>
 

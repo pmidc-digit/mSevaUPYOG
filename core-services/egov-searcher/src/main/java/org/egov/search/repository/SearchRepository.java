@@ -85,7 +85,7 @@ public class SearchRepository {
 	        String url = searchCriteria != null ? (String) searchCriteria.get("url") : null;
 
 	        // 1️⃣ Count
-	        if (url != null && (url.toLowerCase().contains("saskipropertycount")||url.toLowerCase().contains("saskitotalpercentagecount"))) {
+	        if (url != null && (url.toLowerCase().contains("saskipropertyvasikacount")||url.toLowerCase().contains("saskipropertycount")||url.toLowerCase().contains("saskitotalpercentagecount"))) {
 	            log.info("URL contains 'count': " + url);
 	            String count = namedParameterJdbcTemplate.queryForObject(query, preparedStatementValues, String.class);
 	            return count;

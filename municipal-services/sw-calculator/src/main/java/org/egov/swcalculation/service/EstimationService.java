@@ -443,11 +443,11 @@ public class EstimationService {
 		if (feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST) != null) {
 
 			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+			        ? BigDecimal.ZERO
+			        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
 
 			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
 				connection_propertyType = "DEFAULT"; // default securityDeposit to be applied from mdms
@@ -512,11 +512,11 @@ public class EstimationService {
 		if (feeObj.get(SWCalculationConstant.SW_CONNECTION_FEE_CONST) != null) {
 
 			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+			        ? BigDecimal.ZERO
+			        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
 
 			if ((connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals("")) && !property.getUsageCategory().equals("MIXED"))
 				connection_propertyType = "DEFAULT"; // default connectionFee to be applied from mdms

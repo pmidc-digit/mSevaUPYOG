@@ -121,5 +121,7 @@ module.exports = function (app) {
     "/gc-services",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
-  ["/api/Property/GetPropertyDetail", "/api/Authenticate/GetToken"].forEach((location) => app.use(location, bathindaProxy));
+   ["/api/Property/", "/api/Property/GetPropertyDetail", "/api/Authenticate", "/api/Authenticate/GetToken"].forEach((location) =>
+    app.use(location, bathindaProxy)
+  );
 };

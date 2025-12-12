@@ -47,7 +47,7 @@ public class DocumentRepository {
 			namedParameterJdbcTemplate.batchUpdate(WS_APP_DOC_INSERT_QUERY,
 					documentBatchValues.toArray(new Map[documents.size()]));
 		} catch (Exception e) {
-			log.error("Error in inserting migration documents of water connection ", e);
+			log.error("Error in inserting migration documents of garbage connection ", e);
 		}
 	}
 

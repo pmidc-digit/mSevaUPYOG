@@ -127,7 +127,7 @@ public class GcServicesUtil {
 				RequestInfoWrapper.builder().requestInfo(waterConnectionRequest.getRequestInfo()).build());
 		List<Property> propertyList = getPropertyDetails(result);
 		if (CollectionUtils.isEmpty(propertyList)) {
-			throw new CustomException("INCORRECT_PROPERTY_ID", "Incorrect Property Id. Water Connection cannot be created.");
+			throw new CustomException("INCORRECT_PROPERTY_ID", "Incorrect Property Id. Garbage Connection cannot be created.");
 		}
 		return propertyList;
 	}

@@ -52,12 +52,12 @@ public class ValidateProperty {
 		Optional<Property> propertyList = gcServicesUtil.propertySearch(garbageConnectionRequest).stream().findFirst();
 		if (!propertyList.isPresent()) {
 			throw new CustomException("INVALID_PROPERTY",
-					"Water connection cannot be enriched without PropertyId");
+					"Garbage connection cannot be enriched without PropertyId");
 		}
 		Property property = propertyList.get();
 		if (StringUtils.isEmpty(property.getUsageCategory()) && !(garbageConnectionRequest.getRequestInfo().getUserInfo().getType().equalsIgnoreCase("SYSTEM"))) {
 			throw new CustomException("INVALID_PROPERTY_USAGE_TYPE",
-					"Water connection cannot be enriched without property usage type");
+					"Garbage connection cannot be enriched without property usage type");
 		}
 		return property;
 	}

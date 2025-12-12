@@ -56,7 +56,7 @@ public class IdGenRepository {
         try {
             response = restTemplate.postForObject( config.getIdGenHost()+ config.getIdGenPath(), req, IdGenerationResponse.class);
         } catch (HttpClientErrorException e) {
-        	log.error("Unable to generate water connection ID", e);
+        	log.error("Unable to generate garbage connection ID", e);
             throw new ServiceCallException("Id gen service threw an Exception");
         } catch (Exception e) {
             Map<String, String> map = new HashMap<>();

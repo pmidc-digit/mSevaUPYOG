@@ -242,7 +242,7 @@ public class GcServiceImpl implements GcService {
 
 	private void validateDisconnectionRequest(GarbageConnectionRequest waterConnectionRequest) {
 		if (!waterConnectionRequest.getGarbageConnection().getStatus().toString().equalsIgnoreCase(GCConstants.ACTIVE)) {
-			throw new CustomException("INVALID_REQUEST", "Water connection must be active for disconnection request");
+			throw new CustomException("INVALID_REQUEST", "Garbage connection must be active for disconnection request");
 		}
 
 		List<GarbageConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
@@ -267,7 +267,7 @@ public class GcServiceImpl implements GcService {
 
 	private void validateReconnectionRequest(GarbageConnectionRequest waterConnectionRequest) {
 		if (waterConnectionRequest.getGarbageConnection().getStatus().toString().equalsIgnoreCase(GCConstants.ACTIVE)) {
-			throw new CustomException("INVALID_REQUEST", "Water connection must be inactive for reconnection request");
+			throw new CustomException("INVALID_REQUEST", "Garbage connection must be inactive for reconnection request");
 		}
 
 		List<GarbageConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
@@ -794,8 +794,8 @@ public GarbageConnectionRequest updateConnectionStatusBasedOnActionDisconnection
 		List<GarbageConnection> connections = getGarbageConnectionsList(criteria, requestInfo);
 		if (CollectionUtils.isEmpty(connections)) {
 			StringBuilder builder = new StringBuilder();
-			builder.append("WATER CONNECTION NOT FOUND FOR: ").append(id).append(" :ID");
-			throw new CustomException("INVALID_WATERCONNECTION_SEARCH", builder.toString());
+			builder.append("GARBAGE CONNECTION NOT FOUND FOR: ").append(id).append(" :ID");
+			throw new CustomException("INVALID_GARBAGECONNECTION_SEARCH", builder.toString());
 		}
 
 		return connections.get(0);

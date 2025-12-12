@@ -32,9 +32,9 @@ import RentAndLeaseSelectProofIdentity from "./pageComponents/RentAndLeaseSelect
 import RentAndLeaseSummary from "./pageComponents/RentAndLeaseSummary";
 import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
 import CustomDatePicker from "./pageComponents/CustomDatePicker";
-import RALApplicationDetails from "./pages/citizen/RALApplicationDetails"
-import RALResponse from "./pageComponents/Reponse"
-import MyProperties from "./pages/citizen/MyProperties/myProperties"
+import RALApplicationDetails from "./pages/citizen/RALApplicationDetails";
+import RALResponse from "./pageComponents/Reponse";
+import MyProperties from "./pages/citizen/MyProperties/myProperties";
 import RALEmptyResultInbox from "./components/RALEmptyResultInbox";
 
 export const RentAndLeaseReducers = getRootReducer;
@@ -78,8 +78,6 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
   useEffect(() => {
     clearParams();
   }, []);
-
-
 
   const links = [
     {

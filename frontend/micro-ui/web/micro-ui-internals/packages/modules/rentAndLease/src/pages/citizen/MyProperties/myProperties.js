@@ -12,7 +12,8 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   const userInfo = Digit.UserService.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const [loader, setLoader] = useState(false);
-  const [getChallanData, setChallanData] = useState([]);
+  const [getPropertiesData, setPropertiesData] = useState([]);
+  console.log("getPropertiesData", getPropertiesData);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [filters, setFilters] = useState({
@@ -21,12 +22,12 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     mobileNumber: userInfo?.info?.mobileNumber,
   });
 
-  const fetchChallans = async () => {
+  const fetchProperties = async () => {
     setLoader(true);
     try {
       const responseData = await Digit.RentAndLeaseService.search({ tenantId, filters });
       if (responseData?.AllotmentDetails) {
-        setChallanData((prev) => [...prev, ...responseData.AllotmentDetails]);
+        setPropertiesData((prev) => [...prev, ...responseData.AllotmentDetails]);
         setTotalCount(responseData?.totalCount || responseData.AllotmentDetails.length);
 
         if (!responseData?.totalCount) {
@@ -43,7 +44,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   };
 
   useEffect(() => {
-    fetchChallans();
+    fetchProperties();
   }, [filters.offset]);
 
   const handleLoadMore = () => {
@@ -66,15 +67,17 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
           </Header>
         )}
 
-        {getChallanData?.map((bill, index) => {
+        {getPropertiesData?.map((property, index) => {
           return (
             <Card key={index}>
-              <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={bill?.applicationNumber || t("CS_NA")} />
-              <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={bill?.additionalDetails?.allotmentType || t("CS_NA")} />
-              <KeyNote keyValue={t("STATUS")} note={t(bill.status)} />
+              <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={property?.applicationNumber || t("CS_NA")} />
+              <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={property?.additionalDetails?.allotmentType || t("CS_NA")} />
+              <KeyNote keyValue={t("STATUS")} note={t(property.status)} />
               <KeyNote
                 keyValue={t("UC_OWNER_NAME_LABEL")}
-                note={bill?.OwnerInfo && bill?.OwnerInfo.length > 0 ? bill?.OwnerInfo.map((o) => o.name || t("CS_NA")).join(", ") : t("CS_NA")}
+                note={
+                  property?.OwnerInfo && property?.OwnerInfo.length > 0 ? property?.OwnerInfo.map((o) => o.name || t("CS_NA")).join(", ") : t("CS_NA")
+                }
               />
 
               <div
@@ -84,21 +87,21 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 }}
               >
                 {
-                  <Link to={`/digit-ui/citizen/rentandlease/property/${bill?.applicationNumber}/${bill?.tenantId}`}>
+                  <Link to={`/digit-ui/citizen/rentandlease/property/${property?.applicationNumber}/${property?.tenantId}`}>
                     <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
-                {bill?.status == "PENDINGPAYMENT" && (
-                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.applicationNumber)} />
+                {property?.status == "PENDINGPAYMENT"  && (
+                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
               </div>
             </Card>
           );
         })}
 
-        {getChallanData?.length === 0 && !loader && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("RAL_NO_APPLICATION_FOUND_MSG")}</p>}
+        {getPropertiesData?.length === 0 && !loader && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("RAL_NO_APPLICATION_FOUND_MSG")}</p>}
 
-        {(getChallanData?.length < totalCount || hasMore) && (
+        {(getPropertiesData?.length < totalCount || hasMore) && (
           <div style={{ marginLeft: "16px", marginTop: "16px" }}>
             <span className="link" style={{ cursor: "pointer", color: "#007bff", fontWeight: "bold" }} onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}

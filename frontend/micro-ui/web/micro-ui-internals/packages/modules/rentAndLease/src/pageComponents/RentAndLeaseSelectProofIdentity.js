@@ -38,7 +38,7 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
       for (const doc of requiredDocs) {
         const satisfied = docsArray?.some((d) => d.documentType?.includes(doc?.code) && (d?.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          missingDocs.push(t(doc?.code?.replaceAll(".", "_")));
+          missingDocs.push(t(doc?.code?.replaceAll(".", "_")?.toUpperCase()));
         }
       }
 

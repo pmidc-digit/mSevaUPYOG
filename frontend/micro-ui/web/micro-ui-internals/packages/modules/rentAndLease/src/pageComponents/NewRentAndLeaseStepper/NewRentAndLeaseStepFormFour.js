@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useState } from "react";
 import _ from "lodash";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../../redux/action/RentAndLeaseNewApplicationActions";
 
@@ -30,12 +30,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
 
   const onGoToRentAndLease = () => {
-    const isCitizen = window.location.href.includes("citizen");
-    if (isCitizen) {
-      history.push(`/digit-ui/citizen/rent-and-lease-home`);
-    } else {
-      history.push(`/digit-ui/employee/rent-and-lease/inbox`);
-    }
+    history.push(`/digit-ui/employee/rentandlease/inbox`);
+    // const isCitizen = window.location.href.includes("citizen");
+    // if (isCitizen) {
+    //   history.push(`/digit-ui/citizen/rent-and-lease-home`);
+    // } else {
+    //   history.push(`/digit-ui/employee/rent-and-lease/inbox`);
+    // }
   };
 
   function validateStepData(data) {
@@ -68,16 +69,18 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
     try {
       const res = await onSubmit(currentStepData, selectedAction);
+      console.log("res", res);
 
       if (res?.isSuccess) {
-        const action = res?.response?.RentAndLeaseApplications?.[0]?.workflow?.action;
+        const action = res?.response?.AllotmentDetails?.workflow?.action;
+        const status = res?.response?.AllotmentDetails?.status;
         if (action == "CANCEL") {
           onGoToRentAndLease();
-        } else if (action == "SAVEASDRAFT" || action == "SAVEDRAFT" || action == "DRAFT") {
+        } else if (status == "DRAFTED" || action == "DRAFT" || action == "SAVEASDRAFT" || action == "SAVEDRAFT") {
           triggerToast(t("RAL_SAVEDASDRAPT_MESSAGE"));
           setTimeout(() => {
             onGoToRentAndLease();
-          }, 1000);
+          }, 2000);
         } else {
           history.replace(`/digit-ui/${isCitizen ? "citizen" : "employee"}/rentandlease/response/${applicationNumber}`, {
             applicationData: currentStepData?.CreatedResponse,
@@ -91,37 +94,111 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     }
   }
 
+  const { id } = useParams();
+
   const onSubmit = async (data, selectedAction) => {
-    // Adapt this to your RentAndLease service structure
-    // This is a placeholder - you'll need to adjust based on your actual API structure
     const { CreatedResponse } = data;
     const { workflow: existingWorkflow } = CreatedResponse || {};
 
-    const formData = {
-      ...CreatedResponse?.AllotmentDetails,
-      Document: updatedDocuments.map((doc) => {
-        const originalDoc =
-          (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
+    let formData = {};
 
+    if (id) {
+      // EDIT FLOW: Merge updated form data
+      const originalOwners = CreatedResponse?.AllotmentDetails?.OwnerInfo || [];
+      const updatedApplicants = updatedApplicantDetails?.applicants || [];
+
+      const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
+        const originalOwner = originalOwners[index] || {};
         return {
-          documentType: doc?.documentType || originalDoc?.documentType || "",
-          filestoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-          ...(doc?.docId ? { docId: doc.docId } : {}),
-          ...(doc?.allotmentId ? { allotmentId: doc.allotmentId } : {}),
+          ...originalOwner,
+          name: applicant?.name,
+          mobileNo: applicant?.mobileNumber,
+          emailId: applicant?.emailId,
+          correspondenceAddress: {
+            ...originalOwner?.correspondenceAddress,
+            pincode: applicant?.pincode,
+            addressId: applicant?.address,
+            address: applicant?.address,
+          },
+          permanentAddress: {
+            ...originalOwner?.permanentAddress,
+            pincode: applicant?.pincode,
+            addressId: applicant?.address,
+            address: applicant?.address,
+          },
         };
-      }),
-      workflow: {
-        ...existingWorkflow,
-        action: selectedAction?.action || "",
-        comments: "",
-        status: selectedAction?.action || "",
-      },
-    };
+      });
+
+      const originalAdditionalDetails = CreatedResponse?.AllotmentDetails?.additionalDetails || {};
+      const mergedAdditionalDetails = {
+        ...originalAdditionalDetails,
+        ...updatedPropertyDetails,
+        allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
+        propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
+        locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
+      };
+
+      formData = {
+        ...CreatedResponse?.AllotmentDetails,
+        startDate: updatedPropertyDetails?.startDate
+          ? new Date(updatedPropertyDetails?.startDate).getTime()
+          : CreatedResponse?.AllotmentDetails?.startDate,
+        endDate: updatedPropertyDetails?.endDate ? new Date(updatedPropertyDetails?.endDate).getTime() : CreatedResponse?.AllotmentDetails?.endDate,
+        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.penaltyType,
+        OwnerInfo: mergedOwnerInfo,
+        additionalDetails: mergedAdditionalDetails,
+        Document: updatedDocuments.map((doc) => {
+          const originalDoc =
+            (CreatedResponse?.AllotmentDetails?.Document || []).find(
+              (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId
+            ) || {};
+          return {
+            documentType: doc?.documentType || originalDoc?.documentType || "",
+            fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+            documentUid: doc?.documentUid || originalDoc?.documentUid,
+            id: doc?.id || originalDoc?.id,
+            docId: doc?.docId || originalDoc?.docId,
+            allotmentId: doc?.allotmentId || originalDoc?.allotmentId,
+            active: true,
+          };
+        }),
+        workflow: {
+          ...existingWorkflow,
+          action: selectedAction?.action || "",
+          comments: "",
+          assignees: [],
+          documents: [],
+        },
+      };
+    } else {
+      // NORMAL FLOW: Use original logic
+      formData = {
+        ...CreatedResponse?.AllotmentDetails,
+        Document: updatedDocuments.map((doc) => {
+          const originalDoc =
+            (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
+          return {
+            documentType: doc?.documentType || originalDoc?.documentType || "",
+            filestoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+            ...(doc?.docId ? { docId: doc.docId } : {}),
+            ...(doc?.allotmentId ? { allotmentId: doc.allotmentId } : {}),
+          };
+        }),
+        workflow: {
+          ...existingWorkflow,
+          action: selectedAction?.action || "",
+          comments: "",
+          status: selectedAction?.action || "",
+        },
+      };
+    }
 
     // Adapt this to your actual service call
     const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: formData }, tenantId);
-    console.log("response", response);
-    if (response?.responseInfo?.status === "successful") {
+    console.log("Update Response", response);
+    if (response?.AllotmentDetails && response?.AllotmentDetails.length > 0) {
+      return { isSuccess: true, response: { RentAndLeaseApplications: response.AllotmentDetails } };
+    } else if (response?.responseInfo?.status === "successful") {
       return { isSuccess: true, response };
     } else {
       return { isSuccess: false, response };

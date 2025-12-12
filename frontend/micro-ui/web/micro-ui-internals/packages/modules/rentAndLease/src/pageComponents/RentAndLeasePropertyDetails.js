@@ -55,124 +55,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   //   { code: "MONTHLY", name: t("MONTHLY"), i18nKey: "MONTHLY" },
   //   { code: "ONETIME", name: t("ONETIME"), i18nKey: "ONETIME" },
   // ];
-  const incrementCycleOptions = [
-    { code: "YEARLY", name: t("YEARLY"), i18nKey: "YEARLY" },
-    { code: "HALF_YEARLY", name: t("HALF_YEARLY"), i18nKey: "HALF_YEARLY" },
-  ];
-
-  // 🔹 Mock property data
-  const mockProperties = [
-    {
-      propertyType: "ON_RENT",
-      propertyId: "RL001",
-      propertyName: "Commercial Space - Prime Location",
-      allotmentType: "rent",
-      propertySizeOrArea: "1200",
-      address: "123 Main Street, City Center",
-      geoLocation: { latitude: "28.6139", longitude: "77.2090" },
-      propertySpecific: "COMMERCIAL",
-      locationType: "PRIME",
-      propertyImage: "https://c8.alamy.com/comp/KFF7X8/kpmg-logo-KFF7X8.jpg",
-      baseRent: "50000",
-      securityDeposit: "10000",
-      tax_applicable: true,
-      refundApplicableOnDiscontinuation: true,
-      penaltyType: "DAILY",
-      latePayment: "2%",
-    },
-    {
-      propertyType: "ON_LEASE",
-      propertyId: "RL002",
-      propertyName: "Residential Apartment - Prime",
-      allotmentType: "rent",
-      propertySizeOrArea: "1500",
-      address: "456 Park Avenue, Downtown",
-      geoLocation: { latitude: "28.7041", longitude: "77.1025" },
-      propertySpecific: "RESIDENTIAL",
-      locationType: "PRIME",
-      propertyImage: "https://via.placeholder.com/150",
-      baseRent: "35000",
-      securityDeposit: "8000",
-      tax_applicable: true,
-      refundApplicableOnDiscontinuation: false,
-      penaltyType: "MONTHLY",
-      latePayment: "5%",
-    },
-    {
-      propertyType: "ON_RENT",
-      propertyId: "RL003",
-      propertyName: "Commercial Shop - Non-Prime",
-      allotmentType: "rent",
-      propertySizeOrArea: "800",
-      address: "789 Suburban Road, Outskirts",
-      geoLocation: { latitude: "27.1767", longitude: "78.0081" },
-      propertySpecific: "COMMERCIAL",
-      locationType: "NON_PRIME",
-      propertyImage: "https://via.placeholder.com/150",
-      baseRent: "25000",
-      securityDeposit: "5000",
-      tax_applicable: false,
-      refundApplicableOnDiscontinuation: true,
-      penaltyType: "ONETIME",
-      latePayment: "1%",
-    },
-    {
-      propertyType: "ON_LEASE",
-      propertyId: "RL004",
-      propertyName: "Industrial Warehouse - Non-Prime",
-      allotmentType: "rent",
-      propertySizeOrArea: "5000",
-      address: "321 Industrial Area, Zone B",
-      geoLocation: { latitude: "19.0760", longitude: "72.8777" },
-      propertySpecific: "INDUSTRIAL",
-      locationType: "NON_PRIME",
-      propertyImage: "https://via.placeholder.com/150",
-      baseRent: "100000",
-      securityDeposit: "20000",
-      tax_applicable: true,
-      refundApplicableOnDiscontinuation: false,
-      penaltyType: "MONTHLY",
-      latePayment: "10%",
-    },
-    {
-      propertyType: "ON_RENT",
-      propertyId: "RL005",
-      propertyName: "Residential House - Prime",
-      allotmentType: "rent",
-      propertySizeOrArea: "2000",
-      address: "555 Elite Avenue, Premium Area",
-      geoLocation: { latitude: "12.9716", longitude: "77.5946" },
-      propertySpecific: "RESIDENTIAL",
-      locationType: "PRIME",
-      propertyImage: "https://via.placeholder.com/150",
-      baseRent: "60000",
-      securityDeposit: "15000",
-      tax_applicable: true,
-      refundApplicableOnDiscontinuation: true,
-      penaltyType: "ONETIME",
-      latePayment: "3%",
-    },
-    {
-      propertyType: "ON_LEASE",
-      propertyId: "RL006",
-      propertyName: "Mixed Use Property - Prime",
-      allotmentType: "rent",
-      propertySizeOrArea: "3000",
-      address: "999 Business Hub, Central",
-      geoLocation: { latitude: "22.5726", longitude: "88.3639" },
-      propertySpecific: "MIXED_USE",
-      locationType: "PRIME",
-      propertyImage: "https://via.placeholder.com/150",
-      baseRent: "80000",
-      securityDeposit: "25000",
-      tax_applicable: false,
-      refundApplicableOnDiscontinuation: true,
-      penaltyType: "ONETIME",
-      latePayment: "4%",
-    },
-  ];
-
-  // const [filteredProperties, setFilteredProperties] = useState(mockProperties);
+  // const incrementCycleOptions = [
+  //   { code: "YEARLY", name: t("YEARLY"), i18nKey: "YEARLY" },
+  //   { code: "HALF_YEARLY", name: t("HALF_YEARLY"), i18nKey: "HALF_YEARLY" },
+  // ];
 
   // 🔹 Form setup
   const {
@@ -194,7 +80,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       securityDeposit: "",
       refundApplicableOnDiscontinuation: null,
       penaltyType: "",
-      latePayment: "",
+      // latePayment: "",
       startDate: "",
       endDate: "",
       incrementApplicable: "",
@@ -254,8 +140,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       "baseRent",
       "securityDeposit",
       "penaltyType",
-      "latePayment",
       "refundApplicableOnDiscontinuation",
+      // "latePayment",
       // "cowCessApplicable",
       // "taxApplicable"
     ];
@@ -583,7 +469,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Security Amount */}
       <LabelFieldPair>
         <CardLabel>
-          {t("SECURITY_AMOUNT")} <span style={mandatoryStyle}>*</span>
+          {t("RAL_SECURITY_AMOUNT")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -599,7 +485,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {errors.securityDeposit && <CardLabelError style={errorStyle}>{getErrorMessage("securityDeposit")}</CardLabelError>}
 
       {/* Late Payment % */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel>
           {t("LATE_PAYMENT_PERCENT")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
@@ -612,7 +498,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.latePayment && <CardLabelError style={errorStyle}>{getErrorMessage("latePayment")}</CardLabelError>}
+      {errors.latePayment && <CardLabelError style={errorStyle}>{getErrorMessage("latePayment")}</CardLabelError>} */}
 
       {/* Terms & Conditions */}
       {/* <LabelFieldPair>
@@ -653,8 +539,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         <CardLabelError style={errorStyle}>{getErrorMessage("refundApplicableOnDiscontinuation")}</CardLabelError>
       )} */}
 
-      
-
       {/* GST Applicable */}
       {/* <LabelFieldPair>
         <CardLabel>
@@ -688,7 +572,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       </LabelFieldPair> */}
 
       {/* Amount to be Refunded */}
-       {/* 
+      {/* 
       <LabelFieldPair>
         <CardLabel>
           {t("AMOUNT_TO_BE_REFUNDED")}

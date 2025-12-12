@@ -40,7 +40,7 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
-  console.log('workflowDetails', workflowDetails)
+  console.log("workflowDetails", workflowDetails);
 
   // Assuming applicationData is your API response
   const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
@@ -64,7 +64,10 @@ const RALApplicationDetails = () => {
                     <Row label={`${ownerLabelPrefix} ${t("ADS_APPLICANT_NAME")}`} text={owner?.name || t("CS_NA")} />
                     <Row label={`${ownerLabelPrefix} ${t("CORE_COMMON_PROFILE_EMAIL")}`} text={owner?.emailId || t("CS_NA")} />
                     <Row label={`${ownerLabelPrefix} ${t("CORE_MOBILE_NUMBER")}`} text={owner?.mobileNo || t("CS_NA")} />
-                    <Row label={`${ownerLabelPrefix} ${t("CORE_COMMON_PINCODE")}`} text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")} />
+                    <Row
+                      label={`${ownerLabelPrefix} ${t("CORE_COMMON_PINCODE")}`}
+                      text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
+                    />
                   </React.Fragment>
                 );
               })
@@ -101,7 +104,7 @@ const RALApplicationDetails = () => {
           </StatusTable>
         </Card>
 
- <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}

@@ -7,11 +7,11 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   const { t } = useTranslation();
   const [links, setLinks] = useState([]);
   const allLinks = [
-    {
-      text: t("RAL_ALLOT_NEW_PROPERTY"),
-      link: "/digit-ui/employee/rentandlease/allot-property",
-      roles: [],
-    },
+    // {
+    //   text: t("RAL_ALLOT_NEW_PROPERTY"),
+    //   link: "/digit-ui/employee/rentandlease/allot-property",
+    //   roles: [],
+    // },
     // {
     //   text: "Search Receipt",
     //   link: "/digit-ui/employee/mcollect/search-receipt",

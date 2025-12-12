@@ -55,7 +55,6 @@ const RALModal = ({
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
-
   console.log("action123", action);
 
   console.log("allRolesNew", allRolesNew);
@@ -138,7 +137,12 @@ const RALModal = ({
 
     if (action?.isTerminateState) checkCommentsMandatory = true;
 
-    let checkAssigneeMandatory = action?.action === "SENDBACKTOVERIFIER" || action?.action === "VERIFY" || action?.action === "FORWARD" || action?.action === "FORWARDFORFIELDINSPECTION";
+    let checkAssigneeMandatory =
+      action?.action === "SENDBACKTOVERIFIER" ||
+      action?.action === "VERIFY" ||
+      action?.action === "FORWARD" ||
+      action?.action === "FORWARDFORFIELDINSPECTION" ||
+      action?.action === "FORWARDFORAPPROVAL";
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 
     if (checkAssigneeMandatory && !selectedApprover?.uuid) {

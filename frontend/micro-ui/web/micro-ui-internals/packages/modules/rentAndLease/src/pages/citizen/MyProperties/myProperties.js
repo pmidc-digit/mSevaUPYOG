@@ -12,16 +12,29 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   const userInfo = Digit.UserService.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const [loader, setLoader] = useState(false);
-  const [getChallanData, setChallanData] = useState();
+  const [getChallanData, setChallanData] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [filters, setFilters] = useState({
+    limit: 5,
+    offset: 0,
+    mobileNumber: userInfo?.info?.mobileNumber,
+  });
 
-  console.log("copming here", getChallanData);
-
-  const fetchChallans = async (filters) => {
+  const fetchChallans = async () => {
     setLoader(true);
     try {
       const responseData = await Digit.RentAndLeaseService.search({ tenantId, filters });
-      console.log("result", responseData);
-      setChallanData(responseData?.AllotmentDetails);
+      if (responseData?.AllotmentDetails) {
+        setChallanData((prev) => [...prev, ...responseData.AllotmentDetails]);
+        setTotalCount(responseData?.totalCount || responseData.AllotmentDetails.length);
+
+        if (!responseData?.totalCount) {
+          setHasMore(responseData.AllotmentDetails.length === filters.limit);
+        } else {
+          setHasMore(false);
+        }
+      }
       setLoader(false);
     } catch (error) {
       console.log("error", error);
@@ -30,62 +43,18 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   };
 
   useEffect(() => {
-    const filters = {};
-    filters.mobileNumber = userInfo?.info?.mobileNumber;
-    fetchChallans(filters);
-  }, []);
+    fetchChallans();
+  }, [filters.offset]);
 
-  const onSubmit = (data) => {
-    history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
+  const handleLoadMore = () => {
+    setFilters((prev) => ({
+      ...prev,
+      offset: prev.offset + prev.limit,
+    }));
   };
 
-  const payment = {};
-
-  function getBillingPeriod(fromPeriod, toPeriod) {
-    if (fromPeriod && toPeriod) {
-      let from =
-        new Date(fromPeriod).getDate() +
-        " " +
-        Digit.Utils.date.monthNames[new Date(fromPeriod).getMonth()] +
-        " " +
-        new Date(fromPeriod).getFullYear();
-      let to =
-        new Date(toPeriod).getDate() + " " + Digit.Utils.date.monthNames[new Date(toPeriod).getMonth()] + " " + new Date(toPeriod).getFullYear();
-      return from + " - " + to;
-    } else return "N/A";
-  }
-
-  /* paymentDetails?.data?.Bill?.forEach((element) => {
-    if (element?.consumerCode) {
-      payment[element?.consumerCode] = {
-        total_due: element?.totalAmount,
-        bil_due__date: new Date(element?.billDate).toDateString(),
-      };
-    }
-  }); */
-
-  // const searchResults = getChallanData?.map((bill) => {
-  //   return {
-  //     businesService: bill?.businessService,
-  //     total_due: bill?.amount ? bill?.amount : 0,
-  //     OwnerName: bill.citizen?.name || t("CS_NA"),
-  //     status: bill.applicationStatus,
-  //     // BillingPeriod: getBillingPeriod(bill.billDetails[0].fromPeriod, bill.billDetails[0].toPeriod),
-  //     //bil_due__date: bill.billDetails[0].expiryDate || 0,
-  //     // bil_due__date: `${
-  //     //   new Date(bill.billDetails[0].expiryDate).getDate().toString() +
-  //     //   "/" +
-  //     //   (new Date(bill.billDetails[0].expiryDate).getMonth() + 1).toString() +
-  //     //   "/" +
-  //     //   new Date(bill.billDetails[0].expiryDate).getFullYear().toString()
-  //     // }`,
-  //     ChannelNo: bill?.challanNo || t("CS_NA"),
-  //     // ServiceCategory: bill.businessService ? bill.businessService.split(".")[bill.businessService.split(".").length - 1] : t("CS_NA"),
-  //   };
-  // });
-
   const handleMakePayment = (id) => {
-    history.push(`/digit-ui/citizen/payment/collect/Challan_Generation/${id}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
   return (
@@ -93,15 +62,15 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
       <div>
         {header && (
           <Header style={{ marginLeft: "8px" }}>
-            {t(header)} ({getChallanData?.length})
+            {t(header)} ({totalCount})
           </Header>
         )}
 
         {getChallanData?.map((bill, index) => {
           return (
             <Card key={index}>
-              <KeyNote keyValue={t("RAL_PROPERTY_AMOUNT")} note={bill?.amount ? bill?.amount?.[0]?.amount : 0} />
               <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={bill?.applicationNumber || t("CS_NA")} />
+              <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={bill?.additionalDetails?.allotmentType || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.status)} />
               <KeyNote
                 keyValue={t("UC_OWNER_NAME_LABEL")}
@@ -116,31 +85,27 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
               >
                 {
                   <Link to={`/digit-ui/citizen/rentandlease/property/${bill?.applicationNumber}/${bill?.tenantId}`}>
-                    <SubmitBar
-                      label={t("CS_VIEW_DETAILS")}
-                      //  label={CS_VIEW_DETAILS}
-                    />
+                    <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
-                {bill?.applicationStatus == "ACTIVE" && (
-                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.challanNo)} />
+                {bill?.status == "PENDINGPAYMENT" && (
+                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.applicationNumber)} />
                 )}
               </div>
             </Card>
           );
         })}
 
-        {/* <div>
-          <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel} onSubmit={onSubmit} />
-        </div> */}
-      </div>
+        {getChallanData?.length === 0 && !loader && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("RAL_NO_APPLICATION_FOUND_MSG")}</p>}
 
-      {/* <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
-        <p>{t("CHALLAN_NOT_ABLE_TO_FIND_BILL_MSG")} </p>
-        <p className="link">
-          <Link to="/digit-ui/citizen/mcollect/search">{t("UC_CLICK_HERE_TO_SEARCH_LINK")}</Link>
-        </p>
-      </div> */}
+        {(getChallanData?.length < totalCount || hasMore) && (
+          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
+            <span className="link" style={{ cursor: "pointer", color: "#007bff", fontWeight: "bold" }} onClick={handleLoadMore}>
+              {t("CHB_LOAD_MORE_MSG")}
+            </span>
+          </div>
+        )}
+      </div>
       {loader && <Loader page={true} />}
     </div>
   );

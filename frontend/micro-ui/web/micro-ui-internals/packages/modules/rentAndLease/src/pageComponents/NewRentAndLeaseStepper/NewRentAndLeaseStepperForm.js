@@ -170,7 +170,7 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
               startDate: allotmentDetails?.startDate,
               endDate: allotmentDetails?.endDate,
               penaltyType: allotmentDetails?.penaltyType || apiAdditionalDetails?.penaltyType,
-              latePayment: allotmentDetails?.latePayment || "2%",
+              // latePayment: allotmentDetails?.latePayment || "2%",
               // Add other root fields if they are missing in additionalDetails but needed in form
             };
 
@@ -224,6 +224,11 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
             if (formPropertyDetails.endDate) {
               formPropertyDetails.endDate = new Date(formPropertyDetails.endDate).toISOString().split("T")[0];
             }
+
+            // ✅ Populate selectedProperty to match Create flow structure
+            formPropertyDetails.selectedProperty = {
+              ...formPropertyDetails,
+            };
 
             console.log("Mapped formPropertyDetails", formPropertyDetails);
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", formPropertyDetails));

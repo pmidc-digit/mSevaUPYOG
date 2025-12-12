@@ -12,7 +12,7 @@ function RentAndLeaseSummary({ t }) {
     : [];
 
   const property = formData?.propertyDetails || {};
-  console.log('property', property)
+  console.log("property", property);
   const docs = formData?.documents?.documents?.documents || [];
 
   const sectionStyle = {
@@ -72,7 +72,6 @@ function RentAndLeaseSummary({ t }) {
     </div>
   );
 
-
   const propertyLabels = {
     // propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
     propertyId: t("RENT_LEASE_PROPERTY_ID"),
@@ -80,14 +79,14 @@ function RentAndLeaseSummary({ t }) {
     allotmentType: t("RAL_LEASE_USAGE_CATEGORY"),
     propertySizeOrArea: t("RAL_LEASE_PROPERTY_AREA"),
     address: t("RAL_LEASE_PROPERTY_ADDRESS"),
-    propertyType: t("RENT_LEASE_PROPERTY_SPECIFIC"),
+    propertySpecific: t("RENT_LEASE_PROPERTY_SPECIFIC"),
     locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
     securityDeposit: t("SECURITY_DEPOSIT"),
     tax_applicable: t("GST_APPLICABLE"),
     refundApplicableOnDiscontinuation: t("REFUND_APPLICABLE"),
     penaltyType: t("PENALTY_TYPE"),
-    latePayment: t("LATE_PAYMENT_PERCENT"),
+    // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
 
   return (
@@ -103,7 +102,7 @@ function RentAndLeaseSummary({ t }) {
               <div key={index} style={{ marginBottom: "1rem" }}>
                 {/* Optional sub-heading if multiple */}
                 {applicantDetails.length > 1 && (
-                  <h4 style={{ color: "#555", margin: "0 0 0.5rem 1.5rem",fontWeight:"700" }}>
+                  <h4 style={{ color: "#555", margin: "0 0 0.5rem 1.5rem", fontWeight: "700" }}>
                     {t("RAL_APPLICANT")} {index + 1}
                   </h4>
                 )}
@@ -127,7 +126,9 @@ function RentAndLeaseSummary({ t }) {
             <h3 style={headingStyle}>{t("Properties Details")}</h3>
           </div>
           {Object.entries(propertyLabels).map(([key, label]) => {
-            let value = property?.selectedProperty?.[key];
+            let value = property?.selectedProperty?.[key] || property?.[key];
+            if (value?.name) value = value.name;
+            else if (value?.code) value = value.code;
 
             // Special handling for booleans
             if (key === "refundApplicableOnDiscontinuation") {
@@ -153,8 +154,8 @@ function RentAndLeaseSummary({ t }) {
               <div style={documentsContainerStyle}>
                 {docs?.map((doc, index) => (
                   <div key={index} style={documentCardStyle}>
-                     <RALDocuments value={formData?.documents} Code={doc?.documentType} index={index} />
-                     <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    <RALDocuments value={formData?.documents} Code={doc?.documentType} index={index} />
+                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
                   </div>
                 ))}
               </div>

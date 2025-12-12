@@ -73,7 +73,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         const action = res?.response?.RentAndLeaseApplications?.[0]?.workflow?.action;
         if (action == "CANCEL") {
           onGoToRentAndLease();
-        } else if (action == "SAVEASDRAFT" || action == "SAVEDRAFT") {
+        } else if (action == "SAVEASDRAFT" || action == "SAVEDRAFT" || action == "DRAFT") {
           triggerToast(t("RAL_SAVEDASDRAPT_MESSAGE"));
           setTimeout(() => {
             onGoToRentAndLease();
@@ -106,8 +106,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         return {
           documentType: doc?.documentType || originalDoc?.documentType || "",
           filestoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-          docId: doc?.docId || originalDoc?.docId || "",
-          allotmentId: doc?.allotmentId || originalDoc?.allotmentId || "",
+          ...(doc?.docId ? { docId: doc.docId } : {}),
+          ...(doc?.allotmentId ? { allotmentId: doc.allotmentId } : {}),
         };
       }),
       workflow: {

@@ -5,8 +5,8 @@ import _ from "lodash";
 const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
+  console.log("formErrors", formErrors);
   const { triggerToast } = config;
-
 
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
@@ -18,11 +18,6 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
 
     const maxBytes = FILE_POLICY.maxBytes;
     let allowedExtensions = [...FILE_POLICY.allowedExtensions];
-
-    // Restrict to images only for Owner's Photo and PET_PETPHOTO
-    if (docCode === "OWNER.OWNERPHOTO" || docCode === "PET.PETPHOTO") {
-      allowedExtensions = [".jpeg", ".jpg", ".png"];
-    }
 
     const nameLower = file?.name?.toLowerCase?.() || "";
     const okType = allowedExtensions?.some((ext) => nameLower?.endsWith(ext));
@@ -55,7 +50,7 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
     };
   };
 
-   const tenantId = window.location.href.includes("citizen")
+  const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const { isLoading, data: mdmsDocsData } = Digit.Hooks.rentandlease.useRALDocumentsMDMS(tenantId);
@@ -88,14 +83,13 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
 
   const handleSubmit = () => {
     if (Object.keys(formErrors)?.length > 0) {
-      triggerToast(t(formErrors?.missingRequired || "PTR_VALIDATION_ERROR"),true);
+      triggerToast(t(formErrors?.missingRequired || "PTR_VALIDATION_ERROR"), true);
       onSelect(config.key, { missingDocs: formErrors?.missingDocs || [] });
       return;
     }
     let documentStep = { ...mdmsDocsData, documents };
     onSelect(config.key, documentStep);
   };
-
 
   const onSkip = () => onSelect();
 
@@ -200,9 +194,6 @@ function RentAndLeaseSelectDocument({
 
   const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
   const mandatoryStyle = { color: "red" };
-
-
-  console.log('doc', doc)
 
   return (
     <div style={{ marginBottom: "24px" }}>

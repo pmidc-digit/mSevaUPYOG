@@ -72,7 +72,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.["propertyName"]}`),
     },
     {
-      Header: t("RENT_LEASE_PROPERTY_TYPE"),
+      Header: t("RAL_ALLOTMENT_TYPE"),
       Cell: ({ row }) => {
         return GetCell(`${row.original?.searchData?.additionalDetails?.["allotmentType"]}`);
       },

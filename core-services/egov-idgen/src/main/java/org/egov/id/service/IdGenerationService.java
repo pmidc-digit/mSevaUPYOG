@@ -235,6 +235,10 @@ public class IdGenerationService {
         HashMap<String, List<String>> sequences = new HashMap<>();
         String idFormatTemplate = idFormat;
         String cityName = null;
+        Map<String, String> ulbAndDistrictCode = null;
+        
+        if(matchList.contains("ULB.CODE") || matchList.contains("DISTRICT.CODE"))
+        	ulbAndDistrictCode = mdmsService.getUlbAndDistrictCode(requestInfo, idRequest);
 
         for (int i = 0; i < count; i++) {
             idFormat = idFormatTemplate;
@@ -257,6 +261,10 @@ public class IdGenerationService {
                         cityName = mdmsService.getCity(requestInfo, idRequest);
                     }
                     idFormat = idFormat.replace("[" + attributeName + "]", cityName);
+                }else if(attributeName.equalsIgnoreCase("ULB.CODE")) {
+                	idFormat = idFormat.replace("[" + attributeName + "]", ulbAndDistrictCode.get("ulbCode"));
+                }else if(attributeName.equalsIgnoreCase("DISTRICT.CODE")) {
+                	idFormat = idFormat.replace("[" + attributeName + "]", ulbAndDistrictCode.get("districtCode"));
                 } else {
                     idFormat = idFormat.replace("[" + attributeName + "]", generateRandomText(attributeName, requestInfo));
                 }

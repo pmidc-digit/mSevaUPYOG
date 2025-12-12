@@ -463,5 +463,14 @@ public class TLConstants {
     public static final String STATUS_BLACKLISTED="BLACKLISTED";
     
     public static final String STATUS_INACTIVE="INACTIVE";
+    
+    public static final String ACTION_REAPPROVE  = "REAPPROVE";
+    
+	public static final Map<String, String> TRADETYPE_TO_IDGEN_SHORTNAME = Map.of(
+	    "ARCHITECT",   "AR",
+	    "ENGINEER",    "ER",
+	    "TOWNPLANNER", "TP",
+	    "SUPERVISOR",  "BD"
+	);
 
 }

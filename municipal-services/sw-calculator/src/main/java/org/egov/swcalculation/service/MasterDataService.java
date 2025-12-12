@@ -230,6 +230,18 @@ public class MasterDataService {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getApplicableMaster(Demand demand,String assessmentYear, List<Object> masterList) {
+			
+		/* PI-19980 
+		 * We added the masterList == null || masterList.isEmpty() check because the MDMS penalty.json file may not exist when the penalty feature is enabled for the first time.
+           If the penalty folder or JSON file is missing, masterList becomes null, and calling any method on it (like toString() or iterating over it) will throw a NullPointerException.
+           Therefore, we return null when masterList is null or empty to prevent the server from throwing an error.
+		 * */
+		
+		// if masterList is null or empty then return null
+	    if (masterList == null || masterList.isEmpty()) {
+	        log.info("Master List is null or empty");
+	        return null;
+	    }
 
 		Map<String, Object> objToBeReturned = null;
 		String maxYearFromTheList = "0";

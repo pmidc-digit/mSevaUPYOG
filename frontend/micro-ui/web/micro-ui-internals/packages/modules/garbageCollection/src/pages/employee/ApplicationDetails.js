@@ -190,18 +190,14 @@ const ChallanApplicationDetails = () => {
       Licenses: [action],
     };
 
+    console.log("action", action);
+
     if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
     }
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-
-    console.log("getWorkflowService", getWorkflowService);
-
-    console.log("filterNexState", filterNexState);
-
-    console.log("filterRoles", filterRoles);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -218,7 +214,8 @@ const ChallanApplicationDetails = () => {
       action.action !== "ACTIVATE_CONNECTION" &&
       action.action !== "REJECT" &&
       action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION" &&
-      action.action !== "APPROVE"
+      action.action !== "APPROVE" &&
+      action.action !== "APPROVE_FOR_CONNECTION"
     ) {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);

@@ -120,8 +120,6 @@ const Home = ({
       });
     // }
 
-    console.log("mdmsDataObj", mdmsDataObj);
-
     return (
       <React.Fragment>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>

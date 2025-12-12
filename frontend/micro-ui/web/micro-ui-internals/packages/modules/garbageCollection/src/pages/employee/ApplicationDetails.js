@@ -290,11 +290,7 @@ const ChallanApplicationDetails = () => {
               label={t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}
               text={getChallanData?.plotSize || t("CS_NA")}
             />
-            <Row
-              className="border-none"
-              label={t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_ADDRESS")}
-              text={getChallanData?.location || t("CS_NA")}
-            />
+            <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

@@ -15,7 +15,7 @@ import NDCDocumentTimline from "../../components/ChallanDocument";
 import { useParams } from "react-router-dom";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData } from "../../utils/index";
+import { ChallanData,getAcknowledgementData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -122,6 +122,13 @@ const ChallanApplicationDetails = () => {
 
   // sessionStorage.setItem("chb", JSON.stringify(application));
 
+  const getAcknowledgement = async () => {
+        const applications = getChallanData;
+        console.log('applications for garbage', applications)
+        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    };
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: acknowledgementIds,
@@ -151,7 +158,10 @@ const ChallanApplicationDetails = () => {
   const dowloadOptions = [];
 
   
-
+  dowloadOptions.push({
+    label: t("CHB_DOWNLOAD_ACK_FORM"),
+    onClick: () => getAcknowledgement(),
+  });
   async function getRecieptSearch({ tenantId, payments, ...params }) {
       let response = null
       if (payments?.fileStoreId) {

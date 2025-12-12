@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TLConstants {
@@ -466,11 +468,13 @@ public class TLConstants {
     
     public static final String ACTION_REAPPROVE  = "REAPPROVE";
     
-	public static final Map<String, String> TRADETYPE_TO_IDGEN_SHORTNAME = Map.of(
-	    "ARCHITECT",   "AR",
-	    "ENGINEER",    "ER",
-	    "TOWNPLANNER", "TP",
-	    "SUPERVISOR",  "BD"
-	);
+	public static final Map<String, String> TRADETYPE_TO_IDGEN_SHORTNAME =
+	    Stream.of(new Object[][] {
+	        {"ARCHITECT", "AR"},
+	        {"ENGINEER", "ER"},
+	        {"TOWNPLANNER", "TP"},
+	        {"SUPERVISOR", "BD"}
+	    }).collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+
 
 }

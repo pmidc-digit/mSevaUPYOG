@@ -148,33 +148,33 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   );
 
   useEffect(() => {
-    console.log("propertyDetailsFetch==", propertyDetailsFetch?.Properties);
-    console.log("currentStepData==", currentStepData);
-    if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
-      const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
-      const location = propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress || backStepData?.location;
-      const plotSize = propertyDetailsFetch?.Properties?.[0]?.landArea || backStepData?.plotSize;
-      if (backStepData?.propertyId) setValue("propertyId", backStepData?.propertyId);
-      setValue("location", location);
-      setValue("plotSize", plotSize);
-      const pTypeOptions = GCData?.["sw-services-calculation"]?.PropertyUsageType || [];
-      console.log("pTypeOptions", pTypeOptions);
-      const freqTypeOptions = FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency || [];
-      const wasteTypeOptions = WasteType?.["gc-services-masters"]?.TypeOfWaste || [];
-      const connectionCatoptions = connectionCategory?.["gc-services-masters"]?.connectionCategory || [];
-      console.log("connectionCatoptions", connectionCatoptions);
-      const usage = propertyDetailsFetch?.Properties?.[0]?.usageCategory || backStepData?.propertyType;
-      const frequency = backStepData?.frequency;
-      const typeOfWaste = backStepData?.typeOfWaste;
-      const connetionType = backStepData?.connectionCategory;
-      const pType = pTypeOptions?.find((item) => item.name == usage);
-      const freType = freqTypeOptions?.find((item) => item.name == frequency);
-      const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
-      const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
-      setValue("propertyType", pType || null);
-      setValue("frequency", freType || null);
-      setValue("typeOfWaste", wasteType || null);
-      setValue("connectionCategory", connectionCategoryType || null);
+    if (propertyDetailsFetch?.Properties[0]) {
+      if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
+        const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
+        const location = propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress || backStepData?.location;
+        const plotSize = propertyDetailsFetch?.Properties?.[0]?.landArea || backStepData?.plotSize;
+        if (backStepData?.propertyId) setValue("propertyId", backStepData?.propertyId);
+        setValue("location", location);
+        setValue("plotSize", plotSize);
+        const pTypeOptions = GCData?.["sw-services-calculation"]?.PropertyUsageType || [];
+        console.log("pTypeOptions", pTypeOptions);
+        const freqTypeOptions = FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency || [];
+        const wasteTypeOptions = WasteType?.["gc-services-masters"]?.TypeOfWaste || [];
+        const connectionCatoptions = connectionCategory?.["gc-services-masters"]?.connectionCategory || [];
+        console.log("connectionCatoptions", connectionCatoptions);
+        const usage = propertyDetailsFetch?.Properties?.[0]?.usageCategory;
+        const frequency = backStepData?.frequency;
+        const typeOfWaste = backStepData?.typeOfWaste;
+        const connetionType = backStepData?.connectionCategory;
+        const pType = pTypeOptions?.find((item) => item?.code == usage);
+        const freType = freqTypeOptions?.find((item) => item.name == frequency);
+        const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
+        const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
+        setValue("propertyType", pType || null);
+        setValue("frequency", freType || null);
+        setValue("typeOfWaste", wasteType || null);
+        setValue("connectionCategory", connectionCategoryType || null);
+      }
     }
   }, [propertyDetailsFetch, GCData, setValue, currentStepData]);
 
@@ -182,6 +182,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     const pId = watch("propertyId");
     setPropertyId(pId);
   };
+
+  useEffect(() => {
+    if (currentStepData?.apiResponseData || currentStepData?.venueDetails) {
+      const propertyId = currentStepData?.venueDetails || currentStepData?.apiResponseData;
+      if (propertyId) setValue("propertyId", propertyId?.propertyId);
+      searchProperty();
+    }
+  }, [currentStepData]);
 
   const closeToast = () => {
     setShowToast(false);
@@ -210,29 +218,30 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             <div
               style={{
                 display: "flex",
-
                 gap: "15px",
                 alignItems: "center",
               }}
             >
-              <Controller
-                control={control}
-                name="propertyId"
-                rules={{
-                  required: `${t("NDC_MESSAGE_PROPERTY_ID")}`,
-                }}
-                render={(props) => (
-                  <TextInput
-                    style={{ marginBottom: 0 }}
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      handleReset();
-                    }}
-                    t={t}
-                  />
-                )}
-              />
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name="propertyId"
+                  rules={{
+                    required: `${t("NDC_MESSAGE_PROPERTY_ID")}`,
+                  }}
+                  render={(props) => (
+                    <TextInput
+                      style={{ marginBottom: 0 }}
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                        handleReset();
+                      }}
+                      t={t}
+                    />
+                  )}
+                />
+              </div>
               <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
                 {`${t("PT_SEARCH")}`}
               </button>
@@ -267,7 +276,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               </div>
 
               {/* plot size */}
-              <div style={{ marginBottom: "20px" }}>
+              <div className="form-field" style={{ marginBottom: "20px" }}>
                 <CardLabel>
                   {`${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
@@ -292,7 +301,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               </div>
 
               {/* location */}
-              <div style={{ marginBottom: "20px" }}>
+              <div className="form-field" style={{ marginBottom: "20px" }}>
                 <CardLabel>
                   {`${t("GC_LOCATION")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
@@ -388,7 +397,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.typeOfWaste && <p style={{ color: "red" }}>{errors.typeOfWaste.message}</p>}
+                {errors?.connectionCategory && <p style={{ color: "red" }}>{errors.connectionCategory.message}</p>}
               </div>
             </div>
           )}

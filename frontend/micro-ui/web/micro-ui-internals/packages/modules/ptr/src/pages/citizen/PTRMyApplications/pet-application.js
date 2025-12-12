@@ -1,18 +1,14 @@
-import { Card, KeyNote, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Card, KeyNote, SubmitBar, ActionBar } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 const PetApplication = ({ application, tenantId, buttonLabel }) => {
   const { t } = useTranslation();
-
+  const history = useHistory();
   const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PetService", [{ name: "ApplicationType" }]);
-
   const checkRenewTime = data?.PetService?.ApplicationType?.filter((item) => item.code == "RENEWAPPLICATION");
-
   const checkTimeRenew = checkRenewTime?.[0]?.renewalPeriod * 1000;
-
-  console.log("checkTimeRenew", checkTimeRenew);
 
   const parseDate = (rawDate) => {
     if (!rawDate) return null;
@@ -24,15 +20,10 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
     }
   };
 
-  console.log("application", application?.validityDate);
-
   const validToObj = application?.validityDate;
   const validToMillis = validToObj ? validToObj * 1000 : null;
 
   const currentDateObj = Date.now();
-
-  console.log("validToMillis", validToMillis);
-  console.log("currentDateObj", currentDateObj);
 
   // ✅ Use timestamps for duration calculation
   const duration = validToObj && currentDateObj ? validToMillis - currentDateObj : null;
@@ -40,14 +31,8 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
   // const days = duration ? Math.round(duration / (1000 * 60 * 60 * 24)) : null;
   // ✅ Renewal check logic
 
-  console.log("duration", duration);
-
   const checkDuration = duration !== null && duration <= checkTimeRenew;
   const checkRenewal = application?.status == "APPROVED" || application?.status == "EXPIRED";
-
-  // console.log("checkRenewal", checkRenewal);
-
-  console.log("checkDuration", checkDuration);
 
   return (
     <Card>
@@ -66,6 +51,15 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
           <Link to={`/digit-ui/citizen/ptr/petservice/application/${application?.applicationNumber}/${application?.tenantId}`}>
             <SubmitBar label={buttonLabel} />
           </Link>
+        )}
+
+        {(application?.status == "CITIZENACTIONREQUIRED" || application?.status == "INITIATED") && (
+          <SubmitBar
+            label={t("COMMON_EDIT")}
+            onSubmit={() => {
+              history.push(`/digit-ui/citizen/ptr/petservice/new-application/${application?.applicationNumber}`);
+            }}
+          />
         )}
 
         {checkRenewal && checkDuration && (

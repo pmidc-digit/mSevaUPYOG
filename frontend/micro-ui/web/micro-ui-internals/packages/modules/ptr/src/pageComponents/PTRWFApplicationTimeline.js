@@ -329,7 +329,7 @@ const PTRWFApplicationTimeline = (props) => {
             </ActionBar>
           )}
 
-        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && (
+        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && !isCitizen && (
           <ActionBar>
             <SubmitBar
               label={t("COMMON_EDIT")}

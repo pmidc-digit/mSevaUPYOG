@@ -559,7 +559,6 @@ const ApplicationOverview = () => {
           )}
         </div>
       </Card>
-      <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (

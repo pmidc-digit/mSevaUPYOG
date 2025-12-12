@@ -104,7 +104,6 @@ const RALApplicationDetails = () => {
           </StatusTable>
         </Card>
 
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}

@@ -6,8 +6,8 @@ import {
   Row,
   StatusTable,
   MultiLink,
-  CheckPoint,
-  ConnectingCheckPoints,
+  // CheckPoint,
+  // ConnectingCheckPoints,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,54 +17,55 @@ import get from "lodash/get";
 import { Loader } from "../../components/Loader";
 import { ChallanData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
+import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
+// const getTimelineCaptions = (checkpoint, index, arr, t) => {
+//   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+//   const caption = {
+//     date: checkpoint?.auditDetails?.lastModified,
+//     name: checkpoint?.assigner?.name,
+//     // mobileNumber: checkpoint?.assigner?.mobileNumber,
+//     source: checkpoint?.assigner?.source,
+//   };
 
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
+//   return (
+//     <div>
+//       {comment?.length > 0 && (
+//         <div className="TLComments">
+//           <h3>{t("WF_COMMON_COMMENTS")}</h3>
+//           <p style={{ overflowX: "scroll" }}>{comment}</p>
+//         </div>
+//       )}
 
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
+//       {thumbnailsToShow?.thumbs?.length > 0 && (
+//         <DisplayPhotos
+//           srcs={thumbnailsToShow.thumbs}
+//           onClick={(src, idx) => {
+//             let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+//             Digit.Utils.zoomImage(fullImage);
+//           }}
+//         />
+//       )}
 
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
+//       {wfDocuments?.length > 0 && (
+//         <div>
+//           {wfDocuments?.map((doc, index) => (
+//             <div key={index}>
+//               <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+//             </div>
+//           ))}
+//         </div>
+//       )}
 
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
+//       <div style={{ marginTop: "8px" }}>
+//         {caption.date && <p>{caption.date}</p>}
+//         {caption.name && <p>{caption.name}</p>}
+//         {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
+//         {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+//       </div>
+//     </div>
+//   );
+// };
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
@@ -150,20 +151,20 @@ const ChallanApplicationDetails = () => {
   );
   const dowloadOptions = [];
 
-  
+
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-      let response = null
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] }
-      } else  {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments  }] }, "garbage-receipt")
-      }
-  
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
-      window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    let response = null
+    if (payments?.fileStoreId) {
+      response = { filestoreIds: [payments?.fileStoreId] }
+    } else {
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt")
+    }
+
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
+    window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
-  
+
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -226,7 +227,7 @@ const ChallanApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-        {workflowDetails?.data?.timeline && (
+        {/* {workflowDetails?.data?.timeline && (
           <Card style={{ marginTop: "20px" }}>
             <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
             {workflowDetails?.data?.timeline.length === 1 ? (
@@ -244,7 +245,9 @@ const ChallanApplicationDetails = () => {
               </ConnectingCheckPoints>
             )}
           </Card>
-        )}
+        )} */}
+
+        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>

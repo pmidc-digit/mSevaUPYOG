@@ -152,7 +152,7 @@ const RALApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}`);
-    } else if (action?.action === "EDIT") {
+    } else if (action?.action === "EDIT" || action?.action === "SAVEASDRAFT") {
       history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
     } else {
       setShowModal(true);
@@ -300,8 +300,6 @@ const RALApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
           <ActionBar>

@@ -113,7 +113,9 @@ export const SuccessfulPayment = (props) => {
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
-      data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
+      businessService === "GC.ONE_TIME_FEE"
+      ? "garbage-receipt"
+      :data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
 
   const printCertificate = async () => {

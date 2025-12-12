@@ -890,11 +890,13 @@ const PTRApplicationDetails = () => {
             )}
             <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
-            <Row
-              className="border-none"
-              label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
-              text={pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
-            />
+            {pet_details?.owner?.fatherOrHusbandName && (
+              <Row
+                className="border-none"
+                label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
+                text={pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
+              />
+            )}
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
           </StatusTable>
@@ -976,17 +978,6 @@ const PTRApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
-
-          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && isCitizen && (
-            <ActionBar>
-              <SubmitBar
-                label={t("COMMON_EDIT")}
-                onSubmit={() => {
-                  history.push(`/digit-ui/citizen/ptr/petservice/new-application/${applicationNumber}`);
-                }}
-              />
-            </ActionBar>
-          )}
 
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (

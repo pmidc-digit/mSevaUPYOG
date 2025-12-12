@@ -91,7 +91,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                     <SubmitBar label={t("CS_VIEW_DETAILS")} />
                   </Link>
                 }
-                {property?.status == "PENDINGPAYMENT"  && (
+                {(property?.status == "PENDINGPAYMENT" || property?.status == "PENDING_FOR_PAYMENT") && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
               </div>

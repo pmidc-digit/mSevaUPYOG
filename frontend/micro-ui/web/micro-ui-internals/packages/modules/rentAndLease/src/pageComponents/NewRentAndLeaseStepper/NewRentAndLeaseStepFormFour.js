@@ -76,7 +76,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         const status = res?.response?.AllotmentDetails?.status;
         if (action == "CANCEL") {
           onGoToRentAndLease();
-        } else if (status == "DRAFTED" || action == "DRAFT" || action == "SAVEASDRAFT" || action == "SAVEDRAFT") {
+        } else if (status == "DRAFTED" || status == "INITIATED" || action == "DRAFT" || action == "SAVEASDRAFT" || action == "SAVEDRAFT") {
           triggerToast(t("RAL_SAVEDASDRAPT_MESSAGE"));
           setTimeout(() => {
             onGoToRentAndLease();

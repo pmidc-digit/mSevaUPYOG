@@ -115,6 +115,11 @@ function CLUSummary({ currentStepData: formData, t }) {
       <h2 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h2>
       <div style={sectionStyle}>
         {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
+
+        {renderLabel(t("BPA_PLOT_AREA_LABEL"), formData?.siteDetails?.plotArea)}
+        {renderLabel(t("BPA_KHEWAT_KHATUNI_NO_LABEL"), formData?.siteDetails?.khewatOrKhatuniNo)}
+        {renderLabel(t("BPA_CORE_AREA_LABEL"), formData?.siteDetails?.coreArea?.code)}
+
         {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
         {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
         {renderLabel(t("BPA_ULB_TYPE_LABEL"), formData?.siteDetails?.ulbType)}
@@ -137,6 +142,14 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_OWNERSHIP_IN_PCT_LABEL"), formData?.siteDetails?.ownershipInPct)}
 
         {renderLabel(t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"), formData?.siteDetails?.proposedRoadWidthAfterWidening)}
+
+        {renderLabel(t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"), formData?.siteDetails?.appliedCluCategory?.name)}
+        {renderLabel(t("BPA_PROPERTY_UID_LABEL"), formData?.siteDetails?.propertyUid)}
+        {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), formData?.siteDetails?.buildingStatus?.name)}
+        {renderLabel(t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL"), formData?.siteDetails?.isOriginalCategoryAgriculture?.code)}
+        {renderLabel(t("BPA_RESTRICTED_AREA_LABEL"), formData?.siteDetails?.restrictedArea?.code)}
+        {renderLabel(t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isSiteUnderMasterPlan?.code)}
+
         {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
       </div>
 

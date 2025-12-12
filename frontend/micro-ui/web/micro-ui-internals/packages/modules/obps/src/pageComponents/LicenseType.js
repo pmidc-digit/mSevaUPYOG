@@ -113,7 +113,7 @@ console.log("validTo",validTo);
     if (qualificationType) {
       mapQualificationToLicense(qualificationType);
     }
-  }, [qualificationType]);
+  }, [qualificationType, EmployeeStatusData]);
 
   console.log("qualificationTypeFinfing", qualificationType);
 

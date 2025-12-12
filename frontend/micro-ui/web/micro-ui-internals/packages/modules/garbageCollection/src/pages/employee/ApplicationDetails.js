@@ -131,7 +131,8 @@ const ChallanApplicationDetails = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "NewGC",
+    moduleCode: getChallanData?.processInstance?.businessService,
+    // moduleCode: "DisconnectGCConnection",
     role: "EMPLOYEE",
   });
 
@@ -153,6 +154,8 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
+  console.log("workflowDetails", workflowDetails);
+
   let user = Digit.UserService.getUser();
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -165,24 +168,40 @@ const ChallanApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+  console.log("action===", actions);
+
   useEffect(() => {
     let WorkflowService = null;
     (async () => {
-      setLoader(true);
-      WorkflowService = await Digit.WorkflowService.init(tenantId, "NewGC");
-      setLoader(false);
-      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      if (getChallanData) {
+        const service = getChallanData?.processInstance?.businessService;
+        setLoader(true);
+        WorkflowService = await Digit.WorkflowService.init(tenantId, service);
+        console.log("WorkflowService", WorkflowService);
+        setLoader(false);
+        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      }
       // setComplaintStatus(applicationStatus);
     })();
-  }, [tenantId]);
+  }, [tenantId, getChallanData]);
 
   function onActionSelect(action) {
     const payload = {
       Licenses: [action],
     };
 
+    if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
+    }
+
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+
+    console.log("getWorkflowService", getWorkflowService);
+
+    console.log("filterNexState", filterNexState);
+
+    console.log("filterRoles", filterRoles);
 
     setEmployees(filterRoles?.[0]?.actions);
 
@@ -191,7 +210,25 @@ const ChallanApplicationDetails = () => {
   }
 
   const submitAction = async (modalData) => {
-    console.log("modalData", modalData?.Licenses);
+    const action = modalData?.Licenses[0];
+
+    if (
+      !action?.assignes &&
+      action.action !== "SEND_BACK_TO_CITIZEN" &&
+      action.action !== "ACTIVATE_CONNECTION" &&
+      action.action !== "REJECT" &&
+      action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION" &&
+      action.action !== "APPROVE"
+    ) {
+      setErrorOne("Assignee is Mandatory");
+      setShowErrorToastt(true);
+      return;
+    } else if (!action?.comment) {
+      setErrorOne("Comment is Mandatory");
+      setShowErrorToastt(true);
+      return;
+    }
+
     setLoader(true);
 
     const payload = {
@@ -204,15 +241,12 @@ const ChallanApplicationDetails = () => {
       },
     };
 
-    console.log("payload", payload);
-
     try {
       const response = await Digit.GCService.update(payload);
-      console.log("response", response);
       setLoader(false);
       setShowModal(false);
       // ✅ Show success first
-      setLable("Challan is Settled");
+      setLable("Status is Updated");
       setError(false);
       setShowToast(true);
 
@@ -223,54 +257,6 @@ const ChallanApplicationDetails = () => {
       }, 2000);
     } catch (error) {
       setLoader(false);
-    }
-    return;
-    if (!modalData?.amount) {
-      setErrorOne(`Please Enter Amount`);
-      setShowErrorToastt(true);
-    } else {
-      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
-      if (modalData?.amount > finalAmount) {
-        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
-        setShowErrorToastt(true);
-        setError(`Amount must be less than or equal to ${finalAmount}`);
-      } else {
-        console.log("nothing");
-
-        setLoader(true);
-
-        const payload = {
-          Challan: {
-            ...getChallanData,
-            workflow: {
-              action: "SETTLED",
-            },
-            feeWaiver: modalData?.amount,
-          },
-        };
-
-        console.log("payload", payload);
-        try {
-          const response = await Digit.ChallanGenerationService.update(payload);
-          setLoader(false);
-          setShowModal(false);
-          // ✅ Show success first
-          // setShowToast({ key: "success", message: "Successfully updated the status" });
-          setLable("Challan is Settled");
-          setError(false);
-          setShowToast(true);
-
-          // ✅ Delay navigation so toast shows
-          setTimeout(() => {
-            history.push("/digit-ui/employee/challangeneration/inbox");
-            window.location.reload();
-          }, 2000);
-
-          // history.push(`/digit-ui/employee/challangeneration/inbox`);
-        } catch (error) {
-          setLoader(false);
-        }
-      }
     }
   };
 
@@ -292,7 +278,7 @@ const ChallanApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
-            <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
+            <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
@@ -337,12 +323,24 @@ const ChallanApplicationDetails = () => {
           </Card>
         )}
 
-        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
+        {getChallanData?.applicationStatus != "INITIATED" && actions && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu localeKeyPrefix={`WF_GC`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
+
+        {getChallanData?.applicationStatus == "INITIATED" && (
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = getChallanData?.applicationNo;
+                history.push(`/digit-ui/employee/garbagecollection/create-application/${id}`);
+              }}
+            />
           </ActionBar>
         )}
       </div>
@@ -366,6 +364,8 @@ const ChallanApplicationDetails = () => {
           closeToastOne={closeToastOne}
           getLable={getLable}
           getChallanData={getChallanData}
+          loader={loader}
+          setLoader={setLoader}
         />
       ) : null}
 

@@ -67,7 +67,7 @@ const createEmployeeConfig = [
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
-  return { ...item, currStepConfig: stepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+  return { ...item, currStepConfig: stepperConfig?.filter((newConfigItem) => newConfigItem?.stepNumber === item?.stepNumber) };
 });
 
 const EditApplication = () => {
@@ -124,7 +124,7 @@ const EditApplication = () => {
 
   let menu = [];
   genderTypeData &&
-    genderTypeData["common-masters"].GenderType.filter((data) => data.active).map((genderDetails) => {
+    genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active)?.map((genderDetails) => {
       menu.push({ i18nKey: `COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
   });
 
@@ -142,7 +142,7 @@ const EditApplication = () => {
   useEffect(() => {
   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-    const matchedZone = fetchedLocalities.find((loc) => loc.name === zoneName);
+    const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
 
     if (matchedZone) {
       dispatch(
@@ -178,26 +178,26 @@ const EditApplication = () => {
         const updatedApplicantDetails=
         {
           ...applicantDetails,
-          applicantGender : menu.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
+          applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
-        const districtObj = cities.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
+        const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
         setSelectedDistrict(districtObj);
 
         const updatedSiteDetails=
         {
           ...siteDetails,
-          ulbName: ulbListOptions.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
-          roadType: roadType.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
-          buildingStatus: buildingType.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
-          isBasementAreaAvailable: options.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
+          ulbName: ulbListOptions?.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
+          roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
+          buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
+          isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
         
           district: districtObj,
 
-          specificationBuildingCategory: buildingCategory.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
-          specificationNocType: nocType.find((obj) => (obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType)),
-          specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
-          specificationIsSiteUnderMasterPlan: options.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan)),
+          specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
+          specificationNocType: nocType?.find((obj) => (obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType)),
+          specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
+          specificationIsSiteUnderMasterPlan: options?.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan)),
         }
       
         dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));

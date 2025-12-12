@@ -142,6 +142,8 @@ const RALModal = ({
       action?.action === "VERIFY" ||
       action?.action === "FORWARD" ||
       action?.action === "FORWARDFORFIELDINSPECTION" ||
+      action?.action === "FORWARD_FOR_APPROVAL" ||
+      action?.action === "PENDING_FOR_FIELDINSPECTION" ||
       action?.action === "FORWARDFORAPPROVAL";
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 

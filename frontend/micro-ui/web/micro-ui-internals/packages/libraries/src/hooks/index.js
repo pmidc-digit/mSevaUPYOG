@@ -415,6 +415,7 @@ import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
 import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile } from "./obps/useCLUSearchApplication";
 import useCLUInbox from "./obps/useCLUInbox";
 import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
+import useBathindaPropertySearch from "./pt/useBathindaPropertySearch";
 
 const pgr = {
   useComplaintDetails,
@@ -539,7 +540,8 @@ const pt = {
   useGenericViewProperty,
   useRatingAndFeedbackMDMS,
   useServiceSearchCF,
-  useLudhianaPropertSearch
+  useLudhianaPropertSearch,
+  useBathindaPropertySearch
 };
 const dss = {
   useMDMS: useDssMdms,

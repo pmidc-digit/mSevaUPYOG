@@ -23,6 +23,7 @@ import { PropertySearchModal } from "./PropertySearchModal";
 import { useDispatch, useSelector } from "react-redux";
 import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions";
 import { PropertySearchLudhiana } from "./PropertySearchLudhiana";
+import { PropertySearchBathinda } from "./PropertySearchBathinda";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -69,6 +70,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const zonesOptions = menuList2?.tenant?.zoneMaster?.[0]?.zones || [];
   const dispatch = useDispatch();
   const LUDHIANA_TENANT = "pb.ludhiana";
+  const BATHINDA_TENANT = "pb.bathinda";
   const common = [
     {
       code: "YES",
@@ -363,9 +365,11 @@ useEffect(() => {
       newErrors.architectid = t("BPA_ARCHITECT_ID_REQUIRED");
     }
 
-    // if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
-    //   newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
-    // }
+    if (isPropertyAvailable?.value) {
+      if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
+        newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
+      }
+    }
 
     if (!bathnumber) {
       newErrors.bathnumber = t("BPA_BATH_NUMBER_REQUIRED");
@@ -713,14 +717,20 @@ useEffect(() => {
           {errors["isPropertyAvailable"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isPropertyAvailable"]}</CardLabelError>
           )}
-          {!isPropertyAvailable?.value && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
+          {(isPropertyAvailable?.value === false) && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
           {tenantId === LUDHIANA_TENANT && <div>
             {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
             {errors["propertyuid"] && (
               <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
             )}
           </div>}
-          {tenantId != LUDHIANA_TENANT && <div>
+          {tenantId === BATHINDA_TENANT && <div>
+            {isPropertyAvailable?.value && <PropertySearchBathinda formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {errors["propertyuid"] && (
+              <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
+            )}
+          </div>}
+          {(tenantId != LUDHIANA_TENANT) && (tenantId != BATHINDA_TENANT) && <div>
           {isPropertyAvailable?.value && <SubmitBar style={{marginBottom:"1rem"}} label={t("PT_SEARCH_PROPERTY")} onSubmit={() => {setShowModal(true)}} />}
           {showModal &&           
           <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>}

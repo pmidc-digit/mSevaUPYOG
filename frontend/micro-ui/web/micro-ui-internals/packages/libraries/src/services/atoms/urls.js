@@ -8,6 +8,7 @@ const Urls = {
     revenue_localities: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Locality`,
     revenue_blocks: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Block`,
   },
+  bathindaAuth: "/api/Authenticate/GetToken",
 
   pgr_search: `/pgr-services/v2/request/_search`,
   pgr_update: `/pgr-services/v2/request/_update`,
@@ -94,7 +95,8 @@ const Urls = {
     cfsearch: "/service-request/service/v1/_search",
     defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
     getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
-    ludhianaSearch: "/property-services/api/fetch"
+    ludhianaSearch: "/property-services/api/fetch",
+    bathindaSearch: "/api/Property/GetPropertyDetail"
   },
 
   dss: {

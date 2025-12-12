@@ -12,7 +12,7 @@ const MyApplications = ({ view }) => {
 
   const searchListDefaultValues = {
     sortBy: "createdTime",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    //limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
     mobileNumber:""

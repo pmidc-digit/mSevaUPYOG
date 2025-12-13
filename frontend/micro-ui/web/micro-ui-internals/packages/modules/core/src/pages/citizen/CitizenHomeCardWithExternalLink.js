@@ -2,6 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
+  // User authentication and role checks
+  const user = Digit.UserService?.getUser();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const isUserLoggedIn = user?.access_token;
+  const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => role?.code?.includes("BPA") && role?.tenantId === tenantId);
+
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false;
 
   // Predefined color schemes for cards
@@ -140,6 +146,35 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
 
       <div className="chcwe-card-container">
         {links.map((link, index) => {
+          // Filter links based on user role
+          // Show professional login link only if user is NOT logged in
+          if (link?.name === "BPA_CITIZEN_HOME_VIEW_LOGIN_AS_PROFESSIONAL_LABEL" && isUserLoggedIn) {
+            return null;
+          }
+          // Show stakeholder/architect login link only if user is NOT registered as architect/BPA
+          if (link?.name === "BPA_CITIZEN_HOME_STAKEHOLDER_LOGIN_LABEL" && isUserRegistered) {
+            return null;
+          }
+          // Show architect login link only if user IS registered as architect/BPA
+          if (link?.name === "BPA_CITIZEN_HOME_ARCHITECT_LOGIN_LABEL" && !isUserRegistered) {
+            return null;
+          }
+
+          // External links or standard links
+          if (link?.parentModule?.toUpperCase() === "BIRTH" || link?.parentModule?.toUpperCase() === "DEATH" || link?.parentModule?.toUpperCase() === "FIRENOC") {
+            return (
+              <a
+                key={index}
+                href={link.link}
+                className={`chcwe-card chcwe-card-bg-${index % 6}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {renderCardContent(link, index)}
+              </a>
+            );
+          }
+
           return (
             <a
               key={index}

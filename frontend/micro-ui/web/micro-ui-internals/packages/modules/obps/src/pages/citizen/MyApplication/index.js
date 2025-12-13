@@ -85,21 +85,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     mobileNumber:""
   };
 
-const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(
-  {
-    ...searchListDefaultValues,
-    mobileNumber: userInfoforLayout?.mobileNumber || ""
-  },
-  tenantId
-);
 
-
-
-    useEffect(() => {
-      if(datalayout){
-        datalayout.revalidate();
-      }
-    }, []);
 
   const getBPAREGFormData = (data) => {
     console.log("data in getBPAREGFormData", data);
@@ -301,7 +287,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
   // }, [requestor])
 
   useEffect(() => {
-    if (!isLoading && !isBpaSearchLoading && !isLoadinglayout) {
+    if (!isLoading && !isBpaSearchLoading) {
       let searchConvertedArray = [];
       let sortConvertedArray = [];
       if (data?.Licenses?.length) {
@@ -340,18 +326,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
         });
       }
 
-    // <CHANGE> Accessing layout data from the correct property: datalayout.data instead of datalayout.Layout
-     // <CHANGE> Accessing the nested Applications object from layout data
-      if (datalayout?.data?.length) {
-        datalayout.data.forEach((layoutWrapper) => {
-          // <CHANGE> Extract the actual application from Applications property
-          const layout = layoutWrapper.Applications;
-          layout.sortNumber = 0
-          layout.modifiedTime = layout.auditDetails?.lastModifiedTime || null
-          layout.type = "LAYOUT"
-          searchConvertedArray.push(layout)
-        })
-      }        
+        
 
       sortConvertedArray = [].slice.call(searchConvertedArray).sort(function (a, b) {
         return new Date(b.modifiedTime) - new Date(a.modifiedTime) || a.sortNumber - b.sortNumber;
@@ -361,9 +336,9 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, isLoadinglayout, bpaData, data, layoutData]);
+  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
 
-  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isLoadinglayout) {
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading) {
     return <Loader />;
   }
 
@@ -377,10 +352,6 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
     if (typeof bpaDataLength == "number") {
       count = count + bpaDataLength;
     }
-
-    if (typeof layoutDataLength == "number") {
-        count = count + layoutDataLength;
-      }
 
     if (count > 0) return `(${count})`;
     else return "";
@@ -405,7 +376,7 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
   return (
     <Fragment>
   
-      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length, datalayout?.data?.length)}`}</Header>
+      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
       <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
         <span className="link">
@@ -498,32 +469,8 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
 
             </CustomCard>
           );
-        } else if (application.type === "LAYOUT") {
-          return (
-            <CustomCard key={index}>
-              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
-              <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={t("LAYOUT_APPLICATION")} />
-              <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
-              <KeyNote
-                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
-                noteStyle={application?.applicationStatus === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
-              />
-              <Link
-                to={{
-                  pathname: `/digit-ui/citizen/obps/layout/${application?.applicationNo}`,
-                  state: { data: { Layout: [application] } },
-                }}
-              >
-
-                <SubmitBar label={t("TL_VIEW_DETAILS")} />
-              </Link>
-            </CustomCard>
-          )
-        
-        
-        
-         } else {
+        } 
+         else {
           return (
             <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />

@@ -589,7 +589,7 @@ return (
             />
           )}          
         </div>
-        <p style={errorStyle}>{t(Pinerror)}</p>
+       
 
         {/* City Section */}
         <div>

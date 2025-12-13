@@ -142,13 +142,6 @@
   position: relative;
    overflow: visible !important;
 
-
-
-  &:hover {
-    box-shadow: 0 20px 50px rgba(30, 58, 138, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
-    transform: translateY(-4px);
-  }
-
   .card-header {
     font-size: 22px;
     font-weight: 800;

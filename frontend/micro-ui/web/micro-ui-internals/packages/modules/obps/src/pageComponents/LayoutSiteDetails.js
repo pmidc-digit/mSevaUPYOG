@@ -387,7 +387,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
 
-          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
+
 
           {/* <CHANGE> Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>

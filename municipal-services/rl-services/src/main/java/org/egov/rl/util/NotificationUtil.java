@@ -759,31 +759,31 @@ public class NotificationUtil {
     public String getCustomizedMsg(RequestInfo requestInfo, AllotmentDetails allotmentDetails,
 			String localizationMessage) {
 		String message = null, messageTemplate;
-		String ACTION_STATUS = allotmentDetails.getWorkflow().getAction();
-		switch (ACTION_STATUS) {
-
-		case ACTION_STATUS_APPLY:
-			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPLY, localizationMessage);
-			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-			break;
-
-		case ACTION_STATUS_VERIFY:
-			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_VERIFY, localizationMessage);
-			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-			break;
-
-		case ACTION_STATUS_APPROVE:
-			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPROVE, localizationMessage);
-			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-			break;
-
-		case ACTION_STATUS_REJECT:
-			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_REJECT, localizationMessage);
-			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-			break;
-
-		}
-
+//		String ACTION_STATUS = allotmentDetails.getWorkflow().getAction();
+//		switch (ACTION_STATUS) {
+//
+//		case ACTION_STATUS_APPLY:
+//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPLY, localizationMessage);
+//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+//			break;
+//
+//		case ACTION_STATUS_VERIFY:
+//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_VERIFY, localizationMessage);
+//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+//			break;
+//
+//		case ACTION_STATUS_APPROVE:
+//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPROVE, localizationMessage);
+//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+//			break;
+//
+//		case ACTION_STATUS_REJECT:
+//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_REJECT, localizationMessage);
+//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+//			break;
+//
+//		}
+//
 //		return message;
 		return "Action Successfully for RL";
 	}

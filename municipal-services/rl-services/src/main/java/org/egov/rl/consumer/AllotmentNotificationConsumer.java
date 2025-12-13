@@ -28,7 +28,7 @@ public class AllotmentNotificationConsumer {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@KafkaListener(topics = { "${save-rl-allotment}", "${update-rl-allotment}" })
+	@KafkaListener(topics = { "${save.rl.allotment}", "${update.rl.allotment}" })
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		AllotmentRequest allotmentRequest = new AllotmentRequest();

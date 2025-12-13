@@ -107,6 +107,15 @@ public class CluQueryBuilder {
 	 *            values to be replased on the query
 	 * @return Final Search Query
 	 */
+
+	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT uuid FROM eg_clu_owner WHERE cluid = ?");
+
+		preparedStmtList.add(layoutId);
+		return sb.toString();
+	}
+
 	public String getNocSearchQuery(LayoutSearchCriteria criteria, List<Object> preparedStmtList, boolean isCount) {
 
 		StringBuilder builder = new StringBuilder(QUERY);

@@ -357,7 +357,7 @@ public class CLUService {
 						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
 
-				List<String> accountid = new ArrayList<>();
+				List<String> accountid = nocRepository.getOwnerUserIdsByCluId(noc.getId());
 				accountid.add(noc.getAccountId());
 				criteria.setAccountId(accountid);
 				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);

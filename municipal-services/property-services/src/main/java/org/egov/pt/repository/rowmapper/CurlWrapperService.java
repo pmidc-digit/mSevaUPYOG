@@ -1,15 +1,16 @@
 package org.egov.pt.repository.rowmapper;
 
 import org.egov.pt.config.PropertyConfiguration;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Base64;
 
 import org.springframework.http.*;
 
@@ -80,6 +81,9 @@ public class CurlWrapperService {
     }
 
     public String fetchBathindaData(String ulb, String uidNo) {
+    	
+    	if(StringUtils.isEmpty(uidNo) || uidNo.split("-").length != 3)
+    		throw new CustomException("INVALID_UID", "Invalid UID");
 
         StringBuilder urlString = new StringBuilder(config.getThirdPartyBhatindahost());
         urlString.append(config.getThirdPartyBhatindasubUrl())
@@ -90,32 +94,29 @@ public class CurlWrapperService {
 
 
         String authHeader = "Bearer "+ getToken();
+        String[] uidNoArr = uidNo.split("-");
 
+     // Headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", authHeader);
+        
+        // Payload as Map -> {"UserName":"...", "Password":"..."}
+        Map<String, String> payload = new HashMap<>();
+        payload.put("Uidno", uidNoArr[0]);
+        payload.put("Uidno1", uidNoArr[1]);
+        payload.put("Uidno2", uidNoArr[2]);
+
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(payload, headers);
+        
         try {
-            URL url = new URL(urlString.toString());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "application/json, text/plain, */*");
-            connection.setRequestProperty("Authorization", authHeader);
+        	ResponseEntity<String> response = restTemplate.exchange(urlString.toString(), HttpMethod.POST, entity, String.class);
 
-
-            int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
-
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                return response.toString();
-            } else {
-                return "GET request failed with response code: " + responseCode;
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new IllegalStateException("Unexpected status: " + response.getStatusCode());
             }
+
+            return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
             return "Error: " + e.getMessage();

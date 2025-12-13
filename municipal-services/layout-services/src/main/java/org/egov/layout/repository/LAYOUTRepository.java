@@ -1,5 +1,9 @@
 package org.egov.layout.repository;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +59,42 @@ public class LAYOUTRepository {
 		    producer.push(config.getUpdateWorkflowTopic(), nocRequest);
 		}
 	}
+
+
+
+
+	private static final String SQL_GET_USER_IDS =
+			"SELECT uuid FROM eg_layoutowner WHERE layout_id = ?";
+
+	/**
+	 * Fetches all user_ids for a given layout_id.
+
+	 * @param layoutId layout id
+	 * @return list of user_ids; empty list if none found
+	 * @throws SQLException if a database access error occurs
+	 */
+
+	public List<String> getOwnerUserIdsByLayoutId(String layoutId) {
+		List<Object> preparedStmtList = new ArrayList<>();
+
+		// Build SQL via your QueryBuilder: e.g., "SELECT user_id FROM eg_layoutowner WHERE layout_id = ?"
+		String query = queryBuilder.getOwnerUserIdsQuery(layoutId, preparedStmtList);
+
+		// Map each row's "user_id" to Long
+		List<String> userIds = jdbcTemplate.query(
+				query,
+				preparedStmtList.toArray(),
+				(rs, rowNum) -> {
+					String userId = rs.getString("uuid");
+					// If user_id can be NULL, guard with rs.wasNull()
+					return userId;
+				}
+		);
+
+		return userIds;
+	}
+
+
 	/**
 	 * using the queryBulider query the data on applying the search criteria and return the data 
 	 * parsing throw row mapper

@@ -72,11 +72,24 @@ public class EnrichmentService {
 
 
 
-		for (Document doc : documents) {
-			doc.setUuid(UUID.randomUUID().toString()); // Set your desired ID here
-			doc.setLayoutId(nocRequest.getLayout().getId());
-			doc.setDocumentUid(UUID.randomUUID().toString());
-			doc.setDocumentAttachment(UUID.randomUUID().toString());
+		if (!CollectionUtils.isEmpty(nocRequest.getLayout().getDocuments())) {
+			nocRequest.getLayout().getDocuments().forEach(document -> {
+//				if (document.getId() == null) {
+//					document.setId(UUID.randomUUID().toString());
+//				}
+
+
+
+				for (Document doc : documents) {
+//					doc.setId(UUID.randomUUID().toString()); // Set your desired ID here
+					if (doc.getDocumentUid() == null) {
+						doc.setLayoutId(nocRequest.getLayout().getId());
+						doc.setDocumentUid(UUID.randomUUID().toString());
+//					doc.setDocumentAttachment(UUID.randomUUID().toString());
+					}
+
+				}
+			});
 		}
 
 		nocRequest.getLayout().setAccountId(nocRequest.getLayout().getAuditDetails().getCreatedBy());

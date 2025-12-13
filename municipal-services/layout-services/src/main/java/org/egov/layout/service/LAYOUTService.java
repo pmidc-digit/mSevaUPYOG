@@ -142,7 +142,7 @@ public class LAYOUTService {
 
 		Map<String, String> additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getLayout(), mdmsData);
 
-		nocValidator.validateCreate(nocRequest,  mdmsData);
+//		nocValidator.validateCreate(nocRequest,  mdmsData);
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(LAYOUTConstants.WORKFLOWCODE));
@@ -379,7 +379,7 @@ public class LAYOUTService {
 						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
 
-				List<String> accountid = new ArrayList<>();
+				List<String> accountid = nocRepository.getOwnerUserIdsByLayoutId(noc.getId());
 				accountid.add(noc.getAccountId());
 				criteria.setAccountId(accountid);
 				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);

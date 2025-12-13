@@ -48,12 +48,20 @@ public class LayoutQueryBuilder {
 					"FROM eg_layout layout " +
 					"LEFT JOIN eg_layout_details details ON details.layoutid = layout.id " +
 					"LEFT JOIN eg_layout_document layoutdoc ON layoutdoc.layoutid = layout.id " +
+
 					"WHERE 1=1";
 
 
 
 
 
+	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT uuid FROM eg_layout_owner WHERE layoutid = ?");
+
+		preparedStmtList.add(layoutId);
+		return sb.toString();
+	}
 
 
 

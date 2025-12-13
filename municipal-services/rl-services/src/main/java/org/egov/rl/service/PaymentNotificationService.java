@@ -124,7 +124,7 @@ public class PaymentNotificationService {
 			
 			AllotmentCriteria criteria = AllotmentCriteria.builder()
 					.applicationNumbers(Collections.singleton(applicationNumber))
-					.tenantId(tenantId)
+//					.tenantId(tenantId)
 					.build();
 
 			List<AllotmentDetails> applications = allotmentRepository.getAllotmentByApplicationNumber(criteria);
@@ -152,7 +152,7 @@ public class PaymentNotificationService {
 					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
 			
 			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
-			statusUpdateInDatabaseByApplicationNumber(application, applicationStatus, paymentRequest.getRequestInfo());
+			statusUpdateInDatabaseByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
 			
 		} catch (Exception e) {
 			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
@@ -255,50 +255,12 @@ public class PaymentNotificationService {
 	/**
 	 * Generates petRegistrationNumber if needed and updates database with APPROVED status
 	 */
-	private void statusUpdateInDatabaseByApplicationNumber(AllotmentDetails application, String status, RequestInfo requestInfo) {
+	private void statusUpdateInDatabaseByApplicationNumber(String applicationNumber, String status, RequestInfo requestInfo) {
 		try {
-//			String applicationNumber = application.getApplicationNumber();
-//			String petRegistrationNumber = application.getAllPetRegistrationNumber();
-//			boolean isRenewal = application.getApplicationType() != null && RLConstants.RENEWAL_RL_APPLICATION.equals(application.getApplicationType());
-//			
-//			 For renewal applications, if petRegistrationNumber is already set (copied during creation), use it
-//			// For new applications, generate it if not set
-//			if (applicationNumber == null || applicationNumber.isEmpty()) {
-//				if (isRenewal) {
-//					// Try to get from previous application if not already set
-//					// applicationNumber = getPetRegistrationNumberFromPreviousApplication(application, requestInfo);
-//					if (applicationNumber != null && !applicationNumber.isEmpty()) {
-//						log.info("Reused applicationNumber: {} from previous application for renewal: {}", 
-//								 applicationNumber);
-//					}
-//				}
-//				
-////				// Generate new petRegistrationNumber only if still not set (for new applications or if previous app didn't have it)
-////				if (applicationNumber == null || applicationNumber.isEmpty()) {
-////					List<String> regNumList = petUtil.getIdList(requestInfo, application.getTenantId(), 
-////							configs.getPetRegNumName(), configs.getPetRegNumFormat(), 1);
-////					
-////					if (regNumList != null && !regNumList.isEmpty()) {
-////						applicationNumber = regNumList.get(0);
-////						log.info("Generated applicationNumber: {} for application: {} (type: {})", 
-////								applicationNumber, isRenewal ? "RENEWAL" : "NEW");
-////					} else {
-////						log.error("Failed to generate petRegistrationNumber for application: {}", applicationNumber);
-////					}
-////				}
-//			} else {
-//				// petRegistrationNumber is already set (for renewals, it was copied during creation)
-//				if (isRenewal) {
-//					log.info("Using existing applicationNumber : {} for renewal application: {} (already set during creation)", 
-//							 applicationNumber);
-//				}
-//			}
-			
-			updateDatabaseWithStatus(application, status, requestInfo);
-			
+			updateDatabaseWithStatus(applicationNumber, status, requestInfo);			
 		} catch (Exception e) {
-			log.error("Error generating petRegistrationNumber and updating database for application: {}, Error: {}", 
-					application.getApplicationNumber(), e.getMessage(), e);
+			log.error("Error generating applicationNumber and updating database for application: {}, Error: {}", 
+					applicationNumber, e.getMessage(), e);
 		}
 	}
 	
@@ -349,27 +311,26 @@ public class PaymentNotificationService {
 	/**
 	 * Updates database with status and petRegistrationNumber
 	 */
-	private void updateDatabaseWithStatus(AllotmentDetails application, String status, RequestInfo requestInfo) {
+	private void updateDatabaseWithStatus(String applicationNumber, String status, RequestInfo requestInfo) {
 		try {
-			String applicationNumber = application.getApplicationNumber();
 			String updateQuery;
 			Object[] params;
 			long currentTime = System.currentTimeMillis();
 			
 			if (applicationNumber != null && !applicationNumber.isEmpty()) {
-				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE application_number = ?";
+				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodified_time=?, lastmodified_by=? WHERE application_number = ?";
 				params = new Object[]{
 					status,
-					requestInfo.getUserInfo().getUuid(),
 					currentTime,
+					requestInfo.getUserInfo().getUuid(),
 					applicationNumber
 				};
 			} else {
-				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE application_number = ?";
+				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodified_time=?, lastmodified_by=? WHERE application_number = ?";
 				params = new Object[]{
 					status,
-					requestInfo.getUserInfo().getUuid(),
 					currentTime,
+					requestInfo.getUserInfo().getUuid(),
 					applicationNumber
 				};
 			}
@@ -380,45 +341,20 @@ public class PaymentNotificationService {
 			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
 			
 			if (rowsUpdated > 0) {
-				log.info("Successfully updated application - ApplicationNumber: {}, Status: {}, petRegistrationNumber: {}, Rows updated: {}", 
+				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
-				application.setStatus(status);
-				if (applicationNumber != null && !applicationNumber.isEmpty()) {
-					application.setApplicationNumber(applicationNumber);
-				}
+//				application.setStatus(status);
+//				if (applicationNumber != null && !applicationNumber.isEmpty()) {
+//					application.setApplicationNumber(applicationNumber);
+//				}
 			} else {
-				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, petRegNum={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
+				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
 						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
 			}
 			
 		} catch (Exception e) {
 			log.error("Failed to update database for application: {}, Error: {}", 
-					application.getApplicationNumber(), e.getMessage(), e);
+					applicationNumber, e.getMessage(), e);
 		}
 	}
-
-//	/**
-//	 * Gets petRegistrationNumber from previous application for renewal
-//	 */
-//	private String getPetRegistrationNumberFromPreviousApplication(PetRegistrationApplication application, RequestInfo requestInfo) {
-//		try {
-//			if (application.getPreviousApplicationNumber() != null && !application.getPreviousApplicationNumber().isEmpty()) {
-//				PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
-//						.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
-//						.tenantId(application.getTenantId())
-//						.build();
-//				List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
-//				if (previousApps != null && !previousApps.isEmpty()) {
-//					PetRegistrationApplication previousApp = previousApps.get(0);
-//					if (previousApp.getPetRegistrationNumber() != null && !previousApp.getPetRegistrationNumber().isEmpty()) {
-//						return previousApp.getPetRegistrationNumber();
-//					}
-//				}
-//			}
-//		} catch (Exception e) {
-//			log.error("Error fetching petRegistrationNumber from previous application: {}", e.getMessage(), e);
-//		}
-//		return null;
-//	}
-
 }

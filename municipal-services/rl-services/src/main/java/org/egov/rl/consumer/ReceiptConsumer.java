@@ -2,6 +2,8 @@ package org.egov.rl.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
+
 import org.egov.rl.models.collection.PaymentRequest;
 import org.egov.rl.service.PaymentNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +11,13 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Service
 @Slf4j
 public class ReceiptConsumer {
 
@@ -24,22 +27,18 @@ public class ReceiptConsumer {
 	@org.springframework.beans.factory.annotation.Value("${kafka.topics.receipt.create}")
 	private String receiptTopic;
 
-	@javax.annotation.PostConstruct
-	public void init() {
-		log.info("ReceiptConsumer initialized - Listening to topic: {}, group: egov-rl-service", receiptTopic);
-	}
+	@KafkaListener(topics = { "${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	public void listen(final HashMap<String, Object> rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
-	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
-	public void listenPayments(final String rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-		
+		System.out.println("----------0000000000000000000000000000--------------------------------"+rawRecord);
 		if (rawRecord == null || rawRecord.isEmpty()) {
 			log.error("Received empty payment message from topic: {}", topic);
 			return;
 		}
 		
 		try {
-			PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
-			
+			PaymentRequest record = new ObjectMapper().convertValue(rawRecord, PaymentRequest.class);
+			System.out.println("ifsc code -----"+record.getPayment().getIfscCode());
 			if (record == null || record.getPayment() == null || 
 					record.getPayment().getPaymentDetails() == null || record.getPayment().getPaymentDetails().isEmpty()) {
 				log.error("Invalid payment request structure");

@@ -48,6 +48,7 @@ import javax.validation.constraints.NotNull;
 import org.egov.rl.models.AuditDetails;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -66,6 +67,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = { "id" })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BillDetail {
 
 	@JsonProperty("id")

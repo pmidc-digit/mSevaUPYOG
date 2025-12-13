@@ -7,6 +7,7 @@ import javax.validation.constraints.Size;
 
 import org.egov.rl.models.AuditDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,6 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentDetail {
 
 	@Size(max = 64)

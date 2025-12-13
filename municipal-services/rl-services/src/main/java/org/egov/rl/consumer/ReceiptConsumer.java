@@ -30,7 +30,6 @@ public class ReceiptConsumer {
 	@KafkaListener(topics = { "${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
 	public void listen(final HashMap<String, Object> rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
-		System.out.println("----------0000000000000000000000000000--------------------------------"+rawRecord);
 		if (rawRecord == null || rawRecord.isEmpty()) {
 			log.error("Received empty payment message from topic: {}", topic);
 			return;
@@ -38,7 +37,6 @@ public class ReceiptConsumer {
 		
 		try {
 			PaymentRequest record = new ObjectMapper().convertValue(rawRecord, PaymentRequest.class);
-			System.out.println("ifsc code -----"+record.getPayment().getIfscCode());
 			if (record == null || record.getPayment() == null || 
 					record.getPayment().getPaymentDetails() == null || record.getPayment().getPaymentDetails().isEmpty()) {
 				log.error("Invalid payment request structure");

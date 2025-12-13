@@ -12,8 +12,7 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
   const { userRoleStates, otherRoleStates } = statusData || {};
 
   const translateState = (state, t) => {
-    console.log(state, "state");
-    return t(`WF_RENT_N_LEASE_NEW_${state.state || "CREATED"}`);
+    return t(`WF_RENT_N_LEASE_NEW_${state?.state || "CREATED"}`);
   };
 
   if (isLoading) {

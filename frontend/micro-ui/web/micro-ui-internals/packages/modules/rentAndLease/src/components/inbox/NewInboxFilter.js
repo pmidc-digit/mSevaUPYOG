@@ -20,12 +20,19 @@ import _ from "lodash";
 const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, statusMap, moduleCode, ...props }) => {
   const { t } = useTranslation();
   const client = useQueryClient();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [_searchParams, setSearchParams] = useState(() => ({
     ...searchParams,
     applicationStatus: searchParams?.applicationStatus || [],
   }));
   const [clearCheck, setclearCheck] = useState(false);
+
+  // Use existing allotment types from the application
+  const AllotmentTypeMenu = [
+    { name: t("ON_RENT"), code: "rent", value: "rent" },
+    { name: t("ON_LEASE"), code: "lease", value: "lease" },
+  ];
 
   const localParamChange = (filterParam) => {
     setclearCheck(false);
@@ -61,7 +68,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                   />
                 </svg>
               </span>
-              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("COMMON_TABLE_FILTERS")}:</span>
+              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("ES_COMMON_FILTER_BY")}:</span>
             </div>
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
@@ -74,7 +81,6 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                     fill="#505A5F"
                   />
                 </svg>
-                {/* {t("ES_COMMON_CLEAR_ALL")} */}
               </span>
             )}
             {props.type === "mobile" && (
@@ -89,6 +95,19 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
             )}
           </div>
           <div>
+            {/* 1. Assigned To - Radio Buttons */}
+            <RadioButtons
+              onSelect={(d) => localParamChange({ uuid: d })}
+              selectedOption={_searchParams?.uuid}
+              t={t}
+              optionsKey="name"
+              options={[
+                { code: "ASSIGNED_TO_ME", name: "ES_INBOX_ASSIGNED_TO_ME" },
+                { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+              ]}
+            />
+
+            {/* 2. Status - Checkboxes */}
             <div>
               <Status
                 searchParams={_searchParams}
@@ -102,6 +121,22 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                     localParamChange({ applicationStatus });
                   }
                 }}
+              />
+            </div>
+
+            {/* 3. Allotment Type - Dropdown */}
+            <div>
+              <div className="filter-label" style={{ fontWeight: "normal" }}>
+                {t("RENT_LEASE_PROPERTY_TYPE")}
+              </div>
+              <Dropdown
+                option={AllotmentTypeMenu}
+                selected={_searchParams?.allotmentType}
+                optionKey="name"
+                select={(value) => {
+                  localParamChange({ allotmentType: value });
+                }}
+                t={t}
               />
             </div>
 

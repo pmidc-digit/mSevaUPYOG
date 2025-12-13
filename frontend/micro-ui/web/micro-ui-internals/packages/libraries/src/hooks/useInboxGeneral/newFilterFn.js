@@ -55,7 +55,7 @@ export const filterFunctions = {
     const searchFilters = {};
     const workflowFilters = {};
 
-    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services,petType } = filtersArg || {};
+    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services, petType } = filtersArg || {};
 
     if (filtersArg?.applicationNumber) {
       searchFilters.applicationNumber = filtersArg?.applicationNumber;
@@ -80,7 +80,7 @@ export const filterFunctions = {
       searchFilters.mobileNumber = mobileNumber;
     }
 
-     if (petType) {
+    if (petType) {
       searchFilters.petType = petType;
     }
 
@@ -99,7 +99,7 @@ export const filterFunctions = {
     const searchFilters = {};
     const workflowFilters = {};
 
-    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services,petType } = filtersArg || {};
+    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, applicationStatus, services, allotmentType } = filtersArg || {};
 
     if (filtersArg?.applicationNumber) {
       searchFilters.applicationNumber = filtersArg?.applicationNumber;
@@ -124,8 +124,8 @@ export const filterFunctions = {
       searchFilters.mobileNumber = mobileNumber;
     }
 
-     if (petType) {
-      searchFilters.petType = petType;
+    if (allotmentType && allotmentType.value) {
+      searchFilters.allotmentType = allotmentType.value;
     }
 
     if (services) {

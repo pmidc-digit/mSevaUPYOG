@@ -307,7 +307,10 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                 break;
 
             case businessService_BPA:
-                applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNumberIdgenNameBPA(), config.getApplicationNumberIdgenFormatBPA(), request.getLicenses().size());
+            	String idFormateBPAREG = config.getApplicationNumberIdgenFormatBPA();
+            	String tradeType = request.getLicenses().get(0).getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+            	idFormateBPAREG = idFormateBPAREG.replace("SK", TRADETYPE_TO_IDGEN_SHORTNAME.get(tradeType));
+                applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNumberIdgenNameBPA(), idFormateBPAREG, request.getLicenses().size());
                 break;
         }
         ListIterator<String> itr = applicationNumbers.listIterator();
@@ -589,7 +592,14 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                              break;
 
                          case businessService_BPA:
-                             licenseNumbers = getIdList(requestInfo, license.getTenantId(), config.getLicenseNumberIdgenNameBPA(), config.getLicenseNumberIdgenFormatBPA(), count);
+                        	 if(ACTION_REAPPROVE.equalsIgnoreCase(license.getAction())) {
+                        		 licenseNumbers.add(license.getLicenseNumber());
+                        	 }else {
+                        		 String licenseFormateBPAREG = config.getLicenseNumberIdgenFormatBPA();
+                             	 String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+                             	 licenseFormateBPAREG = licenseFormateBPAREG.replace("SK", TRADETYPE_TO_IDGEN_SHORTNAME.get(tradeType));
+                                 licenseNumbers = getIdList(requestInfo, license.getTenantId(), config.getLicenseNumberIdgenNameBPA(), licenseFormateBPAREG, count);
+                        	 }
                              break;
                      }
 				};
@@ -621,7 +631,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.YEAR, res.get(0));
                             String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
-                            if(!tradeType.equalsIgnoreCase("ARCHITECT"))
+                            if(!(tradeType.equalsIgnoreCase("ARCHITECT") || ACTION_REAPPROVE.equalsIgnoreCase(license.getAction())))
                             	license.setValidTo(calendar.getTimeInMillis());
                             license.setValidFrom(time);
                         }

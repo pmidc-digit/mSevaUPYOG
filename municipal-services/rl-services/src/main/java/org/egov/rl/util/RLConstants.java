@@ -32,7 +32,16 @@ public class RLConstants {
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	
+	
+	public static final String NOTIFICATION_VERIFY = "rl.en.counter.verify";
 
+	public static final String NOTIFICATION_APPLY = "rl.en.counter.submit";
+
+	public static final String NOTIFICATION_APPROVE = "rl.en.counter.approve";
+
+	public static final String NOTIFICATION_REJECT = "rl.en.counter.reject";
+
+	
     public static final String MDMS_RL_MOD_NAME = "rentAndLease";
 
     public static final String PT_TYPE_VACANT = "VACANT";

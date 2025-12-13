@@ -1,659 +1,424 @@
-//package org.egov.rl.service;
-//
-//import static org.egov.rl.util.PTConstants.*;
-//
-//import java.math.BigDecimal;
-//import java.util.ArrayList;
-//import java.util.Collections;
-//import java.util.HashMap;
-//import java.util.HashSet;
-//import java.util.LinkedList;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.Set;
-//import java.util.stream.Collectors;
-//
-//import org.apache.commons.lang3.StringUtils;
-//import org.egov.common.contract.request.RequestInfo;
-//import org.egov.rl.config.RentLeaseConfiguration;
-//import org.egov.rl.models.Property;
-//import org.egov.rl.models.PropertyCriteria;
-//import org.egov.rl.models.collection.PaymentDetail;
-//import org.egov.rl.models.collection.PaymentRequest;
-//import org.egov.rl.models.event.Action;
-//import org.egov.rl.models.event.ActionItem;
-//import org.egov.rl.models.event.Event;
-//import org.egov.rl.models.event.EventRequest;
-//import org.egov.rl.models.event.Recepient;
-//import org.egov.rl.models.event.Source;
-//import org.egov.rl.models.transaction.Transaction;
-//import org.egov.rl.models.transaction.TransactionRequest;
-//import org.egov.rl.repository.PropertyRepository;
-//import org.egov.rl.util.NotificationUtil;
-//import org.egov.rl.util.PTConstants;
-//import org.egov.rl.web.contracts.EmailRequest;
-//import org.egov.rl.web.contracts.SMSRequest;
-//import org.egov.tracer.model.CustomException;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Service;
-//import org.springframework.util.CollectionUtils;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.jayway.jsonpath.JsonPath;
-//
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.web.client.RestTemplate;
-//
-//@Slf4j
-//@Service
-//public class PaymentNotificationService {
-//
-//    @Autowired
-//    private RentLeaseConfiguration rentLeaseConfiguration;
-//
-//    @Autowired
-//    private PropertyRepository PropertyRepository;
-//
-//    @Autowired
-//    private NotificationUtil util;
-//
-//    @Autowired
-//    private ObjectMapper mapper;
-//
-//    @Autowired
-//    private RestTemplate restTemplate;
-//
-//    private RentLeaseConfiguration config;
-//
-//    @Value("${egov.mdms.host}")
-//    private String mdmsHost;
-//
-//    @Value("${egov.mdms.search.endpoint}")
-//    private String mdmsUrl;
-//
-//    /**
-//     *
-//     * @param record
-//     * @param topic
-//     */
-//    public void process(HashMap<String, Object> record, String topic){
-//
-//
-//        if(topic.equalsIgnoreCase(rentLeaseConfiguration.getReceiptTopic())){
-//            processPaymentTopic(record, topic);
-//        }
-//
-//        else if(topic.equalsIgnoreCase(rentLeaseConfiguration.getPgTopic())){
-//            processTransaction(record, topic);
-//        }
-//
-//
-//    }
-//
-//
-//
-//
-//    public void processTransaction(HashMap<String, Object> record, String topic){
-//
-//        TransactionRequest transactionRequest = mapper.convertValue(record, TransactionRequest.class);
-//
-//        RequestInfo requestInfo = transactionRequest.getRequestInfo();
-//        Transaction transaction = transactionRequest.getTransaction();
-//        String tenantId = transaction.getTenantId();
-//
-//        if(transaction.getTxnStatus().equals(Transaction.TxnStatusEnum.FAILURE)){
-//
-//            String localizationMessages = util.getLocalizationMessages(tenantId,requestInfo);
-//            String consumerCode = transaction.getConsumerCode();
-//            String path = getJsonPath(topic, ONLINE_PAYMENT_MODE, false);
-//
-//            String messageTemplate = null;
-//            List<String> configuredChannelNames  = util.fetchChannelList(requestInfo, tenantId, PT_BUSINESSSERVICE, ACTION_FOR_PAYMENT_FAILURE);
-//            try {
-//                Object messageObj = JsonPath.parse(localizationMessages).read(path);
-//                messageTemplate = ((ArrayList<String>) messageObj).get(0);
-//            } catch (Exception e) {
-//                log.error("Fetching from localization failed", e);
-//            };
-//            Map<String, String> valMap = getValuesFromTransaction(transaction);
-//            String customMessage = getCustomizedMessage(valMap,messageTemplate,path);
-//
-//            PropertyCriteria criteria = PropertyCriteria.builder().tenantId(tenantId)
-//                    .propertyIds(Collections.singleton(consumerCode))
-//                    .build();
-//
-//            List<Property> properties = PropertyRepository.getPropertiesWithOwnerInfo(criteria, requestInfo, true);
-//
-//            if(CollectionUtils.isEmpty(properties)){
-//                log.error("PROPERTY_NOT_FOUND","Unable to send payment notification to propertyId: "+consumerCode);
-//                return;
-//            }
-//
-//            Property property = properties.get(0);
-//
-//
-//            Set<String> mobileNumbers = new HashSet<>();
-////            property.getOwners().forEach(owner -> {
-////                mobileNumbers.add(owner.getMobileNumber());
-////                if (owner.getAlternatemobilenumber()!= null) {
-////                    mobileNumbers.add(owner.getAlternatemobilenumber());
-////                }
-////            });
-//
-//            List<SMSRequest> smsRequests = getSMSRequests(mobileNumbers, customMessage, valMap);
-//            String payerMobileNo = transaction.getUser().getMobileNumber();
-//            if (!mobileNumbers.contains(payerMobileNo)) {
-//                smsRequests.add(getSMSRequestsWithoutReceipt(payerMobileNo, customMessage, valMap));
-//            }
-//
-//            if(configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
-//                util.sendSMS(smsRequests);
-//            }
-//
-//            if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)) {
-//                List<Event> events = new LinkedList<>();
-//                if (null == rentLeaseConfiguration.getIsUserEventsNotificationEnabled() || rentLeaseConfiguration.getIsUserEventsNotificationEnabled()) {
-//                    events.addAll(getEvents(smsRequests, requestInfo, property, false,valMap));
-//                    util.sendEventNotification(new EventRequest(requestInfo, events));
-//                }
-//            }
-//
-//            if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
-//                List<EmailRequest> emailRequests = util.createEmailRequestFromSMSRequests(requestInfo,smsRequests,tenantId);
-//                util.sendEmail(emailRequests);
-//            }
-//        }
-//        else return;
-//    }
-//
-//
-//
-//
-//
-//
-//
-//
-//    /**
-//     * Generates message from the received object and sends SMSRequest to kafka queue
-//     * @param record The Object received from kafka topic
-//     * @param topic The topic name from which Object is received
-//     */
-//    public void processPaymentTopic(HashMap<String, Object> record, String topic){
-//
-//
-//
-//        PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
-//        RequestInfo requestInfo = paymentRequest.getRequestInfo();
-//
-//        List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
-//        String tenantId = paymentRequest.getPayment().getTenantId();
-//        String paymentMode = paymentRequest.getPayment().getPaymentMode();
-//        String transactionNumber = paymentRequest.getPayment().getTransactionNumber();
-//        List<String> configuredChannelNames  = util.fetchChannelList(requestInfo, tenantId, PT_BUSINESSSERVICE, ACTION_PAID);
-//
-//        List<PaymentDetail> ptPaymentDetails = new LinkedList<>();
-//
-//        paymentDetails.forEach(paymentDetail -> {
-//            if(paymentDetail.getBusinessService().equalsIgnoreCase(PT_BUSINESSSERVICE))
-//                ptPaymentDetails.add(paymentDetail);
-//        });
-//
-//        if(CollectionUtils.isEmpty(ptPaymentDetails))
-//            return;
-//
-//        String localizationMessages = util.getLocalizationMessages(tenantId,requestInfo);
-//        List<SMSRequest> smsRequests = new ArrayList<>();
-//        List<Event> events = new ArrayList<>();
-//        Set<String> mobileNumbers = new HashSet<>();
-//
-//        for(PaymentDetail paymentDetail : ptPaymentDetails){
-//
-//
-//            String consumerCode = paymentDetail.getBill().getConsumerCode();
-//
-//            PropertyCriteria criteria = PropertyCriteria.builder().tenantId(tenantId)
-//                    .propertyIds(Collections.singleton(consumerCode))
-//                    .build();
-//
-//            List<Property> properties = PropertyRepository.getPropertiesWithOwnerInfo(criteria, requestInfo, true);
-//
-//            if(CollectionUtils.isEmpty(properties)){
-//                log.error("PROPERTY_NOT_FOUND","Unable to send payment notification to propertyId: "+consumerCode);
-//                continue;
-//            }
-//
-//            Property property = properties.get(0);
-//
-//            Boolean isPartiallyPayment = !(paymentDetail.getTotalAmountPaid().compareTo(paymentDetail.getTotalDue())==0);
-//
-//            String customMessage = null;
-//            String path = getJsonPath(topic, paymentMode, isPartiallyPayment);
-//            String messageTemplate = null;
-//            
-//            log.info("Path from Topi" +path);
-//          //  log.info("localizationMessages"+localizationMessages);
-//            try {
-//                Object messageObj = JsonPath.parse(localizationMessages).read(path);
-//                messageTemplate = ((ArrayList<String>) messageObj).get(0);
-//            } catch (Exception e) {
-//                log.error("Fetching from localization failed", e);
-//            }
-//            Map<String, String> valMap = getValuesFromPayment(transactionNumber, paymentMode, paymentDetail);
-//            customMessage = getCustomizedMessage(valMap,messageTemplate,path);
-//
-////            property.getOwners().forEach(owner -> {
-////                mobileNumbers.add(owner.getMobileNumber());
-////                if (owner.getAlternatemobilenumber()!= null) {
-////                    mobileNumbers.add(owner.getAlternatemobilenumber());
-////                }
-////            });
-//
-//            smsRequests.addAll(getSMSRequests(mobileNumbers,customMessage, valMap));
-//            String payerMobileNo = paymentRequest.getPayment().getMobileNumber();
-//            if (!mobileNumbers.contains(payerMobileNo)) {
-//                smsRequests.add(getSMSRequestsWithoutReceipt(payerMobileNo, customMessage, valMap));
-//            }
-//
-//            if(null == rentLeaseConfiguration.getIsUserEventsNotificationEnabled() || rentLeaseConfiguration.getIsUserEventsNotificationEnabled()) {
-//                if(paymentDetail.getTotalDue().compareTo(paymentDetail.getTotalAmountPaid())==0)
-//                    events.addAll(getEvents(smsRequests,requestInfo,property,false,valMap));
-//                else events.addAll(getEvents(smsRequests,requestInfo,property,true,valMap));
-//
-//            }
-//        }
-//
-//        if(configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
-//            util.sendSMS(smsRequests);
-//        }
-//
-//        if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)) {
-//            if (!CollectionUtils.isEmpty(events))
-//                util.sendEventNotification(new EventRequest(requestInfo, events));
-//        }
-//
-//        if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
-//            List<EmailRequest> emailRequests = util.createEmailRequestFromSMSRequests(requestInfo,smsRequests,tenantId);
-//            util.sendEmail(emailRequests);
-//        }
-//
-//    }
-//
-//
-//
-//    /**
-//     * Generate and returns SMSRequest if oldPropertyId is not present
-//     * @param messagejson The list of messages received from localization
-//     * @param valMap The map containing all the values as key,value pairs
-//     * @param mobileNumbers The list of mobileNumbers to which sms are to be sent
-//     * @return List of SMS request to be sent
-//     */
-///*    private List<SMSRequest> addOldpropertyIdAbsentSMS(String messagejson,Map<String,String> valMap,List<String> mobileNumbers){
-//        String path = "$..messages[?(@.code==\"{}\")].message";
-//        path = path.replace("{}",NOTIFICATION_OLDPROPERTYID_ABSENT);
-//        Object messageObj = JsonPath.parse(messagejson).read(path);
-//        String message = ((ArrayList<String>)messageObj).get(0);
-//        String customMessage = getCustomizedOldPropertyIdAbsentMessage(message,valMap);
-//        return getSMSRequests(mobileNumbers,customMessage);
-//    }*/
-//
-//
-//    /**
-//     * Returns the map of the values required from the record
-//     * @return The required values as key,value pair
-//     */
-//    private Map<String,String> getValuesFromPayment(String transactionNumber, String paymentMode,PaymentDetail paymentDetail){
-//        BigDecimal totalAmount,amountPaid;
-//        Map<String,String> valMap = new HashMap<>();
-//
-//
-//
-//        try{
-//            totalAmount = paymentDetail.getTotalDue();
-//            valMap.put("totalAmount",totalAmount.toString());
-//
-//            amountPaid = paymentDetail.getTotalAmountPaid();
-//            valMap.put("amountPaid",amountPaid.toString());
-//            valMap.put("amountDue",totalAmount.subtract(amountPaid).toString());
-//
-//            valMap.put("consumerCode",paymentDetail.getBill().getConsumerCode());
-//            valMap.put("propertyId",paymentDetail.getBill().getConsumerCode());
-//
-//            valMap.put("transactionId",transactionNumber);
-//
-//            valMap.put("paymentMode",paymentMode);
-//
-//            valMap.put("tenantId", paymentDetail.getTenantId());
-//
-//            valMap.put("mobileNumber",paymentDetail.getBill().getMobileNumber());
-//
-//            valMap.put("module",paymentDetail.getBusinessService());
-//
-//            valMap.put("receiptNumber",paymentDetail.getReceiptNumber());
-//        }
-//        catch (Exception e)
-//        {
-//            throw new CustomException("PARSING ERROR","Failed to fetch values from the Receipt Object");
-//        }
-//
-//        return valMap;
-//    }
-//
-//    /**
-//     * Returns the map of the values required from the record
-//     * @return The required values as key,value pair
-//     */
-//    private Map<String,String> getValuesFromTransaction(Transaction transaction){
-//        HashMap<String,String> valMap = new HashMap<>();
-//
-//        try{
-//            valMap.put("txnStatus",transaction.getTxnStatus().toString());
-//
-//            valMap.put("txnAmount",transaction.getTxnAmount());
-//
-//            valMap.put("tenantId",transaction.getTenantId());
-//
-//            valMap.put("moduleId",transaction.getConsumerCode());
-//            valMap.put("propertyId",transaction.getConsumerCode());
-//
-//            valMap.put("mobileNumber",transaction.getUser().getMobileNumber());
-//
-//            valMap.put("module",transaction.getModule());
-//        }
-//        catch (Exception e)
-//        {   log.error("Transaction Object Parsing: ",e);
-//            throw new CustomException("PARSING ERROR","Failed to fetch values from the Transaction Object");
-//        }
-//
-//        return valMap;
-//    }
-//
-//
-//
-//    /**
-//     * Adds MobileNumber of logged in user
-//     * @param topic topic from which listening
-//     * @param requestInfo RequestInfo of the request
-//     * @param valMap The map of the required values
-//     * @param mobileNumbers The list of mobileNumbers of owner of properties
-//     */
-//    private void addUserNumber(String topic,RequestInfo requestInfo,Map<String,String> valMap,List<String> mobileNumbers)
-//    {
-//      //  If the requestInfo is of citizen add citizen's MobileNumber
-//        if((topic.equalsIgnoreCase(rentLeaseConfiguration.getReceiptTopic())
-//                || topic.equalsIgnoreCase(rentLeaseConfiguration.getPgTopic())) && !mobileNumbers.contains(valMap.get("mobileNumber")))
-//            mobileNumbers.add(valMap.get("mobileNumber"));
-//    }
-//
-//
-//    /**
-//     *  Returns the jsonPath
-//     * @param topic The topic name from which object is received
-//     * @param paymentMode The payment mode used for payment
-//     * @return  The jsonPath
-//     */
-//    private String getJsonPath(String topic,String paymentMode, Boolean isPartiallyPayment){
-//        String path = "$..messages[?(@.code==\"{}\")].message";
-//        if(topic.equalsIgnoreCase(rentLeaseConfiguration.getReceiptTopic()) && !isPartiallyPayment && paymentMode.equalsIgnoreCase("online"))
-//            path = path.replace("{}",NOTIFICATION_PAYMENT_ONLINE);
-//
-//        if(topic.equalsIgnoreCase(rentLeaseConfiguration.getReceiptTopic()) && !isPartiallyPayment && !paymentMode.equalsIgnoreCase("online"))
-//            path = path.replace("{}",NOTIFICATION_PAYMENT_OFFLINE);
-//
-//        if(topic.equalsIgnoreCase(rentLeaseConfiguration.getReceiptTopic())&& isPartiallyPayment && paymentMode.equalsIgnoreCase("online"))
-//            path = path.replace("{}",NOTIFICATION_PAYMENT_PARTIAL_ONLINE);
-//
-//        if(topic.equalsIgnoreCase(rentLeaseConfiguration.getReceiptTopic()) && isPartiallyPayment&& !paymentMode.equalsIgnoreCase("online"))
-//            path = path.replace("{}",NOTIFICATION_PAYMENT_PARTIAL_OFFLINE);
-//
-//        if(topic.equalsIgnoreCase(rentLeaseConfiguration.getPgTopic()))
-//            path = path.replace("{}",NOTIFICATION_PAYMENT_FAIL);
-//
-//        return path;
-//    }
-//
-//    /**
-//     * Returns customized message for
-//     * @param valMap The map of the required values
-//     * @param message The message template from localization
-//     * @param path The json path used to fetch message
-//     * @return Customized message depending on values in valMap
-//     */
-//    private String getCustomizedMessage(Map<String,String> valMap,String message,String path){
-//        String customMessage = null;
-//        if(path.contains(NOTIFICATION_PAYMENT_ONLINE) || path.contains(NOTIFICATION_PAYMENT_PARTIAL_ONLINE))
-//            customMessage = getCustomizedOnlinePaymentMessage(message,valMap);
-//        if(path.contains(NOTIFICATION_PAYMENT_OFFLINE) || path.contains(NOTIFICATION_PAYMENT_PARTIAL_OFFLINE))
-//            customMessage = getCustomizedOfflinePaymentMessage(message,valMap);
-//        if(path.contains(NOTIFICATION_PAYMENT_FAIL))
-//            customMessage = getCustomizedPaymentFailMessage(message,valMap);
-//        if(path.contains(NOTIFICATION_OLDPROPERTYID_ABSENT))
-//            customMessage = getCustomizedOldPropertyIdAbsentMessage(message,valMap);
-//        return customMessage;
-//    }
-//
-//    private String getReceiptLink(Map<String,String> valMap,String mobileNumber){
-//        StringBuilder builder = new StringBuilder(rentLeaseConfiguration.getUiAppHost());
-//        builder.append(rentLeaseConfiguration.getReceiptDownloadLink());
-//        String link = builder.toString();
-//        link = link.replace("$consumerCode", valMap.get("propertyId"));
-//        link = link.replace("$tenantId", valMap.get("tenantId"));
-//        link = link.replace("$receiptNumber", valMap.get("receiptNumber"));
-//        link = link.replace("$businessService",PT_BUSINESSSERVICE);
-//        link = link.replace("$mobile", mobileNumber);
-//        link = util.getShortenedUrl(link);
-//        return  link;
-//    }
-//
-//    private String getReceiptLinkForInApp(Map<String,String> valMap,String mobileNumber, String businessService){
-//        StringBuilder builder = new StringBuilder(rentLeaseConfiguration.getUiAppHost());
-//        builder.append(rentLeaseConfiguration.getUserEventReceiptDownloadLink());
-//        String link = builder.toString();
-//        link = link.replace("$consumerCode", valMap.get("propertyId"));
-//        link = link.replace("$tenantId", valMap.get("tenantId"));
-//        link = link.replace("$receiptNumber", valMap.get("receiptNumber"));
-//        link = link.replace("$businessService",businessService);
-//        link = link.replace("$mobile", mobileNumber);
-//        return  link;
-//    }
-//
-//    /**
-//     * @param message The message template from localization
-//     * @param valMap The map of the required values
-//     * @return Customized message depending on values in valMap
-//     */
-//    private String getCustomizedOnlinePaymentMessage(String message,Map<String,String> valMap){
-//        message = message.replace("< insert amount paid>",valMap.get("amountPaid"));
-//        message = message.replace("< insert payment transaction id from PG>",valMap.get("transactionId"));
-//        message = message.replace("<insert Property Tax Assessment ID>",valMap.get("propertyId"));
-//        message = message.replace("<pt due>.",valMap.get("amountDue"));
-//    //    message = message.replace("<FY>",valMap.get("financialYear"));
-//        return message;
-//    }
-//
-//
-//    /**
-//     * @param message The message template from localization
-//     * @param valMap The map of the required values
-//     * @return Customized message depending on values in valMap
-//     */
-//    private String getCustomizedOfflinePaymentMessage(String message,Map<String,String> valMap){
-//        message = message.replace("<amount>",valMap.get("amountPaid"));
-//        message = message.replace("<insert mode of payment>",valMap.get("paymentMode"));
-//        message = message.replace("<Enter pending amount>",valMap.get("amountDue"));
-//        message = message.replace("<insert inactive citizen application web URL>.",rentLeaseConfiguration.getNotificationURL());
-////        message = message.replace("<Insert FY>",valMap.get("financialYear"));
-//        return message;
-//    }
-//
-//
-//    /**
-//     * @param message The message template from localization
-//     * @param valMap The map of the required values
-//     * @return Customized message depending on values in valMap
-//     */
-//    private String getCustomizedPaymentFailMessage(String message,Map<String,String> valMap){
-//        message = message.replace("<insert amount to pay>",valMap.get("txnAmount"));
-//        message = message.replace("<insert ID>",valMap.get("propertyId"));
-////        message = message.replace("<FY>",valMap.get("financialYear"));
-//        return message;
-//    }
-//
-//
-//    /**
-//     * @param message The message template from localization
-//     * @param valMap The map of the required values
-//     * @return Customized message depending on values in valMap
-//     */
-//    private String getCustomizedOldPropertyIdAbsentMessage(String message,Map<String,String> valMap){
-//        message = message.replace("<insert Property Tax Assessment ID>",valMap.get("propertyId"));
-//        message = message.replace("<FY>",valMap.get("financialYear"));
-//        return  message;
-//    }
-//
-//
-//    /**
-//     * Creates SMSRequest for the given mobileNumber with the given message
-//     * @param mobileNumbers The set of mobileNumber for which SMSRequest has to be created
-//     * @param customizedMessage The message to sent
-//     * @return List of SMSRequest
-//     */
-//    private List<SMSRequest> getSMSRequests(Set<String> mobileNumbers, String customizedMessage, Map<String, String> valMap){
-//        List<SMSRequest> smsRequests = new ArrayList<>();
-//        for(String mobileNumber : mobileNumbers){
-//            if(mobileNumber!=null)
-//            {   String finalMessage = customizedMessage.replace("$mobile", mobileNumber);
-//                if(customizedMessage.contains("<payLink>")){
-//                    finalMessage = finalMessage.replace("<payLink>", getPaymentLink(valMap));
-//                }
-//                if(customizedMessage.contains("<receipt download link>")){
-//                    String receiptDownloadLink = getReceiptLink(valMap, mobileNumber);
-//                    finalMessage = finalMessage.replace("<receipt download link>", receiptDownloadLink);
-//                }                
-//                SMSRequest smsRequest = new SMSRequest(mobileNumber,finalMessage);
-//                smsRequests.add(smsRequest);
-//            }
-//        }
-//        return smsRequests;
-//    }
-//    
-//    /**
-//     * Creates SMSRequest for the given mobileNumber with the given message removing receipt link
-//     * @param mobileNumber The set of mobileNumber for which SMSRequest has to be created
-//     * @param customizedMessage The message to sent
-//     * @return SMSRequest
-//     */
-//	private SMSRequest getSMSRequestsWithoutReceipt(String mobileNumber, String customizedMessage, Map<String, String> valMap) {
-//
-//		String finalMessage = customizedMessage.replace("$mobile", mobileNumber);
-//		if (customizedMessage.contains("<receipt download link>")) {
-//			finalMessage = finalMessage.replace("Click on the link to download payment receipt <receipt download link>", "");
+package org.egov.rl.service;
+
+import java.util.Collections;
+import java.util.List;
+
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
+import org.egov.rl.config.RentLeaseConfiguration;
+import org.egov.rl.models.*;
+import org.egov.rl.models.collection.PaymentRequest;
+import org.egov.rl.models.workflow.ProcessInstanceRequest;
+import org.egov.rl.models.workflow.ProcessInstanceResponse;
+import org.egov.rl.models.workflow.State;
+import org.egov.rl.repository.AllotmentRepository;
+import org.egov.rl.repository.ServiceRequestRepository;
+import org.egov.rl.util.RLConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class PaymentNotificationService {
+
+	private static final String RL_SERVICES = "rl-services";
+
+	@Autowired
+	private ObjectMapper mapper;
+
+	@Autowired
+	private RentLeaseConfiguration configs;
+
+	@Value("${egov.mdms.host}")
+	private String mdmsHost;
+
+	@Value("${egov.mdms.search.endpoint}")
+	private String mdmsUrl;
+
+	@Autowired
+	private ServiceRequestRepository serviceRequestRepository;
+
+	@Autowired
+	private AllotmentRepository allotmentRepository;
+
+	@Autowired
+	private org.egov.rl.util.PropertyUtil pUtil;
+
+
+
+	/**
+	 * Process the incoming record and topic from the payment notification consumer.
+	 * Performs defensive null checks and validates the payment request before proceeding.
+	 */
+	public void process(PaymentRequest paymentRequest, String topic) throws JsonProcessingException {
+		try {
+			if (paymentRequest == null || paymentRequest.getPayment() == null || 
+					paymentRequest.getPayment().getPaymentDetails() == null || 
+					paymentRequest.getPayment().getPaymentDetails().isEmpty()) {
+				log.error("Invalid payment request structure");
+				return;
+			}
+
+			String businessService = paymentRequest.getPayment().getPaymentDetails().get(0).getBusinessService();
+
+			if (RL_SERVICES.equals(businessService)) {
+				processPaymentAndUpdateApplication(paymentRequest);
+			} else {
+				log.debug("Ignoring payment with business service: {} (expected: {})", businessService, RL_SERVICES);
+			}
+		} catch (Exception e) {
+			log.error("Error processing payment notification: {}", e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Main method to process payment and update application status
+	 * 1. Calls workflow with PAY action to transition to APPROVED
+	 * 2. Fetches updated process instance to get the current status
+	 * 3. Generates petRegistrationNumber if needed
+	 * 4. Updates database with the status from workflow and petRegistrationNumber
+	 */
+	private void processPaymentAndUpdateApplication(PaymentRequest paymentRequest) {
+		String applicationNumber = null;
+		String tenantId = null;
+		
+		try {
+			applicationNumber = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
+			tenantId = paymentRequest.getPayment().getTenantId();
+			
+			log.info("Processing payment for application: {}", applicationNumber);
+			
+			// Transition workflow with PAY action
+			State workflowState = transitionWorkflowToApproved(paymentRequest);
+			if (workflowState == null) {
+				log.error("Workflow transition failed for application: {}", applicationNumber);
+				return;
+			}
+			
+			// Fetch the updated process instance to get the current state
+			ProcessInstance updatedProcessInstance = fetchProcessInstanceFromWorkflow(applicationNumber, tenantId, paymentRequest.getRequestInfo());
+			if (updatedProcessInstance != null && updatedProcessInstance.getState() != null) {
+				workflowState = updatedProcessInstance.getState();
+			} else {
+				log.warn("Could not fetch updated process instance for application: {}, using state from workflow transition", applicationNumber);
+			}
+			
+			// Get the application status from workflow state
+			String applicationStatus = workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState();
+			
+			log.info("Workflow state for application {} - State: {}, ApplicationStatus: {}, Final status: {}", 
+					applicationNumber, workflowState.getState(), workflowState.getApplicationStatus(), applicationStatus);
+			
+			// For payment completion, we expect APPROVED status
+			if (!"APPROVED".equals(applicationStatus)) {
+				log.warn("Application status is not APPROVED after payment: {} for application: {}. Will force to APPROVED.", applicationStatus, applicationNumber);
+			} else {
+				log.info("Application status is APPROVED after payment for application: {}", applicationNumber);
+			}
+			
+			AllotmentCriteria criteria = AllotmentCriteria.builder()
+					.applicationNumbers(Collections.singleton(applicationNumber))
+					.tenantId(tenantId)
+					.build();
+
+			List<AllotmentDetails> applications = allotmentRepository.getAllotmentByApplicationNumber(criteria);
+			if (applications == null || applications.isEmpty()) {
+				log.error("No application found for application number: {}", applicationNumber);
+				return;
+			}
+
+			AllotmentDetails application = applications.get(0);
+			
+			// For both new and renewal applications, ALWAYS set status to APPROVED after payment completion
+			// This ensures consistency regardless of what workflow returns (same logic as new applications)
+			String applicationType = application.getApplicationType();
+			boolean isRenewal = applicationType != null && RLConstants.RENEWAL_RL_APPLICATION.equals(applicationType);
+			
+			// Always use APPROVED status after payment completion for both new and renewal applications
+			// Workflow should return APPROVED, but we enforce it to ensure consistency
+			if (!"APPROVED".equals(applicationStatus)) {
+				log.warn("Workflow returned status '{}' instead of APPROVED for application: {} (type: {}). Forcing to APPROVED.", 
+						applicationStatus, applicationNumber, applicationType);
+			}
+			applicationStatus = "APPROVED";
+			
+			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
+					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
+			
+			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
+			statusUpdateInDatabaseByApplicationNumber(application, applicationStatus, paymentRequest.getRequestInfo());
+			
+		} catch (Exception e) {
+			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * Transitions workflow to APPROVED state by calling workflow service with PAY action
+	 * Returns the state from workflow response
+	 */
+	private State transitionWorkflowToApproved(PaymentRequest paymentRequest) {
+		try {
+			ProcessInstance processInstance = getProcessInstanceForRL(paymentRequest);
+			if (processInstance == null) {
+				log.error("ProcessInstance is null, cannot transition workflow");
+				return null;
+			}
+			
+			Role role = Role.builder().code("SYSTEM").tenantId(paymentRequest.getPayment().getTenantId()).build();
+			paymentRequest.getRequestInfo().getUserInfo().getRoles().add(role);
+			
+			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(
+					paymentRequest.getRequestInfo(),
+					Collections.singletonList(processInstance));
+			
+			State state = callWorkFlow(workflowRequest);
+			if (state == null) {
+				log.error("Workflow transition returned null state");
+			}
+			
+			return state;
+			
+		} catch (Exception e) {
+			log.error("Error transitioning workflow to APPROVED: {}", e.getMessage(), e);
+			return null;
+		}
+	}
+
+	/**
+	 * Constructs a ProcessInstance object from the payment request.
+	 * Performs null checks to prevent NullPointerExceptions.
+	 */
+	private ProcessInstance getProcessInstanceForRL(PaymentRequest paymentRequest) {
+		if (paymentRequest == null || paymentRequest.getPayment() == null ||
+				paymentRequest.getPayment().getPaymentDetails() == null ||
+				paymentRequest.getPayment().getPaymentDetails().isEmpty() ||
+				paymentRequest.getPayment().getPaymentDetails().get(0).getBill() == null) {
+			log.error("Missing required data to build ProcessInstance from paymentRequest: {}", paymentRequest);
+			return null;
+		}
+
+		String consumerCode = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
+		String tenantId = paymentRequest.getPayment().getTenantId();
+
+		if (consumerCode == null || consumerCode.isEmpty() || tenantId == null || tenantId.isEmpty()) {
+			log.error("Consumer code or tenant id is missing or empty");
+			return null;
+		}
+
+		ProcessInstance processInstance = new ProcessInstance();
+		processInstance.setBusinessId(consumerCode);
+		processInstance.setAction("PAY");
+		processInstance.setModuleName("rl-services");
+		processInstance.setTenantId(tenantId);
+		processInstance.setBusinessService("RENT_N_LEASE_NEW");
+		processInstance.setDocuments(null);
+		processInstance.setComment(null);
+		processInstance.setAssignes(null);
+
+		return processInstance;
+	}
+
+	/**
+	 * Calls the workflow service with the given request and returns the state.
+	 * Handles null/empty responses safely.
+	 */
+	public State callWorkFlow(ProcessInstanceRequest workflowReq) {
+		State state = null;
+		try {
+			StringBuilder url = new StringBuilder(configs.getWfHost().concat(configs.getWfTransitionPath()));
+			Object object = serviceRequestRepository.fetchResult(url, workflowReq).get();
+			if (object == null) {
+				log.error("No response from workflow service");
+				return null;
+			}
+
+			ProcessInstanceResponse response = mapper.convertValue(object, ProcessInstanceResponse.class);
+			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
+				log.error("Empty response from workflow service");
+				return null;
+			}
+
+			state = response.getProcessInstances().get(0).getState();
+		} catch (Exception e) {
+			log.error("Exception while calling workflow service: {}", e.getMessage(), e);
+		}
+		return state;
+	}
+
+	/**
+	 * Generates petRegistrationNumber if needed and updates database with APPROVED status
+	 */
+	private void statusUpdateInDatabaseByApplicationNumber(AllotmentDetails application, String status, RequestInfo requestInfo) {
+		try {
+//			String applicationNumber = application.getApplicationNumber();
+//			String petRegistrationNumber = application.getAllPetRegistrationNumber();
+//			boolean isRenewal = application.getApplicationType() != null && RLConstants.RENEWAL_RL_APPLICATION.equals(application.getApplicationType());
+//			
+//			 For renewal applications, if petRegistrationNumber is already set (copied during creation), use it
+//			// For new applications, generate it if not set
+//			if (applicationNumber == null || applicationNumber.isEmpty()) {
+//				if (isRenewal) {
+//					// Try to get from previous application if not already set
+//					// applicationNumber = getPetRegistrationNumberFromPreviousApplication(application, requestInfo);
+//					if (applicationNumber != null && !applicationNumber.isEmpty()) {
+//						log.info("Reused applicationNumber: {} from previous application for renewal: {}", 
+//								 applicationNumber);
+//					}
+//				}
+//				
+////				// Generate new petRegistrationNumber only if still not set (for new applications or if previous app didn't have it)
+////				if (applicationNumber == null || applicationNumber.isEmpty()) {
+////					List<String> regNumList = petUtil.getIdList(requestInfo, application.getTenantId(), 
+////							configs.getPetRegNumName(), configs.getPetRegNumFormat(), 1);
+////					
+////					if (regNumList != null && !regNumList.isEmpty()) {
+////						applicationNumber = regNumList.get(0);
+////						log.info("Generated applicationNumber: {} for application: {} (type: {})", 
+////								applicationNumber, isRenewal ? "RENEWAL" : "NEW");
+////					} else {
+////						log.error("Failed to generate petRegistrationNumber for application: {}", applicationNumber);
+////					}
+////				}
+//			} else {
+//				// petRegistrationNumber is already set (for renewals, it was copied during creation)
+//				if (isRenewal) {
+//					log.info("Using existing applicationNumber : {} for renewal application: {} (already set during creation)", 
+//							 applicationNumber);
+//				}
+//			}
+			
+			updateDatabaseWithStatus(application, status, requestInfo);
+			
+		} catch (Exception e) {
+			log.error("Error generating petRegistrationNumber and updating database for application: {}, Error: {}", 
+					application.getApplicationNumber(), e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * Fetches the current process instance from workflow service
+	 */
+	private ProcessInstance fetchProcessInstanceFromWorkflow(String businessId, String tenantId, RequestInfo requestInfo) {
+		try {
+			StringBuilder url = new StringBuilder(configs.getWfHost());
+			url.append(configs.getWfProcessInstanceSearchPath());
+			url.append("?tenantId=").append(tenantId);
+			url.append("&businessIds=").append(businessId);
+			
+			org.egov.rl.web.contracts.RequestInfoWrapper requestInfoWrapper = 
+					org.egov.rl.web.contracts.RequestInfoWrapper.builder()
+					.requestInfo(requestInfo)
+					.build();
+			
+			Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper).get();
+			if (result == null) {
+				log.error("No response from workflow service when fetching process instance");
+				return null;
+			}
+			
+			ProcessInstanceResponse response = mapper.convertValue(result, ProcessInstanceResponse.class);
+			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
+				log.error("Empty response from workflow service");
+				return null;
+			}
+			
+			ProcessInstance wfProcessInstance = response.getProcessInstances().get(0);
+			
+			ProcessInstance processInstance = new ProcessInstance();
+			processInstance.setBusinessId(wfProcessInstance.getBusinessId());
+			processInstance.setTenantId(wfProcessInstance.getTenantId());
+			processInstance.setBusinessService(wfProcessInstance.getBusinessService());
+			processInstance.setState(wfProcessInstance.getState());
+			
+			return processInstance;
+			
+		} catch (Exception e) {
+			log.error("Error fetching process instance from workflow service: {}", e.getMessage(), e);
+			return null;
+		}
+	}
+
+
+	/**
+	 * Updates database with status and petRegistrationNumber
+	 */
+	private void updateDatabaseWithStatus(AllotmentDetails application, String status, RequestInfo requestInfo) {
+		try {
+			String applicationNumber = application.getApplicationNumber();
+			String updateQuery;
+			Object[] params;
+			long currentTime = System.currentTimeMillis();
+			
+			if (applicationNumber != null && !applicationNumber.isEmpty()) {
+				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE application_number = ?";
+				params = new Object[]{
+					status,
+					requestInfo.getUserInfo().getUuid(),
+					currentTime,
+					applicationNumber
+				};
+			} else {
+				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE application_number = ?";
+				params = new Object[]{
+					status,
+					requestInfo.getUserInfo().getUuid(),
+					currentTime,
+					applicationNumber
+				};
+			}
+			
+			log.info("Executing database update for application: {} with status: {}, RL: {}", 
+					status, applicationNumber != null ? applicationNumber : "null");
+			
+			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
+			
+			if (rowsUpdated > 0) {
+				log.info("Successfully updated application - ApplicationNumber: {}, Status: {}, petRegistrationNumber: {}, Rows updated: {}", 
+						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
+				application.setStatus(status);
+				if (applicationNumber != null && !applicationNumber.isEmpty()) {
+					application.setApplicationNumber(applicationNumber);
+				}
+			} else {
+				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, petRegNum={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
+						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
+			}
+			
+		} catch (Exception e) {
+			log.error("Failed to update database for application: {}, Error: {}", 
+					application.getApplicationNumber(), e.getMessage(), e);
+		}
+	}
+
+//	/**
+//	 * Gets petRegistrationNumber from previous application for renewal
+//	 */
+//	private String getPetRegistrationNumberFromPreviousApplication(PetRegistrationApplication application, RequestInfo requestInfo) {
+//		try {
+//			if (application.getPreviousApplicationNumber() != null && !application.getPreviousApplicationNumber().isEmpty()) {
+//				PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
+//						.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
+//						.tenantId(application.getTenantId())
+//						.build();
+//				List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
+//				if (previousApps != null && !previousApps.isEmpty()) {
+//					PetRegistrationApplication previousApp = previousApps.get(0);
+//					if (previousApp.getPetRegistrationNumber() != null && !previousApp.getPetRegistrationNumber().isEmpty()) {
+//						return previousApp.getPetRegistrationNumber();
+//					}
+//				}
+//			}
+//		} catch (Exception e) {
+//			log.error("Error fetching petRegistrationNumber from previous application: {}", e.getMessage(), e);
 //		}
-//		if (customizedMessage.contains("<payLink>")) {
-//			finalMessage = finalMessage.replace("<payLink>", getPaymentLink(valMap));
-//		}
-//		return new SMSRequest(mobileNumber, finalMessage);
+//		return null;
 //	}
-//
-//    /**
-//     *
-//     * @param requestInfo
-//     * @param property
-//     * @param isActionReq
-//     * @return
-//     */
-//    public List<Event> getEvents(List<SMSRequest> smsRequests, RequestInfo requestInfo,Property property, Boolean isActionReq,Map<String, String> valMap) {
-//
-//        Set<String> mobileNumbers = smsRequests.stream().map(SMSRequest::getMobileNumber).collect(Collectors.toSet());
-//        String customizedMessage = smsRequests.get(0).getMessage();
-//        Map<String, String> mapOfPhnoAndUUIDs = util.fetchUserUUIDs(mobileNumbers,requestInfo, property.getTenantId());
-//        if (CollectionUtils.isEmpty(mapOfPhnoAndUUIDs.keySet()) || StringUtils.isEmpty(customizedMessage))
-//            return null;
-//        List<Event> events = new ArrayList<>();
-//        for(String mobile: mobileNumbers) {
-//            if(null == mapOfPhnoAndUUIDs.get(mobile)) {
-//                log.error("No UUID for mobile {} skipping event", mobile);
-//                continue;
-//            }
-//            List<String> toUsers = new ArrayList<>();
-//            toUsers.add(mapOfPhnoAndUUIDs.get(mobile));
-//            Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
-//            Action action = null;
-//            if(isActionReq) {
-//                List<ActionItem> items = new ArrayList<>();
-//                String businessService = "";
-//                if(property.getChannel().toString().equalsIgnoreCase(MUTATION_PROCESS_CONSTANT)){
-//                    businessService = MUTATION_BUSINESSSERVICE;
-//                }else{
-//                    businessService = PT_BUSINESSSERVICE;
-//                }
-//
-//                if(customizedMessage.contains("{payLink}") && customizedMessage.contains("{receipt download link}"))
-//                {
-//                    String actionLink = rentLeaseConfiguration.getPayLink().replace("$mobile", mobile)
-//                            .replace("propertyId", property.getPropertyId())
-//                            .replace("$tenantId", property.getTenantId())
-//                            .replace("$businessService" , businessService);
-//
-//                    actionLink = rentLeaseConfiguration.getUiAppHost() + actionLink;
-//
-//                    ActionItem item = ActionItem.builder().actionUrl(actionLink).code(PAY_PENDING_PAYMENT_CODE).build();
-//                    items.add(item);
-//                }
-//
-//                if(customizedMessage.contains("{receipt download link}"))
-//                {
-//                    String actionLink = getReceiptLinkForInApp(valMap, mobile,businessService);
-//                    ActionItem item = ActionItem.builder().actionUrl(actionLink).code(DOWNLOAD_MUTATION_RECEIPT_CODE).build();
-//                    items.add(item);
-//                }
-//                action = Action.builder().actionUrls(items).build();
-//
-//            }
-//
-//            String description = removeForInAppMessage(customizedMessage);
-//            events.add(Event.builder().tenantId(property.getTenantId()).description(description)
-//                    .eventType(PTConstants.USREVENTS_EVENT_TYPE).name(PTConstants.USREVENTS_EVENT_NAME)
-//                    .postedBy(PTConstants.USREVENTS_EVENT_POSTEDBY).source(Source.WEBAPP).recepient(recepient)
-//                    .eventDetails(null).actions(action).build());
-//
-//        }
-//
-//
-//        return events;
-//    }
-//
-//
-//    private String getPaymentLink(Map<String,String> valMap){
-//        StringBuilder builder = new StringBuilder(rentLeaseConfiguration.getUiAppHost());
-//        builder.append(rentLeaseConfiguration.getPayLink());
-//        String url = builder.toString();
-//        url = url.replace("$propertyId", valMap.get("propertyId"));
-//        url = url.replace("$tenantId", valMap.get("tenantId"));
-//        url = url.replace("$businessService",PT_BUSINESSSERVICE);
-//
-//        url = util.getShortenedUrl(url);
-//        return url;
-//    }
-//
-//    /**
-//     * Method to remove certain lines from SMS templates
-//     * so that we can reuse the templates for in app notifications
-//     * returns the message minus some lines to match In App Templates
-//     * @param message
-//     */
-//    private String removeForInAppMessage(String message)
-//    {
-//        if(message.contains(PT_TAX_FAIL))
-//            message = message.replace(PT_TAX_FAIL,"");
-//
-//        if(message.contains(PT_TAX_PARTIAL))
-//            message = message.replace(PT_TAX_PARTIAL,"");
-//
-//        if(message.contains(PT_TAX_FULL))
-//            message = message.replace(PT_TAX_FULL,"");
-//
-//        return message;
-//    }
-//
-//}
+
+}

@@ -60,6 +60,10 @@ public class AllotmentRepository {
 	
 	@Autowired
 	private SearchRowMapper searchRowMapper;
+	
+	public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
 	    
 	
 	public List<AllotmentDetails> getAllotmentByIds(AllotmentCriteria criterias) {

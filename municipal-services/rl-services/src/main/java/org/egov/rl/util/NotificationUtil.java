@@ -56,6 +56,15 @@ public class NotificationUtil {
     private RestTemplate restTemplate;
 
     private UserService userService;
+    
+	public static final String ACTION_STATUS_APPLY = "APPLY";
+
+	public static final String ACTION_STATUS_VERIFY = "VERIFY";
+
+	public static final String ACTION_STATUS_APPROVE = "APPROVE";
+
+	public static final String ACTION_STATUS_REJECT = "REJECT";
+
 
 
     @Value("${egov.mdms.host}")
@@ -746,5 +755,44 @@ public class NotificationUtil {
 //                        property.getAcknowldgementNumber()).replace(FEEDBACK_URL, getShortenedUrl(feedbackUrl));
 //
 //    }
+    
+    public String getCustomizedMsg(RequestInfo requestInfo, AllotmentDetails allotmentDetails,
+			String localizationMessage) {
+		String message = null, messageTemplate;
+		String ACTION_STATUS = allotmentDetails.getWorkflow().getAction();
+		switch (ACTION_STATUS) {
+
+		case ACTION_STATUS_APPLY:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPLY, localizationMessage);
+			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+			break;
+
+		case ACTION_STATUS_VERIFY:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_VERIFY, localizationMessage);
+			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+			break;
+
+		case ACTION_STATUS_APPROVE:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPROVE, localizationMessage);
+			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+			break;
+
+		case ACTION_STATUS_REJECT:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_REJECT, localizationMessage);
+			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
+			break;
+
+		}
+
+//		return message;
+		return "Action Successfully for RL";
+	}
+    
+	private String getMessageWithNumberAndPetDetails(AllotmentDetails allotmentDetails, String message) {
+		message = message.replace("{1}", allotmentDetails.getOwnerInfo().get(0).getName());
+		message = message.replace("{2}", allotmentDetails.getApplicationType());
+		message = message.replace("{3}", allotmentDetails.getApplicationNumber());
+		return message;
+	}
 
 }

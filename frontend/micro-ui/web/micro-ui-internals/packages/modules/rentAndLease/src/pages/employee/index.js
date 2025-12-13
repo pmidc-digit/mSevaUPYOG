@@ -26,7 +26,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   //   },
   // };
 
-   const inboxInitialState = {
+  const inboxInitialState = {
     searchParams: {
       uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
       services: ["RENT_N_LEASE_NEW"],
@@ -87,12 +87,13 @@ const EmployeeApp = ({ path, url, userType }) => {
             path={`${path}/inbox`}
             component={() => (
               <Inbox
-               useNewInboxAPI={true}
+                useNewInboxAPI={true}
                 parentRoute={path}
                 businessService="RENT_N_LEASE_NEW"
-                filterComponent="MCOLLECT_INBOX_FILTER"
+                moduleCode="RAL"
+                filterComponent="RAL_INBOX_FILTER"
                 initialStates={inboxInitialState}
-               isInbox={true}
+                isInbox={true}
               />
             )}
           />{" "}

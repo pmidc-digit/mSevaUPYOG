@@ -3,38 +3,70 @@ import { Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import StatusCount from "./StatusCount";
 
-const Status = ({ onAssignmentChange, searchParams, businessServices,clearCheck,setclearCheck }) => {
+const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap, moduleCode }) => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
-  const { data, isLoading } = Digit.Hooks.mcollect.useMCollectMDMS(stateId, "mCollect", "applicationStatus");
-  const applicationStatus = data?.mCollect?.applicationStatus || [];
-  const translateState = (state) => {
-    return `${state.code || "ACTIVE"}`;
+  const [moreStatus, showMoreStatus] = useState(false);
+
+  const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices }, {});
+
+  const { userRoleStates, otherRoleStates } = statusData || {};
+
+  const translateState = (state, t) => {
+    console.log(state, "state");
+    return t(`WF_RENT_N_LEASE_NEW_${state.state || "CREATED"}`);
   };
+
   if (isLoading) {
     return <Loader />;
   }
 
-  return (
+  return userRoleStates?.filter((e) => !e.isTerminateState).length ? (
     <div className="status-container">
       <div className="filter-label" style={{ fontWeight: "normal" }}>
-        {t("UC_COMMON_TABLE_COL_STATUS")}
+        {t("ES_INBOX_STATUS")}
       </div>
-      {applicationStatus?.map((option, index) => {
-        return (
-          <StatusCount
-            key={index}
-            clearCheck={clearCheck}
-            setclearCheck={setclearCheck}
-            onAssignmentChange={onAssignmentChange}
-            status={{ name: translateState(option), code: option.code }}
-            searchParams={searchParams}
-          />
-        );
-      })}
+      {userRoleStates
+        ?.filter((e) => !e.isTerminateState)
+        ?.slice(0, 4)
+        ?.map((option, index) => {
+          return (
+            <StatusCount
+              businessServices={businessServices}
+              key={index}
+              onAssignmentChange={onAssignmentChange}
+              status={{ name: translateState(option, t), code: option.applicationStatus, ...option }}
+              searchParams={searchParams}
+              statusMap={statusMap}
+            />
+          );
+        })}
+      {userRoleStates?.filter((e) => !e.isTerminateState)?.slice(4).length > 0 ? (
+        <React.Fragment>
+          {moreStatus &&
+            userRoleStates
+              ?.filter((e) => !e.isTerminateState)
+              ?.slice(4)
+              ?.map((option, index) => {
+                return (
+                  <StatusCount
+                    businessServices={businessServices}
+                    key={option.uuid}
+                    onAssignmentChange={onAssignmentChange}
+                    status={{ name: translateState(option, t), code: option.applicationStatus, ...option }}
+                    searchParams={searchParams}
+                    statusMap={statusMap}
+                  />
+                );
+              })}
+
+          <div className="filter-button" onClick={() => showMoreStatus(!moreStatus)}>
+            {" "}
+            {moreStatus ? t("ES_COMMON_LESS") : t("ES_COMMON_MORE")}{" "}
+          </div>
+        </React.Fragment>
+      ) : null}
     </div>
-  );
+  ) : null;
 };
 
 export default Status;

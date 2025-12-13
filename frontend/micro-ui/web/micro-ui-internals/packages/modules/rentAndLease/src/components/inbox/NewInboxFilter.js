@@ -12,18 +12,20 @@ import {
 } from "@mseva/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "react-query";
 
 import Status from "./Status";
-import ServiceCategory from "./ServiceCategory";
 import _ from "lodash";
-import { stringReplaceAll } from "../../utils";
 
-const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, ...props }) => {
+const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, statusMap, moduleCode, ...props }) => {
   const { t } = useTranslation();
+  const client = useQueryClient();
 
-  const [_searchParams, setSearchParams] = useState(() => searchParams);
+  const [_searchParams, setSearchParams] = useState(() => ({
+    ...searchParams,
+    applicationStatus: searchParams?.applicationStatus || [],
+  }));
   const [clearCheck, setclearCheck] = useState(false);
-  const [selectedCategories, setselectedCategories] = useState([]);
 
   const localParamChange = (filterParam) => {
     setclearCheck(false);
@@ -37,7 +39,6 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
   const clearAll = () => {
     setSearchParams(defaultSearchParams);
     onFilterChange(defaultSearchParams);
-    setselectedCategories([]);
     setclearCheck(true);
   };
 
@@ -90,42 +91,16 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
           <div>
             <div>
               <Status
-                _searchParams={_searchParams}
-                businessServices={_searchParams.services}
-                clearCheck={clearCheck}
-                setclearCheck={setclearCheck}
-                onAssignmentChange={(e, status) => {
-                  if (e.target.checked) localParamChange({ status: [..._searchParams?.status, status?.code] });
-                  else localParamChange({ status: _searchParams?.status.filter((e) => e !== status?.code) });
-                }}
-              />
-            </div>
-            <div>
-              <ServiceCategory
                 searchParams={_searchParams}
-                setclearCheck={setclearCheck}
-                selectedCategory={selectedCategories}
                 businessServices={_searchParams.services}
-                clearCheck={clearCheck}
-                setSearchParams={setSearchParams}
-                setselectedCategories={setselectedCategories}
-                onAssignmentChange={(e, businessService) => {
-                  let filterParam = [];
-                  let selectedCategory = [];
-                  _searchParams["businessService"] = [];
-                  e &&
-                    e.map((ob) => {
-                      filterParam.push(ob?.[1]?.code);
-                      selectedCategory.push({
-                        code: ob?.[1]?.code,
-                        i18nKey: `BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(ob?.[1]?.code, ".", "_").toUpperCase()}`,
-                      });
-                    });
-                  let _new = { ..._searchParams, businessService: [...filterParam] };
-                  setSearchParams({ ..._new });
-                  setselectedCategories([...selectedCategory]);
-                  // if (e.target.checked) localParamChange({ businessService: [..._searchParams?.businessService, businessService?.code] });
-                  // else localParamChange({ businessService: _searchParams?.businessService.filter((e) => e !== businessService?.code) });
+                statusMap={statusMap || client.getQueryData(`INBOX_STATUS_MAP_${moduleCode}`)}
+                moduleCode={moduleCode}
+                onAssignmentChange={(e, status) => {
+                  if (e.target.checked) localParamChange({ applicationStatus: [...(_searchParams?.applicationStatus || []), status] });
+                  else {
+                    let applicationStatus = _searchParams?.applicationStatus?.filter((e) => e.uuid !== status.uuid);
+                    localParamChange({ applicationStatus });
+                  }
                 }}
               />
             </div>

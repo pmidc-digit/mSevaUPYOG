@@ -202,6 +202,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
                 defaultSearchParams={props.defaultSearchParams}
                 onFilterChange={props.onFilterChange}
                 searchParams={props.searchParams}
+                moduleCode={props.moduleCode}
                 type="desktop"
               />
             }

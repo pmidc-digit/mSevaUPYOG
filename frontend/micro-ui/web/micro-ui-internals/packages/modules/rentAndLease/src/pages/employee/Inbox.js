@@ -182,9 +182,6 @@ const Inbox = ({
         />
       );
     } else {
-      console.log("Inbox Render - isInbox:", isInbox);
-      console.log("Inbox Render - data:", data);
-      console.log("Inbox Render - totalCount:", data?.totalCount);
       return (
         <div>
           {isInbox && (

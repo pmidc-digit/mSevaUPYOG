@@ -117,7 +117,7 @@ const componentsToRegister = {
   SearchChallan,
   SearchBill,
   GroupBill,
-  MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  RAL_INBOX_FILTER: (props) => <InboxFilter {...props} />,
   // New stepper form components
   NewRentAndLeaseStepperForm,
   NewRentAndLeaseStepFormOne,

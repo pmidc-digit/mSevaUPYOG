@@ -157,9 +157,9 @@ const EditLayoutApplication = () => {
   // First useEffect: Handle zone updates only
   useEffect(() => {
     if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-      const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-      const matchedZone = fetchedLocalities.find((loc) => loc.name === zoneName);
-      if (matchedZone) {
+      const zoneName = siteDetails?.zone?.name || siteDetails?.zone
+      const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
+      if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
         dispatch(
           UPDATE_LayoutNewApplication_FORM("siteDetails", {
             ...formData.siteDetails,
@@ -183,7 +183,7 @@ const EditLayoutApplication = () => {
   const { data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
   const menu = [];
   genderTypeData &&
-    genderTypeData["common-masters"].GenderType.filter((data) => data.active).map((genderDetails) => {
+    genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active)?.map((genderDetails) => {
       menu.push({
         i18nKey: `COMMON_GENDER_${genderDetails.code}`,
         code: `${genderDetails.code}`,

@@ -113,7 +113,7 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
     const Property = applicationDetails?.Layout?.[0]
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId)
     const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t)
-    Digit.Utils.pdf.generate(acknowledgementData)
+    Digit.Utils.pdf.generateFormatted(acknowledgementData)
   }
 
   useEffect(() => {
@@ -164,10 +164,6 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
 
   const dowloadOptions = []
   if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
-      onClick: handleDownloadPdf,
-    })
 
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),

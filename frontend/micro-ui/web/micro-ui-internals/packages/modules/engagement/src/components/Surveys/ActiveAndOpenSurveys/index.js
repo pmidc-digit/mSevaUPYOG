@@ -83,11 +83,11 @@ const ActiveAndOpenSurveys = (props) => {
         accessor: "startDate",
         Cell: ({ row }) => (row.original?.startDate ? GetCell(format(new Date(row.original?.startDate), "dd/MM/yyyy")) : ""),
       },
-      {
-        Header: t("EVENTS_END_DATE_LABEL"),
-        accessor: "endDate",
-        Cell: ({ row }) => (row.original?.endDate ? GetCell(format(new Date(row.original?.endDate), "dd/MM/yyyy")) : ""),
-      },
+      // {
+      //   Header: t("EVENTS_END_DATE_LABEL"),
+      //   accessor: "endDate",
+      //   Cell: ({ row }) => (row.original?.endDate ? GetCell(format(new Date(row.original?.endDate), "dd/MM/yyyy")) : ""),
+      // },
       {
         Header: t("Fill Survey"),
         accessor: "fillSurvey",
@@ -213,9 +213,9 @@ const ActiveAndOpenSurveys = (props) => {
                     <b>Start:</b> {survey?.startDate ? format(new Date(survey?.startDate), "dd/MM/yyyy") : "NA"}
                   </p>
 
-                  <p style={{ margin: "4px 0" }}>
+                  {/* <p style={{ margin: "4px 0" }}>
                     <b>End:</b> {survey?.endDate ? format(new Date(survey?.endDate), "dd/MM/yyyy") : "NA"}
-                  </p>
+                  </p> */}
 
                   <SubmitBar label={t("Start Survey")} onSubmit={() => handleStartSurvey(survey)} />
                 </Card>

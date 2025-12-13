@@ -207,7 +207,7 @@ console.log('data for ownerconsent', data)
       OWNER'S DECLARATION
     </h2>
     <div style="text-align:center; margin-top:-78px; font-size:16px;">
-      (For Authorization of Architect under Self-Certification Scheme)
+      (For Authorization of ${architecttype} under Self-Certification Scheme)
     </div>
 
     <div style="margin-top:-52px;">

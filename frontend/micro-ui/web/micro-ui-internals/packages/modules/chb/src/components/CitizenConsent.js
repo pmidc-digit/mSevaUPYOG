@@ -31,25 +31,11 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
   console.log("getModalData", getModalData);
 
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
   const [isUploading, setIsUploading] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
 
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
   const DateOnly = new Date();
-
-  const updatedAdditionalDetails = {
-    ...[data?.applicationData],
-    TimeStamp: otpVerifiedTimestamp,
-  };
-
-  const updatedData = {
-    applicationNo: data?.applicationNo,
-    tenantId: data?.tenantId,
-    applicationData: {
-      ...updatedAdditionalDetails,
-    },
-  };
 
   const formatUlbName = (ulbName = "") => {
     if (!ulbName) return "";
@@ -205,15 +191,17 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   };
 
   const handleGetOTPClick = async () => {
+    setLoader(true);
     try {
       const response = await Digit.UserService.sendOtp({
         otp: {
           mobileNumber: getModalData?.mobileNumber,
           tenantId: user?.info?.tenantId,
-          userType: user?.info?.type,
+          userType: "CITIZEN",
           type: "login",
         },
       });
+      setLoader(false);
 
       console.log("  Full OTP send response:", JSON.stringify(response, null, 2));
 
@@ -239,6 +227,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         alert("Failed to send OTP");
       }
     } catch (error) {
+      setLoader(false);
       const errorData = error?.response?.data || error?.data;
 
       if (errorData?.error?.fields && Array.isArray(errorData.error.fields)) {
@@ -406,7 +395,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
           )}
         </div>
       </Modal>
-      {loader && <Loader page={true} />}
+      {(loader || setOtpLoading) && <Loader page={true} />}
     </div>
   );
 };

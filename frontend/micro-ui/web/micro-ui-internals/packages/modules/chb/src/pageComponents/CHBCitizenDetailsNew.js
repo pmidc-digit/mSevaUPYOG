@@ -25,11 +25,13 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     getValues,
     watch,
   } = useForm({
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       name: (isCitizen && user?.info?.name) || "",
       emailId: (isCitizen && user?.info?.emailId) || "",
       mobileNumber: (isCitizen && user?.info?.mobileNumber) || "",
-      address: "",
+      address: (isCitizen && user?.info?.permanentCity) || "",
     },
   });
 
@@ -171,7 +173,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         setValue("name", userData.user[0].name);
         setValue("emailId", userData.user[0].emailId);
         setValue("address", userData.user[0].permanentAddress);
-        clearErrors(["name", "emailId"]);
+        clearErrors(["name", "emailId", "address"]);
       }
       setLoader(false);
     } catch (error) {
@@ -206,6 +208,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                     props.onChange(e);
                     setValue("name", "");
                     setValue("emailId", "");
+                    setValue("address", "");
                     setUser("");
                     setShowOtp(false);
                     // ✅ updates react-hook-form

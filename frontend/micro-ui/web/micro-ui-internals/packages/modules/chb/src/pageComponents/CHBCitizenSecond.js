@@ -14,6 +14,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [error, setError] = useState(null);
 
+  console.log("tenantId", tenantId);
+
   const {
     control,
     handleSubmit,

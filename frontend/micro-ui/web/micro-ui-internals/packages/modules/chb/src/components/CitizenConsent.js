@@ -170,7 +170,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
         setOTPVerifiedTimestamp(formatted);
         sessionStorage.setItem("otpVerifiedTimestampcitizen", formatted);
-        setUser({ info, ...tokens });
+        // setUser({ info, ...tokens });
         setSetOtpLoading(false);
         setShowOTPInput(false);
         setIsOTPVerified(true);
@@ -394,10 +394,10 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
               {showOTPInput && !isCitizenDeclared && !isOTPVerified && (
                 <React.Fragment>
                   <br></br>
-                  <CardLabel>{t("BPA_OTP")}</CardLabel>
+                  <CardLabel>{t("CHB_OTP")}</CardLabel>
                   <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
-                  <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
+                  <SubmitBar label={t("CHB_VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                   {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
                   {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
                 </React.Fragment>
@@ -406,10 +406,10 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
               {getShowOtp && !isOTPVerified && !isCitizenDeclared && (
                 <React.Fragment>
                   <br></br>
-                  <CardLabel>{t("BPA_OTP")}</CardLabel>
+                  <CardLabel>{t("CHB_OTP")}</CardLabel>
                   <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
-                  <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClickNew} />
+                  <SubmitBar label={t("CHB_VERIFY_OTP")} onSubmit={handleVerifyOTPClickNew} />
                   {/* {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
                 {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>} */}
                 </React.Fragment>

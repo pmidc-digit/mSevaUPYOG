@@ -312,7 +312,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                   render={({ value, onChange, onBlur }) => (
                     <TextInput
                       value={value}
-                      disabled={Boolean(value)}
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={(e) => {
                         onBlur(e);
@@ -340,7 +339,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                     <TextInput
                       value={value}
                       onChange={(e) => onChange(e.target.value)}
-                      disabled={Boolean(value)}
                       onBlur={(e) => {
                         onBlur(e);
                         trigger(`applicants.${index}.emailId`);
@@ -366,7 +364,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                   render={({ value, onChange, onBlur }) => (
                     <TextArea
                       value={value}
-                      disabled={Boolean(value)}
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={(e) => {
                         onBlur(e);
@@ -399,7 +396,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                   render={({ value, onChange, onBlur }) => (
                     <TextInput
                       value={value}
-                      disabled={Boolean(value)}
                       maxlength={6}
                       onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
                       onBlur={(e) => {

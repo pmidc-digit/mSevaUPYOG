@@ -227,11 +227,43 @@ const CHBApplicationDetails = () => {
       history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
+    } else if (action?.action == "CANCEL") {
+      handleCancel();
     } else {
       setShowModal(true);
       setSelectedAction(action);
     }
   }
+
+  const handleCancel = async () => {
+    console.log("displayData?.applicantData", data?.hallsBookingApplication);
+    // return
+    setLoader(true);
+    // ✅ Final payload
+    const finalPayload = {
+      hallsBookingApplication: {
+        ...application,
+        workflow: {
+          action: "CANCEL",
+        },
+      },
+    };
+    try {
+      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
+
+      workflowDetails.revalidate();
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/chb/inbox");
+        window.location.reload();
+      }, 2000);
+      setLoader(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
+    }
+  };
 
   const fetchBillData = async () => {
     setLoading(true);
@@ -301,6 +333,7 @@ const CHBApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
   }
+
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = {
       hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
@@ -521,7 +554,7 @@ const CHBApplicationDetails = () => {
           />
         ) : null}
         {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
-        {(isLoading || auditDataLoading || getLoader) && <Loader page={true} />}
+        {(isLoading || auditDataLoading || getLoader || workflowDetails.isLoading || recieptDataLoading) && <Loader page={true} />}
       </div>
     </React.Fragment>
   );

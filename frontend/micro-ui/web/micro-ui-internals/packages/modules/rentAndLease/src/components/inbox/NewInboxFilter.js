@@ -20,7 +20,6 @@ import _ from "lodash";
 const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, statusMap, moduleCode, ...props }) => {
   const { t } = useTranslation();
   const client = useQueryClient();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [_searchParams, setSearchParams] = useState(() => ({
     ...searchParams,
@@ -29,10 +28,10 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
   const [clearCheck, setclearCheck] = useState(false);
 
   // Use existing allotment types from the application
-  const AllotmentTypeMenu = [
-    { name: t("ON_RENT"), code: "rent", value: "rent" },
-    { name: t("ON_LEASE"), code: "lease", value: "lease" },
-  ];
+  // const AllotmentTypeMenu = [
+  //   { name: t("ON_RENT"), code: "rent", value: "rent" },
+  //   { name: t("ON_LEASE"), code: "lease", value: "lease" },
+  // ];
 
   const localParamChange = (filterParam) => {
     setclearCheck(false);
@@ -125,7 +124,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
             </div>
 
             {/* 3. Allotment Type - Dropdown */}
-            <div>
+            {/* <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("RENT_LEASE_PROPERTY_TYPE")}
               </div>
@@ -138,7 +137,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                 }}
                 t={t}
               />
-            </div>
+            </div> */}
 
             <div>
               <SubmitBar

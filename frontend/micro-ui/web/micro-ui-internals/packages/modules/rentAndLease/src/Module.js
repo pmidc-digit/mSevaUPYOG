@@ -51,13 +51,25 @@ export const RentAndLeaseModule = ({ stateCode, userType, tenants }) => {
     initRentAndLeaseComponents();
   }, []);
 
+  // useEffect(
+  //   () =>
+  //     userType === "employee" &&
+  //     Digit.LocalizationService.getLocale({
+  //       modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+  //       locale: Digit.StoreData.getCurrentLanguage(),
+  //       tenantId: Digit.ULBService.getCurrentTenantId(),
+  //     }),
+  //   []
+  // );
+
+  const stateId = Digit.ULBService.getStateId();
+
   useEffect(
     () =>
-      userType === "employee" &&
       Digit.LocalizationService.getLocale({
-        modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+        modules: [`rainmaker-rentAndLease`],
         locale: Digit.StoreData.getCurrentLanguage(),
-        tenantId: Digit.ULBService.getCurrentTenantId(),
+        tenantId: stateId,
       }),
     []
   );

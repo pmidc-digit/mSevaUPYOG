@@ -195,21 +195,7 @@ const jsPdfGenerator = async ({
         fontSize: 11,
         color: "#6f777c",
         margin: [10, 10],
-      },
-      {
-        text: t("TERMS_AND_CONDITIONS_OF_LICENSE"),
-        fontSize: 16,
-        bold: true,
-        alignment: "center",
-        decoration: "underline",
-        pageBreak: "before",
-        margin: [0, 25, 0, 0],
-      },
-      {
-        text: t("TERMS_AND_CONDITIONS_OF_LICENSE_CONTENT"),
-        fontSize: 8,
-        margin: [10, 20, 10, 0],
-      },
+      }
     ],
     defaultStyle: {
       font: "Hind",
@@ -235,7 +221,17 @@ const jsPdfGeneratorFormatted = async ({
   details,
   applicationNumber,
   t = (text) => text,
+  imageURL,
+  ulbType,
+  ulbName
 }) => {
+  console.log("ulbType",ulbType)
+  const baseUrl = window.location.origin;
+  
+  const module = applicationNumber.split("-")[1];
+  const splitURL = imageURL.split("filestore")?.[1];
+
+  const base64Image = imageURL ? await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`): window.location.origin;
 
   const dd = {
     
@@ -250,7 +246,7 @@ background: [
 
     header: {},
     content: [
-      ...createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createHeaderFormatted(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
       ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
         text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
@@ -1848,8 +1844,8 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
   return detailsHeaders;
 }
 
-function createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType) {
-  const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
+function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
+  const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
     style: "tableExample",
@@ -1896,8 +1892,8 @@ function createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId
           qrCodeDataUrl
             ? {
                 image: qrCodeDataUrl,
-                width: 78,
-                margin: [10, 10],
+                width: 70,
+                margin: [30, 15 , 2, 10],
                 alignment: "right",
               }
             : {},

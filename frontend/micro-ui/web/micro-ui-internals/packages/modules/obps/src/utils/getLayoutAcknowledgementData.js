@@ -327,7 +327,7 @@ const getDocuments = async (appData, t) => {
   }
 }
 
-export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, t) => {
   const stateCode = Digit.ULBService.getStateId()
   const appData = applicationDetails || {}
 
@@ -362,5 +362,6 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
       getDocuments(appData, t),
     ],
     imageURL,
+    ulbType
   }
 }

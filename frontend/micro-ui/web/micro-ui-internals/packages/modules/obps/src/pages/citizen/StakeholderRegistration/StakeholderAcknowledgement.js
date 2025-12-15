@@ -102,7 +102,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
 
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
       console.log(acknowledgementData, "ACKO");
-      await Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+      await Digit.Utils.pdf.generateNewBPAREG(acknowledgementData);
       setLoader(false);
     } catch (err) {
       console.error("Error generating acknowledgement PDF", err);

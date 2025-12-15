@@ -154,6 +154,18 @@ const getSiteDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotNo || "N/A",
     },
     {
+      title: t("BPA_PLOT_AREA_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotArea || "N/A",
+    },
+    {
+      title: t("BPA_KHEWAT_KHATUNI_NO_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.khewatOrKhatuniNo || "N/A",
+    },
+    {
+      title: t("BPA_CORE_AREA_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.coreArea?.code || "N/A",
+    },
+    {
       title: t("BPA_PROPOSED_SITE_ADDRESS"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.proposedSiteAddress || "N/A",
     },
@@ -222,6 +234,31 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.proposedRoadWidthAfterWidening || "N/A",
+    },
+
+    {
+      title: t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name || "N/A",
+    },
+    {
+      title: t("BPA_PROPERTY_UID_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.propertyUid || "N/A",
+    },
+    {
+      title: t("BPA_BUILDING_STATUS_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.buildingStatus?.name || "N/A",
+    },
+    {
+      title: t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.isOriginalCategoryAgriculture?.code || "N/A",
+    },
+    {
+      title: t("BPA_RESTRICTED_AREA_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.restrictedArea?.code || "N/A",
+    },
+    {
+      title: t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.isSiteUnderMasterPlan?.code || "N/A",
     },
     {
       title: t("BPA_BUILDING_CATEGORY_LABEL"),

@@ -195,3 +195,162 @@ export const businessServiceList = (isCode = false) => {
 
   return newAvailableBusinessServices;
 };
+const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
+
+const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
+
+export const getAcknowledgementData = async (application, tenantInfo, t) => {
+  console.log("application in getAcknowledgement", application);
+
+  const details = [];
+
+  // License Details
+  
+  details.push({
+      title: "Owner Details",
+      values: [
+        {
+          title: t("CORE_COMMON_NAME"),
+          value: application?.connectionHolders?.[0]?.name || t("CS_NA"),
+        },
+        {
+          title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
+          value: application?.connectionHolders?.[0]?.mobileNumber || t("CS_NA"),
+        },
+        {
+          title: t("CORE_EMAIL_ID"),
+          value: application?.connectionHolders?.[0]?.emailId || t("CS_NA"),
+        }
+      ],
+    });
+  
+  
+
+    // Licensee Details
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
+
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
+
+  details.push({
+    title: t("PT_PROPERTY_DETAILS"),
+    values: [
+      {
+        title: t("PROPERTY_ID"),
+        value: t(application?.propertyId) || "NA",
+      },
+      {
+        title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
+        value: application?.location || "NA",
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
+        value: application?.propertyType || "NA",
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE"),
+        value: application?.plotSize || "NA",
+      }
+    ],
+  });
+  const docDetails = application?.documents?.map((doc, index) => ({
+    title: t(`${doc.documentType}`) || "NA",
+    value: " ",
+    link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+  }));
+
+  details.push({
+    title: t("BPA_APPLICATION_DOCUMENTS"),
+    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
+  });
+
+  const imageURL = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values?.find(doc => doc?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.url || null;
+
+
+
+  
+
+    return {
+    t: t,
+    tenantId: tenantInfo?.code,
+    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
+    email: tenantInfo?.emailId,
+    phoneNumber: tenantInfo?.contactNumber,
+    heading: t("Acknowledgment letter for Garbage Collection"),
+    applicationNumber: application?.applicationNo || "NA",
+    details,
+    imageURL
+  };
+};

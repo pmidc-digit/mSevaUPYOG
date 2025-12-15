@@ -120,6 +120,8 @@ const WrapPaymentComponent = (props) => {
         ? "bpa-receiptsecond"
         : business_service === "BPA.NC_APP_FEE"
         ? "bpa-obps-receipt"
+        : business_service === "GC.ONE_TIME_FEE"
+        ? "garbage-receipt"
         : business_service === "clu"
         ? "clu-receipt"
         : business_service === "layout"

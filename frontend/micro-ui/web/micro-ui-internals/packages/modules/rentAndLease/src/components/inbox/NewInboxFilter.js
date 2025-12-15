@@ -12,18 +12,27 @@ import {
 } from "@mseva/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "react-query";
 
 import Status from "./Status";
-import ServiceCategory from "./ServiceCategory";
 import _ from "lodash";
-import { stringReplaceAll } from "../../utils";
 
-const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, ...props }) => {
+const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, statusMap, moduleCode, ...props }) => {
   const { t } = useTranslation();
+  const client = useQueryClient();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const [_searchParams, setSearchParams] = useState(() => searchParams);
+  const [_searchParams, setSearchParams] = useState(() => ({
+    ...searchParams,
+    applicationStatus: searchParams?.applicationStatus || [],
+  }));
   const [clearCheck, setclearCheck] = useState(false);
-  const [selectedCategories, setselectedCategories] = useState([]);
+
+  // Use existing allotment types from the application
+  const AllotmentTypeMenu = [
+    { name: t("ON_RENT"), code: "rent", value: "rent" },
+    { name: t("ON_LEASE"), code: "lease", value: "lease" },
+  ];
 
   const localParamChange = (filterParam) => {
     setclearCheck(false);
@@ -37,7 +46,6 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
   const clearAll = () => {
     setSearchParams(defaultSearchParams);
     onFilterChange(defaultSearchParams);
-    setselectedCategories([]);
     setclearCheck(true);
   };
 
@@ -60,7 +68,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                   />
                 </svg>
               </span>
-              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("COMMON_TABLE_FILTERS")}:</span>
+              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("ES_COMMON_FILTER_BY")}:</span>
             </div>
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
@@ -73,7 +81,6 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                     fill="#505A5F"
                   />
                 </svg>
-                {/* {t("ES_COMMON_CLEAR_ALL")} */}
               </span>
             )}
             {props.type === "mobile" && (
@@ -88,45 +95,48 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
             )}
           </div>
           <div>
+            {/* 1. Assigned To - Radio Buttons */}
+            <RadioButtons
+              onSelect={(d) => localParamChange({ uuid: d })}
+              selectedOption={_searchParams?.uuid}
+              t={t}
+              optionsKey="name"
+              options={[
+                { code: "ASSIGNED_TO_ME", name: "ES_INBOX_ASSIGNED_TO_ME" },
+                { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+              ]}
+            />
+
+            {/* 2. Status - Checkboxes */}
             <div>
               <Status
-                _searchParams={_searchParams}
+                searchParams={_searchParams}
                 businessServices={_searchParams.services}
-                clearCheck={clearCheck}
-                setclearCheck={setclearCheck}
+                statusMap={statusMap || client.getQueryData(`INBOX_STATUS_MAP_${moduleCode}`)}
+                moduleCode={moduleCode}
                 onAssignmentChange={(e, status) => {
-                  if (e.target.checked) localParamChange({ status: [..._searchParams?.status, status?.code] });
-                  else localParamChange({ status: _searchParams?.status.filter((e) => e !== status?.code) });
+                  if (e.target.checked) localParamChange({ applicationStatus: [...(_searchParams?.applicationStatus || []), status] });
+                  else {
+                    let applicationStatus = _searchParams?.applicationStatus?.filter((e) => e.uuid !== status.uuid);
+                    localParamChange({ applicationStatus });
+                  }
                 }}
               />
             </div>
+
+            {/* 3. Allotment Type - Dropdown */}
             <div>
-              <ServiceCategory
-                searchParams={_searchParams}
-                setclearCheck={setclearCheck}
-                selectedCategory={selectedCategories}
-                businessServices={_searchParams.services}
-                clearCheck={clearCheck}
-                setSearchParams={setSearchParams}
-                setselectedCategories={setselectedCategories}
-                onAssignmentChange={(e, businessService) => {
-                  let filterParam = [];
-                  let selectedCategory = [];
-                  _searchParams["businessService"] = [];
-                  e &&
-                    e.map((ob) => {
-                      filterParam.push(ob?.[1]?.code);
-                      selectedCategory.push({
-                        code: ob?.[1]?.code,
-                        i18nKey: `BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(ob?.[1]?.code, ".", "_").toUpperCase()}`,
-                      });
-                    });
-                  let _new = { ..._searchParams, businessService: [...filterParam] };
-                  setSearchParams({ ..._new });
-                  setselectedCategories([...selectedCategory]);
-                  // if (e.target.checked) localParamChange({ businessService: [..._searchParams?.businessService, businessService?.code] });
-                  // else localParamChange({ businessService: _searchParams?.businessService.filter((e) => e !== businessService?.code) });
+              <div className="filter-label" style={{ fontWeight: "normal" }}>
+                {t("RENT_LEASE_PROPERTY_TYPE")}
+              </div>
+              <Dropdown
+                option={AllotmentTypeMenu}
+                selected={_searchParams?.allotmentType}
+                optionKey="name"
+                select={(value) => {
+                  localParamChange({ allotmentType: value });
                 }}
+                t={t}
               />
             </div>
 

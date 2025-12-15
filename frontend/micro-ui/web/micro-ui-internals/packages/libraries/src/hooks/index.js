@@ -158,6 +158,8 @@ import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenera
 import useChallanInbox from "./challanGeneration/useInbox";
 
 import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
+import useRALPropertyMDMS from "./rentAndLease/useRentAndLeasePropertyMDMS"
+import useRALDocumentsMDMS from "./rentAndLease/useRentAndLeaseDocumetsMDMS"
 import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
 import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
 import useRentAndLeaseTenants from "./rentAndLease/useTenants";
@@ -787,6 +789,8 @@ const challangeneration = {
 const rentandlease = {
   useRentAndLeaseRecieptSearch,
   useRentAndLeaseMDMS,
+  useRALPropertyMDMS,
+  useRALDocumentsMDMS,
   useRentAndLeaseSearch,
   useRentAndLeaseSearchBill,
   useRentAndLeaseTenants,

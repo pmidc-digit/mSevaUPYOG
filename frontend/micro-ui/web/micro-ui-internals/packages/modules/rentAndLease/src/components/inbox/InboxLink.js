@@ -7,26 +7,26 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   const { t } = useTranslation();
   const [links, setLinks] = useState([]);
   const allLinks = [
-    {
-      text: t("UC_GENERATE_NEW_CHALLAN"),
-      link: "/digit-ui/employee/mcollect/new-application",
-      roles: [],
-    },
-    {
-      text: "Search Receipt",
-      link: "/digit-ui/employee/mcollect/search-receipt",
-      roles: [],
-    },
-    {
-      text: "Search Challan",
-      link: "/digit-ui/employee/mcollect/search-challan",
-      roles: [],
-    },
-    {
-      text: "Search and Pay",
-      link: "/digit-ui/employee/mcollect/search-bill",
-      roles: [],
-    },
+    // {
+    //   text: t("RAL_ALLOT_NEW_PROPERTY"),
+    //   link: "/digit-ui/employee/rentandlease/allot-property",
+    //   roles: [],
+    // },
+    // {
+    //   text: "Search Receipt",
+    //   link: "/digit-ui/employee/mcollect/search-receipt",
+    //   roles: [],
+    // },
+    // {
+    //   text: "Search Challan",
+    //   link: "/digit-ui/employee/mcollect/search-challan",
+    //   roles: [],
+    // },
+    // {
+    //   text: "Search and Pay",
+    //   link: "/digit-ui/employee/mcollect/search-bill",
+    //   roles: [],
+    // },
     // {
     //   text: "Group Bill",
     //   link: "/digit-ui/employee/mcollect/group-bill",
@@ -44,7 +44,7 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       <span className="logo">
         <PTIcon />
       </span>{" "}
-      <span className="text">{t("UC_COMMON_HEADER_SEARCH")}</span>
+      <span className="text">{t("RAL_TITLE")}</span>
     </div>
   );
 

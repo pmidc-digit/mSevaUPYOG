@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Header, Loader } from "@mseva/digit-ui-react-components";
+import { Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import ChbApplication from "./chb-application";
+import { Loader } from "../../../components/Loader";
 
 export const CHBMyApplications = () => {
   const { t } = useTranslation();
@@ -41,10 +42,6 @@ export const CHBMyApplications = () => {
     refetch();
   }, []);
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
   const filteredApplications = data?.hallsBookingApplication || [];
 
   return (
@@ -54,7 +51,7 @@ export const CHBMyApplications = () => {
         {filteredApplications?.length > 0 &&
           filteredApplications?.map((application, index) => (
             <div key={index}>
-              <ChbApplication application={application} tenantId={tenantId} buttonLabel={t("CHB_SUMMARY")} />
+              <ChbApplication refetch={refetch} application={application} tenantId={tenantId} buttonLabel={t("CHB_SUMMARY")} />
             </div>
           ))}
         {filteredApplications?.length === 0 && !isLoading && (
@@ -68,6 +65,7 @@ export const CHBMyApplications = () => {
             </span>
           </div>
         )}
+        {isLoading && <Loader page={true} />}
       </div>
     </React.Fragment>
   );

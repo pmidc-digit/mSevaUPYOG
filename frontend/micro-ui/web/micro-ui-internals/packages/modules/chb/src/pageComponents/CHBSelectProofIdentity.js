@@ -9,6 +9,8 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
+  console.log("tenantId", tenantId);
+
   const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
   console.log("data=====", data);

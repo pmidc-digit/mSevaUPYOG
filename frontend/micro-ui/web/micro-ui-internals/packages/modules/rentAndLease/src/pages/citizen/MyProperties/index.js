@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { config } from "./config";
-import MyChallanResultsComponent from "./myChallan";
+import MyChallanResultsComponent from "./myProperties";
 
 const MyChallans = () => {
   const { t } = useTranslation();

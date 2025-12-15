@@ -161,12 +161,17 @@ const CLUApplicationDetails = () => {
   
   const handleDownloadPdf = async () => {
     const Property = applicationDetails?.Clu?.[0];
-    //console.log("tenants", tenants);
+    console.log('Property', Property)   
+    const site= Property?.cluDetails?.additionalDetails?.siteDetails
+
+    const ulbType = site?.ulbType
+    const ulbName = site?.ulbName?.city?.name
+
+    console.log('ulbType, ulbName', ulbType, ulbName)
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo,  ulbType, ulbName ,t);
 
-    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, t);
-
-    Digit.Utils.pdf.generate(acknowledgementData);
+    Digit.Utils.pdf.generateFormatted(acknowledgementData);
   };
 
 

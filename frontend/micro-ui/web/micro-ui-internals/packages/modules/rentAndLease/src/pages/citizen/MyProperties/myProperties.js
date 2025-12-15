@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Header, ResponseComposer, Card, KeyNote, SubmitBar } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
-import Axios from "axios";
 import { useHistory, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Loader } from "../../../components/Loader";
+// import { Loader } from "../../../components/Loader";
+import { Loader } from "../../../../../challanGeneration/src/components/Loader";
 
 const MyProperties = ({ template, header, actionButtonLabel }) => {
   const { t } = useTranslation();
@@ -13,7 +13,6 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const [loader, setLoader] = useState(false);
   const [getPropertiesData, setPropertiesData] = useState([]);
-  console.log("getPropertiesData", getPropertiesData);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [filters, setFilters] = useState({
@@ -38,7 +37,6 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
       }
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };

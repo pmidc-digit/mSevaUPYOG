@@ -155,7 +155,6 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
         .then((result) => {
           if (result?.AllotmentDetails?.length > 0) {
             const allotmentDetails = result?.AllotmentDetails?.[0];
-            console.log("allotmentDetails", allotmentDetails);
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("responseData", allotmentDetails));
 
             // ✅ Set CreatedResponse to prevent "create" API call in Step 2
@@ -230,7 +229,6 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
               ...formPropertyDetails,
             };
 
-            console.log("Mapped formPropertyDetails", formPropertyDetails);
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", formPropertyDetails));
 
             // --- Map Applicant Details ---
@@ -273,7 +271,6 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
           }
         })
         .catch((e) => {
-          console.error("Error fetching application details", e);
           triggerToast("CS_COMMON_ERROR", true);
         })
         .finally(() => setLoading(false));

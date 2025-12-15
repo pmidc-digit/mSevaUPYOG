@@ -28,6 +28,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const updatedApplicantDetails = currentStepData?.applicantDetails || {};
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
+  console.log("updatedDocuments", updatedDocuments);
 
   const onGoToRentAndLease = () => {
     history.push(`/digit-ui/employee/rentandlease/inbox`);
@@ -98,6 +99,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const onSubmit = async (data, selectedAction) => {
     const { CreatedResponse } = data;
+    console.log("CreatedResponse", CreatedResponse);
     const { workflow: existingWorkflow } = CreatedResponse || {};
 
     let formData = {};
@@ -138,6 +140,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
       };
 
+      // Get the allotmentId from CreatedResponse for new documents
+      const allotmentIdForNewDocs = CreatedResponse?.AllotmentDetails?.id;
+
       formData = {
         ...CreatedResponse?.AllotmentDetails,
         startDate: updatedPropertyDetails?.startDate
@@ -149,16 +154,26 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         additionalDetails: mergedAdditionalDetails,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
-            (CreatedResponse?.AllotmentDetails?.Document || []).find(
-              (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId
+            (CreatedResponse?.AllotmentDetails?.Document || [])?.find(
+              (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
             ) || {};
+
+          // Check if this is a new document (not found in original documents)
+          const isNewDocument = !originalDoc?.documentUid && !originalDoc?.fileStoreId;
+
+          // Get docId and allotmentId
+          const docId = originalDoc?.docId;
+          const allotmentId = doc?.allotmentId || originalDoc?.allotmentId || (isNewDocument ? allotmentIdForNewDocs : undefined);
+
           return {
-            documentType: doc?.documentType || originalDoc?.documentType || "",
+            documentType: originalDoc?.documentType || doc?.documentType || "",
             fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-            documentUid: doc?.documentUid || originalDoc?.documentUid,
+            documentUid: originalDoc?.documentUid || doc?.documentUid,
             id: doc?.id || originalDoc?.id,
-            docId: doc?.docId || originalDoc?.docId,
-            allotmentId: doc?.allotmentId || originalDoc?.allotmentId,
+            // Only include docId if it exists (backend generates it for new documents)
+            ...(docId ? { docId } : {}),
+            // Always include allotmentId (use parent allotment ID for new documents)
+            ...(allotmentId ? { allotmentId } : {}),
             active: true,
           };
         }),

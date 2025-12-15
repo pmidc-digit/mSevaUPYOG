@@ -64,7 +64,7 @@ const GCResponseCitizen = (props) => {
   useEffect(() => {
     if (applicationNumber) {
       const filters = {};
-      filters.challanNo = applicationNumber;
+      filters.applicationNumber = applicationNumber;
       fetchChallans(filters);
     }
   }, []);

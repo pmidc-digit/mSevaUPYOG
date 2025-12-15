@@ -15,7 +15,7 @@ import NDCDocumentTimline from "../../components/ChallanDocument";
 import { useParams } from "react-router-dom";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData } from "../../utils/index";
+import { ChallanData, getAcknowledgementData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
 import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
@@ -123,6 +123,13 @@ const ChallanApplicationDetails = () => {
 
   // sessionStorage.setItem("chb", JSON.stringify(application));
 
+  const getAcknowledgement = async () => {
+    const applications = getChallanData;
+    console.log("applications for garbage", applications);
+    const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+    const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+    Digit.Utils.pdf.generate(acknowldgementDataAPI);
+  };
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: acknowledgementIds,
@@ -151,20 +158,21 @@ const ChallanApplicationDetails = () => {
   );
   const dowloadOptions = [];
 
-
-
+  dowloadOptions.push({
+    label: t("CHB_DOWNLOAD_ACK_FORM"),
+    onClick: () => getAcknowledgement(),
+  });
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = null
+    let response = null;
     if (payments?.fileStoreId) {
-      response = { filestoreIds: [payments?.fileStoreId] }
+      response = { filestoreIds: [payments?.fileStoreId] };
     } else {
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt")
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
     }
 
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
-    window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
-
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -177,7 +185,7 @@ const ChallanApplicationDetails = () => {
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("GC_APPLICATION_DETAILS")}</Header>
+          <Header styles={{ fontSize: "32px", margin: "30px 0 5px" }}>{t("GC_APPLICATION_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -188,7 +196,7 @@ const ChallanApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.connectionHolders?.[0]?.name || t("CS_NA")} />
             <Row
@@ -199,13 +207,24 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.connectionHolders?.[0]?.emailId || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
             <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("PT_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            <Row className="border-none" label={t("NDC_MSG_PROPERTY_LABEL")} text={getChallanData?.propertyId || t("CS_NA")} />
+            <Row className="border-none" label={t("NDC_MSG_PROPERTY_TYPE_LABEL")} text={getChallanData?.propertyType || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}
+              text={getChallanData?.plotSize || t("CS_NA")}
+            />
             <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
           </StatusTable>
 

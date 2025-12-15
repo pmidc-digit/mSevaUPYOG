@@ -195,22 +195,14 @@ export const businessServiceList = (isCode = false) => {
 
   return newAvailableBusinessServices;
 };
+const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
+
+const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 export const getAcknowledgementData = async (application, tenantInfo, t) => {
   console.log("application in getAcknowledgement", application);
 
   const details = [];
-
-  // Application Details
-  details.push({
-    title: t("CS_APPLICATION_DETAILS"),
-    values: [
-      {
-        title: t("CS_APPLICATION_NUMBER"),
-        value: application?.applicationNo || "NA",
-      }
-    ],
-  });
 
   // License Details
   
@@ -261,11 +253,78 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     ],
   });
 
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
 
-
-
-  // Documents
-  // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
+  details.push({
+    title: t("PT_PROPERTY_DETAILS"),
+    values: [
+      {
+        title: t("PROPERTY_ID"),
+        value: t(application?.propertyId) || "NA",
+      },
+      {
+        title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
+        value: application?.location || "NA",
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
+        value: application?.propertyType || "NA",
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE"),
+        value: application?.plotSize || "NA",
+      }
+    ],
+  });
   const docDetails = application?.documents?.map((doc, index) => ({
     title: t(`${doc.documentType}`) || "NA",
     value: " ",
@@ -278,14 +337,18 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
   });
 
   const imageURL = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values?.find(doc => doc?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.url || null;
-  // console.log("imageURL", imageURL);
-  return {
+
+
+
+  
+
+    return {
     t: t,
     tenantId: tenantInfo?.code,
-    name: t("Acknowledgment letter for Garbage Collection"),
+    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: t("LOCAL_GOVERNMENT_PUNJAB"),
+    heading: t("Acknowledgment letter for Garbage Collection"),
     applicationNumber: application?.applicationNo || "NA",
     details,
     imageURL

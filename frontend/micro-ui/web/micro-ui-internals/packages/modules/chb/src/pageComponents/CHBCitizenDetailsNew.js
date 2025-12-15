@@ -16,7 +16,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const [getModalData, setModalData] = useState();
   const [getUser, setUser] = useState(null);
   const [getDisable, setDisable] = useState({ name: false, email: false, address: false });
-
+  const [getShowOtp, setShowOtp] = useState(false);
   const {
     control,
     handleSubmit,
@@ -46,8 +46,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         alert("Please upload Self Certificate");
         return;
       }
-
-      console.log("baseApplication", baseApplication);
 
       // Construct owners array using "data"
       const applicantDetail = {
@@ -91,8 +89,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           additionalDetails,
         },
       };
-
-      console.log("checkpayload", payload);
       // return;
       setLoader(true);
       try {
@@ -118,94 +114,28 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const updateUser = async () => {
     const checkData = getValues();
     setLoader(true);
-    console.log("checkData", checkData);
-    // let payload = {
-    //   name: checkData.name,
-    //   username: checkData.mobileNumber,
-    //   tenantId: `pb`,
-    //   // permanentCity: formData.city.code,
-    // };
+    const tenantId = "pb";
     const payload = {
-      tenantId: "pb",
-
-      // BASIC INFO
-      name: checkData?.name || null,
-      userName: checkData?.mobileNumber || null,
-      mobileNumber: checkData?.mobileNumber || null,
-      emailId: checkData?.email || null,
-      gender: checkData?.gender || "MALE", // default if not present
-
-      // FAMILY INFO
-      fatherOrHusbandName: checkData?.fatherOrHusbandName || null,
-
-      // ADDRESS INFO
-      permanentCity: checkData?.permanentCity || null,
-      correspondenceCity: checkData?.correspondenceCity || null,
-      permanentDistrict: checkData?.permanentDistrict || null,
-      permanentState: checkData?.permanentState || null,
-      correspondenceState: checkData?.correspondenceState || null,
-      correspondenceDistrict: checkData?.correspondenceDistrict || null,
-
-      // DEFAULT VALUES REQUIRED BY API
-      type: "CITIZEN",
-      isPrimaryOwner: true,
-      ownerType: "NONE",
-      status: true,
-      active: true,
-      accountLocked: false,
-
-      // OPTIONAL FIELDS
-      correspondenceAddress: null,
-      permanentAddress: null,
-      permanentPinCode: null,
-      correspondencePinCode: null,
-      ownerId: null,
-      ownerShipPercentage: null,
-      institutionId: null,
-      documents: null,
-      relationship: null,
-      pan: null,
-      aadhaarNumber: null,
-      dob: null,
-      pwdExpiryDate: null,
-      locale: null,
-      signature: null,
-      bloodGroup: null,
-      identificationMark: null,
-      photo: null,
-
-      // ROLES
-      roles: [
-        {
-          code: "CITIZEN",
-          name: "CITIZEN",
-          tenantId: "pb",
-        },
-      ],
-
-      // AUDIT FIELDS
-      createdBy: "0",
-      lastModifiedBy: "0",
-      createdDate: null,
-      lastModifiedDate: null,
-      otpReference: null,
+      otp: {
+        tenantId,
+        mobileNumber: checkData?.mobileNumber || null,
+        name: checkData?.name || null,
+        emailId: checkData?.emailId || null,
+        type: "register",
+      },
     };
 
     try {
-      const response = await Digit.UserService.createUser(payload, tenantId);
+      const response = await Digit.UserService.sendOtp(payload, tenantId);
       setLoader(false);
-      console.log("response", response);
+      setShowOtp(true);
     } catch (err) {
       setLoader(false);
-      console.log(err);
     }
   };
 
   const handleModalData = (e) => {
-    console.log("currentStepData", currentStepData);
-    console.log("getvalues", getValues());
-
-    if (!getUser) {
+    if (!getUser && !isCitizen) {
       updateUser();
       // alert("first update user");
     }
@@ -226,7 +156,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       rent: mapData?.amount,
     };
 
-    console.log("payload", payload);
     setModalData(payload);
     if (e.target.checked) setShowTermsPopup(true);
   };
@@ -235,7 +164,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     setLoader(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
-      console.log("userData", userData);
+      // sessionStorage.setItem("CitizenConsentdocFilestoreidCHB", result?.filestoreIds[0]);
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidCHB");
       setUser(userData?.user?.[0]);
       if (userData?.user?.[0]) {
         setValue("name", userData.user[0].name);
@@ -273,10 +203,11 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   style={{ marginBottom: 0 }}
                   value={props.value}
                   onChange={(e) => {
-                    console.log("eee", e);
                     props.onChange(e);
                     setValue("name", "");
                     setValue("emailId", "");
+                    setUser("");
+                    setShowOtp(false);
                     // ✅ updates react-hook-form
                     if (e.length === 10) {
                       handleMobileChange(e); // 🔥 only then fire API
@@ -422,6 +353,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           showTermsPopupOwner={showTermsPopup}
           setShowTermsPopupOwner={setShowTermsPopup}
           getModalData={getModalData}
+          getUser={getUser}
+          getShowOtp={getShowOtp}
           // otpVerifiedTimestamp={null} // Pass timestamp as a prop
           // bpaData={data?.applicationData} // Pass the complete BPA application data
           tenantId={tenantId} // Pass tenant ID for API calls

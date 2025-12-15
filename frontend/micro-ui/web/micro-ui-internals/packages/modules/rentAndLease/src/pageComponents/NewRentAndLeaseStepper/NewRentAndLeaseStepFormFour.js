@@ -152,6 +152,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
         additionalDetails: mergedAdditionalDetails,
+        propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
             (CreatedResponse?.AllotmentDetails?.Document || [])?.find(

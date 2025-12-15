@@ -120,3 +120,33 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
         : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${consumerCode}.pdf`);
   }
 };
+
+export const convertEpochToDateInput = (epoch) => {
+  if (!epoch) return "";
+  const date = new Date(epoch);
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`; // Format required by <input type="date" />
+};
+
+/*   method to get required format from fielstore url*/
+export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
+  /* Need to enhance this util to return required format*/
+  let downloadLink = documents[fileStoreId] || "";
+  let differentFormats = downloadLink?.split(",") || [];
+  let fileURL = "";
+  differentFormats.length > 0 &&
+    differentFormats.map((link) => {
+      if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+        fileURL = link;
+      }
+    });
+  return fileURL;
+};
+
+/*   method to get filename  from fielstore url*/
+export const pdfDocumentName = (documentLink = "", index = 0) => {
+  let documentName = decodeURIComponent(documentLink.split("?")[0].split("/").pop().slice(13)) || `Document - ${index + 1}`;
+  return documentName;
+};

@@ -551,6 +551,9 @@ export function transformAdsData(adsData) {
   return Object.values(grouped);
 }
 
+
+
+
 // Formats a raw key into a readable label with spacing and capitalization
 export const formatLabel = (key) => {
   const spaced = key

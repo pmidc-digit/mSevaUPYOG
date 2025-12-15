@@ -337,7 +337,7 @@ const getDocuments = async (appData, t) => {
   };
 };
 
-export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   //console.log("appData here in DownloadACK", appData);
@@ -373,5 +373,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getDocuments(appData, t),
     ],
     imageURL,
+    ulbType,
+    ulbName
   };
 };

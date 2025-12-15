@@ -14,6 +14,8 @@ public class SaskiSearchRowMapper implements RowMapper<SaskiProperty> {
     public SaskiProperty mapRow(ResultSet rs, int rowNum) throws SQLException {
         SaskiProperty property = new SaskiProperty();
         property.setPropertyId(rs.getString("propertyid"));
+        property.setObpassFileNo(rs.getString("obpas_fileno"));
+        property.setObpassApplicantName(rs.getString("applicant_name"));
         property.setTenantId(rs.getString("tenantid"));
         property.setOldPropertyId(rs.getString("oldpropertyid"));
         property.setAllotmentNo(rs.getString("allotmentno"));

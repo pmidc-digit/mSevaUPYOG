@@ -17,6 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class SaskiProperty {
 	 private String propertyId;
+	 private String obpassFileNo;
+	    private String obpassApplicantName;
 	    private String tenantId;
 	    private String oldPropertyId;
 	    private String allotmentNo;

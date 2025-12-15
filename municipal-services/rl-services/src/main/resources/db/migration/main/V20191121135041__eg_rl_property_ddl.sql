@@ -120,31 +120,37 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
 
 
 
--->allotments_cheduler table 
-CREATE TABLE IF NOT EXISTS eg_rl_allotment_scheduler(
- id CHARACTER VARYING(128) NOT NULL,
- allotment_id CHARACTER VARYING(128) NOT NULL,
- application_number CHARACTER VARYING(128) NOT NULL,
- tenant_id CHARACTER VARYING(128) NOT NULL,
- status int NOT NULL, --> 1-Active,0-inActive
- payment_success_id CHARACTER VARYING(128),
- demand_id CHARACTER VARYING(128) NOT NULL,
+-->allotments_cheduler table
+ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_scheduler
+(
+    id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    allotment_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    tenant_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    status integer NOT NULL,
+	demand_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    payment_success_id character varying(128) COLLATE pg_catalog."default",
 
- --> scheduler details section
- current_notification_date bigint NOT NULL,
- next_cycle CHARACTER VARYING(128) NOT NULL, --> monthly
- next_notification_date CHARACTER VARYING(128) NOT NULL,
- notification_type CHARACTER VARYING(128) NOT NULL, --> 1-sms,2-email,3-both
- notification_status int NOT NULL, --> 1-sent,2-failed,3-pending
- notification_count_for_current_cycle int NOT NULL,
-
- notification_message CHARACTER VARYING(256) NOT NULL,
- payment_link CHARACTER VARYING(256) NOT NULL,
- created_time bigint NOT NULL,
- created_by character varying(128)  NOT NULL,
- lastmodified_time bigint,
- lastmodified_by character varying(128),
-    
-CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
-CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id) REFERENCES eg_rl_allotment(id)
-);
+    last_notification_status character varying(128),
+	last_notification_date character varying(128),
+	notification_created_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+	notification_count_for_current_cycle int DEFAULT 1,
+	notification_type int DEFAULT 1,
+	noof_notification_haveto_send int DEFAULT 1,
+	notification_interaval_inday int DEFAULT 2,
+	cycle_count int DEFAULT 1,
+	scheduller_type character varying(128),
+	nextCycle_date TIMESTAMPTZ,
+	last_payment_date TIMESTAMPTZ,
+	application_number_status character varying(128) DEFAULT 'ACTIVE',
+	
+	created_time bigint NOT NULL,
+    created_by character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    lastmodified_time bigint,
+    lastmodified_by character varying(128) COLLATE pg_catalog."default",
+    CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
+    CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id)
+        REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)

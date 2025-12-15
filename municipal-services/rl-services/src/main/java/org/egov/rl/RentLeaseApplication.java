@@ -23,12 +23,14 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "org.egov.rl", "org.egov.rl.web.controllers" , "org.egov.rl.config","org.egov.rl.repository","org.egov.rl.consumer"})
 @Import({ TracerConfiguration.class, EncryptionConfiguration.class })
 @EnableCaching
 @EnableKafka
+@EnableScheduling
 public class RentLeaseApplication {
 
     @Value("${app.timezone}")

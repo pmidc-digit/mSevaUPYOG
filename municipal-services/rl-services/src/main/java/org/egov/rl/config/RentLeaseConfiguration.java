@@ -41,6 +41,14 @@ public class RentLeaseConfiguration {
     return converter;
     }
 
+    // Scheduller
+   
+    @Value("${save.scheduller.topic}")
+    private String saveSchedullerTopic;
+
+    @Value("${update.scheduller.topic}")
+    private String updateSchedullerTopic;
+
 
     //PERSISTER
     @Value("${persister.save.property.topic}")

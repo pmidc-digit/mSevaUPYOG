@@ -8,10 +8,6 @@ import javax.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.rl.models.AllotmentClsure;
-import org.egov.rl.models.AllotmentCriteria;
-import org.egov.rl.models.AllotmentDetails;
-import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.AllotmentResponse;
 import org.egov.rl.models.ClosureCriteria;
 import org.egov.rl.models.ClsureRequest;
 import org.egov.rl.models.ClsureResponse;

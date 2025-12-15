@@ -167,7 +167,7 @@ public class AdditionalFeature extends FeatureProcess {
     public static final BigDecimal HEIGHT_WITHOUT_STILT_TYPE1 = BigDecimal.valueOf(15);
     public static final BigDecimal HEIGHT_WITHOUT_STILT = BigDecimal.valueOf(21);
     
-    public static final BigDecimal NO_OF_FLOORS_WITH_STILT = BigDecimal.valueOf(4);
+    public static final BigDecimal NO_OF_FLOORS_WITH_STILT = BigDecimal.valueOf(5);
     public static final BigDecimal NO_OF_FLOORS_WITHOUT_STILT = BigDecimal.valueOf(3);
     
     @Override

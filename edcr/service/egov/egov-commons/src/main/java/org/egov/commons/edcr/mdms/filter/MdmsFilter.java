@@ -31,5 +31,7 @@ public class MdmsFilter {
     public static final String MAX_ALLOWED_HEIGHT = "$[0].MasterPlan[0].maxHeight";
     
     public static final String MAX_ALLOWED_HEIGHT_WITH_STILT = "$[0].MasterPlan[0].maxHeightWithStilt";
+    
+    public static final String SIDE_SETBACK_PATH = "$[0].MasterPlan[0].sideSetBack1";
 
 }

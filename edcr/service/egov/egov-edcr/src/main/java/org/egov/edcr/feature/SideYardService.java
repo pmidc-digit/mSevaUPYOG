@@ -376,6 +376,7 @@ public class SideYardService extends GeneralRule {
         if (mostRestrictiveOccupancy.getSubtype() != null 
         		&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
         		|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
+        		|| A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())
         		|| A_PO.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 
         	processSideYardResidentialAllTypes(pl, blockName, level, min,
@@ -397,7 +398,7 @@ public class SideYardService extends GeneralRule {
 	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
 	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
+	        		MdmsFilter.SIDE_SETBACK_PATH, List.class);
 	        
 	        if (fullListOpt.isPresent()) {
 	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
@@ -424,7 +425,7 @@ public class SideYardService extends GeneralRule {
 
 			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
 			            pl.getMdmsMasterData().get("masterMdmsData"),
-			            MdmsFilter.FRONT_SETBACK_PATH,
+			            MdmsFilter.SIDE_SETBACK_PATH,
 			            BigDecimal.class
 			    );
 
@@ -432,11 +433,12 @@ public class SideYardService extends GeneralRule {
 			        BigDecimal mdmsValue = scOpt.get();
 			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
 
-			        BigDecimal oneFifthHeight = buildingHeight.divide(
-			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
-			        );
-
-			        minVal = oneFifthHeight.max(mdmsValue);
+//			        BigDecimal oneFifthHeight = buildingHeight.divide(
+//			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
+//			        );
+//
+//			        minVal = oneFifthHeight.max(mdmsValue);
+			        minVal = mdmsValue;
 			    }else {
 			    	LOG.error("No value found from mdms for the side setback");
 			    }
@@ -541,7 +543,7 @@ public class SideYardService extends GeneralRule {
 			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
     	}
         
-        LOG.info("SideYard1Result outside: actualDistance/expectedDistance and status:" + actualDistance +" / "+exptDistance +"and "+valid);
+        LOG.info("SideYard1Result outside: actualDistance/expectedDistance and status:" + actualDistance +" / "+exptDistance +" and "+valid);
         // Set the values for the side yard result
         sideYard1Result.rule = rule;
         sideYard1Result.occupancy = occupancyName;
@@ -550,8 +552,8 @@ public class SideYardService extends GeneralRule {
         sideYard1Result.subRule = subRule;
         sideYard1Result.blockName = blockName;
         sideYard1Result.level = level;
-//        sideYard1Result.actualDistance = actualDistance;
-        sideYard1Result.actualDistance = minDistanceSideYard1;
+        sideYard1Result.actualDistance = actualDistance;
+        //sideYard1Result.actualDistance = minDistanceSideYard1;
         sideYard1Result.expectedDistance = exptDistance;
         if (sideYard1Result.actualDistance.compareTo(sideYard1Result.expectedDistance) >= 0) {
             sideYard1Result.status = true;  // ✅ OK if actual >= expected

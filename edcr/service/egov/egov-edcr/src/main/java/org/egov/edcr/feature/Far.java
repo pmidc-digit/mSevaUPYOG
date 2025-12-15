@@ -845,6 +845,7 @@ public class Far extends FeatureProcess {
 	                    // 2. USE THE CLEANED TYPE FOR THE REPORT
 	                    recordDetails.put("TYPE", displayType); 
 	                    recordDetails.put("DEDUCTION", formattedArea.toString() + " m²");
+	                    recordDetails.put("STATUS", "Accepted");
 	                    allDeductionRecords.add(recordDetails);
 	                });
 	            }

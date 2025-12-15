@@ -1319,6 +1319,7 @@ public class PlanReportService {
             try {
 		            if (finalReportStatus)
 		                for (String cmnFeature : common) {
+		                	LOG.info("Checking final report status for : " + cmnFeature);
 		                    for (Map<String, String> commonStatus : allMap.get(cmnFeature).getDetail()) {
 		                        if (commonStatus.get(STATUS).equalsIgnoreCase(Result.Not_Accepted.getResultVal())) {
 		                            finalReportStatus = false;

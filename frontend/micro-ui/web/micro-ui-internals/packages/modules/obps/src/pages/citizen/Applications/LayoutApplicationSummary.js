@@ -94,7 +94,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const applicationDetails = data?.resData
 
   console.log(applicationDetails,data, "DATALAYOUT")
-const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
+  console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
+  const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
@@ -270,8 +271,11 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
     const payloadData = applicationDetails?.Layout?.[0] || {}
     console.log("payload data======> ",payloadData);
 
+
+
     const updatedApplicant = {
       ...payloadData,
+      
       workflow: {},
     }
 
@@ -405,6 +409,26 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
         )}
       </div>
        
+
+    {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
+    {applicationDetails?.Layout?.[0]?.owners && applicationDetails?.Layout?.[0]?.owners?.length > 0 && (
+      <Card>
+        <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
+          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <StatusTable>
+              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
+              <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
+              <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
+              <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
+              <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+              <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
+              <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+    )}
 
  {/* -------------------- APPLICANT DETAILS -------------------- */}
     <Card>

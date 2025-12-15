@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -111,12 +111,13 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
   const [cities, setcitiesopetions] = useState(allCities);
   const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
   const [localities, setLocalities] = useState([]);
+  const [isDistrictInitialized, setIsDistrictInitialized] = useState(false);
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
     "revenue",
     {
-      enabled: !!selectedCity,
+      enabled: !!selectedCity?.code,
     },
     t
   );
@@ -127,22 +128,40 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
     }
   }, [fetchedLocalities]);
 
+  // Only clear localities when user manually changes district (not on initial load)
+  const prevSelectedCityRef = useRef(selectedCity);
   useEffect(() => {
-    setLocalities([]);
-    setValue("zone", null);
-  }, [selectedCity, setValue]);
+    if (isDistrictInitialized && prevSelectedCityRef.current?.code !== selectedCity?.code) {
+      setLocalities([]);
+      setValue("zone", null);
+    }
+    prevSelectedCityRef.current = selectedCity;
+  }, [selectedCity, setValue, isDistrictInitialized]);
 
   // <CHANGE> Auto-select district based on login tenantId (not ULB)
- useEffect(() => {
-  if (tenantId && allCities?.length > 0) {
-    const defaultCity = allCities.find((city) => city.code === tenantId);
-    console.log(defaultCity, 'DDDDD');
-    if (defaultCity) {
-      setSelectedCity(defaultCity);
-      setValue("district", defaultCity); // sets default in react-hook-form
+  useEffect(() => {
+    // Skip if already initialized or if currentStepData has district
+    if (isDistrictInitialized) return;
+    
+    // First priority: restore from currentStepData
+    if (currentStepData?.siteDetails?.district) {
+      setSelectedCity(currentStepData.siteDetails.district);
+      setValue("district", currentStepData.siteDetails.district);
+      setIsDistrictInitialized(true);
+      return;
     }
-  }
-}, [tenantId, allCities]);
+    
+    // Second priority: auto-select based on tenantId
+    if (tenantId && allCities?.length > 0) {
+      const defaultCity = allCities.find((city) => city.code === tenantId);
+      console.log(defaultCity, 'DDDDD');
+      if (defaultCity) {
+        setSelectedCity(defaultCity);
+        setValue("district", defaultCity);
+        setIsDistrictInitialized(true);
+      }
+    }
+  }, [tenantId, allCities, currentStepData, isDistrictInitialized]);
 
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
@@ -1107,8 +1126,9 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
+              t={t}
               render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="i18nkey" />
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="i18nkey" t={t} />
               )}
             />
           </LabelFieldPair>

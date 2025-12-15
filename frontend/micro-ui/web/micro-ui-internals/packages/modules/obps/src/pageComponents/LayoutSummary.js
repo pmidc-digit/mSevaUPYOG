@@ -1,5 +1,5 @@
-import React from "react";
-import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
+import { Card, CardLabel, LabelFieldPair, Table, LinkButton, ImageViewer } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
@@ -8,11 +8,45 @@ import LayoutImageView from "./LayoutImageView";
 import LayoutFeeEstimationDetails from "./LayoutFeeEstimationDetails";
 import LayoutDocumentTableView from "./LayoutDocumentsView";
 
+// Component to render document link
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
+
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
+  return (
+    <LinkButton
+      style={{ display: "inline", background: "#fff" }}
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
+  );
+};
+
 
 function LayoutSummary({ currentStepData: formData, t }) {
 
+  const stateCode = Digit.ULBService.getStateId();
+  const owners = formData?.apiData?.Layout?.[0]?.owners || [];
 
   console.log("formData in Summary Page", formData)
+  console.log("owners in Summary Page", owners)
 
 
   const coordinates = useSelector(function (state) {
@@ -98,10 +132,69 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   return (
     <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
-    <div style={sectionStyle}>
-      <LayoutImageView documents={formData?.documents?.documents?.documents}/>
-    </div>
+      {/* OWNERS DETAILS AND DOCUMENTS */}
+      {owners && owners.length > 0 && (
+        <React.Fragment>
+          <h2 style={headingStyle}>{t("OWNERS_DETAILS_AND_DOCUMENTS") || "Owners Details & Documents"}</h2>
+          
+          {/* PRIMARY OWNER */}
+          <h3 style={{ marginBottom: "0.5rem", color: "#2e4a66", marginTop: "1rem" }}>
+            {t("PRIMARY_OWNER") || "Primary Owner"}
+          </h3>
+          <div style={sectionStyle}>
+            {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owners[0]?.name)}
+            {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
+            {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
+            {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owners[0]?.gender)}
+            {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owners[0]?.dob ? new Date(owners[0]?.dob).toLocaleDateString() : null)}
+            {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owners[0]?.fatherOrHusbandName)}
+            {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owners[0]?.permanentAddress)}
+            
+            {/* Documents Section */}
+            <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
+              <div style={labelFieldPairStyle}>
+                <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
+                <DocumentLink fileStoreId={owners[0]?.additionalDetails?.ownerPhoto} stateCode={stateCode} t={t} />
+              </div>
+              <div style={labelFieldPairStyle}>
+                <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
+                <DocumentLink fileStoreId={owners[0]?.additionalDetails?.documentFile} stateCode={stateCode} t={t} />
+              </div>
+            </div>
+          </div>
+
+          {/* ADDITIONAL OWNERS */}
+          {owners.length > 1 && owners.slice(1).map((owner, index) => (
+            <React.Fragment key={index + 1}>
+              <h3 style={{ marginBottom: "0.5rem", color: "#555", marginTop: "1.5rem" }}>
+                {t("ADDITIONAL_OWNER") || "Additional Owner"} {index + 1}
+              </h3>
+              <div style={sectionStyle}>
+                {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
+                {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+                {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+                {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender)}
+                {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dob ? new Date(owner?.dob).toLocaleDateString() : null)}
+                {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+                {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress)}
+                
+                {/* Documents Section */}
+                <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
+                  <div style={labelFieldPairStyle}>
+                    <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
+                    <DocumentLink fileStoreId={owner?.additionalDetails?.ownerPhoto} stateCode={stateCode} t={t} />
+                  </div>
+                  <div style={labelFieldPairStyle}>
+                    <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
+                    <DocumentLink fileStoreId={owner?.additionalDetails?.documentFile} stateCode={stateCode} t={t} />
+                  </div>
+                </div>
+              </div>
+            </React.Fragment>
+          ))}
+        </React.Fragment>
+      )}
+
       <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
       <div style={sectionStyle}>
         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
@@ -244,6 +337,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
+
 
            <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>

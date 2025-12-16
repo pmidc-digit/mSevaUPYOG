@@ -117,6 +117,8 @@ public class MdmsService {
 
         String idFormatFromMdms = null;
         String cityCodeFromMdms = null;
+        String ulbCodeFromMdms = null;
+        String districtCodeFromMdms = null;
 
 
         Map<String, List<MasterDetail>> masterDetails = new HashMap<String, List<MasterDetail>>();
@@ -150,6 +152,8 @@ public class MdmsService {
                         .parse(mdmsResponse.getMdmsRes().get(tenantModule).get(tenantMaster).get(0));
 
                 cityCodeFromMdms = documentContext.read("$.city.code");
+                ulbCodeFromMdms = documentContext.read("$.ulbCode");
+                districtCodeFromMdms = documentContext.read("$.districtCode");
                 log.debug("Found city code as - " + cityCodeFromMdms);
             }
             if (mdmsResponse.getMdmsRes() != null && mdmsResponse.getMdmsRes().containsKey(formatModule)
@@ -169,8 +173,32 @@ public class MdmsService {
         Map<String, String> mdmsCallMap = new HashMap();
         mdmsCallMap.put(formatMaster, idFormatFromMdms);
         mdmsCallMap.put(tenantMaster, cityCodeFromMdms);
+        mdmsCallMap.put("ulbCode", ulbCodeFromMdms);
+        mdmsCallMap.put("districtCode", districtCodeFromMdms);
 
         return mdmsCallMap;
+    }
+    
+    /**
+     * Description : This method to get ULB And District Code from Mdms
+     *
+     * @param idRequest
+     * @param requestInfo
+     * @return Ulb And District Code
+     * @throws Exception
+     */
+
+    public Map<String, String> getUlbAndDistrictCode(RequestInfo requestInfo, IdRequest idRequest) {
+        Map<String, String> ulbAndDistrictCode = doMdmsServiceCall(requestInfo, idRequest);
+        try {
+            if(ulbAndDistrictCode == null || ulbAndDistrictCode.get("ulbCode") == null || ulbAndDistrictCode.get("districtCode") == null){
+                throw new CustomException("PARSING ERROR", "ULB or District code is Null/not valid");
+            }
+        } catch (Exception e) {
+            log.error("Error occurred while fetching Ulb and District code", e);
+            throw new CustomException("PARSING ERROR", "Failed to get Ulb and District code from MDMS");
+        }
+        return ulbAndDistrictCode;
     }
 
 }

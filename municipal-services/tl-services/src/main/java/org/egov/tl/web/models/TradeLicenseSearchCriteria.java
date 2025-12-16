@@ -3,6 +3,7 @@ package org.egov.tl.web.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.Builder.Default;
 
 import java.util.List;
 
@@ -90,6 +91,10 @@ public class TradeLicenseSearchCriteria {
 
     @JsonProperty("tradeType")
     private String tradeType = null;
+    
+    @JsonProperty("onlyLatestApplication")
+    @Builder.Default
+    private Boolean onlyLatestApplication = false;
 
     public boolean isEmpty() {
         return (this.tenantId == null && this.status == null && this.applicationType == null && this.ids == null && this.applicationNumber == null

@@ -20,6 +20,7 @@ public class Role {
     private Long lastModifiedBy;
     private Date lastModifiedDate;
     private String tenantId;
+    private String groupId;
 
     public static Role getCitizenRole() {
         return Role.builder().code(CITIZEN).build();

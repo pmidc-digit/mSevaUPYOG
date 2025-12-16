@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
+import lombok.extern.slf4j.Slf4j;
 import com.jayway.jsonpath.JsonPath;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MdmsCriteriaReq;
@@ -33,6 +33,7 @@ import net.minidev.json.JSONArray;
 
 import static org.egov.pt.calculator.util.CalculatorConstants.*;
 
+@Slf4j
 @Service
 public class MasterDataService {
 
@@ -336,6 +337,61 @@ public class MasterDataService {
 		masterMap.put(FINANCIALYEAR_MASTER_KEY,financialYearMaster);
 
 		return masterMap;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, JSONArray> getAllPropertyTaxMdmsData(RequestInfo requestInfo, String tenantId, String targetFY ) {
+		Map<String, JSONArray> propertyTaxData = new HashMap<>();
+
+		try {
+			String stateTenantId = tenantId.split("\\.")[0];
+			MdmsCriteriaReq mdmsCriteriaReq = calculatorUtils.prepareMdmsRequest(
+					requestInfo, stateTenantId, "PropertyTax", null);
+			StringBuilder mdmsUrl = calculatorUtils.getMdmsSearchUrl();
+			Object response = repository.fetchResult(mdmsUrl, mdmsCriteriaReq);
+
+			if (response == null) {
+				return propertyTaxData;
+			}
+
+			MdmsResponse mdmsResponse = mapper.convertValue(response, MdmsResponse.class);
+			if (mdmsResponse == null || mdmsResponse.getMdmsRes() == null) {
+				return propertyTaxData;
+			}
+
+			Map<String, Map<String, JSONArray>> mdmsRes = mdmsResponse.getMdmsRes();
+			Map<String, JSONArray> propertyTaxModule = null;
+			if (mdmsRes.containsKey("PropertyTax")) {
+				propertyTaxModule = mdmsRes.get("PropertyTax");
+			}
+
+			if (propertyTaxModule == null || propertyTaxModule.isEmpty()) {
+				return propertyTaxData;
+			}
+
+			for (Map.Entry<String, JSONArray> entry : propertyTaxModule.entrySet()) {
+				String masterName = entry.getKey();
+				JSONArray masterArray = entry.getValue();
+				JSONArray filteredArray = new JSONArray();
+
+				for (Object obj : masterArray) {
+					Map<String, Object> record = (Map<String, Object>) obj;
+
+					String fromFY = (String) record.getOrDefault("fromFY", record.get("financialYear"));
+
+					if (fromFY != null && fromFY.equalsIgnoreCase(targetFY)) {
+						filteredArray.add(record);
+					}
+				}
+
+				propertyTaxData.put(masterName, filteredArray);
+
+			}
+		} catch (Exception e) {
+			log.info("Error fetching PropertyTax data from MDMS: {}", e.getMessage(), e.getMessage());
+		}
+
+		return propertyTaxData;
 	}
 	
 }

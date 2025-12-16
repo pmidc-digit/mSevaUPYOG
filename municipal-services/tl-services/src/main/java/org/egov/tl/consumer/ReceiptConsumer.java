@@ -1,6 +1,9 @@
 package org.egov.tl.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.egov.tl.service.PaymentUpdateService;
 import org.egov.tl.service.notification.PaymentNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 
 @Component
+@Slf4j
 public class ReceiptConsumer {
 
     private PaymentUpdateService paymentUpdateService;
@@ -30,6 +34,7 @@ public class ReceiptConsumer {
 
     @KafkaListener(topics = {"${kafka.topics.receipt.create}"})
     public void listenPayments(final HashMap<String, Object> record) {
+    	log.info("Start ReceiptConsumer.listenPayments method.");
         paymentUpdateService.process(record);
         paymentNotificationService.process(record);
     }

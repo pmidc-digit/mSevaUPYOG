@@ -69,7 +69,7 @@ public class UserTypeQueryBuilder {
     		+ "    userdata.signature, userdata.accountlocked, userdata.accountlockeddate, userdata.bloodgroup,"
     		+ "    userdata.photo, userdata.identificationmark,  userdata.tenantid, userdata.id, userdata.uuid,"
     		+ "    userdata.alternatemobilenumber, addr.id as addr_id, addr.type as addr_type,"
-    		+ "    addr .address as addr_address,  addr.city as addr_city, addr.pincode as addr_pincode,"
+    		+ "    addr .address as addr_address,  addr.city as addr_city, addr.pincode as addr_pincode,addr.district as addr_district,addr.state as addr_state,"
     		+ "    addr.tenantid as addr_tenantid, addr.userid as addr_userid" 
     		+ " FROM eg_user userdata LEFT OUTER JOIN eg_user_address addr ON userdata.id = addr.userid ";
 

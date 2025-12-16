@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -39,7 +40,8 @@ public class Document {
   @JsonProperty("docId")
   private String id ;
 
-  @JsonProperty("allotmentId")
+  @JsonAlias({"allotmentId", "documentUid"})
+  @JsonProperty("documentUid")
   private String documentUid ;
 
   @JsonProperty("documentType")
@@ -56,5 +58,8 @@ public class Document {
 //  @SafeHtml
   @JsonProperty("auditDetails")
   private AuditDetails auditDetails;
+
+  @JsonProperty("additionalDetails")
+  private Object additionalDetails = null;
 }
 

@@ -1,17 +1,10 @@
 package org.egov.rl.service;
 
-import org.apache.el.parser.ELParserTreeConstants;
-import org.egov.common.contract.request.RequestInfo;
-import org.egov.rl.models.AdditionalFeeRate;
-import org.egov.rl.models.AllotmentCriteria;
-import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.BreedType;
 import org.egov.rl.models.DemandDetail;
 import org.egov.rl.models.RLProperty;
 import org.egov.rl.models.TaxRate;
 import org.egov.rl.repository.AllotmentRepository;
-import org.egov.rl.util.CommonUtils;
 import org.egov.rl.util.FeeCalculationUtil;
 import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.util.RLConstants;
@@ -23,10 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -70,7 +61,7 @@ public class CalculationService {
 				if (isSecurityDeposite) {
 					DemandDetail securityDemandDetail = DemandDetail.builder()
 							.taxAmount(new BigDecimal(amount.getSecurityDeposit()))
-							.taxHeadMasterCode(RLConstants.SECURITY_DOPOSITE_FEE_RL_APPLICATION).tenantId(tenantId)
+							.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId)
 							.build();
 					demandDetails.add(securityDemandDetail);
 				}
@@ -83,7 +74,7 @@ public class CalculationService {
 			if (applicationType.equalsIgnoreCase("RENEWAL")) {
 				fee = new BigDecimal(isSecurityDeposite ? amount.getSecurityDeposit() : amount.getBaseRent());
 				DemandDetail baseDemandDetail = DemandDetail.builder().taxAmount(fee)
-						.taxHeadMasterCode(RLConstants.SECURITY_DOPOSITE_FEE_RL_APPLICATION).tenantId(tenantId).build();
+						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build();
 				demandDetails.add(baseDemandDetail);
 				break;
 			}
@@ -105,7 +96,7 @@ public class CalculationService {
 		List<TaxRate> taxRate = mdmsUtil.getHeadTaxAmount(allotmentRequest.getRequestInfo(), tenantId,
 				RLConstants.RL_MASTER_MODULE_NAME);
 		List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION,
-				RLConstants.PENALTY_FEE_RL_APPLICATION, RLConstants.COWCASS_FEE_RL_APPLICATION);
+				RLConstants.PENALTY_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
 		taxRate.stream().forEach(t -> {
 			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;

@@ -61,7 +61,7 @@ public class CommonUtils {
         Long time = System.currentTimeMillis();
         
         if(isCreate)
-            return AuditDetails.builder().createdBy(by).createdTime(time).build();
+            return AuditDetails.builder().createdBy(by).createdTime(time).lastModifiedBy(by).lastModifiedTime(time).build();
         else
             return AuditDetails.builder().lastModifiedBy(by).lastModifiedTime(time).build();
     }

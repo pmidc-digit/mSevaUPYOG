@@ -1,10 +1,6 @@
 package org.egov.rl.web.controllers;
 
-import io.swagger.annotations.ApiParam;
-import org.egov.common.contract.response.ResponseInfo;
-import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.AllotmentResponse;
 import org.egov.rl.models.Demand;
 import org.egov.rl.models.DemandResponse;
 import org.egov.rl.models.collection.GetBillCriteria;
@@ -18,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -38,6 +33,12 @@ public class DemandController {
        
         return new ResponseEntity<>(demand, HttpStatus.CREATED);
     }
+
+	@PostMapping("/_updatedemand")
+	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
+													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
+		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
+	}
 
 
 }

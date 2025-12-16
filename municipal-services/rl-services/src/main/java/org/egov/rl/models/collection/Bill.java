@@ -1,27 +1,17 @@
 package org.egov.rl.models.collection;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.egov.rl.models.AuditDetails;
-import org.springframework.util.CollectionUtils;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.*;
+import org.egov.rl.models.AuditDetails;
+import org.springframework.util.CollectionUtils;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,79 +20,78 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Bill {
-    // TODO some of the fields are mandatory in yml, lets discuss billdetail and billaccountdetail also for more clarity
+    // TODO some of the fields are mandatory in yml, lets discuss billDetail and billAccountDetail also for more clarity
 
 	  @JsonProperty("id")
-	  private String id;
+	  private String id = null;
 
 	  @JsonProperty("mobileNumber")
-	  private String mobileNumber;
+	  private String mobileNumber = null;
 
 	  @JsonProperty("paidBy")
-	  private String paidBy;
+	  private String paidBy = null;
 
 	  @JsonProperty("payerName")
-	  private String payerName;
+	  private String payerName = null;
 
 	  @JsonProperty("payerAddress")
-	  private String payerAddress;
+	  private String payerAddress = null;
 
 	  @JsonProperty("payerEmail")
-	  private String payerEmail;
+	  private String payerEmail = null;
 
 	  @JsonProperty("payerId")
-	  private String payerId;
+	  private String payerId = null;
 
 	  @JsonProperty("status")
-	  private StatusEnum status;
+	  private StatusEnum status = null;
 
 	  @JsonProperty("reasonForCancellation")
- 	  private String reasonForCancellation;
+ 	  private String reasonForCancellation = null;
 
 	  @JsonProperty("isCancelled")
-	  private Boolean isCancelled;
+	  private Boolean isCancelled = null;
 
 	  @JsonProperty("additionalDetails")
-	  private JsonNode additionalDetails;
+	  private JsonNode additionalDetails = null;
 
 	  @JsonProperty("billDetails")
 	  @Valid
-	  private List<BillDetail> billDetails;
+	  private List<BillDetail> billDetails = null;
 
 	  @JsonProperty("tenantId")
-	  private String tenantId;
+	  private String tenantId = null;
 
 	  @JsonProperty("auditDetails")
-	  private AuditDetails auditDetails;
+	  private AuditDetails auditDetails = null;
 
 	  @JsonProperty("collectionModesNotAllowed")
-	  private List<String> collectionModesNotAllowed;
+	  private List<String> collectionModesNotAllowed = null;
 
 	  @JsonProperty("partPaymentAllowed")
-	  private Boolean partPaymentAllowed;
+	  private Boolean partPaymentAllowed = null;
 
 	  @JsonProperty("isAdvanceAllowed")
 	  private Boolean isAdvanceAllowed;
 
 	  @JsonProperty("minimumAmountToBePaid")
-	  private BigDecimal minimumAmountToBePaid;
+	  private BigDecimal minimumAmountToBePaid = null;
 
 	  @JsonProperty("businessService")
-	  private String businessService;
+	  private String businessService = null;
 
 	  @JsonProperty("totalAmount")
-	  private BigDecimal totalAmount;
+	  private BigDecimal totalAmount = null;
 
 	  @JsonProperty("consumerCode")
-	  private String consumerCode;
+	  private String consumerCode = null;
 
 	  @JsonProperty("billNumber")
-	  private String billNumber;
+	  private String billNumber = null;
 
 	  @JsonProperty("billDate")
-	  private Long billDate;
+	  private Long billDate = null;
 
 	  @JsonProperty("amountPaid")
 	  private BigDecimal amountPaid;

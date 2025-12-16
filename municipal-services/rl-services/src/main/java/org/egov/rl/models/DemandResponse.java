@@ -59,6 +59,6 @@ public class DemandResponse {
 	private ResponseInfo responseInfo;
 
 	@JsonProperty("Demands")
-	private List<Demand> demands = new ArrayList<>();
+	private List<Demand> demands;
 
 }

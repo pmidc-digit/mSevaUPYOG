@@ -414,4 +414,10 @@ public class RentLeaseConfiguration {
     @Value("${persister.update.property.audit.oldData.topic}")
     private String updatePropertyAuditEncTopic;
 
+    @Value("${egov.rlcalculator.host}")
+    private String rlCalculatorHost;
+
+    @Value("${egov.rlcalculator.endpoint}")
+    private String rlCalculatorEndpoint;
+
 }

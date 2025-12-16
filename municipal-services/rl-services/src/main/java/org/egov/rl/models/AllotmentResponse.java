@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class AllotmentResponse {
    
-	@JsonProperty("responseInfo")
+	@JsonProperty("ResponseInfo")
     ResponseInfo responseInfo;
     
     @JsonProperty("AllotmentDetails")

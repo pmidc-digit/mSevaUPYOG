@@ -89,7 +89,7 @@ public class AllotmentWorkflowService {
 		System.out.println("-------application.getApplicationNumber()--------"+application.getApplicationNumber());
 		processInstance.setBusinessId(application.getApplicationNumber());
 		processInstance.setAction(workflow.getAction());
-		processInstance.setModuleName("rl-service");
+		processInstance.setModuleName("rl-services");
 		processInstance.setTenantId(application.getTenantId());
 		processInstance.setBusinessService("RENT_N_LEASE_NEW");
 		processInstance.setDocuments(workflow.getDocuments());

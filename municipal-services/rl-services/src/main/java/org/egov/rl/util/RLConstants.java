@@ -20,11 +20,11 @@ public class RLConstants {
 
 	public static final String RL_SERVICE_NAME = "rl-services";
 
-	public static final String SECURITY_DOPOSITE_FEE_RL_APPLICATION = "RL_SECURITY_DOPOSITE_FEE";
+	public static final String SECURITY_DEPOSIT_FEE_RL_APPLICATION = "RL_SECURITY_DEPOSIT_FEE";
 
 	public static final String RENT_LEASE_FEE_RL_APPLICATION = "RENT_LEASE_FEE";
 
-	public static final String COWCASS_FEE_RL_APPLICATION = "RL_COWCASS_FEE";
+	public static final String COWCESS_FEE_RL_APPLICATION = "RL_COWCESS_FEE";
 
 	public static final String PENALTY_FEE_RL_APPLICATION = "RL_PENALTY_FEE";
 	

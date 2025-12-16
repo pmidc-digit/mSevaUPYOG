@@ -2,9 +2,9 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.egov</groupId>
-	<artifactId>pt-calculator-v2</artifactId>
+	<artifactId>rl-calculator</artifactId>
 	<packaging>jar</packaging>
-	<name>egov-pt-calculator</name>
+	<name>egov-rl-calculator</name>
 	<version>1.1.5_beta-SNAPSHOT</version>
 	<properties>
 		<log4j2.version>2.17.1</log4j2.version>
@@ -48,39 +48,9 @@
 				<configuration>
 					<jsonLibrary>jackson2</jsonLibrary>
 					<classes>
-						<class>org.egov.pt.calculator.web.models.AssessmentRequest</class>
-						<class>org.egov.pt.calculator.web.models.AssessmentSearchCriteria</class>
-						<class>org.egov.pt.calculator.web.models.BillingSlabReq</class>
-						<class>org.egov.pt.calculator.web.models.BillingSlabRes</class>
-						<class>org.egov.pt.calculator.web.models.BillingSlabSearchCriteria</class>
-						<class>org.egov.pt.calculator.web.models.CalculationReq</class>
-						<class>org.egov.pt.calculator.web.models.CalculationRes</class>
-						<class>org.egov.pt.calculator.web.models.CalculationCriteria</class>
-						<class>org.egov.pt.calculator.web.models.MutationBillingSlabReq</class>
-						<class>org.egov.pt.calculator.web.models.MutationBillingSlabRes</class>
-						<class>org.egov.pt.calculator.web.models.MutationBillingSlabSearchCriteria</class>
-						<class>org.egov.pt.calculator.web.models.propertyV2.AssessmentRequestV2</class>
-						<class>org.egov.pt.calculator.web.models.propertyV2.AssessmentResponseV2</class>
-						<class>org.egov.pt.calculator.web.models.propertyV2.PropertyRequestV2</class>
-						<class>org.egov.pt.calculator.web.models.propertyV2.PropertyResponseV2</class>
-						<class>org.egov.pt.calculator.web.models.property.PropertyRequest</class>
-						<class>org.egov.pt.calculator.web.models.property.PropertyResponse</class>
-						<class>org.egov.pt.calculator.web.models.demand.BillRequest</class>
-						<class>org.egov.pt.calculator.web.models.demand.BillResponse</class>
-						<class>org.egov.pt.calculator.web.models.demand.DemandRequest</class>
-						<class>org.egov.pt.calculator.web.models.demand.DemandResponse</class>
-						<class>org.egov.pt.calculator.web.models.demand.DemandCriteria</class>
-						<class>org.egov.pt.calculator.web.models.demand.TaxPeriodRequest</class>
-						<class>org.egov.pt.calculator.web.models.demand.TaxPeriodResponse</class>
-						<class>org.egov.pt.calculator.web.models.collections.PaymentRequest</class>
-						<class>org.egov.pt.calculator.web.models.collections.PaymentResponse</class>
-						<class>org.egov.pt.calculator.web.models.collections.PaymentSearchCriteria</class>
+						<class>org.egov.rl.calculator.web.models.CalculationReq</class>
+						<class>org.egov.rl.calculator.web.models.CalculationRes</class>
 					</classes>
-					<customTypeNaming>
-						<customTypeNaming>org.egov.pt.calculator.web.models.demand.Purpose:BillDetailPurpose</customTypeNaming>
-						<customTypeNaming>org.egov.pt.calculator.web.models.demand.Demand$StatusEnum:StatusEnum</customTypeNaming>
-						<customTypeNaming>org.egov.pt.calculator.web.models.Status:PropertyStatus</customTypeNaming>
-					</customTypeNaming>
 					<customTypeMappings>
 						<customTypeMapping>org.egov.common.contract.request.User:User</customTypeMapping>
 						<customTypeMapping>org.egov.common.contract.request.RequestInfo:RequestInfo</customTypeMapping>

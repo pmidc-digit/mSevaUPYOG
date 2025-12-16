@@ -246,7 +246,7 @@ public class AllotmentValidator {
 			throw new CustomException(errorMap);
 		
 		if(allotementRequest.getAllotment().getWorkflow().getAction().equals(RLConstants.APPLY_RL_APPLICATION)) {
-			if(allotementRequest.getAllotment().getDocuments()!=null&&!allotementRequest.getAllotment().getDocuments().isEmpty()) {
+			if(allotementRequest.getAllotment().getDocuments()==null||allotementRequest.getAllotment().getDocuments().isEmpty()) {
 					throw new CustomException("EG_RL_DOCUMENT INFO ERROR", "Document can't be empty in the request");
 			}
 		}

@@ -69,6 +69,17 @@ public class AllotmentController {
         return new ResponseEntity<>(response, HttpStatus.OK);	
     }
     
+    @PostMapping("/_delete")
+    public ResponseEntity<AllotmentResponse> delete(@Valid @RequestBody AllotmentRequest allotmentRequest) {
+    	allotmentService.deleteOwnerById(allotmentRequest);
+        ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
+        AllotmentResponse response = AllotmentResponse.builder()
+                .allotment(null)
+                .responseInfo(resInfo)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);	
+    }
+    
     @PostMapping("/_search")
     public ResponseEntity<AllotmentResponse> search(@RequestBody AllotmentRequest allotmentRequest) {
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);

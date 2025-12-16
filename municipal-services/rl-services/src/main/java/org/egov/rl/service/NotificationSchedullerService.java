@@ -142,5 +142,9 @@ public class NotificationSchedullerService {
 			}
 		});
 	}
+	
+//	public String getRequestInfo() {
+//		config.getUserLoginEndpoint()
+//	}
 
 }

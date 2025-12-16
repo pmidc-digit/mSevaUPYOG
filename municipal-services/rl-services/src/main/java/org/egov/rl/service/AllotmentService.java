@@ -246,5 +246,35 @@ public class AllotmentService {
 
 		return applications;
 	}
+	
+	public void deleteOwnerById(AllotmentRequest allotmentRequest) {
+		String ownerId=allotmentRequest.getAllotment().getId();
+		String allotmentId=allotmentRequest.getAllotment().getOwnerInfo().get(0).getOwnerId();
+		
+		try {
+			String updateQuery;
+			Object[] params;
+			long currentTime = System.currentTimeMillis();
+			
+			if (ownerId != null && !ownerId.isEmpty()) {
+				updateQuery = "DELETE FROM  eg_rl_owner_info  WHERE id = ? AND (select count(*) from eg_rl_owner_info where allotment_id=?) > 1";
+				params = new Object[]{
+						ownerId,
+						allotmentId
+				};
+			}else {
+				updateQuery = "DELETE FROM  eg_rl_owner_info  WHERE id = ? AND (select count(*) from eg_rl_owner_info where allotment_id=?) > 1";
+				params = new Object[]{
+					    ownerId,
+						allotmentId
+				};
+		
+			}			
+			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
+			
+		} catch (Exception e) {
+		}
+	}
+
 
 }

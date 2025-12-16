@@ -81,6 +81,9 @@ public class RentLeaseConfiguration {
 
     @Value("${egov.internal.microservice.user.uuid}")
     private String egovInternalMicroserviceUserUuid;
+    
+    @Value("${egov.user.login.path}")
+    private String userLoginEndpoint;
 
 
     //IDGEN config

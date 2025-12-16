@@ -11,7 +11,7 @@ import org.egov.common.contract.request.RequestInfo;
 @Setter
 public class AllotmentRequest {
 
-    @JsonProperty("requestInfo")
+    @JsonProperty("RequestInfo")
     private RequestInfo requestInfo;
     
     @JsonProperty("AllotmentDetails")

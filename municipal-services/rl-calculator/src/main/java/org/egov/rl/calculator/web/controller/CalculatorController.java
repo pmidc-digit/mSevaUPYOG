@@ -1,5 +1,7 @@
 package org.egov.rl.calculator.web.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.calculator.service.DemandService;
 import org.egov.rl.calculator.util.ResponseInfoFactory;
 import org.egov.rl.calculator.web.models.AllotmentRequest;
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
 import java.util.List;
-
+@Slf4j
 @Controller
 @RequestMapping("/v1")
 public class CalculatorController {
@@ -50,5 +52,13 @@ public class CalculatorController {
 		demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}
+
+//	@PostMapping("/_jobscheduler")
+//	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
+//		log.info("Starting job scheduler for rent demands.");
+//		demandService.generateDemands(requestInfo);
+//		log.info("Finished job scheduler for rent demands.");
+//		return new ResponseEntity<>(HttpStatus.OK);
+//	}
 
 }

@@ -15,6 +15,7 @@ public class RLConstants {
     public static final String APPROVED_RL_APPLICATION = "APPROVE";
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
+    public static final String ROUND_OFF_TAX_HEAD_CODE = "RL_FEE_ROUND_OFF";
 
 	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
 
@@ -31,9 +32,11 @@ public class RLConstants {
 	public static final String SGST_FEE_RL_APPLICATION = "RL_SGST_FEE";
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
-	
-	
-	public static final String NOTIFICATION_VERIFY = "rl.en.counter.verify";
+    public static final String TAX_PERIOD_MASTER = "TaxPeriod";
+    public static final String BILLING_SERVICE_MASTER = "BillingService";
+    public static final String DEMAND_CANCELLED_STATUS = "CANCELLED";
+
+    public static final String NOTIFICATION_VERIFY = "rl.en.counter.verify";
 
 	public static final String NOTIFICATION_APPLY = "rl.en.counter.submit";
 
@@ -508,7 +511,19 @@ public class RLConstants {
 	public static final String DEMAND_END_DATE_PARAM = "periodTo=";
 	public static final String EMPTY_DEMAND_ERROR_CODE = "EMPTY_DEMANDS";
 	public static final String EMPTY_DEMAND_ERROR_MESSAGE = "No demand found for the given bill generate criteria";
+    // BillingService Master
 
+    // RL Service Master
+    public static final String RL_SERVICES_MASTER_MODULE = "rl-services-masters";
+    public static final String PENALTY_MASTER = "Penalty";
+    public static final String BILLING_PERIOD_MASTER = "billingPeriod";
+    public static final String PENALTY_TAXHEAD_CODE = "RL_PENALTY_FEE";
+    public static final String TIME_INTEREST = "TIME_INTEREST";
+    public static final String MDMS_TENANT_MODULE_NAME = "tenant";
+    public static final String MDMS_TENANT_MASTER_NAME = "tenants";
+
+    // JSONPath
+    public static final String JSONPATH_TENANT_CODES = "$.MdmsRes.tenant.tenants[*].code";
 
 }
 

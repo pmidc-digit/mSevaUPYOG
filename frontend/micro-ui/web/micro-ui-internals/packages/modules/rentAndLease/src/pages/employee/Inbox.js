@@ -74,7 +74,6 @@ const Inbox = ({
   //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
   // }, [hookLoading, data]);'
 
-  console.log("dataXXXXXX", data);
 
   useEffect(() => {
     async function fetchBills() {

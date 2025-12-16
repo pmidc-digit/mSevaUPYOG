@@ -24,7 +24,9 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
-      triggerToast(`${t("RAL_UPLOAD_MISSING_DOC_MSG")} ${t(missingFields[0].replace(/\./g, "_").toUpperCase())}`, true);
+      // triggerToast(`${t("RAL_UPLOAD_MISSING_DOC_MSG")} ${t(missingFields[0].replace(/\./g, "_").toUpperCase())}`, true);
+      triggerToast(`${t(missingFields[0].replace(/\./g, "_").toUpperCase())} is required`, true);
+
       return;
     }
     onGoNext();

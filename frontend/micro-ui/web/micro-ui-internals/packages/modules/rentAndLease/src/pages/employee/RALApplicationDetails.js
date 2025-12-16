@@ -33,7 +33,6 @@ const RALApplicationDetails = () => {
   const [error, setError] = useState(null);
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
-  console.log("applicationData", applicationData);
 
   const isCitizen = window.location.href.includes("citizen");
 
@@ -41,7 +40,6 @@ const RALApplicationDetails = () => {
     setLoader(true);
     try {
       const responseData = await Digit.RentAndLeaseService.search({ tenantId, filters });
-      console.log("search ", responseData);
       setApplicationData(responseData?.AllotmentDetails?.[0]);
     } catch (error) {
       console.log("error", error);
@@ -64,7 +62,6 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
-  console.log("workflowDetails", workflowDetails);
 
   const userType = "citizen";
 
@@ -123,6 +120,8 @@ const RALApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+    console.log('actions', actions)
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -138,14 +137,11 @@ const RALApplicationDetails = () => {
       action: [action],
     };
 
-    console.log("action", action);
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
     const filterNexState = (action?.actions ?? action?.state?.actions)?.filter((item) => item.action === action?.action);
 
-    console.log("filterNexState", filterNexState);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-    console.log("filterRoles", filterRoles);
     setEmployees(filterRoles?.[0]?.actions);
 
     if (action?.action == "APPLY") {
@@ -183,7 +179,6 @@ const RALApplicationDetails = () => {
       filtData = data?.Licenses?.[0];
     }
 
-    console.log("filtData", filtData);
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData.action === "SENDBACKTOCITIZEN" ? [applicationData?.auditDetails?.createdBy] : filtData?.assignee,
@@ -255,11 +250,11 @@ const RALApplicationDetails = () => {
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
                 const multipleOwners = applicationData.OwnerInfo.length > 1;
-                const ownerLabelPrefix = multipleOwners ? `${t("OWNER")} ${index + 1}` : t("OWNER");
+                const ownerLabelPrefix = multipleOwners ? `${t("RAL_OWNER")} ${index + 1}` : t("RAL_OWNER");
 
                 return (
                   <React.Fragment key={owner.ownerId || index}>
-                    <Row label={`${ownerLabelPrefix} ${t("ADS_APPLICANT_NAME")}`} text={owner?.name || t("CS_NA")} />
+                    <Row label={`${ownerLabelPrefix} ${t("PT_OWNERSHIP_INFO_NAME")}`} text={owner?.name || t("CS_NA")} />
                     <Row label={`${ownerLabelPrefix} ${t("CORE_COMMON_PROFILE_EMAIL")}`} text={owner?.emailId || t("CS_NA")} />
                     <Row label={`${ownerLabelPrefix} ${t("CORE_MOBILE_NUMBER")}`} text={owner?.mobileNo || t("CS_NA")} />
                     <Row
@@ -279,10 +274,10 @@ const RALApplicationDetails = () => {
             <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={propertyDetails?.propertyName || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={propertyDetails?.propertyType || t("CS_NA")} />
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
-            <Row label={t("BASE_RENT")} text={propertyDetails?.baseRent || t("CS_NA")} />
+            <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
-            <Row label={t("LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
+            <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

@@ -9,14 +9,10 @@ import SearchApplication from "./inbox/search";
 
 const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   const { data, useNewInboxAPI } = props;
-  console.log("data", data);
-  console.log("props", props);
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
   const [EmptyInboxComp, setEmptyInboxComp] = useState(() => {
     const com = Digit.ComponentRegistryService?.getComponent(props.EmptyResultInboxComp);
-    console.log("DesktopInbox - EmptyResultInboxComp prop:", props.EmptyResultInboxComp);
-    console.log("DesktopInbox - Resolved Component:", com);
     return com;
   });
 
@@ -49,7 +45,6 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
     {
       Header: t("APPLICATION_NUMBER"),
       Cell: ({ row }) => {
-        console.log("row", row);
         return (
           <div>
             <span className="link">

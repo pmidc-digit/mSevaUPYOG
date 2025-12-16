@@ -347,22 +347,24 @@ public class NotificationService {
 				.build();
         String tenantId="pb.testing";
 		String action = "RLREMENDER";//WF_NO_WORKFLOW;
+//		String action = RLConstants.RL_PAYMENT_REMINDER;//WF_NO_WORKFLOW;
+		
 		String moduleName = RLConstants.RL_SERVICE_NAME;
 		String completeMsgs = notifUtil.getLocalizationMessages(tenantId,requestInfo);
 		
 		List<String> configuredChannelNames = notifUtil.fetchChannelList(requestInfo, tenantId, moduleName,
 				action);
-
-		if (configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
-			List<SMSRequest> smsRequests = notifUtil.createSMSRequest(completeMsgs, mapOfPhnoAndEmail);
-            log.info("Inside  sms: " + smsRequests);
-			notifUtil.sendSMS(smsRequests);
-		} 
-		if (configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
-			List<EmailRequest> emailRequests = notifUtil.createEmailRequest(requestInfo, completeMsgs,
-					mapOfPhnoAndEmail);
-			notifUtil.sendEmail(emailRequests);
-		}
+//
+//		if (configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
+//			List<SMSRequest> smsRequests = notifUtil.createSMSRequest(completeMsgs, mapOfPhnoAndEmail);
+//            log.info("Inside  sms: " + smsRequests);
+//			notifUtil.sendSMS(smsRequests);
+//		} 
+//		if (configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
+//			List<EmailRequest> emailRequests = notifUtil.createEmailRequest(requestInfo, completeMsgs,
+//					mapOfPhnoAndEmail);
+//			notifUtil.sendEmail(emailRequests);
+//		}
 
 	}
 

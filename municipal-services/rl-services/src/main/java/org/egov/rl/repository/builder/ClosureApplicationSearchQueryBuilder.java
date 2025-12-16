@@ -71,7 +71,7 @@ public class ClosureApplicationSearchQueryBuilder {
 //			 GROUP BY al.id ORDER BY al.created_time DESC
 			long limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), config.getMaxSearchLimit()) : config.getDefaultLimit();
 			long offset = criteria.getOffset() != null ? criteria.getOffset() : config.getDefaultOffset();
-
+            subQuery.append(GROUPBY_QUERY);
 			subQuery.append(" LIMIT ? OFFSET ? ");
 			subQueryParams.add(limit);
 			subQueryParams.add(offset);

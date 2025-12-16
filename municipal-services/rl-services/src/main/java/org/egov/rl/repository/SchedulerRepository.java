@@ -51,5 +51,12 @@ public class SchedulerRepository {
 
 	}
 	
+	public List<NotificationSchedule> getNotificationsByApplicationNumber(String applicationNumber) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = schedulerQueryBuilder.getSchdulerQueryByApplicationnumber(applicationNumber);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+
+	}
+	
 
 }

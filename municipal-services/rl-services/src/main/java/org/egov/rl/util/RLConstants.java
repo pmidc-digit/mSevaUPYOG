@@ -21,6 +21,8 @@ public class RLConstants {
 	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
 
 	public static final String RL_SERVICE_NAME = "rl-services";
+	public static final String RL_PAYMENT_REMINDER = "RL_PAYMENT_REMINDER";
+	
 
 	public static final String SECURITY_DOPOSITE_FEE_RL_APPLICATION = "RL_SECURITY_DOPOSITE_FEE";
 

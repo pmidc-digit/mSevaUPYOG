@@ -51,7 +51,7 @@ public class NotificationSchedule {
     private int status;
     
     @JsonProperty("isPayementReminder")
-    private boolean ispayement_reminder;
+    private boolean isPayementReminder;
 
     @JsonProperty("paymentSuccessId")
     private String paymentSuccessId;

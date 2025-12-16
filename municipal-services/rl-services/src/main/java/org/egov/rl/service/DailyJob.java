@@ -28,18 +28,22 @@ public class DailyJob {
 //	}
 
 	// Runs every 3 day at 02:30 IST // 24 hr time
-	@Scheduled(cron = "0 20 8 * * *", zone = "Asia/Kolkata")
+
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 20 8 * * *", zone = "Asia/Kolkata")
 	public void runEvery3DaysCron() {
-		LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
-
-		// Start date (example)
-		LocalDate startDate = LocalDate.of(2025, 12, 16);
-
-		long days = ChronoUnit.DAYS.between(startDate, today);
-
-		if (days % 3 == 0) {
-			notificationSchedullerService.scheduller();
-		}
+		System.out.println("---------------");
+		
+//		LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+//
+//		// Start date (example)
+//		LocalDate startDate = LocalDate.of(2025, 12, 16);
+//
+//		long days = ChronoUnit.DAYS.between(startDate, today);
+//
+//		if (days % 3 == 0) {
+//			notificationSchedullerService.scheduller();
+//		}
 	}
 
 }

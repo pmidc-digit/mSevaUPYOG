@@ -1,5 +1,7 @@
 package org.egov.rl.service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,6 +43,9 @@ public class PaymentNotificationService {
 	@Value("${egov.mdms.search.endpoint}")
 	private String mdmsUrl;
 
+	@Autowired
+	org.egov.rl.repository.SchedulerRepository schedulerRepository;
+	
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
@@ -341,12 +346,9 @@ public class PaymentNotificationService {
 			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
 			
 			if (rowsUpdated > 0) {
+				updateScheduler(applicationNumber);
 				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
-//				application.setStatus(status);
-//				if (applicationNumber != null && !applicationNumber.isEmpty()) {
-//					application.setApplicationNumber(applicationNumber);
-//				}
 			} else {
 				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
 						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
@@ -357,4 +359,53 @@ public class PaymentNotificationService {
 					applicationNumber, e.getMessage(), e);
 		}
 	}
+	private void updateScheduler(String applicationNumber) {
+		try {
+			String updateQuery;
+			Object[] params;
+			long currentTime = System.currentTimeMillis();
+			
+			if (applicationNumber != null && !applicationNumber.isEmpty()) {
+				updateQuery = "UPDATE eg_rl_allotment_scheduler SET notification_count_for_current_cycle=0, demand_id = null, ispayment_reminder=false WHERE application_number = ?";
+				params = new Object[]{
+					applicationNumber
+				};
+			} else {
+				updateQuery = "UPDATE eg_rl_allotment_scheduler SET notification_count_for_current_cycle=0, demand_id = null, ispayment_reminder=false WHERE application_number = ?";
+					params = new Object[]{
+					applicationNumber
+				};
+			}
+			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
+			
+			
+//			log.info("Executing database update for application: {} with status: {}, RL: {}", 
+//					status, applicationNumber != null ? applicationNumber : "null");
+//			
+			try {
+			NotificationSchedule scheduler=schedulerRepository.getNotificationsByApplicationNumber(applicationNumber).get(0);
+			LocalDateTime now=LocalDateTime.now();
+	        Duration d=Duration.between(now, scheduler.getLastPaymentDate());
+	        long day=d.toDays();
+			String insertQuery="INSERT INTO public.eg_rl_payment_history(id, application_number, tenant_id, slipid, last_payment_date, payment_completed_date, amount, delayinday, payment_agains) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			allotmentRepository.getJdbcTemplate().update(insertQuery,
+					scheduler.getId(),scheduler.getApplicationNumber(),scheduler.getTenantId(),"",scheduler.getLastPaymentDate(),now,"",day,"alloment");
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
+//			
+//			if (rowsUpdated > 0) {
+//				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
+//						applicationNumber, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
+//			} else {
+//				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
+//						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
+//			}
+			
+		} catch (Exception e) {
+			log.error("Failed to update database for application: {}, Error: {}", 
+					applicationNumber, e.getMessage(), e);
+		}
+	}
+
 }

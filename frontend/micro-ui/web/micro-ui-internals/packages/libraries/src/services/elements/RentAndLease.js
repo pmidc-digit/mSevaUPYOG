@@ -18,7 +18,7 @@ export const RentAndLeaseService = {
       data: details,
       useCache: true,
       method: "POST",
-      params: { tenantId },
+      params: {},
       auth: true,
       userService: true,
     }),
@@ -44,6 +44,8 @@ export const RentAndLeaseService = {
       userService: false,
       //params: { tenantId, ...filters },
     }),
+
+    
 
   recieptSearch: (tenantId, businessService, params) => {
     console.log("🔍 [rentAndLeaseService.recieptSearch] Params:", {
@@ -89,7 +91,7 @@ export const RentAndLeaseService = {
       data: details,
       useCache: true,
       method: "POST",
-      //params: { tenantId },
+      params: {},
       auth: true,
       userService: true,
     }),

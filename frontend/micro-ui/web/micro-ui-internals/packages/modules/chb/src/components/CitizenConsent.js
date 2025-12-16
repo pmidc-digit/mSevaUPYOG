@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { Loader } from "../components/Loader";
 
-const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp, getModalData }) => {
+const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp, getModalData, getUser, getShowOtp }) => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const ownername = user?.info?.name;
@@ -29,27 +29,11 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const [setOtpLoading, setSetOtpLoading] = useState(false);
   const stateCode = Digit.ULBService.getStateId();
 
-  console.log("getModalData", getModalData);
-
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
   const [isUploading, setIsUploading] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
 
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
   const DateOnly = new Date();
-
-  const updatedAdditionalDetails = {
-    ...[data?.applicationData],
-    TimeStamp: otpVerifiedTimestamp,
-  };
-
-  const updatedData = {
-    applicationNo: data?.applicationNo,
-    tenantId: data?.tenantId,
-    applicationData: {
-      ...updatedAdditionalDetails,
-    },
-  };
 
   const formatUlbName = (ulbName = "") => {
     if (!ulbName) return "";
@@ -158,8 +142,8 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     const requestData = {
       username: getModalData?.mobileNumber,
       password: otp,
-      tenantId: user?.info?.tenantId,
-      userType: user?.info?.type,
+      tenantId: "pb",
+      userType: "citizen",
     };
     try {
       setSetOtpLoading(true);
@@ -186,7 +170,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
         setOTPVerifiedTimestamp(formatted);
         sessionStorage.setItem("otpVerifiedTimestampcitizen", formatted);
-        setUser({ info, ...tokens });
+        // setUser({ info, ...tokens });
         setSetOtpLoading(false);
         setShowOTPInput(false);
         setIsOTPVerified(true);
@@ -197,7 +181,28 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         return "";
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error);
+      setOTPError(t("Error verifying OTP"));
+      setSetOtpLoading(false);
+      return "";
+    }
+  };
+
+  const handleVerifyOTPClickNew = async () => {
+    setSetOtpLoading(true);
+    const stateCode = "pb";
+    const requestData = {
+      name: getModalData?.name,
+      emailId: getModalData?.emailId,
+      username: getModalData?.mobileNumber,
+      otpReference: otp,
+      tenantId: "pb",
+    };
+    // return;
+    try {
+      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.registerUser(requestData, stateCode);
+      setSetOtpLoading(false);
+      setIsOTPVerified(true);
+    } catch (error) {
       setOTPError(t("Error verifying OTP"));
       setSetOtpLoading(false);
       return "";
@@ -205,17 +210,17 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   };
 
   const handleGetOTPClick = async () => {
+    setLoader(true);
     try {
       const response = await Digit.UserService.sendOtp({
         otp: {
           mobileNumber: getModalData?.mobileNumber,
-          tenantId: user?.info?.tenantId,
-          userType: user?.info?.type,
+          tenantId: "pb",
+          userType: "citizen",
           type: "login",
         },
       });
-
-      console.log("  Full OTP send response:", JSON.stringify(response, null, 2));
+      setLoader(false);
 
       if (response?.error) {
         if (response.error.fields && Array.isArray(response.error.fields)) {
@@ -239,6 +244,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         alert("Failed to send OTP");
       }
     } catch (error) {
+      setLoader(false);
       const errorData = error?.response?.data || error?.data;
 
       if (errorData?.error?.fields && Array.isArray(errorData.error.fields)) {
@@ -379,7 +385,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
                 <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
               </div>
               <br></br>
-              {!isCitizenDeclared && !isOTPVerified && (
+              {!isCitizenDeclared && !isOTPVerified && !getShowOtp && (
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <br></br>
                   <SubmitBar label={t("BPA_UPLOAD")} onSubmit={handleGetOTPClick} disabled={!isValidMobileNumber} />
@@ -388,12 +394,24 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
               {showOTPInput && !isCitizenDeclared && !isOTPVerified && (
                 <React.Fragment>
                   <br></br>
-                  <CardLabel>{t("BPA_OTP")}</CardLabel>
+                  <CardLabel>{t("CHB_OTP")}</CardLabel>
                   <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
-                  <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
+                  <SubmitBar label={t("CHB_VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                   {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
                   {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+                </React.Fragment>
+              )}
+
+              {getShowOtp && !isOTPVerified && !isCitizenDeclared && (
+                <React.Fragment>
+                  <br></br>
+                  <CardLabel>{t("CHB_OTP")}</CardLabel>
+                  <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
+
+                  <SubmitBar label={t("CHB_VERIFY_OTP")} onSubmit={handleVerifyOTPClickNew} />
+                  {/* {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
+                {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>} */}
                 </React.Fragment>
               )}
               {isOTPVerified && !isCitizenDeclared && (
@@ -406,7 +424,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
           )}
         </div>
       </Modal>
-      {loader && <Loader page={true} />}
+      {(loader || setOtpLoading) && <Loader page={true} />}
     </div>
   );
 };

@@ -67,6 +67,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [buildingStatus, setbuildingStatus] = useState(currentStepData?.createdResponse?.additionalDetails?.buildingStatus || "")
   const [purchasedFAR, setpurchasedFAR] = useState(currentStepData?.createdResponse?.additionalDetails?.purchasedFAR || "")
   const [providedFAR, setProvidedFAR] = useState(0);
+  const [purchasableFAR, setPurchasableFAR] = useState(0);
   const [greenbuilding, setgreenbuilding] = useState(currentStepData?.createdResponse?.additionalDetails?.greenbuilding || "")
   const [restrictedArea, setrestrictedArea] = useState(currentStepData?.createdResponse?.additionalDetails?.restrictedArea || "")
   const [proposedSite, setproposedSite] = useState(currentStepData?.createdResponse?.additionalDetails?.proposedSite || "")
@@ -418,10 +419,17 @@ if (anyYes && !ecbcCertificateFile) {
     //providedFAR
     useEffect(() => {
       console.log("ProvidedFAR", providedFAR, currentStepData);
-      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar){
-        setProvidedFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar)
+      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedPurchasableFar){
+        setProvidedFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedPurchasableFar)
+      }else{
+        setProvidedFAR("0.00");
       }
-    }, [currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar])
+      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.purchasableFar){
+        setPurchasableFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.purchasableFar)
+      }else{
+        setPurchasableFAR("0.00");
+      }
+    }, [currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails])
 
     // ✅ greenbuilding
     useEffect(() => {
@@ -932,6 +940,7 @@ console.log("appDate", nocApprovedOn);
       buildingStatus:"",
       purchasedFAR: purchasedFAR?.value,
       providedFAR,
+      purchasableFAR,
       greenbuilding: greenbuilding?.code,
       restrictedArea: restrictedArea?.code,
       proposedSite: proposedSite?.code,
@@ -1287,6 +1296,15 @@ console.log("appDate", nocApprovedOn);
 
         {purchasedFAR?.code === "YES" && (
           <React.Fragment>
+            <CardLabel>{`${t("BPA_ALLOWED_PROVIDED_FAR")} *`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              name="purchasableFAR"
+              value={purchasableFAR}
+              disable={true}
+            />
+            {errors.purchasableFAR && <ErrorMessage error={errors.purchasableFAR} />}
             <CardLabel>{`${t("BPA_PROVIDED_FAR")} *`}</CardLabel>
             <TextInput
               t={t}

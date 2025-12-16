@@ -7,9 +7,9 @@ import {
   Row,
   StatusTable,
   MultiLink,
-  CheckPoint,
+  // CheckPoint,
   Toast,
-  ConnectingCheckPoints,
+  // ConnectingCheckPoints,
   ActionBar,
   Menu,
   SubmitBar,
@@ -22,54 +22,55 @@ import { Loader } from "../../components/Loader";
 import { ChallanData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
 import NDCModal from "../../pageComponents/NDCModal";
+import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
+// const getTimelineCaptions = (checkpoint, index, arr, t) => {
+//   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+//   const caption = {
+//     date: checkpoint?.auditDetails?.lastModified,
+//     name: checkpoint?.assigner?.name,
+//     // mobileNumber: checkpoint?.assigner?.mobileNumber,
+//     source: checkpoint?.assigner?.source,
+//   };
 
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
+//   return (
+//     <div>
+//       {comment?.length > 0 && (
+//         <div className="TLComments">
+//           <h3>{t("WF_COMMON_COMMENTS")}</h3>
+//           <p style={{ overflowX: "scroll" }}>{comment}</p>
+//         </div>
+//       )}
 
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
+//       {thumbnailsToShow?.thumbs?.length > 0 && (
+//         <DisplayPhotos
+//           srcs={thumbnailsToShow.thumbs}
+//           onClick={(src, idx) => {
+//             let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+//             Digit.Utils.zoomImage(fullImage);
+//           }}
+//         />
+//       )}
 
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
+//       {wfDocuments?.length > 0 && (
+//         <div>
+//           {wfDocuments?.map((doc, index) => (
+//             <div key={index}>
+//               <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+//             </div>
+//           ))}
+//         </div>
+//       )}
 
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
+//       <div style={{ marginTop: "8px" }}>
+//         {caption.date && <p>{caption.date}</p>}
+//         {caption.name && <p>{caption.name}</p>}
+//         {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
+//         {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+//       </div>
+//     </div>
+//   );
+// };
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
@@ -131,7 +132,8 @@ const ChallanApplicationDetails = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "NewGC",
+    moduleCode: getChallanData?.processInstance?.businessService,
+    // moduleCode: "DisconnectGCConnection",
     role: "EMPLOYEE",
   });
 
@@ -153,6 +155,8 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
+  console.log("workflowDetails", workflowDetails);
+
   let user = Digit.UserService.getUser();
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -165,21 +169,33 @@ const ChallanApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+  console.log("action===", actions);
+
   useEffect(() => {
     let WorkflowService = null;
     (async () => {
-      setLoader(true);
-      WorkflowService = await Digit.WorkflowService.init(tenantId, "NewGC");
-      setLoader(false);
-      setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      if (getChallanData) {
+        const service = getChallanData?.processInstance?.businessService;
+        setLoader(true);
+        WorkflowService = await Digit.WorkflowService.init(tenantId, service);
+        console.log("WorkflowService", WorkflowService);
+        setLoader(false);
+        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+      }
       // setComplaintStatus(applicationStatus);
     })();
-  }, [tenantId]);
+  }, [tenantId, getChallanData]);
 
   function onActionSelect(action) {
     const payload = {
       Licenses: [action],
     };
+
+    console.log("action", action);
+
+    if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
+    }
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
@@ -191,7 +207,26 @@ const ChallanApplicationDetails = () => {
   }
 
   const submitAction = async (modalData) => {
-    console.log("modalData", modalData?.Licenses);
+    const action = modalData?.Licenses[0];
+
+    if (
+      !action?.assignes &&
+      action.action !== "SEND_BACK_TO_CITIZEN" &&
+      action.action !== "ACTIVATE_CONNECTION" &&
+      action.action !== "REJECT" &&
+      action.action !== "SEND_BACK_FOR_DOCUMENT_VERIFICATION" &&
+      action.action !== "APPROVE" &&
+      action.action !== "APPROVE_FOR_CONNECTION"
+    ) {
+      setErrorOne("Assignee is Mandatory");
+      setShowErrorToastt(true);
+      return;
+    } else if (!action?.comment) {
+      setErrorOne("Comment is Mandatory");
+      setShowErrorToastt(true);
+      return;
+    }
+
     setLoader(true);
 
     const payload = {
@@ -204,15 +239,12 @@ const ChallanApplicationDetails = () => {
       },
     };
 
-    console.log("payload", payload);
-
     try {
       const response = await Digit.GCService.update(payload);
-      console.log("response", response);
       setLoader(false);
       setShowModal(false);
       // ✅ Show success first
-      setLable("Challan is Settled");
+      setLable("Status is Updated");
       setError(false);
       setShowToast(true);
 
@@ -224,61 +256,13 @@ const ChallanApplicationDetails = () => {
     } catch (error) {
       setLoader(false);
     }
-    return;
-    if (!modalData?.amount) {
-      setErrorOne(`Please Enter Amount`);
-      setShowErrorToastt(true);
-    } else {
-      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
-      if (modalData?.amount > finalAmount) {
-        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
-        setShowErrorToastt(true);
-        setError(`Amount must be less than or equal to ${finalAmount}`);
-      } else {
-        console.log("nothing");
-
-        setLoader(true);
-
-        const payload = {
-          Challan: {
-            ...getChallanData,
-            workflow: {
-              action: "SETTLED",
-            },
-            feeWaiver: modalData?.amount,
-          },
-        };
-
-        console.log("payload", payload);
-        try {
-          const response = await Digit.ChallanGenerationService.update(payload);
-          setLoader(false);
-          setShowModal(false);
-          // ✅ Show success first
-          // setShowToast({ key: "success", message: "Successfully updated the status" });
-          setLable("Challan is Settled");
-          setError(false);
-          setShowToast(true);
-
-          // ✅ Delay navigation so toast shows
-          setTimeout(() => {
-            history.push("/digit-ui/employee/challangeneration/inbox");
-            window.location.reload();
-          }, 2000);
-
-          // history.push(`/digit-ui/employee/challangeneration/inbox`);
-        } catch (error) {
-          setLoader(false);
-        }
-      }
-    }
   };
 
   return (
     <React.Fragment>
       <div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.connectionHolders?.[0]?.name || t("CS_NA")} />
             <Row
@@ -289,13 +273,24 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.connectionHolders?.[0]?.emailId || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
-            <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
+            <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
             <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("PT_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            <Row className="border-none" label={t("NDC_MSG_PROPERTY_LABEL")} text={getChallanData?.propertyId || t("CS_NA")} />
+            <Row className="border-none" label={t("NDC_MSG_PROPERTY_TYPE_LABEL")} text={getChallanData?.propertyType || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}
+              text={getChallanData?.plotSize || t("CS_NA")}
+            />
             <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
           </StatusTable>
 
@@ -317,7 +312,7 @@ const ChallanApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-        {workflowDetails?.data?.timeline && (
+        {/* {workflowDetails?.data?.timeline && (
           <Card style={{ marginTop: "20px" }}>
             <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
             {workflowDetails?.data?.timeline.length === 1 ? (
@@ -335,14 +330,27 @@ const ChallanApplicationDetails = () => {
               </ConnectingCheckPoints>
             )}
           </Card>
-        )}
+        )} */}
+         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
+        {getChallanData?.applicationStatus != "INITIATED" && actions && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu localeKeyPrefix={`WF_GC`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
+
+        {getChallanData?.applicationStatus == "INITIATED" && (
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = getChallanData?.applicationNo;
+                history.push(`/digit-ui/employee/garbagecollection/create-application/${id}`);
+              }}
+            />
           </ActionBar>
         )}
       </div>
@@ -366,6 +374,8 @@ const ChallanApplicationDetails = () => {
           closeToastOne={closeToastOne}
           getLable={getLable}
           getChallanData={getChallanData}
+          loader={loader}
+          setLoader={setLoader}
         />
       ) : null}
 

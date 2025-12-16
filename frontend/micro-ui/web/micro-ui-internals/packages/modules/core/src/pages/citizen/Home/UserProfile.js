@@ -819,114 +819,72 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                   <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
                   <Dropdown
                     t={t}
-                    optionKey="district_name_english"
-                    option={uniqueDistricts}
-                    selected={selectedDistrict}
-                    select={SelectDistrict}
+                    optionKey="state_name"
+                    // isMandatory={config.isMandatory}
+                    option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
+                    selected={selectedState}
+                    select={SelectState}
                     disable={editScreen}
                   />
                 </div>
               </div>
 
-              <div style={formGroupRow}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
-                  <TextInput
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    optionKey="i18nKey"
-                    name="Pcode"
-                    minLength="6"
-                    value={pinCode}
-                    onChange={SelectPincode}
-                    disable={editScreen}
-                    {...(validation = {
-                      isRequired: true,
-                      pattern: "^[0-9]{6}$",
-                      type: "number",
-                      title: t("BPA_PINCODE_ERROR_MESSAGE"),
-                    })}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: "20px", padding: "16px", backgroundColor: "#F3F4F6", borderRadius: "8px" }}>
-                <CheckBox
-                  label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
-                  onChange={handleAddressSame}
-                  checked={isAddressSame}
-                  style={{ paddingBottom: "0px", paddingTop: "0px" }}
+              <div>
+                {" "}
+                <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
+                <Dropdown
+                  t={t}
+                  optionKey="district_name_english"
+                  // isMandatory={config.isMandatory}
+                  // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                  option={uniqueDistricts?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
+                  selected={selectedDistrict}
+                  select={SelectDistrict}
                   disable={editScreen}
                 />
               </div>
 
           
 
-              <div style={formGroupRow}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
-                  <CardLabel>{t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}</CardLabel>
-                  <TextArea
-                    t={t}
-                    isMandatory={false}
-                    type={"text"}
-                    optionKey="i18nKey"
-                    name="correspondenceAddress"
-                    value={isAddressSame ? PermanentAddress : correspondenceAddress}
-                    onChange={(e) => setCorrespondenceAddress(e.target.value)}
-                    disable={editScreen || isAddressSame}
-                    style={{ minHeight: "80px" }}
-                  />
-                </div>
+              <CardLabel>{t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}</CardLabel>
+              <TextArea
+                t={t}
+                isMandatory={false}
+                type={"text"}
+                name="correspondenceAddress"
+                value={isAddressSame ? PermanentAddress : correspondenceAddress}
+                onChange={(e) => setCorrespondenceAddress(e.target.value)}
+                disable={editScreen || isAddressSame}
+              />
+
+              <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
+              <div>
+                <Dropdown
+                  t={t}
+                  optionKey="state_name"
+                  // isMandatory={config.isMandatory}
+                  option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
+                  selected={isAddressSame ? selectedState : selectedCorrespondentState}
+                  select={SelectCorrespondentState}
+                  disable={editScreen || isAddressSame}
+                // disable={!isCitizenEditable}
+                />
               </div>
 
-              <div style={formGroupRow}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
-                  <div>
-                    <Dropdown
-                      t={t}
-                      optionKey="state_name"
-                      option={stateOptions}
-                      selected={isAddressSame ? selectedState : selectedCorrespondentState}
-                      select={SelectCorrespondentState}
-                      disable={editScreen || isAddressSame}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
-                  <Dropdown
-                    t={t}
-                    optionKey="district_name_english"
-                    option={uniqueDistrictsCorrespondent}
-                    selected={isAddressSame ? selectedDistrict : selectedCorrespondentDistrict}
-                    select={SelectCorrespondentDistrict}
-                    disable={editScreen || isAddressSame}
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
-                  <TextInput
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    optionKey="i18nKey"
-                    name="CorrespondencePcode"
-                    minLength="6"
-                    value={isAddressSame ? pinCode : pinCodeCorrespondent}
-                    onChange={SelectPincodeCorrespondent}
-                    disable={editScreen || isAddressSame}
-                    {...(validation = {
-                      isRequired: true,
-                      pattern: "^[0-9]{6}$",
-                      type: "number",
-                      title: t("BPA_PINCODE_ERROR_MESSAGE"),
-                    })}
-                  />
-                </div>
+              <div>
+                {" "}
+                <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
+                <Dropdown
+                  t={t}
+                  optionKey="district_name_english"
+                  // isMandatory={config.isMandatory}
+                  // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                  option={uniqueDistrictsCorrespondent?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
+                  selected={isAddressSame ? selectedDistrict : selectedCorrespondentDistrict}
+                  select={SelectCorrespondentDistrict}
+                  disable={editScreen || isAddressSame}
+                // disable={!isCitizenEditable}
+                />
               </div>
 
               <button

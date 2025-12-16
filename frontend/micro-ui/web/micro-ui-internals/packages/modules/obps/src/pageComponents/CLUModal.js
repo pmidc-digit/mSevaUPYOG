@@ -103,7 +103,7 @@ const CLUModal = ({
         })
       );
     }
-  }, [approverData]);
+  }, [approverData,EmployeeStatusData]);
 
 
   function selectFile(e) {

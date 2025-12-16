@@ -14,8 +14,6 @@ const EmployeeApp = ({ path, url, userType }) => {
   sessionStorage.removeItem("revalidateddone");
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log("path", path);
-
   const inboxInitialState = {
     searchParams: {
       uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
@@ -27,6 +25,8 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
   const CHBResponseCitizen = Digit.ComponentRegistryService.getComponent("CHBResponseCitizen");
+  const CHBCreate = Digit?.ComponentRegistryService?.getComponent("CHBStepperForm");
+  const GCResponseCitizen = Digit?.ComponentRegistryService?.getComponent("GCResponseCitizen");
 
   const isRes = window.location.href.includes("chb/response");
   const isNewRegistration =
@@ -67,7 +67,9 @@ const EmployeeApp = ({ path, url, userType }) => {
             {/* <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ChallanApplicationDetails} /> */}
 
             <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-            <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} />
+            <PrivateRoute path={`${path}/create-application`} component={CHBCreate} />
+            {/* <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} /> */}
+            <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
           </div>
         </React.Fragment>
       </AppContainer>

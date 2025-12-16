@@ -103,7 +103,7 @@ const NOCModal = ({
         })
       );
     }
-  }, [approverData]);
+  }, [approverData, EmployeeStatusData]);
 
 
   function selectFile(e) {

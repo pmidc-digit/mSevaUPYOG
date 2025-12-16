@@ -107,6 +107,11 @@ const CLUEditApplication = () => {
 
   const { data: mdmsData, isLoading:isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
   const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
+
+  const { data: areaTypeData } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "CLUAppliedCategory" }]);
+  const appliedCluCategoryOptions = areaTypeData?.BPA?.CLUAppliedCategory || [];
+ 
+  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
   const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
@@ -189,10 +194,10 @@ const CLUEditApplication = () => {
         {
           ...siteDetails,
           localityAreaType: areaTypeOptions?.find((obj)=> obj.name === siteDetails?.localityAreaType?.name  || obj.name === siteDetails?.localityAreaType), 
-
+          appliedCluCategory: appliedCluCategoryOptions?.find((obj)=> obj.name === siteDetails?.appliedCluCategory?.name || obj.name === siteDetails?.appliedCluCategory),
           ulbName: ulbListOptions?.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
           roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
-
+          buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
           district: districtObj,
 
           buildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.buildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
@@ -204,7 +209,7 @@ const CLUEditApplication = () => {
         dispatch(UPDATE_OBPS_FORM("apiData", applicationDetails));
         
     }
-  }, [isLoading, applicationDetails, isMdmsLoading]);
+  }, [isLoading, applicationDetails, isMdmsLoading, isBuildingTypeLoading]);
 
 
   const handleSubmit = (dataGet) => {

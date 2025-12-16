@@ -2,7 +2,6 @@ import useInbox from "../useInbox";
 
 const useGCInbox = ({ tenantId, filters, config = {} }) => {
   const { businessService, status } = filters;
-  console.log("filters===", filters);
   const { applicationNumber, mobileNumber } = filters?.searchForm;
 
   const { limit, offset, sortOrder, sortBy } = filters?.tableForm;

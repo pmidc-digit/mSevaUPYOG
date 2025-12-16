@@ -158,6 +158,8 @@ import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenera
 import useChallanInbox from "./challanGeneration/useInbox";
 
 import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
+import useRALPropertyMDMS from "./rentAndLease/useRentAndLeasePropertyMDMS"
+import useRALDocumentsMDMS from "./rentAndLease/useRentAndLeaseDocumetsMDMS"
 import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
 import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
 import useRentAndLeaseTenants from "./rentAndLease/useTenants";
@@ -414,6 +416,8 @@ import useGCInbox from "./gc/useInbox";
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
 import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile } from "./obps/useCLUSearchApplication";
 import useCLUInbox from "./obps/useCLUInbox";
+import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
+import useBathindaPropertySearch from "./pt/useBathindaPropertySearch";
 
 const pgr = {
   useComplaintDetails,
@@ -538,6 +542,8 @@ const pt = {
   useGenericViewProperty,
   useRatingAndFeedbackMDMS,
   useServiceSearchCF,
+  useLudhianaPropertSearch,
+  useBathindaPropertySearch
 };
 const dss = {
   useMDMS: useDssMdms,
@@ -783,6 +789,8 @@ const challangeneration = {
 const rentandlease = {
   useRentAndLeaseRecieptSearch,
   useRentAndLeaseMDMS,
+  useRALPropertyMDMS,
+  useRALDocumentsMDMS,
   useRentAndLeaseSearch,
   useRentAndLeaseSearchBill,
   useRentAndLeaseTenants,

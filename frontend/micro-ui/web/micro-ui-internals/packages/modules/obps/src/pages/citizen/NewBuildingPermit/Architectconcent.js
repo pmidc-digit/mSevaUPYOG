@@ -221,7 +221,7 @@ const selfdeclarationform = `
     const rightAligned = [
       `Name of Professional - <b>${architecname}</b>`,
       `Designation - <b>${architecttype}</b>`,
-      `Architect Id - <b>${architectid}</b>`,
+      `${architecttype} Id - <b>${architectid}</b>`,
       `Mobile Number - <b>${architectmobileNumber}</b>`,
     ];
     return rightAligned.includes(trimmed);

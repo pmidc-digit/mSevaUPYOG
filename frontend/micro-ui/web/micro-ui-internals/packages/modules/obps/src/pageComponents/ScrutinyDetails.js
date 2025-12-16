@@ -378,20 +378,22 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
 
       try {
         setApiLoading(true);
-        const result = await Digit.OBPSService.update(
-          {
-            BPA: {
-              ...currentStepData?.createdResponse,
-              landInfo,
-              workflow: {
-                action: workflowAction,
-                assignes: [accountId],
-              },
-            },
+        const result = await Digit.OBPSService.update({ BPA: {
+          ...currentStepData?.createdResponse,
+          landInfo,
+          additionalDetails: {
+            ...currentStepData?.createdResponse?.additionalDetails,
+            permissableFar: data?.planDetail?.farDetails?.permissableFar,
+            achievedFar: data?.planDetail?.farDetails?.providedFar,
+            ecsRequired: data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Required,
+            ecsProvided: data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Provided,
           },
-          tenantId
-        );
-        if (result?.ResponseInfo?.status === "successful") {
+          workflow: {
+            action: workflowAction,
+            assignes: [accountId]
+          }
+        } }, tenantId)
+        if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
           onSelect("ScrutinyDetails", { subOccupancy: subOccupancyObject });
         } else {

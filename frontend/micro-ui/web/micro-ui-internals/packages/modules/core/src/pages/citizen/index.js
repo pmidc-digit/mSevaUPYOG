@@ -119,6 +119,7 @@ const Home = ({
       mdmsDataObj?.links.sort((a, b) => {
         return a.orderNumber - b.orderNumber;
       });
+    // }
 
     return (
       <React.Fragment key={index}>

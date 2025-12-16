@@ -6,8 +6,6 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log("searchFieldComponents", searchFieldComponents);
-
   if (!isMobile) {
     return (
       <React.Fragment>

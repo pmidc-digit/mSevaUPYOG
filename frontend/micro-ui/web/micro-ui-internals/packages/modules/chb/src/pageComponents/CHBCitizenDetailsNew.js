@@ -14,19 +14,24 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const [loader, setLoader] = useState(false);
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [getModalData, setModalData] = useState();
-
+  const [getUser, setUser] = useState(null);
+  const [getDisable, setDisable] = useState({ name: false, email: false, address: false });
+  const [getShowOtp, setShowOtp] = useState(false);
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors },
     getValues,
+    watch,
   } = useForm({
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       name: (isCitizen && user?.info?.name) || "",
       emailId: (isCitizen && user?.info?.emailId) || "",
       mobileNumber: (isCitizen && user?.info?.mobileNumber) || "",
-      address: "",
+      address: (isCitizen && user?.info?.permanentCity) || "",
     },
   });
 
@@ -43,8 +48,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         alert("Please upload Self Certificate");
         return;
       }
-
-      console.log("baseApplication", baseApplication);
 
       // Construct owners array using "data"
       const applicantDetail = {
@@ -88,8 +91,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           additionalDetails,
         },
       };
-
-      console.log("checkpayload", payload);
       // return;
       setLoader(true);
       try {
@@ -110,16 +111,36 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       setValue("mobileNumber", formattedData?.applicantDetail?.applicantMobileNo);
       setValue("name", formattedData?.applicantDetail?.applicantName);
     }
-    // if (formattedData) {
-    //   Object.entries(formattedData).forEach(([key, value]) => {
-    //     setValue(key, value);
-    //   });
-    // }
   }, [currentStepData, setValue]);
 
+  const updateUser = async () => {
+    const checkData = getValues();
+    setLoader(true);
+    const tenantId = "pb";
+    const payload = {
+      otp: {
+        tenantId,
+        mobileNumber: checkData?.mobileNumber || null,
+        name: checkData?.name || null,
+        emailId: checkData?.emailId || null,
+        type: "register",
+      },
+    };
+
+    try {
+      const response = await Digit.UserService.sendOtp(payload, tenantId);
+      setLoader(false);
+      setShowOtp(true);
+    } catch (err) {
+      setLoader(false);
+    }
+  };
+
   const handleModalData = (e) => {
-    console.log("currentStepData", currentStepData);
-    console.log("getvalues", getValues());
+    if (!getUser && !isCitizen) {
+      updateUser();
+      // alert("first update user");
+    }
     const mapData = currentStepData?.ownerDetails?.hallsBookingApplication;
 
     const payload = {
@@ -137,15 +158,74 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       rent: mapData?.amount,
     };
 
-    console.log("payload", payload);
     setModalData(payload);
     if (e.target.checked) setShowTermsPopup(true);
+  };
+
+  const handleMobileChange = async (value) => {
+    setLoader(true);
+    try {
+      const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+      // sessionStorage.setItem("CitizenConsentdocFilestoreidCHB", result?.filestoreIds[0]);
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidCHB");
+      setUser(userData?.user?.[0]);
+      if (userData?.user?.[0]) {
+        setValue("name", userData.user[0].name);
+        setValue("emailId", userData.user[0].emailId);
+        setValue("address", userData.user[0].permanentAddress);
+        clearErrors(["name", "emailId", "address"]);
+      }
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
   };
 
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div style={{ width: "50%" }}>
+          {/* mobile number */}
+          <div style={{ marginBottom: "20px" }}>
+            <CardLabel>
+              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="mobileNumber"
+              rules={{
+                required: "Mobile number is required",
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: "Enter a valid 10-digit mobile number",
+                },
+              }}
+              render={(props) => (
+                <MobileNumber
+                  style={{ marginBottom: 0 }}
+                  value={props.value}
+                  onChange={(e) => {
+                    props.onChange(e);
+                    setValue("name", "");
+                    setValue("emailId", "");
+                    setValue("address", "");
+                    setUser("");
+                    setShowOtp(false);
+                    // ✅ updates react-hook-form
+                    if (e.length === 10) {
+                      handleMobileChange(e); // 🔥 only then fire API
+                    }
+                    // debouncedHandleMobileChange(e);
+                  }}
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+          </div>
+
+          {/* name */}
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -168,6 +248,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   onBlur={(e) => {
                     props.onBlur(e);
                   }}
+                  disabled={getUser?.name}
                   t={t}
                 />
               )}
@@ -175,6 +256,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
           </div>
 
+          {/* email */}
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -199,38 +281,12 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   onBlur={(e) => {
                     props.onBlur(e);
                   }}
+                  disabled={getUser?.emailId}
                   t={t}
                 />
               )}
             />
             {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
-          </div>
-
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
-              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="mobileNumber"
-              rules={{
-                required: "Mobile number is required",
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: "Enter a valid 10-digit mobile number",
-                },
-              }}
-              render={(props) => (
-                <MobileNumber
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  onChange={props.onChange} // ✅ don't wrap it
-                  onBlur={props.onBlur}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
           </div>
 
           <div style={{ marginBottom: "20px" }}>
@@ -255,6 +311,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   onBlur={(e) => {
                     props.onBlur(e);
                   }}
+                  disabled={getUser?.permanentAddress}
                   t={t}
                 />
               )}
@@ -299,6 +356,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           showTermsPopupOwner={showTermsPopup}
           setShowTermsPopupOwner={setShowTermsPopup}
           getModalData={getModalData}
+          getUser={getUser}
+          getShowOtp={getShowOtp}
           // otpVerifiedTimestamp={null} // Pass timestamp as a prop
           // bpaData={data?.applicationData} // Pass the complete BPA application data
           tenantId={tenantId} // Pass tenant ID for API calls

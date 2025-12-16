@@ -14,6 +14,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [error, setError] = useState(null);
 
+  console.log("tenantId", tenantId);
+
   const {
     control,
     handleSubmit,
@@ -22,6 +24,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     formState: { errors },
     getValues,
     watch,
+    trigger,
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
@@ -60,10 +63,13 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     };
     try {
       const response = await Digit.CHBServices.slot_search({ filters: payload });
+
       setLoader(false);
       setSlots(response?.hallSlotAvailabiltityDetails);
+      setShowInfo(true);
       return response;
     } catch (error) {
+      console.log("error", error);
       setLoader(false);
     }
   };
@@ -144,7 +150,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   useEffect(() => {
     const formattedData = currentStepData?.ownerDetails?.hallsBookingApplication;
-
+    console.log("formattedData", formattedData);
     // Restore siteId and trigger hall filtering
     if (formattedData) {
       const communityHallsOptions = CHBLocations.CHB.CommunityHalls || [];
@@ -154,7 +160,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const discReasonOptions = CHBReason?.CHB?.DiscountReason;
 
       const selectedCommHall = communityHallsOptions?.find((item) => item?.communityHallId == formattedData?.communityHallCode);
-      const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose);
+      const selectedPurpose = purposeOptions?.find((item) => item?.code == formattedData?.purpose?.purpose?.code);
       const selectedSpecialCat = specialCategoryOptions?.find((item) => item?.code == formattedData?.specialCategory?.category);
       const selectHallCode = hallCodeOptions?.find((item) => item?.HallCode == formattedData?.bookingSlotDetails?.[0]?.hallCode);
       const selectReason = discReasonOptions?.find((item) => item?.reasonName == formattedData?.additionalDetails?.reason);
@@ -180,7 +186,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("specialCategory", selectedSpecialCat || null);
       setValue("purposeDescription", formattedData.purposeDescription || "");
       setValue("discountAmount", formattedData?.additionalDetails?.discountAmount || "");
-      setValue("reason", selectReason || null);
+      setValue("reason", formattedData?.additionalDetails?.reason || "");
       // disImage
     }
   }, [currentStepData, setValue]);
@@ -242,7 +248,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
-                      // setValue("endDate", "");
+                      setValue("endDate", "");
                       // reset({ endDate: "" });
                     }}
                     onBlur={(e) => {
@@ -264,6 +270,23 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               <Controller
                 control={control}
                 name={"endDate"}
+                // rules={{ required: t("END_DATE_REQ") }}
+                rules={{
+                  required: t("END_DATE_REQ"),
+                  validate: (value) => {
+                    if (!value || !startDate) return true;
+
+                    const start = new Date(startDate);
+                    const end = new Date(value);
+                    const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+                    if (daysDiff > 5) {
+                      return t("END_DATE_MAX_5_DAYS");
+                    }
+
+                    return true;
+                  },
+                }}
                 render={(props) => (
                   <TextInput
                     style={{ marginBottom: 0 }}
@@ -275,10 +298,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                         : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                     }
-                    max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
-                    // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                    // max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      trigger("endDate");
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -287,6 +310,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
+              {errors.endDate && <p style={{ color: "red" }}>{errors.endDate.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -306,11 +330,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   select={(e) => {
                     props.onChange(e);
                     slotsSearch(e);
-                    setShowInfo(true);
                   }}
                   selected={props.value}
                   option={getHallCodes}
                   optionKey="HallCode"
+                  disable={errors.endDate || errors.startDate}
                 />
               )}
             />

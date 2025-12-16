@@ -5,7 +5,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { format } from "date-fns";
 
 const useInboxMobileCardsData = ({ parentRoute, table }) => {
-  console.log("table", table);
   const { t } = useTranslation();
 
   const dataForMobileInboxCards = table?.map((value) => {

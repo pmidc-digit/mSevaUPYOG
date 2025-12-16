@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.egov.infra.admin.master.service.CityService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.reporting.util.ReportUtil;
 import org.egov.infra.utils.DateUtils;
+import org.jfree.util.Log;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -123,6 +125,30 @@ public class PlanReportService {
     private static final String LEVEL = "Level";
     private static final String COMBINED_BLOCKS_SUMMARY_DETAILS = "Overall Summary";
     private static final String BLOCK_WISE_SUMMARY = "Block Wise Summary";
+    
+ // === MANDATORY KEYS THAT DECIDE FINAL REPORT STATUS ===
+    private static final List<String> MANDATORY_KEYS = Arrays.asList(
+        "1General Stair - Mid landing",
+        "1General Stair - Number of risers",
+        "1General Stair - Riser Height",
+        "1General Stair - Width",
+        "1General Stair - Tread width",
+        "1Height of Building",
+        "1Height of Floor",
+        "1Number of Floors",
+        "1Plantation Area",
+        "1Plinth",
+        "Coverage",
+        "FAR",
+        "Green buildings and sustainability provisions",
+        "Location Plan",
+        "MainGate",
+        "North Direction",
+        "Parking",
+        "Travel Distance To Emergency Exits",
+        "1Fire Tender Movement",
+        "1FrontRearSideYardDetails"
+    );
 
     public InputStream generateDynamicReport(Plan plan, EdcrApplication dcrApplication) {
         FastReportBuilder drb = new FastReportBuilder();
@@ -315,7 +341,11 @@ public class PlanReportService {
 
                     StringBuilder text = new StringBuilder();
 
-                    String coveredAreaText = "1. Plot Coverage Area is " + (dcrReportBlockDetail.getCoverageArea() != null
+//                    String coveredAreaText = "1. Plot Coverage Area is " + (dcrReportBlockDetail.getCoverageArea() != null
+//                            ? dcrReportBlockDetail.getCoverageArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                                    DcrConstants.ROUNDMODE_MEASUREMENTS)
+//                            : BigDecimal.ZERO) + " m²";
+                    String coveredAreaText = "1. Ground Coverage Area is " + (dcrReportBlockDetail.getCoverageArea() != null
                             ? dcrReportBlockDetail.getCoverageArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
                                     DcrConstants.ROUNDMODE_MEASUREMENTS)
                             : BigDecimal.ZERO) + " m²";
@@ -490,8 +520,11 @@ public class PlanReportService {
 //                        .setColumnProperty("totalCarpetArea", BigDecimal.class.getName()).setTitle("Carpet Area in m²")
 //                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
 
+//                AbstractColumn coverageArea = ColumnBuilder.getNew()
+//                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Plot Coverage")
+//                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
                 AbstractColumn coverageArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Plot Coverage")
+                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Ground Coverage")
                         .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
                 
 
@@ -1317,15 +1350,52 @@ public class PlanReportService {
             }
             
             try {
-		            if (finalReportStatus)
-		                for (String cmnFeature : common) {
-		                	LOG.info("Checking final report status for : " + cmnFeature);
-		                    for (Map<String, String> commonStatus : allMap.get(cmnFeature).getDetail()) {
-		                        if (commonStatus.get(STATUS).equalsIgnoreCase(Result.Not_Accepted.getResultVal())) {
-		                            finalReportStatus = false;
-		                        }
-		                    }
-		                }
+//		            if (finalReportStatus)
+//		                for (String cmnFeature : common) {
+//		                	LOG.info("Checking final report status for : " + cmnFeature);
+//		                    for (Map<String, String> commonStatus : allMap.get(cmnFeature).getDetail()) {
+//		                        if (commonStatus.get(STATUS).equalsIgnoreCase(Result.Not_Accepted.getResultVal())) {
+//		                            finalReportStatus = false;
+//		                        }
+//		                    }
+//		                }
+            	
+            	if(finalReportStatus) {
+            		if (common != null && !common.isEmpty() && allMap != null) {
+				    for (String cmnFeature : common) {				
+				        if (cmnFeature == null) {
+				            LOG.warn("Skipping null common feature");
+				            continue;
+				        }
+				
+				        LOG.info("Checking final report status for : {}", cmnFeature);
+				
+				        if (allMap.get(cmnFeature) == null ||
+				            allMap.get(cmnFeature).getDetail() == null) {
+				
+				            LOG.warn("No detail data found for feature : {}", cmnFeature);
+				            continue;
+				        }
+				
+				        for (Map<String, String> commonStatus
+				                : allMap.get(cmnFeature).getDetail()) {				
+				            if (commonStatus == null) {
+				                continue;
+				            }				
+				            String status = commonStatus.get(STATUS);				
+				            if (Result.Not_Accepted.getResultVal().equalsIgnoreCase(status)) {
+				                finalReportStatus = false;				
+				                LOG.info(
+				                    "Final report marked as NOT ACCEPTED due to feature : {}",
+				                    cmnFeature
+				                );
+				            }
+				        }
+				    }
+				
+				} else {
+				    LOG.warn("Common list or allMap is null / empty. Skipping final report status check.");
+				}            	}
 			}catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -1368,6 +1438,9 @@ public class PlanReportService {
             valuesMap.put("planPermissionNumber", dcrApplication.getPlanPermitNumber());
             valuesMap.put("bpaApplicationDate", DateUtils.toDefaultDateFormat(dcrApplication.getPermitApplicationDate()));
         }
+        
+        finalReportStatus = processComplianceReport(valuesMap);
+        
         if (finalReportStatus) {
             String dcrApplicationNumber = "";
             if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType()))
@@ -1408,7 +1481,196 @@ public class PlanReportService {
         return exportPdf;
 
     }
+    
+    /**
+     * Processes the compliance report based on MANDATORY_KEYS only.
+     * Updates reportStatus and clears errors if all mandatory checks are Accepted.
+     * 
+     * @param valuesMap the map containing all scrutiny data
+     * @return true if all mandatory checks passed (final report can be Accepted), false otherwise
+     */
+    public boolean processComplianceReport(Map<String, Object> valuesMap) {
 
+        boolean allMandatoryAccepted = true;
+        List<String> failedMandatory = new ArrayList<>();
+
+        // Step 1: Check each mandatory key
+        for (String key : MANDATORY_KEYS) {
+            if (!valuesMap.containsKey(key)) {
+                allMandatoryAccepted = false;
+                failedMandatory.add(key + " (Missing)");
+                continue;
+            }
+
+            Object value = valuesMap.get(key);
+            String sectionStatus = getSectionStatus(value);
+
+            if (!"Accepted".equals(sectionStatus)) {
+                allMandatoryAccepted = false;
+                failedMandatory.add(key + " (" + sectionStatus + ")");
+            }
+        }
+
+        // Step 2: Update map and determine final result
+        boolean finalReportStatus; // This is the value you wanted
+
+        if (allMandatoryAccepted) {
+            valuesMap.put("reportStatus", "Accepted");
+            valuesMap.put("errors", new HashMap<>()); // Clear errors
+            finalReportStatus = true;
+            System.out.println("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
+        } else {
+            valuesMap.put("reportStatus", "Not Accepted");
+            finalReportStatus = false;
+            System.out.println("MANDATORY checks FAILED: " + failedMandatory);
+            System.out.println("Report Status remains: Not Accepted");
+        }
+
+        // Step 3: Print sorted summary (always, for logging/review)
+        printAllKeysWithStatusSorted(valuesMap);
+
+        // Return the final decision
+        return finalReportStatus;
+    }
+
+//    public void processComplianceReport(Map<String, Object> valuesMap, Boolean finalReportStatus) {
+//
+//        // Step 1: Determine status of each mandatory key
+//        boolean allMandatoryAccepted = true;
+//        List<String> failedMandatory = new ArrayList<>();
+//
+//        for (String key : MANDATORY_KEYS) {
+//            if (!valuesMap.containsKey(key)) {
+//                allMandatoryAccepted = false;
+//                failedMandatory.add(key + " (Missing)");
+//                continue;
+//            }
+//
+//            Object value = valuesMap.get(key);
+//            String sectionStatus = getSectionStatus(value);
+//
+//            if (!"Accepted".equals(sectionStatus)) {
+//                allMandatoryAccepted = false;
+//                failedMandatory.add(key + " (" + sectionStatus + ")");
+//            }
+//        }
+//
+//        // Step 2: Update reportStatus and errors based on mandatory checks
+//        if (allMandatoryAccepted) {
+//            valuesMap.put("reportStatus", "Accepted");
+//            valuesMap.put("errors", new HashMap<>()); // Clear errors
+//            finalReportStatus=true;
+//            System.out.println("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
+//        } else {
+//            valuesMap.put("reportStatus", "Not Accepted");
+//            System.out.println("MANDATORY checks FAILED: " + failedMandatory);
+//            System.out.println("Report Status remains: Not Accepted");
+//        }
+//
+//        // Step 3: Print sorted summary
+//        printAllKeysWithStatusSorted(valuesMap);
+//    }
+    
+    /**
+     * Returns the status of a section: Accepted / Not Accepted / Mixed / N/A
+     */
+    private String getSectionStatus(Object value) {
+        String status = "N/A (Info only)";
+
+        if (value instanceof List) {
+            List<?> list = (List<?>) value;
+            if (!list.isEmpty() && list.get(0) instanceof Map) {
+                boolean allAccepted = true;
+                boolean allNotAccepted = true;
+                boolean hasStatus = false;
+
+                for (Object item : list) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> itemMap = (Map<String, Object>) item;
+                    if (itemMap.containsKey("Status")) {
+                        hasStatus = true;
+                        String itemStatus = (String) itemMap.get("Status");
+                        if ("Accepted".equals(itemStatus)) {
+                            allNotAccepted = false;
+                        } else if ("Not Accepted".equals(itemStatus)) {
+                            allAccepted = false;
+                        }
+                    }
+                }
+
+                if (hasStatus) {
+                    if (allAccepted) return "Accepted";
+                    if (allNotAccepted) return "Not Accepted";
+                    return "Mixed";
+                }
+            }
+        }
+        return status;
+    }
+    
+    /**
+     * Prints full summary: Accepted → Failed/Mixed → N/A (Info only)
+     */
+    public void printAllKeysWithStatusSorted(Map<String, Object> valuesMap) {
+        System.out.println("\n=== FINAL COMPLIANCE CHECK SUMMARY (Sorted: Accepted → Failed → N/A) ===\n");
+        System.out.printf("%-55s %-15s %s%n", "Key / Section", "Status", "Notes");
+        System.out.println("----------------------------------------------------------------------------------------------------");
+
+        List<Map.Entry<String, String>> acceptedList = new ArrayList<>();
+        List<Map.Entry<String, String>> failedList = new ArrayList<>();
+        List<Map.Entry<String, String>> naList = new ArrayList<>();
+
+        for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            String status = "N/A (Info only)";
+            String notes = "";
+
+            if ("reportStatus".equals(key) && value instanceof String) {
+                status = (String) value;
+                notes = "Overall application status";
+            } else {
+                status = getSectionStatus(value);
+                if ("Accepted".equals(status)) notes = "All items compliant";
+                else if ("Not Accepted".equals(status)) notes = "All items failed";
+                else if ("Mixed".equals(status)) notes = "Some accepted, some not";
+            }
+
+            Map.Entry<String, String> displayEntry = new AbstractMap.SimpleEntry<>(key, status + " | " + notes);
+
+            if ("Accepted".equals(status)) {
+                acceptedList.add(displayEntry);
+            } else if ("Not Accepted".equals(status) || "Mixed".equals(status)) {
+                failedList.add(displayEntry);
+            } else {
+                naList.add(displayEntry);
+            }
+        }
+
+        // Sort all lists alphabetically
+        Collections.sort(acceptedList, Comparator.comparing(Map.Entry::getKey));
+        Collections.sort(failedList, Comparator.comparing(Map.Entry::getKey));
+        Collections.sort(naList, Comparator.comparing(Map.Entry::getKey));
+
+        // Print in order: Accepted → Failed/Mixed → N/A
+        printList(acceptedList);
+        printList(failedList);
+        printList(naList);
+
+        System.out.println("\n=== END OF SUMMARY ===");
+    }
+
+    private void printList(List<Map.Entry<String, String>> list) {
+        for (Map.Entry<String, String> entry : list) {
+            String key = entry.getKey();
+            String[] parts = entry.getValue().split(" \\| ", 2);
+            String status = parts[0];
+            String notes = parts.length > 1 ? parts[1] : "";
+            System.out.printf("%-55s %-15s %s%n", key, status, notes);
+        }
+    }
+    
     public Subreport generateDcrSubReport(final List<DcrReportOutput> dcrReportOutputs) {
         FastReportBuilder drb = new FastReportBuilder();
 

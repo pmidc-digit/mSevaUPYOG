@@ -161,7 +161,8 @@ public class DcrConstants {
     public static final String OFBLOCK = " of Block ";
     public static final String FOROCCUPANCY = " for occupancy ";
     public static final String MEAN_OF_ACCESS = "Mean Of Access";
-    public static final String SQMTRS = "m2";
+//    public static final String SQMTRS = "m2";
+    public static final String SQMTRS = "m²";
     public static final String WELL_DISTANCE_FROMBOUNDARY = "Minimum distance from the well ";
     public static final String WASTE_DISPOSAL_DISTANCE_FROMBOUNDARY = "Minimum distance from the waste disposal ";
     public static final String RAINWATER_HARVES_TANKCAPACITY = "Rain Water Harvesting system storage tank capacity ";

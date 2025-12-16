@@ -549,8 +549,8 @@ public class Coverage extends FeatureProcess {
 			occupancy = occupancyTypeHelper.getType().getName();
 			if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
 					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())) {
-				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString());
-				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString());
+				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + "m²";
+				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
 			}else {
 				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverageArea.setScale(2, RoundingMode.HALF_UP).toString() +" %");
 				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");

@@ -109,27 +109,31 @@ public class ToiletDetails extends FeatureProcess {
                                     BigDecimal ventilationHeight = toilet.getToiletVentilation() != null 
                                             ? toilet.getToiletVentilation().setScale(2, RoundingMode.HALF_UP)
                                             : BigDecimal.ZERO;
+
+//                                    if (area.compareTo(new BigDecimal(1.8)) >= 0
+//                                            && width.compareTo(new BigDecimal(1.2)) >= 0
+//                                            && ventilationHeight.compareTo(new BigDecimal(0.3)) >= 0) {
+//
+//                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
+//                                        details.put(PROVIDED, "Total Area = " + area
+//                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+//                                        details.put(STATUS, Result.Accepted.getResultVal());
+//
+//                                    } else {                                    	
+//                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
+//                                        details.put(PROVIDED, "Total Area = " + area
+//                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+//                                        details.put(STATUS, Result.Not_Accepted.getResultVal());
+//                                        errors.put(VENTILATION_HEIGHT_ERROR, VENTILATION_HEIGHT_ERROR);
+//                                        pl.addErrors(errors);
+//                                    }                                    
                                     
                                     
-
-                                    if (area.compareTo(new BigDecimal(1.8)) >= 0
-                                            && width.compareTo(new BigDecimal(1.2)) >= 0
-                                            && ventilationHeight.compareTo(new BigDecimal(0.3)) >= 0) {
-
                                         details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
                                         details.put(PROVIDED, "Total Area = " + area
                                                 + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
                                         details.put(STATUS, Result.Accepted.getResultVal());
-
-                                    } else {                                    	
-                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
-                                        details.put(PROVIDED, "Total Area = " + area
-                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
-                                        details.put(STATUS, Result.Not_Accepted.getResultVal());
-                                        errors.put(VENTILATION_HEIGHT_ERROR, VENTILATION_HEIGHT_ERROR);
-                                        pl.addErrors(errors);
-                                    }
-
+                                        
                                     scrutinyDetail.getDetail().add(details);
                                 }
                             }

@@ -167,7 +167,7 @@ public class AdditionalFeature extends FeatureProcess {
     public static final BigDecimal HEIGHT_WITHOUT_STILT_TYPE1 = BigDecimal.valueOf(15);
     public static final BigDecimal HEIGHT_WITHOUT_STILT = BigDecimal.valueOf(21);
     
-    public static final BigDecimal NO_OF_FLOORS_WITH_STILT = BigDecimal.valueOf(5);
+    public static final BigDecimal NO_OF_FLOORS_WITH_STILT = BigDecimal.valueOf(4);
     public static final BigDecimal NO_OF_FLOORS_WITHOUT_STILT = BigDecimal.valueOf(3);
     
     @Override
@@ -317,11 +317,11 @@ public class AdditionalFeature extends FeatureProcess {
     						|| A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
             	boolean hasStiltFloor = checkStiltFloor(block.getBuilding().getFloors());
             	if(hasStiltFloor) {
-            		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITH_STILT) <= 0;
-                    requiredFloorCount = NO_OF_FLOORS_WITH_STILT.toPlainString();
+            		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITH_STILT.add(BigDecimal.valueOf(1))) <= 0;
+                    requiredFloorCount = "S + "+ NO_OF_FLOORS_WITH_STILT.toPlainString();
             	}else {
             		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITHOUT_STILT) <= 0;
-                    requiredFloorCount = NO_OF_FLOORS_WITHOUT_STILT.toPlainString();
+                    requiredFloorCount = "G +" + NO_OF_FLOORS_WITHOUT_STILT.toPlainString();
             	}
             }else {
             	if (typeOfArea.equalsIgnoreCase(OLD)) {
@@ -720,8 +720,8 @@ public class AdditionalFeature extends FeatureProcess {
                 details.put(DESCRIPTION, HEIGHT_BUILDING);
                 details.put(DxfFileConstants.AREA_TYPE, typeOfArea);
 //                details.put(DxfFileConstants.ROAD_WIDTH, roadWidth.toString());
-                details.put(PERMISSIBLE, requiredBuildingHeight);
-                details.put(PROVIDED, String.valueOf(buildingHeight));
+                details.put(PERMISSIBLE, requiredBuildingHeight + "m");
+                details.put(PROVIDED, String.valueOf(buildingHeight) + "m");
                 details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
                 //details.put(STATUS, Result.Accepted.getResultVal());
                 scrutinyDetail.getDetail().add(details);

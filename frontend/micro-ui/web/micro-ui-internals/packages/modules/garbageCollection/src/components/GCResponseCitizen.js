@@ -49,11 +49,21 @@ const GCResponseCitizen = (props) => {
     }
   };
   const getAcknowledgement = async () => {
+    try{
+      setLoader(true);
       const applications = getChallanData;
       console.log('applications for garbage', applications)
       const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
       const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
       Digit.Utils.pdf.generate(acknowldgementDataAPI);
+      setLoader(false);
+    }, 0);
+    }catch (error) {
+    console.error("Error generating acknowledgement:", error);
+    setLoader(false);
+  }
+      
   };
   
 
@@ -115,6 +125,7 @@ const GCResponseCitizen = (props) => {
         </ActionBar>
       </Card>
       {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}
+      {loader && <Loader page={true} />}
     </div>
   );
 };

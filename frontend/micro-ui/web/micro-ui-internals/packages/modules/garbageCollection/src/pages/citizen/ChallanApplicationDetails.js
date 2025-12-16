@@ -124,12 +124,22 @@ const ChallanApplicationDetails = () => {
   // sessionStorage.setItem("chb", JSON.stringify(application));
 
   const getAcknowledgement = async () => {
+  setLoader(true);
+  try {
     const applications = getChallanData;
-    console.log("applications for garbage", applications);
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowldgementDataAPI);
-  };
+    setTimeout(() => {
+      Digit.Utils.pdf.generate(acknowldgementDataAPI);
+      setLoader(false);
+    }, 0);
+  } catch (error) {
+    console.error("Error generating acknowledgement:", error);
+    setLoader(false);
+  }
+};
+
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: acknowledgementIds,
@@ -163,16 +173,25 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = null;
-    if (payments?.fileStoreId) {
-      response = { filestoreIds: [payments?.fileStoreId] };
-    } else {
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
-    }
-
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    setLoader(true);
+    try {
+      let response = null;
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      } else {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response.filestoreIds[0],
+      });
+      setLoader(false);
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      console.error(error);
+      setLoader(false);
+    } 
   }
+
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({

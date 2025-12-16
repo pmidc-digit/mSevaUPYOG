@@ -115,6 +115,8 @@ export const SuccessfulPayment = (props) => {
     select: (data) =>
       businessService === "GC.ONE_TIME_FEE"
       ? "garbage-receipt"
+      : businessService === "rl-services"
+      ? "rentandlease-receipt"
       :data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
 
@@ -470,11 +472,13 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
   };
 
   const printReciept = async () => {
+    if (printing) return;
+    setPrinting(true);
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
     const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
-
+    let fileStoreTenant;
     if (!payments.Payments[0]?.fileStoreId) {
       let assessmentYear = "",
         assessmentYearForReceipt = "";
@@ -526,11 +530,16 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
         };
         response = await Digit.PaymentService.generatePdf(state, { Payments: updatedpayments.payments }, generatePdfKey);
       } else {
-        response = await Digit.PaymentService.generatePdf(state, { Payments: payments.Payments }, generatePdfKey);
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments }, generatePdfKey);
       }
     }
-    const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response.filestoreIds[0]], "_blank");
+    fileStoreTenant = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+
+    const fileStore = fileStoreTenant && fileStoreTenant[response.filestoreIds[0]] ? fileStoreTenant : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0], });    
+    if (fileStore && fileStore[response.filestoreIds[0]]) {
+      window.open(fileStore[response.filestoreIds[0]], "_blank");
+    }
+    setPrinting(false);
   };
 
   const printDisconnectionRecipet = async () => {
@@ -776,13 +785,19 @@ hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map
                 <div
                   className="primary-label-btn d-grid"
                   style={{ marginLeft: "unset", marginRight: "20px" }}
-                  onClick={IsDisconnectionFlow === "true" ? printDisconnectionRecipet : printReciept}
+                  onClick={printing ? undefined : IsDisconnectionFlow === "true" ? printDisconnectionRecipet : printReciept}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                  </svg>
-                  {t("CS_COMMON_PRINT_RECEIPT")}
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CS_COMMON_PRINT_RECEIPT")}
+                    </>
+                  )}
                 </div>
               )}
 

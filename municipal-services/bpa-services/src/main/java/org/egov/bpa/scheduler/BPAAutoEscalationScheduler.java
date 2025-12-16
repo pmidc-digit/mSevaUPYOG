@@ -35,8 +35,8 @@ public class BPAAutoEscalationScheduler {
 		this.bpaAutoEscalationService = bpaAutoEscalationService;
 	}
 
-	@Scheduled(initialDelay = 1000, fixedRate = 60000)
-//	@Scheduled(cron = "0 0 0 ? * MON-FRI")
+//	@Scheduled(initialDelay = 1000, fixedRate = 60000)
+	@Scheduled(cron = "0 0 0 ? * MON-FRI")
 //	@Scheduled(cron = "0 0 0 * * ?")
 	public void autoEscalateBPA() {
 		log.info("Start BPA Auto Escalation Scheduler....");

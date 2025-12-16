@@ -51,17 +51,27 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			if (docList.size() < rs.getLong("documentCount")) {
 				docList.add(getDocuments(rs));
 			}
+			System.out.println("-----aa-----------"+rs.getString("application_number"));
 			auditDetails = getAuditDetail(rs, "allotment");
-			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
+			currentAllotment = AllotmentDetails.builder()
+					.id(rs.getString("id"))
+					.propertyId(rs.getString("property_id"))
 					.tenantId(rs.getString("tenant_id"))
+					.applicationNumber(rs.getString("application_number"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
-					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
-					.endDate(rs.getLong("end_date")).isGSTApplicable(rs.getBoolean("is_gst_applicable"))
+					.applicationType(rs.getString("application_type"))
+					.startDate(rs.getLong("start_date"))
+					.endDate(rs.getLong("end_date"))
+					.isGSTApplicable(rs.getBoolean("is_gst_applicable"))
 					.isCowCessApplicable(rs.getBoolean("is_cow_cess_applicable"))
 					.isRefundApplicableOnDiscontinuation(rs.getBoolean("is_refund_applicable_on_discontinuation"))
-					.termAndCondition(rs.getString("term_and_condition")).penaltyType(rs.getString("penalty_type"))
-					.createdTime(rs.getLong("created_time")).createdBy(rs.getString("created_by")).documents(docList)
-					.ownerInfo(userList).auditDetails(auditDetails).build();
+					.termAndCondition(rs.getString("term_and_condition"))
+					.penaltyType(rs.getString("penalty_type"))
+					.createdTime(rs.getLong("created_time"))
+					.createdBy(rs.getString("created_by"))
+					.documents(docList)
+					.ownerInfo(userList)
+					.auditDetails(auditDetails).build();
 			if (rs.getLong("totalAllotments") < 2) {
 				currentAllotmentList.add(currentAllotment);
 			}

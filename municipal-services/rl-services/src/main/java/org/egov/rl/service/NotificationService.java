@@ -18,6 +18,7 @@ import org.egov.mdms.model.ModuleDetail;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
+import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.ProcessInstance;
 import org.egov.rl.models.User;
 import org.egov.rl.models.enums.CreationReason;
@@ -27,6 +28,8 @@ import org.egov.rl.models.event.EventRequest;
 import org.egov.rl.models.workflow.Action;
 import org.egov.rl.models.workflow.Workflow;
 import org.egov.rl.util.NotificationUtil;
+import org.egov.rl.util.RLConstants;
+import org.egov.rl.web.contracts.EmailRequest;
 import org.egov.rl.web.contracts.SMSRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -330,6 +333,39 @@ public class NotificationService {
 		 * tenantId); notifUtil.sendEmail(emailRequests); }
 		 */
 	}
+	
+	public void sendMessage(List<OwnerInfo> owner) {
+		
+		Map<String , String> mapOfPhnoAndEmail=owner.stream().collect(Collectors.toMap( m -> m.getMobileNo(), m -> m.getEmailId()));
+
+		RequestInfo requestInfo=RequestInfo
+				.builder()
+				.apiId("Rainmaker")
+				.authToken("3ef501f7-0b66-4308-9b7e-28e56047da55")
+				.msgId("1756728031554|en_IN")
+				.plainAccessRequest(null)
+				.build();
+        String tenantId="pb.testing";
+		String action = "RLREMENDER";//WF_NO_WORKFLOW;
+		String moduleName = RLConstants.RL_SERVICE_NAME;
+		String completeMsgs = notifUtil.getLocalizationMessages(tenantId,requestInfo);
+		
+		List<String> configuredChannelNames = notifUtil.fetchChannelList(requestInfo, tenantId, moduleName,
+				action);
+
+		if (configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
+			List<SMSRequest> smsRequests = notifUtil.createSMSRequest(completeMsgs, mapOfPhnoAndEmail);
+            log.info("Inside  sms: " + smsRequests);
+			notifUtil.sendSMS(smsRequests);
+		} 
+		if (configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
+			List<EmailRequest> emailRequests = notifUtil.createEmailRequest(requestInfo, completeMsgs,
+					mapOfPhnoAndEmail);
+			notifUtil.sendEmail(emailRequests);
+		}
+
+	}
+
 
 	private String fetchContentFromLocalization(RequestInfo requestInfo, String tenantId, String module, String code) {
 		String message = null;

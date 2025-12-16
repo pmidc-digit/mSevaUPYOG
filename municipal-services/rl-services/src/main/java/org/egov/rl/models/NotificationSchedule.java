@@ -1,11 +1,12 @@
 
 package org.egov.rl.models;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import org.egov.rl.models.enums.SchedullerType;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -48,6 +49,9 @@ public class NotificationSchedule {
 
     @JsonProperty("status")
     private int status;
+    
+    @JsonProperty("isPayementReminder")
+    private boolean ispayement_reminder;
 
     @JsonProperty("paymentSuccessId")
     private String paymentSuccessId;
@@ -56,8 +60,10 @@ public class NotificationSchedule {
     @JsonProperty("demandId")
     private String demandId;
 
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     @JsonProperty("notificationCreatedDate")
-    private Timestamp notificationCreatedDate;
+    private LocalDateTime notificationCreatedDate;
 
     @JsonProperty("schedullerType")
     private String schedullerType;
@@ -65,8 +71,9 @@ public class NotificationSchedule {
     @JsonProperty("cycleCount")
     private int cycleCount;
     
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     @JsonProperty("nextCycleDate")
-    private String nextCycleDate;
+    private LocalDateTime nextCycleDate;
 
     @JsonProperty("notificationType")
     private int notificationType;
@@ -74,20 +81,22 @@ public class NotificationSchedule {
     @JsonProperty("lastNotificationStatus")
     private String lastNotificationStatus;
     
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     @JsonProperty("lastNotificationDate")
-    private Timestamp lastNotificationDate;
+    private LocalDateTime lastNotificationDate;
 
     @JsonProperty("notificationCountForCurrentCycle")
     private int notificationCountForCurrentCycle;
     
-    @JsonProperty("noOfNotificationHavetoSend")
+    @JsonProperty("noOfNotificationHaveToSend")
     private int noOfNotificationHavetoSend;
     
     @JsonProperty("notificationInteravalInDay")
     private int notificationInteravalInDay;
     
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     @JsonProperty("lastPaymentDate")
-    private long lastPaymentDate;
+    private LocalDateTime lastPaymentDate;
 
     @JsonProperty("createdTime")
     private long createdTime;

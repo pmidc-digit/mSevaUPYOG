@@ -20,6 +20,7 @@ import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
+import org.egov.rl.util.RLConstants;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -243,6 +244,12 @@ public class AllotmentValidator {
 			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Owner's name and mobile number in the request");
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
+		
+		if(allotementRequest.getAllotment().getWorkflow().getAction().equals(RLConstants.APPLY_RL_APPLICATION)) {
+			if(allotementRequest.getAllotment().getDocuments()!=null&&!allotementRequest.getAllotment().getDocuments().isEmpty()) {
+					throw new CustomException("EG_RL_DOCUMENT INFO ERROR", "Document can't be empty in the request");
+			}
+		}
 
 		validateOwnersData(allotementRequest, errorMap);
 		validateAndLoadPropertyData(allotementRequest, errorMap);

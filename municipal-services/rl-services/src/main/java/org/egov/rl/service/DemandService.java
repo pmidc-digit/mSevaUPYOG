@@ -5,6 +5,8 @@ package org.egov.rl.service;
 //import static org.egov.ptr.util.PTRConstants.PET_BUSINESSSERVICE;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,8 +57,13 @@ public class DemandService {
 	private CalculationService calculationService;
 
 	public List<Demand> createDemand(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
+
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyDDD"); // yy = year, DDD = day of year
+        String formattedDate = today.format(formatter);
+        
 		String tenantId = allotmentRequest.getAllotment().getTenantId();
-		String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
+		String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();//+"."+formattedDate;
 
 		OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
 		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId()).uuid(ownerInfo.getUserUuid())

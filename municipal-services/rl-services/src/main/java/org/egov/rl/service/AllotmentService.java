@@ -15,9 +15,11 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.Demand;
+import org.egov.rl.models.NotificationSchedule;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.PropertyReportSearchRequest;
 import org.egov.rl.models.RLProperty;
+import org.egov.rl.models.SchedullerRequest;
 import org.egov.rl.models.SearchProperty;
 import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.models.user.User;
@@ -74,6 +76,10 @@ public class AllotmentService {
 
 	@Autowired
 	private NotificationService notificationService;
+	
+	@Autowired
+	private NotificationSchedullerService notificationSchedullerService;
+	
 
 	/**
 	 * Enriches the Request and pushes to the Queue
@@ -125,17 +131,15 @@ public class AllotmentService {
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
-				demandId = demandService.createDemand(true, allotmentRequest).get(0).getId();
+//				notificationSchedullerService.sendNotificationRequest(allotmentRequest, true);
+					demandId = demandService.createDemand(true, allotmentRequest).get(0).getId();
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
-			try {
-				notificationService.sendNotificationForAllotment(allotmentRequest);
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
+			
 		} else if (isApprove) {
 			try {
+//				notificationSchedullerService.sendNotificationRequest(allotmentRequest, false);
 				demandId = demandService.createDemand(false, allotmentRequest).get(0).getId();
 			} catch (Exception e) {
 				// TODO: handle exception

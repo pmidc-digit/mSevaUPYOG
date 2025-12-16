@@ -13,6 +13,8 @@ public class RLConstants {
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";
 	
     public static final String APPROVED_RL_APPLICATION = "APPROVE";
+    
+    public static final String APPLY_RL_APPLICATION = "APPLY";
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
 
@@ -222,7 +224,7 @@ public class RLConstants {
     
     public static final String WF_STATUS_PAID_LOCALE = "PT_NOTIF_WF_STATE_LOCALE_PAID";
 
-	public static final String NOTIFICATION_MODULENAME = "rainmaker-pt";
+	public static final String NOTIFICATION_MODULENAME = "rl-services";
 	
 	/* PT notif loc codes */
 	

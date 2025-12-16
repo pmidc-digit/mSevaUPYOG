@@ -72,17 +72,17 @@ public class SchedullerValidator {
 //						"tenant_id can't be null or empty, please provide the CLSURE information");
 //			}
 
-		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
-		Set<String> applicationNumber = new HashSet<>();
-		applicationNumber.add(notificationSchedule.getApplicationNumber());
-		allotmentCriteria.setApplicationNumbers(applicationNumber);
-
-		AllotmentDetails alllAllotmentDetails = allotmentRepository.getAllotmentByApplicationNumber(allotmentCriteria)
-				.stream().findAny().orElse(null);
-		if (alllAllotmentDetails == null) {
-			throw new CustomException("SCHEDULLER INFO ERROR",
-					"Enter valid applicationNumber , please provide the applicationNumber information");
-		}
+//		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
+//		Set<String> applicationNumber = new HashSet<>();
+//		applicationNumber.add(notificationSchedule.getApplicationNumber());
+//		allotmentCriteria.setApplicationNumbers(applicationNumber);
+//
+//		AllotmentDetails alllAllotmentDetails = allotmentRepository.getAllotmentByApplicationNumber(allotmentCriteria)
+//				.stream().findAny().orElse(null);
+//		if (alllAllotmentDetails == null) {
+//			throw new CustomException("SCHEDULLER INFO ERROR",
+//					"Enter valid applicationNumber , please provide the applicationNumber information");
+//		}
 	}
 
 }

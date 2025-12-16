@@ -37,7 +37,7 @@ public class NotificationSchedullerController {
     @PostMapping("/_create")
     public ResponseEntity<SchedullerResponse> create(@Valid @RequestBody SchedullerRequest schedullerRequest) {
 
-    	List<NotificationSchedule> scheduller =schedullerService.createScheduller(schedullerRequest);
+    	List<NotificationSchedule> scheduller =schedullerService.createScheduller(schedullerRequest,true);
         ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(schedullerRequest.getRequestInfo(), true);
         SchedullerResponse response = SchedullerResponse.builder()
                 .scheduller(scheduller)

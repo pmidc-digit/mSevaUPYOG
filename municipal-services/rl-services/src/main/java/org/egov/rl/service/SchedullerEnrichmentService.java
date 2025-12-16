@@ -1,5 +1,6 @@
 package org.egov.rl.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -64,27 +65,37 @@ public class SchedullerEnrichmentService {
 		NotificationSchedule scheduller = schedullerRequest.getScheduller().stream().findFirst().orElse(null);
 		RequestInfo requestInfo = schedullerRequest.getRequestInfo();
      	AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-		
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastPaymentDate = now.plusWeeks(1);
+        int month=Integer.valueOf(SchedullerType.fromValue(scheduller.getSchedullerType()));
+        LocalDateTime nexCycleDate=now.plusMonths(month);
+
+        System.out.println("month---"+month);
+        System.out.println("nexCycleDate---"+nexCycleDate);
+        System.out.println("lastPaymentDate---"+lastPaymentDate);
+        
      	scheduller=NotificationSchedule.builder()
 		 .id(UUID.randomUUID().toString())
 	     .allotmentId(scheduller.getAllotmentId())
+	     .tenantId(scheduller.getTenantId())
 	     .applicationNumber(scheduller.getApplicationNumber())
 	     .demandId(getDemandIdByApplicationNumber(schedullerRequest,isApplicationIntalization))
 	     
 	     .lastNotificationStatus("success")
 //	     .lastNotificationDate(scheduller.getLastNotificationDate())
-	     .notificationCreatedDate(scheduller.getNotificationCreatedDate())
+	     .notificationCreatedDate(now)
 	     .notificationCountForCurrentCycle(1)
 	     .notificationType(scheduller.getNotificationType()) // 1-SMS, 2-Mail, 3- Both
 	     .noOfNotificationHavetoSend(3)// 3
-	     .notificationInteravalInDay(1)// perday =1
+	     .notificationInteravalInDay(2)// perday =1
 	     
+	     .lastPaymentDate(lastPaymentDate)
 	     .cycleCount(1)
-	     .schedullerType(SchedullerType.fromValue(scheduller.getSchedullerType()).toString()) 
-	     .nextCycleDate(scheduller.getNextCycleDate())
+	     .schedullerType(scheduller.getSchedullerType()) 
+	     .nextCycleDate(nexCycleDate)
 	    
-	     .lastPaymentDate(scheduller.getLastPaymentDate())
-	     .applicationNumberStatus("APPROVED")
+//	     .applicationNumberStatus("APPROVED")
 	     .createdBy(auditDetails.getCreatedBy())
 	     .createdTime(auditDetails.getCreatedTime())
 	     
@@ -97,7 +108,7 @@ public class SchedullerEnrichmentService {
 		AllotmentCriteria criteria=new AllotmentCriteria();
 		Set<String> application=new HashSet<>();
 		application.add(applicationNumber);
-		criteria.setAllotmentIds(application);
+		criteria.setApplicationNumbers(application);
 		return allotmentRepository.getAllotmentByApplicationNumber(criteria).stream().findFirst().orElse(null);
 	}
 	

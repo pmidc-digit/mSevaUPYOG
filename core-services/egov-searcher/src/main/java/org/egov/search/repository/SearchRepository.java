@@ -9,8 +9,10 @@ import java.util.Comparator;
 import org.egov.custom.mapper.billing.impl.Bill;
 import org.egov.custom.mapper.billing.impl.BillRowMapper;
 import org.egov.custom.mapper.billing.impl.IntegratedBillRowMapper;
+import org.egov.custom.mapper.billing.impl.SaskiSearchRowMapper;
 import org.egov.search.model.Definition;
 import org.egov.search.model.PropertyBasedBill;
+import org.egov.search.model.SaskiProperty;
 import org.egov.search.model.SearchRequest;
 import org.egov.search.utils.SearchUtils;
 import org.egov.tracer.model.CustomException;
@@ -45,6 +47,9 @@ public class SearchRepository {
 	private BillRowMapper rowMapper;
 	
 	@Autowired
+	private SaskiSearchRowMapper saskiMapper;
+	
+	@Autowired
 	private IntegratedBillRowMapper integratedRowMapper;
 	
 			
@@ -59,60 +64,81 @@ public class SearchRepository {
 	}
 	
 	public Object fetchWithCustomMapper(SearchRequest searchRequest, Definition searchDefinition) {
-        Map<String, Object> preparedStatementValues = new HashMap<>();
-		
-        String query = searchUtils.buildQuery(searchRequest, searchDefinition.getSearchParams(), searchDefinition.getQuery(), preparedStatementValues);
-		try {
-			log.info("Final Query: " + query);
-			//log.debug("preparedStatementValues: " + preparedStatementValues);
-			List<PropertyBasedBill> result = null;
-			List<Bill> result1 = null;
 
-			 Map<String, Object> searchCriteria = (Map<String, Object>) searchRequest.getSearchCriteria();
+	    Map<String, Object> preparedStatementValues = new HashMap<>();
 
-			    // Validate searchCriteria and get the URL
-			    String url = null;
-			    if (searchCriteria != null) {
-			        url = (String) searchCriteria.get("url");
-			    }
+	    String query = searchUtils.buildQuery(
+	            searchRequest,
+	            searchDefinition.getSearchParams(),
+	            searchDefinition.getQuery(),
+	            preparedStatementValues
+	    );
 
-			    // Check if URL contains 'integrated'
-			    if (url != null && url.contains("integrated")) {
-			        log.info("URL contains 'integrated': " + url);
-			        // Add logic specific to integrated billing URLs
-			        result = namedParameterJdbcTemplate.query(query, preparedStatementValues, integratedRowMapper);
-			    } else {
-			        log.info("URL does not contain 'integrated': " + url);
-			        result1 = namedParameterJdbcTemplate.query(query, preparedStatementValues, rowMapper);
-			    }
-			
-			Map<String, String> business = (Map<String, String>) searchRequest.getSearchCriteria();
-	        
-	   
-			if (result != null && !result.isEmpty()) {
-			    return result;
-			}
+	    try {
+	        log.info("Final Query: " + query);
 
-	     else {
-	         String businesService = business.get("businesService");
-	         if (businesService != null &&
-	        		    (businesService.equalsIgnoreCase("SW") || businesService.equalsIgnoreCase("WS")) &&
-	        		    !result1.isEmpty()) {
+	        List<PropertyBasedBill> integratedResult = null;
+	        List<Bill> normalResult = null;
+	        List<SaskiProperty> propertySearchResult = null;
 
-	        		    for (Bill bill : result1) {
-	        		        if (bill.getBillDetails() != null) {
-	        		            Collections.sort(bill.getBillDetails(),
-	        		                (b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod()));
-	        		        }
-	        		    }
-	        		}
+	        Map<String, Object> searchCriteria = (Map<String, Object>) searchRequest.getSearchCriteria();
+	        String url = searchCriteria != null ? (String) searchCriteria.get("url") : null;
 
-	        		return result1;
-	     		}
-	     } catch (CustomException e) {
-			throw e;
-		}
+	        // 1️⃣ Count
+	        if (url != null && (url.toLowerCase().contains("saskipropertyvasikacount")||url.toLowerCase().contains("saskipropertycount")||url.toLowerCase().contains("saskitotalpercentagecount"))) {
+	            log.info("URL contains 'count': " + url);
+	            String count = namedParameterJdbcTemplate.queryForObject(query, preparedStatementValues, String.class);
+	            return count;
+	        }
+
+	        // 2️⃣ Integrated
+	        if (url != null && url.toLowerCase().contains("integrated")) {
+	            log.info("URL contains 'integrated': " + url);
+	            integratedResult = namedParameterJdbcTemplate.query(query, preparedStatementValues, integratedRowMapper);
+	        } 
+
+	        // 3️⃣ Saski / Property search
+	        else if (url != null && url.toLowerCase().contains("saskipropertysearch")) {
+	            log.info("URL contains 'saski': " + url);
+	            propertySearchResult = namedParameterJdbcTemplate.query(query, preparedStatementValues, saskiMapper);
+	            return propertySearchResult;
+	        } 
+
+	        // 4️⃣ Normal result
+	        else {
+	            log.info("URL does not contain 'integrated' or 'saski': " + url);
+	            normalResult = namedParameterJdbcTemplate.query(query, preparedStatementValues, rowMapper);
+	        }
+
+	        // Return integrated if exists
+	        if (integratedResult != null && !integratedResult.isEmpty()) {
+	            return integratedResult;
+	        }
+
+	        // Sort BillDetails for SW/WS
+	        if (normalResult != null && !normalResult.isEmpty()) {
+	            String businessService = (String) searchCriteria.get("businesService");
+	            if (businessService != null &&
+	                    (businessService.equalsIgnoreCase("SW") || businessService.equalsIgnoreCase("WS"))) {
+
+	                for (Bill bill : normalResult) {
+	                    if (bill.getBillDetails() != null) {
+	                        Collections.sort(
+	                                bill.getBillDetails(),
+	                                (b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod())
+	                        );
+	                    }
+	                }
+	            }
+	        }
+
+	        return normalResult;
+
+	    } catch (CustomException e) {
+	        throw e;
+	    }
 	}
+
 // 	public Integer  getUniqueCitizenCount() {
 	     
 // 		try {

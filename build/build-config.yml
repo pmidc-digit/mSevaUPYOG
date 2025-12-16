@@ -937,7 +937,6 @@ config:
       - work-dir: "municipal-services/asset-services/src/main/resources/db"
         image-name: "asset-services-db"
 
-
   - name: "builds/upyog/municipal-services/asset-calculator"
     build:
       - work-dir: "municipal-services/asset-calculator"
@@ -945,9 +944,6 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/asset-calculator/src/main/resources/db"
         image-name: "asset-calculator-db"
-
-
-
 
   - name: 'builds/upyog/municipal-services/pgr-ai-services'
     build:
@@ -964,3 +960,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/rl-services/src/main/resources/db"
         image-name: "rl-services-db"
+
+  - name: "builds/upyog/municipal-services/rl-calculator"
+    build:
+      - work-dir: "municipal-services/rl-calculator"
+        image-name: "rl-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/rl-calculator/src/main/resources/db"
+        image-name: "rl-calculator-db"

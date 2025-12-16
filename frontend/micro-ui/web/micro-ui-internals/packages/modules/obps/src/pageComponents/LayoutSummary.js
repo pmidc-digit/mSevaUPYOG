@@ -44,9 +44,66 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const stateCode = Digit.ULBService.getStateId();
   const owners = formData?.apiData?.Layout?.[0]?.owners || [];
+  const layoutDocuments = formData?.apiData?.Layout?.[0]?.documents || [];
+
+  // Documents from fresh application flow (Redux state)
+  const photoUploadedFiles = formData?.photoUploadedFiles || {};
+  const documentUploadedFiles = formData?.documentUploadedFiles || {};
 
   console.log("formData in Summary Page", formData)
   console.log("owners in Summary Page", owners)
+  console.log("layoutDocuments in Summary Page", layoutDocuments)
+  console.log("photoUploadedFiles in Summary Page", photoUploadedFiles)
+  console.log("documentUploadedFiles in Summary Page", documentUploadedFiles)
+
+  // Helper function to find document by type and owner index
+  // Searches in both API documents (edit mode) and Redux state (fresh application)
+  const findOwnerDocument = (ownerIndex, docType) => {
+    // First try to find from Redux state (fresh application flow)
+    // For primary owner (index 0), the key is 0, for additional owners the key matches their index in applicants array
+    if (docType === "OWNERPHOTO" && photoUploadedFiles) {
+      const photoFile = photoUploadedFiles[ownerIndex];
+      if (photoFile?.fileStoreId || photoFile?.uuid) {
+        return photoFile?.fileStoreId || photoFile?.uuid;
+      }
+    }
+    
+    if (docType === "OWNERVALIDID" && documentUploadedFiles) {
+      const docFile = documentUploadedFiles[ownerIndex];
+      if (docFile?.fileStoreId || docFile?.uuid) {
+        return docFile?.fileStoreId || docFile?.uuid;
+      }
+    }
+
+    // Then try to find from API documents (edit mode)
+    // For primary owner (index 0), look for OWNER.OWNERPHOTO or OWNER.OWNERVALIDID
+    // For additional owners, look for OWNER.OWNERPHOTO_{index} or OWNER.OWNERVALIDID_{index}
+    if (layoutDocuments && layoutDocuments.length > 0) {
+      let documentTypeKey = "";
+      if (ownerIndex === 0) {
+        documentTypeKey = `OWNER.${docType}`;
+      } else {
+        documentTypeKey = `OWNER.${docType}_${ownerIndex}`;
+      }
+      
+      const doc = layoutDocuments.find((d) => d.documentType === documentTypeKey);
+      if (doc?.uuid || doc?.fileStoreId) {
+        return doc?.uuid || doc?.fileStoreId;
+      }
+    }
+
+    // Also check owner's additionalDetails (if stored there)
+    if (owners && owners[ownerIndex]?.additionalDetails) {
+      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
+        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
+      }
+      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
+        return owners[ownerIndex]?.additionalDetails?.documentFile;
+      }
+    }
+
+    return null;
+  };
 
 
   const coordinates = useSelector(function (state) {
@@ -154,11 +211,11 @@ function LayoutSummary({ currentStepData: formData, t }) {
             <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
               <div style={labelFieldPairStyle}>
                 <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
-                <DocumentLink fileStoreId={owners[0]?.additionalDetails?.ownerPhoto} stateCode={stateCode} t={t} />
+                <DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />
               </div>
               <div style={labelFieldPairStyle}>
                 <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
-                <DocumentLink fileStoreId={owners[0]?.additionalDetails?.documentFile} stateCode={stateCode} t={t} />
+                <DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />
               </div>
             </div>
           </div>
@@ -182,11 +239,11 @@ function LayoutSummary({ currentStepData: formData, t }) {
                 <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
                   <div style={labelFieldPairStyle}>
                     <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
-                    <DocumentLink fileStoreId={owner?.additionalDetails?.ownerPhoto} stateCode={stateCode} t={t} />
+                    <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERPHOTO")} stateCode={stateCode} t={t} />
                   </div>
                   <div style={labelFieldPairStyle}>
                     <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
-                    <DocumentLink fileStoreId={owner?.additionalDetails?.documentFile} stateCode={stateCode} t={t} />
+                    <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERVALIDID")} stateCode={stateCode} t={t} />
                   </div>
                 </div>
               </div>

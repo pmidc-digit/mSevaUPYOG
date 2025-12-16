@@ -79,9 +79,59 @@ const LayoutApplicantDetails = (_props) => {
       })
     }
 
-    // Restore additional applicants from currentStepData
+    // Restore additional applicants from currentStepData (if already in Redux from previous step navigation)
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
+      console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants)
       setApplicants(currentStepData.applicants)
+    } 
+    // If no applicants in Redux, check if we're in edit mode and have owners from API
+    else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
+      const ownersFromApi = currentStepData.apiData.Layout[0].owners
+      console.log("[v0] Mapping owners from API response:", ownersFromApi)
+      
+      // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
+      const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
+        // Convert timestamp to YYYY-MM-DD format for date input
+        let formattedDob = ""
+        if (owner?.dob) {
+          const dobDate = new Date(owner.dob)
+          const year = dobDate.getFullYear()
+          const month = String(dobDate.getMonth() + 1).padStart(2, "0")
+          const day = String(dobDate.getDate()).padStart(2, "0")
+          formattedDob = `${year}-${month}-${day}`
+        }
+
+        // Map gender to the dropdown format
+        const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender
+
+        return {
+          name: owner?.name || "",
+          fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+          mobileNumber: owner?.mobileNumber || "",
+          emailId: owner?.emailId || "",
+          address: owner?.permanentAddress || "",
+          dob: formattedDob,
+          gender: genderObj,
+          // Store original owner data for reference
+          uuid: owner?.uuid || "",
+          id: owner?.id || "",
+        }
+      })
+
+      console.log("[v0] Mapped additional applicants:", additionalApplicants)
+      
+      // Keep the first empty placeholder at index 0, then add additional applicants
+      // This is because the render logic skips index 0 (index > 0)
+      const emptyPlaceholder = {
+        name: "",
+        fatherOrHusbandName: "",
+        mobileNumber: "",
+        emailId: "",
+        address: "",
+        dob: "",
+        gender: "",
+      }
+      setApplicants([emptyPlaceholder, ...additionalApplicants])
     }
 
     // Restore document uploaded files
@@ -98,7 +148,7 @@ const LayoutApplicantDetails = (_props) => {
     if (currentStepData) {
       setIsDataRestored(true)
     }
-  }, [currentStepData, isDataRestored])
+  }, [currentStepData, isDataRestored, menu])
 
   const getOwnerDetails = async () => {
     if (mobileNo === "" || mobileNo.length !== 10) {

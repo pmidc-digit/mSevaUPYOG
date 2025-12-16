@@ -101,14 +101,13 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
-
   // Assuming applicationData is your API response
   const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
 
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+        <div className="cardHeaderWithOptions" style={{ marginLeft: "14px", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
@@ -124,16 +123,20 @@ const RALApplicationDetails = () => {
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
-                const multipleOwners = applicationData.OwnerInfo.length > 1;
-                const ownerLabelPrefix = multipleOwners ? `${t("RAL_OWNER")} ${index + 1}` : t("RAL_OWNER");
+                const multipleOwners = applicationData?.OwnerInfo?.length > 1;
 
                 return (
                   <React.Fragment key={owner.ownerId || index}>
-                    <Row label={`${ownerLabelPrefix} ${t("PT_OWNERSHIP_INFO_NAME")}`} text={owner?.name || t("CS_NA")} />
-                    <Row label={`${ownerLabelPrefix} ${t("CORE_COMMON_PROFILE_EMAIL")}`} text={owner?.emailId || t("CS_NA")} />
-                    <Row label={`${ownerLabelPrefix} ${t("CORE_MOBILE_NUMBER")}`} text={owner?.mobileNo || t("CS_NA")} />
+                    {multipleOwners && (
+                      <CardSectionHeader style={{ padding: "5px 24px 0px 24px", fontWeight: "600" }}>
+                        {t("RAL_OWNER")} {index + 1}
+                      </CardSectionHeader>
+                    )}
+                    <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={owner?.name || t("CS_NA")} />
+                    <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={owner?.emailId || t("CS_NA")} />
+                    <Row label={t("CORE_MOBILE_NUMBER")} text={owner?.mobileNo || t("CS_NA")} />
                     <Row
-                      label={`${ownerLabelPrefix} ${t("CORE_COMMON_PINCODE")}`}
+                      label={t("CORE_COMMON_PINCODE")}
                       text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
                     />
                   </React.Fragment>
@@ -146,11 +149,15 @@ const RALApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
+            <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
+            <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={propertyDetails?.propertyName || t("CS_NA")} />
+            <Row label={t("RAL_ALLOTMENT_TYPE")} text={propertyDetails?.allotmentType || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={propertyDetails?.propertyType || t("CS_NA")} />
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.feesPeriodCycle?.charAt(0)?.toUpperCase() || t("CS_NA")} />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>

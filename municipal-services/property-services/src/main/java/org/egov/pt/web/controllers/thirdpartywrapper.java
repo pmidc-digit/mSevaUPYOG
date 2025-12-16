@@ -19,10 +19,10 @@ public class thirdpartywrapper {
 			@RequestParam @NotBlank String ulb,
 			@RequestParam @NotBlank String uidNo) {
 		String response = "";
-		if(ulb.equalsIgnoreCase("MCL")){
-			response = curlWrapperService.fetchData(ulb, uidNo);
-		}else if(ulb.equalsIgnoreCase("MCB")){
+		if(ulb.equalsIgnoreCase("MCB")){
 			response = curlWrapperService.fetchBathindaData(ulb, uidNo);
+		}else{
+			response = curlWrapperService.fetchData(ulb, uidNo);
 		}
 
 		return ResponseEntity.ok(response);

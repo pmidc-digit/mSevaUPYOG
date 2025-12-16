@@ -17,7 +17,9 @@ import { LoaderNew } from "../components/LoaderNew";
 import { useLocation } from "react-router-dom";
 import CustomUploadFile from "../components/CustomUploadFile";
 
-const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))
+  const formData = sessionData?.value || {};
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(
@@ -32,8 +34,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   let isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;
-  const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))
+  const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;  
 
   if (isopenlink)
     window.onunload = function () {

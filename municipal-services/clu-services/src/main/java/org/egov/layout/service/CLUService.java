@@ -2,13 +2,7 @@ package org.egov.layout.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -361,7 +355,36 @@ public class CLUService {
 //				accountid.add(noc.getAccountId());
 				criteria.setAccountId(accountid);
 				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				noc.setOwners(userDetailResponse.getUser());
+				List<OwnerInfo> owner = userDetailResponse.getUser();
+
+
+
+
+				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
+						.orElse(Collections.emptyList())
+						.stream()
+						.filter(oi -> oi.getUuid() != null && oi.getAdditionalDetails() != null)
+						.collect(Collectors.toMap(
+								OwnerInfo::getUuid,
+								OwnerInfo::getAdditionalDetails,
+								(a, b) -> a // keep first on duplicate uuid
+						));
+
+
+// Merge by uuid
+				for (OwnerInfo oi : owner) {
+					String uuid = oi.getUuid(); // ensure this getter exists
+					if (uuid != null) {
+						Object ad = adByUuid.get(uuid);
+						if (ad != null) {
+							oi.setAdditionalDetails(ad);
+						}
+					}
+				}
+
+
+				noc.setOwners(owner);
+
 
 				// BPA CALL
 //				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())

@@ -44,11 +44,16 @@ public class LayoutQueryBuilder {
 					"json_agg(json_build_object(" +
 					"'uuid', layoutdoc.uuid, " +
 					"'documentType', layoutdoc.documenttype, " +
-					"'documentAttachment', layoutdoc.documentAttachment)) AS documents " +
+					"'documentAttachment', layoutdoc.documentAttachment)) AS documents, " +
+					"json_agg(json_build_object(" +
+					"'additionalDetails', layoutowner.additionalDetails, " +
+					"'uuid', layoutowner.uuid " +
+					")) AS owners " +
+
 					"FROM eg_layout layout " +
 					"LEFT JOIN eg_layout_details details ON details.layoutid = layout.id " +
 					"LEFT JOIN eg_layout_document layoutdoc ON layoutdoc.layoutid = layout.id " +
-
+					"LEFT JOIN eg_layout_owner layoutowner ON layoutowner.layoutid = layout.id " +
 					"WHERE 1=1";
 
 

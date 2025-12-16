@@ -44,10 +44,16 @@ public class CluQueryBuilder {
 					"json_agg(json_build_object(" +
 					"'uuid', cludoc.uuid, " +
 					"'documentType', cludoc.documenttype, " +
-					"'documentAttachment', cludoc.documentAttachment)) AS documents " +
+					"'documentAttachment', cludoc.documentAttachment)) AS documents, " +
+					"json_agg(json_build_object(" +
+					"'additionalDetails', cluowner.additionalDetails, " +
+					"'uuid', cluowner.uuid " +
+					")) AS owners " +
+
 					"FROM eg_clu clu " +
 					"LEFT JOIN eg_clu_details details ON details.cluid = clu.id " +
 					"LEFT JOIN eg_clu_document cludoc ON cludoc.cluid = clu.id " +
+					"LEFT JOIN eg_clu_owner cluowner ON cluowner.cluid = clu.id " +
 					"WHERE 1=1";
 
 

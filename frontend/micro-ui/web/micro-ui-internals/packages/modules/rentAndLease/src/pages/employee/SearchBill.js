@@ -50,7 +50,6 @@ const SearchBill = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setHasSearched(true);
-    console.log("data is here==========", data);
     const businessServiceData = data?.businesService?.code;
     delete data["ULB"];
 
@@ -70,7 +69,6 @@ const SearchBill = () => {
       return acc;
     }, {});
 
-    console.log("filteredData", filteredData);
 
     // const payload = {
     //   businesService: businessServiceData,
@@ -82,14 +80,11 @@ const SearchBill = () => {
 
     try {
       const response = await Digit.ChallanGenerationService.search_bill(tenantId, filteredData);
-      // console.log("response ✅", response?.Payments);
       // setTableData(response?.Payments);
-      console.log("response", response?.Bills);
       setTableData(response?.Bills);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
     }
   };
 

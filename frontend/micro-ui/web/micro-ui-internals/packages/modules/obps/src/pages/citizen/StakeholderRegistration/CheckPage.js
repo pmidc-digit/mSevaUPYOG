@@ -27,13 +27,13 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const storedData = Digit.SessionStorage.get("Digit.BUILDING_PERMIT");
+  const storedData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
 
   const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
   const { result, formData, documents, LicneseType } = safeValue;
   const isArchitect = formData?.LicneseType?.LicenseType?.code?.includes("Architect") || formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect") || LicneseType?.LicenseType?.code?.includes("Architect");
   
-console.log("FormData in CheckPage", result, formData, safeValue, value);
+console.log("FormData in CheckPage", result, formData, safeValue, value, isArchitect);
   const status = value?.result?.Licenses?.[0]?.status;  
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
 
@@ -115,7 +115,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
   },[bparegData, isBPAREGLoading])
   
 
-  const checkTenant = mainType == "ARCHITECT" ? "pb.punjab" : tenantId;
+  const checkTenant = isArchitect ? "pb.punjab" : tenantId;
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: checkTenant,
@@ -143,7 +143,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
     {
       businessService: "BPAREG",
       ...{consumerCodes: consumerCode},
-      tenantId: mainType === "ARCHITECT" ? "pb.punjab" : (tenantId)
+      tenantId: isArchitect ? "pb.punjab" : (tenantId)
     },
     {
       enabled: consumerCode ? true : false,
@@ -326,11 +326,11 @@ console.log("FormData in CheckPage", result, formData, safeValue, value);
           )
         )}
         {renderLabel(t("BPA_LICENSE_TYPE"), t(`TRADELICENSE_TRADETYPE_${result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`))}
-        {LicenseType?.i18nKey?.includes("ARCHITECT") &&
+        {isArchitect &&
           renderLabel(t("BPA_COUNCIL_NUMBER"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
-        {LicenseType?.i18nKey?.includes("TOWNPLANNER") &&
+        {result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("TOWNPLANNER") &&
           renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
-        {LicenseType?.i18nKey?.includes("ARCHITECT")
+        {result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT")
           ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
           : renderLabel(t("BPA_SELECTED_ULB"), ulbName || "NA")}
            {LicenseType?.i18nKey?.includes("ARCHITECT") &&

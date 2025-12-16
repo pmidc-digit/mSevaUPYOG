@@ -276,6 +276,7 @@ const StakeholderRegistration = () => {
   const currentStep = currentStepOBJ?.step ? parseInt(currentStepOBJ?.step) : window.location.href.includes("check") ? 4 : 0;
   const CheckPage = Digit?.ComponentRegistryService?.getComponent("StakeholderCheckPage");
   const StakeholderAcknowledgement = Digit?.ComponentRegistryService?.getComponent("StakeholderAcknowledgement");
+  const newParams = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
 
   console.log("formData in StakeholderRegistration", params);
   console.log("config in StakeholderRegistration", config);
@@ -293,12 +294,12 @@ const StakeholderRegistration = () => {
             const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
             return (
               <Route path={`${path}/${routeObj.route}`} key={index}>
-                <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} />
+                <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={newParams} />
               </Route>
             );
           })}
           <Route path={`${path}/check`}>
-            <CheckPage onSubmit={createApplication} value={params} />
+            <CheckPage onSubmit={createApplication} value={newParams} />
           </Route>
           <Route path={`${path}/acknowledgement`}>
             <StakeholderAcknowledgement data={params} onSuccess={onSuccess} />

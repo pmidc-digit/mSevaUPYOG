@@ -696,7 +696,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     t={t}
                     optionKey="state_name"
                     // isMandatory={config.isMandatory}
-                    option={stateOptions}
+                    option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
                     selected={selectedState}
                     select={SelectState}
                     disable={editScreen}
@@ -713,7 +713,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                   optionKey="district_name_english"
                   // isMandatory={config.isMandatory}
                   // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
-                  option={uniqueDistricts}
+                  option={uniqueDistricts?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
                   selected={selectedDistrict}
                   select={SelectDistrict}
                   disable={editScreen}
@@ -768,7 +768,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                   t={t}
                   optionKey="state_name"
                   // isMandatory={config.isMandatory}
-                  option={stateOptions}
+                  option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
                   selected={isAddressSame ? selectedState : selectedCorrespondentState}
                   select={SelectCorrespondentState}
                   disable={editScreen || isAddressSame}
@@ -784,7 +784,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                   optionKey="district_name_english"
                   // isMandatory={config.isMandatory}
                   // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
-                  option={uniqueDistrictsCorrespondent}
+                  option={uniqueDistrictsCorrespondent?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
                   selected={isAddressSame ? selectedDistrict : selectedCorrespondentDistrict}
                   select={SelectCorrespondentDistrict}
                   disable={editScreen || isAddressSame}

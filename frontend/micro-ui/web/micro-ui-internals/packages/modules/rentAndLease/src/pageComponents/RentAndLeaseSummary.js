@@ -12,7 +12,6 @@ function RentAndLeaseSummary({ t }) {
     : [];
 
   const property = formData?.propertyDetails || {};
-  console.log("property", property);
   const docs = formData?.documents?.documents?.documents || [];
 
   const sectionStyle = {
@@ -33,7 +32,8 @@ function RentAndLeaseSummary({ t }) {
 
   const headingStyle = {
     fontSize: "1.25rem",
-    color: "#2e4a66",
+    color: "#0d43a7",
+    fontWeight: "500",
     margin: 0,
   };
 
@@ -61,12 +61,13 @@ function RentAndLeaseSummary({ t }) {
     borderRadius: "6px",
   };
 
-  const boldLabelStyle = { fontWeight: "600", color: "#333" };
+  const boldLabelStyle = { width:"100%",fontWeight: "600", color: "#333" };
+  
 
   const renderRow = (label, value) => (
     <div style={labelFieldPairStyle}>
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+        <h2 style={boldLabelStyle}>{label}</h2>
       </div>
       <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
     </div>

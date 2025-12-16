@@ -55,10 +55,6 @@ const RALModal = ({
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
-  console.log("action123", action);
-
-  console.log("allRolesNew", allRolesNew);
-
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {

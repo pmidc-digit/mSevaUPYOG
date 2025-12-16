@@ -286,7 +286,8 @@ public class Coverage extends FeatureProcess {
 		
 		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);
-			permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
+//			permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
+			permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);				
 		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
 		} 

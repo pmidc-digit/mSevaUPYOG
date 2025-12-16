@@ -92,7 +92,7 @@ public class TravelDistanceToExit extends FeatureProcess {
             boolean floorsAboveGroundLessThanOrEqualTo3ForAllBlks = true;
             for (Block block : pl.getBlocks()) {
                 if (block.getBuilding() != null && block.getBuilding().getFloorsAboveGround() != null &&
-                        block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) > 0) {
+                        block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) >= 0) {
                     floorsAboveGroundLessThanOrEqualTo3ForAllBlks = false;
                     break;
                 }
@@ -121,7 +121,7 @@ public class TravelDistanceToExit extends FeatureProcess {
             scrutinyDetail.addColumnHeading(2, REQUIRED);
             scrutinyDetail.addColumnHeading(3, PROVIDED);
             scrutinyDetail.addColumnHeading(4, STATUS);
-            scrutinyDetail.setSubHeading(SUBRULE_42_2_DESC);
+            //scrutinyDetail.setSubHeading(SUBRULE_42_2_DESC);
             if (pl != null && pl.getVirtualBuilding() != null) {
 
                 OccupancyTypeHelper mostRestrictiveFarHelper = pl.getVirtualBuilding().getMostRestrictiveFarHelper();

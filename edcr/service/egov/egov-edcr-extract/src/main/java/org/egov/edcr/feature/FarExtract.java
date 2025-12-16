@@ -98,6 +98,9 @@ public class FarExtract extends FeatureExtract {
                 + layerNames.getLayerName("LAYER_NAME_BUILT_UP_AREA")
                 + "_DEDUCT(?:_[A-Z]+(?:_\\d+)?)?";
 
+        String stiltFlrLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" +  "_" + 
+        layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
+        + layerNames.getLayerName("LAYER_NAME_STILT");
         
 
         loadRequiredMasterData(pl);
@@ -151,9 +154,37 @@ public class FarExtract extends FeatureExtract {
                     extractFloorHeight(pl, block, floor);
                 } else
                     floor = (FloorDetail) block.getBuilding().getFloorNumber(floorNo);
+                
+                // Checking stilt floor Occupancy 
+                if(floor.getIsStiltFloor()) {
+                    // --- Stilt floor check ---
+                	stiltFlrLayer = String.format(stiltFlrLayer, block.getNumber(), floor.getNumber());
+                    List<String> stiltParkLayerNames = Util.getLayerNamesLike(pl.getDoc(), stiltFlrLayer);
+                    for (String stiltLayer : stiltParkLayerNames) {
+                        List<DXFLWPolyline> stiltFloorPolyLinesByLayer;
+                        stiltFloorPolyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), stiltLayer);
+                    	for (DXFLWPolyline pline : stiltFloorPolyLinesByLayer) {
+                            BigDecimal occupancyArea = Util.getPolyLineArea(pline);
+                            LOG.error(" Stilt Floor occupancyArea *************** " + occupancyArea);
+                            OccupancyDetail occupancy = new OccupancyDetail();
+                            occupancy.setPolyLine(pline);
+                            occupancy.setBuiltUpArea(occupancyArea == null ? BigDecimal.ZERO : occupancyArea);
+                            occupancy.setExistingBuiltUpArea(BigDecimal.ZERO);
+                            occupancy.setType(Util.findOccupancyType(pline));
+                            occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
+                            LOG.error("Stilt Floor occupancy type " + occupancy.getType().getOccupancyTypeVal());
+                            if (occupancy.getTypeHelper() == null)
+                                pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(
+                                        VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()), s));
+                            else
+                                floor.addBuiltUpArea(occupancy);
+                        }
+                    }
+                	
+                }                
+                
                 // find builtup area
                 for (DXFLWPolyline pline : polyLinesByLayer) {
-
                     BigDecimal occupancyArea = Util.getPolyLineArea(pline);
                     LOG.error(" occupancyArea *************** " + occupancyArea);
                     OccupancyDetail occupancy = new OccupancyDetail();
@@ -594,8 +625,10 @@ public class FarExtract extends FeatureExtract {
 //
         if(checkStiltFloor(pl,block,floor)) {
         	floor.setIsStiltFloor(true);
+        	floor.setArea(checkStiltFloorArea(pl,block,floor));
         }else {
         	floor.setIsStiltFloor(false);
+        	floor.setArea(checkStiltFloorArea(pl,block,floor));
         }
         
    		 if (!flrHeights.isEmpty()) {
@@ -625,8 +658,13 @@ public class FarExtract extends FeatureExtract {
                 if (heights != null && !heights.isEmpty()) {
                     stiltHeights.addAll(heights);
                 }
+                List<DXFLWPolyline> polyLinesByLayer;
+                polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), stiltLayer);
+                BigDecimal occupancyArea = Util.getPolyLineArea(polyLinesByLayer.get(0));
+                LOG.info("Stilt Floor Area : " + occupancyArea);
             }
-
+           
+           
             LOG.info("stiltHeights : " + stiltHeights);
              
             // check stilt max height
@@ -638,6 +676,31 @@ public class FarExtract extends FeatureExtract {
         	LOG.info("Block {} Floor {} is not STILT Floor ,layerName {}  ", 
                     block.getNumber(), floor.getNumber() , stiltFlrLayer);
         	return false;            
+        }        
+    }
+    
+    private BigDecimal checkStiltFloorArea(PlanDetail pl, Block block, Floor floor) {        
+        String stiltFlrLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber()
+        + "_" + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
+        + layerNames.getLayerName("LAYER_NAME_STILT");
+
+        BigDecimal occupancyArea = new BigDecimal(0.0);
+        List<String> stiltParkLayerNames = Util.getLayerNamesLike(pl.getDoc(), stiltFlrLayer);
+
+        if (!stiltParkLayerNames.isEmpty()) {        	
+            LOG.info("Block {} ,Floor {} is STILT Floor ,layerName {} ", 
+                    block.getNumber(), floor.getNumber() , stiltParkLayerNames);
+            for (String stiltLayer : stiltParkLayerNames) {
+                List<DXFLWPolyline> polyLinesByLayer;
+                polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), stiltLayer);
+                occupancyArea = Util.getPolyLineArea(polyLinesByLayer.get(0));
+                LOG.info("Stilt Floor Area : " + occupancyArea);
+            }
+            return occupancyArea;            
+        } else {
+        	LOG.info("Block {} Floor {} is not STILT Floor ,layerName {}  ", 
+                    block.getNumber(), floor.getNumber() , stiltFlrLayer);
+        	return occupancyArea;            
         }        
     }
     

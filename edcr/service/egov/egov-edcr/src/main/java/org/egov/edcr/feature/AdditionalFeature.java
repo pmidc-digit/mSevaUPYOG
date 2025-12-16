@@ -322,7 +322,12 @@ public class AdditionalFeature extends FeatureProcess {
             	}else {
             		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITHOUT_STILT) <= 0;
                     requiredFloorCount = "G +" + NO_OF_FLOORS_WITHOUT_STILT.toPlainString();
+                    if(A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+                    	errors.put("Mandatory stilt floor ", "Stilt floor is mandatory for Independent Floor");
+						pl.addErrors(errors);
+                    }
             	}
+            	
             }else {
             	if (typeOfArea.equalsIgnoreCase(OLD)) {
                     if (roadWidth.compareTo(ROAD_WIDTH_TWO_POINTFOUR) < 0) {
@@ -435,27 +440,35 @@ public class AdditionalFeature extends FeatureProcess {
 				
 				minRequiredFloorHeight = "2.75" + DcrConstants.IN_METER;
 				maxPermissibleFloorHeight = "4.40" + DcrConstants.IN_METER;
-				floor.setIsStiltFloor(false);
+//				floor.setIsStiltFloor(false);
+//				
+//				if(floor.getIsStiltFloor() == false) {
+//					
+//				 if (floorHeight.compareTo(BigDecimal.valueOf(2.75)) >= 0
+//						//&& floorHeight.compareTo(BigDecimal.valueOf(4.40)) <= 0
+//						) {
+//
+////					status = Result.Accepted.getResultVal();
+//					isAccepted = true;
+//				} }
+//				
+//				else if(floor.getIsStiltFloor() == true) {
+//					
+//					if (floorHeight.compareTo(BigDecimal.valueOf(2.5)) >= 0
+//							
+//							) {
+//
+//						isAccepted = true;
+//					}
+//				}
 				
-				if(floor.getIsStiltFloor() == false) {
-					
-				 if (floorHeight.compareTo(BigDecimal.valueOf(2.75)) >= 0
-						//&& floorHeight.compareTo(BigDecimal.valueOf(4.40)) <= 0
-						) {
+				boolean isStilt = Boolean.TRUE.equals(floor.getIsStiltFloor());
+				BigDecimal minHeight = isStilt ? BigDecimal.valueOf(2.50) : BigDecimal.valueOf(2.75);
 
-//					status = Result.Accepted.getResultVal();
-					isAccepted = true;
-				} }
-				
-				else if(floor.getIsStiltFloor() == true) {
-					
-					if (floorHeight.compareTo(BigDecimal.valueOf(2.5)) >= 0
-							
-							) {
-
-						isAccepted = true;
-					}
+				if (floorHeight != null && floorHeight.compareTo(minHeight) >= 0) {
+				    isAccepted = true;
 				}
+
 				
 //				if (occupancyTypeHelper != null && occupancyTypeHelper.getType() != null
 //						&& G.equals(occupancyTypeHelper.getType().getCode())) {

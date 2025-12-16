@@ -102,7 +102,7 @@ public class LiftService extends FeatureProcess {
                 ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
                 scrutinyDetail.addColumnHeading(1, RULE_NO);
                 scrutinyDetail.addColumnHeading(2, DESCRIPTION);
-                scrutinyDetail.addColumnHeading(3, REQUIRED);
+                //scrutinyDetail.addColumnHeading(3, REQUIRED);
                 scrutinyDetail.addColumnHeading(4, PROVIDED);
                 scrutinyDetail.addColumnHeading(5, STATUS);
                 scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Lift Requirements");
@@ -127,8 +127,8 @@ public class LiftService extends FeatureProcess {
                         noOfLiftsRqrd = BigDecimal.valueOf(1);
                         boolean valid = BigDecimal.valueOf(Double.valueOf(block.getNumberOfLifts()))
                                 .compareTo(noOfLiftsRqrd) >= 0;
-                        setReportOutputDetails(plan, SUBRULE_48, SUBRULE_48_DESCRIPTION, noOfLiftsRqrd.toString(),
-                                block.getNumberOfLifts(), valid ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal(), scrutinyDetail);
+                        //setReportOutputDetails(plan, SUBRULE_48, SUBRULE_48_DESCRIPTION, noOfLiftsRqrd.toString(),
+                          //      block.getNumberOfLifts(), valid ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal(), scrutinyDetail);
                     }
 
                     // Process Lift Dimensions
@@ -150,9 +150,7 @@ public class LiftService extends FeatureProcess {
                                 }
                             }
                             setReportOutputDetails(plan, SUBRULE_118,
-                                    String.format(SUBRULE_118_DESCRIPTION, "",
-                                            ""),
-                                    "",
+                                    SUBRULE_118_DESCRIPTION,
                                     liftHeight + " * " + liftWidth,
                                     Result.Accepted.getResultVal(), // Assuming dimensions are always accepted for now
                                     scrutinyDetail);
@@ -167,16 +165,26 @@ public class LiftService extends FeatureProcess {
         return plan;
     }
 
-    private void setReportOutputDetails(Plan plan, String ruleNo, String ruleDesc, String expected, String actual,
-                                        String status, ScrutinyDetail scrutinyDetail) {
-        Map<String, String> details = new HashMap<>();
-        details.put(RULE_NO, ruleNo);
-        details.put(DESCRIPTION, ruleDesc);
-        details.put(REQUIRED, expected);
-        details.put(PROVIDED, actual);
-        details.put(STATUS, status);
-        scrutinyDetail.getDetail().add(details);
-    }
+//    private void setReportOutputDetails(Plan plan, String ruleNo, String ruleDesc, String expected, String actual,
+//                                        String status, ScrutinyDetail scrutinyDetail) {
+//        Map<String, String> details = new HashMap<>();
+//        details.put(RULE_NO, ruleNo);
+//        details.put(DESCRIPTION, ruleDesc);
+//        details.put(REQUIRED, expected);
+//        details.put(PROVIDED, actual);
+//        details.put(STATUS, status);
+//        scrutinyDetail.getDetail().add(details);
+//    }
+    
+    private void setReportOutputDetails(Plan plan, String ruleNo, String ruleDesc, String actual,
+            String status, ScrutinyDetail scrutinyDetail) {
+			Map<String, String> details = new HashMap<>();
+			details.put(RULE_NO, ruleNo);
+			details.put(DESCRIPTION, ruleDesc);			
+			details.put(PROVIDED, actual);
+			details.put(STATUS, status);
+			scrutinyDetail.getDetail().add(details);
+	}
 
     private void validateDimensions(Plan plan, String blockNo, int floorNo, String liftNo,
                                     List<Measurement> liftPolylines) {

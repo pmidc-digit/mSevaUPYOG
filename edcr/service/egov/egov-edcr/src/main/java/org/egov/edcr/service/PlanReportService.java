@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -1471,6 +1472,10 @@ public class PlanReportService {
         final DynamicReport dr = drb.build();
         plan.setEdcrPassed(finalReportStatus);
         InputStream exportPdf = null;
+        
+     // Now update the terminology
+        //replaceStatusWithFulfillTerms(valuesMap);
+        
         try {
             JasperPrint generateJasperPrint = DynamicJasperHelper.generateJasperPrint(dr, new ClassicLayoutManager(),
                     ds, valuesMap);
@@ -1480,6 +1485,56 @@ public class PlanReportService {
         }
         return exportPdf;
 
+    }
+    
+    public static void replaceStatusWithFulfillTerms(Map<String, Object> valuesMap) {
+        System.out.println("Replacing 'Accepted/Not Accepted' with 'Fulfill/Not Fulfill' terminology...");
+
+        // Step 1: Update direct reportStatus if exists
+        if (valuesMap.containsKey("reportStatus")) {
+            Object reportObj = valuesMap.get("reportStatus");
+            if (reportObj instanceof String) {
+                String oldStatus = (String) reportObj;
+                String newStatus = oldStatus
+                        .replace("Accepted", "Fulfill")
+                        .replace("Not Accepted", "Not Fulfill");
+                valuesMap.put("reportStatus", newStatus);
+                System.out.println("Updated reportStatus: " + oldStatus + " → " + newStatus);
+            }
+        }
+
+        // Step 2: Traverse all entries and update nested "Status" fields
+        for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
+            Object value = entry.getValue();
+
+            if (value instanceof List) {
+                List<?> list = (List<?>) value;
+                if (!list.isEmpty() && list.get(0) instanceof Map) {
+                    for (Object item : list) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> itemMap = (Map<String, Object>) item;
+
+                        if (itemMap.containsKey("Status")) {
+                            Object statusObj = itemMap.get("Status");
+                            if (statusObj instanceof String) {
+                                String oldStatus = (String) statusObj;
+                                String newStatus = oldStatus
+                                        .replace("Accepted", "Fulfill")
+                                        .replace("Not Accepted", "Not Fulfill");
+                                itemMap.put("Status", newStatus);
+
+                                // Optional: log changes for debugging
+                                if (!oldStatus.equals(newStatus)) {
+                                    System.out.println("Updated in '" + entry.getKey() + "': " + oldStatus + " → " + newStatus);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("Status terminology update completed.\n");
     }
     
     /**
@@ -1493,6 +1548,9 @@ public class PlanReportService {
 
         boolean allMandatoryAccepted = true;
         List<String> failedMandatory = new ArrayList<>();
+        
+        // Print sorted summary (always, for logging/review)
+        printAllKeysWithStatusSorted(valuesMap);
 
         // Step 1: Check each mandatory key
         for (String key : MANDATORY_KEYS) {
@@ -1521,14 +1579,10 @@ public class PlanReportService {
             System.out.println("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
         } else {
             valuesMap.put("reportStatus", "Not Accepted");
-            finalReportStatus = false;
+            finalReportStatus = false;            
             System.out.println("MANDATORY checks FAILED: " + failedMandatory);
             System.out.println("Report Status remains: Not Accepted");
         }
-
-        // Step 3: Print sorted summary (always, for logging/review)
-        printAllKeysWithStatusSorted(valuesMap);
-
         // Return the final decision
         return finalReportStatus;
     }
@@ -1795,11 +1849,19 @@ public class PlanReportService {
                             	            : occupancy.getBuiltUpArea();
                             	    dcrReportFloorDetail.setBuiltUpArea(builtUpArea.setScale(2, BigDecimal.ROUND_HALF_UP));
                             	    
-                            	    // Floor Area
-                            	    BigDecimal floorArea = occupancy.getExistingFloorArea().compareTo(BigDecimal.ZERO) > 0
-                            	            ? occupancy.getFloorArea().subtract(occupancy.getExistingFloorArea())
-                            	            : occupancy.getFloorArea();
-                            	    dcrReportFloorDetail.setFloorArea(floorArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+                            	    if(floor.getIsStiltFloor()) {
+                            	    	// Floor Area                                	   
+                                	    dcrReportFloorDetail.setFloorArea(BigDecimal.valueOf(0.0));
+                                	    dcrReportFloorDetail.setOccupancy(occupancyName + "(Stilt)");
+                            	    }else {
+                            	    	// Floor Area
+                            	    	dcrReportFloorDetail.setOccupancy(occupancyName);
+                                	    BigDecimal floorArea = occupancy.getExistingFloorArea().compareTo(BigDecimal.ZERO) > 0
+                                	            ? occupancy.getFloorArea().subtract(occupancy.getExistingFloorArea())
+                                	            : occupancy.getFloorArea();
+                                	    dcrReportFloorDetail.setFloorArea(floorArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+                            	    }
+                            	    
                             	    
                             	    // Built-up Deduction Area
                             	    BigDecimal builtUpDeductionArea = occupancy.getDeduction() == null ? BigDecimal.ZERO : occupancy.getDeduction();

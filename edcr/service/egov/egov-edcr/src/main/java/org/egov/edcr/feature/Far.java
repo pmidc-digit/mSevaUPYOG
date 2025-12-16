@@ -296,16 +296,18 @@ public class Far extends FeatureProcess {
 					 * .setExistingCarpetArea(occupancy.getExistingFloorArea().
 					 * multiply(BigDecimal.valueOf(0.80)));
 					 */
-
-					bltUpArea = bltUpArea.add(
-							occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0) : occupancy.getBuiltUpArea());
-					existingBltUpArea = existingBltUpArea
-							.add(occupancy.getExistingBuiltUpArea() == null ? BigDecimal.valueOf(0)
-									: occupancy.getExistingBuiltUpArea());
-					flrArea = flrArea.add(occupancy.getFloorArea());
-					existingFlrArea = existingFlrArea.add(occupancy.getExistingFloorArea());
-					carpetArea = carpetArea.add(occupancy.getCarpetArea());
-					existingCarpetArea = existingCarpetArea.add(occupancy.getExistingCarpetArea());
+					if(!flr.getIsStiltFloor()) {
+						bltUpArea = bltUpArea.add(
+								occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0) : occupancy.getBuiltUpArea());
+						existingBltUpArea = existingBltUpArea
+								.add(occupancy.getExistingBuiltUpArea() == null ? BigDecimal.valueOf(0)
+										: occupancy.getExistingBuiltUpArea());
+						flrArea = flrArea.add(occupancy.getFloorArea());
+						existingFlrArea = existingFlrArea.add(occupancy.getExistingFloorArea());
+						carpetArea = carpetArea.add(occupancy.getCarpetArea());
+						existingCarpetArea = existingCarpetArea.add(occupancy.getExistingCarpetArea());
+					}
+					
 				}
 			}
 			building.setTotalFloorArea(flrArea);
@@ -349,15 +351,18 @@ public class Far extends FeatureProcess {
 								&& occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() != null
 								&& occupancy.getTypeHelper().getType().getCode() != null && occupancy.getTypeHelper()
 										.getType().getCode().equals(occupancyType.getType().getCode())) {
-							blockWiseFloorArea = blockWiseFloorArea.add(occupancy.getFloorArea());
-							blockWiseBuiltupArea = blockWiseBuiltupArea
-									.add(occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0)
-											: occupancy.getBuiltUpArea());
-							blockWiseExistingFloorArea = blockWiseExistingFloorArea
-									.add(occupancy.getExistingFloorArea());
-							blockWiseExistingBuiltupArea = blockWiseExistingBuiltupArea
-									.add(occupancy.getExistingBuiltUpArea() == null ? BigDecimal.valueOf(0)
-											: occupancy.getExistingBuiltUpArea());
+							if(!flr.getIsStiltFloor()) {
+								blockWiseFloorArea = blockWiseFloorArea.add(occupancy.getFloorArea());
+								blockWiseBuiltupArea = blockWiseBuiltupArea
+										.add(occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0)
+												: occupancy.getBuiltUpArea());
+								blockWiseExistingFloorArea = blockWiseExistingFloorArea
+										.add(occupancy.getExistingFloorArea());
+								blockWiseExistingBuiltupArea = blockWiseExistingBuiltupArea
+										.add(occupancy.getExistingBuiltUpArea() == null ? BigDecimal.valueOf(0)
+												: occupancy.getExistingBuiltUpArea());
+							}
+							
 
 						}
 					}

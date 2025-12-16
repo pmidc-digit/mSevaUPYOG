@@ -191,6 +191,12 @@ public class NotificationUtil {
 
 		case CANCELLED:
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
+			log.info("Cancellation notification prepared for booking: " + bookingDetail.getBookingNo());
+			break;
+
+		case CANCELLATION_REQUESTED:
+			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
+			log.info("Cancellation request notification prepared for booking: " + bookingDetail.getBookingNo());
 			break;
 
 //		case PAYMENT_FAILED:

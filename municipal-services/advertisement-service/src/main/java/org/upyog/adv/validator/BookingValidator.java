@@ -101,6 +101,49 @@ public class BookingValidator {
 			}
 		}
 
+    /**
+     * Validates if a booking can be cancelled
+     * @param bookingRequest The booking request with cancellation action
+     */
+    public void validateCancellation(BookingRequest bookingRequest) {
+        log.info("Validating cancellation for booking no: " + bookingRequest.getBookingApplication().getBookingNo());
+
+        String currentStatus = bookingRequest.getBookingApplication().getBookingStatus();
+
+        // Check if current status allows cancellation
+        if (currentStatus == null) {
+            throw new CustomException("INVALID_CANCELLATION", "Booking status is null");
+        }
+
+        // Cannot cancel already terminal states
+        if (currentStatus.equals(BookingStatusEnum.CANCELLED.toString()) ||
+                currentStatus.equals(BookingStatusEnum.BOOKING_EXPIRED.toString()) ||
+                currentStatus.equals(BookingStatusEnum.PAYMENT_FAILED.toString())) {
+            throw new CustomException("INVALID_CANCELLATION",
+                    "Booking with status " + currentStatus + " cannot be cancelled");
+        }
+
+        // Check if booking dates haven't started yet (business rule) can comment it if no need
+
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails != null && !cartDetails.isEmpty()) {
+			LocalDate today = BookingUtil.getCurrentDate();
+			LocalDate minBookingDate = cartDetails.stream()
+				.map(CartDetail::getBookingDate)
+				.filter(date -> date != null)
+				.min(LocalDate::compareTo)
+				.orElse(null);
+
+			if (minBookingDate != null && today.isAfter(minBookingDate)) {
+				throw new CustomException("INVALID_CANCELLATION",
+					"Cannot cancel booking after booking dates have started");
+			}
+		}
+
+
+        log.info("Cancellation validation passed for booking no: " + bookingRequest.getBookingApplication().getBookingNo());
+    }
+
 		/**
 		 * Validates if the search parameters are valid
 		 * 

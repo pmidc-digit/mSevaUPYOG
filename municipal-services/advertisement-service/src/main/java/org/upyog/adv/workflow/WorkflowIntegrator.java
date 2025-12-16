@@ -115,8 +115,14 @@ public class WorkflowIntegrator {
           return BookingStatusEnum.PENDING_FOR_PAYMENT.toString();
         case "PAY":
           return BookingStatusEnum.BOOKED.toString();
+          case "PENDING_FOR_INSPECTION":
+              return BookingStatusEnum.PENDING_FOR_INSPECTION.toString();
         case "APPROVE":
           return BookingStatusEnum.BOOKED.toString();
+        case "CANCEL":
+          return BookingStatusEnum.CANCELLED.toString();
+        case "REQUEST_CANCELLATION":
+          return BookingStatusEnum.CANCELLATION_REQUESTED.toString();
         default:
           break;
       }

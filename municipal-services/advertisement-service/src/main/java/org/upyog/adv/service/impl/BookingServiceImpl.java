@@ -574,20 +574,39 @@ public class BookingServiceImpl implements BookingService {
 
 		// If workflow action present, transition and set status from WF response
 		boolean usedWorkflow = false;
+		String workflowAction = null;
 		try {
 			if (workflowIntegrator != null
 					&& advertisementBookingRequest.getBookingApplication().getWorkflow() != null
 					&& StringUtils.isNotBlank(
 							advertisementBookingRequest.getBookingApplication().getWorkflow().getAction())) {
 
+				workflowAction = advertisementBookingRequest.getBookingApplication().getWorkflow().getAction();
+				
+				// Validate cancellation if CANCEL action is triggered
+				if ("CANCEL".equalsIgnoreCase(workflowAction) || "REQUEST_CANCELLATION".equalsIgnoreCase(workflowAction)) {
+					bookingValidator.validateCancellation(advertisementBookingRequest);
+				}
+
 				String nextStatus = workflowIntegrator.transition(advertisementBookingRequest.getRequestInfo(),
 						advertisementBookingRequest.getBookingApplication(),
-						advertisementBookingRequest.getBookingApplication().getWorkflow().getAction());
-				if(advertisementBookingRequest.getBookingApplication().getWorkflow().getAction().equalsIgnoreCase(BookingConstants.SUBMIT)){
+						workflowAction);
+				if("SUBMIT".equalsIgnoreCase(workflowAction)){
 
 					Object mdmsData = mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), advertisementBookingRequest.getBookingApplication().getTenantId());
 					demandService.createDemand(advertisementBookingRequest, mdmsData, true);
 
+				}
+				
+				// Release slots and clean timers on cancellation
+				if ("CANCEL".equalsIgnoreCase(workflowAction) && StringUtils.isNotBlank(nextStatus) 
+						&& nextStatus.equals(BookingStatusEnum.CANCELLED.toString())) {
+					log.info("Releasing slots and cleaning timers for cancelled booking: " + bookingNo);
+					String bookingId = advertisementBookingRequest.getBookingApplication().getBookingId();
+					if (StringUtils.isNotBlank(bookingId) && advertisementBookingRequest.getBookingApplication().getCartDetails() != null) {
+						bookingRepository.deleteTimerEntriesForSlots(bookingId, 
+							advertisementBookingRequest.getBookingApplication().getCartDetails());
+					}
 				}
 
 				if (StringUtils.isNotBlank(nextStatus)) {

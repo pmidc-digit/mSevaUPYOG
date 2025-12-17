@@ -126,8 +126,8 @@ public class AllotmentDetails {
 	@JsonProperty("notesComments")
 	private String notesComments;
 	
-	@JsonProperty("refundAmount")
-	private String refundAmount;
+	@JsonProperty("amountToBeRefund")
+	private String amountToBeRefund;
 	
 	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
@@ -178,7 +178,7 @@ public class AllotmentDetails {
 	            ", reasonForClosure=" + reasonForClosure +
 	            ", amountToBeDeducted=" + amountToBeDeducted +
 	            ", notesComments=" + notesComments +
-	            ", refundAmount=" + refundAmount +
+	            ", amountToBeRefund=" + amountToBeRefund +
 	            '}';
 	}
 }

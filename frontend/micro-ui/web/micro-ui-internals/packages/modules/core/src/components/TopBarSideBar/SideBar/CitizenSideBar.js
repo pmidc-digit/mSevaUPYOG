@@ -35,10 +35,14 @@ const Profile = ({ info, stateName, t }) => {
 
   React.useEffect(() => {
     const fetchProfileDetails = async () => {
-      const tenant = Digit.ULBService.getCurrentTenantId();
+      // const tenant = Digit.ULBService.getCurrentTenantId();
+      const tenantId = window.location.href.includes("employee")
+        ? Digit.ULBService.getCurrentPermanentCity()
+        : localStorage.getItem("Citizen.tenant-id");
       const uuid = info?.uuid;
       if (uuid) {
-        const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+        const usersResponse = await Digit.UserService.userSearch(tenantId, { uuid: [uuid] }, {});
+        console.log("coming here 1");
         if (usersResponse?.user?.length) {
           const userDetails = usersResponse.user[0];
           sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));

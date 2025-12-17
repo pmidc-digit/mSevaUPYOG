@@ -36,6 +36,7 @@ const TopBar = ({
       const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {})
       if (usersResponse && usersResponse.user && usersResponse.user.length) {
         const userDetails = usersResponse.user[0]
+         sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));
         const thumbs = userDetails?.photo?.split(",")
         setProfilePic(thumbs?.at(0))
       }

@@ -56,6 +56,10 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
+  const handleDisConnection = (id) => {
+    console.log(id);
+  };
+
   return (
     <div style={{ marginTop: "16px" }}>
       <div>
@@ -91,6 +95,9 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 }
                 {(property?.status == "PENDINGPAYMENT" || property?.status == "PENDING_FOR_PAYMENT") && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
+                )}
+                {property?.status == "APPROVED" && (
+                  <SubmitBar label={t("RAL_END_TENANCY")} onSubmit={() => handleDisConnection(property?.applicationNumber)} />
                 )}
               </div>
             </Card>

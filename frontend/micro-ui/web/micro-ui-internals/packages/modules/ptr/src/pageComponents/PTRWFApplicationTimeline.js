@@ -274,12 +274,6 @@ const PTRWFApplicationTimeline = (props) => {
   return (
     <React.Fragment>
       <Fragment>
-        {workflowDetails?.data?.timeline?.length > 0 && (
-          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-            {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
-          </CardSectionHeader>
-        )}
-
         {/* ===== OLD TIMELINE IMPLEMENTATION (Commented out for reference) ===== */}
         {/* 
         {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
@@ -329,7 +323,7 @@ const PTRWFApplicationTimeline = (props) => {
             </ActionBar>
           )}
 
-        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && (
+        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && !isCitizen && (
           <ActionBar>
             <SubmitBar
               label={t("COMMON_EDIT")}

@@ -120,10 +120,14 @@ const WrapPaymentComponent = (props) => {
         ? "bpa-receiptsecond"
         : business_service === "BPA.NC_APP_FEE"
         ? "bpa-obps-receipt"
+        : business_service === "GC.ONE_TIME_FEE"
+        ? "garbage-receipt"
         : business_service === "clu"
         ? "clu-receipt"
         : business_service === "layout"
         ? "layout-receipt"
+        : business_service === "rl-services"
+        ? "rentandlease-receipt"
         : data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
@@ -249,7 +253,7 @@ const WrapPaymentComponent = (props) => {
     let paymentArray = [];
     const tenantId = paymentData?.tenantId;
 
-    let licenseSection, licenseType, usage, fileNo;
+    let licenseSection, licenseType, usage, fileNo,fileStoreTenant;
 
     if (applicationDetails) {
       licenseSection = applicationDetails?.applicationDetails?.find((section) => section?.title === "BPA_LICENSE_DETAILS_LABEL");
@@ -359,11 +363,14 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKey);
-        }
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);      
+          }
       }
     }
-    const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
+    fileStoreTenant = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+
+    const fileStore = fileStoreTenant && fileStoreTenant[response.filestoreIds[0]] ? fileStoreTenant : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0], });    
+    
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
@@ -1282,8 +1289,11 @@ const WrapPaymentComponent = (props) => {
               marginTop: "15px",
             }}
           >
-            <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
-
+            {printing ? (
+              <Loader />
+            ) : (
+                  <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+            )}
             {/* {!(business_service === "TL") && !business_service?.includes("PT") && (
             <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
           )}

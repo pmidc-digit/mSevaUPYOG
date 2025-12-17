@@ -484,14 +484,15 @@ console.log("validTo",validTo);
       })
     } else {
       const data = formData?.formData || formData
-      console.log("onSelect going 2", data)
+      console.log("onSelect going 2", data, ArchitectNo)
       data.LicneseType.LicenseType = LicenseType
       data.LicneseType.ArchitectNo = ArchitectNo
       data.LicneseType.selfCertification = selfCertification ? selfCertification : false
       data.LicneseType.qualificationType = qualificationType
       data.LicneseType.validTo = validTo
-      formData.formData = data
-      onSelect("", formData)
+      const newFormData = {...formData}
+      newFormData.formData = data
+      onSelect("", newFormData)
     }
   }
   console.log("formData in LicenseType", formData);
@@ -561,7 +562,7 @@ console.log("validTo",validTo);
                       e.preventDefault();
                     }
                   }}
-                  disabled={!isEditable}
+                  // disabled={!isEditable}
                 />
                 {errorMessage && (
                   <div
@@ -626,7 +627,7 @@ console.log("validTo",validTo);
                       maxDate.setFullYear(maxDate.getFullYear() + 80)
                       return maxDate.toISOString().split("T")[0]
                     })()}
-                    disabled={!isEditable}
+                    // disabled={!isEditable}
                   />
 
                 </div>
@@ -645,7 +646,7 @@ console.log("validTo",validTo);
                   name="ArchitectNo"
                   value={ArchitectNo}
                   onChange={selectAssociateOrFellowNo}
-                  disabled={!isEditable}
+                  // disabled={!isEditable}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();

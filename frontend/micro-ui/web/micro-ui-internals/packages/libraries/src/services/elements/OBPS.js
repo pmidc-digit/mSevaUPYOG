@@ -357,7 +357,22 @@ const getFormattedULBName = (ulbCode = "") => {
             { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
           ],
         }
-        : {
+        : License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("TOWNPLANNER") ? {
+          title: "BPA_LICENSE_DETAILS_LABEL",
+          asSectionHeader: true,
+          values: [
+            {
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
+            },
+            { title: "BPA_ASSOCIATE_OR_FELLOW_NUMBER", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },         
+            {
+              title: "BPA_LICENSE_TYPE",
+              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+            },
+            { title: "BPA_SELECTED_ULB", value:  ulbName || "NA" },
+          ],
+        } : {
           title: "BPA_LICENSE_DETAILS_LABEL",
           asSectionHeader: true,
           values: [
@@ -872,8 +887,15 @@ const getFormattedULBName = (ulbCode = "") => {
           : []),
         { title: "BPA_PURCHASED_FAR", value: BPA?.additionalDetails?.purchasedFAR ? "YES" : "NO", isNotTranslated: true },
         ...(BPA?.additionalDetails?.purchasedFAR
-          ? [{ title: "BPA_PROVIDED_FAR", value: BPA?.additionalDetails?.providedFAR || "NA", isNotTranslated: true }]
+          ? [
+            { title: "BPA_PROVIDED_FAR", value: BPA?.additionalDetails?.providedFAR || "NA", isNotTranslated: true },
+            { title: "BPA_ALLOWED_PROVIDED_FAR", value: BPA?.additionalDetails?.purchasableFAR || "NA", isNotTranslated: true },
+          ]
           : []),
+        { title: "BPA_PERMISSIBLE_FAR", value: BPA?.additionalDetails?.permissableFar || "NA", isNotTranslated: true },
+        { title: "BPA_FAR_ACHIEVED", value: BPA?.additionalDetails?.achievedFar || "NA", isNotTranslated: true },
+        { title: "BPA_ECS_REQUIRED", value: BPA?.additionalDetails?.ecsRequired || "NA", isNotTranslated: true },
+        { title: "BPA_ECS_PROVIDED", value: BPA?.additionalDetails?.ecsProvided || "NA", isNotTranslated: true },
         { title: "BPA_GREEN_BUIDINGS", value: BPA?.additionalDetails?.greenbuilding || "NA", isNotTranslated: true },
         ...(BPA?.additionalDetails?.greenbuilding === "YES"
           ? [{ title: "BPA_SELECTED_RATINGS", value: BPA?.additionalDetails?.rating || "NA", isNotTranslated: true }]

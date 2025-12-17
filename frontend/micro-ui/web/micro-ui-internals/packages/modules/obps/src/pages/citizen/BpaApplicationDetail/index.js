@@ -943,10 +943,18 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
   const validateDataForAction = (action) => {
     if(action === "SEND_TO_CITIZEN"){
       const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      const isFeesDeclared = data?.applicationData?.additionalDetails?.isFeesDeclared;
+      if(!isFeesDeclared){
+        setShowToast({
+          key: "error",
+          action: t("Please Declare Fees Under Self Certification Scheme")
+        })
+        return false
+      }
       if(!isArchitectUnderTakingIncluded) {
         setShowToast({
           key: "error",
-          action: "Please_Upload_Architect_UnderTaking"
+          action: t("Please_Upload_Architect_UnderTaking")
         })
         return false
       }
@@ -2018,7 +2026,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                       <div id="timeline">
                         {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
                         <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
-                        {!workflowDetails?.isLoading &&
+                        {/* {!workflowDetails?.isLoading &&
                           workflowDetails?.data?.newNextAction?.length > 0 &&
                           !isFromSendBack &&
                           checkBoxVisible && (
@@ -2032,7 +2040,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                                 isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
                               }}
                             />
-                          )}
+                          )} */}
                       </div>
                       {((workflowDetails?.data?.actionState?.applicationStatus === "CITIZEN_APPROVAL_INPROCESS" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_SANC_FEE_PAYMENT" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_APPL_FEE") && !isArchitect) &&
                         <div>{!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
@@ -2291,6 +2299,21 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                     </React.Fragment>
                   )} */}
                 </div>
+                {!workflowDetails?.isLoading &&
+                  workflowDetails?.data?.newNextAction?.length > 0 &&
+                  !isFromSendBack &&
+                  checkBoxVisible && (
+                    <CheckBox
+                      styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                      checked={isTocAccepted}
+                      label={getCheckBoxLable()}
+                      // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
+                      onChange={() => {
+                        setIsTocAccepted(!isTocAccepted)
+                        isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
+                      }}
+                    />
+                  )}
                 <br></br>
 
                 <div>
@@ -2316,6 +2339,25 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
             </Card>
           </div>
         )}
+
+        {workflowDetails?.data?.actionState?.applicationStatus === "INPROGRESS" && !isUserCitizen && (
+          !workflowDetails?.isLoading &&
+          workflowDetails?.data?.newNextAction?.length > 0 &&
+          !isFromSendBack &&
+          checkBoxVisible && (
+            <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
+            <CheckBox
+              styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+              checked={isTocAccepted}
+              label={getCheckBoxLable()}
+              // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
+              onChange={() => {
+                setIsTocAccepted(!isTocAccepted)
+                isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
+              }}
+            />
+            </Card>
+          ))}
 
         {showTermsModal ? (
           <ActionModal

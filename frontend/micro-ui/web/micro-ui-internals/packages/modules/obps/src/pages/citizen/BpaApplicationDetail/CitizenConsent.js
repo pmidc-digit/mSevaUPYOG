@@ -141,7 +141,7 @@ console.log('data for ownerconsent', data)
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
       const response = await Digit.UserService.sendOtp({
-        otp: { mobileNumber: mobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type, type: "login" },
+        otp: { mobileNumber: ownermobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type, type: "login" },
       })
       if (response.isSuccessful) {
         setShowOTPInput(true)
@@ -207,7 +207,7 @@ console.log('data for ownerconsent', data)
       OWNER'S DECLARATION
     </h2>
     <div style="text-align:center; margin-top:-78px; font-size:16px;">
-      (For Authorization of Architect under Self-Certification Scheme)
+      (For Authorization of ${architecttype} under Self-Certification Scheme)
     </div>
 
     <div style="margin-top:-52px;">
@@ -311,10 +311,26 @@ console.log('data for ownerconsent', data)
       }
       setIsUploading(true); // Set isUploading to true before starting the upload
       
-      const TimeStamp=  new Date(timeStamp).toString();
+      const opts = {
+        timeZone: "Asia/Kolkata",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short"
+      };
+
+      const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(timeStamp);
+      const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+      const formattedIST = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
       const updatedAdditionalDetails = {
         ...data?.applicationData,
-        TimeStamp,
+        TimeStamp: formattedIST,
       };
 
       // Update the entire data object with the new additionalDetails
@@ -419,7 +435,7 @@ console.log(result, "RESULT");
     },
   };
 
-  const isValidMobileNumber = mobileNumber?.length === 10 && /^[0-9]+$/.test(mobileNumber)
+  const isValidMobileNumber = ownermobileNumber?.length === 10 && /^[0-9]+$/.test(ownermobileNumber)
 
   return (
     <div>

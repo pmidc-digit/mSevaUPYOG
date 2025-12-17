@@ -13,6 +13,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+  const userInfoData = JSON.parse(sessionStorage.getItem("userInfoData") || "{}");
+
   const history = useHistory();
   const [loader, setLoader] = useState(false);
 
@@ -29,10 +31,10 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     clearErrors,
   } = useForm({
     defaultValues: {
-      name: (isCitizen && user?.info?.name) || "",
-      emailId: (isCitizen && user?.info?.emailId) || "",
-      mobileNumber: (isCitizen && user?.info?.mobileNumber) || "",
-      address: (isCitizen && user?.info?.permanentAddress) || "",
+      name: (isCitizen && userInfoData?.name) || "",
+      emailId: (isCitizen && userInfoData?.emailId) || "",
+      mobileNumber: (isCitizen && userInfoData?.mobileNumber) || "",
+      address: (isCitizen && userInfoData?.permanentAddress) || "",
     },
   });
 

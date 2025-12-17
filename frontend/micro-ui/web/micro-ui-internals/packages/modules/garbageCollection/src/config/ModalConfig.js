@@ -24,7 +24,8 @@ export const ModalConfig = ({
     action?.action == "SENDBACK" ||
     action?.action == "VERIFIED" ||
     action?.action == "SEND_BACK_FOR_DOCUMENT_VERIFICATION" ||
-    action?.action == "APPROVE"
+    action?.action == "APPROVE" ||
+    action?.action == "APPROVE_FOR_CONNECTION"
   )
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;

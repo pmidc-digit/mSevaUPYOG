@@ -82,7 +82,7 @@ const getApplicantDetails = (appData, t) => {
     },
     {
       title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantFatherHusbandName || "N/A",
+      value: appData?.owners?.[0]?.fatherOrHusbandName || "Not Provided",
     },
     {
       title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
@@ -102,11 +102,7 @@ const getApplicantDetails = (appData, t) => {
     {
       title: t("NOC_APPLICANT_ADDRESS_LABEL"),
       value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantPropertyId || "N/A",
-    },
+    }
   ]
 
   return {
@@ -161,7 +157,7 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_NET_TOTAL_AREA_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.netTotalArea || "N/A",
+      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.totalAreaUnderLayout || "N/A",
     },
     {
       title: t("NOC_ROAD_WIDTH_AT_SITE_LABEL"),
@@ -191,16 +187,9 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_SITE_COLONY_NAME_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.colonyName || "N/A",
+      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.layoutApprovedColonyName || "N/A",
     },
-    {
-      title: t("NOC_SITE_VASIKA_NO_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
-    },
-    {
-      title: t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.khewatAndKhatuniNo || "N/A",
-    },
+    
     {
       title: t("NOC_BUILDING_STATUS_LABEL"),
       value:
@@ -213,7 +202,7 @@ const getSiteDetails = (appData, t) => {
       value:
         appData?.layoutDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code ||
         appData?.layoutDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable ||
-        "N/A",
+        "No",
     },
   ]
 
@@ -255,7 +244,7 @@ const getSpecificationDetails = (appData, t) => {
     {
       title: t("NOC_BUILDING_CATEGORY_LABEL"),
       value:
-        appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name ||
+        appData?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name ||
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory ||
         "N/A",
     },
@@ -264,21 +253,21 @@ const getSpecificationDetails = (appData, t) => {
       value:
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationNocType?.name ||
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationNocType ||
-        "N/A",
+        "Not Applicable",
     },
     {
       title: t("NOC_RESTRICTED_AREA_LABEL"),
       value:
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea?.code ||
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea ||
-        "N/A",
+        "Not Applicable",
     },
     {
       title: t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
       value:
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
         appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan ||
-        "N/A",
+        "No",
     },
   ]
 
@@ -338,7 +327,7 @@ const getDocuments = async (appData, t) => {
   }
 }
 
-export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, t) => {
   const stateCode = Digit.ULBService.getStateId()
   const appData = applicationDetails || {}
 
@@ -373,5 +362,6 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
       getDocuments(appData, t),
     ],
     imageURL,
+    ulbType
   }
 }

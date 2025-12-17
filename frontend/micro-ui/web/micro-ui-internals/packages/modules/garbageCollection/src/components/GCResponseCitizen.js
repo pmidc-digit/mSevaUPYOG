@@ -2,7 +2,7 @@ import { Banner, Card, CardText, ActionBar, SubmitBar, Toast } from "@mseva/digi
 import React, { useState, Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import { ChallanData } from "../utils";
+import { ChallanData,getAcknowledgementData } from "../utils";
 import { Loader } from "./Loader";
 
 const GCResponseCitizen = (props) => {
@@ -23,6 +23,8 @@ const GCResponseCitizen = (props) => {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   // const pathname = window?.location?.pathname || "";
   // const afterApplication = pathname?.split("/response/")[1];
   // const parts = afterApplication?.split("/");
@@ -37,15 +39,33 @@ const GCResponseCitizen = (props) => {
   const fetchChallans = async (filters) => {
     setLoader(true);
     try {
-      const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
+      const responseData = await Digit.GCService.search({ tenantId, filters });
       console.log("search ", responseData);
-      setChallanData(responseData?.challans?.[0]);
+      setChallanData(responseData?.GarbageConnection?.[0]);
       setLoader(false);
     } catch (error) {
       console.log("error", error);
       setLoader(false);
     }
   };
+  const getAcknowledgement = async () => {
+    try{
+      setLoader(true);
+      const applications = getChallanData;
+      console.log('applications for garbage', applications)
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
+      Digit.Utils.pdf.generate(acknowldgementDataAPI);
+      setLoader(false);
+    }, 0);
+    }catch (error) {
+    console.error("Error generating acknowledgement:", error);
+    setLoader(false);
+  }
+      
+  };
+  
 
   const closeToast = () => {
     setShowToast(null);
@@ -54,7 +74,7 @@ const GCResponseCitizen = (props) => {
   useEffect(() => {
     if (applicationNumber) {
       const filters = {};
-      filters.challanNo = applicationNumber;
+      filters.applicationNumber = applicationNumber;
       fetchChallans(filters);
     }
   }, []);
@@ -64,28 +84,7 @@ const GCResponseCitizen = (props) => {
     else history.push(`/digit-ui/employee`);
   };
 
-  const printChallanNotice = async () => {
-    if (chbPermissionLoading) return;
-    setChbPermissionLoading(true);
-    try {
-      const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: applicationNumber } });
-      const challan = {
-        ...applicationDetails,
-        ...challanEmpData,
-      };
-      console.log("applicationDetails", applicationDetails);
-      let application = challan;
-      let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application } }, "challan-notice");
-        fileStoreId = response?.filestoreIds[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setChbPermissionLoading(false);
-    }
-  };
+  
 
   const handlePayment = () => {
     // return;
@@ -113,18 +112,12 @@ const GCResponseCitizen = (props) => {
             {t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
           </CardText>
         ) : null} */}
-        <div className="primary-label-btn d-grid" onClick={chbPermissionLoading ? undefined : printChallanNotice}>
-          {chbPermissionLoading ? (
-            <Loader />
-          ) : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-              </svg>
-              {t("Challan_Notice")}
-            </>
-          )}
+        <div className="primary-label-btn d-grid" onClick={getAcknowledgement}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+          </svg>
+          {t("CHB_DOWNLOAD_ACK_FORM")}
         </div>
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
@@ -132,6 +125,7 @@ const GCResponseCitizen = (props) => {
         </ActionBar>
       </Card>
       {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}
+      {loader && <Loader page={true} />}
     </div>
   );
 };

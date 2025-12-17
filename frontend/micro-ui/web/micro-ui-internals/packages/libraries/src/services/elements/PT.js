@@ -1,5 +1,6 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
+import Axios from "axios";
 
 export const PTService = {
   search: ({ tenantId, filters, auth }) =>
@@ -177,7 +178,33 @@ export const PTService = {
       useCache: false,
       method: "GET",
       params: { ...filters },
-    })
+    }),
+    getPropertyDetails: (details) => {
+    console.log("details in bathinda service", Urls.pt.bathindaSearch);
+    const config = {
+      url: Urls.pt.bathindaSearch,
+      method: "post",
+      data: details.data,
+      headers: {
+        Authorization: `Bearer ${details.token}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    return Axios(config);
+  },
+  authenticateBathinda: (credentials) => {
+    const config = {
+      url: Urls.bathindaAuth,
+      method: "post",
+      data: credentials,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    return Axios(config);
+  },
 };
 
 

@@ -297,7 +297,7 @@ public class GcServiceImpl implements GcService {
 	 */
 	public List<GarbageConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
 		List<GarbageConnection> garbageConnectionList;
-		if(StringUtils.isEmpty(criteria.getMobileNumber()) && StringUtils.isEmpty(criteria.getApplicationNumber())){
+		if(StringUtils.isEmpty(criteria.getMobileNumber()) && StringUtils.isEmpty(criteria.getApplicationNumber()) && StringUtils.isEmpty(criteria.getConnectionNumber())){
 
 			criteria.setUserIds(Collections.singleton(requestInfo.getUserInfo().getUuid()));
 		}

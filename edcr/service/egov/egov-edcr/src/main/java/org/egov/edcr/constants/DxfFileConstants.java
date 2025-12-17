@@ -75,13 +75,18 @@ public class DxfFileConstants {
     public static final String G_RS  = "G-RS";   // Retail Service Industry
     public static final String G_H   = "G-H";    // Hazard Industries
     public static final String G_S   = "G-S";    // Storage
-    public static final String G_F   = "G-F";    // Factory
+    //public static final String G_F   = "G-F";    // Factory
     public static final String G_I   = "G-I";    // Industrial
     public static final String G_K   = "G-K";    // Knitwear Industry
     public static final String G_T   = "G-T";    // Textile Industry
-    public static final String G_IT  = "G-IT";   // Information Technology
+    //public static final String G_IT  = "G-IT";   // Information Technology
     public static final String G_GI  = "G-GI";   // General Industry
     public static final String G_W   = "G-W";    // Warehouse
+    
+    // new Occupancy for Industry
+    public static final String G_GTKS   = "G-GTKS";    // Industrial Plotted - General, Textile, Knitwear, Sports
+    public static final String G_IT   = "G-IT";    // Industrial Plotted (G-IT)
+    public static final String G_F   = "G-F";    // Industrial Flatted (G-F)
     
     public static final String H_PP = "H-PP"; // Petrol Pump
 
@@ -92,6 +97,8 @@ public class DxfFileConstants {
     public static final String J_FS = "J-FS";// Filling Station
     public static final String J_FCSS = "J-FCSS";// Filling Cum Service Station
     public static final String J_CNG = "J-CNG";// Compressed Natural Gas (CNG) Mother Station
+    public static final String J_TW = "J-TW";// For two-three Wheelers
+    public static final String J_CNGD = "J-CNGD";// CNG Daughter Station
     
     // Sub Occupany for Hotel/ Motel
     public static final String K_H = "K-HM"; // Hotel / Motel

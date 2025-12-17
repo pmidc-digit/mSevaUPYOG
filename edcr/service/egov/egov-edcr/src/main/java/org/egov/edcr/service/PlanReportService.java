@@ -126,7 +126,7 @@ public class PlanReportService {
     private static final String LEVEL = "Level";
     private static final String COMBINED_BLOCKS_SUMMARY_DETAILS = "Overall Summary";
     private static final String BLOCK_WISE_SUMMARY = "Block Wise Summary";
-    private static final BigDecimal BUILDING_HEIGHT = BigDecimal.valueOf(15);
+    private static final BigDecimal BUILDING_HEIGHT = BigDecimal.valueOf(21);
     
  // === MANDATORY KEYS THAT DECIDE FINAL REPORT STATUS ===
     private static final List<String> MANDATORY_KEYS = Arrays.asList(
@@ -740,7 +740,18 @@ public class PlanReportService {
 
             List<String> combinedSummary = new ArrayList<>();
             combinedSummary.add(COMBINED_BLOCKS_SUMMARY_DETAILS);
-            drb.addConcatenatedReport(createHeaderSubreport(COMBINED_BLOCKS_SUMMARY_DETAILS, COMBINED_BLOCKS_SUMMARY_DETAILS));
+//            drb.addConcatenatedReport(createHeaderSubreport(COMBINED_BLOCKS_SUMMARY_DETAILS, COMBINED_BLOCKS_SUMMARY_DETAILS));
+//            valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);
+            Subreport overallSummarySub = 
+                    createHeaderSubreport(
+                        COMBINED_BLOCKS_SUMMARY_DETAILS,
+                        COMBINED_BLOCKS_SUMMARY_DETAILS
+                    );
+
+            // 🔴 Page break ONLY here
+            overallSummarySub.setStartInNewPage(true);
+
+            drb.addConcatenatedReport(overallSummarySub);
             valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);
 
             // Add total area details

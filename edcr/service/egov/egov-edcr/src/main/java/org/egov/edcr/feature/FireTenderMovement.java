@@ -68,7 +68,7 @@ import org.springframework.stereotype.Service;
 public class FireTenderMovement extends FeatureProcess {
     private static final Logger LOG = LogManager.getLogger(FireTenderMovement.class);
     private static final BigDecimal FIFTEEN = BigDecimal.valueOf(15);
-    private static final BigDecimal THREE_POINTSIXSIX = BigDecimal.valueOf(3.66);
+    private static final BigDecimal THREE_POINTSIXSIX = BigDecimal.valueOf(6);
     private static final String RULE_36_3 = "36-3";
 
     @Override

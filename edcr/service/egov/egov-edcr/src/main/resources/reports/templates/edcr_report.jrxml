@@ -120,7 +120,7 @@
 				</reportElement>
 				<imageExpression><![CDATA[$P{cityLogo}]]></imageExpression>
 			</image>
-			<staticText>
+			<!-- <staticText>
 				<reportElement x="16" y="352" width="186" height="18" uuid="3f3325d3-7390-4b18-a07b-d723a2d91099"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -133,7 +133,7 @@
 					<font size="12" isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[Declaration in drawings]]></text>
-			</staticText>
+			</staticText> -->
 			<staticText>
 				<reportElement x="12" y="105" width="536" height="18" uuid="c90071fa-f965-4d78-8e92-98e7658a97b9"/>
 				<box>
@@ -939,7 +939,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{planInformation}.getPlotArea()]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+			<!-- <textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement x="12" y="370" width="16" height="25" uuid="0b650422-ec24-4c2f-8bad-e98a7a96f8dd"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -1388,7 +1388,7 @@
 					<paragraph leftIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA["10"]]></textFieldExpression>
-			</textField>
+			</textField> -->
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement x="304" y="144" width="114" height="21" uuid="9970f7fd-bfb1-42a3-88d4-6eaf28aad7ea"/>
 				<box>

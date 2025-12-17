@@ -180,6 +180,9 @@ public class PropertyController {
         try {
             log.info("PropertyCriteria JSON: {}",
                     objectMapper.writeValueAsString(propertyCriteria));
+            log.info("RequestInfoWrapper JSON: {}",
+                    objectMapper.valueToTree(requestInfoWrapper).toString());
+
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize PropertyCriteria", e);
         }

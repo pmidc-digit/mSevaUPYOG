@@ -20,6 +20,7 @@ import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
+import org.egov.rl.util.RLConstants;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -222,6 +223,12 @@ public class AllotmentValidator {
 					"Wrong allotment id is passing , please provide another corroct allotment Id information");
 		}
 
+
+		if(allotementRequest.getAllotment().getWorkflow().getAction().equals(RLConstants.APPLY_RL_APPLICATION)) {
+			if(allotementRequest.getAllotment().getDocuments()==null||allotementRequest.getAllotment().getDocuments().isEmpty()) {
+					throw new CustomException("EG_RL_DOCUMENT INFO ERROR", "Document can't be empty in the request");
+			}
+		}
 
 //		long uniqueAadharNumberSet = owners.stream().map(owner -> owner.getAadharCardNumber().trim()).distinct().count();
 //		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();

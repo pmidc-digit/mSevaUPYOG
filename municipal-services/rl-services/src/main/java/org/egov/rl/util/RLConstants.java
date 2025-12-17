@@ -15,6 +15,9 @@ public class RLConstants {
     public static final String APPROVED_RL_APPLICATION = "APPROVE";
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
+	
+	public static final String APPLY_RL_APPLICATION = "APPLY";
+	
 
 	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
 

@@ -141,7 +141,7 @@ console.log('data for ownerconsent', data)
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
       const response = await Digit.UserService.sendOtp({
-        otp: { mobileNumber: mobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type, type: "login" },
+        otp: { mobileNumber: ownermobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type, type: "login" },
       })
       if (response.isSuccessful) {
         setShowOTPInput(true)
@@ -435,7 +435,7 @@ console.log(result, "RESULT");
     },
   };
 
-  const isValidMobileNumber = mobileNumber?.length === 10 && /^[0-9]+$/.test(mobileNumber)
+  const isValidMobileNumber = ownermobileNumber?.length === 10 && /^[0-9]+$/.test(ownermobileNumber)
 
   return (
     <div>

@@ -187,7 +187,7 @@ const FeeEstimation = ({
         if (!adjustedAmounts || adjustedAmounts.length === 0) return [];
         const totalAmount = adjustedAmounts.reduce((acc, item) => acc + (item.amount || 0), 0);
         const totalDeduction = adjustedAmounts.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);
-        const grandTotal = totalAmount - totalDeduction;
+        const grandTotal = totalAmount + totalDeduction;
         return [
             ...adjustedAmounts,
             { id: "san-total", taxHeadCode: "BPA_TOTAL", title: t("BPA_TOTAL"), amount: totalAmount, category: "", adjustedAmount: totalDeduction, grandTotal: grandTotal },
@@ -252,7 +252,8 @@ const FeeEstimation = ({
     // }, [recalculate, refetchSanctionFee]);
 
     const handleAdjustedAmountChange = (index, value, ammount) => {
-        if(Number(value)>ammount){
+        console.log("ammount", ammount, "value", value);
+        if((ammount + Number(value)) < 0){
             setShowToast({ key: "error", message: "Adjusted_Amount_More_Than_Ammount" });
             return;
         }

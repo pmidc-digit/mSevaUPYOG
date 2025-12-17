@@ -100,12 +100,14 @@ export const PayTwoTable = ({
                                                 t={t}
                                                 type="number"
                                                 isMandatory={false}
+                                                // className="hide-number-spinner"
                                                 value={sanctionFeeData[row.index]?.adjustedAmount || ""}
                                                 onChange={(e) =>
                                                     handleAdjustedAmountChange(row.index, e.target.value, row.amount)
                                                 }
                                                 onBlur={onAdjustedAmountBlur}
                                                 disable={disable}
+                                                step={1}                                                
                                                 style={{
                                                     width: "100%",
                                                     padding: "4px",

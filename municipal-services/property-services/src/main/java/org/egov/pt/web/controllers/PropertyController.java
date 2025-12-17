@@ -177,16 +177,6 @@ public class PropertyController {
         if(!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()){
             propertyValidator.validatePropertyCriteria(propertyCriteria, requestInfoWrapper.getRequestInfo());
         }
-        try {
-            log.info("PropertyCriteria JSON: {}",
-                    objectMapper.writeValueAsString(propertyCriteria));
-            log.info("RequestInfoWrapper JSON: {}",
-                    objectMapper.valueToTree(requestInfoWrapper).toString());
-
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize PropertyCriteria", e);
-        }
-
     	List<Property> properties = new ArrayList<Property>();
     	Integer count = 0;
         

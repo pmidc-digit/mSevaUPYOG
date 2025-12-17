@@ -1,0 +1,216 @@
+import React, { useState } from "react";
+import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown } from "@mseva/digit-ui-react-components";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Loader } from "../../components/Loader";
+
+const GenerateBill = () => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const { t } = useTranslation();
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+
+  const [loader, setLoader] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    getValues,
+    clearErrors,
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    console.log("data===", data);
+  };
+
+  const ConnectionType = [{ name: "Garbage", code: "GARBAGE" }];
+  const batchLocality = [
+    { name: "Batch", code: "BATCH" },
+    { name: "Locality", code: "LOCALITY" },
+  ];
+
+  return (
+    <React.Fragment>
+      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("ACTION_TEST_GENERATE_BILL")}</CardSubHeader>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "24px",
+            width: "100%",
+          }}
+        >
+          {/* connection type */}
+          <div
+            style={{
+              flex: "0 0 20%", // 2 items per row
+              maxWidth: "20%",
+            }}
+          >
+            <CardLabel>
+              {`${t("Connection Type")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              //   style={{  }}
+              control={control}
+              name={"connectionType"}
+              rules={{ required: t("GC_CONNECTION_TYPE_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0, width: "100%" }}
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={ConnectionType}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors?.connectionType && <p style={{ color: "red" }}>{errors.connectionType.message}</p>}
+          </div>
+
+          {/* select Batch or Locality */}
+          <div
+            style={{
+              flex: "0 0 20%", // 2 items per row
+              maxWidth: "20%",
+            }}
+          >
+            <CardLabel>
+              {`${t("Select Batch or Locality")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"batchOrLocality"}
+              rules={{ required: t("GC_BATCH_LOCALITY_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0, width: "100%" }}
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={batchLocality}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors?.batchOrLocality && <p style={{ color: "red" }}>{errors.batchOrLocality.message}</p>}
+          </div>
+
+          {/* locality */}
+          <div
+            style={{
+              flex: "0 0 20%", // 2 items per row
+              maxWidth: "20%",
+            }}
+          >
+            <CardLabel>
+              {`${t("CS_SWACH_LOCALITY")}`}
+              {/* <span style={{ color: "red" }}>*</span> */}
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"locality"}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0, width: "100%" }}
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={[]}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors?.locality && <p style={{ color: "red" }}>{errors.locality.message}</p>}
+          </div>
+
+          {/* batch */}
+          <div
+            style={{
+              flex: "0 0 20%", // 2 items per row
+              maxWidth: "20%",
+            }}
+          >
+            <CardLabel>
+              {`${t("Batch")}`}
+              {/* <span style={{ color: "red" }}>*</span> */}
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"batch"}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0, width: "100%" }}
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={[]}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors?.batch && <p style={{ color: "red" }}>{errors.batch.message}</p>}
+          </div>
+
+          {/* group */}
+          <div
+            style={{
+              flex: "0 0 20%", // 2 items per row
+              maxWidth: "20%",
+            }}
+          >
+            <CardLabel>
+              {`${t("Group")}`}
+              {/* <span style={{ color: "red" }}>*</span> */}
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"group"}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0, width: "100%" }}
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={[]}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors?.group && <p style={{ color: "red" }}>{errors.group.message}</p>}
+          </div>
+        </div>
+        <ActionBar>
+          <SubmitBar style={{ background: "#eee", color: "black", border: "1px solid" }} label="Search" submit="submit" />
+          <SubmitBar label="Generate Bill" submit="submit" />
+        </ActionBar>
+      </form>
+      {loader && <Loader page={true} />}
+    </React.Fragment>
+  );
+};
+
+export default GenerateBill;

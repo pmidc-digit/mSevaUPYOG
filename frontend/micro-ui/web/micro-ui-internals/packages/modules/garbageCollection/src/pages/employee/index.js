@@ -27,12 +27,14 @@ const EmployeeApp = ({ path, url, userType }) => {
   const CHBResponseCitizen = Digit.ComponentRegistryService.getComponent("CHBResponseCitizen");
   const CHBCreate = Digit?.ComponentRegistryService?.getComponent("CHBStepperForm");
   const GCResponseCitizen = Digit?.ComponentRegistryService?.getComponent("GCResponseCitizen");
+  const GenerateBill = Digit?.ComponentRegistryService?.getComponent("GenerateBill");
+  const BillGenie = Digit?.ComponentRegistryService?.getComponent("BillGenie");
 
-  const isRes = window.location.href.includes("chb/response");
+  const isRes = window.location.href.includes("garbagecollection/response");
   const isNewRegistration =
     window.location.href.includes("searchhall") ||
     window.location.href.includes("modify-application") ||
-    window.location.href.includes("chb/application-details");
+    window.location.href.includes("garbagecollection/application-details");
   return (
     <Switch>
       <AppContainer>
@@ -68,6 +70,8 @@ const EmployeeApp = ({ path, url, userType }) => {
 
             <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
             <PrivateRoute path={`${path}/create-application`} component={CHBCreate} />
+            <PrivateRoute path={`${path}/generate-bill`} component={GenerateBill} />
+            <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
             {/* <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} /> */}
             <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
           </div>

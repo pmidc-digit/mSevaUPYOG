@@ -22,6 +22,8 @@ import EditEmployee from "./pages/EditEmployee/index";
 import Details from "./pages/EmployeeDetails";
 import Inbox from "./pages/Inbox";
 import Response from "./pages/Response";
+import EmpMaping from "./pages/empMapping";
+import HRMSEMPMAPDetails from "./pages/HRMSEMPMAPDetails";
 //
 import SelectEmployeeGuardianName from "./components/pageComponents/SelectEmployeeGuardianName";
 import SelectEmployeeGuardianRelationship from "./components/pageComponents/SelectEmployeeGuardianRelationship";
@@ -81,7 +83,9 @@ const componentsToRegister = {
   SelectULB,
   EmployeeDetails,
   AdministrativeDetails,
-  Summary
+  Summary,
+  EmpMaping: EmpMaping,
+  HRMSEMPMAPDetails: HRMSEMPMAPDetails
 };
 
 export const initHRMSComponents = () => {

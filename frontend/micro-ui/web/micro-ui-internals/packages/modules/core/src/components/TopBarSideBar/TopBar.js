@@ -28,12 +28,17 @@ const TopBar = ({
   const [profilePic, setProfilePic] = React.useState(null);
 
   React.useEffect(async () => {
-    const tenant = Digit.ULBService.getCurrentTenantId();
+    const tenantId = window.location.href.includes("employee")
+      ? Digit.ULBService.getCurrentPermanentCity()
+      : localStorage.getItem("Citizen.tenant-id");
     const uuid = userDetails?.info?.uuid;
     if (uuid) {
-      const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+      const usersResponse = await Digit.UserService.userSearch(tenantId, { uuid: [uuid] }, {});
+      console.log("coming here 2");
       if (usersResponse && usersResponse.user && usersResponse.user.length) {
         const userDetails = usersResponse.user[0];
+
+        sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));
         const thumbs = userDetails?.photo?.split(",");
         setProfilePic(thumbs?.at(0));
       }

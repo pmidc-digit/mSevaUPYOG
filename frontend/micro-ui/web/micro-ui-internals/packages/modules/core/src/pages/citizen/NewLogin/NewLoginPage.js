@@ -14,7 +14,7 @@ const NewLogin = ({ stateCode }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const history = useHistory();
-  const [mobileNumber, setMobileNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState(() => location.state?.mobileNumber || "");
   const [lastSubmittedMobile, setLastSubmittedMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("MOBILE"); // MOBILE | OTP
@@ -22,9 +22,9 @@ const NewLogin = ({ stateCode }) => {
   const [canSubmit, setCanSubmit] = useState(true);
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [user, setUser] = useState(null);
-  const [selectedLanguage, setSelectedLanguage] = useState(() => Digit.StoreData.getCurrentLanguage());
+  const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
-  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(() => location.state?.selectedCity || null);
 
   useEffect(() => {
     let to;
@@ -47,11 +47,11 @@ const NewLogin = ({ stateCode }) => {
     setCitizenDetail(user?.info, user?.access_token, stateCode);
     const redirectPath = getFromLocation(location.state);
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
-      history.replace("/digit-ui/citizen/select-location", {
-        redirectBackTo: redirectPath,
-      });
+      // Use full page reload to ensure all components get fresh user data
+      window.location.href = "/digit-ui/citizen/select-location";
     } else {
-      history.replace(redirectPath);
+      // Use full page reload to ensure all components get fresh user data
+      window.location.href = redirectPath;
     }
   }, [user, stateCode, location.state, history]);
 
@@ -98,9 +98,13 @@ const NewLogin = ({ stateCode }) => {
           err?.response?.data?.error?.fields?.[0]?.code === "OTP.UNKNOWN_CREDENTIAL" &&
           err?.response?.data?.error?.fields?.[0]?.message?.includes("No such username")
         ) {
-          // User not registered, show error and navigate to registration
-          setError(t("CS_COMMON_USER_NOT_REGISTERED"));
-          setLastSubmittedMobile(mobileNumber);
+          // User not registered, redirect to registration page
+          history.push("/digit-ui/citizen/new-registration", {
+            from: getFromLocation(location.state),
+            mobileNumber: mobileNumber,
+            selectedLanguage: selectedLanguage,
+            selectedCity: selectedCity,
+          });
         } else {
           setError(t("CS_COMMON_ERROR"));
         }

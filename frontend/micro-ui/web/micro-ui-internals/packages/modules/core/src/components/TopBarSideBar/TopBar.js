@@ -107,23 +107,47 @@ const TopBar = ({
       ? false
       : ["/digit-ui/citizen/select-language", "/digit-ui/citizen/select-location"].includes(pathname)
 
+  // Get ULB details for citizen navbar
+  const ulbDetails = typeof window !== 'undefined' && sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY") 
+    ? JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY")) 
+    : "";
+  const ulbName = ulbDetails ? ulbDetails?.value?.displayName + " " + ulbDetails?.value?.city?.ulbType : "";
+  const ulbLogo = ulbDetails 
+    ? ulbDetails?.value?.logoId 
+    : "https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png";
+  
+  // Check if user is logged in using userDetails prop (more reliable than sessionStorage)
+  const isLoggedIn = !!userDetails?.access_token;
+
   if (CITIZEN) {
     return (
-      <div>
-        <TopBarComponent
-          img={stateInfo?.logoUrlWhite}
-          isMobile={true}
-          toggleSidebar={updateSidebar}
-          logoUrl={stateInfo?.logoUrlWhite}
-          onLogout={handleLogout}
-          userDetails={userDetails}
-          notificationCount={unreadNotificationCount < 99 ? unreadNotificationCount : 99}
-          notificationCountLoaded={notificationCountLoaded}
-          cityOfCitizenShownBesideLogo={t(CitizenHomePageTenantId)}
-          onNotificationIconClick={onNotificationIconClick}
-          hideNotificationIconOnSomeUrlsWhenNotLoggedIn={urlsToDisableNotificationIcon(pathname)}
-          changeLanguage={!mobileView ? <ChangeLanguage dropdown={true} /> : null}
-        />
+      <div className="navbar" style={{padding : "1rem 0rem"}}>
+        <div className="center-container_navbar" style={{}}>
+          <div className="left-wrapper_navbar" style={{}}>
+            {isLoggedIn && <Hamburger handleClick={updateSidebar} />}
+            <div className="ulb-info" style={{marginLeft : "1rem"}}>
+              <img src={ulbLogo} alt="ULB Logo" className="ulb-logo" style={{minWidth : "25px", height : "25px"}} />
+              <span className="ulb-name">{ulbName}</span>
+            </div>
+          </div>
+
+          <div className="right-wrapper_navbar" style={{}}>
+            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <ChangeLanguage dropdown={true} />}
+            {!urlsToDisableNotificationIcon(pathname) && (
+              <div className="notification-wrapper" onClick={onNotificationIconClick}>
+                {notificationCountLoaded && unreadNotificationCount ? (
+                  <span className="notification-count">{unreadNotificationCount < 99 ? unreadNotificationCount : 99}</span>
+                ) : null}
+                <NotificationBell />
+              </div>
+            )}
+            <img
+              src={'https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/Upyog-logo.png'}
+              alt="mSeva"
+              className="upyog-logo"
+            />
+          </div>
+        </div>
       </div>
     )
   }

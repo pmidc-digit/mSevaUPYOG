@@ -157,6 +157,9 @@ const NewRegistration = ({ stateCode }) => {
   const handleLoginClick = () => {
     history.push("/digit-ui/citizen/login-page", {
       from: getFromLocation(location.state),
+      mobileNumber: registrationData?.mobileNumber || location.state?.mobileNumber,
+      selectedLanguage: selectedLanguage,
+      selectedCity: selectedCity,
     });
   };
   return (

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -176,8 +177,13 @@ public class PropertyController {
         if(!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()){
             propertyValidator.validatePropertyCriteria(propertyCriteria, requestInfoWrapper.getRequestInfo());
         }
-        log.info("PropertyCriteria JSON: {}",
-                objectMapper.writeValueAsString(propertyCriteria));
+        try {
+            log.info("PropertyCriteria JSON: {}",
+                    objectMapper.writeValueAsString(propertyCriteria));
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize PropertyCriteria", e);
+        }
+
     	List<Property> properties = new ArrayList<Property>();
     	Integer count = 0;
         

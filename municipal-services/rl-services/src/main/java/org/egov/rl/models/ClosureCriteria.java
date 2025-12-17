@@ -23,6 +23,8 @@ public class ClosureCriteria {
 	private String tenantId;
 
 	private Set<String> allotmentIds;
+	
+	private Set<String> Ids;
 
 	private Set<String> tenantIds;
 	

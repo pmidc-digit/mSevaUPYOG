@@ -30,6 +30,7 @@ public class NotificationScheduleRowMapper implements ResultSetExtractor<List<No
     		                .demandId(rs.getString("demand_id"))
     		                .lastNotificationStatus(rs.getString("last_notification_status"))
     		                .lastNotificationDate(rs.getTimestamp("last_notification_date").toLocalDateTime())
+    		                .lastPaymentDate(rs.getTimestamp("last_payment_date").toLocalDateTime())
     		                .notificationCreatedDate(rs.getTimestamp("notification_created_date").toLocalDateTime())
     		                .nextCycleDate(rs.getTimestamp("nextcycle_date").toLocalDateTime())
     		                .applicationNumberStatus(rs.getString("application_number_status"))

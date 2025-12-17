@@ -2,12 +2,16 @@ package org.egov.rl.service;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import org.egov.rl.models.NotificationSchedule;
+import org.egov.rl.repository.AllotmentRepository;
+import org.egov.rl.repository.SchedulerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,6 +23,12 @@ public class DailyJob {
 
 	@Autowired
 	NotificationSchedullerService notificationSchedullerService;
+	
+	@Autowired
+	SchedulerRepository schedulerRepository;
+	
+	@Autowired
+	AllotmentRepository allotmentRepository;
 //
 //	// Runs every day at 02:30 IST // 24 hr time
 //// @Scheduled(cron = "0 12 2 * * *", zone = "Asia/Kolkata")
@@ -32,7 +42,8 @@ public class DailyJob {
     @Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 //	@Scheduled(cron = "0 20 8 * * *", zone = "Asia/Kolkata")
 	public void runEvery3DaysCron() {
-		System.out.println("---------------");
+    	
+    	
 		
 //		LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
 //

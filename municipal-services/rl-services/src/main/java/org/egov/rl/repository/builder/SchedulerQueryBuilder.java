@@ -4,8 +4,6 @@ package org.egov.rl.repository.builder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import org.egov.rl.models.ClsureCriteria;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -25,9 +23,9 @@ public class SchedulerQueryBuilder {
 
 	private static final String BASE_QUERY ="SELECT "
 			+ "ar.*"
-			+ "FROM eg_rl_allotment_scheduler ar "
+			+ " FROM eg_rl_allotment_scheduler ar "
 			+ "INNER JOIN eg_rl_allotment ap ON ap.id = ar.allotment_id"
-			+ " where ar.application_number_status='ACTIVE' ";// AND (ar.nextcycle_date::date - CURRENT_DATE) >= -7 AND (ar.nextcycle_date::date - CURRENT_DATE) <= 7 ORDER BY ar.notification_created_date DESC ";
+			+ " where ar.application_number_status='ACTIVE'";// AND (ar.nextcycle_date::date - CURRENT_DATE) >= -7 AND (ar.nextcycle_date::date - CURRENT_DATE) <= 7 ORDER BY ar.notification_created_date DESC ";
 	
 	// after payment have to update :  ispayement_reminder=false and nextcycle_date=next date for payment
 	
@@ -39,7 +37,7 @@ public class SchedulerQueryBuilder {
 	
 	public String getSchdulerQueryByApplicationnumber(String applicationNumber) {
 		StringBuilder subQuery = new StringBuilder("");
-		subQuery.append(BASE_QUERY+" WHERE ar.application_number="+applicationNumber);
+		subQuery.append(BASE_QUERY+" AND ar.application_number="+applicationNumber);
 		return subQuery.toString();
 	}
 

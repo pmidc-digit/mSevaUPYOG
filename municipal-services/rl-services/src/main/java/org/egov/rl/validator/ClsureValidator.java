@@ -18,7 +18,7 @@ import org.egov.rl.models.AllotmentClsure;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.ClsureCriteria;
+import org.egov.rl.models.ClosureCriteria;
 import org.egov.rl.models.ClsureRequest;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.repository.AllotmentRepository;
@@ -119,7 +119,7 @@ public class ClsureValidator {
 			throw new CustomException("CLSURE INFO ERROR",
 					"Closure's id can't be null or empty, please provide the CLSURE information");
 
-		ClsureCriteria clsureCriteria = new ClsureCriteria();
+		ClosureCriteria clsureCriteria = new ClosureCriteria();
 		Set<String> ids = new HashSet<>();
 		ids.add(clsureRequest.getAllotmentClsure().getId());
 		clsureCriteria.setIds(ids);

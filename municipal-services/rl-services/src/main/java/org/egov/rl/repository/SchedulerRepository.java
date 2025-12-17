@@ -17,7 +17,6 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.ClosureCriteria;
-import org.egov.rl.models.ClsureCriteria;
 import org.egov.rl.models.NotificationSchedule;
 import org.egov.rl.repository.builder.AllotmentQueryBuilder;
 import org.egov.rl.repository.builder.ClosureApplicationSearchQueryBuilder;

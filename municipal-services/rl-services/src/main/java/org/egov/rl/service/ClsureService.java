@@ -13,7 +13,6 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.ClosureCriteria;
-import org.egov.rl.models.ClsureCriteria;
 import org.egov.rl.models.ClsureRequest;
 import org.egov.rl.producer.PropertyProducer;
 import org.egov.rl.repository.ClsureRepository;
@@ -95,7 +94,7 @@ public class ClsureService {
 	}
 	
 	public ClsureRequest clsureSearch(ClsureRequest clsureRequest){
-		ClsureCriteria clsureCriteria=new ClsureCriteria();
+		ClosureCriteria clsureCriteria=new ClosureCriteria();
 		Set<String> id=new HashSet<>();
 		id.add(clsureRequest.getAllotmentClsure().getId());
 		clsureCriteria.setIds(id);

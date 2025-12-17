@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.egov.rl.models.ClsureCriteria;
+import org.egov.rl.models.ClosureCriteria;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -23,7 +23,7 @@ public class ClsureQueryBuilder {
 			
 	//	private final String GROUPBY_QUERY = " GROUP BY al.id, ap.id , doc.id;";
     
-	public String getClsureSearchById(ClsureCriteria criteria, List<Object> preparedStmtList) {
+	public String getClsureSearchById(ClosureCriteria criteria, List<Object> preparedStmtList) {
 
 		StringBuilder subQuery = new StringBuilder("");
 		List<Object> subQueryParams = new ArrayList<>();

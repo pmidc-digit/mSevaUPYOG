@@ -17,7 +17,6 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.ClosureCriteria;
-import org.egov.rl.models.ClsureCriteria;
 import org.egov.rl.repository.builder.AllotmentQueryBuilder;
 import org.egov.rl.repository.builder.ClosureApplicationSearchQueryBuilder;
 import org.egov.rl.repository.builder.ClsureQueryBuilder;
@@ -44,7 +43,7 @@ public class ClsureRepository {
 	private ClsurerRowMapper rowMapper;
     
 	
-	public List<AllotmentClsure> getClsureByIds(ClsureCriteria criterias) {
+	public List<AllotmentClsure> getClsureByIds(ClosureCriteria criterias) {
 
 		List<Object> preparedStmtList = new ArrayList<>();
 		

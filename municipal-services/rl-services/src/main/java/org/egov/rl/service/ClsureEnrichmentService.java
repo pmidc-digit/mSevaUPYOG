@@ -24,7 +24,7 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.AuditDetails;
-import org.egov.rl.models.ClsureCriteria;
+import org.egov.rl.models.ClosureCriteria;
 import org.egov.rl.models.ClsureRequest;
 import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
@@ -84,7 +84,7 @@ public class ClsureEnrichmentService {
     	AllotmentClsure allotmentClsure = clsureRequest.getAllotmentClsure();
         RequestInfo requestInfo = clsureRequest.getRequestInfo();
 		
-    	ClsureCriteria clsureCriteria=new ClsureCriteria();
+    	ClosureCriteria clsureCriteria=new ClosureCriteria();
 		Set<String> id=new HashSet<>();
 		id.add(allotmentClsure.getId());
 		clsureCriteria.setIds(id);
@@ -114,8 +114,8 @@ public class ClsureEnrichmentService {
 		
     }
     public List<AllotmentClsure> searchClsure(RequestInfo requestInfo,
-		    ClsureCriteria clsureCriteria) {
-			return clsureRepository.getClsureByIds(clsureCriteria);
+		    ClosureCriteria closureCriteria) {
+			return clsureRepository.getClsureByIds(closureCriteria);
 		}
 
     /**

@@ -45,7 +45,7 @@ public class PaymentNotificationService {
 
 	@Autowired
 	org.egov.rl.repository.SchedulerRepository schedulerRepository;
-	
+
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
@@ -55,17 +55,16 @@ public class PaymentNotificationService {
 	@Autowired
 	private org.egov.rl.util.PropertyUtil pUtil;
 
-
-
 	/**
 	 * Process the incoming record and topic from the payment notification consumer.
-	 * Performs defensive null checks and validates the payment request before proceeding.
+	 * Performs defensive null checks and validates the payment request before
+	 * proceeding.
 	 */
 	public void process(PaymentRequest paymentRequest, String topic) throws JsonProcessingException {
 		try {
-			if (paymentRequest == null || paymentRequest.getPayment() == null || 
-					paymentRequest.getPayment().getPaymentDetails() == null || 
-					paymentRequest.getPayment().getPaymentDetails().isEmpty()) {
+			if (paymentRequest == null || paymentRequest.getPayment() == null
+					|| paymentRequest.getPayment().getPaymentDetails() == null
+					|| paymentRequest.getPayment().getPaymentDetails().isEmpty()) {
 				log.error("Invalid payment request structure");
 				return;
 			}
@@ -83,50 +82,58 @@ public class PaymentNotificationService {
 	}
 
 	/**
-	 * Main method to process payment and update application status
-	 * 1. Calls workflow with PAY action to transition to APPROVED
-	 * 2. Fetches updated process instance to get the current status
-	 * 3. Generates petRegistrationNumber if needed
-	 * 4. Updates database with the status from workflow and petRegistrationNumber
+	 * Main method to process payment and update application status 1. Calls
+	 * workflow with PAY action to transition to APPROVED 2. Fetches updated process
+	 * instance to get the current status 3. Generates petRegistrationNumber if
+	 * needed 4. Updates database with the status from workflow and
+	 * petRegistrationNumber
 	 */
 	private void processPaymentAndUpdateApplication(PaymentRequest paymentRequest) {
 		String applicationNumber = null;
 		String tenantId = null;
-		
+
 		try {
 			applicationNumber = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
 			tenantId = paymentRequest.getPayment().getTenantId();
-			
+
 			log.info("Processing payment for application: {}", applicationNumber);
-			
+
 			// Transition workflow with PAY action
 			State workflowState = transitionWorkflowToApproved(paymentRequest);
 			if (workflowState == null) {
 				log.error("Workflow transition failed for application: {}", applicationNumber);
 				return;
 			}
-			
+
 			// Fetch the updated process instance to get the current state
-			ProcessInstance updatedProcessInstance = fetchProcessInstanceFromWorkflow(applicationNumber, tenantId, paymentRequest.getRequestInfo());
+			ProcessInstance updatedProcessInstance = fetchProcessInstanceFromWorkflow(applicationNumber, tenantId,
+					paymentRequest.getRequestInfo());
 			if (updatedProcessInstance != null && updatedProcessInstance.getState() != null) {
 				workflowState = updatedProcessInstance.getState();
 			} else {
-				log.warn("Could not fetch updated process instance for application: {}, using state from workflow transition", applicationNumber);
+				log.warn(
+						"Could not fetch updated process instance for application: {}, using state from workflow transition",
+						applicationNumber);
 			}
-			
+
 			// Get the application status from workflow state
-			String applicationStatus = workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState();
-			
-			log.info("Workflow state for application {} - State: {}, ApplicationStatus: {}, Final status: {}", 
-					applicationNumber, workflowState.getState(), workflowState.getApplicationStatus(), applicationStatus);
-			
+			String applicationStatus = workflowState.getApplicationStatus() != null
+					? workflowState.getApplicationStatus()
+					: workflowState.getState();
+
+			log.info("Workflow state for application {} - State: {}, ApplicationStatus: {}, Final status: {}",
+					applicationNumber, workflowState.getState(), workflowState.getApplicationStatus(),
+					applicationStatus);
+
 			// For payment completion, we expect APPROVED status
 			if (!"APPROVED".equals(applicationStatus)) {
-				log.warn("Application status is not APPROVED after payment: {} for application: {}. Will force to APPROVED.", applicationStatus, applicationNumber);
+				log.warn(
+						"Application status is not APPROVED after payment: {} for application: {}. Will force to APPROVED.",
+						applicationStatus, applicationNumber);
 			} else {
 				log.info("Application status is APPROVED after payment for application: {}", applicationNumber);
 			}
-			
+
 			AllotmentCriteria criteria = AllotmentCriteria.builder()
 					.applicationNumbers(Collections.singleton(applicationNumber))
 //					.tenantId(tenantId)
@@ -139,34 +146,43 @@ public class PaymentNotificationService {
 			}
 
 			AllotmentDetails application = applications.get(0);
-			
-			// For both new and renewal applications, ALWAYS set status to APPROVED after payment completion
-			// This ensures consistency regardless of what workflow returns (same logic as new applications)
+
+			// For both new and renewal applications, ALWAYS set status to APPROVED after
+			// payment completion
+			// This ensures consistency regardless of what workflow returns (same logic as
+			// new applications)
 			String applicationType = application.getApplicationType();
 			boolean isRenewal = applicationType != null && RLConstants.RENEWAL_RL_APPLICATION.equals(applicationType);
-			
-			// Always use APPROVED status after payment completion for both new and renewal applications
+
+			// Always use APPROVED status after payment completion for both new and renewal
+			// applications
 			// Workflow should return APPROVED, but we enforce it to ensure consistency
 			if (!"APPROVED".equals(applicationStatus)) {
-				log.warn("Workflow returned status '{}' instead of APPROVED for application: {} (type: {}). Forcing to APPROVED.", 
+				log.warn(
+						"Workflow returned status '{}' instead of APPROVED for application: {} (type: {}). Forcing to APPROVED.",
 						applicationStatus, applicationNumber, applicationType);
 			}
 			applicationStatus = "APPROVED";
-			
-			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
-					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
-			
-			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
-			statusUpdateInDatabaseByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
-			
+
+			log.info(
+					"Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})",
+					applicationNumber, applicationType, isRenewal,
+					workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus()
+							: workflowState.getState());
+
+			// Always generate/update petRegistrationNumber and update status for both new
+			// and renewal applications after payment
+			statusUpdateInDatabaseByApplicationNumber(applicationNumber, applicationStatus,
+					paymentRequest.getRequestInfo());
+
 		} catch (Exception e) {
 			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
 		}
 	}
-	
+
 	/**
-	 * Transitions workflow to APPROVED state by calling workflow service with PAY action
-	 * Returns the state from workflow response
+	 * Transitions workflow to APPROVED state by calling workflow service with PAY
+	 * action Returns the state from workflow response
 	 */
 	private State transitionWorkflowToApproved(PaymentRequest paymentRequest) {
 		try {
@@ -175,21 +191,20 @@ public class PaymentNotificationService {
 				log.error("ProcessInstance is null, cannot transition workflow");
 				return null;
 			}
-			
+
 			Role role = Role.builder().code("SYSTEM").tenantId(paymentRequest.getPayment().getTenantId()).build();
 			paymentRequest.getRequestInfo().getUserInfo().getRoles().add(role);
-			
-			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(
-					paymentRequest.getRequestInfo(),
+
+			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(paymentRequest.getRequestInfo(),
 					Collections.singletonList(processInstance));
-			
+
 			State state = callWorkFlow(workflowRequest);
 			if (state == null) {
 				log.error("Workflow transition returned null state");
 			}
-			
+
 			return state;
-			
+
 		} catch (Exception e) {
 			log.error("Error transitioning workflow to APPROVED: {}", e.getMessage(), e);
 			return null;
@@ -197,14 +212,14 @@ public class PaymentNotificationService {
 	}
 
 	/**
-	 * Constructs a ProcessInstance object from the payment request.
-	 * Performs null checks to prevent NullPointerExceptions.
+	 * Constructs a ProcessInstance object from the payment request. Performs null
+	 * checks to prevent NullPointerExceptions.
 	 */
 	private ProcessInstance getProcessInstanceForRL(PaymentRequest paymentRequest) {
-		if (paymentRequest == null || paymentRequest.getPayment() == null ||
-				paymentRequest.getPayment().getPaymentDetails() == null ||
-				paymentRequest.getPayment().getPaymentDetails().isEmpty() ||
-				paymentRequest.getPayment().getPaymentDetails().get(0).getBill() == null) {
+		if (paymentRequest == null || paymentRequest.getPayment() == null
+				|| paymentRequest.getPayment().getPaymentDetails() == null
+				|| paymentRequest.getPayment().getPaymentDetails().isEmpty()
+				|| paymentRequest.getPayment().getPaymentDetails().get(0).getBill() == null) {
 			log.error("Missing required data to build ProcessInstance from paymentRequest: {}", paymentRequest);
 			return null;
 		}
@@ -245,7 +260,8 @@ public class PaymentNotificationService {
 			}
 
 			ProcessInstanceResponse response = mapper.convertValue(object, ProcessInstanceResponse.class);
-			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
+			if (response == null || response.getProcessInstances() == null
+					|| response.getProcessInstances().isEmpty()) {
 				log.error("Empty response from workflow service");
 				return null;
 			}
@@ -258,60 +274,61 @@ public class PaymentNotificationService {
 	}
 
 	/**
-	 * Generates petRegistrationNumber if needed and updates database with APPROVED status
+	 * Generates petRegistrationNumber if needed and updates database with APPROVED
+	 * status
 	 */
-	private void statusUpdateInDatabaseByApplicationNumber(String applicationNumber, String status, RequestInfo requestInfo) {
+	private void statusUpdateInDatabaseByApplicationNumber(String applicationNumber, String status,
+			RequestInfo requestInfo) {
 		try {
-			updateDatabaseWithStatus(applicationNumber, status, requestInfo);			
+			updateDatabaseWithStatus(applicationNumber, status, requestInfo);
 		} catch (Exception e) {
-			log.error("Error generating applicationNumber and updating database for application: {}, Error: {}", 
+			log.error("Error generating applicationNumber and updating database for application: {}, Error: {}",
 					applicationNumber, e.getMessage(), e);
 		}
 	}
-	
+
 	/**
 	 * Fetches the current process instance from workflow service
 	 */
-	private ProcessInstance fetchProcessInstanceFromWorkflow(String businessId, String tenantId, RequestInfo requestInfo) {
+	private ProcessInstance fetchProcessInstanceFromWorkflow(String businessId, String tenantId,
+			RequestInfo requestInfo) {
 		try {
 			StringBuilder url = new StringBuilder(configs.getWfHost());
 			url.append(configs.getWfProcessInstanceSearchPath());
 			url.append("?tenantId=").append(tenantId);
 			url.append("&businessIds=").append(businessId);
-			
-			org.egov.rl.web.contracts.RequestInfoWrapper requestInfoWrapper = 
-					org.egov.rl.web.contracts.RequestInfoWrapper.builder()
-					.requestInfo(requestInfo)
-					.build();
-			
+
+			org.egov.rl.web.contracts.RequestInfoWrapper requestInfoWrapper = org.egov.rl.web.contracts.RequestInfoWrapper
+					.builder().requestInfo(requestInfo).build();
+
 			Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper).get();
 			if (result == null) {
 				log.error("No response from workflow service when fetching process instance");
 				return null;
 			}
-			
+
 			ProcessInstanceResponse response = mapper.convertValue(result, ProcessInstanceResponse.class);
-			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
+			if (response == null || response.getProcessInstances() == null
+					|| response.getProcessInstances().isEmpty()) {
 				log.error("Empty response from workflow service");
 				return null;
 			}
-			
+
 			ProcessInstance wfProcessInstance = response.getProcessInstances().get(0);
-			
+
 			ProcessInstance processInstance = new ProcessInstance();
 			processInstance.setBusinessId(wfProcessInstance.getBusinessId());
 			processInstance.setTenantId(wfProcessInstance.getTenantId());
 			processInstance.setBusinessService(wfProcessInstance.getBusinessService());
 			processInstance.setState(wfProcessInstance.getState());
-			
+
 			return processInstance;
-			
+
 		} catch (Exception e) {
 			log.error("Error fetching process instance from workflow service: {}", e.getMessage(), e);
 			return null;
 		}
 	}
-
 
 	/**
 	 * Updates database with status and petRegistrationNumber
@@ -321,76 +338,66 @@ public class PaymentNotificationService {
 			String updateQuery;
 			Object[] params;
 			long currentTime = System.currentTimeMillis();
-			
+
 			if (applicationNumber != null && !applicationNumber.isEmpty()) {
 				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodified_time=?, lastmodified_by=? WHERE application_number = ?";
-				params = new Object[]{
-					status,
-					currentTime,
-					requestInfo.getUserInfo().getUuid(),
-					applicationNumber
-				};
+				params = new Object[] { status, currentTime, requestInfo.getUserInfo().getUuid(), applicationNumber };
 			} else {
 				updateQuery = "UPDATE eg_rl_allotment SET status = ?, lastmodified_time=?, lastmodified_by=? WHERE application_number = ?";
-				params = new Object[]{
-					status,
-					currentTime,
-					requestInfo.getUserInfo().getUuid(),
-					applicationNumber
-				};
+				params = new Object[] { status, currentTime, requestInfo.getUserInfo().getUuid(), applicationNumber };
 			}
-			
-			log.info("Executing database update for application: {} with status: {}, RL: {}", 
-					status, applicationNumber != null ? applicationNumber : "null");
-			
+
+			log.info("Executing database update for application: {} with status: {}, RL: {}", status,
+					applicationNumber != null ? applicationNumber : "null");
+
 			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
-			
+
 			if (rowsUpdated > 0) {
 				updateScheduler(applicationNumber);
-				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
+				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}",
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
 			} else {
-				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
-						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
+				log.error(
+						"FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}",
+						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime,
+						applicationNumber);
 			}
-			
+
 		} catch (Exception e) {
-			log.error("Failed to update database for application: {}, Error: {}", 
-					applicationNumber, e.getMessage(), e);
+			log.error("Failed to update database for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
 		}
 	}
+
 	private void updateScheduler(String applicationNumber) {
 		try {
 			String updateQuery;
 			Object[] params;
 			long currentTime = System.currentTimeMillis();
-			
+
 			if (applicationNumber != null && !applicationNumber.isEmpty()) {
 				updateQuery = "UPDATE eg_rl_allotment_scheduler SET notification_count_for_current_cycle=0, demand_id = null, ispayment_reminder=false WHERE application_number = ?";
-				params = new Object[]{
-					applicationNumber
-				};
+				params = new Object[] { applicationNumber };
 			} else {
 				updateQuery = "UPDATE eg_rl_allotment_scheduler SET notification_count_for_current_cycle=0, demand_id = null, ispayment_reminder=false WHERE application_number = ?";
-					params = new Object[]{
-					applicationNumber
-				};
+				params = new Object[] { applicationNumber };
 			}
 			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
-			
-			
+
 //			log.info("Executing database update for application: {} with status: {}, RL: {}", 
 //					status, applicationNumber != null ? applicationNumber : "null");
 //			
 			try {
-			NotificationSchedule scheduler=schedulerRepository.getNotificationsByApplicationNumber(applicationNumber).get(0);
-			LocalDateTime now=LocalDateTime.now();
-	        Duration d=Duration.between(now, scheduler.getLastPaymentDate());
-	        long day=d.toDays();
-			String insertQuery="INSERT INTO public.eg_rl_payment_history(id, application_number, tenant_id, slipid, last_payment_date, payment_completed_date, amount, delayinday, payment_agains) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-			allotmentRepository.getJdbcTemplate().update(insertQuery,
-					scheduler.getId(),scheduler.getApplicationNumber(),scheduler.getTenantId(),"",scheduler.getLastPaymentDate(),now,"",day,"alloment");
-			}catch (Exception e) {
+				NotificationSchedule scheduler = schedulerRepository
+						.getNotificationsByApplicationNumber("'PB-RL-2025-26-000101'").get(0);
+				LocalDateTime now = LocalDateTime.now();
+				Duration d = Duration.between(now, scheduler.getLastPaymentDate());
+				long day = d.toDays();
+				String insertQuery = "INSERT INTO eg_rl_payment_history(id, application_number, tenant_id, slipid, last_payment_date, payment_completed_date, amount, delayinday, payment_agains) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				allotmentRepository.getJdbcTemplate().update(insertQuery, scheduler.getId(),
+						scheduler.getApplicationNumber(), scheduler.getTenantId(), "", scheduler.getLastPaymentDate(),
+						now, "", day, "alloment");
+			} catch (Exception e) {
+				e.printStackTrace();
 				// TODO: handle exception
 			}
 //			
@@ -401,10 +408,9 @@ public class PaymentNotificationService {
 //				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
 //						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
 //			}
-			
+
 		} catch (Exception e) {
-			log.error("Failed to update database for application: {}, Error: {}", 
-					applicationNumber, e.getMessage(), e);
+			log.error("Failed to update database for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
 		}
 	}
 

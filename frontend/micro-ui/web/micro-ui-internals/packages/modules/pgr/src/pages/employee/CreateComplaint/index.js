@@ -9,6 +9,31 @@ import { FormComposer } from "../../../components/FormComposer";
 import { createComplaint } from "../../../redux/actions/index";
 
 export const CreateComplaint = ({ parentUrl }) => {
+   const location = useLocation();
+   useEffect(() => {
+    sessionStorage.removeItem("complaintType");
+    sessionStorage.removeItem("subType");
+    sessionStorage.removeItem("PriorityLevel");
+    sessionStorage.removeItem("mobileNumber");
+    sessionStorage.removeItem("name");
+    sessionStorage.removeItem("emailId");
+    sessionStorage.removeItem("houseNoAndStreetName");
+    sessionStorage.removeItem("landmark");
+    sessionStorage.removeItem("description");
+
+     setComplaintType({});
+      setSubType({});
+      setPriorityLevel({});
+      setMobileNumber("");
+      setFullName("");
+      setEmail("");
+      setDescription("");
+      setSelectedLocality(null);
+      setSubTypeMenu([]);
+      setSubmitted(false);
+      setSubmitValve(false);
+    // Add any other keys you want to clear
+  }, [location.pathname]);
   const cities = Digit.Hooks.pgr.useTenants();
   const { t } = useTranslation();
 
@@ -65,7 +90,8 @@ export const CreateComplaint = ({ parentUrl }) => {
   const history = useHistory();
   const serviceDefinitions = Digit.GetServiceDefinitions;
   const client = useQueryClient();
-  const location = useLocation();
+ 
+
   useEffect(() => {
     if (complaintType?.key && selectedCity?.code && selectedLocality?.code) {
       setSubmitValve(true);
@@ -411,6 +437,7 @@ export const CreateComplaint = ({ parentUrl }) => {
     <>
     {/* {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
     <FormComposer
+     key={location.pathname} 
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}
       onSubmit={wrapperSubmit}

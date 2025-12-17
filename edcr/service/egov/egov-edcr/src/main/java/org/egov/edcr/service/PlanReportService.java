@@ -126,6 +126,7 @@ public class PlanReportService {
     private static final String LEVEL = "Level";
     private static final String COMBINED_BLOCKS_SUMMARY_DETAILS = "Overall Summary";
     private static final String BLOCK_WISE_SUMMARY = "Block Wise Summary";
+    private static final BigDecimal BUILDING_HEIGHT = BigDecimal.valueOf(15);
     
  // === MANDATORY KEYS THAT DECIDE FINAL REPORT STATUS ===
     private static final List<String> MANDATORY_KEYS = Arrays.asList(
@@ -147,7 +148,7 @@ public class PlanReportService {
         "North Direction",
         "Parking",
         "Travel Distance To Emergency Exits",
-        "1Fire Tender Movement",
+        //"1Fire Tender Movement",
         "1FrontRearSideYardDetails"
     );
 
@@ -1474,7 +1475,7 @@ public class PlanReportService {
         InputStream exportPdf = null;
         
      // Now update the terminology
-        //replaceStatusWithFulfillTerms(valuesMap);
+        replaceStatusWithFulfillTerms(valuesMap);
         
         try {
             JasperPrint generateJasperPrint = DynamicJasperHelper.generateJasperPrint(dr, new ClassicLayoutManager(),
@@ -1810,6 +1811,10 @@ public class PlanReportService {
                     dcrReportBlockDetail.setBuildingHeightExcludingMPt(building.getBuildingHeightExcludingMP());
                     dcrReportBlockDetail.setConstructedArea(building.getTotalConstructedArea());
                     List<Floor> floors = building.getFloors();
+                    if (building.getBuildingHeightExcludingMP() != null &&
+                    	    building.getBuildingHeightExcludingMP().compareTo(BUILDING_HEIGHT) > 0) {                    	    
+                    	    MANDATORY_KEYS.add("1Fire Tender Movement");
+                    }
 
                     if (!floors.isEmpty()) {
                         List<DcrReportFloorDetail> dcrReportFloorDetails = new ArrayList<>();
@@ -1989,14 +1994,34 @@ public class PlanReportService {
         return virtualBuildingReport;
     }
 
+//    private List<ConditionalStyle> getConditonalStyles() {
+//        List<ConditionalStyle> conditionalStyles = new ArrayList<>();
+//        FetchCondition fc = new FetchCondition(STATUS, "Not Accepted");
+//
+//        ConditionalStyle cs = new ConditionalStyle(fc, reportService.getDetailStyle(Color.RED));
+//        conditionalStyles.add(cs);
+//
+//        fc = new FetchCondition(STATUS, "Accepted");
+//
+//        cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(0, 128, 0)));
+//        conditionalStyles.add(cs);
+//
+//        fc = new FetchCondition(STATUS, "Verify");
+//
+//        cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(30, 144, 255)));
+//        conditionalStyles.add(cs);
+//
+//        return conditionalStyles;
+//    }
+    
     private List<ConditionalStyle> getConditonalStyles() {
         List<ConditionalStyle> conditionalStyles = new ArrayList<>();
-        FetchCondition fc = new FetchCondition(STATUS, "Not Accepted");
+        FetchCondition fc = new FetchCondition(STATUS, "Not Fulfill");
 
         ConditionalStyle cs = new ConditionalStyle(fc, reportService.getDetailStyle(Color.RED));
         conditionalStyles.add(cs);
 
-        fc = new FetchCondition(STATUS, "Accepted");
+        fc = new FetchCondition(STATUS, "Fulfill");
 
         cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(0, 128, 0)));
         conditionalStyles.add(cs);

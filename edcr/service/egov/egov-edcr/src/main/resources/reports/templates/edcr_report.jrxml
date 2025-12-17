@@ -10,7 +10,7 @@
 	<import value="org.egov.infstr.utils.*"/>
 	<import value="org.egov.infra.reporting.util.ReportUtil"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="report status style" forecolor="#FFFFFF">
+	<!-- <style name="report status style" forecolor="#FFFFFF">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$P{reportStatus} != null && $P{reportStatus}.equalsIgnoreCase("Accepted")]]></conditionExpression>
 			<style forecolor="#009900"/>
@@ -19,7 +19,30 @@
 			<conditionExpression><![CDATA[$P{reportStatus} != null && !$P{reportStatus}.equalsIgnoreCase("Accepted")]]></conditionExpression>
 			<style forecolor="#FF0000"/>
 		</conditionalStyle>
-	</style>
+	</style>-->
+	<style name="report status style" forecolor="#FFFFFF" fontName="Arial" isBold="true">
+    <conditionalStyle>
+        <!-- Condition: reportStatus is "Fulfill" (case-insensitive) -->
+        <conditionExpression>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Fulfill")]]>
+        </conditionExpression>
+        <style forecolor="#009900"/>
+    </conditionalStyle>
+    <conditionalStyle>
+        <!-- Condition: reportStatus is "Not Fulfill" (case-insensitive) -->
+        <conditionExpression>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Not Fulfill")]]>
+        </conditionExpression>
+        <style forecolor="#FF0000"/>
+    </conditionalStyle>
+    <!-- Optional: for Mixed or Partially Fulfill (if you use it) -->
+    <conditionalStyle>
+        <conditionExpression>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Mixed")]]>
+        </conditionExpression>
+        <style forecolor="#FF9900"/> <!-- Orange for Mixed -->
+    </conditionalStyle>
+</style>
 	<parameter name="resultOutput" class="java.lang.String"/>
 	<parameter name="errorOutput" class="java.lang.String"/>
 	<parameter name="reportStatus" class="java.lang.String"/>

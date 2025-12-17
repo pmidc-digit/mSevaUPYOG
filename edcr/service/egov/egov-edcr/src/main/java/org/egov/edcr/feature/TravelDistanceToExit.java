@@ -91,8 +91,8 @@ public class TravelDistanceToExit extends FeatureProcess {
                 !pl.getVirtualBuilding().getOccupancyTypes().isEmpty() && !pl.getBlocks().isEmpty()) {
             boolean floorsAboveGroundLessThanOrEqualTo3ForAllBlks = true;
             for (Block block : pl.getBlocks()) {
-                if (block.getBuilding() != null && block.getBuilding().getFloorsAboveGround() != null &&
-                        block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) >= 0) {
+                if (block.getBuilding() != null && block.getBuilding().getFloorsAboveGround() != null){
+                		//&& block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) >= 0) {
                     floorsAboveGroundLessThanOrEqualTo3ForAllBlks = false;
                     break;
                 }

@@ -92,6 +92,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             enabled: !!safeTenantId,
         })
     const [adjustedAmounts, setAdjustedAmounts] = useState(() => currentStepData?.createdResponse?.additionalDetails?.adjustedAmounts || []);
+    const [isFeesDeclared, setIsFeesDeclared] = useState(() => currentStepData?.createdResponse?.additionalDetails?.isFeesDeclared || false);
 
     const closeMenu = () => {
         setDisplayMenu(false);
@@ -390,6 +391,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }
     };
 
+    const setFeesDeclaration = (e) => {        
+        setIsFeesDeclared(true);
+    };
+
     const checkLabels = () => {
         return (
             <div>
@@ -594,7 +599,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
                             BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
                             BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
-                        }
+                        },
+                        isFeesDeclared
                     },
                     documents,
                     workflow: {
@@ -623,9 +629,13 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // setShowModal(true);
         // setSelectedAction(action);
         console.log("Selected Action", action?.action, otpVerifiedTimestamp, isArchitectDeclared, agree);
-        if(action?.action !== "SAVE_AS_DRAFT" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "")){
+        if(action?.action !== "SAVE_AS_DRAFT" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
             if(!agree){
                 setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
+                return
+            }
+            if(!isFeesDeclared){
+                setShowToast({ key: "true", error: true, message: t("Self Certification Fees Declaration is Mandatory") })
                 return
             }
             if(otpVerifiedTimestamp === ""){
@@ -1540,6 +1550,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         adjustedAmounts={adjustedAmounts}
                         setAdjustedAmounts={setAdjustedAmounts}
                     />}
+                    <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />
                 </Card>
 
 

@@ -137,59 +137,58 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    try{
+    try {
       setLoading(true);
       let application = data?.hallsBookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
-      const updatedApplication = {
-        ...application,
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-    }catch (error) {
-      console.error("Sanction Letter download error:", error);
+      let fileStoreId = application?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const updatedApplication = {
+          ...application,
+          paymentReceiptFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+        refetch();
       }
-      finally { setLoading(false); }
-    
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    try{
+    try {
       setLoading(true);
       let application = {
-      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
+        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
           return {
             ...app,
             bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
               return new Date(a.bookingDate) - new Date(b.bookingDate);
-            })
+            }),
           };
-        })
-    };
+        }),
+      };
 
-    let fileStoreId = payments?.fileStoreId;
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
-      fileStoreId = response?.filestoreIds[0];
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-    }
-    catch (error) {
-      console.error("Sanction Letter download error:", error);
+      let fileStoreId = payments?.fileStoreId;
+      if (!fileStoreId) {
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
+        fileStoreId = response?.filestoreIds[0];
       }
-      finally { setLoading(false); }
-    
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleDownload = async (document, tenantid) => {
@@ -265,6 +264,9 @@ const CHBApplicationDetails = () => {
       bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
+
+  console.log("docs===", docs);
+
   return (
     <React.Fragment>
       <div>
@@ -349,7 +351,7 @@ const CHBApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-         <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
     </React.Fragment>

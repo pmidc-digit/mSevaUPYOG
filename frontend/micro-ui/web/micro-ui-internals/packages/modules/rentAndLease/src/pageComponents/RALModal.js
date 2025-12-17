@@ -45,7 +45,6 @@ const RALModal = ({
   const [financialYears, setFinancialYears] = useState([]);
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
-  console.log(action, "action");
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,

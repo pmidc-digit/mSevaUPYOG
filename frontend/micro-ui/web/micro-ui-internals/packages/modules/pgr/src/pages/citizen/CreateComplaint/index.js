@@ -476,7 +476,22 @@ const [description, setDescription] = useState("")
        },
       ],
     },
-    
+    {
+      head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
+      body: [
+        {
+          //label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
+          type: "textarea",
+          onChange: handleDescription,
+          value:description,
+          populators: {
+            name: "description",
+            placeholder: t("CS_ADDITIONAL_DETAILS_PLACEHOLDER"),
+            onChange: handleDescription,
+          },
+        },
+      ],
+    },
     {
       head: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES"),
       body: [
@@ -499,22 +514,7 @@ const [description, setDescription] = useState("")
         },
       ],
     },
-    {
-      head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
-      body: [
-        {
-          //label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
-          type: "textarea",
-          onChange: handleDescription,
-          value:description,
-          populators: {
-            name: "description",
-            placeholder: t("CS_ADDITIONAL_DETAILS_PLACEHOLDER"),
-            onChange: handleDescription,
-          },
-        },
-      ],
-    },
+    
   ];
     useEffect(()=>{
       if(propetyData !== "undefined"   && propetyData !== null)

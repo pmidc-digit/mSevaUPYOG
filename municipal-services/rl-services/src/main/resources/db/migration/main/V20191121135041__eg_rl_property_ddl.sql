@@ -91,60 +91,60 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_document_tenantid ON eg_rl_document (allotm
 
 
 -->allotment closure or discontunation table 
-CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
-(
-    id character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    allotment_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
-	tenant_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    status character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
-	alloted_application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    reason_for_clsure character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    amount_to_be_refund character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    amount_to_be_deducted character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    refund_amount character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    notes_comments character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    upload_proof character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    created_time bigint NOT NULL,
-    created_by character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    lastmodified_time bigint,
-    lastmodified_by character varying(128) COLLATE pg_catalog."default",
-    CONSTRAINT pk_eg_rl_allotment_clsure PRIMARY KEY (id),
-    CONSTRAINT unique_eg_rl_allotment_clsure UNIQUE (allotment_id),
-	CONSTRAINT unique_eg_rl_alloted_application_number UNIQUE (alloted_application_number),
-    CONSTRAINT fk_eg_rl_allotment_clsure FOREIGN KEY (allotment_id)
-        REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-);
+-- CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
+-- (
+--     id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+--     allotment_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+-- 	tenant_id character varying(128) COLLATE pg_catalog."default" NOT NULL,
+--     status character varying(128) COLLATE pg_catalog."default" NOT NULL,
+--     application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
+-- 	alloted_application_number character varying(128) COLLATE pg_catalog."default" NOT NULL,
+--     reason_for_clsure character varying(128) COLLATE pg_catalog."default" NOT NULL,
+--     amount_to_be_refund character varying(256) COLLATE pg_catalog."default" NOT NULL,
+--     amount_to_be_deducted character varying(256) COLLATE pg_catalog."default" NOT NULL,
+--     refund_amount character varying(256) COLLATE pg_catalog."default" NOT NULL,
+--     notes_comments character varying(256) COLLATE pg_catalog."default" NOT NULL,
+--     upload_proof character varying(256) COLLATE pg_catalog."default" NOT NULL,
+--     created_time bigint NOT NULL,
+--     created_by character varying(128) COLLATE pg_catalog."default" NOT NULL,
+--     lastmodified_time bigint,
+--     lastmodified_by character varying(128) COLLATE pg_catalog."default",
+--     CONSTRAINT pk_eg_rl_allotment_clsure PRIMARY KEY (id),
+--     CONSTRAINT unique_eg_rl_allotment_clsure UNIQUE (allotment_id),
+-- 	CONSTRAINT unique_eg_rl_alloted_application_number UNIQUE (alloted_application_number),
+--     CONSTRAINT fk_eg_rl_allotment_clsure FOREIGN KEY (allotment_id)
+--         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
+--         ON UPDATE NO ACTION
+--         ON DELETE NO ACTION
+-- );
 
 
 
 -->allotments_cheduler table 
-CREATE TABLE IF NOT EXISTS eg_rl_allotment_scheduler(
- id CHARACTER VARYING(128) NOT NULL,
- allotment_id CHARACTER VARYING(128) NOT NULL,
- application_number CHARACTER VARYING(128) NOT NULL,
- tenant_id CHARACTER VARYING(128) NOT NULL,
- status int NOT NULL, --> 1-Active,0-inActive
- payment_success_id CHARACTER VARYING(128),
- demand_id CHARACTER VARYING(128) NOT NULL,
+-- CREATE TABLE IF NOT EXISTS eg_rl_allotment_scheduler(
+--  id CHARACTER VARYING(128) NOT NULL,
+--  allotment_id CHARACTER VARYING(128) NOT NULL,
+--  application_number CHARACTER VARYING(128) NOT NULL,
+--  tenant_id CHARACTER VARYING(128) NOT NULL,
+--  status int NOT NULL, --> 1-Active,0-inActive
+--  payment_success_id CHARACTER VARYING(128),
+--  demand_id CHARACTER VARYING(128) NOT NULL,
 
- --> scheduler details section
- current_notification_date bigint NOT NULL,
- next_cycle CHARACTER VARYING(128) NOT NULL, --> monthly
- next_notification_date CHARACTER VARYING(128) NOT NULL,
- notification_type CHARACTER VARYING(128) NOT NULL, --> 1-sms,2-email,3-both
- notification_status int NOT NULL, --> 1-sent,2-failed,3-pending
- notification_count_for_current_cycle int NOT NULL,
+--  --> scheduler details section
+--  current_notification_date bigint NOT NULL,
+--  next_cycle CHARACTER VARYING(128) NOT NULL, --> monthly
+--  next_notification_date CHARACTER VARYING(128) NOT NULL,
+--  notification_type CHARACTER VARYING(128) NOT NULL, --> 1-sms,2-email,3-both
+--  notification_status int NOT NULL, --> 1-sent,2-failed,3-pending
+--  notification_count_for_current_cycle int NOT NULL,
 
- notification_message CHARACTER VARYING(256) NOT NULL,
- payment_link CHARACTER VARYING(256) NOT NULL,
- created_time bigint NOT NULL,
- created_by character varying(128)  NOT NULL,
- lastmodified_time bigint,
- lastmodified_by character varying(128),
+--  notification_message CHARACTER VARYING(256) NOT NULL,
+--  payment_link CHARACTER VARYING(256) NOT NULL,
+--  created_time bigint NOT NULL,
+--  created_by character varying(128)  NOT NULL,
+--  lastmodified_time bigint,
+--  lastmodified_by character varying(128),
     
-CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
-CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id) REFERENCES eg_rl_allotment(id)
-);
+-- CONSTRAINT pk_eg_rl_allotment_scheduler PRIMARY KEY (id),
+-- CONSTRAINT fk_eg_rl_allotment_scheduler FOREIGN KEY (allotment_id) REFERENCES eg_rl_allotment(id)
+-- );

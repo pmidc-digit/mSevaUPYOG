@@ -909,6 +909,13 @@ input[type="number"] {
   gap: 16px;
 }
 
+.timeline-date-assignee {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0px 2px 0px;
+}
+
 .timeline-header-item {
   display: flex;
   flex-direction: row;
@@ -1000,14 +1007,14 @@ input[type="number"] {
 }
 
 .timeline-docs-wrapper {
-  margin-top: 10px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .timeline-doc-link {
-  min-width: 100px;
+  color: #0d43a7;
+  text-decoration: underline;
 }
 
 .timeline-doc-icon {

@@ -57,7 +57,8 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
         if (!documentLink) return null;
         return (
           <a key={idx} target="_blank" rel="noopener noreferrer" href={documentLink} className="timeline-doc-link">
-            <PDFSvg className="timeline-doc-icon" />
+            {/* <PDFSvg className="timeline-doc-icon" /> */}
+            {document?.documentType}
           </a>
         );
       })}
@@ -73,6 +74,7 @@ const normalizeTimeline = (workflowDetails) => {
   return rawTimeline?.map((item, index) => {
     const createdDate = item?.auditDetails?.created || "N/A";
     const lastModified = item?.auditDetails?.lastModified || "N/A";
+    const timing = item?.auditDetails?.timing || " ";
 
     return {
       id: index,
@@ -83,6 +85,7 @@ const normalizeTimeline = (workflowDetails) => {
       documents: item?.wfDocuments || [],
       createdDate,
       lastModified,
+      timing,
       noOfDays: calculateDays(createdDate, lastModified),
     };
   });
@@ -90,23 +93,34 @@ const normalizeTimeline = (workflowDetails) => {
 
 /* ===== Header Field Configuration ===== */
 const HEADER_FIELDS = [
-  { label: "CM_TIMELINE_NAME", key: "assignerName" },
-  { label: "CM_TIMELINE_ACTION_TAKEN", key: "performedAction" },
+  // { label: "CM_TIMELINE_ACTION_TAKEN", key: "performedAction" },
   { label: "CM_TIMELINE_ACTION_TAKEN_ON", key: "lastModified" },
   { label: "CM_TIMELINE_DATE_RECEIVED", key: "createdDate" },
-  { label: "CM_TIMELINE_NO_OF_DAYS", key: "noOfDays" },
+  // { label: "CM_TIMELINE_NO_OF_DAYS", key: "noOfDays" },
+  // { label: "CM_TIMELINE_NAME", key: "assignerName" },
 ];
 
 /* ===== Memoized Caption Component ===== */
 const TimelineCaption = React.memo(({ checkpoint, t, onDownloadPDF }) => (
   <div className="timeline-card">
     <div className="timeline-header">
-      {HEADER_FIELDS?.map(({ label, key }) => (
+      {/* {HEADER_FIELDS?.map(({ label, key }) => (
         <div key={key} className="timeline-header-item">
           <span className="timeline-label">{t(label)}:</span>
           <span className="timeline-value">{t(checkpoint?.[key]) || "N/A"}</span>
         </div>
-      ))}
+      ))} */}
+      <div className="timeline-header-item">
+        <span className="timeline-label">{t("CM_TIMELINE_ACTION_TAKEN")}:</span>
+        <span className="timeline-value">{t(checkpoint?.["performedAction"]) || "N/A"}</span>
+      </div>
+      <div className="timeline-header-item">
+        <span className="timeline-label">{t("CM_TIMELINE_ACTION_TAKEN_ON")}:</span>
+        <span className="timeline-value">
+          {t(checkpoint?.lastModified || "CS_NA")}
+          {checkpoint?.timing ? ` ${checkpoint.timing}` : ""}
+        </span>
+      </div>
     </div>
     <div className="timeline-note">
       <span className="timeline-label">{t("CM_TIMELINE_NOTE")}:</span>
@@ -121,6 +135,26 @@ const TimelineCaption = React.memo(({ checkpoint, t, onDownloadPDF }) => (
         ))}
       </div>
     )}
+    <div className="timeline-date-assignee">
+      {/* {HEADER_FIELDS?.map(({ label, key }) => (
+        <div key={key} className="timeline-header-item">
+          <span className="timeline-label">{t(label)}:</span>
+          <span className="timeline-value">{t(checkpoint?.[key]) || "N/A"}</span>
+        </div>
+      ))} */}
+      <div className="timeline-header-item">
+        <span className="timeline-label">{t("CM_TIMELINE_DATE_RECEIVED")}:</span>
+        <span className="timeline-value">{t(checkpoint?.["createdDate"]) || "N/A"}</span>
+      </div>
+      <div className="timeline-header-item">
+        {/* <span className="timeline-label">{t("CM_TIMELINE_NAME")}:</span> */}
+        <span className="timeline-value">{t(checkpoint?.["assignerName"]) || "N/A"}</span>
+      </div>
+    </div>
+    <div className="timeline-header">
+      <span className="timeline-label">{t("CM_TIMELINE_NO_OF_DAYS")}:</span>
+      <span className="timeline-value">{t(checkpoint?.["noOfDays"]) || "N/A"}</span>
+    </div>
   </div>
 ));
 

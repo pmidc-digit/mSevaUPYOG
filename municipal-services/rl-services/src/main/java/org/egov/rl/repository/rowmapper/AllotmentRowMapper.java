@@ -54,6 +54,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			auditDetails = getAuditDetail(rs, "allotment");
 			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
 					.tenantId(rs.getString("tenant_id"))
+					.applicationNumber(rs.getString("application_number"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
 					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
 					.endDate(rs.getLong("end_date")).isGSTApplicable(rs.getBoolean("is_gst_applicable"))

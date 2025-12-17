@@ -115,6 +115,21 @@ public class AllotmentDetails {
 	@JsonProperty("workflow")
 	private Workflow workflow;
 	
+	// closure section
+	
+	@JsonProperty("reasonForClosure")
+	private String reasonForClosure;
+	
+	@JsonProperty("amountToBeDeducted")
+	private String amountToBeDeducted;
+	
+	@JsonProperty("notesComments")
+	private String notesComments;
+	
+	@JsonProperty("refundAmount")
+	private String refundAmount;
+	
+	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
 		if (this.ownerInfo == null) {
 			this.ownerInfo = new ArrayList<>();
@@ -159,7 +174,11 @@ public class AllotmentDetails {
 	            ", auditDetails=" + auditDetails +
 	            ", ownerInfo=" + ownerInfo +
 	            ", additionalDetails=" + additionalDetails +
-	            ", workflow=" + workflow +
+	            ", workflow=" + workflow +      
+	            ", reasonForClosure=" + reasonForClosure +
+	            ", amountToBeDeducted=" + amountToBeDeducted +
+	            ", notesComments=" + notesComments +
+	            ", refundAmount=" + refundAmount +
 	            '}';
 	}
 }

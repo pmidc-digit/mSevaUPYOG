@@ -284,7 +284,10 @@ const RALApplicationDetails = () => {
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
-            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.feesPeriodCycle?.charAt(0)?.toUpperCase() || t("CS_NA")} />
+            <Row
+              label={t("PENALTY_TYPE")}
+              text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
+            />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>
@@ -348,7 +351,7 @@ const RALApplicationDetails = () => {
             showToast={showToast}
             closeToast={closeToast}
             getEmployees={getEmployees}
-            errors={error}
+            // errors={error}
             setShowToast={setShowToast}
           />
         ) : null}

@@ -1,4 +1,4 @@
-import { Card, CardSubHeader, Header, Row, StatusTable, CardSectionHeader,MultiLink } from "@mseva/digit-ui-react-components";
+import { Card, CardSubHeader, Header, Row, StatusTable, CardSectionHeader, MultiLink } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import RALDocuments from "../../components/RALDocument";
@@ -15,7 +15,6 @@ const RALApplicationDetails = () => {
   const [showOptions, setShowOptions] = useState(false);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-  console.log("applicationData", applicationData);
 
   const fetchApplications = async (filters) => {
     setLoader(true);
@@ -27,7 +26,6 @@ const RALApplicationDetails = () => {
       setLoader(false);
     }
   };
-
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -78,7 +76,7 @@ const RALApplicationDetails = () => {
     } catch (error) {
       console.error(error);
       setLoader(false);
-    } 
+    }
   }
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
@@ -157,7 +155,10 @@ const RALApplicationDetails = () => {
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
-            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.feesPeriodCycle?.charAt(0)?.toUpperCase() || t("CS_NA")} />
+            <Row
+              label={t("PENALTY_TYPE")}
+              text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
+            />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>

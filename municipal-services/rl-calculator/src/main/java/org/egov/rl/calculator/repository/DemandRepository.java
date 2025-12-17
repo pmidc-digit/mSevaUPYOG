@@ -1,20 +1,24 @@
 package org.egov.rl.calculator.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 
+import org.egov.rl.calculator.repository.rowmapper.DemandRowMapper;
 import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Repository
 public class DemandRepository {
 
@@ -27,8 +31,9 @@ public class DemandRepository {
 	@Autowired
 	private ObjectMapper mapper;
 
-//	@Autowired
-//	private CommonUtils util;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 	/**
 	 * Creates demand
 	 *
@@ -76,14 +81,18 @@ public class DemandRepository {
 	}
 
 	public List<Demand> getDemandsForRentableIdsAndPeriod(List<String> rentableIds, Long fromDate, Long toDate) {
-		String query = "SELECT * FROM egbs_demand WHERE consumerCode IN (:rentableIds) AND taxPeriodFrom >= :fromDate AND taxPeriodTo <= :toDate";
+		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom >= :fromDate AND taxperiodto <= :toDate";
 		Map<String, Object> params = new HashMap<>();
 		params.put("rentableIds", rentableIds);
 		params.put("fromDate", fromDate);
 		params.put("toDate", toDate);
-
+		Object[] queryParams = new Object[] {
+				params.get("rentableIds"),
+				params.get("fromDate"),
+				params.get("toDate")
+		};
 		try {
-			return jdbcTemplate.query(query, params, new DemandRowMapper());
+			return jdbcTemplate.query(query, queryParams, new DemandRowMapper());
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch demands for the given rentable IDs and period");

@@ -11,7 +11,14 @@ import { pdfDownloadLink } from "../utils";
 
 function CHBDocument({ value = {}, Code, index, showFileName = false }) {
   const { t } = useTranslation();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
+  console.log("value==", value);
+  console.log("Code==", Code);
   const { isLoading, isError, error, data } = Digit.Hooks.chb.useChbDocumentSearch({ value }, { value }, Code, index);
+  // const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
+
+  // console.log("check data===", data?.CHB?.Documents);
 
   const documents = value?.documents
     ? value.documents.documents
@@ -22,14 +29,16 @@ function CHBDocument({ value = {}, Code, index, showFileName = false }) {
     return <Loader />;
   }
 
-  console.log("Code", Code);
+  console.log("data====", data);
+  console.log("documents====", documents);
 
   return (
     <div>
       <React.Fragment>
         <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {documents.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document.fileStoreId);
+          {documents?.map((document, index) => {
+            const fileId = document.fileStoreId || document.filestoreId;
+            let documentLink = pdfDownloadLink(data.pdfFiles, fileId);
             return (
               <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
                 <PDFSvg /* width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }}  */ />

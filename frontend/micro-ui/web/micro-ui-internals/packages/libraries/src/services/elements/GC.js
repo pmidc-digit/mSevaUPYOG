@@ -35,4 +35,15 @@ export const GCService = {
       params: {},
       auth: true,
     }),
+  location: (details, tenantId) =>
+    Request({
+      url: Urls.gc.location,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "GET",
+      params: {},
+      auth: true,
+    }),
 };

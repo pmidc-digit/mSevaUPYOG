@@ -106,9 +106,9 @@ public class ClsureEnrichmentService {
 		allotmentDbClsure.setReasonForClosure(allotmentClsure.getReasonForClosure());
 		allotmentDbClsure.setRefundAmount(allotmentClsure.getRefundAmount());
 		allotmentDbClsure.setUploadProof(allotmentClsure.getUploadProof());
-		allotmentDbClsure.setStatus(allotmentClsure.getWorkflow().getStatus());
-		allotmentDbClsure.setNotesComments(allotmentClsure.getNotesComments());
-		allotmentDbClsure.setWorkflow(allotmentClsure.getWorkflow());
+//		allotmentDbClsure.setStatus(allotmentClsure.getWorkflow().getStatus());
+//		allotmentDbClsure.setNotesComments(allotmentClsure.getNotesComments());
+//		allotmentDbClsure.setWorkflow(allotmentClsure.getWorkflow());
 		clsureRequest.setAllotmentClsure(allotmentDbClsure);
 		System.out.println("---------allotmentDbClsure--------"+allotmentDbClsure.getAmountToBeDeducted());
 		
@@ -128,14 +128,14 @@ public class ClsureEnrichmentService {
 		AllotmentClsure allotmentClsure=clsureRequest.getAllotmentClsure();
 		allotmentClsure.setId(UUID.randomUUID().toString());
 		String tenantId = clsureRequest.getAllotmentClsure().getTenantId();
-		RequestInfo requestInfo = clsureRequest.getRequestInfo();
-		if (config.getIsWorkflowEnabled()) {
-			allotmentClsure.setStatus(allotmentClsure.getWorkflow().getStatus());
-		}
+//		RequestInfo requestInfo = clsureRequest.getRequestInfo();
+//		if (config.getIsWorkflowEnabled()) {
+//			allotmentClsure.setStatus(allotmentClsure.getWorkflow().getStatus());
+//		}
 		clsureRequest.setAllotmentClsure(allotmentClsure);
 		
-		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId, config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1).get(0);
-		allotmentClsure.setApplicationNumber(applicationNumber);
+//		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId, config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1).get(0);
+//		allotmentClsure.setApplicationNumber(applicationNumber);
 		clsureRequest.setAllotmentClsure(allotmentClsure);
 	}
 

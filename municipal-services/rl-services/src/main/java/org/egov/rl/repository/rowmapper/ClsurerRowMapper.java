@@ -26,7 +26,7 @@ public class ClsurerRowMapper implements ResultSetExtractor<List<AllotmentClsure
 					.allotmentId(rs.getString("allotment_id"))
 					.tenantId(rs.getString("tenant_id"))
 					.status(rs.getString("status"))
-					.applicationNumber(rs.getString("application_number"))
+//					.applicationNumber(rs.getString("application_number"))
 					.allotedApplicationNumber(rs.getString("alloted_application_number"))
 					.amountToBeDeducted(rs.getString("amount_to_be_deducted"))
 					.amountToBeRefund(rs.getString("amount_to_be_refund"))

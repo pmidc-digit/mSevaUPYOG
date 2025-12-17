@@ -89,7 +89,7 @@ public class AllotmentDetails {
 	private String termAndCondition;;
 	
 	@JsonProperty("penaltyType")
-	private String penaltyType;;
+	private String penaltyType;
 	
 	@JsonProperty("witnessDetails")
 	private String witnessDetails;
@@ -114,6 +114,10 @@ public class AllotmentDetails {
 	
 	@JsonProperty("workflow")
 	private Workflow workflow;
+	
+    @JsonProperty("AllotmentClsure")
+    private AllotmentClsure allotmentClsure;
+
 	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
 		if (this.ownerInfo == null) {

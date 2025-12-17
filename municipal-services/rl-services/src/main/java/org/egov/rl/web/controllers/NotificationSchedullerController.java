@@ -12,7 +12,6 @@ import org.egov.rl.models.ClsureResponse;
 import org.egov.rl.models.NotificationSchedule;
 import org.egov.rl.models.SchedullerRequest;
 import org.egov.rl.models.SchedullerResponse;
-import org.egov.rl.service.ClsureService;
 import org.egov.rl.service.NotificationSchedullerService;
 import org.egov.rl.util.ResponseInfoFactory;
 import org.springframework.beans.factory.annotation.Autowired;

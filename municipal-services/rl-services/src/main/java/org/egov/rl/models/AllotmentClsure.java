@@ -42,9 +42,6 @@ public class AllotmentClsure {
     @JsonProperty("status")
     private String status;
     
-	@JsonProperty("applicationNumber")
-	private String applicationNumber;
-	
 	@JsonProperty("allotedApplicationNumber")
 	private String allotedApplicationNumber;
 
@@ -69,7 +66,7 @@ public class AllotmentClsure {
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
-    
-	@JsonProperty("workflow")
-	private Workflow workflow;
+//    
+//	@JsonProperty("workflow")
+//	private Workflow workflow;
 }

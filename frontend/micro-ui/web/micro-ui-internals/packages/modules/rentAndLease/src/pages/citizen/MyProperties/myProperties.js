@@ -98,10 +98,10 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   // };
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="ral-my-properties-container">
       <div>
         {header && (
-          <Header style={{ marginLeft: "8px" }}>
+          <Header className="ral-my-properties-header">
             {t(header)} ({totalCount})
           </Header>
         )}
@@ -119,12 +119,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 }
               />
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "20px",
-                }}
-              >
+              <div className="ral-card-action-container">
                 {
                   <Link to={`/digit-ui/citizen/rentandlease/property/${property?.applicationNumber}/${property?.tenantId}`}>
                     <SubmitBar label={t("CS_VIEW_DETAILS")} />
@@ -139,11 +134,11 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
           );
         })}
 
-        {getPropertiesData?.length === 0 && !loader && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("RAL_NO_APPLICATION_FOUND_MSG")}</p>}
+        {getPropertiesData?.length === 0 && !loader && <p className="ral-no-application-text">{t("RAL_NO_APPLICATION_FOUND_MSG")}</p>}
 
         {(getPropertiesData?.length < totalCount || hasMore) && (
-          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
-            <span className="link" style={{ cursor: "pointer", color: "#007bff", fontWeight: "bold" }} onClick={handleLoadMore}>
+          <div className="ral-load-more-container">
+            <span className="link ral-load-more-link" onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}
             </span>
           </div>

@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 
 const SearchChallan = (props) => {
-
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -67,7 +66,6 @@ const SearchChallan = (props) => {
       return acc;
     }, {});
 
-
     try {
       const response = await Digit.ChallanGenerationService.search({ tenantId, filters });
       setTableData(response?.challans);
@@ -120,11 +118,7 @@ const SearchChallan = (props) => {
         disableSortBy: true,
         accessor: (row) => {
           const formattedStatus = row?.applicationStatus.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
-          return (
-            <span className="cell-text" style={{ color: "green" }}>
-              {formattedStatus}
-            </span>
-          );
+          return <span className="cell-text ral-status-green">{formattedStatus}</span>;
           // return GetCell(row?.applicationStatus);
         },
       },
@@ -134,51 +128,7 @@ const SearchChallan = (props) => {
 
   return (
     <React.Fragment>
-      <style>
-        {`
-          .formWrapperNDC {
-            // padding: 20px;
-            // background: #fff;
-            // border-radius: 10px;
-            max-width: 1200px;
-            // margin: auto;
-            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
-
-          .ndcFormCard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-
-          .surveydetailsform-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-          .surveydetailsform-wrapper p {
-            color: red;
-            font-size: 14px;
-          }
-
-          .citizen-card-input{
-            margin-bottom: 0 !important;
-         }
-
-          @media (max-width: 1024px) {
-            .ndcFormCard {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 768px) {
-            .ndcFormCard {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-application-details ral-group-bills-header"}>
         <Header>Search Challan</Header>
       </div>
 
@@ -197,7 +147,7 @@ const SearchChallan = (props) => {
                     },
                   })}
                 />
-                {errors.challanNo && <p style={{ color: "red" }}>{errors.challanNo.message}</p>}
+                {errors.challanNo && <p className="ral-error-message-p">{errors.challanNo.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Service Type</label>
@@ -218,14 +168,12 @@ const SearchChallan = (props) => {
                   )}
                 />
 
-                {errors.businessService && <p style={{ color: "red" }}>{errors.businessService.message}</p>}
+                {errors.businessService && <p className="ral-error-message-p">{errors.businessService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
                 <div className="field-container">
-                  <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
-                    +91
-                  </span>
+                  <span className="citizen-card-input citizen-card-input--front ral-flex-none">+91</span>
                   <TextInput
                     name="mobileNumber"
                     type="text"
@@ -244,7 +192,7 @@ const SearchChallan = (props) => {
                       },
                     })}
                   />
-                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+                  {errors.mobileNumber && <p className="ral-error-message-p">{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
@@ -253,7 +201,7 @@ const SearchChallan = (props) => {
         </FormProvider>
 
         {tableData?.length > 0 && (
-          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+          <div className="ral-table-container">
             <Table
               t={t}
               data={tableData}
@@ -261,11 +209,8 @@ const SearchChallan = (props) => {
               columns={columns}
               getCellProps={(cellInfo) => {
                 return {
-                  style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px",
-                  },
+                  className: "ral-table-cell",
+                  minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
                 };
               }}
               // onPageSizeChange={onPageSizeChange}

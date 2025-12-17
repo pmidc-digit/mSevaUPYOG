@@ -69,7 +69,6 @@ const SearchBill = () => {
       return acc;
     }, {});
 
-
     // const payload = {
     //   businesService: businessServiceData,
     //   billNo: data?.billNo,
@@ -102,7 +101,7 @@ const SearchBill = () => {
         accessor: (row) => {
           const receiptNumber = row?.billNumber;
           return (
-            <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+            <span className="cell-text ral-link-blue-underline" onClick={() => downloadPDF(row)}>
               {receiptNumber}
             </span>
           );
@@ -157,51 +156,7 @@ const SearchBill = () => {
 
   return (
     <React.Fragment>
-      <style>
-        {`
-          .formWrapperNDC {
-            // padding: 20px;
-            // background: #fff;
-            // border-radius: 10px;
-            max-width: 1200px;
-            // margin: auto;
-            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
-
-          .ndcFormCard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-
-          .surveydetailsform-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-          .surveydetailsform-wrapper p {
-            color: red;
-            font-size: 14px;
-          }
-
-          .citizen-card-input{
-            margin-bottom: 0 !important;
-         }
-
-          @media (max-width: 1024px) {
-            .ndcFormCard {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 768px) {
-            .ndcFormCard {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-application-details ral-group-bills-header"}>
         <Header>Search Bill</Header>
         <div>
           <SubmitBar onSubmit={() => history.push("/digit-ui/employee/mcollect/group-bill")} label="Group Bills" />{" "}
@@ -214,7 +169,7 @@ const SearchBill = () => {
             <div className="ndcFormCard">
               <div className="surveydetailsform-wrapper">
                 <label>
-                  ULB<span style={{ color: "red" }}>*</span>
+                  ULB<span className="ral-mandatory-symbol">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -233,11 +188,11 @@ const SearchBill = () => {
                     />
                   )}
                 />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.serviceCategory && <p className="ral-error-message-p">{errors.serviceCategory.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
-                  Service Type <span style={{ color: "red" }}>*</span>
+                  Service Type <span className="ral-mandatory-symbol">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -256,7 +211,7 @@ const SearchBill = () => {
                     />
                   )}
                 />
-                {errors.businesService && <p style={{ color: "red" }}>{errors.businesService.message}</p>}
+                {errors.businesService && <p className="ral-error-message-p">{errors.businesService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
@@ -269,7 +224,7 @@ const SearchBill = () => {
                     },
                   })}
                 />
-                {errors.consumerCode && <p style={{ color: "red" }}>{errors.consumerCode.message}</p>}
+                {errors.consumerCode && <p className="ral-error-message-p">{errors.consumerCode.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Bill No</label>
@@ -282,14 +237,12 @@ const SearchBill = () => {
                     },
                   })}
                 />
-                {errors.billNo && <p style={{ color: "red" }}>{errors.billNo.message}</p>}
+                {errors.billNo && <p className="ral-error-message-p">{errors.billNo.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
                 <div className="field-container">
-                  <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
-                    +91
-                  </span>
+                  <span className="citizen-card-input citizen-card-input--front ral-flex-none">+91</span>
                   <TextInput
                     name="mobileNumber"
                     type="text"
@@ -308,7 +261,7 @@ const SearchBill = () => {
                       },
                     })}
                   />
-                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+                  {errors.mobileNumber && <p className="ral-error-message-p">{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
@@ -317,7 +270,7 @@ const SearchBill = () => {
         </FormProvider>
 
         {tableData?.length > 0 ? (
-          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+          <div className="ral-table-container">
             <Table
               t={t}
               data={tableData}
@@ -325,11 +278,8 @@ const SearchBill = () => {
               columns={columns}
               getCellProps={(cellInfo) => {
                 return {
-                  style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px",
-                  },
+                  className: "ral-table-cell",
+                  minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
                 };
               }}
               // onPageSizeChange={onPageSizeChange}
@@ -343,8 +293,7 @@ const SearchBill = () => {
             />
           </div>
         ) : (
-          hasSearched &&
-          !isLoading && <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("No Records Found")}</div>
+          hasSearched && !isLoading && <div className="ral-no-records">{t("No Records Found")}</div>
         )}
 
         {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}

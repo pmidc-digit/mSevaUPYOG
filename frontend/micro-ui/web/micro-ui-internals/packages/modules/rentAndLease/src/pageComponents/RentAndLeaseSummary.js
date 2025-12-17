@@ -14,61 +14,12 @@ function RentAndLeaseSummary({ t }) {
   const property = formData?.propertyDetails || {};
   const docs = formData?.documents?.documents?.documents || [];
 
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 0",
-    borderRadius: "8px",
-    marginBottom: "1.5rem",
-    boxShadow: "0 2px 6px rgba(18,38,63,0.04)",
-  };
-
-  const headerRow = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "0.75rem",
-    padding: "0 1.5rem",
-  };
-
-  const headingStyle = {
-    fontSize: "1.25rem",
-    color: "#0d43a7",
-    fontWeight: "500",
-    margin: 0,
-  };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e9eef2",
-    padding: "0.6rem 1.5rem",
-    alignItems: "center",
-  };
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-    marginTop: "0.5rem",
-  };
-
-  const documentCardStyle = {
-    flex: "1 1 220px",
-    minWidth: "180px",
-    maxWidth: "260px",
-    backgroundColor: "#fbfcfe",
-    padding: "0.6rem",
-    border: "1px solid #eef3f7",
-    borderRadius: "6px",
-  };
-
-  const boldLabelStyle = { width: "100%", fontWeight: "600", color: "#333" };
-
   const renderRow = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-        <h2 style={boldLabelStyle}>{label}</h2>
+    <div className="ral-summary-label-field-pair">
+      <div className="ral-flex-center-gap">
+        <h2 className="ral-summary-bold-label">{label}</h2>
       </div>
-      <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
+      <div className="ral-text-right-min-width">{value || "NA"}</div>
     </div>
   );
 
@@ -91,18 +42,18 @@ function RentAndLeaseSummary({ t }) {
 
   return (
     <div className="application-summary">
-      <Card className="summary-section" style={{ padding: "2px" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("ADS_APPLICANT_DETAILS")}</h3>
+      <Card className="summary-section ral-summary-card">
+        <div className="ral-summary-section-container">
+          <div className="ral-summary-header-row">
+            <h3 className="ral-summary-heading">{t("ADS_APPLICANT_DETAILS")}</h3>
           </div>
 
           {applicantDetails.length > 0 ? (
             applicantDetails.map((applicant, index) => (
-              <div key={index} style={{ marginBottom: "1rem" }}>
+              <div key={index} className="ral-margin-bottom-1rem">
                 {/* Optional sub-heading if multiple */}
                 {applicantDetails.length > 1 && (
-                  <h4 style={{ color: "#555", margin: "0 0 0.5rem 1.5rem", fontWeight: "900" }}>
+                  <h4 className="ral-summary-header">
                     {t("RAL_APPLICANT")} {index + 1}
                   </h4>
                 )}
@@ -120,10 +71,10 @@ function RentAndLeaseSummary({ t }) {
         </div>
       </Card>
 
-      <Card className="summary-section" style={{ padding: "2px" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("Properties Details")}</h3>
+      <Card className="summary-section ral-summary-card">
+        <div className="ral-summary-section-container">
+          <div className="ral-summary-header-row">
+            <h3 className="ral-summary-heading">{t("Properties Details")}</h3>
           </div>
           {Object.entries(propertyLabels).map(([key, label]) => {
             let value = property?.selectedProperty?.[key] || property?.[key];
@@ -144,18 +95,18 @@ function RentAndLeaseSummary({ t }) {
       </Card>
 
       <Card className="summary-section">
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("ES_TITLE_DOCS")}</h3>
+        <div className="ral-summary-section-container">
+          <div className="ral-summary-header-row">
+            <h3 className="ral-summary-heading">{t("ES_TITLE_DOCS")}</h3>
           </div>
 
           <div>
             {Array.isArray(docs) && docs?.length > 0 ? (
-              <div style={documentsContainerStyle}>
+              <div className="ral-summary-documents-container">
                 {docs?.map((doc, index) => (
-                  <div key={index} style={documentCardStyle}>
+                  <div key={index} className="ral-summary-document-card">
                     <RALDocuments value={formData?.documents} Code={doc?.documentType} index={index} />
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    <CardSectionHeader className="ral-margin-top-10-font-15">{t(doc?.documentType)}</CardSectionHeader>
                   </div>
                 ))}
               </div>

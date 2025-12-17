@@ -115,7 +115,7 @@ const SearchReceipt = () => {
         accessor: (row) => {
           const receiptNumber = row?.paymentDetails?.[0]?.receiptNumber;
           return (
-            <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+            <span className="cell-text ral-link-blue-underline" onClick={() => downloadPDF(row)}>
               {receiptNumber}
             </span>
           );
@@ -163,51 +163,7 @@ const SearchReceipt = () => {
 
   return (
     <React.Fragment>
-      <style>
-        {`
-          .formWrapperNDC {
-            // padding: 20px;
-            // background: #fff;
-            // border-radius: 10px;
-            max-width: 1200px;
-            // margin: auto;
-            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
-
-          .ndcFormCard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-
-          .surveydetailsform-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-          .surveydetailsform-wrapper p {
-            color: red;
-            font-size: 14px;
-          }
-
-         .citizen-card-input{
-            margin-bottom: 0 !important;
-         }
-
-          @media (max-width: 1024px) {
-            .ndcFormCard {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 768px) {
-            .ndcFormCard {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-application-details ral-group-bills-header"}>
         <Header>Search Receipts</Header>
       </div>
 
@@ -226,11 +182,11 @@ const SearchReceipt = () => {
                     },
                   })}
                 />
-                {errors.receiptNumbers && <p style={{ color: "red" }}>{errors.receiptNumbers.message}</p>}
+                {errors.receiptNumbers && <p className="ral-error-message-p">{errors.receiptNumbers.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
-                  Service Type <span style={{ color: "red" }}>*</span>
+                  Service Type <span className="ral-mandatory-symbol">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -249,7 +205,7 @@ const SearchReceipt = () => {
                     />
                   )}
                 />
-                {errors.businessServices && <p style={{ color: "red" }}>{errors.businessServices.message}</p>}
+                {errors.businessServices && <p className="ral-error-message-p">{errors.businessServices.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
@@ -262,14 +218,12 @@ const SearchReceipt = () => {
                     },
                   })}
                 />
-                {errors.consumerCodes && <p style={{ color: "red" }}>{errors.consumerCodes.message}</p>}
+                {errors.consumerCodes && <p className="ral-error-message-p">{errors.consumerCodes.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
                 <div className="field-container">
-                  <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
-                    +91
-                  </span>
+                  <span className="citizen-card-input citizen-card-input--front ral-flex-none">+91</span>
                   <TextInput
                     name="mobileNumber"
                     type="text"
@@ -288,7 +242,7 @@ const SearchReceipt = () => {
                       },
                     })}
                   />
-                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+                  {errors.mobileNumber && <p className="ral-error-message-p">{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
@@ -297,7 +251,7 @@ const SearchReceipt = () => {
         </FormProvider>
 
         {tableData?.length > 0 ? (
-          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+          <div className="ral-table-container">
             <Table
               t={t}
               data={tableData}
@@ -305,11 +259,8 @@ const SearchReceipt = () => {
               columns={columns}
               getCellProps={(cellInfo) => {
                 return {
-                  style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px",
-                  },
+                  className: "ral-table-cell",
+                  minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
                 };
               }}
               // onPageSizeChange={onPageSizeChange}
@@ -323,8 +274,7 @@ const SearchReceipt = () => {
             />
           </div>
         ) : (
-          hasSearched &&
-          !isLoading && <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("No Records Found")}</div>
+          hasSearched && !isLoading && <div className="ral-no-records">{t("No Records Found")}</div>
         )}
 
         {isLoading && <Loader />}

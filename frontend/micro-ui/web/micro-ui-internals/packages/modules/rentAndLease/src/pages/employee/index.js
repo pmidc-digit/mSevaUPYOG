@@ -72,13 +72,13 @@ const EmployeeApp = ({ path, url, userType }) => {
     <Switch>
       <React.Fragment>
         <div className="ground-container">
-          {/* <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
-            <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
+          {/* <p className="breadcrumb employee-main-application-details ral-breadcrumb-mobile">
+            <Link to="/digit-ui/employee" className="ral-home-link-grey">
               {t("ES_COMMON_HOME")}
             </Link>{" "}
             / <span>{location.pathname === "/digit-ui/employee/mcollect/inbox" ? t("UC_SEARCH_HEADER") : t("UC_COMMON_HEADER_SEARCH")}</span>
           </p> */}
-          <div style={{ marginLeft: "-4px", display: "flex", alignItems: "center" }}>
+          <div className="ral-back-button-container">
             <BackButton location={location} />
           </div>
           <PrivateRoute exact path={`${path}/`} component={() => <RentAndLeaseModule matchPath={path} userType={userType} />} />

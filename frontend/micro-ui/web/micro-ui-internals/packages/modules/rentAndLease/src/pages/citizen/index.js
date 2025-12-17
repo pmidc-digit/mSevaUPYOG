@@ -18,10 +18,10 @@ const App = () => {
   const MyPropertiesComponent = Digit?.ComponentRegistryService?.getComponent("MyProperties");
 
   return (
-    <span className={"mcollect-citizen"} style={{ width: "100%" }}>
+    <span className={"mcollect-citizen ral-width-100"}>
       <Switch>
         <AppContainer>
-          <BackButton style={{ top: "55px" }}>Back</BackButton>
+          <BackButton className="ral-back-button-citizen">Back</BackButton>
           <PrivateRoute path={`${path}/search`} component={SearchChallanComponent} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
           {/* <PrivateRoute path={`${path}/allot-property`} component={NewRentAndLeaseStepperForm} /> */}

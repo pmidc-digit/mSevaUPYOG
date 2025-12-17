@@ -11,7 +11,6 @@ const MCollectAcknowledgement = () => {
   const { isEdit } = Digit.Hooks.useQueryParams();
   useEffect(() => {
     setParams(func.getQueryStringParams(location.search)); // result: '?query=abc'
-
   }, [location]);
   const { t } = useTranslation();
 
@@ -32,7 +31,7 @@ const MCollectAcknowledgement = () => {
           />
           <CardText>{t("UC_BILL_CANCELLED_SUCCESS_SUB_MESSAGE")}</CardText>
           {"generatePdfKey" ? (
-            <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printReciept}>
+            <div className="primary-label-btn d-grid ral-print-btn" onClick={printReciept}>
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
@@ -40,8 +39,8 @@ const MCollectAcknowledgement = () => {
               {t("UC_PRINT_CHALLAN_LABEL")}
             </div>
           ) : null}
-          <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-            <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
+          <ActionBar className="ral-action-bar-end">
+            <Link to={`/digit-ui/employee`} className="ral-margin-right-1rem">
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
           </ActionBar>
@@ -56,7 +55,7 @@ const MCollectAcknowledgement = () => {
           />
           <CardText>{t("UC_BILL_GENERATION_MESSAGE_SUB")}</CardText>
           {"generatePdfKey" ? (
-            <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printReciept}>
+            <div className="primary-label-btn d-grid ral-print-btn" onClick={printReciept}>
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
@@ -64,9 +63,9 @@ const MCollectAcknowledgement = () => {
               {t("UC_PRINT_CHALLAN_LABEL")}
             </div>
           ) : null}
-          <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-            <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
-              <LinkButton style={{ color: "#FF8C00" }} label={t("CORE_COMMON_GO_TO_HOME")} />
+          <ActionBar className="ral-action-bar-container">
+            <Link to={`/digit-ui/employee`} className="ral-home-link">
+              <LinkButton className="ral-home-link-btn" label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
 
             <Link

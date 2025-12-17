@@ -1,0 +1,98 @@
+/* Rent and Lease Module Styles */
+
+.ral-payment-link-container {
+  margin-top: 1em;
+  bottom: 0px;
+  width: 100%;
+  margin-bottom: 1.2em;
+}
+
+.ral-rate-link-container {
+  margin-top: 24px;
+}
+
+.ral-header-container {
+  margin-left: 14px;
+  max-width: 960px;
+}
+
+.ral-header-text {
+  font-size: 32px;
+}
+
+.ral-subheader-text {
+  font-size: 24px;
+}
+
+.ral-owner-header {
+  padding: 5px 24px 0px 24px;
+  font-weight: 600;
+}
+
+.ral-documents-subheader {
+  font-size: 24px;
+  margin-top: 30px;
+}
+
+.ral-documents-card {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.ral-document-title {
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.ral-toast-container {
+  z-index: 1000;
+}
+
+.ral-action-link {
+  color: #fe7a51;
+  cursor: pointer;
+}
+
+.ral-group-bills-header {
+  margin-bottom: 15px;
+}
+
+.ral-error-message-p {
+  color: red;
+}
+
+/* Group Bills Form Styles */
+.formWrapperNDC {
+  max-width: 1200px;
+}
+
+.ndcFormCard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.surveydetailsform-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.surveydetailsform-wrapper p {
+  color: red;
+  font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+  .ndcFormCard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .ndcFormCard {
+    grid-template-columns: 1fr;
+  }
+}

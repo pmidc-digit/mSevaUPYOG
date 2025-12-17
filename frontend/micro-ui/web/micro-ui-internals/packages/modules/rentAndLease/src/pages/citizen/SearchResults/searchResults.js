@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { mobileNumber, challanNo, Servicecategory,tenantId } = Digit.Hooks.useQueryParams();
+  const { mobileNumber, challanNo, Servicecategory, tenantId } = Digit.Hooks.useQueryParams();
   const filters = {};
   if (mobileNumber) filters.mobileNumber = mobileNumber;
   if (challanNo) filters.consumerCode = challanNo;
@@ -21,9 +21,8 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
     return <Loader />;
   }
 
-
   const onSubmit = (data) => {
- history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
+    history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
   };
 
   const payment = {};
@@ -56,10 +55,10 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   });
 
   return (
-    <div style={{ marginTop: "16px" }}>
-      <div >
+    <div className="ral-margin-top-16">
+      <div>
         {header && (
-          <Header style={{ marginLeft: "8px" }}>
+          <Header className="ral-margin-left-8">
             {t(header)} ({searchResults?.length})
           </Header>
         )}

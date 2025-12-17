@@ -54,48 +54,7 @@ const GroupBills = () => {
   };
   return (
     <React.Fragment>
-      <style>
-        {`
-          .formWrapperNDC {
-            // padding: 20px;
-            // background: #fff;
-            // border-radius: 10px;
-            max-width: 1200px;
-            // margin: auto;
-            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
-
-          .ndcFormCard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-
-          .surveydetailsform-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-          .surveydetailsform-wrapper p {
-            color: red;
-            font-size: 14px;
-          }
-
-
-          @media (max-width: 1024px) {
-            .ndcFormCard {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 768px) {
-            .ndcFormCard {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-application-details ral-group-bills-header"}>
         <Header>Group Bills</Header>
       </div>
 
@@ -105,7 +64,7 @@ const GroupBills = () => {
             <div className="ndcFormCard">
               <div className="surveydetailsform-wrapper">
                 <label>
-                  ULB <span style={{ color: "red" }}>*</span>
+                  ULB <span className="ral-mandatory-symbol">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -124,11 +83,11 @@ const GroupBills = () => {
                     />
                   )}
                 />
-                {errors.ULB && <p style={{ color: "red" }}>{errors.ULB.message}</p>}
+                {errors.ULB && <p className="ral-error-message-p">{errors.ULB.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
-                  Service Category <span style={{ color: "red" }}>*</span>
+                  Service Category <span className="ral-mandatory-symbol">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -148,12 +107,12 @@ const GroupBills = () => {
                   )}
                 />
 
-                {errors.businesService && <p style={{ color: "red" }}>{errors.businesService.message}</p>}
+                {errors.businesService && <p className="ral-error-message-p">{errors.businesService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
                   select Batch or Locality *
-                  <span style={{ color: "red" }}>*</span>
+                  <span className="ral-mandatory-symbol">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -172,7 +131,7 @@ const GroupBills = () => {
                     />
                   )}
                 />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.serviceCategory && <p className="ral-error-message-p">{errors.serviceCategory.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Location/Mohalla</label>
@@ -193,7 +152,7 @@ const GroupBills = () => {
                     />
                   )}
                 />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.serviceCategory && <p className="ral-error-message-p">{errors.serviceCategory.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Batch</label>
@@ -213,7 +172,7 @@ const GroupBills = () => {
                     />
                   )}
                 />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.serviceCategory && <p className="ral-error-message-p">{errors.serviceCategory.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Group</label>
@@ -233,7 +192,7 @@ const GroupBills = () => {
                     />
                   )}
                 />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.serviceCategory && <p className="ral-error-message-p">{errors.serviceCategory.message}</p>}
               </div>
 
               <div className="surveydetailsform-wrapper">
@@ -247,7 +206,7 @@ const GroupBills = () => {
                     },
                   })}
                 />
-                {errors.billNo && <p style={{ color: "red" }}>{errors.billNo.message}</p>}
+                {errors.billNo && <p className="ral-error-message-p">{errors.billNo.message}</p>}
               </div>
             </div>
             <SubmitBar label="Next" submit="submit" />

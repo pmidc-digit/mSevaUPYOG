@@ -64,5 +64,13 @@ public class Configurations {
 	private String localizationContextPath;
 	@Value("${egov.localization.search.endpoint}")
 	private String localizationSearchEndpoint;
+	@Value("${egov.rl.service.host}")
+	private String rlServiceHost;
+	@Value("${egov.rl.search.endpoint}")
+	private String rlSearchEndpoint;
+	@Value("${demand.generation.batch.size}")
+	private Integer demandGenerationBatchSize;
+
+
 
 }

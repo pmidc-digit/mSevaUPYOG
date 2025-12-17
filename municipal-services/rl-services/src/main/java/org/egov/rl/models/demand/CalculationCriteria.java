@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
 @ToString
 public class CalculationCriteria   {
 
-        @JsonProperty("allotmentRequest")
+        @JsonProperty("AllotmentRequest")
         private AllotmentRequest allotmentRequest;
 
         @JsonProperty("applicationNumber")

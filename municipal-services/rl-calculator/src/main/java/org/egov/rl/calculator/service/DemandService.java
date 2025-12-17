@@ -10,6 +10,7 @@ import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.*;
+import org.egov.rl.calculator.web.models.Status;
 import org.egov.rl.calculator.web.models.demand.*;
 
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
@@ -343,85 +344,163 @@ public class DemandService {
         }
     }
 
-//    public void generateDemands(RequestInfo requestInfo) {
-//        List<String> tenantIds = mstrDataService.getTenantIds(requestInfo,requestInfo.getUserInfo().getTenantId());
-//        log.info("Starting demand generation job for tenants: {}", tenantIds);
-//
-//        for (String tenantId : tenantIds) {
-//            log.info("Generating demands for tenant: {}", tenantId);
-//            try {
-//                generateDemandForTenant(tenantId, requestInfo);
-//            } catch (Exception e) {
-//                log.error("Error while generating demands for tenant: " + tenantId, e);
-//            }
-//        }
-//        log.info("Finished demand generation job.");
-//    }
-//
-//    private void generateDemandForTenant(String tenantId, RequestInfo requestInfo) {
-//        // 1. Get the current billing period from MDMS
-//        List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
-//        if (billingPeriods.isEmpty()) {
-//            log.error("No billing period found for tenant: {}", tenantId);
-//            return;
-//        }
-//        BillingPeriod currentBillingPeriod = billingPeriods.get(0);
-//        long fromDate = currentBillingPeriod.get;
-//        long toDate = currentBillingPeriod.getToDate();
-//        log.info("Current Billing Period for tenant {}: {} to {}", tenantId, fromDate, toDate);
-//
-//        // 2. Fetch all active properties for the tenant
-//        List<Property> properties = fetchAllPropertiesForTenant(requestInfo, tenantId);
-//        if (properties.isEmpty()) {
-//            log.info("No properties found for tenant: {}", tenantId);
-//            return;
-//        }
-//
-//        // 3. Filter out properties that already have a demand for the current billing period
-//        List<Property> propertiesToGenerateDemand = filterPropertiesWithoutDemand(properties, requestInfo, fromDate, toDate);
-//        log.info("Found {} properties requiring demand generation for tenant {}", propertiesToGenerateDemand.size(), tenantId);
-//
-//        // 4. Generate demands in batches
-//        int batchSize = config.getDemandGenerationBatchSize();
-//        List<List<Property>> batches = new ArrayList<>();
-//        for (int i = 0; i < propertiesToGenerateDemand.size(); i += batchSize) {
-//            batches.add(propertiesToGenerateDemand.subList(i, Math.min(i + batchSize, propertiesToGenerateDemand.size())));
-//        }
-//
-//        for (List<Property> batch : batches) {
-//            List<CalculationCriteria> criteriaList = batch.stream()
-//                    .map(property -> CalculationCriteria.builder()
-//                            .tenantId(property.getTenantId())
-//                            .rentableId(property.getRentableId())
-//                            .build())
-//                    .collect(Collectors.toList());
-//
-//            CalculationReq req = CalculationReq.builder()
-//                    .requestInfo(requestInfo)
-//                    .calculationCriteria(criteriaList)
-//                    .build();
-//            try {
-//                createDemand(req);
-//            } catch (Exception e) {
-//                log.error("Error creating demands for batch in tenant {}: {}", tenantId, e.getMessage());
-//            }
-//        }
-//    }
-//
-////    private List<String> getTenantIds(RequestInfo requestInfo) {
-////        StringBuilder url = new StringBuilder(config.getMdmsHost())
-////                .append(config.getMdmsEndpoint());
-////
-////        MdmsCriteriaReq mdmsCriteriaReq = calculatorUtil.getMdmsRequest(requestInfo, config.getStateLevelTenantId(),
-////                RLConstants.MDMS_TENANT_MODULE_NAME, RLCalculatorConstants.MDMS_TENANT_MASTER_NAME, null);
-////
-////        try {
-////            Object result = repository.fetchResult(url, mdmsCriteriaReq);
-////            return JsonPath.read(result, RLCalculatorConstants.JSONPATH_TENANT_CODES);
-////        } catch (Exception e) {
-////            throw new CustomException("INVALID_TENANT_ID", "Error fetching tenants from MDMS");
-////        }
-////    }
+    public void generateDemands(RequestInfo requestInfo) {
+        List<String> tenantIds = mstrDataService.getTenantIds(requestInfo,requestInfo.getUserInfo().getTenantId());
+        log.info("Starting demand generation job for tenants: {}", tenantIds);
+
+        for (String tenantId : tenantIds) {
+            log.info("Generating demands for tenant: {}", tenantId);
+            try {
+                generateDemandForTenant(tenantId, requestInfo);
+            } catch (Exception e) {
+                log.error("Error while generating demands for tenant: " + tenantId, e);
+            }
+        }
+        log.info("Finished demand generation job.");
+    }
+
+    private void generateDemandForTenant(String tenantId, RequestInfo requestInfo) {
+        log.info("Generating demands for tenant: {}", tenantId);
+        Map<String, Object> mdmsData = mstrDataService.getBillingAndTaxPeriods(tenantId, requestInfo);
+        List<BillingPeriod> billingPeriods = (List<BillingPeriod>) mdmsData.get(RLConstants.BILLING_PERIOD_MASTER);
+        List<TaxPeriod> taxPeriods = (List<TaxPeriod>) mdmsData.get(RLConstants.TAX_PERIOD_MASTER);
+
+        if (CollectionUtils.isEmpty(billingPeriods) || CollectionUtils.isEmpty(taxPeriods)) {
+            log.error("MDMS data for billing period or tax period is not configured for tenant: {}", tenantId);
+            return;
+        }
+
+        taxPeriods.sort(Comparator.comparing(TaxPeriod::getFromDate));
+
+        for (BillingPeriod billingPeriod : billingPeriods) {
+            if (billingPeriod.getActive()) {
+                log.info("Processing active billing cycle: {}", billingPeriod.getBillingCycle());
+                List<AllotmentDetails> approvedApplications = fetchApprovedAllotmentApplications(tenantId, requestInfo);
+
+                if (CollectionUtils.isEmpty(approvedApplications)) {
+                    log.info("No approved applications found for tenant: {}", tenantId);
+                    continue;
+                }
+
+                for (TaxPeriod taxPeriod : taxPeriods) {
+                    if (taxPeriod.getPeriodCycle().name().equalsIgnoreCase(billingPeriod.getBillingCycle())
+                            && taxPeriod.getToDate() <= billingPeriod.getTaxPeriodTo()) {
+
+                        List<AllotmentDetails> activeApplicationsInPeriod = filterActiveApplicationsForPeriod(approvedApplications, taxPeriod);
+
+                        if (CollectionUtils.isEmpty(activeApplicationsInPeriod)) {
+                            continue;
+                        }
+
+                        List<AllotmentDetails> applicationsWithoutDemand = filterApplicationsWithoutDemand(activeApplicationsInPeriod, taxPeriod);
+
+                        if (!CollectionUtils.isEmpty(applicationsWithoutDemand)) {
+                            log.info("Generating demand for {} applications for period {} to {}",
+                                    applicationsWithoutDemand.size(), taxPeriod.getFromDate(), taxPeriod.getToDate());
+                            generateDemandInBatches(applicationsWithoutDemand, requestInfo, taxPeriod);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private List<AllotmentDetails> filterActiveApplicationsForPeriod(List<AllotmentDetails> applications, TaxPeriod taxPeriod) {
+        long periodStart = taxPeriod.getFromDate();
+        long periodEnd = taxPeriod.getToDate();
+
+        return applications.stream()
+                .filter(app -> {
+                    Long allotmentStartDate = app.getStartDate();
+                    Long allotmentEndDate = app.getEndDate();
+
+                    return allotmentStartDate != null && allotmentStartDate <= periodEnd &&
+                            (allotmentEndDate == null || allotmentEndDate >= periodStart);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo) {
+        RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+        String url = config.getRlServiceHost()
+                + config.getRlSearchEndpoint()
+                + "?tenantId=" + tenantId
+                + "&status=APPROVED";
+        RequestInfoWrapper wrapper = RequestInfoWrapper.builder()
+                .requestInfo(requestInfo)
+                .build();
+        try {
+            Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
+            AllotmentSearchResponse response = mapper.convertValue(result, AllotmentSearchResponse.class);
+            return response.getAllotment();
+        } catch (Exception e) {
+            log.error("Error while fetching approved allotment applications for tenant: {}", tenantId, e);
+            throw new CustomException("RL_APP_SEARCH_ERROR", "Failed to fetch approved allotment applications");
+        }
+    }
+
+    private List<AllotmentDetails> filterApplicationsWithoutDemand(List<AllotmentDetails> applications, TaxPeriod taxPeriod) {
+        List<String> allotmentNumbers = applications.stream()
+                .map(AllotmentDetails::getApplicationNumber)
+                .collect(Collectors.toList());
+
+        List<Demand> existingDemands = demandRepository.getDemandsForRentableIdsAndPeriod(
+                allotmentNumbers, taxPeriod.getFromDate(), taxPeriod.getToDate());
+
+        if (CollectionUtils.isEmpty(existingDemands)) {
+            return applications;
+        }
+
+        Map<String, List<Demand>> demandsByConsumerCode = existingDemands.stream()
+                .collect(Collectors.groupingBy(Demand::getConsumerCode));
+
+        return applications.stream()
+                .filter(app -> !demandsByConsumerCode.containsKey(app.getApplicationNumber()))
+                .collect(Collectors.toList());
+    }
+
+
+    private void generateDemandInBatches(List<AllotmentDetails> applications, RequestInfo requestInfo, TaxPeriod taxPeriod) {
+        int batchSize = config.getDemandGenerationBatchSize();
+        for (int i = 0; i < applications.size(); i += batchSize) {
+            List<AllotmentDetails> batch = applications.subList(i, Math.min(i + batchSize, applications.size()));
+
+            // Prepare CalculationReq for the batch
+            List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
+            for (AllotmentDetails application : batch) {
+                long effectiveFromDate = Math.max(application.getStartDate(), taxPeriod.getFromDate());
+                long effectiveToDate = (application.getEndDate() != null)
+                        ? Math.min(application.getEndDate(), taxPeriod.getToDate())
+                        : taxPeriod.getToDate();
+
+                //AllotmentRequest
+                AllotmentRequest allotmentRequest = AllotmentRequest.builder()
+                        .allotment(application)
+                        .requestInfo(requestInfo)
+                        .build();
+
+                // Add AllotmentRequest to CalculationCriteria
+                CalculationCriteria criteria = CalculationCriteria.builder()
+                        .allotmentRequest(allotmentRequest)
+                        .fromDate(effectiveFromDate)
+                        .toDate(effectiveToDate)
+                        .build();
+                calculationCriteriaList.add(criteria);
+            }
+
+            CalculationReq calculationReq = CalculationReq.builder()
+                    .requestInfo(requestInfo)
+                    .calculationCriteria(calculationCriteriaList)
+                    .build();
+
+            // createDemand  generate demands for the batch
+            try {
+                createDemand(false, calculationReq);
+            } catch (Exception e) {
+                log.error("Error while creating demands for batch: {}", e.getMessage());
+            }
+        }
+    }
 
 }
 

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Status {
 
 	ACTIVE ("ACTIVE"),
+    APPROVED ("APPROVED"),
 
 	INACTIVE ("INACTIVE"),
 

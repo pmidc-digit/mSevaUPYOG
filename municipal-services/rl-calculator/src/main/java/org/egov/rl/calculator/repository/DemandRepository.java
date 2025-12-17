@@ -11,7 +11,9 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class DemandRepository {
@@ -73,6 +75,18 @@ public class DemandRepository {
 
 	}
 
+	public List<Demand> getDemandsForRentableIdsAndPeriod(List<String> rentableIds, Long fromDate, Long toDate) {
+		String query = "SELECT * FROM egbs_demand WHERE consumerCode IN (:rentableIds) AND taxPeriodFrom >= :fromDate AND taxPeriodTo <= :toDate";
+		Map<String, Object> params = new HashMap<>();
+		params.put("rentableIds", rentableIds);
+		params.put("fromDate", fromDate);
+		params.put("toDate", toDate);
 
-
+		try {
+			return jdbcTemplate.query(query, params, new DemandRowMapper());
+		} catch (Exception e) {
+			log.error("Error while fetching demands for rentable IDs and period", e);
+			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
 }

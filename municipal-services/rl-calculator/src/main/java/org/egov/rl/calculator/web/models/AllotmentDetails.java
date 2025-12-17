@@ -42,10 +42,10 @@ public class AllotmentDetails {
 
 	/* ------------Allotment Section---------------------- */
 	@JsonProperty("startDate")
-	private long startDate;
+	private Long startDate;
 
 	@JsonProperty("endDate")
-	private long endDate;
+	private Long endDate;
 	
 	@JsonProperty("isGSTApplicable")
 	private boolean isGSTApplicable;

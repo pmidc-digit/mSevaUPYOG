@@ -16,9 +16,8 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -108,12 +107,6 @@ public class MasterDataService {
         return new MdmsCriteriaReq(requestInfo, mdmsCriteria);
     }
 
-    /**
-     * Fetches Penalty slabs from MDMS
-     * @param requestInfo The requestInfo of the request
-     * @param tenantId The tenantId of the city
-     * @return List of Penalty slab objects
-     */
     public List<Penalty> getPenaltySlabs(RequestInfo requestInfo, String tenantId) {
         // Using RL_SERVICES_MASTER_MODULE to fetch service-specific penalty
         MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
@@ -182,5 +175,58 @@ public class MasterDataService {
 
     public StringBuilder getMdmsSearchUrl() {
         return new StringBuilder().append(configs.getMdmsHost()).append(configs.getMdmsEndpoint());
+    }
+
+    public MdmsCriteriaReq getMdmsRequestForBillingAndTax(RequestInfo requestInfo, String tenantId) {
+        List<MasterDetail> masterDetails = new ArrayList<>();
+        masterDetails.add(MasterDetail.builder().name(RLConstants.BILLING_SERVICE_MASTER).build());
+        masterDetails.add(MasterDetail.builder().name(RLConstants.TAX_PERIOD_MASTER).build());
+
+        ModuleDetail moduleDetail = ModuleDetail.builder()
+                .moduleName(RLConstants.BILLING_SERVICE_MASTER)
+                .masterDetails(masterDetails)
+                .build();
+
+        List<ModuleDetail> moduleDetails = new ArrayList<>();
+        moduleDetails.add(moduleDetail);
+
+        MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+                .tenantId(tenantId)
+                .moduleDetails(moduleDetails)
+                .build();
+
+        return MdmsCriteriaReq.builder()
+                .requestInfo(requestInfo)
+                .mdmsCriteria(mdmsCriteria)
+                .build();
+    }
+
+    public Map<String, Object> getBillingAndTaxPeriods(String tenantId, RequestInfo requestInfo) {
+        MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestForBillingAndTax(requestInfo, tenantId);
+        Object result = repository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+        Map<String, Object> mdmsData = new HashMap<>();
+
+        try {
+            Map<String, Map<String, List<Object>>> mdmsResponse = (Map) result;
+            Map<String, List<Object>> moduleData = mdmsResponse.get(RLConstants.RL_SERVICES_MASTER_MODULE);
+
+            List<BillingPeriod> billingPeriods = moduleData.get(RLConstants.BILLING_PERIOD_MASTER)
+                    .stream()
+                    .map(obj -> mapper.convertValue(obj, BillingPeriod.class))
+                    .collect(Collectors.toList());
+
+            List<TaxPeriod> taxPeriods = moduleData.get(RLConstants.TAX_PERIOD_MASTER)
+                    .stream()
+                    .map(obj -> mapper.convertValue(obj, TaxPeriod.class))
+                    .collect(Collectors.toList());
+
+            mdmsData.put(RLConstants.BILLING_PERIOD_MASTER, billingPeriods);
+            mdmsData.put(RLConstants.TAX_PERIOD_MASTER, taxPeriods);
+
+        } catch (Exception e) {
+            log.error("Error parsing MDMS response", e);
+            throw new CustomException("MDMS_PARSING_ERROR", "Failed to parse MDMS response");
+        }
+        return mdmsData;
     }
 }

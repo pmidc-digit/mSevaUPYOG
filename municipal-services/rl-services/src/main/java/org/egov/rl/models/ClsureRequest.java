@@ -20,7 +20,7 @@ import lombok.Setter;
 @Setter
 public class ClsureRequest {
 
-    @JsonProperty("requestInfo")
+    @JsonProperty("RequestInfo")
     private RequestInfo requestInfo;
     
     @JsonProperty("AllotmentClsure")

@@ -1,13 +1,11 @@
 
 package org.egov.rl.repository.builder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
+import org.egov.rl.models.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -36,7 +34,8 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 		List<Object> subQueryParams = new ArrayList<>();
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.status != 'CLOSED' AND al.expireflag=false AND al.tenant_id = ? ");
+//			subQuery.append(" al.status != 'CLOSED' AND ");
+			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!criteria.getIsReportSearch()) {
@@ -48,8 +47,9 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 			
 			if (!ObjectUtils.isEmpty(criteria.getStatus())) {
 				addClauseIfRequired(subQuery, subQueryParams);
-				subQuery.append(" al.status = ? ");
-				subQueryParams.add(criteria.getStatus());
+				String inSql = String.join(",", Collections.nCopies(criteria.getStatus().size(), "?"));
+				subQuery.append(" al.status IN (").append(inSql).append(" ) ");
+				addToPreparedStatementStatuses(subQueryParams, criteria.getStatus());
 			}
 
 			if (!CollectionUtils.isEmpty(criteria.getApplicationNumbers())) {
@@ -85,29 +85,12 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 
 
 		}
-//		if (criteria.getIsReportSearch()) {
-//			if (criteria.getFromDate() != null && criteria.getToDate() != null) {
-//				addClauseIfRequired(subQuery, subQueryParams);
-//                if (criteria.getFromDate() != null && criteria.getToDate() != null) {
-//					subQuery.append(" (al.start_date >= ? AND al.end_date <= ?) OR al.end_date <= ? ");
-//					subQueryParams.add(criteria.getFromDate()); // long value
-//					subQueryParams.add(criteria.getToDate()); // long value
-//					subQueryParams.add(criteria.getToDate()); // long value
-//				}
-//			}
-//		}
-//		
 		// Now build the main query
 		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
 		mainQuery.append(subQuery);
 
 		// Add all subquery parameters to the main prepared statement list
 		preparedStmtList.addAll(subQueryParams);
-
-		// Order the final result
-//		mainQuery.append(GROUPBY_QUERY);
-//		mainQuery.append(subQuery);
-//		preparedStmtList.addAll(subQueryParams);
 
 		return mainQuery.toString();
 	}
@@ -136,6 +119,11 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 			preparedStmtList.add(id);
 		});
 	}
+
+	private void addToPreparedStatementStatuses(List<Object> preparedStmtList, Set<Status> statuses) {
+		statuses.forEach(status -> preparedStmtList.add(status.name()));
+	}
+
 
 	public String createdAllotedQuery(String tenantId) {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long

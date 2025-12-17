@@ -23,12 +23,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber;
 
-  console.log("currentStepDataINFourth", currentStepData);
-
   const updatedApplicantDetails = currentStepData?.applicantDetails || {};
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
-  console.log("updatedDocuments", updatedDocuments);
 
   const onGoToRentAndLease = () => {
     history.push(`/digit-ui/employee/rentandlease/inbox`);
@@ -70,7 +67,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
     try {
       const res = await onSubmit(currentStepData, selectedAction);
-      console.log("res", res);
 
       if (res?.isSuccess) {
         const action = res?.response?.AllotmentDetails?.workflow?.action;
@@ -99,7 +95,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const onSubmit = async (data, selectedAction) => {
     const { CreatedResponse } = data;
-    console.log("CreatedResponse", CreatedResponse);
     const { workflow: existingWorkflow } = CreatedResponse || {};
 
     let formData = {};
@@ -188,8 +183,50 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       };
     } else {
       // NORMAL FLOW: Use original logic
+      const originalOwners = CreatedResponse?.AllotmentDetails?.OwnerInfo || [];
+      const updatedApplicants = updatedApplicantDetails?.applicants || [];
+
+      const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
+        const originalOwner = originalOwners[index] || {};
+        return {
+          ...originalOwner,
+          name: applicant?.name,
+          mobileNo: applicant?.mobileNumber,
+          emailId: applicant?.emailId,
+          correspondenceAddress: {
+            ...originalOwner?.correspondenceAddress,
+            pincode: applicant?.pincode,
+            addressId: applicant?.address,
+            address: applicant?.address,
+          },
+          permanentAddress: {
+            ...originalOwner?.permanentAddress,
+            pincode: applicant?.pincode,
+            addressId: applicant?.address,
+            address: applicant?.address,
+          },
+        };
+      });
+
+      const originalAdditionalDetails = CreatedResponse?.AllotmentDetails?.additionalDetails || {};
+      const mergedAdditionalDetails = {
+        ...originalAdditionalDetails,
+        ...updatedPropertyDetails,
+        allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
+        propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
+        locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
+      };
+
       formData = {
         ...CreatedResponse?.AllotmentDetails,
+        startDate: updatedPropertyDetails?.startDate
+          ? new Date(updatedPropertyDetails?.startDate).getTime()
+          : CreatedResponse?.AllotmentDetails?.startDate,
+        endDate: updatedPropertyDetails?.endDate ? new Date(updatedPropertyDetails?.endDate).getTime() : CreatedResponse?.AllotmentDetails?.endDate,
+        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.penaltyType,
+        OwnerInfo: mergedOwnerInfo,
+        additionalDetails: mergedAdditionalDetails,
+        propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
             (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
@@ -211,7 +248,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
     // Adapt this to your actual service call
     const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: formData }, tenantId);
-    console.log("Update Response", response);
     if (response?.AllotmentDetails && response?.AllotmentDetails.length > 0) {
       return { isSuccess: true, response: { RentAndLeaseApplications: response.AllotmentDetails } };
     } else if (response?.responseInfo?.status === "successful") {
@@ -236,18 +272,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   const businessService = "RENT_N_LEASE_NEW";
-  console.log(
-    currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber,
-    " currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber"
-  );
   // Adapt workflow details hook for RentAndLease
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: applicationNumber,
     moduleCode: businessService,
   });
-
-  console.log("workflowDetails", workflowDetails);
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
@@ -261,8 +291,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   function onActionSelect(action) {
     goNext(action);
   }
-
-  console.log("actions", actions);
 
   return (
     <React.Fragment>

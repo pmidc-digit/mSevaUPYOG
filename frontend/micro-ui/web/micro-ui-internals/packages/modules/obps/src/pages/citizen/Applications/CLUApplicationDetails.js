@@ -84,6 +84,7 @@ const CLUApplicationDetails = () => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const [displayData, setDisplayData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
@@ -160,44 +161,56 @@ const CLUApplicationDetails = () => {
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
   
   const handleDownloadPdf = async () => {
+  try {
+    setLoading(true);
     const Property = applicationDetails?.Clu?.[0];
-    console.log('Property', Property)   
-    const site= Property?.cluDetails?.additionalDetails?.siteDetails
+    const site = Property?.cluDetails?.additionalDetails?.siteDetails;
+    const ulbType = site?.ulbType;
+    const ulbName = site?.ulbName?.city?.name;
 
-    const ulbType = site?.ulbType
-    const ulbName = site?.ulbName?.city?.name
-
-    console.log('ulbType, ulbName', ulbType, ulbName)
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo,  ulbType, ulbName ,t);
+    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
 
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
-  };
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
-    const application = applicationDetails?.Clu;
-    const approvecomments = approveComments?.[0];
-    const finalComment = approvecomments
-  ? `The above approval is subjected to followings conditions: ${approvecomments}`
-  : "";
-    console.log('application', application)
+    
      try {
+      setLoading(true);
+        const application = applicationDetails?.Clu;
+        const approvecomments = approveComments?.[0];
+        const finalComment = approvecomments
+      ? `The above approval is subjected to followings conditions: ${approvecomments}`
+      : "";
+    console.log('application', application)
+      let response = null;
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      } else {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey, "garbage-receipt");
+      }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
 
     } catch (error) {
       console.error("Sanction Letter download error:", error);
-    }
       }
+      finally { setLoading(false); }
+    }
 
 
   const dowloadOptions = [];
@@ -345,6 +358,7 @@ const CLUApplicationDetails = () => {
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
+        {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"

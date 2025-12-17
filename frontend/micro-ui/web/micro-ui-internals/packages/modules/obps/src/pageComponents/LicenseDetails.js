@@ -218,7 +218,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {
-      let data = formData?.formData;
+      let data = formData?.LicneseDetails ? formData : formData?.formData;
       data.LicneseDetails.name = name;
       data.LicneseDetails.mobileNumber = mobileNumber;
       data.LicneseDetails.gender = gender;

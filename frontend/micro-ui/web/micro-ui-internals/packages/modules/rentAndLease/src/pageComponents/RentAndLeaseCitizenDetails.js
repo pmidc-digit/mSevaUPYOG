@@ -27,7 +27,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
   ];
 
-  console.log("currentStepDataInSec", currentStepData);
 
   const {
     control,
@@ -97,7 +96,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
   };
 
   const onSubmit = async (data) => {
-    console.log("dataInSubmit", data);
     if (validateStep) {
       const validationErrors = validateStep(data);
       if (Object.keys(validationErrors)?.length > 0) return;
@@ -125,7 +123,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     }
 
 
-    console.log('payload', payload)
     triggerLoader(true);
     try {
       // Call create API
@@ -134,7 +131,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       const status = response?.responseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
-      console.log("isSuccess", isSuccess);
 
       if (isSuccess) {
         const appData = Array.isArray(response?.allotment) ? response.allotment[0] : response?.allotment;
@@ -171,7 +167,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       const user = userData?.user?.[0] || {};
-      console.log("user", user);
       setValue(`applicants.${index}.name`, user.name || "", { shouldValidate: true });
       setValue(`applicants.${index}.emailId`, user.emailId || "", { shouldValidate: true });
       setValue(`applicants.${index}.address`, user.permanentAddress || user?.correspondenceAddress || "", { shouldValidate: true });
@@ -213,7 +208,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
   useEffect(() => {
     const applicantsData = currentStepData?.applicantDetails?.applicants || [];
-    console.log("applicantsData", applicantsData);
     const ownershipTypeData = currentStepData?.applicantDetails?.ownershipType || "";
 
     if (Array.isArray(applicantsData) && applicantsData.length > 0) {

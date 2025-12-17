@@ -55,10 +55,6 @@ const RALModal = ({
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
-  console.log("action123", action);
-
-  console.log("allRolesNew", allRolesNew);
-
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
@@ -228,7 +224,7 @@ const RALModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} />}
       {PTALoading && <Loader page={true} />}
     </Modal>
   );

@@ -5,7 +5,6 @@ import _ from "lodash";
 const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
-  console.log("formErrors", formErrors);
   const { triggerToast } = config;
 
   const FILE_POLICY = {

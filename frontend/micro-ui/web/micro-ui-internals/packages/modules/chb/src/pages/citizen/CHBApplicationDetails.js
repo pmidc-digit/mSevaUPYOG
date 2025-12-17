@@ -116,7 +116,7 @@ const CHBApplicationDetails = () => {
 
   const getChbAcknowledgement = async () => {
     const applications = application || {};
-    console.log('applications for chbb', applications)
+    console.log("applications for chbb", applications);
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
     Digit.Utils.pdf.generate(acknowldgementDataAPI);
@@ -151,14 +151,14 @@ const CHBApplicationDetails = () => {
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = {
-      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
-          return {
-            ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            })
-          };
-        })
+      hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+        return {
+          ...app,
+          bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
+            return new Date(a.bookingDate) - new Date(b.bookingDate);
+          }),
+        };
+      }),
     };
 
     let fileStoreId = application?.permissionLetterFilestoreId;
@@ -243,6 +243,9 @@ const CHBApplicationDetails = () => {
       bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
+
+  console.log("docs===", docs);
+
   return (
     <React.Fragment>
       <div>
@@ -326,7 +329,7 @@ const CHBApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-         <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
     </React.Fragment>

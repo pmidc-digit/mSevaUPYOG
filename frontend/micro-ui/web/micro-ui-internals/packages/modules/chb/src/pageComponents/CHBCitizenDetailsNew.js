@@ -11,12 +11,14 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const isCitizen = window.location.href.includes("citizen");
   const stateId = Digit.ULBService.getStateId();
   const user = Digit.UserService.getUser();
+  const userInfoData = JSON.parse(sessionStorage.getItem("userInfoData") || "{}");
   const [loader, setLoader] = useState(false);
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [getModalData, setModalData] = useState();
   const [getUser, setUser] = useState(null);
   const [getDisable, setDisable] = useState({ name: false, email: false, address: false });
   const [getShowOtp, setShowOtp] = useState(false);
+  const { mobileNumber, emailId, name } = user?.info;
   const {
     control,
     handleSubmit,
@@ -28,10 +30,10 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      name: (isCitizen && user?.info?.name) || "",
-      emailId: (isCitizen && user?.info?.emailId) || "",
-      mobileNumber: (isCitizen && user?.info?.mobileNumber) || "",
-      address: (isCitizen && user?.info?.permanentCity) || "",
+      name: (isCitizen && (userInfoData?.name || name)) || "",
+      emailId: (isCitizen && (userInfoData?.emailId || emailId)) || "",
+      mobileNumber: (isCitizen && (userInfoData?.mobileNumber || mobileNumber)) || "",
+      address: (isCitizen && userInfoData?.permanentAddress) || "",
     },
   });
 
@@ -86,7 +88,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           address,
           owners,
           purpose: {
-            purpose: baseApplication?.purpose?.purpose?.code,
+            purpose: baseApplication?.purpose?.purpose?.name,
           },
           additionalDetails,
         },

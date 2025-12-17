@@ -113,7 +113,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
     // Calculate final amount safely
     const finalAmount = numericAmount * slotCount;
-
+    // console.log("purpose", purpose);
     const payload = {
       hallsBookingApplication: {
         tenantId,

@@ -61,8 +61,7 @@ function RentAndLeaseSummary({ t }) {
     borderRadius: "6px",
   };
 
-  const boldLabelStyle = { width:"100%",fontWeight: "600", color: "#333" };
-  
+  const boldLabelStyle = { width: "100%", fontWeight: "600", color: "#333" };
 
   const renderRow = (label, value) => (
     <div style={labelFieldPairStyle}>
@@ -103,7 +102,7 @@ function RentAndLeaseSummary({ t }) {
               <div key={index} style={{ marginBottom: "1rem" }}>
                 {/* Optional sub-heading if multiple */}
                 {applicantDetails.length > 1 && (
-                  <h4 style={{ color: "#555", margin: "0 0 0.5rem 1.5rem", fontWeight: "700" }}>
+                  <h4 style={{ color: "#555", margin: "0 0 0.5rem 1.5rem", fontWeight: "900" }}>
                     {t("RAL_APPLICANT")} {index + 1}
                   </h4>
                 )}

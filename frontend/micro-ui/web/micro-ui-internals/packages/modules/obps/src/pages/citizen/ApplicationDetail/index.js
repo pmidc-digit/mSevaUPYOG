@@ -386,6 +386,11 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
               t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
               License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
             )}
+          {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("TOWNPLANNER") &&
+            renderLabel(
+              t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"),
+              License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
+            )}
              {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
             renderLabel(
               t("BPA_CERTIFICATE_EXPIRY_DATE"),

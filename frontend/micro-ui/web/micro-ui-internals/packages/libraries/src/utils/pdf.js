@@ -227,11 +227,19 @@ const jsPdfGeneratorFormatted = async ({
 }) => {
   console.log("ulbType",ulbType)
   const baseUrl = window.location.origin;
-  
-  const module = applicationNumber.split("-")[1];
-  const splitURL = imageURL.split("filestore")?.[1];
+  let finalUrl;
 
-  const base64Image = imageURL ? await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`): window.location.origin;
+  if (imageURL?.includes("filestore")) {
+    const splitURL = imageURL.split("filestore")?.[1];
+    finalUrl = `${baseUrl}/filestore${splitURL}`;
+  } else {
+    // external URL, just use it directly
+    finalUrl = imageURL;
+  }
+
+  const base64Image = imageURL
+    ? await getBase64FromUrl(finalUrl)
+    : baseUrl;
 
   const dd = {
     
@@ -247,15 +255,20 @@ background: [
     header: {},
     content: [
       ...createHeaderFormatted(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
-      ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
-      {
-        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
-        font: "Hind",
-        fontSize: 11,
-        color: "#6f777c",
-        margin: [10, 10],
-      }
+      ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit)
     ],
+    footer: function (currentPage, pageCount) {
+      if (currentPage === pageCount) {
+        return {
+          text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+          font: "Hind",
+          fontSize: 11,
+          color: "#6f777c",
+          margin: [80, -30, 10, 40]
+        };
+      }
+      return null; // no footer on other pages
+    },    
     defaultStyle: {
       font: "Hind",
       margin: [20, 10, 20, 10],
@@ -1802,14 +1815,14 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
         text: indData?.title,
         style: "header",
         fontSize: 9,
-        margin: [10, 5, 0, 5],
+        margin: [10, 2, 0, 2],
         border: isLast ? [true, false, false, true] : [true, false, false, false]
         // left border always true, bottom border true only for last row
       },
       {
         text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
         fontSize: 9,
-        margin: [0, 5, 0, 5],
+        margin: [0, 2, 0, 2],
         border: isLast ? [false, false, true, true] : [false, false, true, false]
         // right border always true, bottom border true only for last row
       }
@@ -1830,7 +1843,7 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
       hLineColor: () => "#cccccc",
       vLineColor: () => "#cccccc"
     },
-    margin: [10, 10, 10, 10]
+    margin: [10, 2, 10, 2]
   });
 }
 

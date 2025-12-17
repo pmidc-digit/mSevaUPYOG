@@ -60,11 +60,13 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
   console.log("dataVal", dataVal);
   console.log("moduleCode", moduleCode);
   const { tenants } = storeData || {};
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(
+  const { data: applicationDetails, isLoading: isLicenseLoading } =
+  Digit.Hooks.obps.useLicenseDetails(
     checkTenant,
     { applicationNumber: finalDataBind?.applicationNumber, tenantId: checkTenant },
     {}
   );
+  const isLoading = loader || isLicenseLoading;
 
   console.log("applicationDetails", applicationDetails);
 
@@ -102,7 +104,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
 
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
       console.log(acknowledgementData, "ACKO");
-      await Digit.Utils.pdf.generateNewBPAREG(acknowledgementData);
+      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
       setLoader(false);
     } catch (err) {
       console.error("Error generating acknowledgement PDF", err);
@@ -128,7 +130,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
           alignItems: "center",
         }}
       >
-        {(finalDataBind?.action == "APPLY" && !(finalDataBind?.applicationType === "UPGRADE")) && (
+        {finalDataBind?.action == "APPLY" && !(finalDataBind?.applicationType === "UPGRADE") && (
           <Link
             to={{
               pathname: `/digit-ui/citizen/payment/collect/${finalDataBind?.businessService}/${finalDataBind?.applicationNumber}/${finalDataBind?.tenantId}?tenantId=${finalDataBind?.tenantId}`,
@@ -139,7 +141,9 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
           </Link>
         )}
 
-        {finalDataBind?.action == "APPLY" && <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />}
+        {finalDataBind?.action === "APPLY" && !isLoading && <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />}
+
+        {isLoading && <Loader />}
 
         {!isOpenLinkFlow && (
           <Link to={`/digit-ui/citizen`}>

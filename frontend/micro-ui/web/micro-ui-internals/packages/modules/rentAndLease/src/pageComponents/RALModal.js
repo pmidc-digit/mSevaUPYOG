@@ -224,7 +224,7 @@ const RALModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} />}
       {PTALoading && <Loader page={true} />}
     </Modal>
   );

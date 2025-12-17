@@ -1,4 +1,4 @@
-import React ,{useEffect}from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_ADSNewApplication_FORM } from "../../redux/action/ADSNewApplicationActions";
@@ -18,7 +18,6 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       ? state.ads.ADSNewApplicationFormReducer.formData[config?.key]
       : {};
   });
-
 
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
@@ -66,7 +65,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     setError("");
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => setShowToast(null), 2000);
       return () => clearTimeout(timer);

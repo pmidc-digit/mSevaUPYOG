@@ -23,7 +23,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber;
 
-
   const updatedApplicantDetails = currentStepData?.applicantDetails || {};
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
@@ -184,8 +183,50 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       };
     } else {
       // NORMAL FLOW: Use original logic
+      const originalOwners = CreatedResponse?.AllotmentDetails?.OwnerInfo || [];
+      const updatedApplicants = updatedApplicantDetails?.applicants || [];
+
+      const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
+        const originalOwner = originalOwners[index] || {};
+        return {
+          ...originalOwner,
+          name: applicant?.name,
+          mobileNo: applicant?.mobileNumber,
+          emailId: applicant?.emailId,
+          correspondenceAddress: {
+            ...originalOwner?.correspondenceAddress,
+            pincode: applicant?.pincode,
+            addressId: applicant?.address,
+            address: applicant?.address,
+          },
+          permanentAddress: {
+            ...originalOwner?.permanentAddress,
+            pincode: applicant?.pincode,
+            addressId: applicant?.address,
+            address: applicant?.address,
+          },
+        };
+      });
+
+      const originalAdditionalDetails = CreatedResponse?.AllotmentDetails?.additionalDetails || {};
+      const mergedAdditionalDetails = {
+        ...originalAdditionalDetails,
+        ...updatedPropertyDetails,
+        allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
+        propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
+        locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
+      };
+
       formData = {
         ...CreatedResponse?.AllotmentDetails,
+        startDate: updatedPropertyDetails?.startDate
+          ? new Date(updatedPropertyDetails?.startDate).getTime()
+          : CreatedResponse?.AllotmentDetails?.startDate,
+        endDate: updatedPropertyDetails?.endDate ? new Date(updatedPropertyDetails?.endDate).getTime() : CreatedResponse?.AllotmentDetails?.endDate,
+        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.penaltyType,
+        OwnerInfo: mergedOwnerInfo,
+        additionalDetails: mergedAdditionalDetails,
+        propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
             (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
@@ -237,7 +278,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     id: applicationNumber,
     moduleCode: businessService,
   });
-
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =

@@ -43,6 +43,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -61,6 +63,9 @@ public class PropertyController {
 
     @Autowired
     private MigrationService migrationService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private PropertyValidator propertyValidator;
@@ -171,7 +176,8 @@ public class PropertyController {
         if(!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()){
             propertyValidator.validatePropertyCriteria(propertyCriteria, requestInfoWrapper.getRequestInfo());
         }
-        
+        log.info("PropertyCriteria JSON: {}",
+                objectMapper.writeValueAsString(propertyCriteria));
     	List<Property> properties = new ArrayList<Property>();
     	Integer count = 0;
         

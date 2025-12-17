@@ -33,6 +33,8 @@ const RALApplicationDetails = () => {
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
 
+  console.log("applicationData", applicationData);
+
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -197,9 +199,6 @@ const RALApplicationDetails = () => {
       if (response?.responseInfo?.status == "successful") {
         // ✅ Show success first
         setShowToast({ key: false, label: "Successfully updated the status" });
-        // setError("Successfully updated the status");
-        // data.revalidate();
-
         // ✅ Delay navigation so toast shows
         setTimeout(() => {
           history.push("/digit-ui/employee/rentandlease/inbox");
@@ -207,10 +206,11 @@ const RALApplicationDetails = () => {
 
         setSelectedAction(null);
         setShowModal(false);
+      } else {
+        console.log(response);
       }
     } catch (err) {
       setShowToast({ key: true, label: "Something went wrong" });
-      // setError("Something went wrong");
     }
   };
 
@@ -238,6 +238,47 @@ const RALApplicationDetails = () => {
       return () => clearTimeout(timer);
     }
   }, [showToast]);
+
+  // const handleDisConnection = async (data) => {
+  //   setLoader(true);
+  //   const payload = {
+  //     AllotmentDetails: {
+  //       ...data,
+  //       applicationType: "DISCONNECT_RENT_AND_LEASE_CONNECTION",
+  //       processInstance: {
+  //         ...data?.processInstance,
+  //         action: "INITIATE",
+  //       },
+  //     },
+  //     disconnectRequest: true,
+  //   };
+
+  //   try {
+  //     const response = await Digit.RentAndLeaseService.create(payload);
+  //     updateApplication(response?.AllotmentDetails[0]);
+  //   } catch (error) {
+  //     setLoader(false);
+  //   }
+  // };
+
+  // const updateApplication = async (response) => {
+  //   const payload = {
+  //     AllotmentDetails: {
+  //       ...response,
+  //       processInstance: {
+  //         ...response?.processInstance,
+  //         action: "SUBMIT_APPLICATION",
+  //       },
+  //     },
+  //   };
+  //   try {
+  //     await Digit.RentAndLeaseService.update(payload);
+  //     await fetchApplications();
+  //     setLoader(false);
+  //   } catch (error) {
+  //     setLoader(false);
+  //   }
+  // };
 
   return (
     <React.Fragment>
@@ -336,6 +377,12 @@ const RALApplicationDetails = () => {
           </ActionBar>
         )}
 
+        {/* {applicationData?.status == "APPROVED" && (
+          <ActionBar>
+            <SubmitBar label={t("RAL_END_TENANCY")} onSubmit={() => handleDisConnection(applicationData)} />
+          </ActionBar>
+        )} */}
+
         {showModal ? (
           <RALModal
             t={t}
@@ -351,14 +398,13 @@ const RALApplicationDetails = () => {
             showToast={showToast}
             closeToast={closeToast}
             getEmployees={getEmployees}
-            // errors={error}
             setShowToast={setShowToast}
           />
         ) : null}
         {workflowDetails?.data && showNextActions(workflowDetails?.data?.actionState?.nextActions)}
       </div>
 
-      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} style={{ zIndex: 1000 }} />}
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );

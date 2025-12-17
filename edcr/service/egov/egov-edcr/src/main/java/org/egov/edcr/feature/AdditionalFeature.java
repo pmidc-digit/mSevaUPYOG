@@ -168,7 +168,7 @@ public class AdditionalFeature extends FeatureProcess {
     public static final BigDecimal HEIGHT_WITHOUT_STILT = BigDecimal.valueOf(21);
     
     public static final BigDecimal NO_OF_FLOORS_WITH_STILT = BigDecimal.valueOf(4);
-    public static final BigDecimal NO_OF_FLOORS_WITHOUT_STILT = BigDecimal.valueOf(3);
+    public static final BigDecimal NO_OF_FLOORS_WITHOUT_STILT = BigDecimal.valueOf(2);
     
     @Override
     public Plan validate(Plan pl) {
@@ -320,7 +320,7 @@ public class AdditionalFeature extends FeatureProcess {
             		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITH_STILT.add(BigDecimal.valueOf(1))) <= 0;
                     requiredFloorCount = "S + "+ NO_OF_FLOORS_WITH_STILT.toPlainString();
             	}else {
-            		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITHOUT_STILT) <= 0;
+            		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITHOUT_STILT.add(BigDecimal.valueOf(1))) <= 0;
                     requiredFloorCount = "G +" + NO_OF_FLOORS_WITHOUT_STILT.toPlainString();
                     if(A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
                     	errors.put("Mandatory stilt floor ", "Stilt floor is mandatory for Independent Floor");

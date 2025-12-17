@@ -45,6 +45,7 @@ const RALModal = ({
   const [financialYears, setFinancialYears] = useState([]);
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
+  console.log(action, "action");
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
@@ -121,17 +122,29 @@ const RALModal = ({
       action?.action === "REJECT" ||
       action?.action === "SENDBACKTOCITIZEN" ||
       action?.action === "FORWARD";
+    action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
+      action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
+      action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+      action?.action === "FORWARD_FOR_APPROVAL" ||
+      action?.action === "REQUEST_FOR_DISCONNECTION" ||
+      action?.action === "FORWARD_FOT_SETLEMENT";
 
     if (action?.isTerminateState) checkCommentsMandatory = true;
 
     let checkAssigneeMandatory =
-      action?.action === "SENDBACKTOVERIFIER" ||
+      action?.action === "SENDBACKTOOVERIFIER" ||
       action?.action === "VERIFY" ||
       action?.action === "FORWARD" ||
       action?.action === "FORWARDFORFIELDINSPECTION" ||
       action?.action === "PENDING_FOR_FIELDINSPECTION" ||
       action?.action === "FORWARD_FOR_APPROVAL" ||
-      action?.action === "FORWARDFORAPPROVAL";
+      action?.action === "FORWARDFORAPPROVAL" ||
+      action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
+      action?.action === "REQUEST_FOR_DISCONNECTION" ||
+      action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
+      action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+      action?.action === "FORWARD_FOT_SETLEMENT";
+
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 
     if (checkAssigneeMandatory && !selectedApprover?.uuid) {

@@ -193,7 +193,7 @@ const RALApplicationDetails = () => {
         ...finalPayload,
       });
 
-      if (response?.responseInfo?.status == "successful") {
+      if (response?.ResponseInfo?.status == "successful") {
         // ✅ Show success first
         setShowToast({ key: false, label: "Successfully updated the status" });
         // ✅ Delay navigation so toast shows

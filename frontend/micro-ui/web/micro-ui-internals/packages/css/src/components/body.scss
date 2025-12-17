@@ -156,3 +156,107 @@ body {
   max-height: 120px;
   margin-top: 90px;
 }
+
+.citizen-and-architect-photo-header {
+    font-size: 24px;
+}
+
+.citizen-and-architect-photo-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 10px;
+    padding: 0px 20px;
+}
+
+.citizen-and-architect-photo-item {
+    text-align: center;
+}
+
+.citizen-and-architect-photo-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10%;
+    cursor: default;
+}
+
+.citizen-and-architect-photo-clickable {
+    cursor: pointer;
+}
+
+.citizen-and-architect-photo-label {
+    /* Add any label styling if needed */
+}
+.clu-summary-page {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.clu-summary-heading {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.3rem;
+  color: #2e4a66;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.clu-summary-section {
+  background-color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.clu-summary-label-field-pair {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed #e0e0e0;
+  padding: 0.5rem 0;
+  color: #333;
+}
+
+.clu-summary-bold-label {
+  font-weight: bold;
+  color: #555;
+}
+.custom-card-container {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  border-radius: 18px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  padding: 0;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  overflow: hidden;
+  cursor: default;
+}
+
+.custom-card-clickable {
+  cursor: pointer;
+}
+
+.custom-card-hovered {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.custom-card-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 24px 20px;
+}
+
+.custom-card-td {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

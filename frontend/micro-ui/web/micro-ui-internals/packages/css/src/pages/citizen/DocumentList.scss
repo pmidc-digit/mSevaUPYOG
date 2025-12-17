@@ -382,3 +382,68 @@
   margin-bottom: 20px;
   border: none;
 }
+
+.clu-doc-required-card {
+    background: #FAFAFA;
+    border: 1px solid #D6D5D4;
+    padding: 8px;
+    border-radius: 4px;
+    max-width: 600px;
+    min-width: 280px;
+    margin-bottom: 15px;
+    padding-top: 15px;
+}
+
+.clu-doc-required-wrapper {
+    margin-bottom: 24px;
+}
+
+.clu-doc-required-label {
+    width: 100%;
+}
+
+.clu-doc-required-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.clu-doc-required-coordinates {
+    padding: 10px;
+    font-size: 14px;
+}
+.clu-doc-view-container {
+    margin-top: 19px;
+}
+
+.clu-doc-view-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.clu-doc-view-link {
+    width: 120px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.clu-doc-view-pdf-icon {
+    background: #f6f6f6;
+    padding: 8px;
+}
+
+.clu-doc-view-label {
+    margin-top: 8px;
+    font-size: 12px;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}

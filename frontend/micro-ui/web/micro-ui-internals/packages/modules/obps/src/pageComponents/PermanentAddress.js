@@ -834,7 +834,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             // disable={!isCitizenEditable}
           />
 
-          <CheckBox
+          {/* <CheckBox
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={handleAddressSame}
             checked={isAddressSame}
@@ -851,7 +851,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             value={correspondenceAddress}
             onChange={(e) => setCorrespondenceAddress(e.target.value)}
             // disable={isAddressSame}
-          />
+          /> */}
 
           <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
           {isStateLoading ? <Loader /> : <div>

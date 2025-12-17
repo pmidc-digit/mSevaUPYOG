@@ -174,7 +174,7 @@ const CLUSiteDetails = (_props) => {
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
+      <div>
         <CardSectionHeader className="card-section-header">{t("BPA_SITE_DETAILS")}</CardSectionHeader>
         <div>
           <LabelFieldPair>

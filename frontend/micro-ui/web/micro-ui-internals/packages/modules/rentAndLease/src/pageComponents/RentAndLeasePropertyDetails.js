@@ -24,7 +24,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const { data: mdmsPropertyData } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
-  console.log("mdmsPropertyData", mdmsPropertyData);
   const { triggerLoader } = config?.currStepConfig[0];
 
   // 🔹 Dropdown options
@@ -104,7 +103,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   const selectedLocationType = watch("locationType");
 
   const [filteredProperties, setFilteredProperties] = useState([]);
-  console.log("filteredProperties", filteredProperties);
 
   useEffect(() => {
     if (mdmsPropertyData) {

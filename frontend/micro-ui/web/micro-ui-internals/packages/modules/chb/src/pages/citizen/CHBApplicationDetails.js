@@ -115,11 +115,18 @@ const CHBApplicationDetails = () => {
   }
 
   const getChbAcknowledgement = async () => {
-    const applications = application || {};
-    console.log('applications for chbb', applications)
-    const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-    const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    try {
+      setLoading(true);
+      const applications = application || {};
+      console.log("applications for chbb", applications);
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
+      Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   let documentDate = t("CS_NA");
@@ -130,7 +137,9 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let application = data?.hallsBookingApplication?.[0];
+    try{
+      setLoading(true);
+      let application = data?.hallsBookingApplication?.[0];
     let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
       let response = { filestoreIds: [payments?.fileStoreId] };
@@ -147,10 +156,17 @@ const CHBApplicationDetails = () => {
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
+    }catch (error) {
+      console.error("Sanction Letter download error:", error);
+      }
+      finally { setLoading(false); }
+    
   }
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = {
+    try{
+      setLoading(true);
+      let application = {
       hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
           return {
             ...app,
@@ -161,13 +177,19 @@ const CHBApplicationDetails = () => {
         })
     };
 
-    let fileStoreId = application?.permissionLetterFilestoreId;
+    let fileStoreId = payments?.fileStoreId;
     if (!fileStoreId) {
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
       fileStoreId = response?.filestoreIds[0];
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
+    }
+    catch (error) {
+      console.error("Sanction Letter download error:", error);
+      }
+      finally { setLoading(false); }
+    
   }
 
   const handleDownload = async (document, tenantid) => {
@@ -248,6 +270,7 @@ const CHBApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
+          {loading && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"

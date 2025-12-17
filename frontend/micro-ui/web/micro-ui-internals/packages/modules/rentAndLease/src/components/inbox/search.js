@@ -10,7 +10,6 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     defaultValues: searchParams,
   });
 
-  console.log('searchFields', searchFields)
   const mobileView = innerWidth <= 640;
 
   const onSubmitInput = (data) => {

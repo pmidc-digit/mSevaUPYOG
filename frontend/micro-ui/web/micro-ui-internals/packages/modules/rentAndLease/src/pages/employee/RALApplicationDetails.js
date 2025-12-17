@@ -30,21 +30,16 @@ const RALApplicationDetails = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [getEmployees, setEmployees] = useState([]);
-  const [error, setError] = useState(null);
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
-  console.log("applicationData", applicationData);
-
-  const isCitizen = window.location.href.includes("citizen");
 
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
       const responseData = await Digit.RentAndLeaseService.search({ tenantId, filters });
-      console.log("search ", responseData);
       setApplicationData(responseData?.AllotmentDetails?.[0]);
     } catch (error) {
-      console.log("error", error);
+      setShowToast({ key: true, label: "Error While Fetching Application Details" });
     } finally {
       setLoader(false);
     }
@@ -63,8 +58,6 @@ const RALApplicationDetails = () => {
     moduleCode: "RENT_N_LEASE_NEW",
     role: "EMPLOYEE",
   });
-
-  console.log("workflowDetails", workflowDetails);
 
   const userType = "citizen";
 
@@ -122,7 +115,6 @@ const RALApplicationDetails = () => {
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
-
   const closeToast = () => {
     setShowToast(null);
   };
@@ -138,27 +130,25 @@ const RALApplicationDetails = () => {
       action: [action],
     };
 
-    console.log("action", action);
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
     const filterNexState = (action?.actions ?? action?.state?.actions)?.filter((item) => item.action === action?.action);
 
-    console.log("filterNexState", filterNexState);
-    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-    console.log("filterRoles", filterRoles);
-    setEmployees(filterRoles?.[0]?.actions);
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState?.[0]?.nextState);
+    setEmployees(filterRoles?.[0]?.actions || []);
 
-    if (action?.action == "APPLY") {
+    if (action?.action == "APPLY" || action?.action == "REJECT") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
-      history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}`);
-    } else if (action?.action === "EDIT" || action?.action === "SAVEASDRAFT") {
-      history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
+      history.push(`/digit-ui/employee/payment/collect/rentandlease/${appNo}/${tenantId}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);
     }
+    // else if (action?.action === "SAVEASDRAFT") {
+    //   history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
+    // }
   }
 
   const submitAction = async (data) => {
@@ -183,7 +173,6 @@ const RALApplicationDetails = () => {
       filtData = data?.Licenses?.[0];
     }
 
-    console.log("filtData", filtData);
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData.action === "SENDBACKTOCITIZEN" ? [applicationData?.auditDetails?.createdBy] : filtData?.assignee,
@@ -207,8 +196,8 @@ const RALApplicationDetails = () => {
 
       if (response?.responseInfo?.status == "successful") {
         // ✅ Show success first
-        setShowToast({ key: "success", message: "Successfully updated the status" });
-        setError("Successfully updated the status");
+        setShowToast({ key: false, label: "Successfully updated the status" });
+        // setError("Successfully updated the status");
         // data.revalidate();
 
         // ✅ Delay navigation so toast shows
@@ -220,8 +209,8 @@ const RALApplicationDetails = () => {
         setShowModal(false);
       }
     } catch (err) {
-      setShowToast({ key: "error", message: "Something went wrong" });
-      setError("Something went wrong");
+      setShowToast({ key: true, label: "Something went wrong" });
+      // setError("Something went wrong");
     }
   };
 
@@ -243,10 +232,17 @@ const RALApplicationDetails = () => {
     }
   }, [tenantId]);
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+        <div className="cardHeaderWithOptions" style={{ marginLeft: "14px", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
         </div>
         <Card>
@@ -255,15 +251,19 @@ const RALApplicationDetails = () => {
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
                 const multipleOwners = applicationData.OwnerInfo.length > 1;
-                const ownerLabelPrefix = multipleOwners ? `${t("OWNER")} ${index + 1}` : t("OWNER");
 
                 return (
                   <React.Fragment key={owner.ownerId || index}>
-                    <Row label={`${ownerLabelPrefix} ${t("ADS_APPLICANT_NAME")}`} text={owner?.name || t("CS_NA")} />
-                    <Row label={`${ownerLabelPrefix} ${t("CORE_COMMON_PROFILE_EMAIL")}`} text={owner?.emailId || t("CS_NA")} />
-                    <Row label={`${ownerLabelPrefix} ${t("CORE_MOBILE_NUMBER")}`} text={owner?.mobileNo || t("CS_NA")} />
+                    {multipleOwners && (
+                      <CardSectionHeader style={{ padding: "5px 24px 0px 24px", fontWeight: "600" }}>
+                        {t("RAL_OWNER")} {index + 1}
+                      </CardSectionHeader>
+                    )}
+                    <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={owner?.name || t("CS_NA")} />
+                    <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={owner?.emailId || t("CS_NA")} />
+                    <Row label={t("CORE_MOBILE_NUMBER")} text={owner?.mobileNo || t("CS_NA")} />
                     <Row
-                      label={`${ownerLabelPrefix} ${t("CORE_COMMON_PINCODE")}`}
+                      label={t("CORE_COMMON_PINCODE")}
                       text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
                     />
                   </React.Fragment>
@@ -276,13 +276,17 @@ const RALApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
+            <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
+            <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={propertyDetails?.propertyName || t("CS_NA")} />
+            <Row label={t("RAL_ALLOTMENT_TYPE")} text={propertyDetails?.allotmentType || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={propertyDetails?.propertyType || t("CS_NA")} />
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
-            <Row label={t("BASE_RENT")} text={propertyDetails?.baseRent || t("CS_NA")} />
+            <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.feesPeriodCycle?.charAt(0)?.toUpperCase() || t("CS_NA")} />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
-            <Row label={t("LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
+            <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
@@ -302,7 +306,7 @@ const RALApplicationDetails = () => {
           </StatusTable>
         </Card>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
-        {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
+        {applicationData?.status != "INITIATED" && actions?.length > 0 && actions[0]?.action != "PAY" && (
           <ActionBar>
             {displayMenu ? (
               <Menu
@@ -315,6 +319,17 @@ const RALApplicationDetails = () => {
               />
             ) : null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
+
+        {applicationData?.status == "INITIATED" && (
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
+              }}
+            />
           </ActionBar>
         )}
 
@@ -340,7 +355,7 @@ const RALApplicationDetails = () => {
         {workflowDetails?.data && showNextActions(workflowDetails?.data?.actionState?.nextActions)}
       </div>
 
-      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} />}
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );

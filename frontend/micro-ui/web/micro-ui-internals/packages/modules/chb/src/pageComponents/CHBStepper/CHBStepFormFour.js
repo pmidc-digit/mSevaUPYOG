@@ -98,6 +98,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
       setLoader(false);
       dispatch(RESET_CHB_APPLICATION_FORM());
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidCHB");
       if (response?.responseInfo?.status == "SUCCESSFUL") {
         return { isSuccess: true, response };
       } else {

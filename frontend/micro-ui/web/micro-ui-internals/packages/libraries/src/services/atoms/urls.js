@@ -96,7 +96,7 @@ const Urls = {
     defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
     getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
     ludhianaSearch: "/property-services/api/fetch",
-    bathindaSearch: "/api/Property/GetPropertyDetail"
+    bathindaSearch: "/api/Property/GetPropertyDetail",
   },
 
   dss: {
@@ -374,6 +374,7 @@ const Urls = {
     create: "/gc-services/gc/_create",
     search: "/gc-services/gc/_search",
     update: "/gc-services/gc/_update",
+    location: "/egov-location/location/v11/boundarys/_search",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

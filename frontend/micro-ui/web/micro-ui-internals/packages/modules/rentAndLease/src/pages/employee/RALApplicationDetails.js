@@ -32,9 +32,6 @@ const RALApplicationDetails = () => {
   const [getEmployees, setEmployees] = useState([]);
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
-
-  console.log("applicationData", applicationData);
-
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -206,8 +203,6 @@ const RALApplicationDetails = () => {
 
         setSelectedAction(null);
         setShowModal(false);
-      } else {
-        console.log(response);
       }
     } catch (err) {
       setShowToast({ key: true, label: "Something went wrong" });

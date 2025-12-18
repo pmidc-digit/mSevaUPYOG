@@ -112,12 +112,13 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
               <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={property?.applicationNumber || t("CS_NA")} />
               <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={property?.additionalDetails?.allotmentType || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(property.status)} />
-              <KeyNote
+              {/* <KeyNote
                 keyValue={t("UC_OWNER_NAME_LABEL")}
                 note={
                   property?.OwnerInfo && property?.OwnerInfo.length > 0 ? property?.OwnerInfo.map((o) => o.name || t("CS_NA")).join(", ") : t("CS_NA")
                 }
-              />
+              /> */}
+              <KeyNote keyValue={t("RENT_LEASE_PROPERTY_NAME")} note={property?.additionalDetails?.propertyName || t("CS_NA")} />
 
               <div
                 style={{

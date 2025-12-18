@@ -48,7 +48,7 @@ public class CalculatorController {
 	}
 	@PostMapping("/_estimate")
 	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
-		DemandResponse demandResponse =demandService.estimate(true,allotmentRequest);
+		DemandResponse demandResponse =demandService.estimate(allotmentRequest.getCalculationCriteria().stream().findFirst().get().isSecurityDeposite(),allotmentRequest);
 		demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}

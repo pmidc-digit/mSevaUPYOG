@@ -100,6 +100,12 @@ public class AllotmentDetails {
 	@JsonProperty("amountToBeRefund")
 	private String amountToBeRefund;
 	
+	@JsonProperty("registrationNumber")
+	private String registrationNumber;
+	
+	@JsonProperty("tradeLicenseNumber")
+	private String tradeLicenseNumber;
+	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
 		if (this.ownerInfo == null) {
 			this.ownerInfo = new ArrayList<>();
@@ -149,6 +155,8 @@ public class AllotmentDetails {
 	            ", amountToBeDeducted=" + amountToBeDeducted +
 	            ", notesComments=" + notesComments +
 	            ", amountToBeRefund=" + amountToBeRefund +
+	            ", registrationNumber=" + registrationNumber +
+	            ", tradeLicenseNumber=" + tradeLicenseNumber +
 	            '}';
 	}
 }

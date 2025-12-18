@@ -63,6 +63,13 @@ public class RentLeaseConfiguration {
 
     @Value("${persister.migration.batch.count.topic}")
     private String migartionBatchCountTopic;
+    
+    //trade license
+    @Value("${egov.tl.host}")
+    private String tradeLicenseHost;
+    
+    @Value("${egov.tl.search.path}")
+    private String tradeLicenseSearchEndpoint;
 
     //USER
     @Value("${egov.user.host}")

@@ -663,7 +663,7 @@ public class EstimationService {
 //			else
 //				connection_propertyType = "COMMERCIAL";
 
-			connection_propertyType = criteria.getWaterConnection().getFrequency_of_garbage_collection();
+			connection_propertyType = criteria.getWaterConnection().getPropertyType();
 
 			ArrayList conn_fees = (ArrayList) feeObj.get(GCCalculationConstant.WS_CONNECTION_FEE_CONST);
 
@@ -679,7 +679,7 @@ public class EstimationService {
 				toPlotSize = new BigDecimal(connFeeMap.get("toPlotSize"));
 				// connectionFeeApplicable=new BigDecimal(connFeeMap.get("connectionFee"));
 				propertyType = connFeeMap.get("usageType").toString();
-				if (propertyType.equals(connection_propertyType)) {
+				if (propertyType.equalsIgnoreCase(connection_propertyType)) {
 					connectionFeeApplicable = new BigDecimal(connFeeMap.get("connectionFee"));
 					break; // matched the attributes and got valid connection fee
 				}
@@ -688,6 +688,13 @@ public class EstimationService {
 
 			// connectionFee = new
 			// BigDecimal(feeObj.getAsNumber(GCCalculationConstant.WS_CONNECTION_FEE_CONST).toString());
+			if(criteria.getWaterConnection().getFrequency_of_garbage_collection().equalsIgnoreCase("Quarterly")){
+
+				connectionFeeApplicable =
+						(connectionFeeApplicable == null ? BigDecimal.ZERO : connectionFeeApplicable)
+								.multiply(BigDecimal.valueOf(3));
+
+			}
 			connectionFee = connectionFeeApplicable;
 		}
 

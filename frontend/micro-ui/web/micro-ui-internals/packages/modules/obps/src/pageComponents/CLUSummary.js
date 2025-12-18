@@ -12,8 +12,14 @@ function CLUSummary({ currentStepData: formData, t }) {
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
+    
+  const ownerPhotos = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerPhotos;
+  });
 
-  console.log("coordinates in summary page", coordinates);
+  //console.log("coordinates in summary page", coordinates);
+  console.log("ownerPhotos(redux)", ownerPhotos);
+  console.log("ownerFileStoreId", ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId);
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -63,19 +69,26 @@ function CLUSummary({ currentStepData: formData, t }) {
     <div style={pageStyle}>
       <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
       <div style={sectionStyle}>
-        <CLUImageView documents={formData?.documents?.documents?.documents} ownerName={formData?.applicationDetails?.applicantOwnerOrFirmName} />
+        <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
-      <div style={sectionStyle}>
-        {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
-        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
-        {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
-        {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), formData?.applicationDetails?.applicantMobileNumber)}
-        {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
-        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
-      </div>
+      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
+        return (
+        <div key={index} style={sectionStyle}>
+         <h3 className="card-subtitle">
+           {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("BPA_OWNER")} #${index + 1}`}
+         </h3>
+
+         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.ownerOrFirmName)}
+         {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+         {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+         {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+         {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dateOfBirth)}
+         {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code)}
+         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.address)}
+        </div>
+        )
+      })}
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
@@ -84,6 +97,7 @@ function CLUSummary({ currentStepData: formData, t }) {
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
+            {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formData?.applicationDetails?.professionalRegIdValidity)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
           </div>

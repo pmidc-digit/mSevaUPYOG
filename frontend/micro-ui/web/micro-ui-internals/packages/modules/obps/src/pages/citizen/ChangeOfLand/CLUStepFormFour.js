@@ -26,6 +26,16 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
 
+  const ownerIds = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerIds;
+  });
+    
+  const ownerPhotos = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerPhotos;
+  });
+
+
+
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -60,10 +70,10 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    const finalPayload = mapToCLUPayload(data, selectedAction);
-    console.log("finalPayload here==>", finalPayload);
-
     try {
+      const finalPayload = mapToCLUPayload(data, selectedAction);
+      console.log("finalPayload here==>", finalPayload);
+
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
@@ -96,7 +106,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           } else {
             //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
             history.replace({
-              pathname: `/digit-ui/employee/obps/response/${response?.Noc?.[0]?.applicationNo}`,
+              pathname: `/digit-ui/employee/obps/response/${response?.Clu?.[0]?.applicationNo}`,
               state: { data: response },
             });
           }
@@ -114,8 +124,24 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   function mapToCLUPayload(cluFormData, selectedAction) {
     console.log("cluFormData", cluFormData);
 
+    {/**Change of Owner Feature Left and to be discussed*/}
+
+    // const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+    //   return {
+    //     mobileNumber: item?.mobileNumber || "",
+    //     name: item?.ownerOrFirmName || "",
+    //     emailId: item?.emailId || "",
+    //     userName: item?.mobileNumber || "",
+    //     additionalDetails:{
+    //      ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
+    //      ownerId: {...ownerIds?.ownerIdList?.[index]}
+    //     }
+    //   }
+    //  });
+
     const updatedApplication = {
       ...cluFormData?.apiData?.Clu?.[0],
+      // owners: ownerData,// NEED TO BE DISCUSSED
       workflow: {
         action: selectedAction?.action || "",
       },
@@ -144,6 +170,8 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             // specificationIsSiteUnderMasterPlan: cluFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
           },
           coordinates: { ...coordinates },
+          ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
+          ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] 
         },
       },
       documents: [],
@@ -211,7 +239,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       <CheckBox
         label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
           currentStepData?.applicationDetails?.applicantOwnerOrFirmName || "NA"
-        }). I along with with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}
         checked={selectedCheckBox}

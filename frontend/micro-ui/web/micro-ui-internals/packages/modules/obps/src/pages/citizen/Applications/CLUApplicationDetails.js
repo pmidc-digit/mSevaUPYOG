@@ -154,7 +154,7 @@ const CLUApplicationDetails = () => {
 
   }
 
-  console.log("Approve Comments:", approveComments);
+ // console.log("Approve Comments:", approveComments);
 
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
@@ -261,7 +261,7 @@ const CLUApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  //console.log("actions here", actions);
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -332,6 +332,8 @@ const CLUApplicationDetails = () => {
     }
   };
 
+  console.log("displayData==>", displayData);
+
   if (isLoading) {
     return <Loader />;
   }
@@ -350,22 +352,24 @@ const CLUApplicationDetails = () => {
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("BPA_APPLICANT_DETAILS")}</CardSubHeader>
-        {displayData?.applicantDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
-              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
-              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
-              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card>
+      {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
+      <React.Fragment>
+        <Card>
+          <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={detail?.dateOfBirth || "N/A"} />
+              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
+              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+              </StatusTable>
+            </div>
+        </Card>
+        </React.Fragment>
+      ))}
 
       {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
@@ -377,13 +381,14 @@ const CLUApplicationDetails = () => {
                   <Row label={t("BPA_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} text={detail?.professionalRegIdValidity || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
             </Card>
           </React.Fragment>
-        ))}
+       ))}
 
       <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>

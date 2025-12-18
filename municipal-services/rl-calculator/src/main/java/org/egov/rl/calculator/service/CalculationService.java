@@ -3,6 +3,7 @@ package org.egov.rl.calculator.service;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
+import org.egov.rl.calculator.web.models.AllotmentDetails;
 import org.egov.rl.calculator.web.models.AllotmentRequest;
 
 import org.egov.rl.calculator.web.models.RLProperty;
@@ -34,7 +35,7 @@ public class CalculationService {
 		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
 				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 
-		return processCalculationForDemandGeneration(true, tenantId, calculationTypes, allotmentRequest);
+		return processCalculationForDemandGeneration(isSecurityDeposite, tenantId, calculationTypes, allotmentRequest);
 	}
 
 	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposite, String tenantId,
@@ -46,16 +47,16 @@ public class CalculationService {
 		// Step 1: Calculate base fee
 		for (RLProperty amount : calculateAmount) {
 			if (isSecurityDeposite) {
-				DemandDetail securityDemandDetail = DemandDetail.builder()
-						.taxAmount(new BigDecimal(amount.getSecurityDeposit()))
-						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build();
-				demandDetails.add(securityDemandDetail);
+				fee = new BigDecimal(amount.getSecurityDeposit());
+				demandDetails.add(DemandDetail.builder().taxAmount(fee)
+						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build());
 			}
-		
-			DemandDetail baseDemandDetail = DemandDetail.builder().taxAmount(new BigDecimal(amount.getBaseRent()))
-					.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build();
-			demandDetails.add(baseDemandDetail);
-
+			if ((applicationType.equalsIgnoreCase(RLConstants.NEW_RL_APPLICATION))
+					|| (applicationType.equalsIgnoreCase(RLConstants.RENEWAL_RL_APPLICATION))) {
+				fee = new BigDecimal(amount.getBaseRent());
+				demandDetails.add(DemandDetail.builder().taxAmount(fee)
+						.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
+			}
 		}
 
 		// Step 2: Calculate additional fees (Penality, cowcass, cgst,sgst)
@@ -90,5 +91,31 @@ public class CalculationService {
 				}
 			}
 		});
+	}
+
+	public List<DemandDetail> calculateSatelmentDemand(AllotmentRequest allotmentRequest) {
+		String tenantId = allotmentRequest.getAllotment().getTenantId();
+
+		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
+				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+
+		return satelmentCalculationForDemandGeneration(tenantId, calculationTypes, allotmentRequest);
+	}
+
+	private List<DemandDetail> satelmentCalculationForDemandGeneration(String tenantId,
+			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
+		List<DemandDetail> demandDetails = new ArrayList<>();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		BigDecimal amountDeducted = new BigDecimal(allotmentDetails.getAmountToBeDeducted()); // BigDecimal
+		BigDecimal securityAmount = calculateAmount.stream()
+				.filter(d -> d.getPropertyId().equals(allotmentDetails.getPropertyId())).findFirst()
+				.map(d -> new BigDecimal(d.getSecurityDeposit())) // BigDecimal
+				.orElse(BigDecimal.ZERO);
+
+		BigDecimal amountToBeRefunded = securityAmount.subtract(amountDeducted);
+
+		demandDetails.add(DemandDetail.builder().taxAmount(amountToBeRefunded)
+				.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION).tenantId(tenantId).build());
+		return demandDetails;
 	}
 }

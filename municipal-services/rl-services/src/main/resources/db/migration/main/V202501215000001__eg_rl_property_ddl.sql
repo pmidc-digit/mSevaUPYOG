@@ -2,7 +2,7 @@
 -- Add columns
 ALTER TABLE eg_rl_allotment
     ADD COLUMN reason_for_closure        VARCHAR(255),               -- short reason text
-    ADD COLUMN amount_tobe_deducted      bigint,    -- monetary value
+    ADD COLUMN amount_tobe_deducted      bigint DEFAULT 0,    -- monetary value
     ADD COLUMN notes_comments            VARCHAR(255),                        -- longer free text
     ADD COLUMN amount_to_be_refund       bigint;     -- if you want to keep the optional field
 

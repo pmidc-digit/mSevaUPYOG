@@ -200,17 +200,24 @@ public class AllotmentValidator {
 			throw new CustomException("PROPERTY ID INFO ERROR",
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
-		String previousApplicationNumber = allotementRequest.getAllotment().getPreviousApplicationNumber();
+//		String previousApplicationNumber = allotementRequest.getAllotment().getPreviousApplicationNumber();
 		String id = allotementRequest.getAllotment().getId();
 		if ((id == null) || (id != null && id.isEmpty())) {
-			throw new CustomException("TENANT ID INFO ERROR",
+			throw new CustomException("ALLOTMENT ID INFO ERROR",
 					"Allotment Id cannot be empty, please provide allotment id information");
+		}
+		
+		String previousApplicationNumber = allotementRequest.getAllotment().getPreviousApplicationNumber();
+		String tradeLicenseNumber = allotementRequest.getAllotment().getTradeLicenseNumber();
+		
+		if ((previousApplicationNumber != null) || (previousApplicationNumber != null && !previousApplicationNumber.isEmpty())) {
+			if ((tradeLicenseNumber == null) || (tradeLicenseNumber != null && tradeLicenseNumber.isEmpty())) {
+ 			    throw new CustomException("TRADELICENSENUMBER INFO ERROR",
+					"tradeLicenseNumber cannot be empty, please provide Trade License information");
+			}
 		}
 
 		AllotmentCriteria allotmentCriteria=new AllotmentCriteria();
-		System.out.println("------------id----------"+id);
-		System.out.println("------------tenantId----------"+tenantId);
-		
 		Set<String> ids=new HashSet<>();
 		ids.add(id.trim());
 		allotmentCriteria.setAllotmentIds(ids);

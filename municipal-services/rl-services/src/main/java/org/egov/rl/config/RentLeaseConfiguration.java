@@ -89,6 +89,12 @@ public class RentLeaseConfiguration {
     @Value("${egov.idgen.applicationnumber.format}")
     private String allotmentApplicationNummberGenNameFormat;
 
+    @Value("${egov.rl.reg.number.name}")
+    private String rlRegistrationNumber;
+
+    @Value("${egov.rl.reg.number.format}")
+    private String rlRegistrationNumberFormat;
+
     
     @Value("${egov.idgen.ack.name}")
     private String ackIdGenName;

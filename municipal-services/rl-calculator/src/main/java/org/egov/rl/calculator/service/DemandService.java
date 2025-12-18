@@ -25,105 +25,142 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class DemandService {
 
+	@Autowired
+	MasterDataService mstrDataService;
 
-    @Autowired
-    MasterDataService mstrDataService;
+	@Autowired
+	private Configurations config;
 
-    @Autowired
-    private Configurations config;
+	@Autowired
+	private Repository serviceRequestRepository;
 
-    @Autowired
-    private Repository serviceRequestRepository;
+	@Autowired
+	private ObjectMapper mapper;
 
-    @Autowired
-    private ObjectMapper mapper;
+	@Autowired
+	private DemandRepository demandRepository;
 
-    @Autowired
-    private DemandRepository demandRepository;
+	@Autowired
+	private PropertyUtil utill;
 
-    @Autowired
-    private PropertyUtil utill;
+	@Autowired
+	private CalculationService calculationService;
 
-    @Autowired
-    private CalculationService calculationService;
+	public DemandResponse createDemand(CalculationReq calculationReq) {
 
-    public DemandResponse createDemand(CalculationReq calculationReq) {
-    	
-    	boolean isSecurityDeposite=calculationReq.getCalculationCriteria().get(0).isSecurityDeposite();
-        List<Demand> demands = new ArrayList<>();
-        RequestInfo requestInfo = calculationReq.getRequestInfo();
-        String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().getTenantId();
+		if (calculationReq.getCalculationCriteria().get(0).isSatelment()) {
+			return createSatelmentDemand(calculationReq);
+		} else {
 
-        List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
-        BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of billing
+			boolean isSecurityDeposite = calculationReq.getCalculationCriteria().get(0).isSecurityDeposite();
+			List<Demand> demands = new ArrayList<>();
+			RequestInfo requestInfo = calculationReq.getRequestInfo();
+			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
+					.getTenantId();
 
-        for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
+			List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
+			BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of
+																	// billing
 
-            AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
+			for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
+
+				AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
 
 //            String tenantId = allotmentRequest.getAllotment().getTenantId();
-            String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
+				String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
 
-            OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
-            Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId()).uuid(ownerInfo.getUserUuid())
-                    .mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId()).build();
-            List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite, allotmentRequest);
-            BigDecimal amountPayable = new BigDecimal(0);
-            String applicationType = allotmentRequest.getAllotment().getApplicationType();
+				OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+				Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
+						.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo())
+						.tenantId(ownerInfo.getTenantId()).build();
+				List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite,
+						allotmentRequest);
+				BigDecimal amountPayable = new BigDecimal(0);
+				String applicationType = allotmentRequest.getAllotment().getApplicationType();
 
-            amountPayable = demandDetails.stream()
-                    .map(DemandDetail::getTaxAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            Demand demand = Demand.builder()
-                    .consumerCode(consumerCode)
-                    .demandDetails(demandDetails)
-                    .payer(payerUser)
-                    .minimumAmountPayable(amountPayable)
-                    .tenantId(tenantId)
-                    .taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
-                    .taxPeriodTo(billingPeriod.getTaxPeriodTo())
-                    .billExpiryTime(billingPeriod.getDemandEndDateMillis())
-                    .consumerType(applicationType)
-                    .businessService(RLConstants.RL_SERVICE_NAME)
-                    .additionalDetails(null)
-                    .build();
+				amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
+						BigDecimal::add);
+				Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
+						.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)
+						.taxPeriodFrom(billingPeriod.getTaxPeriodFrom()).taxPeriodTo(billingPeriod.getTaxPeriodTo())
+						.billExpiryTime(billingPeriod.getDemandEndDateMillis()).consumerType(applicationType)
+						.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 
-            demands.add(demand);
-        }
+				demands.add(demand);
+			}
 
+			List<Demand> demands1 = demandRepository.saveDemand(
+					calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+			return DemandResponse.builder().demands(demands1).build();
+		}
+	}
 
-        List<Demand> demands1 = demandRepository.saveDemand(calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
-        return DemandResponse.builder().demands(demands1).build();
+	public DemandResponse createSatelmentDemand(CalculationReq calculationReq) {
 
-    }
+		AllotmentRequest allotmentRequest = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest();
 
+//		String deductedAmount = allotmentRequest.getAllotment().getAmountToBeDeducted();
+		List<Demand> demands = new ArrayList<>();
+		RequestInfo requestInfo = calculationReq.getRequestInfo();
+		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
+				.getTenantId();
 
-    public DemandResponse updateDemandsbkp(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+		List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
+		BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of
+																// billing
+		String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
 
-        if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+		OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
+				.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId())
+				.build();
+
+		List<DemandDetail> demandDetails = calculationService.calculateSatelmentDemand(allotmentRequest);
+		BigDecimal amountPayable = new BigDecimal(0);
+		String applicationType = allotmentRequest.getAllotment().getApplicationType();
+
+		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
+				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
+				.taxPeriodTo(billingPeriod.getTaxPeriodTo()).billExpiryTime(billingPeriod.getDemandEndDateMillis())
+				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null)
+				.build();
+
+		demands.add(demand);
+
+		List<Demand> demands1 = demandRepository.saveDemand(
+				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+		return DemandResponse.builder().demands(demands1).build();
+	}
+
+	public DemandResponse updateDemandsbkp(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+		if (getBillCriteria.getAmountExpected() == null)
+			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
 //		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-        DemandResponse res = mapper.convertValue(
-                serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
-                DemandResponse.class);
-        if (CollectionUtils.isEmpty(res.getDemands())) {
-            Map<String, String> map = new HashMap<>();
-            map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
-        }
+		DemandResponse res = mapper.convertValue(
+				serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+				DemandResponse.class);
+		if (CollectionUtils.isEmpty(res.getDemands())) {
+			Map<String, String> map = new HashMap<>();
+			map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+		}
 
-        Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
-        res.getDemands().forEach(demand -> {
-            if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
-                consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
-            else {
-                List<Demand> demands = new LinkedList<>();
-                demands.add(demand);
-                consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
-            }
-        });
+		Map<String, List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+		res.getDemands().forEach(demand -> {
+			if (consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
+			else {
+				List<Demand> demands = new LinkedList<>();
+				demands.add(demand);
+				consumerCodeToDemandMap.put(demand.getConsumerCode(), demands);
+			}
+		});
 
 //		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
 //			List<Demand> demandsToBeUpdated = new LinkedList<>();
@@ -131,376 +168,357 @@ public class DemandService {
 //			StringBuilder updateDemandUrl = petUtil.getUpdateDemandUrl();
 //            repository.fetchResult(updateDemandUrl, request);
 //		}
-        return res;
-    }
+		return res;
+	}
 
+	public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {
 
-    public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {
+		List<Demand> demands = new ArrayList<>();
+		RequestInfo requestInfo = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo();
+		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
+				.getTenantId();
 
-        List<Demand> demands = new ArrayList<>();
-        RequestInfo requestInfo = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo();
-        String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().getTenantId();
+		List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
+		BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of
+																// billing
 
-        List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
-        BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of billing
+		for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
 
-        for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
-
-            AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
+			AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
 
 //            String tenantId = allotmentRequest.getAllotment().getTenantId();
-            String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
+			String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
 
-            OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
-            Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId()).uuid(ownerInfo.getUserUuid())
-                    .mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId()).build();
-            List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite, allotmentRequest);
-            BigDecimal amountPayable = new BigDecimal(0);
-            String applicationType = allotmentRequest.getAllotment().getApplicationType();
+			OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+			Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
+					.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo())
+					.tenantId(ownerInfo.getTenantId()).build();
+			List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite, allotmentRequest);
+			BigDecimal amountPayable = new BigDecimal(0);
+			String applicationType = allotmentRequest.getAllotment().getApplicationType();
 
-            amountPayable = demandDetails.stream()
-                    .map(DemandDetail::getTaxAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            Demand demand = Demand.builder()
-                    .consumerCode(consumerCode)
-                    .demandDetails(demandDetails)
-                    .payer(payerUser)
-                    .minimumAmountPayable(amountPayable)
-                    .tenantId(tenantId)
-                    .taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
-                    .taxPeriodTo(billingPeriod.getTaxPeriodTo())
-                    .billExpiryTime(billingPeriod.getDemandEndDateMillis())
-                    .consumerType(applicationType)
-                    .businessService(RLConstants.RL_SERVICE_NAME)
-                    .additionalDetails(null)
-                    .build();
+			amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
+					BigDecimal::add);
+			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
+					.minimumAmountPayable(amountPayable).tenantId(tenantId)
+					.taxPeriodFrom(billingPeriod.getTaxPeriodFrom()).taxPeriodTo(billingPeriod.getTaxPeriodTo())
+					.billExpiryTime(billingPeriod.getDemandEndDateMillis()).consumerType(applicationType)
+					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 
-            demands.add(demand);
-        }
+			demands.add(demand);
+		}
 
 //        List<Demand> demands1 = demandRepository.saveDemand(calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
-        return DemandResponse.builder().demands(demands).build();
-
-    }
-
-
-    public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
-
-        if (getBillCriteria.getAmountExpected() == null)
-            getBillCriteria.setAmountExpected(BigDecimal.ZERO);
-        RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-
-        if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes())) {
-            getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getApplicationNumber()));
-        }
-
-        DemandResponse res = mapper.convertValue(
-                serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
-                DemandResponse.class);
-
-        if (CollectionUtils.isEmpty(res.getDemands())) {
-            Map<String, String> map = new HashMap<>();
-            map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
-            throw new CustomException(map);
-        }
-
-        List<Demand> demands = res.getDemands().stream()
-                .filter(d -> d.getStatus() == null || !d.getStatus().toString().equalsIgnoreCase(RLConstants.DEMAND_CANCELLED_STATUS))
-                .collect(Collectors.toList());
-
-        if (CollectionUtils.isEmpty(demands)) {
-            return DemandResponse.builder().demands(Collections.emptyList()).build();
-        }
-
-        List<Demand> demandsToBeUpdated = new LinkedList<>();
-        String tenantId = getBillCriteria.getTenantId();
-        List<TaxPeriod> taxPeriods = mstrDataService.getTaxPeriodList(requestInfo, tenantId, RLConstants.RL_SERVICE_NAME);
-        List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
-        List<Penalty> penaltySlabs = mstrDataService.getPenaltySlabs(requestInfo, tenantId);
-
-        for (Demand demand : demands) {
-            BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            if (totalTax.compareTo(totalCollection) > 0) {
-                applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods,billingPeriods,penaltySlabs);
-            }
-
-            addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
-            demandsToBeUpdated.add(demand);
-        }
-
-        demandRepository.updateDemand(requestInfo, demandsToBeUpdated);
-        return DemandResponse.builder().demands(demandsToBeUpdated).build();
-    }
-
-    private void applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper, List<TaxPeriod> taxPeriods, List<BillingPeriod> billingPeriods, List<Penalty> penaltySlabs) {
-        log.info("Applying time based applicables for demand: {}", demand.getId());
-
-        if (CollectionUtils.isEmpty(penaltySlabs)) {
-            log.info("No penalty slabs found for tenant: {}", demand.getTenantId());
-            return;
-        }
-        log.info("Found {} penalty slabs.", penaltySlabs.size());
-
-        Long demandCreationTime = demand.getAuditDetails() != null ? demand.getAuditDetails().getCreatedTime() : null;
-        Long expiryDurationMillis = demand.getBillExpiryTime();
-        log.info("Demand ID: {}. Creation Time: {}. Expiry Days: {}", demand.getId(), demandCreationTime, expiryDurationMillis);
-
-        if (expiryDurationMillis == null || demandCreationTime == null) {
-            log.error("Cannot apply penalty. Demand creation time or expiry days is null for demand: {}", demand.getId());
-            return;
-        }
-
-        long expiryTimeMillis = demandCreationTime + expiryDurationMillis;
-        log.info("Demand ID: {}. Calculated Expiry Timestamp: {}. Current Time: {}", demand.getId(), expiryTimeMillis, System.currentTimeMillis());
-
-        if (System.currentTimeMillis() < expiryTimeMillis) {
-            log.info("Demand is not yet overdue. Skipping penalty calculation for demand: {}", demand.getId());
-            return;
-        }
-
-        boolean penaltyAlreadyApplied = demand.getDemandDetails().stream()
-                .anyMatch(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE));
-
-        if (penaltyAlreadyApplied) {
-            log.info("Penalty already applied for demand: {}", demand.getId());
-            return;
-        }
-
-        long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - expiryTimeMillis);
-        log.info("Demand ID: {}. Days Past Expiry: {}", demand.getId(), daysPastExpiry);
-
-        BigDecimal principalAmount = demand.getDemandDetails().stream()
-                .filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
-                .map(DemandDetail::getTaxAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        log.info("Demand ID: {}. Principal amount for penalty calculation: {}", demand.getId(), principalAmount);
-
-        if (principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            log.info("Principal amount is zero or less for demand: {}. Skipping penalty.", demand.getId());
-            return;
-        }
-
-        Penalty penaltySlab = penaltySlabs.get(0);
-        log.info("Demand ID: {}. Using Penalty Slab: Applicable After {} days.", demand.getId(), penaltySlab.getApplicableAfterDays());
-
-        if (penaltySlab.getApplicableAfterDays() != null && daysPastExpiry > penaltySlab.getApplicableAfterDays()) {
-            log.info("Applying penalty for demand: {}", demand.getId());
-
-            BigDecimal penaltyAmount = BigDecimal.ZERO;
-
-            if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
-                penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
-            } else if (penaltySlab.getFlatAmount() != null && penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
-                penaltyAmount = penaltySlab.getFlatAmount();
-            }
-
-            if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
-                penaltyAmount = penaltySlab.getMinAmount();
-            }
-
-            if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
-                penaltyAmount = penaltySlab.getMaxAmount();
-            }
-
-            if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
-                DemandDetail penaltyDetail = DemandDetail.builder()
-                        .taxAmount(penaltyAmount)
-                        .taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE)
-                        .tenantId(demand.getTenantId())
-                        .collectionAmount(BigDecimal.ZERO)
-                        .demandId(demand.getId())
-                        .build();
-                demand.getDemandDetails().add(penaltyDetail);
-                log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
-            }else {
-                log.warn("Calculated penalty amount is zero or less for demand: {}. No penalty applied.", demand.getId());
-            }
-        } else {
-            log.info("Penalty grace period not over for demand: {}", demand.getId());
-        }
-    }
-
-
-    private void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
-        BigDecimal totalTax = demandDetails.stream().map(DemandDetail::getTaxAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal roundedTotal = totalTax.setScale(0, BigDecimal.ROUND_HALF_UP);
-        BigDecimal roundOffAmount = roundedTotal.subtract(totalTax);
-
-        if (roundOffAmount.compareTo(BigDecimal.ZERO) != 0) {
-            DemandDetail roundOffDetail = DemandDetail.builder()
-                    .taxAmount(roundOffAmount)
-                    .taxHeadMasterCode(RLConstants.ROUND_OFF_TAX_HEAD_CODE)
-                    .tenantId(tenantId)
-                    .collectionAmount(BigDecimal.ZERO)
-                    .build();
-            demandDetails.add(roundOffDetail);
-        }
-    }
-
-    public void generateDemands(RequestInfo requestInfo) {
-        List<String> tenantIds = mstrDataService.getTenantIds(requestInfo,requestInfo.getUserInfo().getTenantId());
-        log.info("Starting demand generation job for tenants: {}", tenantIds);
-
-        for (String tenantId : tenantIds) {
-            log.info("Generating demands for tenant: {}", tenantId);
-            try {
-                generateDemandForTenant(tenantId, requestInfo);
-            } catch (Exception e) {
-                log.error("Error while generating demands for tenant: " + tenantId, e);
-            }
-        }
-        log.info("Finished demand generation job.");
-    }
-
-    private void generateDemandForTenant(String tenantId, RequestInfo requestInfo) {
-        log.info("Generating demands for tenant: {}", tenantId);
-        Map<String, Object> mdmsData = mstrDataService.getBillingAndTaxPeriods(tenantId, requestInfo);
-        List<BillingPeriod> billingPeriods = (List<BillingPeriod>) mdmsData.get(RLConstants.BILLING_PERIOD_MASTER);
-        List<TaxPeriod> taxPeriods = (List<TaxPeriod>) mdmsData.get(RLConstants.TAX_PERIOD_MASTER);
-
-        if (CollectionUtils.isEmpty(billingPeriods) || CollectionUtils.isEmpty(taxPeriods)) {
-            log.error("MDMS data for billing period or tax period is not configured for tenant: {}", tenantId);
-            return;
-        }
-
-        taxPeriods.sort(Comparator.comparing(TaxPeriod::getFromDate));
-
-        for (BillingPeriod billingPeriod : billingPeriods) {
-            if (billingPeriod.getActive()) {
-                log.info("Processing active billing cycle: {}", billingPeriod.getBillingCycle());
-                List<AllotmentDetails> approvedApplications = fetchApprovedAllotmentApplications(tenantId, requestInfo);
-
-                if (CollectionUtils.isEmpty(approvedApplications)) {
-                    log.info("No approved applications found for tenant: {}", tenantId);
-                    continue;
-                }
-
-                for (TaxPeriod taxPeriod : taxPeriods) {
-                    if (taxPeriod.getPeriodCycle().name().equalsIgnoreCase(billingPeriod.getBillingCycle())
-                            && taxPeriod.getToDate() <= billingPeriod.getTaxPeriodTo()) {
-
-                        List<AllotmentDetails> activeApplicationsInPeriod = filterActiveApplicationsForPeriod(approvedApplications, taxPeriod);
-
-                        if (CollectionUtils.isEmpty(activeApplicationsInPeriod)) {
-                            continue;
-                        }
-
-                        List<AllotmentDetails> applicationsWithoutDemand = filterApplicationsWithoutDemand(activeApplicationsInPeriod, taxPeriod);
-
-                        if (!CollectionUtils.isEmpty(applicationsWithoutDemand)) {
-                            log.info("Generating demand for {} applications for period {} to {}",
-                                    applicationsWithoutDemand.size(), taxPeriod.getFromDate(), taxPeriod.getToDate());
-                            generateDemandInBatches(applicationsWithoutDemand, requestInfo, taxPeriod);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private List<AllotmentDetails> filterActiveApplicationsForPeriod(List<AllotmentDetails> applications, TaxPeriod taxPeriod) {
-        long periodStart = taxPeriod.getFromDate();
-        long periodEnd = taxPeriod.getToDate();
-
-        return applications.stream()
-                .filter(app -> {
-                    Long allotmentStartDate = app.getStartDate();
-                    Long allotmentEndDate = app.getEndDate();
-
-                    return allotmentStartDate != null && allotmentStartDate <= periodEnd &&
-                            (allotmentEndDate == null || allotmentEndDate >= periodStart);
-                })
-                .collect(Collectors.toList());
-    }
-
-    private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo) {
-        RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
-        String url = config.getRlServiceHost()
-                + config.getRlSearchEndpoint()
-                + "?tenantId=" + tenantId
-                + "&status=APPROVED";
-        RequestInfoWrapper wrapper = RequestInfoWrapper.builder()
-                .requestInfo(requestInfo)
-                .build();
-        try {
-            Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
-            AllotmentSearchResponse response = mapper.convertValue(result, AllotmentSearchResponse.class);
-            return response.getAllotment();
-        } catch (Exception e) {
-            log.error("Error while fetching approved allotment applications for tenant: {}", tenantId, e);
-            throw new CustomException("RL_APP_SEARCH_ERROR", "Failed to fetch approved allotment applications");
-        }
-    }
-
-    private List<AllotmentDetails> filterApplicationsWithoutDemand(List<AllotmentDetails> applications, TaxPeriod taxPeriod) {
-        List<String> allotmentNumbers = applications.stream()
-                .map(AllotmentDetails::getApplicationNumber)
-                .collect(Collectors.toList());
-
-        List<Demand> existingDemands = demandRepository.getDemandsForRentableIdsAndPeriod(
-                allotmentNumbers, taxPeriod.getFromDate(), taxPeriod.getToDate());
-
-        if (CollectionUtils.isEmpty(existingDemands)) {
-            return applications;
-        }
-
-        Map<String, List<Demand>> demandsByConsumerCode = existingDemands.stream()
-                .collect(Collectors.groupingBy(Demand::getConsumerCode));
-
-        return applications.stream()
-                .filter(app -> !demandsByConsumerCode.containsKey(app.getApplicationNumber()))
-                .collect(Collectors.toList());
-    }
-
-
-    private void generateDemandInBatches(List<AllotmentDetails> applications, RequestInfo requestInfo, TaxPeriod taxPeriod) {
-        int batchSize = config.getDemandGenerationBatchSize();
-        for (int i = 0; i < applications.size(); i += batchSize) {
-            List<AllotmentDetails> batch = applications.subList(i, Math.min(i + batchSize, applications.size()));
-
-            // Prepare CalculationReq for the batch
-            List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
-            for (AllotmentDetails application : batch) {
-                long effectiveFromDate = Math.max(application.getStartDate(), taxPeriod.getFromDate());
-                long effectiveToDate = (application.getEndDate() != null)
-                        ? Math.min(application.getEndDate(), taxPeriod.getToDate())
-                        : taxPeriod.getToDate();
-
-                //AllotmentRequest
-                AllotmentRequest allotmentRequest = AllotmentRequest.builder()
-                        .allotment(application)
-                        .requestInfo(requestInfo)
-                        .build();
-
-                // Add AllotmentRequest to CalculationCriteria
-                CalculationCriteria criteria = CalculationCriteria.builder()
-                        .allotmentRequest(allotmentRequest)
-                        .fromDate(effectiveFromDate)
-                        .toDate(effectiveToDate)
-                        .build();
-                calculationCriteriaList.add(criteria);
-            }
-
-            CalculationReq calculationReq = CalculationReq.builder()
-                    .requestInfo(requestInfo)
-                    .calculationCriteria(calculationCriteriaList)
-                    .build();
-
-            // createDemand  generate demands for the batch
-            try {
-                createDemand(calculationReq);
-            } catch (Exception e) {
-                log.error("Error while creating demands for batch: {}", e.getMessage());
-            }
-        }
-    }
+		return DemandResponse.builder().demands(demands).build();
+
+	}
+
+	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+		if (getBillCriteria.getAmountExpected() == null)
+			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+
+		if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes())) {
+			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getApplicationNumber()));
+		}
+
+		DemandResponse res = mapper.convertValue(
+				serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+				DemandResponse.class);
+
+		if (CollectionUtils.isEmpty(res.getDemands())) {
+			Map<String, String> map = new HashMap<>();
+			map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+			throw new CustomException(map);
+		}
+
+		List<Demand> demands = res.getDemands().stream()
+				.filter(d -> d.getStatus() == null
+						|| !d.getStatus().toString().equalsIgnoreCase(RLConstants.DEMAND_CANCELLED_STATUS))
+				.collect(Collectors.toList());
+
+		if (CollectionUtils.isEmpty(demands)) {
+			return DemandResponse.builder().demands(Collections.emptyList()).build();
+		}
+
+		List<Demand> demandsToBeUpdated = new LinkedList<>();
+		String tenantId = getBillCriteria.getTenantId();
+		List<TaxPeriod> taxPeriods = mstrDataService.getTaxPeriodList(requestInfo, tenantId,
+				RLConstants.RL_SERVICE_NAME);
+		List<BillingPeriod> billingPeriods = mstrDataService.getBillingPeriod(requestInfo, tenantId);
+		List<Penalty> penaltySlabs = mstrDataService.getPenaltySlabs(requestInfo, tenantId);
+
+		for (Demand demand : demands) {
+			BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			if (totalTax.compareTo(totalCollection) > 0) {
+				applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods, billingPeriods, penaltySlabs);
+			}
+
+			addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
+			demandsToBeUpdated.add(demand);
+		}
+
+		demandRepository.updateDemand(requestInfo, demandsToBeUpdated);
+		return DemandResponse.builder().demands(demandsToBeUpdated).build();
+	}
+
+	private void applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
+			List<TaxPeriod> taxPeriods, List<BillingPeriod> billingPeriods, List<Penalty> penaltySlabs) {
+		log.info("Applying time based applicables for demand: {}", demand.getId());
+
+		if (CollectionUtils.isEmpty(penaltySlabs)) {
+			log.info("No penalty slabs found for tenant: {}", demand.getTenantId());
+			return;
+		}
+		log.info("Found {} penalty slabs.", penaltySlabs.size());
+
+		Long demandCreationTime = demand.getAuditDetails() != null ? demand.getAuditDetails().getCreatedTime() : null;
+		Long expiryDurationMillis = demand.getBillExpiryTime();
+		log.info("Demand ID: {}. Creation Time: {}. Expiry Days: {}", demand.getId(), demandCreationTime,
+				expiryDurationMillis);
+
+		if (expiryDurationMillis == null || demandCreationTime == null) {
+			log.error("Cannot apply penalty. Demand creation time or expiry days is null for demand: {}",
+					demand.getId());
+			return;
+		}
+
+		long expiryTimeMillis = demandCreationTime + expiryDurationMillis;
+		log.info("Demand ID: {}. Calculated Expiry Timestamp: {}. Current Time: {}", demand.getId(), expiryTimeMillis,
+				System.currentTimeMillis());
+
+		if (System.currentTimeMillis() < expiryTimeMillis) {
+			log.info("Demand is not yet overdue. Skipping penalty calculation for demand: {}", demand.getId());
+			return;
+		}
+
+		boolean penaltyAlreadyApplied = demand.getDemandDetails().stream()
+				.anyMatch(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE));
+
+		if (penaltyAlreadyApplied) {
+			log.info("Penalty already applied for demand: {}", demand.getId());
+			return;
+		}
+
+		long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - expiryTimeMillis);
+		log.info("Demand ID: {}. Days Past Expiry: {}", demand.getId(), daysPastExpiry);
+
+		BigDecimal principalAmount = demand.getDemandDetails().stream().filter(
+				detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
+				.map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		log.info("Demand ID: {}. Principal amount for penalty calculation: {}", demand.getId(), principalAmount);
+
+		if (principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+			log.info("Principal amount is zero or less for demand: {}. Skipping penalty.", demand.getId());
+			return;
+		}
+
+		Penalty penaltySlab = penaltySlabs.get(0);
+		log.info("Demand ID: {}. Using Penalty Slab: Applicable After {} days.", demand.getId(),
+				penaltySlab.getApplicableAfterDays());
+
+		if (penaltySlab.getApplicableAfterDays() != null && daysPastExpiry > penaltySlab.getApplicableAfterDays()) {
+			log.info("Applying penalty for demand: {}", demand.getId());
+
+			BigDecimal penaltyAmount = BigDecimal.ZERO;
+
+			if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
+				penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2,
+						RoundingMode.HALF_UP);
+			} else if (penaltySlab.getFlatAmount() != null
+					&& penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
+				penaltyAmount = penaltySlab.getFlatAmount();
+			}
+
+			if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
+				penaltyAmount = penaltySlab.getMinAmount();
+			}
+
+			if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
+				penaltyAmount = penaltySlab.getMaxAmount();
+			}
+
+			if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
+				DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
+						.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
+						.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
+				demand.getDemandDetails().add(penaltyDetail);
+				log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
+			} else {
+				log.warn("Calculated penalty amount is zero or less for demand: {}. No penalty applied.",
+						demand.getId());
+			}
+		} else {
+			log.info("Penalty grace period not over for demand: {}", demand.getId());
+		}
+	}
+
+	private void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
+		BigDecimal totalTax = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
+				BigDecimal::add);
+
+		BigDecimal roundedTotal = totalTax.setScale(0, BigDecimal.ROUND_HALF_UP);
+		BigDecimal roundOffAmount = roundedTotal.subtract(totalTax);
+
+		if (roundOffAmount.compareTo(BigDecimal.ZERO) != 0) {
+			DemandDetail roundOffDetail = DemandDetail.builder().taxAmount(roundOffAmount)
+					.taxHeadMasterCode(RLConstants.ROUND_OFF_TAX_HEAD_CODE).tenantId(tenantId)
+					.collectionAmount(BigDecimal.ZERO).build();
+			demandDetails.add(roundOffDetail);
+		}
+	}
+
+	public void generateDemands(RequestInfo requestInfo) {
+		List<String> tenantIds = mstrDataService.getTenantIds(requestInfo, requestInfo.getUserInfo().getTenantId());
+		log.info("Starting demand generation job for tenants: {}", tenantIds);
+
+		for (String tenantId : tenantIds) {
+			log.info("Generating demands for tenant: {}", tenantId);
+			try {
+				generateDemandForTenant(tenantId, requestInfo);
+			} catch (Exception e) {
+				log.error("Error while generating demands for tenant: " + tenantId, e);
+			}
+		}
+		log.info("Finished demand generation job.");
+	}
+
+	private void generateDemandForTenant(String tenantId, RequestInfo requestInfo) {
+		log.info("Generating demands for tenant: {}", tenantId);
+		Map<String, Object> mdmsData = mstrDataService.getBillingAndTaxPeriods(tenantId, requestInfo);
+		List<BillingPeriod> billingPeriods = (List<BillingPeriod>) mdmsData.get(RLConstants.BILLING_PERIOD_MASTER);
+		List<TaxPeriod> taxPeriods = (List<TaxPeriod>) mdmsData.get(RLConstants.TAX_PERIOD_MASTER);
+
+		if (CollectionUtils.isEmpty(billingPeriods) || CollectionUtils.isEmpty(taxPeriods)) {
+			log.error("MDMS data for billing period or tax period is not configured for tenant: {}", tenantId);
+			return;
+		}
+
+		taxPeriods.sort(Comparator.comparing(TaxPeriod::getFromDate));
+
+		for (BillingPeriod billingPeriod : billingPeriods) {
+			if (billingPeriod.getActive()) {
+				log.info("Processing active billing cycle: {}", billingPeriod.getBillingCycle());
+				List<AllotmentDetails> approvedApplications = fetchApprovedAllotmentApplications(tenantId, requestInfo);
+
+				if (CollectionUtils.isEmpty(approvedApplications)) {
+					log.info("No approved applications found for tenant: {}", tenantId);
+					continue;
+				}
+
+				for (TaxPeriod taxPeriod : taxPeriods) {
+					if (taxPeriod.getPeriodCycle().name().equalsIgnoreCase(billingPeriod.getBillingCycle())
+							&& taxPeriod.getToDate() <= billingPeriod.getTaxPeriodTo()) {
+
+						List<AllotmentDetails> activeApplicationsInPeriod = filterActiveApplicationsForPeriod(
+								approvedApplications, taxPeriod);
+
+						if (CollectionUtils.isEmpty(activeApplicationsInPeriod)) {
+							continue;
+						}
+
+						List<AllotmentDetails> applicationsWithoutDemand = filterApplicationsWithoutDemand(
+								activeApplicationsInPeriod, taxPeriod);
+
+						if (!CollectionUtils.isEmpty(applicationsWithoutDemand)) {
+							log.info("Generating demand for {} applications for period {} to {}",
+									applicationsWithoutDemand.size(), taxPeriod.getFromDate(), taxPeriod.getToDate());
+							generateDemandInBatches(applicationsWithoutDemand, requestInfo, taxPeriod);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private List<AllotmentDetails> filterActiveApplicationsForPeriod(List<AllotmentDetails> applications,
+			TaxPeriod taxPeriod) {
+		long periodStart = taxPeriod.getFromDate();
+		long periodEnd = taxPeriod.getToDate();
+
+		return applications.stream().filter(app -> {
+			Long allotmentStartDate = app.getStartDate();
+			Long allotmentEndDate = app.getEndDate();
+
+			return allotmentStartDate != null && allotmentStartDate <= periodEnd
+					&& (allotmentEndDate == null || allotmentEndDate >= periodStart);
+		}).collect(Collectors.toList());
+	}
+
+	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo) {
+		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+		String url = config.getRlServiceHost() + config.getRlSearchEndpoint() + "?tenantId=" + tenantId
+				+ "&status=APPROVED";
+		RequestInfoWrapper wrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+		try {
+			Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
+			AllotmentSearchResponse response = mapper.convertValue(result, AllotmentSearchResponse.class);
+			return response.getAllotment();
+		} catch (Exception e) {
+			log.error("Error while fetching approved allotment applications for tenant: {}", tenantId, e);
+			throw new CustomException("RL_APP_SEARCH_ERROR", "Failed to fetch approved allotment applications");
+		}
+	}
+
+	private List<AllotmentDetails> filterApplicationsWithoutDemand(List<AllotmentDetails> applications,
+			TaxPeriod taxPeriod) {
+		List<String> allotmentNumbers = applications.stream().map(AllotmentDetails::getApplicationNumber)
+				.collect(Collectors.toList());
+
+		List<Demand> existingDemands = demandRepository.getDemandsForRentableIdsAndPeriod(allotmentNumbers,
+				taxPeriod.getFromDate(), taxPeriod.getToDate());
+
+		if (CollectionUtils.isEmpty(existingDemands)) {
+			return applications;
+		}
+
+		Map<String, List<Demand>> demandsByConsumerCode = existingDemands.stream()
+				.collect(Collectors.groupingBy(Demand::getConsumerCode));
+
+		return applications.stream().filter(app -> !demandsByConsumerCode.containsKey(app.getApplicationNumber()))
+				.collect(Collectors.toList());
+	}
+
+	private void generateDemandInBatches(List<AllotmentDetails> applications, RequestInfo requestInfo,
+			TaxPeriod taxPeriod) {
+		int batchSize = config.getDemandGenerationBatchSize();
+		for (int i = 0; i < applications.size(); i += batchSize) {
+			List<AllotmentDetails> batch = applications.subList(i, Math.min(i + batchSize, applications.size()));
+
+			// Prepare CalculationReq for the batch
+			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
+			for (AllotmentDetails application : batch) {
+				long effectiveFromDate = Math.max(application.getStartDate(), taxPeriod.getFromDate());
+				long effectiveToDate = (application.getEndDate() != null)
+						? Math.min(application.getEndDate(), taxPeriod.getToDate())
+						: taxPeriod.getToDate();
+
+				// AllotmentRequest
+				AllotmentRequest allotmentRequest = AllotmentRequest.builder().allotment(application)
+						.requestInfo(requestInfo).build();
+
+				// Add AllotmentRequest to CalculationCriteria
+				CalculationCriteria criteria = CalculationCriteria.builder().allotmentRequest(allotmentRequest)
+						.fromDate(effectiveFromDate).toDate(effectiveToDate).build();
+				calculationCriteriaList.add(criteria);
+			}
+
+			CalculationReq calculationReq = CalculationReq.builder().requestInfo(requestInfo)
+					.calculationCriteria(calculationCriteriaList).build();
+
+			// createDemand generate demands for the batch
+			try {
+				createDemand(calculationReq);
+			} catch (Exception e) {
+				log.error("Error while creating demands for batch: {}", e.getMessage());
+			}
+		}
+	}
 
 }
-

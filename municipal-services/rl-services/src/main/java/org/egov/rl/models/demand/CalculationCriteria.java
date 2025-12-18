@@ -34,9 +34,12 @@ public class CalculationCriteria   {
         
         @JsonProperty("isSecurityDeposite")
         @Default
-        private boolean isSecurityDeposite=false;       
+        private boolean isSecurityDeposite=false;   
         
-
+        @JsonProperty("isSatelment")
+        @Default
+        private boolean isSatelment=false;
+        
         @JsonProperty("tenantId")
         private String tenantId;
 

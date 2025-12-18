@@ -1,5 +1,6 @@
 package org.egov.rl.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import org.egov.rl.producer.PropertyProducer;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
+import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.util.RLConstants;
 import org.egov.rl.validator.AllotmentValidator;
 import org.egov.rl.workflow.AllotmentWorkflowService;
@@ -74,6 +76,9 @@ public class AllotmentService {
 
 	@Autowired
 	private NotificationService notificationService;
+	
+	@Autowired
+	private PropertyUtil mdmsUtil;
 
 	/**
 	 * Enriches the Request and pushes to the Queue
@@ -91,7 +96,7 @@ public class AllotmentService {
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
-			allotmentRequest.getAllotment().setStatus("ACTIVE");
+			allotmentRequest.getAllotment().setStatus("APPROVED");
 		}
 		String previousApplicationNumber = allotmentRequest.getAllotment().getPreviousApplicationNumber();
 		if (previousApplicationNumber != null && previousApplicationNumber.trim().length() > 0) {
@@ -119,13 +124,13 @@ public class AllotmentService {
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
-			allotmentRequest.getAllotment().setStatus("ACTIVE");
+			allotmentRequest.getAllotment().setStatus("APPROVED");
 		}
 		String demandId = null;
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
-				demandId=callCalculatorService(true,allotmentRequest);
+				demandId=callCalculatorService(false,true,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
@@ -137,23 +142,46 @@ public class AllotmentService {
 			}
 		} else if (isApprove) {
 			try {
-				demandId=callCalculatorService(false,allotmentRequest);
+				demandId=callCalculatorService(false,false,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
 						"Error occured while demand generation.");
 			}
-
 		}
+		
+		if(action.equalsIgnoreCase(RLConstants.FORWARD_FOR_SATELMENT_RL_APPLICATION)) {
+			satelmentAllotment(allotmentRequest);
+		}
+		
 		allotmentRequest.getAllotment().setDemandId(demandId);
-
 		producer.push(config.getUpdateRLAllotmentTopic(), allotmentRequest);
 		allotmentRequest.getAllotment().setWorkflow(null);
 		return allotmentRequest.getAllotment();
 	}
 	
-	private String callCalculatorService(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
-		CalculationReq calculationReq = getCalculationReq(isSecurityDeposite,allotmentRequest);
+	private void satelmentAllotment(AllotmentRequest allotmentRequest) {
+		String tenantId = allotmentRequest.getAllotment().getTenantId();
+		List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
+				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+		
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		BigDecimal amountDeducted = new BigDecimal(allotmentDetails.getAmountToBeDeducted()); // BigDecimal
+		BigDecimal securityAmount = calculateAmount.stream()
+				.filter(d -> d.getPropertyId().equals(allotmentDetails.getPropertyId())).findFirst()
+				.map(d -> new BigDecimal(d.getSecurityDeposit())) // BigDecimal
+				.orElse(BigDecimal.ZERO);
+		BigDecimal amountToBeRefunded = securityAmount.subtract(amountDeducted);
+		if(amountToBeRefunded.compareTo(BigDecimal.ZERO) > 0) {
+		    allotmentRequest.getAllotment().setAmountToBeRefund(tenantId);
+		} else {
+//			BigDecimal amountToBePay = amountToBeRefunded.negate(); 
+			callCalculatorService(true,false,allotmentRequest);
+		}
+	}
+	
+	private String callCalculatorService(boolean isSatelment,boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
+		CalculationReq calculationReq = getCalculationReq(isSatelment,isSecurityDeposite,allotmentRequest);
 
 		StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
 				.append(config.getRlCalculatorEndpoint());
@@ -163,12 +191,13 @@ public class AllotmentService {
 		return demandId;
 	}
 
-	private CalculationReq getCalculationReq(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
+	private CalculationReq getCalculationReq(boolean isSatelment,boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
 		CalculationReq calculationReq =new CalculationReq();
 		calculationReq.setRequestInfo(allotmentRequest.getRequestInfo());
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 		CalculationCriteria calculationCriteria =CalculationCriteria.builder()
 				.isSecurityDeposite(isSecurityDeposite)
+				.isSatelment(isSatelment?isSatelment:false)
 				.allotmentRequest(allotmentRequest)
 				.build();
 		calculationCriteriaList.add(calculationCriteria);

@@ -90,6 +90,19 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_document_tenantid ON eg_rl_document (allotm
 
 
 
+ALTER TABLE eg_rl_allotment
+ADD COLUMN registration_number VARCHAR(100) NOT NULL;
+
+-- Unique constraint lagao
+ALTER TABLE eg_rl_allotment
+ADD CONSTRAINT eg_rl_allotment_registration_number_uk
+UNIQUE (registration_number)
+
+ALTER TABLE eg_rl_allotment 
+ADD COLUMN trade_license_number VARCHAR(100);
+
+
+
 -->allotment closure or discontunation table 
 -- CREATE TABLE IF NOT EXISTS public.eg_rl_allotment_clsure
 -- (

@@ -48,6 +48,8 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 					.propertyId(rs.getString("property_id"))
 					.tenantId(rs.getString("tenant_id"))
 					.applicationNumber(rs.getString("application_number"))
+					.registrationNumber(rs.getString("registration_number"))
+					.tradeLicenseNumber(rs.getString("trade_license_number"))
 					.status(rs.getString("status"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
 					.applicationType(rs.getString("application_type"))

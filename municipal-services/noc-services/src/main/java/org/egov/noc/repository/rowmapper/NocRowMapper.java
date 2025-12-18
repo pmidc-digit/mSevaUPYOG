@@ -1,5 +1,6 @@
 package org.egov.noc.repository.rowmapper;
 
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -8,10 +9,7 @@ import java.util.stream.Collectors;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.egov.noc.web.model.AuditDetails;
-import org.egov.noc.web.model.Document;
-import org.egov.noc.web.model.Noc;
-import org.egov.noc.web.model.NocDetails;
+import org.egov.noc.web.model.*;
 import org.egov.noc.web.model.enums.ApplicationType;
 import org.egov.noc.web.model.enums.Status;
 import org.springframework.dao.DataAccessException;
@@ -130,7 +128,9 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 //		}
 //	}
 
-
+	private boolean isBlank(String s) {
+		return s == null || s.trim().isEmpty();
+	}
 	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
 		String documentsJson = rs.getString("documents");
 
@@ -164,6 +164,63 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 					log.error("Failed to parse nocDetails JSON", e);
 				}
 			}
+
+
+			String ownersJson = rs.getString("owners");
+			if (!isBlank(ownersJson) && !"null".equalsIgnoreCase(ownersJson.trim())) {
+				Gson gson = new Gson();
+				Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
+
+				try {
+					List<Map<String, Object>> rawOwners = gson.fromJson(ownersJson, listType);
+
+					// Deduplicate by uuid while preserving order
+					Map<String, OwnerInfo> ownersByUuid = new LinkedHashMap<>();
+
+					for (Map<String, Object> raw : rawOwners) {
+						// Extract uuid
+						String uuid = null;
+						Object uuidObj = raw.get("uuid");
+						if (uuidObj instanceof String) {
+							uuid = ((String) uuidObj).trim();
+						}
+						if (StringUtils.isBlank(uuid)) {
+							// Skip if we don’t have a stable key
+							continue;
+						}
+
+						// Ensure one OwnerInfo per uuid
+						OwnerInfo oi = ownersByUuid.computeIfAbsent(uuid, k -> new OwnerInfo());
+						// Set the uuid so we can merge later in service layer
+						oi.setUuid(uuid);
+
+						// Extract additionalDetails
+						Map<String, Object> adMap = null;
+						Object ad = raw.get("additionalDetails");
+
+						if (ad instanceof Map) {
+							//noinspection unchecked
+							adMap = (Map<String, Object>) ad;
+						} else if (ad instanceof String) {
+							// Handle JSON string case
+							try {
+								Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+								adMap = gson.fromJson((String) ad, mapType);
+							} catch (Exception ignore) { /* swallow parse error */ }
+						}
+
+						if (adMap != null && !adMap.isEmpty()) {
+							oi.setAdditionalDetails(adMap);
+						}
+					}
+
+					noc.setOwners(new ArrayList<>(ownersByUuid.values()));
+				} catch (JsonSyntaxException e) {
+					log.error("Failed to parse owners JSON", e);
+				}
+			}
+
+
 
 		}
 	}

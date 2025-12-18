@@ -386,7 +386,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         {showToast && (
           <Toast
             error={showToast.error} // true for removal, false for success
-            label={t ? t(showToast.label) : showToast.label}
+            label={t(showToast.label)}
             onClose={() => setShowToast(null)}
             isDleteBtn={true}
           />

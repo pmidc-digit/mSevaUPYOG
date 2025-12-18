@@ -321,13 +321,14 @@
   justify-content: space-between;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+.hide-number-spinner input[type="number"]::-webkit-inner-spin-button,
+.hide-number-spinner input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] {
-  -moz-appearance: textfield;
+
+.hide-number-spinner input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
 }
 
 .static {
@@ -985,13 +986,13 @@ input[type="number"] {
 
 .download-button {
   cursor: pointer;
-  color: white;
-  font-weight: bold;
-  padding: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 5px;
+  color: #0d43a7;
   border: 1px solid #0d43a7;
   border-radius: 4px;
   transition: all 0.2s ease-in-out;
-  font-size: 16px;
   display: inline-block;
 
   &:hover {
@@ -1016,5 +1017,6 @@ input[type="number"] {
 }
 
 .timeline-subheader {
-  margin-bottom: 0px !important;
+  font-size: 22px !important;
+  font-weight: 500 !important;
 }

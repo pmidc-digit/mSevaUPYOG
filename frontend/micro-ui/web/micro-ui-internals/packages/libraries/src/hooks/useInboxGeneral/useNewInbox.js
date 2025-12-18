@@ -9,6 +9,7 @@ import { SVService } from "../../services/elements/SV";
 import { CHBServices } from "../../services/elements/CHB";
 import { ASSETService } from "../../services/elements/ASSET";
 import { PTRService } from "../../services/elements/PTR";
+import { RentAndLeaseService } from "../../services/elements/RentAndLease";
 import { ADSServices } from "../../services/elements/ADS"; //edited this
 
 const inboxConfig = (tenantId, filters) => ({
@@ -36,6 +37,14 @@ const inboxConfig = (tenantId, filters) => ({
     fetchFilters: filterFunctions.PTR,
     _searchFn: () => PTRService.search({ tenantId, filters }),
   },
+  RAL: {
+    services: ["rl-services"],
+    searchResponseKey: "allotedProperties",
+    businessIdsParamForSearch: "applicationNumber",
+    businessIdAliasForSearch: "applicationNumber",
+    fetchFilters: filterFunctions.RAL,
+    _searchFn: () => RentAndLeaseService.search({ tenantId, filters }),
+  },
 
   FSM: {
     services: ["FSM"],
@@ -61,14 +70,14 @@ const inboxConfig = (tenantId, filters) => ({
     fetchFilters: filterFunctions.CHB,
     _searchFn: () => CHBServices.search({ tenantId, filters }),
   },
- ASSET: {
+  ASSET: {
     services: ["asset-create"],
     searchResponseKey: "Asset",
     businessIdsParamForSearch: "applicationNo",
     businessIdAliasForSearch: "applicationNo",
     fetchFilters: filterFunctions.ASSET,
     _searchFn: () => ASSETService.search({ tenantId, filters }),
-  }
+  },
 });
 
 const callMiddlewares = async (data, middlewares) => {
@@ -93,6 +102,8 @@ const useNewInboxGeneral = ({ tenantId, ModuleCode, filters, middleware = [], co
   const { t } = useTranslation();
   const { fetchFilters, searchResponseKey, businessIdAliasForSearch, businessIdsParamForSearch } = inboxConfig()[ModuleCode];
   let { workflowFilters, searchFilters, limit, offset, sortBy, sortOrder } = fetchFilters(filters);
+
+  console.log("ModuleCode44", ModuleCode);
 
   const query = useQuery(
     ["INBOX", workflowFilters, searchFilters, ModuleCode, limit, offset, sortBy, sortOrder],

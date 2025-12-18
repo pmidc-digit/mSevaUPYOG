@@ -157,7 +157,6 @@ const OwnerForm1 = (_props) => {
   const TaxHeadMasterFields = Digit.Hooks.mcollect.useMCollectTaxHeads(selectedCategoryType,categoriesandTypes);
   const selectedPincode = useWatch({control: control, name: "pincode", defaultValue:""});
 
-  console.log("tax Master Fields", TaxHeadMasterFields)
   useEffect(() => {
     if(!isEdit)
     setValue("categoryType","");
@@ -234,7 +233,6 @@ const OwnerForm1 = (_props) => {
     }
   }, [formValue]);
 
-console.log("consumerDetail",consumerdetail)
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });

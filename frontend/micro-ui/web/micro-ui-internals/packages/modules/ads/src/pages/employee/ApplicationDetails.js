@@ -248,7 +248,7 @@ const ApplicationDetails = () => {
     }
 
     // Direct submit for simple actions (same behavior you had)
-    if (wfAction.action === "SUBMIT" || wfAction.action === "INITIATE") {
+    if (wfAction.action === "SUBMIT" || wfAction.action === "INITIATE" || wfAction.action === "CANCEL") {
       const payloadAction = {
         action: wfAction.action,
         comment: wfAction.action || "",

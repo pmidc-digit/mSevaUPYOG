@@ -43,7 +43,6 @@ const SearchReceipt = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setHasSearched(true);
-    console.log("data is here==========", data);
     const businessService = data?.businessServices?.code;
 
     // Filter out empty strings, null, undefined, and empty arrays
@@ -62,13 +61,11 @@ const SearchReceipt = () => {
 
     try {
       const response = await Digit.ChallanGenerationService.recieptSearch(tenantId, businessService, filteredData);
-      console.log("✅ recieptSearch response", response?.Payments);
       setTableData(response?.Payments);
       setIsLoading(false);
       // let collectionres = await Digit.PaymentService.recieptSearch(BPA?.tenantId, appBusinessService[i], { consumerCodes: BPA?.applicationNo, isEmployee: true });
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
     }
   };
 
@@ -77,26 +74,21 @@ const SearchReceipt = () => {
   };
 
   const downloadPDF = async (rowData) => {
-    console.log("generating pdf here==========");
     setIsLoading(true);
     try {
       const response = await Digit.ChallanGenerationService.generatePdf(tenantId, { Payments: [{ ...rowData }] }, "consolidatedreceiptold");
       setIsLoading(false);
       fileFetch(response?.filestoreIds?.[0]);
-      console.log("✅ generating pdf response", response);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
     }
   };
 
   const fileFetch = async (fileStoreId) => {
     setIsLoading(true);
-    console.log("fetching file here==========");
     try {
       const response = await Digit.ChallanGenerationService.file_fetch(tenantId, fileStoreId);
       setIsLoading(false);
-      console.log("✅ fetching file response", response);
 
       // Extract the URL from the response
       const fileUrl = response?.[fileStoreId] || response?.fileStoreIds?.[0]?.url;

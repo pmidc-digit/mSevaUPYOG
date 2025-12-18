@@ -179,8 +179,8 @@ const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.H
       },
       initiationFlow: true,
       editableFields: {
-        "provide-license-type": true,
-        "licensee-details": true,
+        "provide-license-type": false,
+        "licensee-details": false,
         "Permanent-address": true,
         "professional-document-details": true,
         isCreate: false,

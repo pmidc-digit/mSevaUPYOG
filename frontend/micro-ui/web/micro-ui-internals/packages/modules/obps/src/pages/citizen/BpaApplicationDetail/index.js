@@ -943,10 +943,18 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
   const validateDataForAction = (action) => {
     if(action === "SEND_TO_CITIZEN"){
       const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      const isFeesDeclared = data?.applicationData?.additionalDetails?.isFeesDeclared;
+      if(!isFeesDeclared){
+        setShowToast({
+          key: "error",
+          action: t("Please Declare Fees Under Self Certification Scheme")
+        })
+        return false
+      }
       if(!isArchitectUnderTakingIncluded) {
         setShowToast({
           key: "error",
-          action: "Please_Upload_Architect_UnderTaking"
+          action: t("Please_Upload_Architect_UnderTaking")
         })
         return false
       }

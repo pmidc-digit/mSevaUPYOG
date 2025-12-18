@@ -152,8 +152,6 @@ const ActiveAndOpenSurveys = (props) => {
 
   let isMobile = Digit.Utils.browser.isMobile();
 
-  console.log("isMobile", isMobile);
-
   return (
     <div>
       {tenantId === "pb.punjab" && window.location.href.includes("/employee") ? (

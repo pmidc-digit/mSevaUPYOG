@@ -85,7 +85,6 @@ const Profile = ({ info, stateName, t }) => {
       const uuid = info?.uuid;
       if (uuid) {
         const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
-
         if (usersResponse?.user?.length) {
           const userDetails = usersResponse.user[0];
           setProfilePic(userDetails?.photo || null);

@@ -14,6 +14,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [error, setError] = useState(null);
 
+  console.log("tenantId", tenantId);
+
   const {
     control,
     handleSubmit,
@@ -111,7 +113,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
     // Calculate final amount safely
     const finalAmount = numericAmount * slotCount;
-
+    // console.log("purpose", purpose);
     const payload = {
       hallsBookingApplication: {
         tenantId,

@@ -64,17 +64,32 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
 
   const uidIsValid = Boolean(Uidno && Uidno.trim() !== "");
 
-  const {
-    isLoading,
-    isError,
-    error,
-    data: propertyDetailsFetch
-  } = Digit.Hooks.pt.useBathindaPropertySearch(
+  // const {
+  //   isLoading,
+  //   isError,
+  //   error,
+  //   data: propertyDetailsFetch
+  // } = Digit.Hooks.pt.useBathindaPropertySearch(
+  //   {
+  //     filters: { Uidno, Uidno1, Uidno2 },
+  //   },
+  //   {
+  //     enabled: uidIsValid
+  //   }
+  // );
+
+  const { isLoading, isError, error, data: propertyDetailsFetch } = Digit.Hooks.pt.useLudhianaPropertSearch(
     {
-      filters: { Uidno, Uidno1, Uidno2 },
+      filters: {
+        ulb: "MCB",
+        uidNo: `${Uidno}-${Uidno1}-${Uidno2}`
+      }
     },
     {
+    //   filters: { propertyIds: searchPropertyId },
+    //   tenantId: tenantId,
       enabled: uidIsValid
+    //   privacy: Digit.Utils.getPrivacyObject(),
     }
   );
 
@@ -110,8 +125,8 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
   }, [menuList, formData?.cpt?.details?.address?.locality]);
 
     useEffect(() => {
-      if (!isLoading && propertyDetailsFetch?.status === 200 && propertyDetailsFetch?.data?.status === "1") {
-        const { Nameofpropertyowner, Nameoffather,Mobile, Locality, Sublocality, Zone, Roadname, Pincode, Fulladdress, Uidno, Uidno1, Uidno2 } = propertyDetailsFetch?.data?.data;
+      if (!isLoading && propertyDetailsFetch?.status === "1") {
+        const { Nameofpropertyowner, Nameoffather,Mobile, Locality, Sublocality, Zone, Roadname, Pincode, Fulladdress, Uidno, Uidno1, Uidno2 } = propertyDetailsFetch?.data;
         const owners = [{
           mobileNumber: Mobile,
           name: Nameofpropertyowner,
@@ -132,9 +147,9 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
         });
         dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], zonalMapping: {zone: Zone} })); 
       //   setCheckStats(true);
-      }else if(!isLoading && propertyDetailsFetch?.status === 200 && propertyDetailsFetch?.data?.status === "0"){
+      }else if(!isLoading && propertyDetailsFetch?.status === "0"){
         setPropertyDetails({});
-        setShowToast({ error: true, label: propertyDetailsFetch?.data?.message || "CS_PT_NO_PROPERTIES_FOUND" });
+        setShowToast({ error: true, label: propertyDetailsFetch?.message || "CS_PT_NO_PROPERTIES_FOUND" });
       }
        else if (!isLoading) {
         if (isfirstRender.current) {

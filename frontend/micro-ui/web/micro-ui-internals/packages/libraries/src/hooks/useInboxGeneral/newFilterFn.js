@@ -55,7 +55,7 @@ export const filterFunctions = {
     const searchFilters = {};
     const workflowFilters = {};
 
-    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services,petType } = filtersArg || {};
+    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services, petType } = filtersArg || {};
 
     if (filtersArg?.applicationNumber) {
       searchFilters.applicationNumber = filtersArg?.applicationNumber;
@@ -80,7 +80,7 @@ export const filterFunctions = {
       searchFilters.mobileNumber = mobileNumber;
     }
 
-     if (petType) {
+    if (petType) {
       searchFilters.petType = petType;
     }
 
@@ -90,6 +90,50 @@ export const filterFunctions = {
     searchFilters["isInboxSearch"] = true;
     searchFilters["creationReason"] = ["CREATE"];
     workflowFilters["moduleName"] = "pet-service";
+
+    return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
+  },
+  RAL: (filtersArg) => {
+    let { uuid } = Digit.UserService.getUser()?.info || {};
+
+    const searchFilters = {};
+    const workflowFilters = {};
+
+    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, applicationStatus, services, allotmentType } = filtersArg || {};
+
+    if (filtersArg?.applicationNumber) {
+      searchFilters.applicationNumber = filtersArg?.applicationNumber;
+    }
+    if (filtersArg?.applicationNumbers) {
+      searchFilters.applicationNumber = applicationNumbers;
+    }
+
+    if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
+      workflowFilters.status = applicationStatus.map((status) => status.code || status.state);
+      if (applicationStatus?.some((e) => e.nonActionableRole)) {
+        searchFilters.fetchNonActionableRecords = true;
+      }
+    }
+    if (filtersArg?.locality?.length) {
+      searchFilters.locality = filtersArg?.locality.map((item) => item.code.split("_").pop());
+    }
+    if (filtersArg?.uuid && filtersArg?.uuid.code === "ASSIGNED_TO_ME") {
+      workflowFilters.assignee = uuid;
+    }
+    if (mobileNumber) {
+      searchFilters.mobileNumber = mobileNumber;
+    }
+
+    if (allotmentType && allotmentType.value) {
+      searchFilters.allotmentType = allotmentType.value;
+    }
+
+    if (services) {
+      workflowFilters.businessService = services;
+    }
+    searchFilters["isInboxSearch"] = true;
+    searchFilters["creationReason"] = ["CREATE"];
+    workflowFilters["moduleName"] = "rl-services";
 
     return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
   },

@@ -8,20 +8,18 @@ import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
 
 const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
-  const { data } = props;
-  console.log("data", data);
+  const { data, useNewInboxAPI } = props;
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
+  const [EmptyInboxComp, setEmptyInboxComp] = useState(() => {
+    const com = Digit.ComponentRegistryService?.getComponent(props.EmptyResultInboxComp);
+    return com;
+  });
 
   // challans, workFlowData
 
   // const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
   const GetCell = (value) => <span className="cell-text">{value}</span>;
-
-  const GetSlaCell = (value) => {
-    if (isNaN(value)) return <span className="sla-cell-success">0</span>;
-    return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
-  };
 
   const convertEpochToDate = (dateEpoch) => {
     if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
@@ -45,103 +43,104 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
   const inboxColumns = () => [
     {
-      Header: t("UC_CHALLAN_NO"),
+      Header: t("APPLICATION_NUMBER"),
       Cell: ({ row }) => {
         return (
           <div>
             <span className="link">
-              <Link to={`${props.parentRoute}/challansearch/` + row.original?.["challanNo"]}>{row.original?.["challanNo"]}</Link>
+              <Link
+                to={`${props.parentRoute}/property/` + row.original?.searchData?.["applicationNumber"] + "/" + row.original?.searchData?.["tenantId"]}
+              >
+                {row.original?.searchData?.["applicationNumber"]}
+              </Link>
             </span>
           </div>
         );
       },
-      mobileCell: (original) => GetMobCell(original?.["challanNo"]),
+      mobileCell: (original) => GetMobCell(original?.searchData?.["applicationNumber"]),
     },
     {
-      Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
+      Header: t("RENT_LEASE_PROPERTY_NAME"),
       Cell: ({ row }) => {
-        return GetCell(`${row.original?.["name"]}`);
+        return GetCell(`${row.original?.searchData?.additionalDetails?.["propertyName"]}`);
       },
-      mobileCell: (original) => GetMobCell(original?.["name"]),
+      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.["propertyName"]}`),
     },
     {
-      Header: t("UC_SERVICE_CATEGORY_LABEL"),
+      Header: t("RAL_ALLOTMENT_TYPE"),
       Cell: ({ row }) => {
-        let code = stringReplaceAll(`${row.original?.["businessService"]}`, ".", "_");
-        code = code.toUpperCase();
-        return GetCell(t(`BILLINGSERVICE_BUSINESSSERVICE_${code}`));
+        return GetCell(`${row.original?.searchData?.additionalDetails?.["allotmentType"]}`);
       },
-      mobileCell: (original) => GetMobCell(`BILLINGSERVICE_BUSINESSSERVICE_${original?.["businessService"]}`),
+      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.["allotmentType"]}`),
     },
     {
-      Header: t("UC_RECEPIT_NO_LABEL"),
+      Header: t("RENT_AMOUNT "),
       Cell: ({ row }) => {
-        return row.original?.["receiptNumber"] ? GetCell(`${row.original?.["receiptNumber"]}`) : "-";
+        return GetCell(`${row.original?.searchData?.additionalDetails?.["baseRent"]}`);
       },
-      mobileCell: (original) => GetMobCell(original?.["receiptNumber"]) || "-",
-    },
-    {
-      Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
-      Cell: ({ row }) => {
-        const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
-        return GetCell(t(`${dueDate}`));
-      },
-      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
-    },
-    {
-      Header: t("UC_COMMON_TOTAL_AMT"),
-      Cell: ({ row }) => {
-        return GetCell(t(`${row.original?.totalAmount}`));
-      },
-      mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.["baseRent"]) || "-",
     },
     {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
       Cell: ({ row }) => {
-        const wf = row.original?.applicationStatus;
-        return GetCell(t(`${row.original?.applicationStatus}`));
+        return GetCell(t(`${row.original?.searchData?.["status"]}`));
       },
-      mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+      mobileCell: (original) => GetMobCell(original?.searchData?.["status"]),
     },
-    {
-      Header: t("WS_COMMON_TABLE_COL_ACTION"),
-      Cell: ({ row }) => {
-        const amount = row.original?.totalAmount;
-        let action = "ACTIVE";
-        if (amount > 0) action = "COLLECT";
-        if (action == "COLLECT") {
-          return (
-            <div>
-              <span className="link">
-                <Link
-                  to={{
-                    pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
-                  }}
-                >
-                  {t(`UC_${action}`)}
-                </Link>
-              </span>
-            </div>
-          );
-        } else if (row.original?.applicationStatus == "PAID") {
-          return (
-            <div>
-              <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
-            </div>
-          );
-        } else {
-          return GetCell(t(`${"CS_NA"}`));
-        }
-      },
-      mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
-    },
+    // {
+    //   Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
+    //   Cell: ({ row }) => {
+    //     const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
+    //     return GetCell(t(`${dueDate}`));
+    //   },
+    //   mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
+    // },
+    // {
+    //   Header: t("UC_COMMON_TOTAL_AMT"),
+    //   Cell: ({ row }) => {
+    //     return GetCell(t(`${row.original?.totalAmount}`));
+    //   },
+    //   mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
+    // },
+    // {
+    //   Header: t("WS_COMMON_TABLE_COL_ACTION"),
+    //   Cell: ({ row }) => {
+    //     const amount = row.original?.totalAmount;
+    //     let action = "ACTIVE";
+    //     if (amount > 0) action = "COLLECT";
+    //     if (action == "COLLECT") {
+    //       return (
+    //         <div>
+    //           <span className="link">
+    //             <Link
+    //               to={{
+    //                 pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
+    //               }}
+    //             >
+    //               {t(`UC_${action}`)}
+    //             </Link>
+    //           </span>
+    //         </div>
+    //       );
+    //     } else if (row.original?.applicationStatus == "PAID") {
+    //       return (
+    //         <div>
+    //           <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
+    //         </div>
+    //       );
+    //     } else {
+    //       return GetCell(t(`${"CS_NA"}`));
+    //     }
+    //   },
+    //   mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+    // },
   ];
 
   let result;
   if (props.isLoading || props.isLoader) {
     result = <Loader />;
-  } else if (data?.length === 0) {
-    result = (
+  } else if (data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty)) {
+    result = (EmptyInboxComp && <EmptyInboxComp data={data} />) || (
       <Card style={{ marginTop: 20 }}>
         {/* TODO Change localization key */}
         {t("CS_MYAPPLICATIONS_NO_APPLICATION")
@@ -191,12 +190,14 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       {!props.isSearch && (
         <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.businessService} />
+
           <div>
             {
               <FilterComponent
                 defaultSearchParams={props.defaultSearchParams}
                 onFilterChange={props.onFilterChange}
                 searchParams={props.searchParams}
+                moduleCode={props.moduleCode}
                 type="desktop"
               />
             }

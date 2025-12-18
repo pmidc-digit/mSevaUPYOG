@@ -158,6 +158,8 @@ import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenera
 import useChallanInbox from "./challanGeneration/useInbox";
 
 import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
+import useRALPropertyMDMS from "./rentAndLease/useRentAndLeasePropertyMDMS"
+import useRALDocumentsMDMS from "./rentAndLease/useRentAndLeaseDocumetsMDMS"
 import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
 import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
 import useRentAndLeaseTenants from "./rentAndLease/useTenants";
@@ -194,6 +196,9 @@ import useHRMSCreate from "./hrms/useHRMScreate";
 import useHRMSUpdate from "./hrms/useHRMSUpdate";
 import useHRMSCount from "./hrms/useHRMSCount";
 import useHRMSGenderMDMS from "./hrms/useHRMSGender";
+import useOBPSRoles from "./hrms/useOBPSRoles";
+import useEmployeeList from "./hrms/useEmployeeList";
+import useZones from "./hrms/useZones";
 
 import useReceiptsSearch from "./receipts/useReceiptsSearch";
 import useReceiptsMDMS from "./receipts/useReceiptsMDMS";
@@ -570,6 +575,9 @@ const hrms = {
   useHRMSUpdate,
   useHRMSCount,
   useHRMSGenderMDMS,
+  useOBPSRoles,
+  useEmployeeList,
+  useZones,
 };
 const tl = {
   useTenants: useTenantsTL,
@@ -787,6 +795,8 @@ const challangeneration = {
 const rentandlease = {
   useRentAndLeaseRecieptSearch,
   useRentAndLeaseMDMS,
+  useRALPropertyMDMS,
+  useRALDocumentsMDMS,
   useRentAndLeaseSearch,
   useRentAndLeaseSearchBill,
   useRentAndLeaseTenants,

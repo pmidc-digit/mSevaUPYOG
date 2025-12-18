@@ -9,7 +9,7 @@ import AddressDetails from "./pageComponents/AddressDetails";
 import ConsumerDetails from "./pageComponents/ConsumerDetails";
 import ServiceDetails from "./pageComponents/ServiceDetails";
 import CitizenApp from "./pages/citizen";
-import MyChallanResultsComponent from "./pages/citizen/MyChallan";
+import MyChallanResultsComponent from "./pages/citizen/MyProperties";
 import SearchChallanComponent from "./pages/citizen/SearchChallan";
 import SearchResultsComponent from "./pages/citizen/SearchResults";
 import EmployeeApp from "./pages/employee";
@@ -20,16 +20,63 @@ import SearchReceipt from "./pages/employee/SearchReceipt";
 import SearchChallan from "./pages/employee/SearchChallan";
 import SearchBill from "./pages/employee/SearchBill";
 import GroupBill from "./pages/employee/GroupBills";
+import getRootReducer from "./redux/reducer";
+import NewRentAndLeaseStepperForm from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepperForm";
+import NewRentAndLeaseStepFormOne from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormOne";
+import NewRentAndLeaseStepFormTwo from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormTwo";
+import NewRentAndLeaseStepFormThree from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormThree";
+import NewRentAndLeaseStepFormFour from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormFour";
+import RentAndLeaseCitizenDetails from "./pageComponents/RentAndLeaseCitizenDetails";
+import RentAndLeasePropertyDetails from "./pageComponents/RentAndLeasePropertyDetails";
+import RentAndLeaseSelectProofIdentity from "./pageComponents/RentAndLeaseSelectProofIdentity";
+import RentAndLeaseSummary from "./pageComponents/RentAndLeaseSummary";
+import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
+import CustomDatePicker from "./pageComponents/CustomDatePicker";
+import RALApplicationDetails from "./pages/citizen/RALApplicationDetails";
+import RALResponse from "./pageComponents/Reponse";
+import MyProperties from "./pages/citizen/MyProperties/myProperties";
+import RALEmptyResultInbox from "./components/RALEmptyResultInbox";
+
+export const RentAndLeaseReducers = getRootReducer;
 
 export const RentAndLeaseModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
   Digit.SessionStorage.set("ChallanGeneration_TENANTS", tenants);
+  const { path, url } = useRouteMatch();
+
+  // Register components
+  useEffect(() => {
+    initRentAndLeaseComponents();
+  }, []);
+
+  // useEffect(
+  //   () =>
+  //     userType === "employee" &&
+  //     Digit.LocalizationService.getLocale({
+  //       modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+  //       locale: Digit.StoreData.getCurrentLanguage(),
+  //       tenantId: Digit.ULBService.getCurrentTenantId(),
+  //     }),
+  //   []
+  // );
+
+  const stateId = Digit.ULBService.getStateId();
+
+  useEffect(
+    () =>
+      Digit.LocalizationService.getLocale({
+        modules: [`rainmaker-rentAndLease`],
+        locale: Digit.StoreData.getCurrentLanguage(),
+        tenantId: stateId,
+      }),
+    []
+  );
+
   if (isLoading) {
     return <Loader />;
   }
-  const { path, url } = useRouteMatch();
 
   if (userType === "employee") {
     return <EmployeeApp path={path} url={url} userType={userType} />;
@@ -38,7 +85,7 @@ export const RentAndLeaseModule = ({ stateCode, userType, tenants }) => {
 
 export const RentAndLeaseLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("PT_CREATE_PROPERTY112", {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("RENT_LEASE_CREATE", {});
 
   useEffect(() => {
     clearParams();
@@ -50,8 +97,12 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
       i18nKey: t("UC_SEARCH_AND_PAY"),
     },
     {
-      link: `${matchPath}/My-Challans`,
-      i18nKey: t("UC_MY_CHALLANS"),
+      link: `${matchPath}/my-properties`,
+      i18nKey: t("UC_MY_PROPERTIES"),
+    },
+    {
+      link: `${matchPath}/new-application`,
+      i18nKey: t("RENT_LEASE_CREATE_APPLICATION"),
     },
   ];
 
@@ -59,6 +110,7 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
 };
 
 const componentsToRegister = {
+  RALApplicationDetails,
   ConsumerDetails,
   ServiceDetails,
   AddressDetails,
@@ -72,11 +124,26 @@ const componentsToRegister = {
   MCollectSearchChallanComponent: SearchChallanComponent,
   MCollectSearchResultsComponent: SearchResultsComponent,
   MCollectMyChallanResultsComponent: MyChallanResultsComponent,
+  MyProperties,
   SearchReceipt,
   SearchChallan,
   SearchBill,
   GroupBill,
-  MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  RAL_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  // New stepper form components
+  NewRentAndLeaseStepperForm,
+  NewRentAndLeaseStepFormOne,
+  NewRentAndLeaseStepFormTwo,
+  NewRentAndLeaseStepFormThree,
+  NewRentAndLeaseStepFormFour,
+  RentAndLeaseCitizenDetails,
+  RentAndLeasePropertyDetails,
+  RentAndLeaseSelectProofIdentity,
+  RentAndLeaseSummary,
+  RentAndLeaseDocument,
+  RALResponse,
+  CustomDatePicker,
+  RALEmptyResultInbox,
 };
 
 export const initRentAndLeaseComponents = () => {

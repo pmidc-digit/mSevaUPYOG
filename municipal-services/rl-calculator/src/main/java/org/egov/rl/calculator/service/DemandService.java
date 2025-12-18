@@ -51,9 +51,9 @@ public class DemandService {
     @Autowired
     private CalculationService calculationService;
 
-    public DemandResponse createDemand(boolean isSecurityDeposite, CalculationReq calculationReq) {
-
-
+    public DemandResponse createDemand(CalculationReq calculationReq) {
+    	
+    	boolean isSecurityDeposite=calculationReq.getCalculationCriteria().get(0).isSecurityDeposite();
         List<Demand> demands = new ArrayList<>();
         RequestInfo requestInfo = calculationReq.getRequestInfo();
         String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().getTenantId();
@@ -495,7 +495,7 @@ public class DemandService {
 
             // createDemand  generate demands for the batch
             try {
-                createDemand(false, calculationReq);
+                createDemand(calculationReq);
             } catch (Exception e) {
                 log.error("Error while creating demands for batch: {}", e.getMessage());
             }

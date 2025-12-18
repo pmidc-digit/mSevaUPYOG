@@ -2,6 +2,8 @@ package org.egov.rl.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.Builder.Default;
+
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -29,6 +31,10 @@ public class CalculationCriteria   {
 
         @JsonProperty("oldApplicationNumber")
         private String oldApplicationNumber;
+
+        @JsonProperty("isSecurityDeposite")
+        @Default
+        private boolean isSecurityDeposite=false;
 
         @JsonProperty("tenantId")
         private String tenantId;

@@ -103,6 +103,5 @@ public class CalculationService {
 				}
 			}
 		});
-		System.out.println("--d-----------------------"+demandDetails.size());
 	}
 }

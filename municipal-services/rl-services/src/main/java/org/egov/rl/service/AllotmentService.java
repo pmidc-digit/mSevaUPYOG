@@ -125,14 +125,7 @@ public class AllotmentService {
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
-
-				CalculationReq calculationReq = getCalculationReq(allotmentRequest);
-
-				StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
-						.append(config.getRlCalculatorEndpoint());
-				Object response = serviceRequestRepository.fetchResult(url, calculationReq).get();
-				DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
-				demandId =demandResponse.getDemands().get(0).getId();
+				demandId=callCalculatorService(true,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
@@ -144,13 +137,7 @@ public class AllotmentService {
 			}
 		} else if (isApprove) {
 			try {
-
-				CalculationReq calculationReq = getCalculationReq(allotmentRequest);
-				StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
-						.append(config.getRlCalculatorEndpoint());
-				Object response = serviceRequestRepository.fetchResult(url, calculationReq);
-				DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
-				demandId =demandResponse.getDemands().get(0).getId();
+				demandId=callCalculatorService(false,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
@@ -164,13 +151,26 @@ public class AllotmentService {
 		allotmentRequest.getAllotment().setWorkflow(null);
 		return allotmentRequest.getAllotment();
 	}
+	
+	private String callCalculatorService(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
+		CalculationReq calculationReq = getCalculationReq(isSecurityDeposite,allotmentRequest);
 
-	private CalculationReq getCalculationReq(AllotmentRequest allotmentRequest) {
+		StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
+				.append(config.getRlCalculatorEndpoint());
+		Object response = serviceRequestRepository.fetchResult(url, calculationReq).get();
+		DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
+		String demandId =demandResponse.getDemands().get(0).getId();
+		return demandId;
+	}
+
+	private CalculationReq getCalculationReq(boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
 		CalculationReq calculationReq =new CalculationReq();
 		calculationReq.setRequestInfo(allotmentRequest.getRequestInfo());
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
-		CalculationCriteria calculationCriteria =new CalculationCriteria();
-		calculationCriteria.setAllotmentRequest(allotmentRequest);
+		CalculationCriteria calculationCriteria =CalculationCriteria.builder()
+				.isSecurityDeposite(isSecurityDeposite)
+				.allotmentRequest(allotmentRequest)
+				.build();
 		calculationCriteriaList.add(calculationCriteria);
 		calculationReq.setCalculationCriteria(calculationCriteriaList);
 		return calculationReq;

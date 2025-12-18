@@ -36,7 +36,7 @@ public class CalculatorController {
     public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq allotmentRequest) {
 
 
-    	DemandResponse demandResponse =demandService.createDemand(true,allotmentRequest);
+    	DemandResponse demandResponse =demandService.createDemand(allotmentRequest);
        demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
         return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
     }

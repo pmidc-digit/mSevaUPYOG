@@ -580,14 +580,17 @@ List<String> allowedParams = null;
 		// }
 		
 		
-		Boolean isCriteriaEmpty = CollectionUtils.isEmpty(criteria.getOldpropertyids())
-				&& CollectionUtils.isEmpty(criteria.getAcknowledgementIds())
-				&& CollectionUtils.isEmpty(criteria.getPropertyIds())
-				&& CollectionUtils.isEmpty(criteria.getOwnerIds()) 
-				&& CollectionUtils.isEmpty(criteria.getUuids())
-				&& null == criteria.getSurveyId()
-				&& null == criteria.getMobileNumber()
-				&& null == criteria.getName();
+		Boolean isCriteriaEmpty =
+		        CollectionUtils.isEmpty(criteria.getOldpropertyids())
+		     && CollectionUtils.isEmpty(criteria.getAcknowledgementIds())
+		     && CollectionUtils.isEmpty(criteria.getPropertyIds())
+		     && CollectionUtils.isEmpty(criteria.getOwnerIds())
+		     && CollectionUtils.isEmpty(criteria.getUuids())
+		     && CollectionUtils.isEmpty(criteria.getVasikaNos())   // ✅ added
+		     && criteria.getSurveyId() == null
+		     && criteria.getMobileNumber() == null
+		     && criteria.getName() == null;
+
 		
 		if (isUserCitizen) {
 			

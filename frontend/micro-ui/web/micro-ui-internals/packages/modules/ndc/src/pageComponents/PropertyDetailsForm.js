@@ -30,7 +30,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   const [showToast, setShowToast] = useState(null);
   const [propertyLoader, setPropertyLoader] = useState(false);
-  // const [error, setError] = useState("");
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedBillData, setSelectedBillData] = useState({});
   const propertyId = formData?.cpt?.details?.propertyId;

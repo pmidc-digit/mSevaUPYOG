@@ -15,6 +15,7 @@ const GenerateBill = () => {
     : window.localStorage.getItem("Employee.tenant-id");
 
   const [loader, setLoader] = useState(false);
+  const [getData, setData] = useState();
 
   const {
     control,
@@ -22,6 +23,7 @@ const GenerateBill = () => {
     setValue,
     formState: { errors },
     getValues,
+    watch,
     clearErrors,
   } = useForm();
 
@@ -31,13 +33,32 @@ const GenerateBill = () => {
 
   const ConnectionType = [{ name: "Garbage", code: "GARBAGE" }];
   const batchLocality = [
-    { name: "Batch", code: "BATCH" },
-    { name: "Locality", code: "LOCALITY" },
+    { name: "Batch", code: "Block" },
+    { name: "Locality", code: "Locality" },
   ];
+
+  const handleApiData = async (val) => {
+    setLoader(true);
+    const filters = {};
+    filters.hierarchyTypeCode = "REVENUE";
+    filters.boundaryType = val?.code;
+    try {
+      const response = await Digit.GCService.location({ tenantId, filters });
+      setLoader(false);
+      console.log("response==", response?.TenantBoundary?.[0]?.boundary);
+      setData(response?.TenantBoundary?.[0]?.boundary);
+    } catch (error) {
+      setLoader(false);
+      console.log("error==", error);
+      // setLoader(false);
+    }
+  };
+
+  const boundaryType = watch("batchOrLocality");
 
   return (
     <React.Fragment>
-      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("ACTION_TEST_GENERATE_BILL")}</CardSubHeader>
+      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>{t("ACTION_TEST_GENERATE_BILL")}</CardSubHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div
           style={{
@@ -48,7 +69,7 @@ const GenerateBill = () => {
           }}
         >
           {/* connection type */}
-          <div
+          {/* <div
             style={{
               flex: "0 0 20%", // 2 items per row
               maxWidth: "20%",
@@ -77,9 +98,9 @@ const GenerateBill = () => {
               )}
             />
             {errors?.connectionType && <p style={{ color: "red" }}>{errors.connectionType.message}</p>}
-          </div>
+          </div> */}
 
-          {/* select Batch or Locality */}
+          {/* boundaryType */}
           <div
             style={{
               flex: "0 0 20%", // 2 items per row
@@ -99,6 +120,7 @@ const GenerateBill = () => {
                   className="form-field"
                   select={(e) => {
                     props.onChange(e);
+                    handleApiData(e);
                   }}
                   selected={props.value}
                   option={batchLocality}
@@ -111,69 +133,73 @@ const GenerateBill = () => {
           </div>
 
           {/* locality */}
-          <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
-          >
-            <CardLabel>
-              {`${t("CS_SWACH_LOCALITY")}`}
-              {/* <span style={{ color: "red" }}>*</span> */}
-            </CardLabel>
-            <Controller
-              control={control}
-              name={"locality"}
-              render={(props) => (
-                <Dropdown
-                  style={{ marginBottom: 0, width: "100%" }}
-                  className="form-field"
-                  select={(e) => {
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={[]}
-                  optionKey="name"
-                  t={t}
-                />
-              )}
-            />
-            {errors?.locality && <p style={{ color: "red" }}>{errors.locality.message}</p>}
-          </div>
+          {boundaryType?.code == "Locality" && (
+            <div
+              style={{
+                flex: "0 0 20%", // 2 items per row
+                maxWidth: "20%",
+              }}
+            >
+              <CardLabel>
+                {`${t("CS_SWACH_LOCALITY")}`}
+                {/* <span style={{ color: "red" }}>*</span> */}
+              </CardLabel>
+              <Controller
+                control={control}
+                name={"locality"}
+                render={(props) => (
+                  <Dropdown
+                    style={{ marginBottom: 0, width: "100%" }}
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={getData}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.locality && <p style={{ color: "red" }}>{errors.locality.message}</p>}
+            </div>
+          )}
 
           {/* batch */}
-          <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
-          >
-            <CardLabel>
-              {`${t("Batch")}`}
-              {/* <span style={{ color: "red" }}>*</span> */}
-            </CardLabel>
-            <Controller
-              control={control}
-              name={"batch"}
-              render={(props) => (
-                <Dropdown
-                  style={{ marginBottom: 0, width: "100%" }}
-                  className="form-field"
-                  select={(e) => {
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={[]}
-                  optionKey="name"
-                  t={t}
-                />
-              )}
-            />
-            {errors?.batch && <p style={{ color: "red" }}>{errors.batch.message}</p>}
-          </div>
+          {boundaryType?.code == "Block" && (
+            <div
+              style={{
+                flex: "0 0 20%", // 2 items per row
+                maxWidth: "20%",
+              }}
+            >
+              <CardLabel>
+                {`${t("Batch")}`}
+                {/* <span style={{ color: "red" }}>*</span> */}
+              </CardLabel>
+              <Controller
+                control={control}
+                name={"batch"}
+                render={(props) => (
+                  <Dropdown
+                    style={{ marginBottom: 0, width: "100%" }}
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={getData}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.batch && <p style={{ color: "red" }}>{errors.batch.message}</p>}
+            </div>
+          )}
 
           {/* group */}
-          <div
+          {/* <div
             style={{
               flex: "0 0 20%", // 2 items per row
               maxWidth: "20%",
@@ -181,7 +207,6 @@ const GenerateBill = () => {
           >
             <CardLabel>
               {`${t("Group")}`}
-              {/* <span style={{ color: "red" }}>*</span> */}
             </CardLabel>
             <Controller
               control={control}
@@ -201,7 +226,7 @@ const GenerateBill = () => {
               )}
             />
             {errors?.group && <p style={{ color: "red" }}>{errors.group.message}</p>}
-          </div>
+          </div> */}
         </div>
         <ActionBar>
           <SubmitBar style={{ background: "#eee", color: "black", border: "1px solid" }} label="Search" submit="submit" />

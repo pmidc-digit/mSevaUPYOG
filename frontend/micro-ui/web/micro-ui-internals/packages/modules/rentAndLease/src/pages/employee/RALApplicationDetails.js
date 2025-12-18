@@ -81,7 +81,7 @@ const RALApplicationDetails = () => {
                 // pathname: `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}`,
                 // pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`,
 
-                pathname: `/digit-ui/employee/payment/collect/rentandlease/${acknowledgementIds}/${tenantId}?tenantId=${tenantId}`,
+                pathname: `/digit-ui/employee/payment/collect/rl-services/${acknowledgementIds}/${tenantId}?tenantId=${tenantId}`,
 
                 state: { tenantId: tenantId, applicationNumber: acknowledgementIds },
               }}
@@ -140,7 +140,7 @@ const RALApplicationDetails = () => {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
-      history.push(`/digit-ui/employee/payment/collect/rentandlease/${appNo}/${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);

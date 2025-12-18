@@ -27,11 +27,11 @@ const PTRDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     result =
       (EmptyInboxComp && <EmptyInboxComp data={data} />) ||
       (data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty) ? (
-        <Card style={{ marginTop: 20 }}>
+        <Card className="ptr-search-results-card">
           {t("CS_MYAPPLICATIONS_NO_APPLICATION")
             .split("\\n")
             .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
+              <p key={index} className="ptr-search-results-text">
                 {text}
               </p>
             ))}
@@ -49,9 +49,8 @@ const PTRDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           return {
             style: {
               minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
             },
+            className: "ptr-table-cell",
           };
         }}
         onPageSizeChange={props.onPageSizeChange}
@@ -87,7 +86,7 @@ const PTRDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           </div>
         </div>
       )}
-      <div style={{ flex: 1 }}>
+      <div className="ptr-desktop-inbox-search-container">
         <SearchApplication
           defaultSearchParams={props.defaultSearchParams}
           onSearch={(d) => {
@@ -100,9 +99,7 @@ const PTRDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           searchParams={props.searchParams}
           clearSearch={() => setClearSearchCalled(true)}
         />
-        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
-          {result}
-        </div>
+        <div className={`result ptr-desktop-inbox-result-container ${!props?.isSearch ? "ptr-desktop-inbox-result-margin" : ""}`}>{result}</div>
       </div>
     </div>
   );

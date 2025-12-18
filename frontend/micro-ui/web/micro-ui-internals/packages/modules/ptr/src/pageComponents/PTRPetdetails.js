@@ -153,13 +153,13 @@ const OwnerForm = (_props) => {
     else if (!Object.keys(errors).length && formState.errors[config.key]) clearErrors(config.key);
   }, [errors]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  // const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-          {allOwners?.length > 2 ? <div style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>X</div> : null}
+      <div className="ptr-pet-details-container">
+        <div className="ptr-pet-details-card">
+          {allOwners?.length > 2 ? <div className="ptr-pet-details-close-btn">X</div> : null}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_SEARCH_PET_TYPE") + " *"}</CardLabel>
@@ -181,7 +181,7 @@ const OwnerForm = (_props) => {
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.petType ? errors?.petType?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.petType ? errors?.petType?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_SEARCH_BREED_TYPE") + " *"}</CardLabel>
             <Controller
@@ -202,7 +202,7 @@ const OwnerForm = (_props) => {
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.breedType ? errors?.breedType?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.breedType ? errors?.breedType?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_PET_NAME") + " *"}</CardLabel>
@@ -233,7 +233,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.petName ? errors?.petName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.petName ? errors?.petName?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_PET_AGE") + " *"}</CardLabel>
@@ -263,7 +263,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <div style={{ textAlign: "center" }}>
+          <div className="ptr-pet-details-age-display">
             {Math.floor(watch("petAge") / 12)}&nbsp;
             {Math.floor(watch("petAge") / 12) === 1 ? "YEAR" : "YEARS"}
             &nbsp;&nbsp;
@@ -271,7 +271,7 @@ const OwnerForm = (_props) => {
             {watch("petAge") % 12 === 1 ? "MONTH" : "MONTHS"}
           </div>
           <br></br>
-          <CardLabelError style={errorStyle}>{localFormState.touched.petAge ? errors?.petAge?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.petAge ? errors?.petAge?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_PET_SEX") + " *"}</CardLabel>
@@ -294,7 +294,7 @@ const OwnerForm = (_props) => {
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.petGender ? errors?.petGender?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.petGender ? errors?.petGender?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_DOCTOR_NAME") + " *"}</CardLabel>
@@ -322,7 +322,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.doctorName ? errors?.doctorName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.doctorName ? errors?.doctorName?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_CLINIC_NAME") + " *"}</CardLabel>
             <div className="field">
@@ -349,7 +349,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.clinicName ? errors?.clinicName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">{localFormState.touched.clinicName ? errors?.clinicName?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_VACCINATED_DATE") + " *"}</CardLabel>
@@ -375,7 +375,9 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.lastVaccineDate ? errors?.lastVaccineDate?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">
+            {localFormState.touched.lastVaccineDate ? errors?.lastVaccineDate?.message : ""}
+          </CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER") + " *"}</CardLabel>
@@ -403,7 +405,9 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.vaccinationNumber ? errors?.vaccinationNumber?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-pet-details-error">
+            {localFormState.touched.vaccinationNumber ? errors?.vaccinationNumber?.message : ""}
+          </CardLabelError>
         </div>
       </div>
       {showToast?.label && (

@@ -200,7 +200,7 @@ const ApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+        <div className="cardHeaderWithOptions ptr-application-details-header-container">
           {/* <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header> */}
           {/* {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
@@ -212,7 +212,7 @@ const ApplicationDetails = () => {
           )} */}
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ptr-application-details-subheader">{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
             {(pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName) && (
@@ -227,7 +227,7 @@ const ApplicationDetails = () => {
             <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
+          <CardSubHeader className="ptr-application-details-subheader">{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
@@ -236,7 +236,7 @@ const ApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ptr-application-details-subheader">{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_PET_NAME")} text={pet_details?.petDetails?.petName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={t(pet_details?.petDetails?.petType) || t("CS_NA")} />
@@ -316,7 +316,7 @@ const ApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_DOCS")}</CardSubHeader>
+          <CardSubHeader className="ptr-application-details-subheader">{t("ES_TITLE_DOCS")}</CardSubHeader>
           <div>
             {Array.isArray(application?.documents) && application.documents.length > 0 ? (
               <PTRDocument
@@ -337,7 +337,7 @@ const ApplicationDetails = () => {
             <Toast
               error={showToast.key}
               label={t(showToast.label)}
-              style={{ bottom: "0px" }}
+              className="ptr-toast-bottom"
               onClose={() => {
                 setShowToast(null);
               }}

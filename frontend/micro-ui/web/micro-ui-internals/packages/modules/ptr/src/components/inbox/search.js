@@ -18,17 +18,17 @@ import { useTranslation } from "react-i18next";
 const fieldComponents = {
   date: DatePicker,
   mobileNumber: MobileNumber,
-//   Locality: (props) => (
-//     <Localities
-//       tenantId={Digit.ULBService.getCurrentTenantId()}
-//       selectLocality={props.onChange}
-//       keepNull={false}
-//       boundaryType="revenue"
-//       selected={props.value}
-//       disableLoader={true}
-//       sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
-//     />
-//   ),
+  //   Locality: (props) => (
+  //     <Localities
+  //       tenantId={Digit.ULBService.getCurrentTenantId()}
+  //       selectLocality={props.onChange}
+  //       keepNull={false}
+  //       boundaryType="revenue"
+  //       selected={props.value}
+  //       disableLoader={true}
+  //       sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
+  //     />
+  //   ),
 };
 
 const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams, isInboxPage, defaultSearchParams, clearSearch: _clearSearch }) => {
@@ -73,7 +73,6 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   //   });
   // }, [form, formState, setError, clearErrors]);
 
-
   const onSubmitInput = (data) => {
     if (!data.mobileNumber) {
       delete data.mobileNumber;
@@ -107,9 +106,9 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   }
 
   const clearAll = (mobileView) => {
-    const mobileViewStyles = mobileView ? { margin: 0 } : {};
+    const mobileViewStyles = mobileView ? "ptr-mobile-margin-0" : "";
     return (
-      <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
+      <LinkLabel className={`ptr-inbox-search-link-label ${mobileViewStyles}`} onClick={clearSearch}>
         {t("ES_COMMON_CLEAR_SEARCH")}
       </LinkLabel>
     );
@@ -118,7 +117,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-        <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
+        <div className={`search-container ptr-inbox-search-container ${isInboxPage ? "ptr-inbox-page-margin" : "ptr-inbox-search-revert-margin"}`}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header">
@@ -128,7 +127,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className={"complaint-input-container for-pt " + (!isInboxPage ? "for-search" : "")} style={{ width: "100%", display:"grid" }}>
+            <div className={"complaint-input-container for-pt ptr-inbox-search-input-container " + (!isInboxPage ? "for-search" : "")}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
@@ -158,24 +157,19 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                       )}
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
-                      <span
-                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
-                        className="inbox-search-form-error"
-                      >
-                        {formState?.errors?.[input.name]?.message}
-                      </span>
+                      <span className="inbox-search-form-error ptr-inbox-search-error">{formState?.errors?.[input.name]?.message}</span>
                     ) : null}
                   </div>
                 ))}
 
               {isInboxPage && (
-                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
+                <div className="input-fields ptr-inbox-clear-search-wrapper">
                   <div>{clearAll()}</div>
                 </div>
               )}
 
               {type === "desktop" && !mobileView && (
-                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
+                <div className="search-submit-wrapper ptr-inbox-search-submit-wrapper">
                   <SubmitBar
                     className="submit-bar-search"
                     label={t("ES_COMMON_SEARCH")}
@@ -191,10 +185,13 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
         </div>
         {(type === "mobile" || mobileView) && (
           <ActionBar className="clear-search-container">
-            <button className="clear-search" style={{ flex: 1 }}>
-              {clearAll(mobileView)}
-            </button>
-            <SubmitBar disabled={!!Object.keys(formState.errors).length} label={t("ES_COMMON_SEARCH")} style={{ flex: 1 }} submit={true} />
+            <button className="clear-search ptr-inbox-mobile-clear-btn">{clearAll(mobileView)}</button>
+            <SubmitBar
+              disabled={!!Object.keys(formState.errors).length}
+              label={t("ES_COMMON_SEARCH")}
+              className="ptr-inbox-mobile-submit-btn"
+              submit={true}
+            />
           </ActionBar>
         )}
       </React.Fragment>

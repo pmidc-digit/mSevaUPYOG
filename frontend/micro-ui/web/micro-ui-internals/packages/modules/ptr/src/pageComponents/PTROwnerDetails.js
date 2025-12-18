@@ -80,13 +80,13 @@ const OwnerForm = (_props) => {
     else if (!Object.keys(errors).length && formState.errors[config.key]) clearErrors(config.key);
   }, [errors]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  // const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-          {allOwners?.length > 2 ? <div style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>X</div> : null}
+      <div className="ptr-owner-details-container">
+        <div className="ptr-owner-details-card">
+          {allOwners?.length > 2 ? <div className="ptr-owner-details-close-btn">X</div> : null}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("REPORT_FSM_RESULT_APPLICANTNAME") + " *"}</CardLabel>
@@ -117,7 +117,9 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.applicantName ? errors?.applicantName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-owner-details-error">
+            {localFormState.touched.applicantName ? errors?.applicantName?.message : ""}
+          </CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_FATHER_HUSBAND_NAME") + " *"}</CardLabel>
@@ -148,7 +150,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.fatherName ? errors?.fatherName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-owner-details-error">{localFormState.touched.fatherName ? errors?.fatherName?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM3_MOBILE_NUMBER") + " *"}</CardLabel>
@@ -177,7 +179,9 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-owner-details-error">
+            {localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}
+          </CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_ALT_MOBILE_NUMBER") + " *"}</CardLabel>
@@ -206,7 +210,9 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.alternateNumber ? errors?.alternateNumber?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-owner-details-error">
+            {localFormState.touched.alternateNumber ? errors?.alternateNumber?.message : ""}
+          </CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_EMAIL_ID")}</CardLabel>
@@ -239,7 +245,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-owner-details-error">{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
         </div>
       </div>
       {showToast?.label && (

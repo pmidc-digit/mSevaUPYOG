@@ -38,11 +38,11 @@ const PTRResponseCitizen = (props) => {
           applicationNumber={ptrCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`PTR__APPROVAL_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="ptr-response-banner"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
 
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="ptr-response-action-bar">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_PTR")} onSubmit={onGoToPTR} />
         </ActionBar>

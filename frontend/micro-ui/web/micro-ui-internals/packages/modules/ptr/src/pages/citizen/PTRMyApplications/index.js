@@ -63,33 +63,33 @@ export const PTRMyApplications = () => {
   if (isLoading) {
     return <Loader />;
   }
-  const styles = {
-    paginationControls: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "12px",
-      margin: "20px 0",
-    },
-    paginationBtn: {
-      backgroundColor: "#2947a3",
-      color: "#fff",
-      border: "none",
-      padding: "8px 12px",
-      borderRadius: "50%",
-      fontSize: "18px",
-      cursor: "pointer",
-      transition: "background-color 0.2s ease",
-    },
-    disabledBtn: {
-      backgroundColor: "#ccc",
-      cursor: "not-allowed",
-    },
-    paginationInfo: {
-      fontWeight: 500,
-      color: "#333",
-    },
-  };
+  // const styles = {
+  //   paginationControls: {
+  //     display: "flex",
+  //     justifyContent: "center",
+  //     alignItems: "center",
+  //     gap: "12px",
+  //     margin: "20px 0",
+  //   },
+  //   paginationBtn: {
+  //     backgroundColor: "#2947a3",
+  //     color: "#fff",
+  //     border: "none",
+  //     padding: "8px 12px",
+  //     borderRadius: "50%",
+  //     fontSize: "18px",
+  //     cursor: "pointer",
+  //     transition: "background-color 0.2s ease",
+  //   },
+  //   disabledBtn: {
+  //     backgroundColor: "#ccc",
+  //     cursor: "not-allowed",
+  //   },
+  //   paginationInfo: {
+  //     fontWeight: 500,
+  //     color: "#333",
+  //   },
+  // };
 
   return (
     <React.Fragment>
@@ -105,7 +105,7 @@ export const PTRMyApplications = () => {
             </div>
           ))
         )}
-        {!applicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
+        {!applicationsList?.length > 0 && <p className="ptr-no-application-msg">{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
 
         {/* {applicationsList?.length !== 0 && (
           <div>
@@ -117,12 +117,9 @@ export const PTRMyApplications = () => {
       </div>
       {/* Pagination controls */}
       {applicationsList?.length > itemsPerPage && (
-        <div style={styles.paginationControls}>
+        <div className="ptr-pagination-controls">
           <button
-            style={{
-              ...styles.paginationBtn,
-              ...(currentPage === 1 ? styles.disabledBtn : {}),
-            }}
+            className={`ptr-pagination-btn ${currentPage === 1 ? "ptr-pagination-btn-disabled" : ""}`}
             disabled={currentPage === 1}
             onClick={() => {
               setLoadingPage(true);
@@ -135,15 +132,12 @@ export const PTRMyApplications = () => {
             &#8592;
           </button>
 
-          <span style={styles.paginationInfo}>
+          <span className="ptr-pagination-info">
             {`${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, applicationsList.length)} of ${applicationsList.length}`}
           </span>
 
           <button
-            style={{
-              ...styles.paginationBtn,
-              ...(currentPage === totalPages ? styles.disabledBtn : {}),
-            }}
+            className={`ptr-pagination-btn ${currentPage === totalPages ? "ptr-pagination-btn-disabled" : ""}`}
             disabled={currentPage === totalPages}
             onClick={() => {
               setLoadingPage(true);
@@ -158,9 +152,9 @@ export const PTRMyApplications = () => {
         </div>
       )}
 
-      <p style={{ marginLeft: "16px", marginTop: "16px" }}>
+      <p className="ptr-no-application-msg">
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
-        <span className="link" style={{ display: "block" }}>
+        <span className="link ptr-register-new-pet-link">
           <Link to="/digit-ui/citizen/ptr/petservice/new-application/info">{t("PTR_COMMON_CLICK_HERE_TO_REGISTER_NEW_PET")}</Link>
         </span>
       </p>

@@ -25,7 +25,7 @@ const App = () => {
   const PTRList = Digit?.ComponentRegistryService?.getComponent("PTRList");
 
   return (
-    <span className={"pet-citizen"} style={{ width: "100%" }}>
+    <span className={"pet-citizen ptr-citizen-wrapper"}>
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}

@@ -225,10 +225,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
     }
   };
 
-  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "-16px", marginBottom: "10px" };
+  // const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "-16px", marginBottom: "10px" };
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ptr-document-upload-container">
       {loading && <Loader />}
 
       {/* {doc?.hasDropdown ? (
@@ -275,7 +275,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
             error={Boolean(fieldError)}
           />
 
-          {fieldError && <errorStyle style={errorStyle}>{fieldError}</errorStyle>}
+          {fieldError && <div className="ptr-document-upload-error">{fieldError}</div>}
         </div>
       </LabelFieldPair>
     </div>

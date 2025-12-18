@@ -8,15 +8,13 @@ const PTRSelectPincode = ({ t, config, onSelect, formData = {}, userType, regist
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
 
-  console.log("formData in oincode ",formData)
+  console.log("formData in oincode ", formData);
 
   const [pincode, setPincode] = useState(() => {
     if (presentInModifyApplication && userType === "employee") return formData?.originalData?.address?.pincode || "";
     return formData?.address?.pincode || "";
   });
 
-  
-  
   const inputs = [
     {
       label: "PTR_ADDRESS_PINCODE",
@@ -72,10 +70,17 @@ const PTRSelectPincode = ({ t, config, onSelect, formData = {}, userType, regist
           <LabelFieldPair key={index}>
             <CardLabel className="card-label-smaller">{t(input.label)}</CardLabel>
             <div className="field">
-              <TextInput key={input.name} value={pincode} onChange={onChange} {...input.validation} disable={presentInModifyApplication} autoFocus={presentInModifyApplication} />
+              <TextInput
+                key={input.name}
+                value={pincode}
+                onChange={onChange}
+                {...input.validation}
+                disable={presentInModifyApplication}
+                autoFocus={presentInModifyApplication}
+              />
             </div>
           </LabelFieldPair>
-          {error ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{error}</CardLabelError> : null}
+          {error ? <CardLabelError className="ptr-pincode-error">{error}</CardLabelError> : null}
         </React.Fragment>
       );
     });
@@ -83,17 +88,17 @@ const PTRSelectPincode = ({ t, config, onSelect, formData = {}, userType, regist
   const onSkip = () => onSelect();
   return (
     <React.Fragment>
-    {window.location.href.includes("/citizen") ? <Timeline currentStep={3}/> : null}
-    <FormStep
-      t={t}
-      config={{ ...config, inputs }}
-      onSelect={goNext}
-      _defaultValues={{ pincode }}
-      onChange={onChange}
-      onSkip={onSkip}
-      forcedError={t(pincodeServicability)}
-    ></FormStep>
-            </React.Fragment>
+      {window.location.href.includes("/citizen") ? <Timeline currentStep={3} /> : null}
+      <FormStep
+        t={t}
+        config={{ ...config, inputs }}
+        onSelect={goNext}
+        _defaultValues={{ pincode }}
+        onChange={onChange}
+        onSkip={onSkip}
+        forcedError={t(pincodeServicability)}
+      ></FormStep>
+    </React.Fragment>
   );
 };
 

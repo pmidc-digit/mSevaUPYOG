@@ -63,7 +63,7 @@ const PTRWFApplicationTimeline = (props) => {
     switch (nextAction?.action) {
       case "PAY":
         return props?.userType === "citizen" ? (
-          <div style={{ marginTop: "1em", bottom: "0px", width: "100%", marginBottom: "1.2em" }}>
+          <div className="ptr-timeline-payment-container">
             <Link
               to={{
                 // history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}?tenantId=${tenantId}`);
@@ -84,7 +84,7 @@ const PTRWFApplicationTimeline = (props) => {
 
       case "SUBMIT_FEEDBACK":
         return (
-          <div style={{ marginTop: "24px" }}>
+          <div className="ptr-timeline-feedback-container">
             <Link to={`/digit-ui/citizen/fsm/rate/${props.id}`}>
               <SubmitBar label={t("CS_APPLICATION_DETAILS_RATE")} />
             </Link>

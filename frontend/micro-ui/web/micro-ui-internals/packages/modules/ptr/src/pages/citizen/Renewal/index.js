@@ -37,7 +37,7 @@ export const PTRList = () => {
           newApplicationsList.map((application, index) => (
             <div key={index}>{application?.licenseNumber && <TradeLicenseList application={application} />}</div>
           ))}
-        {!newApplicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}
+        {!newApplicationsList?.length > 0 && <p className="ptr-no-application-msg">{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}
       </div>
       {/* <p style={{ marginLeft: "16px", marginTop: "16px" }}>
         {t("TL_NOT_ABLE_TO_FIND_TRADE_LICENSE")}{" "}

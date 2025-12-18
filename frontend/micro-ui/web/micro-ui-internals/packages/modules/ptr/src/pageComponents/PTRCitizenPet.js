@@ -292,7 +292,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
+  // const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
   // helper: parse the custom age string into { years, months, totalYears }
   const parsePetAge = (raw) => {
@@ -365,7 +365,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           />
         </div>
       </LabelFieldPair>
-      {errors.petName && <CardLabelError style={errorStyle}>{getErrorMessage("petName")}</CardLabelError>}
+      {errors.petName && <CardLabelError className="ptr-error-style">{getErrorMessage("petName")}</CardLabelError>}
 
       {/* PET TYPE */}
       <LabelFieldPair>
@@ -387,7 +387,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           )}
         />
       </LabelFieldPair>
-      {errors.petType && <CardLabelError style={errorStyle}>{getErrorMessage("petType")}</CardLabelError>}
+      {errors.petType && <CardLabelError className="ptr-error-style">{getErrorMessage("petType")}</CardLabelError>}
 
       {/* BREED TYPE */}
       <LabelFieldPair>
@@ -412,7 +412,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           }}
         />
       </LabelFieldPair>
-      {errors.breedType && <CardLabelError style={errorStyle}>{getErrorMessage("breedType")}</CardLabelError>}
+      {errors.breedType && <CardLabelError className="ptr-error-style">{getErrorMessage("breedType")}</CardLabelError>}
 
       {/* PET GENDER */}
       <LabelFieldPair>
@@ -434,7 +434,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           )}
         />
       </LabelFieldPair>
-      {errors.petGender && <CardLabelError style={errorStyle}>{getErrorMessage("petGender")}</CardLabelError>}
+      {errors.petGender && <CardLabelError className="ptr-error-style">{getErrorMessage("petGender")}</CardLabelError>}
 
       {/* COLOR */}
       <LabelFieldPair>
@@ -461,7 +461,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           />
         </div>
       </LabelFieldPair>
-      {errors.petColor && <CardLabelError style={errorStyle}>{getErrorMessage("petColor")}</CardLabelError>}
+      {errors.petColor && <CardLabelError className="ptr-error-style">{getErrorMessage("petColor")}</CardLabelError>}
 
       {/* PET AGE */}
       <LabelFieldPair>
@@ -530,18 +530,16 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petAge && (
-            <CardLabelError style={{ width: "70%", fontSize: "12px", marginTop: "-18px" }}>{getErrorMessage("petAge")}</CardLabelError>
-          )}
+          {errors.petAge && <CardLabelError className="ptr-pet-age-error">{getErrorMessage("petAge")}</CardLabelError>}
 
-          <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
+          <span className="ptr-example-text">{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
 
           {/* Example helper text */}
         </div>
       </LabelFieldPair>
 
       {/* VACCINATED DATE */}
-      <LabelFieldPair style={{ marginTop: "20px" }}>
+      <LabelFieldPair className="ptr-vaccinated-date-label">
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATED_DATE")} *</CardLabel>
         <div className="field">
           <Controller
@@ -568,10 +566,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           />
         </div>
       </LabelFieldPair>
-      {errors.lastVaccineDate && <CardLabelError style={errorStyle}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
+      {errors.lastVaccineDate && <CardLabelError className="ptr-error-style">{getErrorMessage("lastVaccineDate")}</CardLabelError>}
 
       {/* VACCINATION NUMBER */}
-      <LabelFieldPair style={{ marginTop: "15px" }}>
+      <LabelFieldPair className="ptr-vaccination-number-label">
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
         <div className="field">
           <Controller
@@ -594,7 +592,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           />
         </div>
       </LabelFieldPair>
-      {errors.vaccinationNumber && <CardLabelError style={errorStyle}>{getErrorMessage("vaccinationNumber")}</CardLabelError>}
+      {errors.vaccinationNumber && <CardLabelError className="ptr-error-style">{getErrorMessage("vaccinationNumber")}</CardLabelError>}
 
       {/* DOCTOR NAME */}
       <LabelFieldPair>
@@ -615,7 +613,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           />
         </div>
       </LabelFieldPair>
-      {errors.doctorName && <CardLabelError style={errorStyle}>{getErrorMessage("doctorName")}</CardLabelError>}
+      {errors.doctorName && <CardLabelError className="ptr-error-style">{getErrorMessage("doctorName")}</CardLabelError>}
 
       {/* CLINIC NAME */}
       <LabelFieldPair>
@@ -631,14 +629,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           />
         </div>
       </LabelFieldPair>
-      {errors.clinicName && <CardLabelError style={errorStyle}>{getErrorMessage("clinicName")}</CardLabelError>}
+      {errors.clinicName && <CardLabelError className="ptr-error-style">{getErrorMessage("clinicName")}</CardLabelError>}
 
       <ActionBar>
-        <SubmitBar
-          label="Back"
-          style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "5px" }}
-          onSubmit={onGoBack}
-        />
+        <SubmitBar label="Back" className="ptr-back-button" onSubmit={onGoBack} />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
       {isLoading && <Loader page={true} />}

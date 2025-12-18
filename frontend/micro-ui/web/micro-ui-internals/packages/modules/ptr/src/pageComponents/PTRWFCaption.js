@@ -17,7 +17,7 @@ const PTRWFCaption = ({ data, OpenImage }) => {
           {data?.wfComment?.map((e) => (
             <div className="TLComments">
               <h3>{t("WF_COMMON_COMMENTS")}</h3>
-              <p style={{ overflowX: "scroll" }}>{e}</p>
+              <p className="ptr-wf-comment-text">{e}</p>
             </div>
           ))}
         </div>

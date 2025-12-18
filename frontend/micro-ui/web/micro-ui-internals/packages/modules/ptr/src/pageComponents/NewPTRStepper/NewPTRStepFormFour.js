@@ -231,11 +231,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       />
       <ActionBar>
         {/* Back button */}
-        <SubmitBar
-          label={t("CS_COMMON_BACK")}
-          onSubmit={() => onGoBack(currentStepData)}
-          style={{ backgroundColor: "white", color: "black", border: "1px solid", marginRight: "10px" }}
-        />
+        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={() => onGoBack(currentStepData)} className="ptr-stepper-back-btn" />
 
         {/* Take Action menu */}
         {displayMenu && actions ? (

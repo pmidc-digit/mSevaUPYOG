@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  CardLabel,
-  LabelFieldPair,
-  Dropdown,
-  UploadFile,
-  Toast,
-  Loader,
-  CardHeader,
-  CardSectionHeader,
-} from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, CardHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 
 import { useLocation } from "react-router-dom";
 const PTRDocumentUpload = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
@@ -20,22 +11,18 @@ const PTRDocumentUpload = ({ t, config, onSelect, userType, formData, setError: 
   let action = "create";
 
   const { pathname } = useLocation();
-  
 
-  const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");   
+  const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
 
-
-  const PTRDocument = data?.PetService?.Documents.map(document => ({
-  ...document,
-  hasDropdown: true
-}));
-
+  const PTRDocument = data?.PetService?.Documents.map((document) => ({
+    ...document,
+    hasDropdown: true,
+  }));
 
   const goNext = () => {
     onSelect(config.key, { documents, PTRDocumentLength: PTRDocument?.length });
   };
 
-  
   useEffect(() => {
     goNext();
   }, [documents]);
@@ -65,9 +52,7 @@ const PTRDocumentUpload = ({ t, config, onSelect, userType, formData, setError: 
             config={config}
             formState={formState}
           />
-          
         );
-       
       })}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </div>
@@ -88,10 +73,9 @@ function PTRSelectDocument({
   config,
   formState,
   fromRawData,
-  id
+  id,
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
@@ -102,18 +86,16 @@ function PTRSelectDocument({
       : {}
   );
 
-  
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
 
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
- 
 
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
   const { dropdownData } = doc;
- 
+
   var dropDownData = dropdownData;
   const [isHidden, setHidden] = useState(false);
 
@@ -176,7 +158,7 @@ function PTRSelectDocument({
       const docType = dropDownData
         .filter((e) => e.code === originalDoc?.documentType)
         .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
-        
+
       if (!docType) setHidden(true);
       else {
         setSelectedDocument(docType);
@@ -213,10 +195,8 @@ function PTRSelectDocument({
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
 
-
-
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ptr-document-upload-container">
       {doc?.hasDropdown ? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
@@ -242,7 +222,7 @@ function PTRSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png"   //  to accept document of all kind
+            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
           />

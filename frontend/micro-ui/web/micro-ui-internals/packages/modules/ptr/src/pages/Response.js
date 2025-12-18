@@ -131,14 +131,14 @@ const Response = (props) => {
           {DisplayText(state.action, (mutation.isSuccess || !!successData) && !mutation.isError, props.parentRoute.includes("employee"), t)}
         </CardText>
         {(mutation.isSuccess || !!successData) && !mutation.isError && (
-          <SubmitBar style={{ overflow: "hidden" }} label={t("PTR_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />
+          <SubmitBar className="ptr-response-submit-bar" label={t("PTR_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />
         )}
       </Card>
       <ActionBar>
-          <Link to={`${props.parentRoute.includes("employee") ? "/digit-ui/employee" : "/digit-ui/citizen"}`}>
-            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-          </Link>
-        </ActionBar>
+        <Link to={`${props.parentRoute.includes("employee") ? "/digit-ui/employee" : "/digit-ui/citizen"}`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+        </Link>
+      </ActionBar>
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
     </div>
   );

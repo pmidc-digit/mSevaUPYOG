@@ -349,9 +349,11 @@ public class EstimationService {
 			return totalUnite;
 		} else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(SWCalculationConstant.plotBasedConst)) {
-			if (property.getLandArea() != null && property.getLandArea() > 0)
-				return property.getLandArea();
-			return new Double(sewerageConnection.getNoOfToilets());
+			return (property.getLandArea() != null && property.getLandArea() > 0) 
+					? property.getLandArea() 
+					: (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) 
+					? property.getSuperBuiltUpArea().doubleValue() 
+					: new Double(sewerageConnection.getNoOfToilets());
 		}
 		
 		else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)

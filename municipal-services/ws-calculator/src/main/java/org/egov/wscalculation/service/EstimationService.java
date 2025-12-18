@@ -441,8 +441,10 @@ public class EstimationService {
 				return waterConnection.getPipeSize();
 		} else if (waterConnection.getConnectionType().equals(WSCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(WSCalculationConstant.plotBasedConst)) {
-			if (property.getLandArea() != null && property.getLandArea() > 0)
-				return property.getLandArea();
+				return  (property.getLandArea() != null && property.getLandArea() > 0)
+						? property.getLandArea()
+						: (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0)
+						? property.getSuperBuiltUpArea().doubleValue() : 0.0 ;
 		}
 		return 0.0;
 	}

@@ -14,7 +14,7 @@ public class RLConstants {
 	
     public static final String APPROVED_RL_APPLICATION = "APPROVE";
     
-    public static final String FORWARD_FOR_SATELMENT_RL_APPLICATION = "FORWARD_FOR_SATELMENT";
+    public static final String FORWARD_FOR_SATELMENT_RL_APPLICATION = "PENDING_FOT_SETLEMENT";
     
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";

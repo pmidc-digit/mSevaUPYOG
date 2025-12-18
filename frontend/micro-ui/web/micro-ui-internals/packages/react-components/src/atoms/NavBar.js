@@ -1,3 +1,6 @@
+
+
+
 import React, { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -65,72 +68,114 @@ const IconsObject = {
   LoginIcon: <LoginIcon className="icon" />,
   PTRIcon: <PTRIcon className="icon" />
 };
-const NavBar = ({ open, toggleSidebar, profileItem, menuItems, onClose, Footer, isEmployee, search, setSearch,isSideBarScroll }) => {
-  const node = useRef();
-  const location = useLocation();
-  const { pathname } = location;
-  const { t } = useTranslation();
-  Digit.Hooks.useClickOutside(node, open ? onClose : null, open);
 
-  if(isSideBarScroll &&  !Digit.clikOusideFired)
-  {
-    document.getElementById("sideBarMenu").scrollTo(0,0);
+const NavBar = ({
+  open,
+  toggleSidebar,
+  profileItem,
+  menuItems,
+  onClose,
+  Footer,
+  isEmployee,
+  search,
+  setSearch,
+  isSideBarScroll,
+}) => {
+  const node = useRef()
+  const location = useLocation()
+  const { pathname } = location
+  const { t } = useTranslation()
+
+  Digit.Hooks.useClickOutside(node, open ? onClose : null, open)
+
+  if (isSideBarScroll && !Digit.clikOusideFired) {
+    document.getElementById("sideBarMenu")?.scrollTo(0, 0)
   }
 
   const MenuItem = ({ item }) => {
-    let itemComponent;
+    let itemComponent
     if (item.type === "component") {
-      itemComponent = item.action;
+      itemComponent = item.action
     } else {
-      itemComponent = item.text;
+      itemComponent = item.text
     }
-    const leftIconArray = item.icon || item.icon?.type?.name;
-    const leftIcon = leftIconArray ? IconsObject[leftIconArray] : IconsObject.BillsIcon;
+
+    const leftIconArray = item.icon || item.icon?.type?.name
+    const leftIcon = leftIconArray ? IconsObject[leftIconArray] : IconsObject.BillsIcon
+    const isActive = pathname === item.link
+
     const Item = () => (
-      <span className="menu-item" {...item.populators}>
-        {leftIcon}
+      <span
+        className="menu-item"
+        {...item.populators}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          color: isActive ? "#4f46e5" : "#374151",
+          cursor: "pointer",
+          transition: "background-color 0.2s ease",
+          textDecoration: "none",
+          fontSize: "0.9375rem",
+          fontWeight: isActive ? "500" : "400",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", minWidth: "20px" }}>{leftIcon}</span>
         <div className="menu-label">{itemComponent}</div>
       </span>
-    );
+    )
 
     if (item.type === "external-link") {
       return (
-        <a href={item.link}>
+        <a href={item.link} style={{ textDecoration: "none" }}>
           <Item />
         </a>
-      );
+      )
     }
+
     if (item.type === "link") {
       if (item.link.indexOf("/digit-ui") === -1 && isEmployee) {
-        const getOrigin = window.location.origin;
+        const getOrigin = window.location.origin
         return (
-          <a href={getOrigin + "/employee/" + item.link}>
+          <a href={getOrigin + "/employee/" + item.link} style={{ textDecoration: "none" }}>
             <Item />
           </a>
-        );
+        )
       }
       return (
-        <Link to={item.link}>
+        <Link to={item.link} style={{ textDecoration: "none" }}>
           <Item />
         </Link>
-      );
+      )
     }
 
     if (item.type === "dynamic") {
       if (isEmployee) {
-        return <SubMenu item={item} t={t} toggleSidebar={toggleSidebar} isEmployee={isEmployee} />;
+        return <SubMenu item={item} t={t} toggleSidebar={toggleSidebar} isEmployee={isEmployee} />
       }
     }
-    return <Item />;
-  };
+
+    return <Item />
+  }
 
   const renderSearch = () => {
     return (
-      <div className="sidebar-list">
+      <div className="sidebar-list" >
         <div className="submenu-container">
           <div className="sidebar-link">
-            <div className="actions">
-              <SearchIcon className="icon" />
+            <div
+              className="actions"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: "#f9fafb",
+                border: "1px solid #e5e7eb",
+                borderRadius: "6px",
+               
+              }}
+            >
+              <SearchIcon className="icon" style={{ color: "#6b7280" }} />
               <input
                 className="employee-search-input"
                 type="text"
@@ -138,13 +183,22 @@ const NavBar = ({ open, toggleSidebar, profileItem, menuItems, onClose, Footer, 
                 name="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  backgroundColor: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#111827",
+                  fontSize: "0.875rem",
+                  width: "100%",
+                }}
               />
             </div>
           </div>
         </div>
       </div>
-    );
-  };
+    )
+  }
+
   return (
     <React.Fragment>
       <div>
@@ -155,49 +209,91 @@ const NavBar = ({ open, toggleSidebar, profileItem, menuItems, onClose, Footer, 
             width: "100%",
             top: "0px",
             left: `${open ? "0px" : "-100%"}`,
-            opacity: "1",
+            opacity: open ? "1" : "0",
             backgroundColor: "rgba(0, 0, 0, 0.54)",
             willChange: "opacity",
             transform: "translateZ(0px)",
-            transition: "left 0ms cubic-bezier(0.23, 1, 0.32, 1) 0ms, opacity 400ms cubic-bezier(0.23, 1, 0.32, 1) 0ms",
+            transition: "opacity 400ms cubic-bezier(0.23, 1, 0.32, 1)",
             zIndex: "1200",
-            pointerzevents: "auto",
+            pointerEvents: open ? "auto" : "none",
           }}
+          onClick={onClose}
         ></div>
         <div
           ref={node}
           style={{
             display: "flex",
             flexDirection: "column",
-            marginTop: "56px",
-            height: "calc(100vh - 56px)",
+            marginTop: "0",
+            height: "100vh",
+            paddingTop: "60px",
             position: "fixed",
             top: 0,
             left: 0,
-            transition: "transform 0.3s ease-in-out",
-            background: "#fff",
-            zIndex: "1999",
-            width: "280px",
-            transform: `${open ? "translateX(0)" : "translateX(-450px)"}`,
-            boxShadow: "rgb(0 0 0 / 16%) 8px 0px 16px",
+            transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            background: "#ffffff",
+            zIndex: "1250",
+            maxWidth: "350px",
+            minWidth:"330px",
+            width: "350px",
+            transform: `${open ? "translateX(0)" : "translateX(-100%)"}`,
+            boxShadow: "2px 0 8px rgba(0, 0, 0, 0.1)",
+            overflowY: "hidden",
           }}
         >
           {profileItem}
-          <div className="drawer-list" id="sideBarMenu">
-            {isEmployee ? renderSearch() : null}
-            {menuItems?.map((item, index) => (
-              <div className={`sidebar-list ${pathname === item.link ? "active" : ""}`} key={index}>
-                <MenuItem item={item} />
-              </div>
-            ))}
-            <div className={`sidebar-list`}>
+          <div
+            className="drawer-list"
+            id="sideBarMenu"
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              overflowX: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              {isEmployee ? renderSearch() : null}
+              {menuItems?.map((item, index) => (
+                <div
+                  className={`sidebar-list ${pathname === item.link ? "active" : ""}`}
+                  key={index}
+                  style={{
+                    backgroundColor: pathname === item.link ? "#eef2ff" : "transparent",
+                    borderLeft: pathname === item.link ? "3px solid #4f46e5" : "3px solid transparent",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (pathname !== item.link) {
+                      e.currentTarget.style.backgroundColor = "#f9fafb"
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (pathname !== item.link) {
+                      e.currentTarget.style.backgroundColor = "transparent"
+                    }
+                  }}
+                >
+                  <MenuItem item={item} />
+                </div>
+              ))}
+            </div>
+            <div
+              className="sidebar-footer"
+              style={{
+                borderTop: "1px solid #e5e7eb",
+                padding: "1rem",
+                backgroundColor: "#f9fafb",
+              }}
+            >
               <div className="side-bar-footer">{Footer}</div>
             </div>
           </div>
         </div>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
 export default NavBar;

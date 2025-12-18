@@ -401,7 +401,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 {t("I_AGREE_TO_BELOW_UNDERTAKING")}
                 <br />
                 {/* {!isArchitectDeclared && <LinkButton style={{ marginLeft: "-55px", background: "#fff" }} label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />} */}
-                {isArchitectDeclared && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
+                {isArchitectDeclared && <div className="view-declaration-link" onClick={handleTermsLinkClick} >{t("VIEW_DECLARATION")} </div>}
             </div>
         );
     };
@@ -455,7 +455,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             accessor: "fileUrl",
             Cell: ({ value }) =>
                 value ? (
-                    <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                    <LinkButton className="view-link-button"
                         label={t("View")}
                         onClick={() => routeTo(value)}
                     />
@@ -825,16 +825,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     return (
         <React.Fragment>
             <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-            <div style={{ marginTop: "30px", paddingBottom: "30px" }}>
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+            <div className="summary-content-wrapper">
+                <Card className="summary-main-card"   >
                     <StatusTable >
                         <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={currentStepData?.createdResponse?.applicationNo} />
                     </StatusTable>
                 </Card>
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                <Card className="summary-main-card"  >
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable>
                         {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
@@ -844,25 +844,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         {currentStepData?.createdResponse?.landInfo?.owners &&
                             currentStepData?.createdResponse?.landInfo?.owners?.length > 0 &&
                             currentStepData?.createdResponse?.landInfo?.owners?.map((ob, index) => (
-                                <div
+                                <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
                                     key={index}
-                                    style={
-                                        currentStepData?.createdResponse?.landInfo?.owners.length > 1
-                                            ? {
-                                                marginTop: "19px",
-                                                background: "#FAFAFA",
-                                                border: "1px solid #D6D5D4",
-                                                borderRadius: "4px",
-                                                padding: "8px",
-                                                lineHeight: "19px",
-                                                maxWidth: "960px",
-                                                minWidth: "280px",
-                                            }
-                                            : {}
-                                    }
+                                   
                                 >
                                     {currentStepData?.createdResponse?.landInfo?.owners.length > 1 && (
-                                        <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
+                                        <CardSubHeader className="summary-subheader"  >
                                             {t("COMMON_OWNER")} {index + 1}
                                         </CardSubHeader>
                                     )}
@@ -888,8 +875,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </div>
                             ))}
                     </StatusTable>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable>
                         {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
                             className="customTable table-border-style"
@@ -905,11 +892,11 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
+                <Card className="summary-main-card"   >
+                    <CardSubHeader className="summary-subheader"  >
                         {t(`BPA_BASIC_DETAILS_TITLE`)}
                     </CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                     <hr className="summary-hr-divider"   />
                     <StatusTable >
                         <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(currentStepData?.BasicDetails?.applicationDate))} />
                         <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)} text={t(`WF_BPA_${currentStepData?.BasicDetails?.applicationType}`)} />
@@ -919,9 +906,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLOT_AND_SITE_DETAILS_TITLE")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                <Card className="summary-main-card"   >
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_PLOT_AND_SITE_DETAILS_TITLE")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable >
                         
 
@@ -1091,9 +1078,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     {/* </StatusTable>
                 </Card>
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                <Card   >
+                    <CardSubHeader  >{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable >                                                 */}
                         {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
@@ -1116,26 +1103,26 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>
 
-                <Card>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+                <Card className="summary-main-card">
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_EDCR_DETAILS")}</CardSubHeader>
 
-                    <div style={{ marginTop: "19px", background: "#FAFAFA", border: "1px solid #D6D5D4", borderRadius: "4px", padding: "12px", maxWidth: "960px", minWidth: "280px" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "15px" }}>
+                    <div className="summary-page-table-container" >
+                        <table className="summary-page-table">
                             <tbody>
                                 {/* EDCR Number */}
-                                <tr style={{ borderBottom: "1px solid #eaeaea" }}>
-                                    <td style={{ padding: "8px", fontWeight: "600", color: "#333" }}>{t("BPA_EDCR_NO_LABEL")}</td>
-                                    <td style={{ padding: "8px", textAlign: "right", color: "#555" }}>
+                                <tr className="summary-page-table-row">
+                                    <td className="summary-page-table-data" >{t("BPA_EDCR_NO_LABEL")}</td>
+                                    <td className="summary-page-tabledata" >
                                         {currentStepData?.BasicDetails?.scrutinyNumber?.edcrNumber || currentStepData?.BasicDetails?.edcrDetails?.edcrNumber || t("CS_NA")}
                                     </td>
                                 </tr>
 
                                 {/* Uploaded Plan */}
                                 <tr>
-                                    <td style={{ padding: "12px 8px", fontWeight: "600", color: "#333" }}>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</td>
-                                    <td style={{ padding: "12px 8px", textAlign: "right" }}>
+                                    <td className="summary-page-uploaded-tabledata" >{t("BPA_UPLOADED_PLAN_DIAGRAM")}</td>
+                                    <td className="summary-page-uploaded-table-data">
                                         {currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile ? (
                                             <LinkButton
                                                 label={t("View")}
@@ -1149,8 +1136,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
                                 {/* Scrutiny Report */}
                                 <tr>
-                                    <td style={{ padding: "12px 8px", fontWeight: "600", color: "#333" }}>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</td>
-                                    <td style={{ padding: "12px 8px", textAlign: "right" }}>
+                                    <td className="summary-page-uploaded-tabledata" >{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</td>
+                                    <td className="summary-page-uploaded-table-data" >
                                         {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
                                             <LinkButton
                                                 label={t("View")}
@@ -1166,11 +1153,11 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </div>
                 </Card>
 
-                {/* <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                {/* <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }} style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader> */}
+                {/*  <hr className="summary-hr-divider"   /> */}
+                {/* <CardSubHeader   style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader> */}
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
+                <Card className="summary-main-card"  >
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
                     <StatusTable >
                         <Row
                             className="border-none"
@@ -1211,17 +1198,17 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         />
                         <Row className="border-none" label={t("BPA_MAUZA")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")} />
                         </StatusTable>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
                     <StatusTable >
                         <Row className="border-none" label={t("BPA_AVG_PLOT_DEPTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_DEPTH} />
                         <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
                     </StatusTable>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_ROAD_DETAILS")}</CardSubHeader>
                     <StatusTable >
                         <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")} />
                         <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
                     </StatusTable>
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
                     <StatusTable >
                         <Row
                             className="border-none"
@@ -1230,27 +1217,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             
                         />
                     </StatusTable>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
                     {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.map((block, index) => (
-                        <div
+                        <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
                             key={index}
-                            style={
-                                currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.length > 1
-                                    ? {
-                                        marginTop: "19px",
-                                        background: "#FAFAFA",
-                                        border: "1px solid #D6D5D4",
-                                        borderRadius: "4px",
-                                        padding: "8px",
-                                        lineHeight: "19px",
-                                        maxWidth: "960px",
-                                        minWidth: "280px",
-                                    }
-                                    : {}
-                            }
+                          
                         >
-                            <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>
+                            <CardSubHeader className="summary-subheader"  >
                                 {t("BPA_BLOCK_SUBHEADER")} {index + 1}
                             </CardSubHeader>
                             <StatusTable>
@@ -1261,7 +1235,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
                                 ></Row>
                             </StatusTable>
-                            <div style={{ overflow: "scroll" }}>
+                            <div className="summary-page-scroll">
                                 <Table
                                     className="customTable table-fixed-first-column table-border-style"
                                     t={t}
@@ -1283,8 +1257,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                     ))}
 
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
                     <StatusTable >
                         <Row
                             className="border-none"
@@ -1300,9 +1274,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
                 
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                <Card className="summary-main-card"   >
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable>                                                
                         <Row
                             className="border-none"
@@ -1490,7 +1464,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         />}
                     </StatusTable>
 
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
                     <StatusTable >
                         <Row className="border-none" label={t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad} />
                         <Row className="border-none" label={t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad} />
@@ -1498,9 +1472,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>
 
-                {ecbcDocumentsData?.length > 0 && <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                {ecbcDocumentsData?.length > 0 && <Card className="summary-main-card"   >
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable>                        
                         {pdfLoading ? <Loader /> : <Table
                             className="customTable table-border-style"
@@ -1516,9 +1490,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>}
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                <Card className="summary-main-card"   >
+                    <CardSubHeader className="summary-subheader"  >{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
+                     <hr className="summary-hr-divider"   />
                     <StatusTable>                        
                         {pdfLoading ? <Loader /> : <Table
                             className="customTable table-border-style"
@@ -1534,7 +1508,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>
 
-                <Card>
+                <Card className="summary-main-card">
                     {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation                    
                         currentStepData={currentStepData}                        
                         development={development}
@@ -1554,8 +1528,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </Card>
 
 
-                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
+                <Card className="summary-main-card"   >
+                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader className="summary-subheader"  >{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
                     {/* {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && (
                         <div>
                             <br></br>
@@ -1594,23 +1568,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     <br></br>
                     <div>
                         {/* <CHANGE> Added checked prop to make checkbox active state visible */}
-                        <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
+                        <CheckBox label={checkLabels()} onChange={setdeclarationhandler} className="summary-page-checkbox" checked={agree} />
                         {showTermsPopup && (
                             <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} currentStepData={currentStepData} formData={formData} onSelect={onSelect}/>
                         )}
                     </div>
-                    <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                     <hr className="summary-hr-divider"   />
 
                 </Card>
                 <ActionBar>
-                    <SubmitBar
+                    <SubmitBar className="back-submit-button"
                         label="Back"
-                        style={{
-                            border: "1px solid",
-                            background: "transparent",
-                            color: "#2947a3",
-                            marginRight: "5px",
-                        }}
+                      
                         onSubmit={onGoBack}
                     />
                     {/* <SubmitBar

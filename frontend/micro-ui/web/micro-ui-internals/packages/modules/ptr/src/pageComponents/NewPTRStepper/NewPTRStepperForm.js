@@ -142,7 +142,7 @@ const NewPTRStepperForm = () => {
   }, [history, dispatch]);
 
   return (
-    <div className="pageCard">
+    <div>
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("PET_REGISTRATION_APPLICATION")}
       </CardHeader>

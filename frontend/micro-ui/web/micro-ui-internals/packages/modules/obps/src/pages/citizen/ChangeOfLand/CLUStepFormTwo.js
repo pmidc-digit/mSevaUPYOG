@@ -172,7 +172,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           <CLUSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} /> 
         </div>
         <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="go-back-footer-button" label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

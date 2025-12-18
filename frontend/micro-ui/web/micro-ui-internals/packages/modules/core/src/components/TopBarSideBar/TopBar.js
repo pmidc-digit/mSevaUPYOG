@@ -142,11 +142,11 @@ const TopBar = ({
                 <NotificationBell />
               </div>
             )}
-            <img
+            {/* <img
               src={'https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/Upyog-logo.png'}
               alt="mSeva"
               className="upyog-logo"
-            />
+            /> */}
           </div>
         </div>
       </div>

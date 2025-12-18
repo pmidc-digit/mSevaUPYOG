@@ -2109,10 +2109,13 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 
 			calculation.set("taxHeadEstimates", taxHeadEstimates);
 
-
 			ArrayNode billingSlabIds = mapper.createArrayNode();
-			billingSlabIds.add(id + "|" + floorNo);
-			calculation.set("billingSlabIds", billingSlabIds);
+			if(isVacant){
+				calculation.set("billingSlabIds", mapper.createArrayNode());
+			}else {
+				billingSlabIds.add(id + "|" + floorNo);
+				calculation.set("billingSlabIds", billingSlabIds);
+			}
 
 			calculation.put("serviceNumber", properties.path("acknowldgementNumber").asText(null));
 			calculation.put("fromDate", 1364774400); // epoch for 1-apr-2013 "AC-2025-10-01-2900664"

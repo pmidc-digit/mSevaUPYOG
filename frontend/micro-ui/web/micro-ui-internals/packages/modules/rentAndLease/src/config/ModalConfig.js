@@ -14,13 +14,18 @@ export const ModalConfig = ({
   businessService,
 }) => {
   let checkAssigneeVisible =
-    action?.action == "SENDBACKTOVERIFIER" ||
-    action?.action == "VERIFY" ||
-    action?.action == "FORWARD" ||
+    action?.action === "SENDBACKTOOVERIFIER" ||
+    action?.action === "VERIFY" ||
+    action?.action === "FORWARD" ||
     action?.action === "FORWARDFORFIELDINSPECTION" ||
     action?.action === "PENDING_FOR_FIELDINSPECTION" ||
     action?.action === "FORWARD_FOR_APPROVAL" ||
-    action?.action === "FORWARDFORAPPROVAL";
+    action?.action === "FORWARDFORAPPROVAL" ||
+    action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
+    action?.action === "REQUEST_FOR_DISCONNECTION" ||
+    action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
+    action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+    action?.action === "FORWARD_FOT_SETLEMENT";
   if (action?.isTerminateState) checkAssigneeMandatory = false;
 
   if (action.isTerminateState) {

@@ -56,9 +56,46 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
-  const handleDisConnection = (id) => {
-    console.log(id);
-  };
+  // const handleDisConnection = async (data) => {
+  //   setLoader(true);
+  //   const payload = {
+  //     AllotmentDetails: {
+  //       ...data,
+  //       applicationType: "DISCONNECT_RENT_AND_LEASE_CONNECTION",
+  //       processInstance: {
+  //         ...data?.processInstance,
+  //         action: "INITIATE",
+  //       },
+  //     },
+  //     disconnectRequest: true,
+  //   };
+
+  //   try {
+  //     const response = await Digit.RentAndLeaseService.create(payload);
+  //     updateApplication(response?.AllotmentDetails[0]);
+  //   } catch (error) {
+  //     setLoader(false);
+  //   }
+  // };
+
+  // const updateApplication = async (response) => {
+  //   const payload = {
+  //     AllotmentDetails: {
+  //       ...response,
+  //       processInstance: {
+  //         ...response?.processInstance,
+  //         action: "SUBMIT_APPLICATION",
+  //       },
+  //     },
+  //   };
+  //   try {
+  //     await Digit.RentAndLeaseService.update(payload);
+  //     await fetchProperties();
+  //     setLoader(false);
+  //   } catch (error) {
+  //     setLoader(false);
+  //   }
+  // };
 
   return (
     <div style={{ marginTop: "16px" }}>
@@ -96,9 +133,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 {(property?.status == "PENDINGPAYMENT" || property?.status == "PENDING_FOR_PAYMENT") && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
-                {property?.status == "APPROVED" && (
-                  <SubmitBar label={t("RAL_END_TENANCY")} onSubmit={() => handleDisConnection(property?.applicationNumber)} />
-                )}
+                {/* {property?.status == "APPROVED" && <SubmitBar label={t("RAL_END_TENANCY")} onSubmit={() => handleDisConnection(property)} />} */}
               </div>
             </Card>
           );

@@ -3,7 +3,8 @@
  * Follows the same pattern as OBPS getAcknowledgementData.
  */
 
-const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, t) => {
+const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = {}, t) => {
+  console.log('pdfFiles', pdfFiles)
   const timeline = workflowDetails?.data?.timeline || workflowDetails?.timeline || [];
   const processInstances = workflowDetails?.data?.processInstances || workflowDetails?.processInstances || [];
   
@@ -11,6 +12,12 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, t) => {
   const businessId = processInstances?.[0]?.businessId || "N/A";
   const businessService = processInstances?.[0]?.businessService || "N/A";
   const moduleName = processInstances?.[0]?.moduleName || "N/A";
+
+  const pdfDownloadLink = (documents, fileStoreId) => {
+  const downloadLink = documents?.[fileStoreId] || "";
+  const formats = downloadLink?.split(",")?.filter(Boolean) || [];
+  return formats?.find((link) => !link?.includes("large") && !link?.includes("medium") && !link?.includes("small")) || formats?.[0] || "";
+  };
 
   // Transform timeline entries into detailed rows (maintaining original order - latest first)
   const timelineRows = timeline.map((item, index) => {
@@ -39,7 +46,8 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, t) => {
       documents: documents.map(doc => ({
         name: doc?.fileName || doc?.documentType || "Document",
         type: doc?.documentType || "Document",
-        fileStoreId: doc?.fileStoreId
+        fileStoreId: doc?.fileStoreId,
+        link: pdfDownloadLink(pdfFiles, doc?.fileStoreId)
       })),
       hasDocuments: documents.length > 0
     };
@@ -69,7 +77,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, t) => {
       hour12: true
     }),
     timelineRows,
-    totalSteps: timelineRows.length,
+    totalSteps: timelineRows.length
   };
 };
 

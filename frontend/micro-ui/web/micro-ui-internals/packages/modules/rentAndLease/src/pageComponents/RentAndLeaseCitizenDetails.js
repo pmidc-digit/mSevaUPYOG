@@ -27,7 +27,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
   ];
 
-
   const {
     control,
     handleSubmit,
@@ -50,7 +49,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     name: "applicants",
   });
 
-  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null}) => {
+  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null }) => {
     const startDateEpoch = propertyDetails?.startDate ? new Date(propertyDetails?.startDate).getTime() : null;
     const endDateEpoch = propertyDetails?.endDate ? new Date(propertyDetails?.endDate).getTime() : null;
 
@@ -122,15 +121,13 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       return;
     }
 
-
     triggerLoader(true);
     try {
       // Call create API
       const response = await Digit.RentAndLeaseService.create({ allotmentDetails: payload }, tenantId);
 
-      const status = response?.responseInfo?.status;
+      const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
-
 
       if (isSuccess) {
         const appData = Array.isArray(response?.allotment) ? response.allotment[0] : response?.allotment;

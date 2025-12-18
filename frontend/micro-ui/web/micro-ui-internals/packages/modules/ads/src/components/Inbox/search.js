@@ -117,7 +117,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-        <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
+        <div className={`search-container ads-search-container ${ isInboxPage ? "ads-search-container--inbox" : "ads-search-container--revert" }`}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header">
@@ -158,8 +158,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
                       <span
-                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
-                        className="inbox-search-form-error"
+                        className="inbox-search-form-error ads-search-error"
                       >
                         {formState?.errors?.[input.name]?.message}
                       </span>
@@ -168,13 +167,13 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
 
               {isInboxPage && (
-                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
+                <div className="input-fields ads-search-inbox-clear">
                   <div>{clearAll()}</div>
                 </div>
               )}
 
               {type === "desktop" && !mobileView && (
-                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
+                <div className="search-submit-wrapper ads-search-submit-wrapper">
                   <SubmitBar
                     className="submit-bar-search"
                     label={t("ES_COMMON_SEARCH")}

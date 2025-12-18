@@ -433,11 +433,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
             columns={columns}
             getCellProps={(cellInfo) => {
               return {
-                style: {
-                  minWidth: cellInfo.column.Header === t("ADS_INBOX_APPLICATION_NO") ? "240px" : "",
-                  padding: "20px 18px",
-                  fontSize: "16px",
-                },
+                className: cellInfo.column.Header === t("ADS_INBOX_APPLICATION_NO") ? "ads-inbox-cell" : "ads-default-cell",
               };
             }}
             onPageSizeChange={onPageSizeChange}

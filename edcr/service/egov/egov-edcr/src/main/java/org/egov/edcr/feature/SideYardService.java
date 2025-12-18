@@ -55,6 +55,8 @@ import static org.egov.edcr.constants.DxfFileConstants.B;
 import static org.egov.edcr.constants.DxfFileConstants.D;
 import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.G;
+import static org.egov.edcr.constants.DxfFileConstants.G_GTKS;
+import static org.egov.edcr.constants.DxfFileConstants.G_IT;
 import static org.egov.edcr.constants.DxfFileConstants.I;
 import static org.egov.edcr.constants.DxfFileConstants.A_PO;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
@@ -312,9 +314,9 @@ public class SideYardService extends GeneralRule {
 									 */
 								}else if (G.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {									
 			                            if (sideYard1 != null) {			                                
-			                                minlength = sideYard1.getArea().doubleValue();
+			                                minlength = sideYard1.getMinimumDistance().doubleValue();
 			                            } else if (sideYard2 != null) {
-			                                minlength = sideYard2.getArea().doubleValue();
+			                                minlength = sideYard2.getMinimumDistance().doubleValue();
 			                            }
 			                        
 									  	checkSideYardForIndustrial(pl, block.getBuilding(), buildingHeight,
@@ -606,7 +608,10 @@ public class SideYardService extends GeneralRule {
 			if(sideYard1Result.occupancyCode !=null && (sideYard1Result.occupancyCode.equalsIgnoreCase("A") || 
 					sideYard1Result.occupancyCode.equalsIgnoreCase("A-R")	||
 					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AF") ||
-					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AIF")
+					sideYard1Result.occupancyCode.equalsIgnoreCase("A-AIF")||
+					sideYard1Result.occupancyCode.equalsIgnoreCase("G-GTKS") ||
+					sideYard1Result.occupancyCode.equalsIgnoreCase("G-IT") ||
+					sideYard1Result.occupancyCode.equalsIgnoreCase("G-F")					
 					)) {
 				permissableValueWithPercentage = sideYard1Result.expectedDistance.toString();
 			    providedValue = sideYard1Result.actualDistance.toString();
@@ -665,7 +670,10 @@ public class SideYardService extends GeneralRule {
     					(sideYard2Result.occupancyCode.equalsIgnoreCase("A") || 
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-R")	||
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AIF")	||
-    					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AF") )) {
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AF") ||
+    					sideYard1Result.occupancyCode.equalsIgnoreCase("G-GTKS") ||
+    					sideYard1Result.occupancyCode.equalsIgnoreCase("G-IT") ||
+    					sideYard1Result.occupancyCode.equalsIgnoreCase("G-F"))) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
     			    providedValue = sideYard2Result.actualDistance.toString();
     			}else if (sideYard2Result.setBackPercentage != null 
@@ -941,55 +949,99 @@ public class SideYardService extends GeneralRule {
         BigDecimal plotArea = pl.getPlot().getArea();
         String occCode = mostRestrictiveOccupancy != null ? mostRestrictiveOccupancy.getSubtype().getCode() : null;
 
-        if (occCode != null) {
-            switch (occCode) {
-                case "G-SP": // Sports Industry
-                case "G-RS": // Retail Service Industry
-                case "G-H":  // Hazard Industries
-                case "G-S":  // Storage
-                case "G-F":  // Factory
-                case "G-I":  // Industrial
-                    // 15% of plot area
-                    side1val = plotArea.multiply(BigDecimal.valueOf(0.15)).setScale(2, RoundingMode.HALF_UP);
-                    side2val = plotArea.multiply(BigDecimal.valueOf(0.15)).setScale(2, RoundingMode.HALF_UP);
-                    sideYard1Result.setBackPercentage = "15";
-                    sideYard2Result.setBackPercentage = "15";
-                    break;
+//        if (occCode != null) {
+//            switch (occCode) {
+//                case "G-SP": // Sports Industry
+//                case "G-RS": // Retail Service Industry
+//                case "G-H":  // Hazard Industries
+//                case "G-S":  // Storage
+//                case "G-F":  // Factory
+//                case "G-I":  // Industrial
+//                    // 15% of plot area
+//                    side1val = plotArea.multiply(BigDecimal.valueOf(0.15)).setScale(2, RoundingMode.HALF_UP);
+//                    side2val = plotArea.multiply(BigDecimal.valueOf(0.15)).setScale(2, RoundingMode.HALF_UP);
+//                    sideYard1Result.setBackPercentage = "15";
+//                    sideYard2Result.setBackPercentage = "15";
+//                    break;
+//
+//                case "G-W": // Warehouse
+//                    // 35% of plot area
+//                    side1val = plotArea.multiply(BigDecimal.valueOf(0.35)).setScale(2, RoundingMode.HALF_UP);
+//                    side2val = plotArea.multiply(BigDecimal.valueOf(0.35)).setScale(2, RoundingMode.HALF_UP);
+//                    sideYard1Result.setBackPercentage = "15";
+//                    sideYard2Result.setBackPercentage = "15";
+//                    break;
+//
+//                case "G-K":  // Knitwear Industry
+//                case "G-T":  // Textile Industry
+//                case "G-IT": // Information Technology
+//                case "G-GI": // General Industry
+//                    // Follow NBC → height based
+//                    side1val = getNBCSideYardByHeight(buildingHeight);
+//                    side2val = getNBCSideYardByHeight(buildingHeight);
+//                    isNbcType=true;
+//                    sideYard1Result.setBackPercentage = side1val.toPlainString().concat("m");
+//                    sideYard2Result.setBackPercentage = side2val.toPlainString().concat("m");
+//                    break;
+//
+//                default:
+//                    // fallback to NBC
+//                    side1val = getNBCSideYardByHeight(buildingHeight);
+//                    side2val = getNBCSideYardByHeight(buildingHeight);
+//                    isNbcType=true;
+//                    sideYard1Result.setBackPercentage = side1val.toPlainString().concat("m");
+//                    sideYard2Result.setBackPercentage = side2val.toPlainString().concat("m");
+//            }
+//        } else {
+//            // no occupancy → fallback NBC
+//            //side1val = getNBCSideYardByHeight(buildingHeight);
+//            //side2val = getNBCSideYardByHeight(buildingHeight);
+//        }
+        if(mostRestrictiveOccupancy != null &&
+				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
+						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+        	if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+    		    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+    		            pl.getMdmsMasterData().get("masterMdmsData"),
+    		            MdmsFilter.SIDE_SETBACK_PATH,
+    		            BigDecimal.class
+    		    );
+    		    if (scOpt.isPresent()) {
+    		        BigDecimal mdmsValue = scOpt.get();
+    		        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);
+    		        BigDecimal oneForthHeight = buildingHeight.divide(
+    		                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
+    		        );
+    		        LOG.info("One forth of building height is : " + oneForthHeight);		        
+    		        side1val = oneForthHeight.max(mdmsValue);	
+    		        side2val = oneForthHeight.max(mdmsValue);
+    		    }else {
+    		    	LOG.error("No value found from mdms for the side setback");
+    		    }
+    		}
+        	
+        }else {
+        	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_SIDE_SETBACK_PATH, List.class);
+	        
+	        if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             
+	             // Extraction 1B: Apply the tiered setback logic
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
 
-                case "G-W": // Warehouse
-                    // 35% of plot area
-                    side1val = plotArea.multiply(BigDecimal.valueOf(0.35)).setScale(2, RoundingMode.HALF_UP);
-                    side2val = plotArea.multiply(BigDecimal.valueOf(0.35)).setScale(2, RoundingMode.HALF_UP);
-                    sideYard1Result.setBackPercentage = "15";
-                    sideYard2Result.setBackPercentage = "15";
-                    break;
-
-                case "G-K":  // Knitwear Industry
-                case "G-T":  // Textile Industry
-                case "G-IT": // Information Technology
-                case "G-GI": // General Industry
-                    // Follow NBC → height based
-                    side1val = getNBCSideYardByHeight(buildingHeight);
-                    side2val = getNBCSideYardByHeight(buildingHeight);
-                    isNbcType=true;
-                    sideYard1Result.setBackPercentage = side1val.toPlainString().concat("m");
-                    sideYard2Result.setBackPercentage = side2val.toPlainString().concat("m");
-                    break;
-
-                default:
-                    // fallback to NBC
-                    side1val = getNBCSideYardByHeight(buildingHeight);
-                    side2val = getNBCSideYardByHeight(buildingHeight);
-                    isNbcType=true;
-                    sideYard1Result.setBackPercentage = side1val.toPlainString().concat("m");
-                    sideYard2Result.setBackPercentage = side2val.toPlainString().concat("m");
-            }
-        } else {
-            // no occupancy → fallback NBC
-            //side1val = getNBCSideYardByHeight(buildingHeight);
-            //side2val = getNBCSideYardByHeight(buildingHeight);
+	             requiredSetback.ifPresent(
+	                 setbackRear -> LOG.info("Setback for Height " + buildingHeight + ": " + setbackRear)
+	             );
+	             side1val = requiredSetback.get().abs().stripTrailingZeros();	
+ 		        side2val = requiredSetback.get().abs().stripTrailingZeros();
+	        }else {
+	        	LOG.error("No value found from mdms for the side setback");
+	        }
         }
 
+        
         // Validation checks
         if (BigDecimal.valueOf(max).compareTo(side1val) >= 0)
             valid1 = true;
@@ -1009,7 +1061,7 @@ public class SideYardService extends GeneralRule {
 	          //compareSideYard2Result(blockName, side2val, BigDecimal.valueOf(min), BigDecimal.ZERO,
 	          //BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result,
 	          //valid2, subRule, rule, level);
-	        	  compareSideYard2Result(blockName, side2val, BigDecimal.valueOf(sideYard2.getArea().doubleValue()), BigDecimal.ZERO,
+	        	compareSideYard2ResultForIndustry(blockName, side2val, BigDecimal.valueOf(sideYard2.getMinimumDistance().doubleValue()), BigDecimal.ZERO,
 	                      BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result,
 	                      valid2, subRule, rule, level);        	
 	        }      
@@ -1018,7 +1070,7 @@ public class SideYardService extends GeneralRule {
 	          //compareSideYard1Result(blockName, side1val, BigDecimal.valueOf(min), BigDecimal.ZERO,
 	          //BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result,
 	          //valid1, subRule, rule, level);
-				  compareSideYard1Result(blockName, side1val, BigDecimal.valueOf(sideYard1.getArea().doubleValue()), BigDecimal.ZERO,
+	        	compareSideYard1ResultForIndustry(blockName, side1val, BigDecimal.valueOf(sideYard1.getMinimumDistance().doubleValue()), BigDecimal.ZERO,
 				          BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result,
 				          valid1, subRule, rule, level);
 	        }
@@ -1459,6 +1511,84 @@ public class SideYardService extends GeneralRule {
 
     }
 
+    private void compareSideYard1ResultForIndustry(String blockName, BigDecimal exptDistance, BigDecimal actualDistance,
+            BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance,
+            OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, Boolean valid, String subRule,
+            String rule, Integer level) {
+        String occupancyName;
+        String occupanyCode;
+        if (mostRestrictiveOccupancy.getSubtype() != null) {
+        	occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+        }else {
+        	occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+    	}
+        
+        if (exptDistance.compareTo(sideYard1Result.expectedDistance) >= 0) {
+            if (exptDistance.compareTo(sideYard1Result.expectedDistance) == 0) {
+                sideYard1Result.rule = sideYard1Result.rule != null ? sideYard1Result.rule + "," + rule : rule;
+                sideYard1Result.occupancy = sideYard1Result.occupancy != null
+                        ? sideYard1Result.occupancy + "," + occupancyName
+                        : occupancyName;
+                sideYard1Result.occupancy = sideYard1Result.occupancy != null
+                        ? sideYard1Result.occupancy + "," + occupanyCode
+                        : occupanyCode;
+            } else {
+                sideYard1Result.rule = rule;
+                sideYard1Result.occupancy = occupancyName;
+                sideYard1Result.occupancyCode = occupanyCode;
+            }
+
+            sideYard1Result.subRule = subRule;
+            sideYard1Result.blockName = blockName;
+            sideYard1Result.level = level;
+            sideYard1Result.actualDistance = actualDistance;
+            sideYard1Result.expectedDistance = exptDistance;
+            sideYard1Result.status = valid;
+            sideYard1Result.occupancyCode = occupanyCode;
+        }
+    }
+
+    private void compareSideYard2ResultForIndustry(String blockName, BigDecimal exptDistance, BigDecimal actualDistance,
+            BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance,
+            OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard2Result, Boolean valid, String subRule,
+            String rule, Integer level) {
+        String occupancyName;
+        String occupanyCode;
+        if (mostRestrictiveOccupancy.getSubtype() != null) {
+        	occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+        }else {
+        	occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+    	}
+        
+        if (exptDistance.compareTo(sideYard2Result.expectedDistance) >= 0) {
+            if (exptDistance.compareTo(sideYard2Result.expectedDistance) == 0) {
+                sideYard2Result.rule = sideYard2Result.rule != null ? sideYard2Result.rule + "," + rule : rule;
+                sideYard2Result.occupancy = sideYard2Result.occupancy != null
+                        ? sideYard2Result.occupancy + "," + occupancyName
+                        : occupancyName;
+                sideYard2Result.occupancy = sideYard2Result.occupancy != null
+                        ? sideYard2Result.occupancy + "," + occupanyCode
+                        : occupanyCode;
+            } else {
+                sideYard2Result.rule = rule;
+                sideYard2Result.occupancy = occupancyName;
+                sideYard2Result.occupancyCode = occupanyCode;
+            }
+
+            sideYard2Result.subRule = subRule;
+            sideYard2Result.blockName = blockName;
+            sideYard2Result.level = level;
+            sideYard2Result.actualDistance = actualDistance;
+            sideYard2Result.expectedDistance = exptDistance;
+            sideYard2Result.status = valid;
+            sideYard2Result.occupancyCode = occupanyCode;
+        }
+    }
+    
     private void compareSideYard1Result(String blockName, BigDecimal exptDistance, BigDecimal actualDistance,
             BigDecimal expectedMeanDistance, BigDecimal actualMeanDistance,
             OccupancyTypeHelper mostRestrictiveOccupancy, SideYardResult sideYard1Result, Boolean valid, String subRule,

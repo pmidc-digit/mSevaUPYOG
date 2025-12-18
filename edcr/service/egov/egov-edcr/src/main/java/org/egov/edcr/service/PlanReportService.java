@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -137,7 +138,7 @@ public class PlanReportService {
         "1General Stair - Tread width",
         "1Height of Building",
         "1Height of Floor",
-        "1Number of Floors",
+        //"1Number of Floors",
         "1Plantation Area",
         "1Plinth",
         "Coverage",
@@ -1557,13 +1558,9 @@ public class PlanReportService {
      * @return true if all mandatory checks passed (final report can be Accepted), false otherwise
      */
     public boolean processComplianceReport(Map<String, Object> valuesMap) {
-
         boolean allMandatoryAccepted = true;
         List<String> failedMandatory = new ArrayList<>();
-        
-        // Print sorted summary (always, for logging/review)
         printAllKeysWithStatusSorted(valuesMap);
-
         // Step 1: Check each mandatory key
         for (String key : MANDATORY_KEYS) {
             if (!valuesMap.containsKey(key)) {
@@ -1571,34 +1568,60 @@ public class PlanReportService {
                 failedMandatory.add(key + " (Missing)");
                 continue;
             }
-
             Object value = valuesMap.get(key);
             String sectionStatus = getSectionStatus(value);
-
             if (!"Accepted".equals(sectionStatus)) {
                 allMandatoryAccepted = false;
                 failedMandatory.add(key + " (" + sectionStatus + ")");
             }
         }
-
         // Step 2: Update map and determine final result
         boolean finalReportStatus; // This is the value you wanted
-
         if (allMandatoryAccepted) {
             valuesMap.put("reportStatus", "Accepted");
             valuesMap.put("errors", new HashMap<>()); // Clear errors
             finalReportStatus = true;
             System.out.println("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
         } else {
-            valuesMap.put("reportStatus", "Not Accepted");
+        	valuesMap.put("reportStatus", "Not Accepted");
             finalReportStatus = false;            
+            @SuppressWarnings("unchecked")
+            Map<String, String> errors = (Map<String, String>) valuesMap.get("errors");            
+            if (errors == null) {
+                errors = new LinkedHashMap<>();
+            }
+            for (String failedCheck : failedMandatory) {                
+                String errorKey = failedCheck.substring(0, failedCheck.indexOf(" (")).trim() + " Error";
+                String errorMessage = getErrorMessageForFailedCheck(failedCheck); // Custom message logic
+                errors.put(errorKey, errorMessage);
+            }
             System.out.println("MANDATORY checks FAILED: " + failedMandatory);
+            System.out.println("Added mandatory failure errors to errors map.");
             System.out.println("Report Status remains: Not Accepted");
+            valuesMap.put("errors", errors);
         }
-        // Return the final decision
         return finalReportStatus;
     }
 
+    private static String getErrorMessageForFailedCheck(String failedCheck) {
+        // Extract the key and status
+        String keyPart = failedCheck.substring(0, failedCheck.indexOf(" (")).trim();
+        String statusPart = failedCheck.contains("Missing") ? "Missing" : 
+                           failedCheck.substring(failedCheck.indexOf("(") + 1, failedCheck.indexOf(")"));
+
+        if ("Missing".equals(statusPart)) {
+            return keyPart + " details are missing in the plan.";
+        } else if ("Not Accepted".equals(statusPart) || "Mixed".equals(statusPart)) {
+            return "The submitted " + formatKeyName(keyPart) + " does not comply with regulations.";
+        }
+        return "Failed to meet requirement: " + keyPart;
+    }
+
+    private static String formatKeyName(String key) {
+        // Convert "1Height of Building" → "Height of Building"
+        return key.replaceFirst("^1", "").trim();
+    }
+    
 //    public void processComplianceReport(Map<String, Object> valuesMap, Boolean finalReportStatus) {
 //
 //        // Step 1: Determine status of each mandatory key
@@ -1825,6 +1848,10 @@ public class PlanReportService {
                     if (building.getBuildingHeightExcludingMP() != null &&
                     	    building.getBuildingHeightExcludingMP().compareTo(BUILDING_HEIGHT) > 0) {                    	    
                     	    MANDATORY_KEYS.add("1Fire Tender Movement");
+                    }
+                    
+                    if(building.getMostRestrictiveFarHelper().getType().equals("R")) {
+                    	MANDATORY_KEYS.add("1Number of Floors");
                     }
 
                     if (!floors.isEmpty()) {

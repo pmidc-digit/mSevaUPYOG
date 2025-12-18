@@ -58,6 +58,8 @@ import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.I;
 import static org.egov.edcr.constants.DxfFileConstants.A_PO;
 import static org.egov.edcr.constants.DxfFileConstants.G;
+import static org.egov.edcr.constants.DxfFileConstants.G_GTKS;
+import static org.egov.edcr.constants.DxfFileConstants.G_IT;
 import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
@@ -160,6 +162,9 @@ public class FrontYardService extends GeneralRule {
 	private static final BigDecimal INDUSTRIAL_FRONT_SETBACK_PERCENT_25 = BigDecimal.valueOf(0.25);
 	
 	private Boolean isNbcType=false;
+	
+	private static final double FOUR_MTR = 4;
+	private static final double FIVE_MTR = 5;
 
 	
 private class FrontYardResult {
@@ -311,7 +316,11 @@ private class FrontYardResult {
 								if(frontYardResult.occupancyCode.equalsIgnoreCase("A") || 
 										frontYardResult.occupancyCode.equalsIgnoreCase("A-R")	||
 										frontYardResult.occupancyCode.equalsIgnoreCase("A-AF") ||
-										frontYardResult.occupancyCode.equalsIgnoreCase("A-AIF")) {
+										frontYardResult.occupancyCode.equalsIgnoreCase("A-AIF") ||
+										frontYardResult.occupancyCode.equalsIgnoreCase("G-GTKS") ||
+										frontYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
+										frontYardResult.occupancyCode.equalsIgnoreCase("G-F")
+										) {
 									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.toString();
 								    providedValue = frontYardResult.actualMinDistance.toString();
 								    details.put("OccCode", frontYardResult.occupancyCode);
@@ -842,7 +851,7 @@ private class FrontYardResult {
 	    	// Validate using common function
 		    valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);		    
 		    // Save result
-		    compareFrontYardResult(blockName, min, mean, mostRestrictiveOccupancy,
+		    compareFrontYardResultIndustry(blockName, min, mean, mostRestrictiveOccupancy,
 		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);		   
 	    }else {
 	    	// Validate using common function
@@ -860,6 +869,48 @@ private class FrontYardResult {
 //				minVal, meanVal, level);
 		return valid;
 	}	
+	
+	private void compareFrontYardResultIndustry(String blockName, BigDecimal min, BigDecimal mean,
+			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, Boolean valid,
+			String subRule, String rule, BigDecimal minVal, BigDecimal meanVal, Integer level) {
+		String occupancyName;
+		String occupanyCode;
+		if (mostRestrictiveOccupancy.getSubtype() != null) {
+			occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+		}else {
+			occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+		}
+		
+		if (minVal.compareTo(frontYardResult.expectedminimumDistance) >= 0) {
+			if (minVal.compareTo(frontYardResult.expectedminimumDistance) == 0) {
+				frontYardResult.rule = frontYardResult.rule != null ? frontYardResult.rule + "," + rule : rule;
+				frontYardResult.occupancy = frontYardResult.occupancy != null
+						? frontYardResult.occupancy + "," + occupancyName
+						: occupancyName;
+				frontYardResult.occupancyCode = frontYardResult.occupancyCode != null
+						? frontYardResult.occupancyCode + "," + occupanyCode
+						: occupanyCode;
+			} else {
+				frontYardResult.rule = rule;
+				frontYardResult.occupancy = occupancyName;
+				frontYardResult.occupancyCode = occupanyCode;
+			}
+
+			frontYardResult.subRule = subRule;
+			frontYardResult.blockName = blockName;
+			frontYardResult.level = level;
+			frontYardResult.expectedminimumDistance = minVal;
+			frontYardResult.expectedmeanDistance = meanVal;
+			frontYardResult.actualMinDistance = mean;
+			frontYardResult.actualMeanDistance = mean;
+			frontYardResult.status = valid;
+			frontYardResult.occupancyCode = occupanyCode;
+			LOG.info("FrontYardResult +" + frontYardResult.toString());
+
+		}
+	}
 	
 	private void compareFrontYardResult(String blockName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, Boolean valid,
@@ -1128,44 +1179,86 @@ private class FrontYardResult {
 		String subType = mostRestrictiveOccupancy.getSubtype().getCode();
 		LOG.info("Evaluating setback for subType: {}", subType);
 		
-		switch (subType) {
-			
-			// -------- Sports Industry (20% after min plotArea 300) --------
-			case "G-SP":
-			case "G-RS":
-			case "G-H":
-			case "G-S":
-			case "G-F":
-			case "G-I":
-				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) >= 0) {
-					minVal = plotArea.multiply(INDUSTRIAL_FRONT_SETBACK_PERCENT_20);
-					frontYardResult.setBackPercentage = "20";
-				}
-				break;
-			
-			// -------- Warehouse (25% after min plotArea 300) --------
-			case "G-W":
-				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) >= 0) {
-					minVal = plotArea.multiply(INDUSTRIAL_FRONT_SETBACK_PERCENT_25);
-					frontYardResult.setBackPercentage = "25";
-				}
-				break;
-			
-			// -------- Knitwear, Textile, IT, General Industry → NBC based --------
-			case "G-K":
-			case "G-T":
-			case "G-IT":
-			case "G-GI":
-				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) >= 0) {
-					minVal = getNBCFrontSetback(buildingHeight);
-					isNbcType=true;
-					frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");
-				}
-				break;
-			
-			default:
-				LOG.warn("No Industrial setback rule defined for subType: {}", subType);
-		}
+//		switch (subType) {
+//			
+//			// -------- Sports Industry (20% after min plotArea 300) --------
+//			case "G-SP":
+//			case "G-RS":
+//			case "G-H":
+//			case "G-S":
+//			case "G-F":
+//			case "G-I":
+//				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) >= 0) {
+//					minVal = plotArea.multiply(INDUSTRIAL_FRONT_SETBACK_PERCENT_20);
+//					frontYardResult.setBackPercentage = "20";
+//				}
+//				break;
+//			
+//			// -------- Warehouse (25% after min plotArea 300) --------
+//			case "G-W":
+//				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) >= 0) {
+//					minVal = plotArea.multiply(INDUSTRIAL_FRONT_SETBACK_PERCENT_25);
+//					frontYardResult.setBackPercentage = "25";
+//				}
+//				break;
+//			
+//			// -------- Knitwear, Textile, IT, General Industry → NBC based --------
+//			case "G-K":
+//			case "G-T":
+//			case "G-IT":
+//			case "G-GI":
+//				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) >= 0) {
+//					minVal = getNBCFrontSetback(buildingHeight);
+//					isNbcType=true;
+//					frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");
+//				}
+//				break;
+//			
+//			default:
+//				LOG.warn("No Industrial setback rule defined for subType: {}", subType);
+//		}
+		
+		if(mostRestrictiveOccupancy != null &&
+				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
+						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+			            pl.getMdmsMasterData().get("masterMdmsData"),
+			            MdmsFilter.FRONT_SETBACK_PATH,
+			            BigDecimal.class
+			    );
+			    if (scOpt.isPresent()) {
+			        BigDecimal mdmsValue = scOpt.get();
+			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);
+			        BigDecimal oneForthHeight = buildingHeight.divide(
+			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
+			        );
+			        LOG.info("One forth of building height is : " + oneForthHeight);		        
+			        minVal = oneForthHeight.max(mdmsValue);		     
+			    }else {
+			    	LOG.error("No value found from mdms for the side setback");
+			    }
+			}
+		}else {
+			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
+	        
+	        if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             
+	             // Extraction 1B: Apply the tiered setback logic
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+
+	             requiredSetback.ifPresent(
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
+	             );
+	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	        }else {
+	        	LOG.error("No value found from mdms for the side setback");
+	        }			
+		}		
+		
 		
 		return minVal.setScale(2, RoundingMode.HALF_UP);
 }

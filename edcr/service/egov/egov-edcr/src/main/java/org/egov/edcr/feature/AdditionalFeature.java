@@ -47,10 +47,10 @@
 
 package org.egov.edcr.feature;
 
-import static org.egov.edcr.constants.DxfFileConstants.A;
-import static org.egov.edcr.constants.DxfFileConstants.A_AF;
-import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
-import static org.egov.edcr.constants.DxfFileConstants.A_R;
+import static org.egov.edcr.constants.DxfFileConstants.*;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.utility.DcrConstants.DECIMALDIGITS_MEASUREMENTS;
 import static org.egov.edcr.utility.DcrConstants.FLOOR_HEIGHT_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
@@ -399,7 +399,7 @@ public class AdditionalFeature extends FeatureProcess {
 
             
 
-            if (errors.isEmpty() && StringUtils.isNotBlank(requiredFloorCount)) {
+            if (StringUtils.isNotBlank(requiredFloorCount)) {
                 Map<String, String> details = new HashMap<>();
                 details.put(RULE_NO, RULE_38);
                 details.put(DESCRIPTION, NO_OF_FLOORS);
@@ -613,19 +613,36 @@ public class AdditionalFeature extends FeatureProcess {
                     pl.addErrors(errors);
                 }
             }else {
-//            	if (hasStiltFloor) {
-//                    maxHeight = HEIGHT_WITH_STILT;          // Typically 17.5
-//                    //isAccepted = buildingHeight.compareTo(HEIGHT_WITH_STILT) <= 0;
-//                    isAccepted=true;
-//                    requiredBuildingHeight = "<= " + HEIGHT_WITH_STILT;
-//                } else {
-//                    maxHeight = HEIGHT_WITHOUT_STILT;       // Typically 21
-//                    //isAccepted = buildingHeight.compareTo(HEIGHT_WITHOUT_STILT) <= 0;
-//                    isAccepted=true;
-//                    requiredBuildingHeight = "<= " + HEIGHT_WITHOUT_STILT;
-//                }
-            	requiredBuildingHeight = "No Restriction subject to Air Safety Regulations, Traffic Circulation, Fire safety Norms.";
-            	isAccepted=true;
+            	if(mostRestrictiveOccupancy != null &&
+        				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
+        						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {            	
+                	if (hasStiltFloor) {
+                		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {
+                			// for stilt floor
+        					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MAX_ALLOWED_HEIGHT_WITH_STILT, BigDecimal.class);
+        			        scOpt.ifPresent(sc -> LOG.info("max allowed Height Value with stilt : " + sc));
+        			        maxHeight = scOpt.get();
+        			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
+        			        requiredBuildingHeight = scOpt.get().toPlainString();
+        				}
+                    } else {
+                    	if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {
+                			// for without stilt floor
+        					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MAX_ALLOWED_HEIGHT, BigDecimal.class);
+        			        scOpt.ifPresent(sc -> LOG.info("max allowed Height Value : " + sc));
+        			        maxHeight = scOpt.get();
+        			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
+        			        requiredBuildingHeight = scOpt.get().toPlainString();
+        				}
+                    }
+                    if (!isAccepted) {
+                        errors.put("BUILDING_HEIGHT_ERROR",
+                                "Building height (" + buildingHeight + "m) exceeds maximum allowed (" + maxHeight + "m)");
+                        pl.addErrors(errors);
+                    }
+                }
+//            	requiredBuildingHeight = "No Restriction subject to Air Safety Regulations, Traffic Circulation, Fire safety Norms.";
+//            	isAccepted=true;
             }
             
             

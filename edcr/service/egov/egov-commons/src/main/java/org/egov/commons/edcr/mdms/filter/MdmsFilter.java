@@ -20,6 +20,8 @@ public class MdmsFilter {
     
     public static final String LIST_REAR_SETBACK_PATH = "$[0].MasterPlan[0].rearSetBack";
     
+    public static final String LIST_SIDE_SETBACK_PATH = "$[0].MasterPlan[0].sideSetBack1";
+    
     public static final String FRONT_SETBACK_PATH = "$[0].MasterPlan[0].frontSetBack";
     
     public static final String REAR_SETBACK_PATH = "$[0].MasterPlan[0].rearSetBack";
@@ -33,5 +35,7 @@ public class MdmsFilter {
     public static final String MAX_ALLOWED_HEIGHT_WITH_STILT = "$[0].MasterPlan[0].maxHeightWithStilt";
     
     public static final String SIDE_SETBACK_PATH = "$[0].MasterPlan[0].sideSetBack1";
+    
+    public static final String MIN_ROAD_WIDTH = "$[0].MasterPlan[0].minRoad";
 
 }

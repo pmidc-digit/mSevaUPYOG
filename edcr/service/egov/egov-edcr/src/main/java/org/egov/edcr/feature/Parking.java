@@ -478,49 +478,95 @@ public class Parking extends FeatureProcess {
                 errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
                 pl.addErrors(errors);
             } else {
-                String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-                BigDecimal divisor = BigDecimal.valueOf(100); // default
-                int multiplier = 1; // default
-                boolean ruleFound = true;
+//                String subType = mostRestrictiveOccupancy.getSubtype().getCode();
+//                BigDecimal divisor = BigDecimal.valueOf(100); // default
+//                int multiplier = 1; // default
+//                boolean ruleFound = true;
+//
+//                switch (subType) {
+//                    case "G-I": // Industrial
+//                    case "G-F": // Factory
+//                    case "G-S": // Storage
+//                    case "G-H": // Hazard
+//                    case "G-T": // Textile
+//                    case "G-K": // Knitwear
+//                    case "G-RS": // Retail
+//                    case "G-SP": // Sports Industry
+//                        divisor = BigDecimal.valueOf(100);
+//                        multiplier = 1;
+//                        break;
+//
+//                    case "G-W": // Warehouse
+//                    case "G-IT": // IT Units
+//                    case "G-GI": // General Industry
+//                        divisor = BigDecimal.valueOf(100);
+//                        multiplier = 2;
+//                        break;
+//
+//                    default:
+//                        ruleFound = false;
+//                        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
+//                }
+//
+//                if (!ruleFound) {
+//                    HashMap<String, String> errors = new HashMap<>();
+//                    errors.put("Parking Calculation Error:", 
+//                        "No ECS rule defined for subtype: " + subType);
+//                    pl.addErrors(errors);
+//                } else {
+//                    // Calculate required ECS, always round UP
+//                    BigDecimal requiredParking = plotCoveredArea
+//                            .divide(divisor, 0, RoundingMode.HALF_UP)
+//                            .multiply(BigDecimal.valueOf(multiplier));
+//
+//                    noOfrequiredParking = requiredParking.intValue();
+//                }
+//            }
+            	
+            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
 
-                switch (subType) {
-                    case "G-I": // Industrial
-                    case "G-F": // Factory
-                    case "G-S": // Storage
-                    case "G-H": // Hazard
-                    case "G-T": // Textile
-                    case "G-K": // Knitwear
-                    case "G-RS": // Retail
-                    case "G-SP": // Sports Industry
-                        divisor = BigDecimal.valueOf(100);
-                        multiplier = 1;
-                        break;
+            	BigDecimal divisor = BigDecimal.valueOf(100); // per 100 sqm
+            	BigDecimal multiplier = BigDecimal.ZERO;
+            	boolean ruleFound = true;
 
-                    case "G-W": // Warehouse
-                    case "G-IT": // IT Units
-                    case "G-GI": // General Industry
-                        divisor = BigDecimal.valueOf(100);
-                        multiplier = 2;
-                        break;
+            	switch (subType) {
 
-                    default:
-                        ruleFound = false;
-                        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-                }
+            	    case "G-GTKS":
+            	        // 0.5 ECS per 100 sqm
+            	        multiplier = BigDecimal.valueOf(0.5);
+            	        break;
 
-                if (!ruleFound) {
-                    HashMap<String, String> errors = new HashMap<>();
-                    errors.put("Parking Calculation Error:", 
-                        "No ECS rule defined for subtype: " + subType);
-                    pl.addErrors(errors);
-                } else {
-                    // Calculate required ECS, always round UP
-                    BigDecimal requiredParking = plotCoveredArea
-                            .divide(divisor, 0, RoundingMode.HALF_UP)
-                            .multiply(BigDecimal.valueOf(multiplier));
+            	    case "G-IT":
+            	        // Conditional based on site area
+            	        if (plotCoveredArea.compareTo(BigDecimal.valueOf(8094)) <= 0) {
+            	            multiplier = BigDecimal.ONE;       // 1 ECS per 100 sqm
+            	        } else {
+            	            multiplier = BigDecimal.valueOf(2); // 2 ECS per 100 sqm
+            	        }
+            	        break;
 
-                    noOfrequiredParking = requiredParking.intValue();
-                }
+            	    case "G-F":
+            	        // 2 ECS per 100 sqm
+            	        multiplier = BigDecimal.valueOf(2);
+            	        break;
+
+            	    default:
+            	        ruleFound = false;
+            	        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
+            	}
+
+            	if (!ruleFound) {
+            	    HashMap<String, String> errors = new HashMap<>();
+            	    errors.put("Parking Calculation Error",
+            	            "No ECS rule defined for subtype: " + subType);
+            	    pl.addErrors(errors);
+            	} else {
+            	    // ECS calculation → ALWAYS round UP
+            	    BigDecimal requiredParking = plotCoveredArea
+            	            .divide(divisor, 0, RoundingMode.CEILING)
+            	            .multiply(multiplier);
+            	    noOfrequiredParking = requiredParking.intValue();
+            	}
             }
         }
 

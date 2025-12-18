@@ -74,6 +74,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -82,6 +83,8 @@ import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.springframework.stereotype.Service;
 
@@ -141,17 +144,15 @@ public class RoadWidth extends FeatureProcess {
                 scrutinyDetail.addColumnHeading(1, RULE_NO);
                 scrutinyDetail.addColumnHeading(2, DESCRIPTION);
                 scrutinyDetail.addColumnHeading(3, OCCUPANCY +" - "+ ROADTYPE);
-//                scrutinyDetail.addColumnHeading(4, PERMITTED);
+                scrutinyDetail.addColumnHeading(4, PERMITTED);
                 scrutinyDetail.addColumnHeading(4, PROVIDED);
-//                scrutinyDetail.addColumnHeading(6, STATUS);
+                scrutinyDetail.addColumnHeading(6, STATUS);
 
                 Map<String, String> details = new HashMap<>();
                 details.put(RULE_NO, RULE_34);
                 details.put(DESCRIPTION, ROADWIDTH_DESCRIPTION);
 
                 Map<String, BigDecimal> occupancyValuesMap = getOccupancyValues();
-                
-               
 
                 if (pl.getVirtualBuilding() != null && pl.getVirtualBuilding().getMostRestrictiveFarHelper() != null) {
                     OccupancyHelperDetail occupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper()
@@ -163,24 +164,24 @@ public class RoadWidth extends FeatureProcess {
                         details.put(OCCUPANCY +" - "+ ROADTYPE, occupancyType.getName() +" - "+ "("+ roadType +")");
                         // get occupancy for industrial
                         OccupancyHelperDetail occupancyType1 = pl.getVirtualBuilding().getMostRestrictiveFarHelper().getType();
-                        if (G.equals(occupancyType1.getCode())) {
-                        	validateRoadWidthForIndustrial(pl,roadWidth);
-                        }
-                        BigDecimal roadWidthRequired = occupancyValuesMap.get(occupancyType.getCode());
+                        //if (G.equals(occupancyType.getCode())) {
+                        //getRoadWidthFromMdms(pl,roadWidth);
+                        //}
+                        BigDecimal roadWidthRequired = getRoadWidthFromMdms(pl,roadWidth);
                         if (roadWidthRequired != null) {
-//                            if (roadWidth.compareTo(roadWidthRequired) >= 0) {
-//                                details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
+                            if (roadWidth.compareTo(roadWidthRequired) >= 0) {
+                                details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
                                 details.put(PROVIDED, roadWidth.toString() + "m");
-//                                details.put(STATUS, Result.Accepted.getResultVal());
+                                details.put(STATUS, Result.Accepted.getResultVal());
                                 scrutinyDetail.getDetail().add(details);
-                              //  pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-//                            } else {
-//                                details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
-//                                details.put(PROVIDED, roadWidth.toString() + "m");
-//                                details.put(STATUS, Result.Not_Accepted.getResultVal());
-//                                scrutinyDetail.getDetail().add(details);
-//                                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-//                            }
+                                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                            } else {
+                                details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
+                                details.put(PROVIDED, roadWidth.toString() + "m");
+                                details.put(STATUS, Result.Not_Accepted.getResultVal());
+                                scrutinyDetail.getDetail().add(details);
+                                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                            }
                         }
                     }
                 }
@@ -212,47 +213,56 @@ public class RoadWidth extends FeatureProcess {
 
     }
     
-    public void validateRoadWidthForIndustrial(Plan pl, BigDecimal roadWidth) {       
+    public BigDecimal getRoadWidthFromMdms(Plan pl, BigDecimal roadWidth) {       
         OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
         OccupancyHelperDetail subtype = mostRestrictiveOccupancy.getSubtype();
-        String subType = subtype.getCode();        
-        if (subType == null) {
-            return; // Cannot validate without subtype
-        }       
+//        String subType = subtype.getCode();        
+//        if (subType == null) {
+//            return; // Cannot validate without subtype
+//        }       
 
-        BigDecimal requiredRoadWidth = null;
+        BigDecimal requiredRoadWidth = BigDecimal.valueOf(0);
 
-        switch (subType) {
-            case DxfFileConstants.G_SP:  // Sports Industry
-            case DxfFileConstants.G_RS:  // Retail Service Industry
-            case DxfFileConstants.G_H:   // Hazard Industries
-            case DxfFileConstants.G_S:   // Storage
-            case DxfFileConstants.G_F:   // Factory
-            case DxfFileConstants.G_I:   // Industrial
-            case DxfFileConstants.G_IT:  // Information Technology
-            case DxfFileConstants.G_T:   // Textile Industry
-            case DxfFileConstants.G_K:   // Knitwear Industry
-                requiredRoadWidth = ROAD_WIDTH_12;
-                break;
+//        switch (subType) {
+//            case DxfFileConstants.G_SP:  // Sports Industry
+//            case DxfFileConstants.G_RS:  // Retail Service Industry
+//            case DxfFileConstants.G_H:   // Hazard Industries
+//            case DxfFileConstants.G_S:   // Storage
+//            case DxfFileConstants.G_F:   // Factory
+//            case DxfFileConstants.G_I:   // Industrial
+//            case DxfFileConstants.G_IT:  // Information Technology
+//            case DxfFileConstants.G_T:   // Textile Industry
+//            case DxfFileConstants.G_K:   // Knitwear Industry
+//                requiredRoadWidth = ROAD_WIDTH_12;
+//                break;
+//
+//            case DxfFileConstants.G_W:   // Warehouse
+//                requiredRoadWidth = ROAD_WIDTH_24;
+//                break;
+//
+//            case DxfFileConstants.G_GI:  // General Industry
+//                requiredRoadWidth = ROAD_WIDTH_18;
+//                break;
+//
+//            default:
+//                // Not applicable for other types
+//                break;
+//        }
 
-            case DxfFileConstants.G_W:   // Warehouse
-                requiredRoadWidth = ROAD_WIDTH_24;
-                break;
-
-            case DxfFileConstants.G_GI:  // General Industry
-                requiredRoadWidth = ROAD_WIDTH_18;
-                break;
-
-            default:
-                // Not applicable for other types
-                break;
-        }
-
+        if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_ROAD_WIDTH, BigDecimal.class);
+			scOpt.ifPresent(sc -> LOG.info("Min Road width Value: " + sc));
+			requiredRoadWidth = scOpt.get();
+		}
+        
         if (requiredRoadWidth != null && roadWidth.compareTo(requiredRoadWidth) < 0) {
             HashMap<String, String> errors = new HashMap<>();
             errors.put("Road width Error:", "Minimum Required Road width is " + requiredRoadWidth + " m");
             pl.addErrors(errors);
         }
+        
+        return requiredRoadWidth;
+        
     }
 
     

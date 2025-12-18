@@ -47,52 +47,52 @@
 
 package org.egov.edcr.feature;
 
-import static org.egov.edcr.constants.DxfFileConstants.A;
-import static org.egov.edcr.constants.DxfFileConstants.A2;
-import static org.egov.edcr.constants.DxfFileConstants.A_AF;
-import static org.egov.edcr.constants.DxfFileConstants.A_FH;
-import static org.egov.edcr.constants.DxfFileConstants.A_R;
-import static org.egov.edcr.constants.DxfFileConstants.A_SA;
-import static org.egov.edcr.constants.DxfFileConstants.B2;
-import static org.egov.edcr.constants.DxfFileConstants.D_A;
-import static org.egov.edcr.constants.DxfFileConstants.D_B;
-import static org.egov.edcr.constants.DxfFileConstants.D_C;
-import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
-import static org.egov.edcr.constants.DxfFileConstants.E_EARC;
-import static org.egov.edcr.constants.DxfFileConstants.E_NS;
-import static org.egov.edcr.constants.DxfFileConstants.E_PS;
-import static org.egov.edcr.constants.DxfFileConstants.E_SACA;
-import static org.egov.edcr.constants.DxfFileConstants.E_SFDAP;
-import static org.egov.edcr.constants.DxfFileConstants.E_SFMC;
-import static org.egov.edcr.constants.DxfFileConstants.F;
-import static org.egov.edcr.constants.DxfFileConstants.H_PP;
-import static org.egov.edcr.constants.DxfFileConstants.M_DFPAB;
-import static org.egov.edcr.constants.DxfFileConstants.M_HOTHC;
-import static org.egov.edcr.constants.DxfFileConstants.M_NAPI;
-import static org.egov.edcr.constants.DxfFileConstants.M_OHF;
-import static org.egov.edcr.constants.DxfFileConstants.M_VH;
-import static org.egov.edcr.constants.DxfFileConstants.S_BH;
-import static org.egov.edcr.constants.DxfFileConstants.S_CA;
-import static org.egov.edcr.constants.DxfFileConstants.S_CRC;
-import static org.egov.edcr.constants.DxfFileConstants.S_ECFG;
-import static org.egov.edcr.constants.DxfFileConstants.S_ICC;
-import static org.egov.edcr.constants.DxfFileConstants.S_MCH;
-import static org.egov.edcr.constants.DxfFileConstants.S_SAS;
-import static org.egov.edcr.constants.DxfFileConstants.S_SC;
-import static org.egov.edcr.constants.DxfFileConstants.G;
-import static org.egov.edcr.constants.DxfFileConstants.G_PHI;
-import static org.egov.edcr.constants.DxfFileConstants.G_NPHI;
-
-import static org.egov.edcr.constants.DxfFileConstants.C;
-import static org.egov.edcr.constants.DxfFileConstants.C_MA;
-import static org.egov.edcr.constants.DxfFileConstants.C_MIP;
-import static org.egov.edcr.constants.DxfFileConstants.C_MOP;
-
-import static org.egov.edcr.constants.DxfFileConstants.J;
-import static org.egov.edcr.constants.DxfFileConstants.J_FS;
-import static org.egov.edcr.constants.DxfFileConstants.J_FCSS;
-import static org.egov.edcr.constants.DxfFileConstants.J_CNG;
-import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
+import static org.egov.edcr.constants.DxfFileConstants.*;
+//import static org.egov.edcr.constants.DxfFileConstants.A2;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_FH;
+//import static org.egov.edcr.constants.DxfFileConstants.A_R;
+//import static org.egov.edcr.constants.DxfFileConstants.A_SA;
+//import static org.egov.edcr.constants.DxfFileConstants.B2;
+//import static org.egov.edcr.constants.DxfFileConstants.D_A;
+//import static org.egov.edcr.constants.DxfFileConstants.D_B;
+//import static org.egov.edcr.constants.DxfFileConstants.D_C;
+//import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
+//import static org.egov.edcr.constants.DxfFileConstants.E_EARC;
+//import static org.egov.edcr.constants.DxfFileConstants.E_NS;
+//import static org.egov.edcr.constants.DxfFileConstants.E_PS;
+//import static org.egov.edcr.constants.DxfFileConstants.E_SACA;
+//import static org.egov.edcr.constants.DxfFileConstants.E_SFDAP;
+//import static org.egov.edcr.constants.DxfFileConstants.E_SFMC;
+//import static org.egov.edcr.constants.DxfFileConstants.F;
+//import static org.egov.edcr.constants.DxfFileConstants.H_PP;
+//import static org.egov.edcr.constants.DxfFileConstants.M_DFPAB;
+//import static org.egov.edcr.constants.DxfFileConstants.M_HOTHC;
+//import static org.egov.edcr.constants.DxfFileConstants.M_NAPI;
+//import static org.egov.edcr.constants.DxfFileConstants.M_OHF;
+//import static org.egov.edcr.constants.DxfFileConstants.M_VH;
+//import static org.egov.edcr.constants.DxfFileConstants.S_BH;
+//import static org.egov.edcr.constants.DxfFileConstants.S_CA;
+//import static org.egov.edcr.constants.DxfFileConstants.S_CRC;
+//import static org.egov.edcr.constants.DxfFileConstants.S_ECFG;
+//import static org.egov.edcr.constants.DxfFileConstants.S_ICC;
+//import static org.egov.edcr.constants.DxfFileConstants.S_MCH;
+//import static org.egov.edcr.constants.DxfFileConstants.S_SAS;
+//import static org.egov.edcr.constants.DxfFileConstants.S_SC;
+//import static org.egov.edcr.constants.DxfFileConstants.G;
+//import static org.egov.edcr.constants.DxfFileConstants.G_PHI;
+//import static org.egov.edcr.constants.DxfFileConstants.G_NPHI;
+//
+//import static org.egov.edcr.constants.DxfFileConstants.C;
+//import static org.egov.edcr.constants.DxfFileConstants.C_MA;
+//import static org.egov.edcr.constants.DxfFileConstants.C_MIP;
+//import static org.egov.edcr.constants.DxfFileConstants.C_MOP;
+//
+//import static org.egov.edcr.constants.DxfFileConstants.J;
+//import static org.egov.edcr.constants.DxfFileConstants.J_FS;
+//import static org.egov.edcr.constants.DxfFileConstants.J_FCSS;
+//import static org.egov.edcr.constants.DxfFileConstants.J_CNG;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
 
 import static org.egov.edcr.utility.DcrConstants.DECIMALDIGITS_MEASUREMENTS;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
@@ -737,7 +737,8 @@ public class Far extends FeatureProcess {
 			if (mostRestrictiveOccupancyType.getType() != null
 					&& (DxfFileConstants.G.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())
 							|| DxfFileConstants.B.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())
-							|| DxfFileConstants.D.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))) {
+							//|| DxfFileConstants.D.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())
+							)) {
 				processFarForGBDOccupancy(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
 						errorMsgs, plotArea);
 			}
@@ -1063,6 +1064,66 @@ public class Far extends FeatureProcess {
 		
 		else if (codes.contains(A_AIF))
 			return codesMap.get(A_AIF);
+		
+		else if (codes.contains(G_GTKS))
+			return codesMap.get(G_GTKS);
+		
+		else if (codes.contains(G_IT))
+			return codesMap.get(G_IT);
+		
+		else if (codes.contains(G_F))
+			return codesMap.get(G_F);
+		
+		else if (codes.contains(F_SCC))
+		    return codesMap.get(F_SCC);
+		else if (codes.contains(F_RS))
+		    return codesMap.get(F_RS);
+		else if (codes.contains(F_R))
+		    return codesMap.get(F_R);
+		else if (codes.contains(F_FP))
+		    return codesMap.get(F_FP);
+		else if (codes.contains(F_FC))
+		    return codesMap.get(F_FC);
+		else if (codes.contains(F_CC))
+		    return codesMap.get(F_CC);
+		else if (codes.contains(F_CO))
+		    return codesMap.get(F_CO);
+		else if (codes.contains(F_B))
+		    return codesMap.get(F_B);
+
+		else if (codes.contains(F_DS))
+		    return codesMap.get(F_DS);
+		else if (codes.contains(F_BS))
+		    return codesMap.get(F_BS);
+		else if (codes.contains(F_BO))
+		    return codesMap.get(F_BO);
+		else if (codes.contains(F_IT))
+		    return codesMap.get(F_IT);
+		else if (codes.contains(F_O))
+		    return codesMap.get(F_O);
+		else if (codes.contains(F_S))
+		    return codesMap.get(F_S);
+		else if (codes.contains(F_SM))
+		    return codesMap.get(F_SM);
+		else if (codes.contains(F_WS))
+		    return codesMap.get(F_WS);
+		else if (codes.contains(F_M))
+		    return codesMap.get(F_M);
+		else if (codes.contains(F_SRM))
+		    return codesMap.get(F_SRM);
+		else if (codes.contains(F_SCO))
+		    return codesMap.get(F_SCO);
+		else if (codes.contains(F_BTH))
+		    return codesMap.get(F_BTH);
+		else if (codes.contains(F_DBTH))
+		    return codesMap.get(F_DBTH);
+		else if (codes.contains(F_SSTY))
+		    return codesMap.get(F_SSTY);
+		else if (codes.contains(F_GBA))
+		    return codesMap.get(F_GBA);
+		else if (codes.contains(F_SC))
+		    return codesMap.get(F_SC);
+
 		
 		else
 			return null;
@@ -1620,93 +1681,93 @@ public class Far extends FeatureProcess {
 		        && occupancyType.getType() != null 
 		        && occupancyType.getType().getCode() != null) {
 			OccupancyHelperDetail subtype = occupancyType.getSubtype();
-			occupancyName = subtype.getName();
-			String subType = subtype.getCode();
+			//occupancyName = subtype.getName();
+			getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
 		    
 		    //String subType = occupancyType.getSubtype().get().getCode();
 
-		    switch (subType) {
-		        // *********** INDUSTRIAL PLOTTED ***********
-		        case "G-I": // Industrial
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) <= 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_1_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_1_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_1_50;
-		            } else {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_3_00) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_3_00.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_3_00;
-		            }
-		            break;
-
-		        // *********** INFORMATION TECHNOLOGY PLOTTED ***********
-		        case "G-IT": // Information Technology
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
-		            }
-		            break;
-
-		        // *********** TEXTILE PLOTTED ***********
-		        case "G-T": // Textile Industry
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
-		            }
-		            break;
-
-		        // *********** KNITWEAR PLOTTED ***********
-		        case "G-K": // Knitwear Industry
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
-		            }
-		            break;
-
-		        // *********** GENERAL INDUSTRY FLATTED ***********
-		        case "G-GI": // General Industry
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_3_00) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_3_00.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_3_00;
-		            }
-		            break;
-
-		        // *********** TEXTILE FLATTED ***********
-		        // Same rule as Textile PLOTTED
-		        case "G-TF": // Textile Flatted (custom code if needed)
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
-		            }
-		            break;
-
-		        // *********** KNITWEAR FLATTED ***********
-		        // Same rule as Knitwear PLOTTED
-		        case "G-KF": // Knitwear Flatted (custom code if needed)
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
-		            }
-		            break;
-
-		        // *********** WHOLESALE TRADE / WAREHOUSE / FREIGHT COMPLEX ***********
-		        case "G-W": // Warehouse
-		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_10000) > 0) {
-		                isAccepted = far.compareTo(INDUSTRIAL_FAR_1_50) <= 0;
-		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_1_50.doubleValue());
-		                expectedResult = "<= " + INDUSTRIAL_FAR_1_50;
-		            }
-		            break;
-
-		        default:
-		            LOG.info("No Industrial FAR rule matched for subType: " + subType);
-		    }
+//		    switch (subType) {
+//		        // *********** INDUSTRIAL PLOTTED ***********
+//		        case "G-I": // Industrial
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) <= 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_1_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_1_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_1_50;
+//		            } else {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_3_00) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_3_00.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_3_00;
+//		            }
+//		            break;
+//
+//		        // *********** INFORMATION TECHNOLOGY PLOTTED ***********
+//		        case "G-IT": // Information Technology
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+//		            }
+//		            break;
+//
+//		        // *********** TEXTILE PLOTTED ***********
+//		        case "G-T": // Textile Industry
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+//		            }
+//		            break;
+//
+//		        // *********** KNITWEAR PLOTTED ***********
+//		        case "G-K": // Knitwear Industry
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+//		            }
+//		            break;
+//
+//		        // *********** GENERAL INDUSTRY FLATTED ***********
+//		        case "G-GI": // General Industry
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_3_00) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_3_00.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_3_00;
+//		            }
+//		            break;
+//
+//		        // *********** TEXTILE FLATTED ***********
+//		        // Same rule as Textile PLOTTED
+//		        case "G-TF": // Textile Flatted (custom code if needed)
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+//		            }
+//		            break;
+//
+//		        // *********** KNITWEAR FLATTED ***********
+//		        // Same rule as Knitwear PLOTTED
+//		        case "G-KF": // Knitwear Flatted (custom code if needed)
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+//		            }
+//		            break;
+//
+//		        // *********** WHOLESALE TRADE / WAREHOUSE / FREIGHT COMPLEX ***********
+//		        case "G-W": // Warehouse
+//		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_10000) > 0) {
+//		                isAccepted = far.compareTo(INDUSTRIAL_FAR_1_50) <= 0;
+//		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_1_50.doubleValue());
+//		                expectedResult = "<= " + INDUSTRIAL_FAR_1_50;
+//		            }
+//		            break;
+//
+//		        default:
+//		            LOG.info("No Industrial FAR rule matched for subType: " + subType);
+//		    }
 		}
 		
 		if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {

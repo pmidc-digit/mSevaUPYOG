@@ -22,20 +22,20 @@
 	</style>-->
 	<style name="report status style" forecolor="#FFFFFF" fontName="Arial" isBold="true">
     <conditionalStyle>
-        <!-- Condition: reportStatus is "Fulfill" (case-insensitive) -->
+        <!-- Condition: reportStatus is "Fulfilled" (case-insensitive) -->
         <conditionExpression>
-            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Fulfill")]]>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Fulfilled")]]>
         </conditionExpression>
         <style forecolor="#009900"/>
     </conditionalStyle>
     <conditionalStyle>
-        <!-- Condition: reportStatus is "Not Fulfill" (case-insensitive) -->
+        <!-- Condition: reportStatus is "Not Fulfilled" (case-insensitive) -->
         <conditionExpression>
-            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Not Fulfill")]]>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Not Fulfilled")]]>
         </conditionExpression>
         <style forecolor="#FF0000"/>
     </conditionalStyle>
-    <!-- Optional: for Mixed or Partially Fulfill (if you use it) -->
+    <!-- Optional: for Mixed or Partially Fulfilled (if you use it) -->
     <conditionalStyle>
         <conditionExpression>
             <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Mixed")]]>

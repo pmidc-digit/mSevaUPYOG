@@ -47,6 +47,16 @@ public class DxfFileConstants {
     public static final int OCCUPANCY_H_COLOR_CODE = 11;
     public static final int OCCUPANCY_I1_COLOR_CODE = 12;
     
+    
+    // Color codes for commercial as per 2025 byLaws
+    public static final int OCCUPANCY_F1_COLOR_CODE = 35;
+    public static final int OCCUPANCY_F2_COLOR_CODE = 36;
+    public static final int OCCUPANCY_F3_COLOR_CODE = 37;
+    public static final int OCCUPANCY_F4_COLOR_CODE = 38;
+    public static final int OCCUPANCY_F5_COLOR_CODE = 39;
+    public static final int OCCUPANCY_F6_COLOR_CODE = 40;
+    public static final int OCCUPANCY_F7_COLOR_CODE = 41;
+    
     // Color codes for Petrol Pump
     public static final int OCCUPANCY_I2_COLOR_CODE = 00;
     public static final int OCCUPANCY_J_COLOR_CODE = 13;
@@ -82,7 +92,7 @@ public class DxfFileConstants {
     //public static final int OCCUPANCY_C2_COLOR_CODE = 20;
     //public static final int OCCUPANCY_C3_COLOR_CODE = 21;
     public static final int OCCUPANCY_D2_COLOR_CODE = 22;
-    public static final int OCCUPANCY_F1_COLOR_CODE = 17;
+//    public static final int OCCUPANCY_F1_COLOR_CODE = 17;
     //public static final int OCCUPANCY_F2_COLOR_CODE = 18;
     public static final int OCCUPANCY_F3_HOTEL_COLOR_CODE = 23;
     public static final int OCCUPANCY_A1_PROFESSIONALOFFICE_COLOR_CODE = 24;

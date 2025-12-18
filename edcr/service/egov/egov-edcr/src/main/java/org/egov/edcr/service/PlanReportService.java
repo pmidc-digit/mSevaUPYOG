@@ -1500,7 +1500,7 @@ public class PlanReportService {
     }
     
     public static void replaceStatusWithFulfillTerms(Map<String, Object> valuesMap) {
-        System.out.println("Replacing 'Accepted/Not Accepted' with 'Fulfill/Not Fulfill' terminology...");
+        System.out.println("Replacing 'Accepted/Not Accepted' with 'Fulfilled/Not Fulfilled' terminology...");
 
         // Step 1: Update direct reportStatus if exists
         if (valuesMap.containsKey("reportStatus")) {
@@ -1508,8 +1508,8 @@ public class PlanReportService {
             if (reportObj instanceof String) {
                 String oldStatus = (String) reportObj;
                 String newStatus = oldStatus
-                        .replace("Accepted", "Fulfill")
-                        .replace("Not Accepted", "Not Fulfill");
+                        .replace("Accepted", "Fulfilled")
+                        .replace("Not Accepted", "Not Fulfilled");
                 valuesMap.put("reportStatus", newStatus);
                 System.out.println("Updated reportStatus: " + oldStatus + " → " + newStatus);
             }
@@ -1531,8 +1531,8 @@ public class PlanReportService {
                             if (statusObj instanceof String) {
                                 String oldStatus = (String) statusObj;
                                 String newStatus = oldStatus
-                                        .replace("Accepted", "Fulfill")
-                                        .replace("Not Accepted", "Not Fulfill");
+                                        .replace("Accepted", "Fulfilled")
+                                        .replace("Not Accepted", "Not Fulfilled");
                                 itemMap.put("Status", newStatus);
 
                                 // Optional: log changes for debugging
@@ -2027,12 +2027,12 @@ public class PlanReportService {
     
     private List<ConditionalStyle> getConditonalStyles() {
         List<ConditionalStyle> conditionalStyles = new ArrayList<>();
-        FetchCondition fc = new FetchCondition(STATUS, "Not Fulfill");
+        FetchCondition fc = new FetchCondition(STATUS, "Not Fulfilled");
 
         ConditionalStyle cs = new ConditionalStyle(fc, reportService.getDetailStyle(Color.RED));
         conditionalStyles.add(cs);
 
-        fc = new FetchCondition(STATUS, "Fulfill");
+        fc = new FetchCondition(STATUS, "Fulfilled");
 
         cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(0, 128, 0)));
         conditionalStyles.add(cs);

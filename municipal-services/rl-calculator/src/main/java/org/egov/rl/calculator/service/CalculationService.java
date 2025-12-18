@@ -1,6 +1,5 @@
 package org.egov.rl.calculator.service;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
@@ -26,7 +25,6 @@ public class CalculationService {
 	@Autowired
 	private PropertyUtil mdmsUtil;
 
-
 	/**
 	 * @return A list of DemandDetail objects representing the calculated demand.
 	 */
@@ -47,59 +45,48 @@ public class CalculationService {
 		List<DemandDetail> demandDetails = new ArrayList<>();
 		// Step 1: Calculate base fee
 		for (RLProperty amount : calculateAmount) {
-			if (applicationType.equalsIgnoreCase("NEW")) {
-				if (isSecurityDeposite) {
-					DemandDetail securityDemandDetail = DemandDetail.builder()
-							.taxAmount(new BigDecimal(amount.getSecurityDeposit()))
-							.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId)
-							.build();
-					demandDetails.add(securityDemandDetail);
-				}
-				DemandDetail baseDemandDetail = DemandDetail.builder().taxAmount(new BigDecimal(amount.getBaseRent()))
-						.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build();
-				demandDetails.add(baseDemandDetail);
-				break;
-			}
-
-			if (applicationType.equalsIgnoreCase("RENEWAL")) {
-				fee = new BigDecimal(isSecurityDeposite ? amount.getSecurityDeposit() : amount.getBaseRent());
-				DemandDetail baseDemandDetail = DemandDetail.builder().taxAmount(fee)
+			if (isSecurityDeposite) {
+				DemandDetail securityDemandDetail = DemandDetail.builder()
+						.taxAmount(new BigDecimal(amount.getSecurityDeposit()))
 						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build();
-				demandDetails.add(baseDemandDetail);
-				break;
+				demandDetails.add(securityDemandDetail);
 			}
+		
+			DemandDetail baseDemandDetail = DemandDetail.builder().taxAmount(new BigDecimal(amount.getBaseRent()))
+					.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build();
+			demandDetails.add(baseDemandDetail);
+
 		}
 
 		// Step 2: Calculate additional fees (Penality, cowcass, cgst,sgst)
-		calculateAdditionalFees(calculateAmount.get(0),allotmentRequest, tenantId, demandDetails);
+		calculateAdditionalFees(calculateAmount.get(0), allotmentRequest, tenantId, demandDetails);
 		return demandDetails;
 	}
 
 	private void calculateAdditionalFees(RLProperty calculateAmount, AllotmentRequest allotmentRequest, String tenantId,
-										 List<DemandDetail> demandDetails) {
+			List<DemandDetail> demandDetails) {
 
 		BigDecimal baseAmount = new BigDecimal(calculateAmount.getBaseRent());
-		Long lastModifiedDate = allotmentRequest.getAllotment().getAuditDetails().getLastModifiedTime();
-		Long rentLeasePayDate = Instant.ofEpochMilli(lastModifiedDate).plus(Duration.ofDays(30)).toEpochMilli();
-		Long rentLeasePayWithPenaltyDate = Instant.ofEpochMilli(rentLeasePayDate).plus(Duration.ofDays(30)).toEpochMilli();
+//		Long lastModifiedDate = allotmentRequest.getAllotment().getAuditDetails().getLastModifiedTime();
+//		Long rentLeasePayDate = Instant.ofEpochMilli(lastModifiedDate).plus(Duration.ofDays(30)).toEpochMilli();
+//		Long rentLeasePayWithPenaltyDate = Instant.ofEpochMilli(rentLeasePayDate).plus(Duration.ofDays(30)).toEpochMilli();
 
 		List<TaxRate> taxRate = mdmsUtil.getHeadTaxAmount(allotmentRequest.getRequestInfo(), tenantId,
 				RLConstants.RL_MASTER_MODULE_NAME);
 		List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION,
 				RLConstants.PENALTY_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
 		taxRate.stream().forEach(t -> {
-			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
+//			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;
-			if (taxList.stream().anyMatch(d->d.equals(t.getTaxType())) && t.isActive()) {
-				if (t.getType().contains("%")&&!(t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION))) {
+			if (taxList.stream().anyMatch(d -> d.equals(t.getTaxType())) && t.isActive()) {
+				if (t.getType().contains("%") && !(t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION))) {
 					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
-				} else if(!t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION)) {
+				} else if (!t.getTaxType().contains(RLConstants.PENALTY_FEE_RL_APPLICATION)) {
 					amount = new BigDecimal(t.getAmount());
 				}
 				if (!amount.equals(BigDecimal.ZERO)) {
-					demandDetails.add(DemandDetail.builder().taxAmount(amount)
-							.taxHeadMasterCode(t.getTaxType()).tenantId(tenantId)
-							.build());
+					demandDetails.add(DemandDetail.builder().taxAmount(amount).taxHeadMasterCode(t.getTaxType())
+							.tenantId(tenantId).build());
 				}
 			}
 		});

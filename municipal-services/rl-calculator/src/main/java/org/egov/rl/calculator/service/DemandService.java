@@ -51,7 +51,7 @@ public class DemandService {
     @Autowired
     private CalculationService calculationService;
 
-    public DemandResponse createDemand(boolean isSecurityDeposite, CalculationReq calculationReq) {
+    public DemandResponse createDemand(boolean isSecurityDeposit, CalculationReq calculationReq) {
 
 
         List<Demand> demands = new ArrayList<>();
@@ -71,7 +71,7 @@ public class DemandService {
             OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
             Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId()).uuid(ownerInfo.getUserUuid())
                     .mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId()).build();
-            List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite, allotmentRequest);
+            List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposit, allotmentRequest);
             BigDecimal amountPayable = new BigDecimal(0);
             String applicationType = allotmentRequest.getAllotment().getApplicationType();
 
@@ -101,41 +101,7 @@ public class DemandService {
 
     }
 
-
-    public DemandResponse updateDemandsbkp(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
-
-        if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
-//		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-        DemandResponse res = mapper.convertValue(
-                serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
-                DemandResponse.class);
-        if (CollectionUtils.isEmpty(res.getDemands())) {
-            Map<String, String> map = new HashMap<>();
-            map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
-        }
-
-        Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
-        res.getDemands().forEach(demand -> {
-            if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
-                consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
-            else {
-                List<Demand> demands = new LinkedList<>();
-                demands.add(demand);
-                consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
-            }
-        });
-
-//		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
-//			List<Demand> demandsToBeUpdated = new LinkedList<>();
-//			DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
-//			StringBuilder updateDemandUrl = petUtil.getUpdateDemandUrl();
-//            repository.fetchResult(updateDemandUrl, request);
-//		}
-        return res;
-    }
-
-
-    public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {
+    public DemandResponse estimate(boolean isSecurityDeposit, CalculationReq calculationReq) {
 
         List<Demand> demands = new ArrayList<>();
         RequestInfo requestInfo = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo();
@@ -148,13 +114,12 @@ public class DemandService {
 
             AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
 
-//            String tenantId = allotmentRequest.getAllotment().getTenantId();
             String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
 
             OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
             Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId()).uuid(ownerInfo.getUserUuid())
                     .mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId()).build();
-            List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite, allotmentRequest);
+            List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposit, allotmentRequest);
             BigDecimal amountPayable = new BigDecimal(0);
             String applicationType = allotmentRequest.getAllotment().getApplicationType();
 
@@ -177,8 +142,6 @@ public class DemandService {
 
             demands.add(demand);
         }
-
-//        List<Demand> demands1 = demandRepository.saveDemand(calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
         return DemandResponse.builder().demands(demands).build();
 
     }
@@ -361,7 +324,17 @@ public class DemandService {
 
     private void generateDemandForTenant(String tenantId, RequestInfo requestInfo) {
         log.info("Generating demands for tenant: {}", tenantId);
-        Map<String, Object> mdmsData = mstrDataService.getBillingAndTaxPeriods(tenantId, requestInfo);
+        Map<String, Object> mdmsData = new HashMap<>();
+        try {
+            mdmsData = mstrDataService.getBillingAndTaxPeriods(tenantId, requestInfo);
+            // Proceed with demand generation
+        } catch (CustomException e) {
+            if ("NO_BILLING_PERIODS".equals(e.getCode())) {
+                log.warn("Skipping demand generation for tenant {} due to missing billing periods", tenantId);
+            } else {
+                throw e; // Re-throw other exceptions
+            }
+        }
         List<BillingPeriod> billingPeriods = (List<BillingPeriod>) mdmsData.get(RLConstants.BILLING_PERIOD_MASTER);
         List<TaxPeriod> taxPeriods = (List<TaxPeriod>) mdmsData.get(RLConstants.TAX_PERIOD_MASTER);
 
@@ -383,7 +356,7 @@ public class DemandService {
                 }
 
                 for (TaxPeriod taxPeriod : taxPeriods) {
-                    if (taxPeriod.getPeriodCycle().name().equalsIgnoreCase(billingPeriod.getBillingCycle())
+                    if (taxPeriod.getPeriodCycle()!=null &&taxPeriod.getPeriodCycle().name().equalsIgnoreCase(billingPeriod.getBillingCycle())
                             && taxPeriod.getToDate() <= billingPeriod.getTaxPeriodTo()) {
 
                         List<AllotmentDetails> activeApplicationsInPeriod = filterActiveApplicationsForPeriod(approvedApplications, taxPeriod);
@@ -465,7 +438,6 @@ public class DemandService {
         for (int i = 0; i < applications.size(); i += batchSize) {
             List<AllotmentDetails> batch = applications.subList(i, Math.min(i + batchSize, applications.size()));
 
-            // Prepare CalculationReq for the batch
             List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
             for (AllotmentDetails application : batch) {
                 long effectiveFromDate = Math.max(application.getStartDate(), taxPeriod.getFromDate());
@@ -473,13 +445,11 @@ public class DemandService {
                         ? Math.min(application.getEndDate(), taxPeriod.getToDate())
                         : taxPeriod.getToDate();
 
-                //AllotmentRequest
                 AllotmentRequest allotmentRequest = AllotmentRequest.builder()
                         .allotment(application)
                         .requestInfo(requestInfo)
                         .build();
 
-                // Add AllotmentRequest to CalculationCriteria
                 CalculationCriteria criteria = CalculationCriteria.builder()
                         .allotmentRequest(allotmentRequest)
                         .fromDate(effectiveFromDate)
@@ -493,7 +463,6 @@ public class DemandService {
                     .calculationCriteria(calculationCriteriaList)
                     .build();
 
-            // createDemand  generate demands for the batch
             try {
                 createDemand(false, calculationReq);
             } catch (Exception e) {

@@ -178,17 +178,24 @@ public class MasterDataService {
     }
 
     public MdmsCriteriaReq getMdmsRequestForBillingAndTax(RequestInfo requestInfo, String tenantId) {
-        List<MasterDetail> masterDetails = new ArrayList<>();
-        masterDetails.add(MasterDetail.builder().name(RLConstants.BILLING_SERVICE_MASTER).build());
-        masterDetails.add(MasterDetail.builder().name(RLConstants.TAX_PERIOD_MASTER).build());
+        List<MasterDetail> masterDetailsForBillingPeriod = new ArrayList<>();
+        List<MasterDetail> masterDetailsForTaxPeriod = new ArrayList<>();
+        masterDetailsForBillingPeriod.add(MasterDetail.builder().name(RLConstants.BILLING_PERIOD_MASTER).build());
+        masterDetailsForTaxPeriod.add(MasterDetail.builder().name(RLConstants.TAX_PERIOD_MASTER).build());
 
-        ModuleDetail moduleDetail = ModuleDetail.builder()
+        ModuleDetail moduleDetailForTaxPeriod = ModuleDetail.builder()
                 .moduleName(RLConstants.BILLING_SERVICE_MASTER)
-                .masterDetails(masterDetails)
+                .masterDetails(masterDetailsForTaxPeriod)
+                .build();
+
+        ModuleDetail moduleDetailForBillingPeriod = ModuleDetail.builder()
+                .moduleName(RLConstants.RL_SERVICES_MASTER_MODULE)
+                .masterDetails(masterDetailsForBillingPeriod)
                 .build();
 
         List<ModuleDetail> moduleDetails = new ArrayList<>();
-        moduleDetails.add(moduleDetail);
+        moduleDetails.add(moduleDetailForTaxPeriod);
+        moduleDetails.add(moduleDetailForBillingPeriod);
 
         MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
                 .tenantId(tenantId)
@@ -208,14 +215,21 @@ public class MasterDataService {
 
         try {
             Map<String, Map<String, List<Object>>> mdmsResponse = (Map) result;
-            Map<String, List<Object>> moduleData = mdmsResponse.get(RLConstants.RL_SERVICES_MASTER_MODULE);
+            List<Map<String, Object>> billingPeriod =
+                    JsonPath.read(mdmsResponse, "$.MdmsRes['rl-services-masters'].billingPeriod");
 
-            List<BillingPeriod> billingPeriods = moduleData.get(RLConstants.BILLING_PERIOD_MASTER)
+            List<Map<String, Object>> taxPeriod =
+                    JsonPath.read(mdmsResponse, "$.MdmsRes.BillingService.TaxPeriod[?(@.service == 'rl-services')]");
+
+            List<BillingPeriod> billingPeriods = billingPeriod
                     .stream()
                     .map(obj -> mapper.convertValue(obj, BillingPeriod.class))
                     .collect(Collectors.toList());
-
-            List<TaxPeriod> taxPeriods = moduleData.get(RLConstants.TAX_PERIOD_MASTER)
+            if (billingPeriods == null || billingPeriods.isEmpty()) {
+                log.error("No billing periods found for tenant: {}", tenantId);
+                throw new CustomException("NO_BILLING_PERIODS", "No billing periods found for tenant: " + tenantId);
+            }
+            List<TaxPeriod> taxPeriods = taxPeriod
                     .stream()
                     .map(obj -> mapper.convertValue(obj, TaxPeriod.class))
                     .collect(Collectors.toList());

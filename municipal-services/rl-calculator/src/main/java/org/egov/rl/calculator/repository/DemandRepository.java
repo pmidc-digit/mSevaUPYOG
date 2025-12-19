@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -81,18 +79,29 @@ public class DemandRepository {
 	}
 
 	public List<Demand> getDemandsForRentableIdsAndPeriod(List<String> rentableIds, Long fromDate, Long toDate) {
-		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom >= :fromDate AND taxperiodto <= :toDate";
-		Map<String, Object> params = new HashMap<>();
-		params.put("rentableIds", rentableIds);
-		params.put("fromDate", fromDate);
-		params.put("toDate", toDate);
-		Object[] queryParams = new Object[] {
-				params.get("rentableIds"),
-				params.get("fromDate"),
-				params.get("toDate")
-		};
+		String inSql = String.join(",", Collections.nCopies(rentableIds.size(), "?"));
+
+		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + inSql +
+				") AND taxperiodfrom >= ? AND taxperiodto <= ?";
+
+
+//		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom >= :fromDate AND taxperiodto <= :toDate";
+		List<Object> params = new ArrayList<>();
+		params.addAll(rentableIds);
+		params.add(fromDate);
+		params.add(toDate);
+
+//		Map<String, Object> params = new HashMap<>();
+//		params.put("rentableIds", rentableIds);
+//		params.put("fromDate", fromDate);
+//		params.put("toDate", toDate);
+//		Object[] queryParams = new Object[] {
+//				params.get("rentableIds"),
+//				params.get("fromDate"),
+//				params.get("toDate")
+//		};
 		try {
-			return jdbcTemplate.query(query, queryParams, new DemandRowMapper());
+			return jdbcTemplate.query(query, params.toArray(), new DemandRowMapper());
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch demands for the given rentable IDs and period");

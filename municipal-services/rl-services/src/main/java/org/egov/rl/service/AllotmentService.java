@@ -129,7 +129,7 @@ public class AllotmentService {
 				CalculationReq calculationReq = getCalculationReq(allotmentRequest);
 
 				StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
-						.append(config.getRlCalculatorEndpoint());
+						.append(config.getRlCalculatorEndpoint()).append("?isSecurityDeposit=true");
 				Object response = serviceRequestRepository.fetchResult(url, calculationReq).get();
 				DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
 				demandId =demandResponse.getDemands().get(0).getId();

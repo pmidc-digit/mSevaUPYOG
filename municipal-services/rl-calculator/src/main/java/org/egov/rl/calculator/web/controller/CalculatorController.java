@@ -14,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -33,10 +30,10 @@ public class CalculatorController {
 	private ResponseInfoFactory responseInfoFactory;
 
     @PostMapping("/_calculate")
-    public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq allotmentRequest) {
+    public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq allotmentRequest, @RequestParam(required = false) boolean isSecurityDeposit) {
 
 
-    	DemandResponse demandResponse =demandService.createDemand(true,allotmentRequest);
+    	DemandResponse demandResponse =demandService.createDemand(isSecurityDeposit,allotmentRequest);
        demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
         return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
     }
@@ -47,18 +44,18 @@ public class CalculatorController {
 		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
 	}
 	@PostMapping("/_estimate")
-	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
+	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest, @RequestParam(required = false) boolean isSecurityDeposit) {
 		DemandResponse demandResponse =demandService.estimate(true,allotmentRequest);
 		demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}
 
-//	@PostMapping("/_jobscheduler")
-//	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
-//		log.info("Starting job scheduler for rent demands.");
-//		demandService.generateDemands(requestInfo);
-//		log.info("Finished job scheduler for rent demands.");
-//		return new ResponseEntity<>(HttpStatus.OK);
-//	}
+	@PostMapping("/_jobscheduler")
+	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
+		log.info("Starting job scheduler for rent demands.");
+		demandService.generateDemands(requestInfoWrapper.getRequestInfo());
+		log.info("Finished job scheduler for rent demands.");
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
 }

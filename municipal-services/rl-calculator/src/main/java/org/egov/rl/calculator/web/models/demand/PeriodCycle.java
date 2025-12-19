@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PeriodCycle {
 
+
+	MONTHLY("MONTHLY"),
+	QUATERLY("QUATERLY"),
 	MONTH("MONTH"),
 
 	QUARTER("QUARTER"),

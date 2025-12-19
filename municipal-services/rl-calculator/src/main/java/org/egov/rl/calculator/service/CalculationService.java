@@ -30,17 +30,17 @@ public class CalculationService {
 	/**
 	 * @return A list of DemandDetail objects representing the calculated demand.
 	 */
-	public List<DemandDetail> calculateDemand(boolean isSecurityDeposite, AllotmentRequest allotmentRequest) {
+	public List<DemandDetail> calculateDemand(boolean isSecurityDeposit, AllotmentRequest allotmentRequest) {
 		String tenantId = allotmentRequest.getAllotment().getTenantId();
 
 		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
 				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 
-		return processCalculationForDemandGeneration(true, tenantId, calculationTypes, allotmentRequest);
+		return processCalculationForDemandGeneration(isSecurityDeposit, tenantId, calculationTypes, allotmentRequest);
 	}
 
-	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposite, String tenantId,
-			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
+	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposit, String tenantId,
+																	 List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
 
 		String applicationType = allotmentRequest.getAllotment().getApplicationType();
 		BigDecimal fee = BigDecimal.ZERO;
@@ -48,7 +48,7 @@ public class CalculationService {
 		// Step 1: Calculate base fee
 		for (RLProperty amount : calculateAmount) {
 			if (applicationType.equalsIgnoreCase("NEW")) {
-				if (isSecurityDeposite) {
+				if (isSecurityDeposit) {
 					DemandDetail securityDemandDetail = DemandDetail.builder()
 							.taxAmount(new BigDecimal(amount.getSecurityDeposit()))
 							.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId)
@@ -62,15 +62,13 @@ public class CalculationService {
 			}
 
 			if (applicationType.equalsIgnoreCase("RENEWAL")) {
-				fee = new BigDecimal(isSecurityDeposite ? amount.getSecurityDeposit() : amount.getBaseRent());
+				fee = new BigDecimal(isSecurityDeposit ? amount.getSecurityDeposit() : amount.getBaseRent());
 				DemandDetail baseDemandDetail = DemandDetail.builder().taxAmount(fee)
 						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build();
 				demandDetails.add(baseDemandDetail);
 				break;
 			}
 		}
-
-		// Step 2: Calculate additional fees (Penality, cowcass, cgst,sgst)
 		calculateAdditionalFees(calculateAmount.get(0),allotmentRequest, tenantId, demandDetails);
 		return demandDetails;
 	}

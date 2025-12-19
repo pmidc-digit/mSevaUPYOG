@@ -272,7 +272,8 @@ public class TLValidator {
         });
         
         request.getLicenses().forEach(license -> {
-            if(license.getApplicationType() != null && license.getApplicationType().toString().equals(TLConstants.APPLICATION_TYPE_RENEWAL)){
+            if(license.getApplicationType() != null && license.getApplicationType().toString().equals(TLConstants.APPLICATION_TYPE_RENEWAL) && 
+            		!TLConstants.businessService_BPA.equalsIgnoreCase(license.getBusinessService())){
 
                 if(license.getStatus().equalsIgnoreCase(TLConstants.STATUS_APPROVED)
                         && licenseMap.containsKey(license.getLicenseNumber())

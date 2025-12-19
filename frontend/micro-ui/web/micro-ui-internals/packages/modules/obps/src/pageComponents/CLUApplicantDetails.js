@@ -213,19 +213,22 @@ const getOwnerDetails = async (idx) => {
     deleteOwnerId(index);
     deleteOwnerPhoto(index);
  
-    const filteredOwners= currentStepData?.applicationDetails?.owners?.filter((item, idx)=> idx !== index);
+    const filteredOwners = currentStepData?.applicationDetails?.owners?.filter((item, idx)=> idx !== index);
+
+    if(filteredOwners?.length > 0){
 
     dispatch(UPDATE_OBPS_FORM("applicationDetails",
     {
      ...currentStepData?.applicationDetails,
      owners:filteredOwners
     }));
-
-    remove(index);
+    }
+     remove(index);
+    
   }
 
-  // console.log("ownerIdList (local)==>", ownerIdList);
-  // console.log("ownerPhotoList (local)==>", ownerPhotoList);
+  console.log("ownerIdList (local)==>", ownerIdList);
+  console.log("ownerPhotoList (local)==>", ownerPhotoList);
 
   return (
     <React.Fragment>
@@ -241,7 +244,7 @@ const getOwnerDetails = async (idx) => {
         {fields.map((field, index) => (
           <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
             <CardSectionSubText >
-             {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("BPA_OWNER")} ${index + 1}`}
+             {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}
             </CardSectionSubText>
 
             <div

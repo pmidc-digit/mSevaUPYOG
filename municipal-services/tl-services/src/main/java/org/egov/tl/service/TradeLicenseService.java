@@ -111,16 +111,19 @@ public class TradeLicenseService {
             businessServicefromPath = businessService_TL;
        tlValidator.validateBusinessService(tradeLicenseRequest,businessServicefromPath);
        Map<String, Object> mdmsDataMap = new HashMap<String, Object>();
+       List<Integer> reminderPeriodsList = new ArrayList<>();
        tradeLicenseRequest.getLicenses().forEach(license -> {
     	   Object mdmsDataForTenantId = util.mDMSCall(tradeLicenseRequest.getRequestInfo(), license.getTenantId());
 		   mdmsDataMap.put(license.getTenantId(), mdmsDataForTenantId);
+		   reminderPeriodsList.addAll(JsonPath.read(mdmsDataForTenantId, "$.MdmsRes.TradeLicense.ReminderPeriods.*.reminderPeriods"));
 	   });
+       Long reminderPeriods = Long.valueOf(reminderPeriodsList.isEmpty() ? "0" : reminderPeriodsList.get(0).toString());
        Object billingSlabs = null;//util.getBillingSlabs(tradeLicenseRequest.getRequestInfo(), tradeLicenseRequest.getLicenses().get(0).getTenantId());
        actionValidator.validateCreateRequest(tradeLicenseRequest);
         switch(businessServicefromPath)
         {
             case businessService_BPA:
-                validateMobileNumberUniqueness(tradeLicenseRequest);
+                validateMobileNumberUniqueness(tradeLicenseRequest, reminderPeriods);
                 break;
         }
        enrichmentService.enrichTLCreateRequest(tradeLicenseRequest, mdmsDataMap);
@@ -144,7 +147,8 @@ public class TradeLicenseService {
         return tradeLicenseRequest.getLicenses();
 	}
 
-    public void validateMobileNumberUniqueness(TradeLicenseRequest request) {
+    public void validateMobileNumberUniqueness(TradeLicenseRequest request, Long reminderPeriods) {
+    	Long currentTime = System.currentTimeMillis();
         for (TradeLicense license : request.getLicenses()) {
             for (TradeUnit tradeUnit : license.getTradeLicenseDetail().getTradeUnits()) {
                 String tradetypeOfNewLicense = tradeUnit.getTradeType().split("\\.")[0];
@@ -154,7 +158,11 @@ public class TradeLicenseService {
                     List<TradeLicense> licensesFromSearch = getLicensesFromMobileNumber(tradeLicenseSearchCriteria, request.getRequestInfo());
                     List<String> tradeTypeResultforSameMobNo = new ArrayList<>();
                     for (TradeLicense result : licensesFromSearch) {
-                        if (!StringUtils.equals(result.getApplicationNumber(), license.getApplicationNumber()) && !(StringUtils.equals(result.getStatus(),STATUS_REJECTED) || StringUtils.equals(result.getStatus(),STATUS_EXPIRED))) {
+                    	Long validToDate = result.getValidTo();
+                        if (!StringUtils.equals(result.getApplicationNumber(), license.getApplicationNumber()) && 
+                        		!(StringUtils.equals(result.getStatus(),STATUS_REJECTED) || 
+                        				StringUtils.equals(result.getStatus(),STATUS_EXPIRED) || 
+                        				(validToDate != null && (validToDate - currentTime) <= reminderPeriods))) {
                             tradeTypeResultforSameMobNo.add(result.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0]);
                         }
                     }
@@ -431,10 +439,13 @@ public class TradeLicenseService {
                 businessServicefromPath = businessService_TL;
             tlValidator.validateBusinessService(tradeLicenseRequest, businessServicefromPath);
             Map<String, Object> mdmsDataMap = new HashMap<String, Object>();
+            List<Integer> reminderPeriodsList = new ArrayList<>();
             tradeLicenseRequest.getLicenses().forEach(license -> {
          	   Object mdmsDataForTenantId = util.mDMSCall(tradeLicenseRequest.getRequestInfo(), license.getTenantId());
      		   mdmsDataMap.put(license.getTenantId(), mdmsDataForTenantId);
+     		   reminderPeriodsList.addAll(JsonPath.read(mdmsDataForTenantId, "$.MdmsRes.TradeLicense.ReminderPeriods.*.reminderPeriods"));
      	   });
+            Long reminderPeriods = Long.valueOf(reminderPeriodsList.isEmpty() ? "0" : reminderPeriodsList.get(0).toString());
             Object billingSlabs = null;//util.getBillingSlabs(tradeLicenseRequest.getRequestInfo(), tradeLicenseRequest.getLicenses().get(0).getTenantId());
             String businessServiceName = null;
             switch (businessServicefromPath) {
@@ -472,7 +483,7 @@ public class TradeLicenseService {
             switch(businessServicefromPath)
             {
                 case businessService_BPA:
-                    validateMobileNumberUniqueness(tradeLicenseRequest);
+                    validateMobileNumberUniqueness(tradeLicenseRequest, reminderPeriods);
                     break;
             }
             Map<String, Difference> diffMap = diffService.getDifference(tradeLicenseRequest, searchResult);

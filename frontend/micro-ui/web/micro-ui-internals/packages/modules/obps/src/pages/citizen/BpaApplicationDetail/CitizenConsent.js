@@ -336,6 +336,7 @@ console.log('data for ownerconsent', data)
       // Update the entire data object with the new additionalDetails
       const updatedData = {
         applicationNo: data?.applicationNo,
+        ulbselection,
         tenantId: data?.tenantId,
         applicationData: {
           ...updatedAdditionalDetails

@@ -110,7 +110,7 @@ const BpaApplicationDetail = () => {
   // });
 console.log('cities', cities)
 let ulbType,districtCode,ulbCode, subjectLine = "";
-const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.districtName;
+const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.name;
 console.log('loginCity', loginCity)
 if (cities.data !== undefined) {
     const selectedTenantData = cities.data.find((item) => item?.city?.name === loginCity);
@@ -119,7 +119,12 @@ if (cities.data !== undefined) {
     ulbCode= selectedTenantData?.city?.code;
     districtCode = selectedTenantData?.city?.districtCode;
 
-    subjectLine = ulbType === "Municipal Corporation" ? "Sanction u/s 262(1) of PMC Act,1976" : "Sanction u/s 193 of PM Act,1911"
+    subjectLine =
+      ulbType === "Municipal Corporation"
+        ? "Sanction u/s 262(1) of PMC Act,1976"
+        : ulbType === "Improvement Trust"
+          ? "Sanctioned under Punjab Town Improvement Act, 1922"
+          : "Sanction u/s 193 of PM Act,1911";
 }
   console.log('ulbCode & districtCode & ulbType & subjectLine', ulbCode, districtCode,ulbType , subjectLine)
 
@@ -694,10 +699,17 @@ useEffect(() => {
 const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
     console.log('nowIST', nowIST)
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST}
+    const newValidityDate = new Date(data?.applicationData?.approvalDate);
+
+    // validity date = approval date + 3 as per feedback
+    newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
+    const approvalDatePlusThree = newValidityDate.getTime();
+
+    console.log("validity date",approvalDatePlusThree); 
+
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate}
     console.log('requestData', requestData)
     let count = 0
-
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
       if (
         (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||

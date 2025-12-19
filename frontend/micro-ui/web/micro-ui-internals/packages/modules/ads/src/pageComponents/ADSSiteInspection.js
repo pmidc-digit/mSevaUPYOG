@@ -50,13 +50,13 @@ const ADSSiteInspection = ({ t, config, onSelect, userType, formData, setError: 
             );
           })}
           {error && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div className="ads-error-container">
               <Toast label={error} onClose={() => setError(null)} error />
               <button
                 type="button"
                 aria-label="Dismiss"
                 onClick={() => setError(null)}
-                style={{ background: "transparent", border: "none", fontSize: "18px", cursor: "pointer", lineHeight: 1 }}
+                className="ads-error-dismiss"
                 title={t("CS_ACTION_CLOSE") || "Close"}
               >
                 ×

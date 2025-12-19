@@ -181,7 +181,7 @@ const NewADSStepperForm = ({ userType }) => {
 
   return (
     <div className="pageCard">
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "500", color: "#1C1D1F" }} divider={true}>
+      <CardHeader className="ads-heading-large" divider={true}>
         {t("ADS_REGISTRATION_APPLICATION")}
         {createTime && (
           <ReservationTimer

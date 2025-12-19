@@ -1,0 +1,203 @@
+.custom-timeline-container {
+  width: 100%;
+  padding: 24px;
+  background-color: #f9fafb;
+  margin-left: 16px;
+  border-radius: 12px;
+}
+
+.custom-timeline-header {
+  margin-bottom: 24px;
+}
+
+.custom-tracking-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.custom-tracking-line {
+  height: 1px;
+  background-color: #9ca3af;
+  width: 80px;
+}
+
+.custom-tracking-status-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d4ed8;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+}
+
+.custom-title-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.custom-timeline-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e3a8a;
+  white-space: nowrap;
+}
+
+.custom-blue-bar {
+  background: linear-gradient(to left, #2563eb, #0d9488); /* Reversed gradient */
+  height: 50px;
+  border-radius: 5px;
+  flex: 1;
+  min-width: 50px; /* Ensure it doesn't collapse */
+}
+
+.custom-timeline-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.custom-timeline-entry {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.custom-vertical-line {
+  position: absolute;
+  left: 93px;
+  top: 37px;
+  width: 3px;
+  background-color: #d1d5db;
+  bottom: 0;
+}
+
+.custom-date-badge {
+  display: inline-block;
+  background-color: #14b8a6;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.custom-entry-content {
+  display: flex;
+  gap: 24px;
+}
+
+.custom-icon-container {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: 69px;
+}
+
+.custom-circular-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #14b8a6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.custom-mail-icon {
+  width: 20px;
+  height: 20px;
+  color: white;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.custom-content-card {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.custom-card-top {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 24px;
+}
+
+.custom-card-left {
+  flex: 1;
+  padding-right: 16px;
+}
+
+.custom-card-right {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.custom-action-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.custom-actions-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.custom-status-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.custom-officer-info {
+  margin-bottom: 4px;
+}
+
+.custom-officer-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.custom-officer-email {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.custom-email-label {
+  font-weight: 600;
+}
+
+.custom-comments-section {
+  border-top: 1px solid #e5e7eb;
+  padding: 16px 24px 20px;
+}
+
+.custom-comments-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 8px;
+}
+
+.custom-comment-text {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}

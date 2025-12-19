@@ -5,8 +5,9 @@ import RALDocuments from "../../components/RALDocument";
 import { useParams } from "react-router-dom";
 // import { Loader } from "../../components/Loader";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+// import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import { getAcknowledgementData } from "../../utils/index";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
   const { acknowledgementIds, tenantId } = useParams();
@@ -155,8 +156,9 @@ const RALApplicationDetails = () => {
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            {/* <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} /> */}
             <Row
-              label={t("PENALTY_TYPE")}
+              label={t("RAL_FEE_CYCLE")}
               text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
             />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
@@ -180,7 +182,8 @@ const RALApplicationDetails = () => {
           </StatusTable>
         </Card>
 
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>

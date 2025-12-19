@@ -58,6 +58,7 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setAuditDetails(auditDetails);
 		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
 		setIdgenIds(allotmentRequest);
+		setRegistrationNumber(allotmentRequest);
 	}
 
 //	public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {
@@ -251,6 +252,20 @@ public class AllotmentEnrichmentService {
 				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
 				.get(0);
 		allotmentDetails.setApplicationNumber(applicationNumber);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		allotmentRequest.setAllotment(allotmentDetails);
+	}
+
+	private void setRegistrationNumber(AllotmentRequest allotmentRequest) {
+
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		String tenantId = allotmentDetails.getTenantId();
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+		String registrationNumber = propertyutil.getIdList(requestInfo, tenantId,
+				config.getRlRegistrationNumber(), config.getRlRegistrationNumberFormat(), 1)
+				.get(0);
+		allotmentDetails.setRegistrationNumber(registrationNumber);
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);

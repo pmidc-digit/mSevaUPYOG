@@ -54,6 +54,9 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			auditDetails = getAuditDetail(rs, "allotment");
 			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
 					.tenantId(rs.getString("tenant_id"))
+					.applicationNumber(rs.getString("application_number"))
+					.registrationNumber(rs.getString("registration_number"))
+					.tradeLicenseNumber(rs.getString("trade_license_number"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
 					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
 					.endDate(rs.getLong("end_date")).isGSTApplicable(rs.getBoolean("is_gst_applicable"))
@@ -61,6 +64,10 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.isRefundApplicableOnDiscontinuation(rs.getBoolean("is_refund_applicable_on_discontinuation"))
 					.termAndCondition(rs.getString("term_and_condition")).penaltyType(rs.getString("penalty_type"))
 					.createdTime(rs.getLong("created_time")).createdBy(rs.getString("created_by")).documents(docList)
+					.reasonForClosure(rs.getString("reason_for_closure"))
+					.notesComments(rs.getString("notes_comments"))
+					.amountToBeDeducted(rs.getString("amount_tobe_deducted"))
+					.amountToBeRefund(rs.getString("amount_to_be_refund"))
 					.ownerInfo(userList).auditDetails(auditDetails).build();
 			if (rs.getLong("totalAllotments") < 2) {
 				currentAllotmentList.add(currentAllotment);

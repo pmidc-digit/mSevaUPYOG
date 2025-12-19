@@ -217,11 +217,11 @@ public class AllotmentQueryBuilder {
 //		return mainQuery.toString();
 //	}
 
-	public String getAllotedByPropertyIdsAndStatusActive(String propertyId, String tenantId, String previousApplicationNumber) {
+	public String getAllotedByPropertyIdsAndStatusActive(String propertyId, String tenantId) {
 		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
 		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
-		mainQuery.append(" WHERE status = 'ACTIVE' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
+		mainQuery.append(" WHERE status = 'APPROVED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
 //		if(previousApplicationNumber==null){
 //			mainQuery.append(" AND previous_application_number is null");	
 //		}else {

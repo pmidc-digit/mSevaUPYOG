@@ -33,7 +33,8 @@ public class CalculatorController {
     public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq allotmentRequest, @RequestParam(required = false) boolean isSecurityDeposit) {
 
 
-    	DemandResponse demandResponse =demandService.createDemand(isSecurityDeposit,allotmentRequest);
+//    	DemandResponse demandResponse =demandService.createDemand(isSecurityDeposit,allotmentRequest);
+    	DemandResponse demandResponse =demandService.createDemand(allotmentRequest);
        demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
         return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
     }
@@ -44,8 +45,8 @@ public class CalculatorController {
 		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
 	}
 	@PostMapping("/_estimate")
-	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest, @RequestParam(required = false) boolean isSecurityDeposit) {
-		DemandResponse demandResponse =demandService.estimate(true,allotmentRequest);
+	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
+		DemandResponse demandResponse =demandService.estimate(allotmentRequest.getCalculationCriteria().stream().findFirst().get().isSecurityDeposite(),allotmentRequest);
 		demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}

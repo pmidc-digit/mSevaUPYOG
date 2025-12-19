@@ -63,6 +63,13 @@ public class RentLeaseConfiguration {
 
     @Value("${persister.migration.batch.count.topic}")
     private String migartionBatchCountTopic;
+    
+    //trade license
+    @Value("${egov.tl.host}")
+    private String tradeLicenseHost;
+    
+    @Value("${egov.tl.search.path}")
+    private String tradeLicenseSearchEndpoint;
 
     //USER
     @Value("${egov.user.host}")
@@ -88,6 +95,12 @@ public class RentLeaseConfiguration {
 
     @Value("${egov.idgen.applicationnumber.format}")
     private String allotmentApplicationNummberGenNameFormat;
+
+    @Value("${egov.rl.reg.number.name}")
+    private String rlRegistrationNumber;
+
+    @Value("${egov.rl.reg.number.format}")
+    private String rlRegistrationNumberFormat;
 
     
     @Value("${egov.idgen.ack.name}")

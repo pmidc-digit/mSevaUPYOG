@@ -98,9 +98,9 @@ public class AllotmentRepository {
 //		String query = queryBuilder.getAllotmentByPropertyId(propertyId, tenantId);
 //		return jdbcTemplate.query(query, searchRowMapper);
 //	}
-   public List<AllotmentDetails> getAllotedByPropertyIdsAndStatusActive(String propertyId,String tenantId,String previousApplicationNumber) {
+   public List<AllotmentDetails> getAllotedByPropertyIdsAndStatusActive(String propertyId,String tenantId) {
 		
-		String query = queryBuilder.getAllotedByPropertyIdsAndStatusActive(propertyId, tenantId,previousApplicationNumber);
+		String query = queryBuilder.getAllotedByPropertyIdsAndStatusActive(propertyId, tenantId);
 		return jdbcTemplate.query(query, searchRowMapper);
 	}
    

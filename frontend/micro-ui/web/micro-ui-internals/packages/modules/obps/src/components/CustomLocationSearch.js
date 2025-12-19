@@ -233,7 +233,7 @@ const initAutocomplete = (position) => {
         });
 
         const infowindow = new window.google.maps.InfoWindow({
-            content: `<div style="font-size:14px;">SITE ${index + 1}</div>`,
+            content: `<div className="obps-autocomplete-font-size">SITE ${index + 1}</div>`,
         });
 
         if (isMobile) {

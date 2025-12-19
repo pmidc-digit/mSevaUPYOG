@@ -61,141 +61,142 @@ const Footer = () => {
   
 
   return (
-    <div className="footer-body" style={{ width: "100%", position: "relative", bottom: 0, backgroundColor: "#152265", textAlign: "center" }}>
-      <div className="footer-top" styles={styles.footerTop}>
-      <div className="footer-top-icons" style={styles.footerTopIcons}>
+    // <div className="footer-body" style={{ width: "100%", position: "relative", bottom: 0, backgroundColor: "#152265", textAlign: "center" }}>
+    //   <div className="footer-top" styles={styles.footerTop}>
+    //   <div className="footer-top-icons" style={styles.footerTopIcons}>
         
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/nic%20image.png" alt="nic"  style={styles.image}/>
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/myGov%20image.png" alt="myGov"  style={styles.image}/>
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/data%20gov%20image.png" alt="dataGov" style={styles.image}/>
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/digital%20india%20image.png" alt="digitalIndia" style={styles.image} />
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/gem%20image.png" alt="gemIndia" style={styles.image} />
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/india%20gov%20image.png" alt="indiaGov" style={styles.image}/>
-          <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/meity%20image.png" alt="meity" style={styles.image}/>
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/nic%20image.png" alt="nic"  style={styles.image}/>
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/myGov%20image.png" alt="myGov"  style={styles.image}/>
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/data%20gov%20image.png" alt="dataGov" style={styles.image}/>
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/digital%20india%20image.png" alt="digitalIndia" style={styles.image} />
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/gem%20image.png" alt="gemIndia" style={styles.image} />
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/india%20gov%20image.png" alt="indiaGov" style={styles.image}/>
+    //       <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/meity%20image.png" alt="meity" style={styles.image}/>
        
-      </div>
-       {/* <button className="footer-top-button"   styles={styles.footerTopButton}>
-        <div className="footer-top-header" styles={styles.footerTopHeader}> 
-          Follow Us
-        </div>
+    //   </div>
+    //    {/* <button className="footer-top-button"   styles={styles.footerTopButton}>
+    //     <div className="footer-top-header" styles={styles.footerTopHeader}> 
+    //       Follow Us
+    //     </div>
 
-        <div className="social-icons " style={styles.footerTopSocialIcons}>
-        <a href="https://www.facebook.com" target="_blank" className="social-icon facebook">FB</a>
-        <a href="https://www.twitter.com" target="_blank" className="social-icon twitter">TW</a>
-        <a href="https://www.linkedin.com" target="_blank" className="social-icon linkedin">LIN</a>
-        <a href="https://www.youtube.com" target="_blank" className="social-icon youtube">UTUBE</a>
-        </div>
+    //     <div className="social-icons " style={styles.footerTopSocialIcons}>
+    //     <a href="https://www.facebook.com" target="_blank" className="social-icon facebook">FB</a>
+    //     <a href="https://www.twitter.com" target="_blank" className="social-icon twitter">TW</a>
+    //     <a href="https://www.linkedin.com" target="_blank" className="social-icon linkedin">LIN</a>
+    //     <a href="https://www.youtube.com" target="_blank" className="social-icon youtube">UTUBE</a>
+    //     </div>
 
-       </button> */}
+    //    </button> */}
 
-      </div>
+    //   </div>
 
-      <div className="footer-bottom">
-        <div className="footer-bottom-first">
-          <h2>Punjab Municipal Bhawan</h2>
-          <h2>3, Dakshin Marg, 35A,</h2>
-          <h2>Chandigarh, 160022</h2>
-          <h2>Mail : pgrs.lg@punjab.gov.in</h2>
-        </div>
-        <div className="footer-bottom-second">
-          <h1>LINKS</h1>
-          <ul>
-            <li>
-              <a href="#item1">Privacy Policy</a>
-            </li>
-            <li>
-              <a href="#item2">Disclaimer</a>
-            </li>
-            <li>
-              <a href="#item3">Help</a>
-            </li>
-            <li>
-              <a href="#item4">Terms & Conditions</a>
-            </li>
-            <li>
-              <a href="#item5">Accessibility Statement</a>
-            </li>
-            <li>
-              <a href="#item6">Copyright Policy</a>
-            </li>
-            <li>
-              <a href="#item7">Contact Us</a>
-            </li>
-          </ul>
-        </div>
-        <div className="footer-bottom-third">
-          <h1>IMPORTANT LINKS</h1>
-          <ul>
-            <li>
-              <a href="#item1">Menu 1</a>
-            </li>
-            <li>
-              <a href="#item2">Menu 2</a>
-            </li>
-            <li>
-              <a href="#item3">Menu 3</a>
-            </li>
-            <li>
-              <a href="#item4">Menu 4</a>
-            </li>
-          </ul>
-        </div>
-        <div className="footer-bottom-fourth">
-          <h1>EXTERNAL WEBSITES</h1>
-          <ul>
-            <li>
-              <a href="#item1">Menu 1</a>
-            </li>
-            <li>
-              <a href="#item2">Menu 2</a>
-            </li>
-            <li>
-              <a href="#item3">Menu 3</a>
-            </li>
-            <li>
-              <a href="#item4">Menu 4</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      {/* <div style={{backgroundColor:'#294A97', width:'100%',minHeight:'200px'}}></div> */}
-      <div style={{ display: "flex", justifyContent: "center", color: "white" }}>
-        <span
-          style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
-          onClick={() => {
-            window.open("https://www.digit.org/", "_blank").focus();
-          }}
-        >
-          Powered by DIGIT
-        </span>
-        <span style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>|</span>
-        <a
-          style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
-          href="#"
-          target="_blank"
-        >
-          UPYOG License
-        </a>
+    //   <div className="footer-bottom">
+    //     <div className="footer-bottom-first">
+    //       <h2>Punjab Municipal Bhawan</h2>
+    //       <h2>3, Dakshin Marg, 35A,</h2>
+    //       <h2>Chandigarh, 160022</h2>
+    //       <h2>Mail : pgrs.lg@punjab.gov.in</h2>
+    //     </div>
+    //     <div className="footer-bottom-second">
+    //       <h1>LINKS</h1>
+    //       <ul>
+    //         <li>
+    //           <a href="#item1">Privacy Policy</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item2">Disclaimer</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item3">Help</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item4">Terms & Conditions</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item5">Accessibility Statement</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item6">Copyright Policy</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item7">Contact Us</a>
+    //         </li>
+    //       </ul>
+    //     </div>
+    //     <div className="footer-bottom-third">
+    //       <h1>IMPORTANT LINKS</h1>
+    //       <ul>
+    //         <li>
+    //           <a href="#item1">Menu 1</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item2">Menu 2</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item3">Menu 3</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item4">Menu 4</a>
+    //         </li>
+    //       </ul>
+    //     </div>
+    //     <div className="footer-bottom-fourth">
+    //       <h1>EXTERNAL WEBSITES</h1>
+    //       <ul>
+    //         <li>
+    //           <a href="#item1">Menu 1</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item2">Menu 2</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item3">Menu 3</a>
+    //         </li>
+    //         <li>
+    //           <a href="#item4">Menu 4</a>
+    //         </li>
+    //       </ul>
+    //     </div>
+    //   </div>
+    //   {/* <div style={{backgroundColor:'#294A97', width:'100%',minHeight:'200px'}}></div> */}
+    //   <div style={{ display: "flex", justifyContent: "center", color: "white" }}>
+    //     <span
+    //       style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+    //       onClick={() => {
+    //         window.open("https://www.digit.org/", "_blank").focus();
+    //       }}
+    //     >
+    //       Powered by DIGIT
+    //     </span>
+    //     <span style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>|</span>
+    //     <a
+    //       style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+    //       href="#"
+    //       target="_blank"
+    //     >
+    //       UPYOG License
+    //     </a>
 
-        <span className="upyog-copyright-footer" style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>
-          |
-        </span>
-        <span
-          className="upyog-copyright-footer"
-          style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
-          onClick={() => {
-            window.open("", "_blank").focus();
-          }}
-        >
-          Copyright © {new Date().getFullYear()} -
-        </span>
+    //     <span className="upyog-copyright-footer" style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>
+    //       |
+    //     </span>
+    //     <span
+    //       className="upyog-copyright-footer"
+    //       style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+    //       onClick={() => {
+    //         window.open("", "_blank").focus();
+    //       }}
+    //     >
+    //       Copyright © {new Date().getFullYear()} -
+    //     </span>
 
-        {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
-      </div>
-      {/* <div className="upyog-copyright-footer-web">
-        <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
-      </div> */}
-    </div>
+    //     {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
+    //   </div>
+    //   {/* <div className="upyog-copyright-footer-web">
+    //     <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
+    //   </div> */}
+    // </div>
+    ""
   );
 };
 

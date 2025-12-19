@@ -399,7 +399,7 @@ const EditLayoutApplication = () => {
   }
 
   return (
-    <div className="pageCard">
+    <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("Layout Application")}
       </CardHeader>

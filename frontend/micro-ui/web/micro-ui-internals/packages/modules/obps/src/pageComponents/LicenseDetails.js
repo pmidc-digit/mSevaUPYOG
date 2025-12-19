@@ -300,17 +300,23 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 })}
               /> */}
               <div>
-                <CardLabel>{t("BPA_APPLICANT_DOB_LABEL")}*</CardLabel>
-                <DatePicker
-                  date={dateOfBirth}
-                  onChange={handleDateOfBirthChange}
-                  min="1900-01-01"
-                  max={new Date().toISOString().split("T")[0]}
-                  isRequired={true}
-                  // disabled={disable?.dateOfBirth}
-                  disabled={!isEditable || disable?.dateOfBirth}
-                />
-                {errorMessage?.dateOfBirth?.length > 0 && <div style={errorStyle}>{errorMessage?.dateOfBirth}</div>}
+              <CardLabel>{t("BPA_APPLICANT_DOB_LABEL")}*</CardLabel>
+              <DatePicker
+                date={dateOfBirth}
+                onChange={handleDateOfBirthChange}
+                min="1900-01-01"
+                max={new Date().toISOString().split("T")[0]}
+                isRequired={true}
+                // disabled={disable?.dateOfBirth}
+                disabled={!isEditable || disable?.dateOfBirth}
+              />
+              {errorMessage?.dateOfBirth?.length>0 && (
+                  <div
+                   
+                  >
+                    {errorMessage?.dateOfBirth}
+                  </div>
+                )}
               </div>
               {/* <CardLabel>{`${t("BPA_APPLICANT_NAME_LABEL")}*`}</CardLabel>
             <TextInput
@@ -346,7 +352,13 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   disabled={!isEditable || disable?.gender}
                 />
 
-                {errorMessage?.gender?.length > 0 && <div style={errorStyle}>{errorMessage?.gender}</div>}
+                {errorMessage?.gender?.length>0 && (
+                  <div
+                  
+                  >
+                    {errorMessage?.gender}
+                  </div>
+                )}
               </div>
 
               <CardLabel>{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}*`}</CardLabel>
@@ -358,26 +370,33 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
               />
               <div>
-                <CardLabel>{`${t("BPA_APPLICANT_EMAIL_LABEL")}*`}</CardLabel>
-                <TextInput
-                  t={t}
-                  type={"email"}
-                  isMandatory={false}
-                  optionKey="i18nKey"
-                  name="email"
-                  value={email}
-                  onChange={selectEmail}
-                  // disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
-                  disable={!isEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
-                  // disable={editScreen}
-                  {...{
-                    required: true,
-                    pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
-                    type: "email",
-                    title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-                  }}
-                />
-                {errorMessage?.email?.length > 0 && <div style={errorStyle}>{errorMessage?.email}</div>}
+              <CardLabel>{`${t("BPA_APPLICANT_EMAIL_LABEL")}*`}</CardLabel>
+              <TextInput
+                t={t}
+                type={"email"}
+                isMandatory={false}
+                optionKey="i18nKey"
+                name="email"
+                value={email}
+                onChange={selectEmail}
+                // disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
+                 disable={!isEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
+                
+                // disable={editScreen}
+                {...{
+                  required: true,
+                  pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
+                  type: "email",
+                  title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                }}
+              />
+              {errorMessage?.email?.length>0 && (
+                  <div
+                   
+                  >
+                    {errorMessage?.email}
+                  </div>
+                )}
               </div>
               {/* <CardLabel>{`${t("BPA_APPLICANT_PAN_NO")}`}</CardLabel>
             <TextInput

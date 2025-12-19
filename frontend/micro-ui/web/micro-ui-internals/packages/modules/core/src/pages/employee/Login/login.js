@@ -1,4 +1,4 @@
-import { BackButton, Dropdown, Loader, Toast } from "@mseva/digit-ui-react-components";
+import { BackButton, Dropdown, Loader, LoginIcon, Toast } from "@mseva/digit-ui-react-components";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";
@@ -27,12 +27,13 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [user, setUser] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [disable, setDisable] = useState(false);
+   const [isForgotPasswordView, setIsForgotPasswordView] = useState(false)
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
-  let   sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
+  let sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
-  
+
   useEffect(() => {
     if (!user) {
       return;
@@ -50,7 +51,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     }
 
     /*  RAIN-6489 Logic to navigate to National DSS home incase user has only one role [NATADMIN]*/
-    if (user?.info?.roles && user?.info?.roles?.length > 0 &&  user?.info?.roles?.every((e) => e.code === "NATADMIN")) {
+    if (user?.info?.roles && user?.info?.roles?.length > 0 && user?.info?.roles?.every((e) => e.code === "NATADMIN")) {
       redirectPath = "/digit-ui/employee/dss/landing/NURT_DASHBOARD";
     }
     /*  RAIN-6489 Logic to navigate to National DSS home incase user has only one role [NATADMIN]*/
@@ -90,9 +91,14 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   };
 
   const onForgotPassword = () => {
-    sessionStorage.getItem("User") && sessionStorage.removeItem("User")
+    sessionStorage.getItem("User") && sessionStorage.removeItem("User");
+     setIsForgotPasswordView(true)
     history.push("/digit-ui/employee/user/forgot-password");
   };
+
+    const onBackToLogin = () => {
+    setIsForgotPasswordView(false)
+  }
 
   const [userId, password, city] = propsConfig.inputs;
   const config = [
@@ -114,28 +120,47 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           },
           isMandatory: true,
         },
+        // {
+        //   label: t(city.label),
+        //   type: city.type,
+        //   populators: {
+        //     name: city.name,
+        //     customProps: {},
+        //     component: (props, customProps) => (
+        //       <Dropdown
+        //         option={cities}
+                
+        //         optionKey="i18nKey"
+        //         select={(d) => {
+        //           props.onChange(d);
+        //         }}
+        //         t={t}
+        //         {...customProps}
+        //       />
+        //     ),
+        //   },
+        //   isMandatory: true,
+        // },
         {
           label: t(city.label),
-          type: city.type,
+          type: "custom",
           populators: {
             name: city.name,
             customProps: {},
             component: (props, customProps) => (
               <Dropdown
                 option={cities}
-               // className="login-city-dd"
-               className="cityCss"
+
                 optionKey="i18nKey"
-                select={(d) => {
-                  props.onChange(d);
-                }}
+                select={(d) => props.onChange(d)}
                 t={t}
                 {...customProps}
               />
             ),
           },
           isMandatory: true,
-        },
+        }
+
       ],
     },
   ];
@@ -143,57 +168,98 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   return isLoading || isStoreLoading ? (
     <Loader />
   ) : (
+    // <Background>
+
+    //   <FormComposer
+    //     onSubmit={onLogin}
+    //     isDisabled={isDisabled || disable}
+    //     noBoxShadow
+    //     inline
+    //     submitInForm
+    //     config={config}
+    //     label={propsConfig.texts.submitButtonLabel}
+    //     secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
+    //     onSecondayActionClick={onForgotPassword}
+    //     heading={propsConfig.texts.header}
+    //     description={"Login to access your account"}
+    //     headingStyle={{ textAlign: "center" }}
+    //     className="loginFormStyleEmployeeNew"
+    //     buttonStyle={{ maxWidth: "100%", width: "100%" ,backgroundColor:"#2947A3"}}
+    //   >
+
+    //   </FormComposer>
+    //   {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
+
+    // </Background>
     <Background>
-      {/* <div className="employeeBackbuttonAlign">
-        <BackButton variant="white" style={{ borderBottom: "none" }} />
-      </div> */}
-
-      <FormComposer
-        onSubmit={onLogin}
-        isDisabled={isDisabled || disable}
-        noBoxShadow
-        inline
-        submitInForm
-        config={config}
-        label={propsConfig.texts.submitButtonLabel}
-        secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
-        onSecondayActionClick={onForgotPassword}
-        heading={propsConfig.texts.header}
-        description={"Login to access your account"}
-        headingStyle={{ textAlign: "center" }}
-        //cardStyle={{ margin: "auto", minWidth: "408px" }}
-        //cardStyle={{ margin: "auto", minWidth: "738px" ,paddingTop:'56px',paddingBottom:'56px'}}
-        className="loginFormStyleEmployeeNew"
-       // className='box-border h-32 w-300 p-4 border-4 z-index-4 justify-center'
-        buttonStyle={{ maxWidth: "100%", width: "100%" ,backgroundColor:"#2947A3"}}
-      >
-        {/* <Header /> */}
-      </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
-    
-    
-     
- 
-    {/* .  <div className="footerCont">
-      <div className="footer">
-        <div className="footerText">
-          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
-          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px"}}>|</span>
-          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
-
-          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize:"12px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", border:'2px solid yellow',fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
-          
-           <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
-
-        </div>
-        <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
+      <div className="employee-login-container">
+        <div className="employee-login-content">
+          <div className="employee-login-icon-circle">
+            <LoginIcon />
           </div>
+
+          <div className="employee-login-branding">
+            <h1 className="employee-upyog-title">UPYOG</h1>
+            <p className="employee-upyog-subtitle">Urban Governance Platform</p>
+          </div>
+
+          <div className="employee-login-card">
+            {isForgotPasswordView && (
+              <button onClick={onBackToLogin} className="employee-back-button" type="button">
+                ← Back to Login
+              </button>
+            )}
+
+            {!isForgotPasswordView ? (
+              <FormComposer
+                onSubmit={onLogin}
+                isDisabled={isDisabled || disable}
+                noBoxShadow
+                inline
+                submitInForm
+                config={config}
+                label={propsConfig.texts.submitButtonLabel}
+                secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
+                onSecondayActionClick={onForgotPassword}
+                heading={propsConfig.texts.header}
+                description={"Enter your details to access your account"}
+                headingStyle={{ textAlign: "left", fontSize: "32px", fontWeight: "600", marginBottom: "8px" }}
+                className="employee-login-form"
+                buttonStyle={{
+                  maxWidth: "100%",
+                  width: "100%",
+                  backgroundColor: "#5243E9",
+                  borderRadius: "8px",
+                  padding: "12px",
+                }}
+              />
+            ) : (
+              <div className="employee-forgot-password-content">
+                <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px", color: "#0b0c0c" }}>
+                  Forgot Password?
+                </h2>
+                <p style={{ fontSize: "16px", color: "#686677", lineHeight: "1.5" }}>
+                  Please contact your system administrator to reset your password.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="employee-login-footer">
+            <span style={{ cursor: "pointer" }} onClick={() => window.open("https://www.digit.org/", "_blank")}>
+              Powered by DIGIT
+            </span>
+            <span style={{ margin: "0 8px" }}>|</span>
+            <a href="#" target="_blank" rel="noreferrer">
+              UPYOG License
+            </a>
+            <span style={{ margin: "0 8px" }}>|</span>
+            <span>Copyright © {new Date().getFullYear()}</span>
+          </div>
+        </div>
       </div>
-      </div> */}
 
-
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true} />}
     </Background>
   );
 };

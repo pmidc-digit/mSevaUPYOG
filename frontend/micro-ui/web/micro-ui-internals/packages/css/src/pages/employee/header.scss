@@ -1,0 +1,262 @@
+/* Banner Header Container */
+.employee-header-bannerHeader {
+  width: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Top App Bar */
+.employee-header-appbar {
+  background-color: #2947a3;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.employee-header-appbar-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.employee-header-appbar-box-left {
+  font-weight: 500;
+}
+
+.employee-header-appbar-box-right a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  transition: opacity 0.2s;
+}
+
+.employee-header-appbar-box-right a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Main Header */
+.employee-header-topHeader {
+  background-color: #ffffff;
+  padding: 16px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.employee-header-topHeader-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+}
+
+/* Logo Section */
+.employee-header-topHeader-box-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.employee-header-header-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Navigation Menu */
+.employee-header-topHeader-box-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.employee-header-header-nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 32px;
+}
+
+.employee-header-header-nav li {
+  margin: 0;
+}
+
+.employee-header-header-nav a {
+  color: #374151;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.2s;
+  position: relative;
+  padding: 8px 0;
+}
+
+.employee-header-header-nav a:hover {
+  color: #2947a3;
+}
+
+.employee-header-header-nav a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #2947a3;
+  transition: width 0.3s ease;
+}
+
+.employee-header-header-nav a:hover::after {
+  width: 100%;
+}
+
+/* Action Buttons */
+.employee-header-topHeader-box-right {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.employee-header-header-btn {
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  outline: none;
+}
+
+.employee-header-header-btn-login {
+  background-color: transparent;
+  color: #2947a3;
+  border: 2px solid #2947a3;
+}
+
+.employee-header-header-btn-login:hover {
+  background-color: #2947a3;
+  color: #ffffff;
+}
+
+.employee-header-header-btn-register {
+  background-color: #2947a3;
+  color: #ffffff;
+  border: 2px solid #2947a3;
+}
+
+.employee-header-header-btn-register:hover {
+  background-color: #1e3a8a;
+  border-color: #1e3a8a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(41, 71, 163, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .employee-header-topHeader-container {
+    gap: 16px;
+  }
+
+  .employee-header-header-nav ul {
+    gap: 20px;
+  }
+
+  .employee-header-header-nav a {
+    font-size: 14px;
+  }
+
+  .employee-header-header-logo {
+    height: 42px;
+  }
+}
+
+@media (max-width: 768px) {
+  .employee-header-appbar-container {
+    padding: 0 16px;
+  }
+
+  .employee-header-topHeader {
+    padding: 12px 0;
+  }
+
+  .employee-header-topHeader-container {
+    padding: 0 16px;
+    flex-wrap: wrap;
+  }
+
+  .employee-header-topHeader-box-left {
+    gap: 16px;
+  }
+
+  .employee-header-header-logo {
+    height: 36px;
+  }
+
+  .employee-header-topHeader-box-center {
+    order: 3;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .employee-header-header-nav ul {
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .employee-header-header-nav a {
+    font-size: 13px;
+  }
+
+  .employee-header-topHeader-box-right {
+    gap: 8px;
+  }
+
+  .employee-header-header-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-header-appbar {
+    font-size: 12px;
+    padding: 6px 0;
+  }
+
+  .employee-header-appbar-box-right a {
+    font-size: 11px;
+  }
+
+  .employee-header-topHeader-box-left {
+    gap: 12px;
+  }
+
+  .employee-header-header-logo {
+    height: 32px;
+  }
+
+  .employee-header-header-nav ul {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .employee-header-header-nav a {
+    font-size: 12px;
+  }
+
+  .employee-header-header-btn {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+}

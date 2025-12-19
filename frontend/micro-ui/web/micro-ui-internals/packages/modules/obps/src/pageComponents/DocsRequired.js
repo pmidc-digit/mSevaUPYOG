@@ -139,7 +139,7 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
         <CardHeader>{checkingUrl ? t(`BPA_OOCUPANCY_CERTIFICATE_APP_LABEL`) : t(`OBPS_NEW_BUILDING_PERMIT`)}</CardHeader>
         {/* TODO: Change text styles */}
         {/* <CitizenInfoLabel style={{margin:"0px"}} textStyle={{color:"#0B0C0C"}} text={t(`OBPS_DOCS_REQUIRED_TIME`)} showInfo={false} /> */}
-        <CardText style={{ color: "#0B0C0C", marginTop: "12px", fontSize: "16px", fontWeight: "400", lineHeight: "24px" }}>
+        <CardText >
           {t(`OBPS_NEW_BUILDING_PERMIT_DESCRIPTION`)}
         </CardText>
         {isLoading ? (
@@ -147,11 +147,11 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
         ) : (
           <Fragment>
             {codedDocs.map((doc, index) => (
-              <div key={index} style={{ fontWeight: 700, marginBottom: "8px" }}>
-                <div style={{ display: "flex" }}>
+              <div className="documentation-list" key={index}>
+            
                   <div>{`${index + 1}.`}&nbsp;</div>
                   <div>{t(doc.code)}</div>
-                </div>
+            
               </div>
             ))}
           </Fragment>

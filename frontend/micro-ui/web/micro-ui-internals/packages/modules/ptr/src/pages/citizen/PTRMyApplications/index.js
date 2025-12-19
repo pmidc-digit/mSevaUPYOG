@@ -94,6 +94,12 @@ export const PTRMyApplications = () => {
   return (
     <React.Fragment>
       <Header>{`${t("CS_TITLE_MY_APPLICATIONS")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header>
+        <p style={{ marginLeft: "16px", marginTop: "16px" }}>
+        {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
+        <span className="link" style={{ display: "block" }}>
+          <Link to="/digit-ui/citizen/ptr/petservice/new-application/info">{t("PTR_COMMON_CLICK_HERE_TO_REGISTER_NEW_PET")}</Link>
+        </span>
+      </p>
       <div>
         {loadingPage ? (
           <Loader />
@@ -158,12 +164,7 @@ export const PTRMyApplications = () => {
         </div>
       )}
 
-      <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-        {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
-        <span className="link" style={{ display: "block" }}>
-          <Link to="/digit-ui/citizen/ptr/petservice/new-application/info">{t("PTR_COMMON_CLICK_HERE_TO_REGISTER_NEW_PET")}</Link>
-        </span>
-      </p>
+    
     </React.Fragment>
   );
 };

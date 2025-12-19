@@ -98,18 +98,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.BPA?.CLUDocuments?.map((document, index) => {
             return (
-              <div
-                  style={{
-                    background: "#FAFAFA",
-                    border: "1px solid #D6D5D4",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    maxWidth: "600px",
-                    minWidth: "280px",
-                    marginBottom: "15px",
-                    paddingTop: "15px",
-                  }}
-                  >
+              <div className="clu-doc-required-card">
               <CLUSelectDocument
                 key={index}
                 document={document}
@@ -364,14 +353,14 @@ function CLUSelectDocument({
   }
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="clu-doc-required-wrapper">
       {getLoading && <Loader />}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+          <CardLabel className="clu-doc-required-label">
             {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"} 
           </CardLabel>
 
-      <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
+      <div className="clu-doc-required-field">
         {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
           <CustomUploadFile
             id={"clu-doc"}
@@ -398,8 +387,8 @@ function CLUSelectDocument({
           />
         )}
 
-            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
-            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
+            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="clu-doc-required-coordinates">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
+            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="clu-doc-required-coordinates">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
           </div>
 
       </LabelFieldPair>

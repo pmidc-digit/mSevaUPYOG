@@ -160,8 +160,8 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   }, [history, dispatch]);
 
   return (
-    <div className={isMobile?"":"pageCard"}>
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+    <div className={isMobile?"":"card"}>
+      <CardHeader divider={true}>
         {t("bpa_header_application")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

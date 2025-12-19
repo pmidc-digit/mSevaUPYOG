@@ -9,3 +9,5 @@ export const RESET_LAYOUT_NEW_APPLICATION_FORMType = "RESET_LAYOUT_NEW_APPLICATI
 export const UPDATE_LayoutNewApplication_CoOrdinatesType = "UPDATE_LayoutNewApplication_CoOrdinates";
 
 export const UPDATE_OBPS_CoOrdinatesType = "UPDATE_OBPS_CoOrdinates";
+export const UPDATE_OBPS_OwnerPhotosType = "UPDATE_OBPS_OwnerPhotos";
+export const UPDATE_OBPS_OwnerIdsType = "UPDATE_OBPS_OwnerIds";

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
+import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
   const userInfo = Digit.UserService.getUser();
@@ -166,7 +167,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         },
       ],
       className: "CitizenHomeCard",
-      styles: { padding: "0px", minWidth: "90%", minHeight: "90%", display: "flex" },
+    
     },
     {
       title: t("ACTION_TEST_EDCR_SCRUTINY"),
@@ -181,13 +182,13 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           i18nKey: t("BPA_OC_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
         },
       ],
-      styles: { minWidth: "90%", minHeight: "90%" },
+    
     },
     {
       title: t("ACTION_TEST_BPA_STAKE_HOLDER_HOME"),
       Icon: <BPAIcon className="fill-path-primary-main" />,
       links: bpaLinks,
-      styles: { minWidth: "90%", minHeight: "90%" },
+     
     },
     {
       title: t("ACTION_TEST_LAYOUT_HOME"),
@@ -206,7 +207,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
         },
       ],
-      styles: { minWidth: "90%", minHeight: "90%" },
+     
     },
     {
       title: t("ACTION_TEST_CLU_HOME"),
@@ -225,7 +226,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
         },
       ],
-      styles: { minWidth: "90%", minHeight: "90%" },
+     
     },
   ];
 
@@ -237,7 +238,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
             {data.name === "employeeCard" ? (
               <EmployeeModuleCard {...data} />
             ) : (
-              <CitizenHomeCard header={data.title} links={data.links} Icon={() => data.Icon} styles={data?.styles} />
+              <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
             )}
           </div>
         );

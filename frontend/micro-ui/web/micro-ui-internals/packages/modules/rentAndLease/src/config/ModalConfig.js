@@ -31,6 +31,38 @@ export const ModalConfig = ({
   if (action.isTerminateState) {
     checkAssigneeVisible = false;
   }
+  if (action?.action === "RENEWAL") {
+    return {
+      label: {
+        // heading: t("RAL_RENEWAL_MODAL_HEADING"),
+        submit: t("RAL_RENEWAL_SUBMIT"),
+        cancel: t("WF_EMPLOYEE_NEWTL_CANCEL"),
+      },
+      form: [
+        {
+          body: [
+            {
+              label: `${t("RAL_TRADE_LICENSE_NUMBER")} *`,
+              isMandatory: false,
+              type: "text",
+              validation: {
+                // required: true,
+                message: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                pattern: {
+                  value: /^[A-Z0-9\/-]{6,20}$/,
+                  message: t("RAL_INVALID_TRADE_LICENSE_NUMBER"),
+                },
+              },
+              populators: {
+                name: "tradeLicenseNumber",
+              },
+            },
+          ],
+        },
+      ],
+    };
+  }
+
   return {
     label: {
       // heading: t(`WF_${action?.action}_APPLICATION`),

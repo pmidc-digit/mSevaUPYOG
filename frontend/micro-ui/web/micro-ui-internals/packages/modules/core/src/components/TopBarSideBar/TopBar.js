@@ -122,7 +122,7 @@ const TopBar = ({
 
   if (CITIZEN) {
     return (
-      <div className="navbar" style={{padding : "1rem 0rem"}}>
+      <div className="navbar" style={{padding : "1rem 1.5rem"}}>
         <div className="center-container_navbar" style={{}}>
           <div className="left-wrapper_navbar" style={{}}>
             {isLoggedIn && <Hamburger handleClick={updateSidebar} />}

@@ -59,7 +59,7 @@ const TopBar = ({
   console.log("TopBar Debug:", { isLoggedIn, userToken: userToken?.value?.token, userDetailsToken: userDetails?.access_token, pathname });
   
   return (
-     <div className="navbar" style={{padding : "1rem 0rem"}}>
+     <div className="navbar" style={{padding : "1rem 1.5rem"}}>
       <div className="center-container_navbar" style={{}}>
         <div className="left-wrapper_navbar" style={{}}>
           {isLoggedIn && <Hamburger handleClick={toggleSidebar} />}
@@ -69,7 +69,7 @@ const TopBar = ({
           </div>
         </div>
 
-        <div className="right-wrapper_navbar" style={{}}>
+        <div className="right-wrapper_navbar" style={{ paddingRight: "0.5rem" }}>
           {!hideNotificationIconOnSomeUrlsWhenNotLoggedIn && changeLanguage}
           {!hideNotificationIconOnSomeUrlsWhenNotLoggedIn && (
             <div className="notification-wrapper" onClick={onNotificationIconClick}>

@@ -172,7 +172,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
         </div>
         <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

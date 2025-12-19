@@ -195,7 +195,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
           </LabelFieldPair>
         </div>
         <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

@@ -317,7 +317,7 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
       {showToast && <Toast isDleteBtn error label={error} onClose={closeToast} />}
 
       <ActionBar>
-        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={onGoBack} style={{ background: " white", color: "#2947a3", border: "1px solid" }} />
+        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={onGoBack} className="submit-bar-back" />
 
         {displayMenu && (
           <Menu

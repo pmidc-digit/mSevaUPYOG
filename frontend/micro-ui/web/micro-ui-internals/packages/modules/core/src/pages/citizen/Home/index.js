@@ -37,7 +37,13 @@ const Home = () => {
   const history = useHistory()
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredServices, setFilteredServices] = useState([])
-  const [showAllCards, setShowAllCards] = useState(false)
+  
+  // Use sessionStorage to persist showAllCards state across navigation
+  const getInitialShowAllCards = () => {
+    const stored = sessionStorage.getItem("citizen.home.showAllCards")
+    return stored === "true"
+  }
+  const [showAllCards, setShowAllCards] = useState(getInitialShowAllCards)
   
   const citizenInfoString = window.localStorage.getItem("user-info")
   const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null
@@ -122,6 +128,29 @@ const Home = () => {
         return <PTRIcon />
       case "CITIZEN_SERVICE_SWACH":
         return <CHBIcon />
+      case "CITIZEN_SERVICE_NOC":
+        return <NOCIcon />
+      case "CITIZEN_SERVICE_OBPS":
+        return <PTIcon />
+      case "CITIZEN_SERVICE_ADS":
+        return <ADSIcone />
+      case "CITIZEN_SERVICE_NDC":
+        return <NDCIcon />
+      case "CITIZEN_SERVICE_MODULE_SV":
+        return <MCollectIcon />
+        case "CITIZEN_SERVICE_CHALLANGENERATION":
+        return <NDCIcon />
+        case "CITIZEN_SERVICE_MCOLLECT":
+        return <MCollectIcon />
+      case "CITIZEN_SERVICE_DOCUMENTS":
+        return <DocumentIcon />
+      case "CITIZEN_SERVICE_HELP":
+        return <HelpIcon />
+        case "CITIZEN_SERVICE_RENTANDLEASE":
+        return <GenericFileIcon />
+        case "CITIZEN_SERVICE_CHB":
+        return <CHBIcon />
+
       default:
         return <MCollectIcon />
     }
@@ -275,7 +304,11 @@ const Home = () => {
           {allCitizenServicesProps.options?.length > 4 && (
             <div style={{ marginTop: "24px", textAlign: "center", justifyContent: "center", display: "flex", width: "100%" }}>
               <button
-                onClick={() => setShowAllCards(!showAllCards)}
+                onClick={() => {
+                  const newValue = !showAllCards
+                  setShowAllCards(newValue)
+                  sessionStorage.setItem("citizen.home.showAllCards", newValue.toString())
+                }}
                 style={{
                   padding: "12px 32px",
                   backgroundColor: "#2563eb",

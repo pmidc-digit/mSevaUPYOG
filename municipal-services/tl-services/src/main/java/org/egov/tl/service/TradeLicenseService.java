@@ -150,6 +150,9 @@ public class TradeLicenseService {
     public void validateMobileNumberUniqueness(TradeLicenseRequest request, Long reminderPeriods) {
     	Long currentTime = System.currentTimeMillis();
         for (TradeLicense license : request.getLicenses()) {
+        	String applicationType = license.getApplicationType() != null
+    				? license.getApplicationType().toString()
+    				: "";
             for (TradeUnit tradeUnit : license.getTradeLicenseDetail().getTradeUnits()) {
                 String tradetypeOfNewLicense = tradeUnit.getTradeType().split("\\.")[0];
                 List<String> mobileNumbers = license.getTradeLicenseDetail().getOwners().stream().map(OwnerInfo::getMobileNumber).collect(Collectors.toList());
@@ -162,7 +165,7 @@ public class TradeLicenseService {
                         if (!StringUtils.equals(result.getApplicationNumber(), license.getApplicationNumber()) && 
                         		!(StringUtils.equals(result.getStatus(),STATUS_REJECTED) || 
                         				StringUtils.equals(result.getStatus(),STATUS_EXPIRED) || 
-                        				(validToDate != null && (validToDate - currentTime) <= reminderPeriods))) {
+                        				(validToDate != null && (validToDate - currentTime) <= reminderPeriods && APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(applicationType)))) {
                             tradeTypeResultforSameMobNo.add(result.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0]);
                         }
                     }

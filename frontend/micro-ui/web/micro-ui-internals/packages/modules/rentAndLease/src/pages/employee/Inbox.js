@@ -74,7 +74,6 @@ const Inbox = ({
   //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
   // }, [hookLoading, data]);'
 
-
   useEffect(() => {
     async function fetchBills() {
       let businessServiceMap = {};
@@ -148,19 +147,6 @@ const Inbox = ({
 
   const totalCount = data?.[0]?.totalCount;
 
-  //Todo : do for propert Number
-  const getSearchFields = () => [
-    { label: t("APPLICATION_NUMBER"), name: "applicationNumber" },
-    {
-      label: t("UC_MOBILE_NO_LABEL"),
-      name: "mobileNumber",
-      maxlength: 10,
-      pattern: "[6-9][0-9]{9}",
-      title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
-      componentInFront: "+91",
-    },
-  ];
-
   if (rest?.data?.length !== null) {
     if (isMobile) {
       return (
@@ -169,7 +155,6 @@ const Inbox = ({
           defaultSearchParams={initialStates.searchParams}
           isLoading={hookLoading}
           isSearch={!isInbox}
-          searchFields={getSearchFields()}
           onFilterChange={handleFilterChange}
           onSearch={handleFilterChange}
           onSort={handleSort}
@@ -198,7 +183,7 @@ const Inbox = ({
             defaultSearchParams={initialStates.searchParams}
             isSearch={!isInbox}
             onFilterChange={handleFilterChange}
-            searchFields={getSearchFields()}
+            // searchFields={getSearchFields()}
             onSearch={handleFilterChange}
             onSort={handleSort}
             onNextPage={fetchNextPage}

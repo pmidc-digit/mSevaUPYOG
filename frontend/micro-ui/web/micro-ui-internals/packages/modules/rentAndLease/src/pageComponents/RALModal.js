@@ -35,6 +35,7 @@ const RALModal = ({
   closeToast,
   setShowToast,
   getEmployees,
+  handleRenewal,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -115,6 +116,16 @@ const RALModal = ({
   }, [file]);
 
   function submit(data) {
+    if (action?.action === "RENEWAL") {
+      if (!data?.tradeLicenseNumber) {
+        setShowToast({ key: true, label: t("Trade License Number is required") });
+        return;
+      }
+      handleRenewal({ ...applicationData, ...data });
+      closeModal();
+      return;
+    }
+
     let checkCommentsMandatory =
       action?.action === "APPROVE" ||
       action?.action === "VERIFY" ||

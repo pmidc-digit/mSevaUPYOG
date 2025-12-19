@@ -63,7 +63,7 @@ export const ADSMyApplications = () => {
         {currentItems?.length > 0 &&
           currentItems.map((application, index) => (
             <div key={index}>
-              <AdsApplication application={application} tenantId={tenantId} buttonLabel={t("ADS_SUMMARY")} />
+              <AdsApplication application={application} tenantId={tenantId} buttonLabel={t("ADS_SUMMARY")} refetchBookings={refetch} />
             </div>
           ))}
 

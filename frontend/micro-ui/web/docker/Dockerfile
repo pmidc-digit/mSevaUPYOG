@@ -20,13 +20,13 @@ RUN yarn add @mseva/digit-ui-module-pt@1.0.36
 RUN yarn add @mseva/digit-ui-module-tl@1.0.19
 RUN yarn add @mseva/digit-ui-module-obps@1.1.30
 RUN yarn add @mseva/digit-ui-module-sv@1.1.31
-RUN yarn add @mseva/upyog-ui-module-ads@1.1.59
+RUN yarn add @mseva/upyog-ui-module-ads@1.1.60
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.64
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.25
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.15
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.25
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.30
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.13
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.16
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.58
 ARG WORK_DIR
 WORKDIR /app

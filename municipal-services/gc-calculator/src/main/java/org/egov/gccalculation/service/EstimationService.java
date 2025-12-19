@@ -688,13 +688,13 @@ public class EstimationService {
 
 			// connectionFee = new
 			// BigDecimal(feeObj.getAsNumber(GCCalculationConstant.WS_CONNECTION_FEE_CONST).toString());
-			if(criteria.getWaterConnection().getFrequency_of_garbage_collection().equalsIgnoreCase("Quarterly")){
-
-				connectionFeeApplicable =
-						(connectionFeeApplicable == null ? BigDecimal.ZERO : connectionFeeApplicable)
-								.multiply(BigDecimal.valueOf(3));
-
-			}
+//			if(criteria.getWaterConnection().getFrequency_of_garbage_collection().equalsIgnoreCase("Quarterly")){
+//
+//				connectionFeeApplicable =
+//						(connectionFeeApplicable == null ? BigDecimal.ZERO : connectionFeeApplicable)
+//								.multiply(BigDecimal.valueOf(3));
+//
+//			}
 			connectionFee = connectionFeeApplicable;
 		}
 

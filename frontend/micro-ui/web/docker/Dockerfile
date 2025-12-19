@@ -14,7 +14,7 @@ RUN yarn add @mseva/digit-ui-module-core@1.0.62
 RUN yarn add @mseva/digit-ui-module-common@1.1.66
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
-RUN yarn add @mseva/digit-ui-module-ptr@1.1.90
+RUN yarn add @mseva/digit-ui-module-ptr@1.1.91
 RUN yarn add @mseva/digit-ui-module-swach@1.0.47
 RUN yarn add @mseva/digit-ui-module-pt@1.0.36
 RUN yarn add @mseva/digit-ui-module-tl@1.0.19
@@ -26,7 +26,7 @@ RUN yarn add @mseva/upyog-ui-module-asset@1.1.25
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.15
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.25
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.30
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.16
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.17
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.58
 ARG WORK_DIR
 WORKDIR /app

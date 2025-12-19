@@ -50,6 +50,16 @@ public class GateServiceExtract extends FeatureExtract {
         List<DXFLWPolyline> wicketGatePolyLinesByLayer = Util.getPolyLinesByLayer(planDetail.getDoc(), wicketGateLayerName);
         
         try {
+        	if (mainGatePolyLinesByLayer == null || mainGatePolyLinesByLayer.isEmpty()) {
+
+                LOG.error("Main gate polyline is not defined.");
+
+                planDetail.addError(
+                        "GATE_POLYLINE_MISSING",
+                        "Main gate polyline is mandatory but not defined in the plan."
+                );
+                return planDetail;
+            }
 
             if (mainGatePolyLinesByLayer != null && !mainGatePolyLinesByLayer.isEmpty()) {
 

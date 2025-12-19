@@ -44,29 +44,29 @@ public class GateService  extends FeatureProcess {
 
 	    HashMap<String, String> errors = new HashMap<>();
 
-	    BigDecimal gateLength = BigDecimal.ZERO;
+	    BigDecimal gateHeight = BigDecimal.ZERO;
 	    boolean gateDefined = false;
 
 	    // --- Gate extraction ---
 	    if (plan.getGate() != null &&
 	    	    plan.getGate().getGates() != null &&
 	    	    !plan.getGate().getGates().isEmpty() &&
-	    	    plan.getGate().getGates().stream().anyMatch(g -> g != null && g.getLength() != null)) {
+	    	    plan.getGate().getGates().stream().anyMatch(g -> g != null && g.getHeight() != null)) {
 
 	        LOG.info("Gate information found in the plan. Processing gate measurements.");
 
 	        for (Measurement gate : plan.getGate().getGates()) {
-	            if (gate != null && gate.getLength() != null) {
-	                gateLength = gate.getLength().setScale(2, RoundingMode.HALF_UP);
+	            if (gate != null && gate.getHeight() != null) {
+	                gateHeight = gate.getHeight().setScale(2, RoundingMode.HALF_UP);
 	                gateDefined = true;
-	                LOG.info("Gate length extracted: {}", gateLength);
+	                LOG.info("Gate length extracted: {}", gateHeight);
 	            }
 	        }
 
 	    } else {
 	        LOG.error("Main gate not defined in the drawing.");
-	        errors.put("Main gate not defined", "Main gate not defined in the drawing");
-	        plan.addErrors(errors);
+	        //errors.put("Main gate not defined", "Main gate not defined in the drawing");
+	        //plan.addErrors(errors);
 	    }
 
 	    // --- Validation ---
@@ -74,14 +74,14 @@ public class GateService  extends FeatureProcess {
 	        LOG.warn("Gate details missing. Marking as Not Accepted.");
 	        details.put(PROVIDED, "0.00");
 	        details.put(STATUS, Result.Not_Accepted.getResultVal());
-	    } else if (gateLength.compareTo(BigDecimal.ZERO) > 0) {
+	    } else if (gateHeight.compareTo(BigDecimal.ZERO) > 0) {
 	        LOG.info("Gate length is greater than zero. Accepted.");
-	        details.put(PROVIDED, gateLength.toPlainString());
+	        details.put(PROVIDED, gateHeight.toPlainString() + " m");
 	        details.put(STATUS, Result.Accepted.getResultVal());
 
 	    } else {
 	        LOG.warn("Gate length is zero or negative. Not Accepted.");
-	        details.put(PROVIDED, gateLength.toPlainString());
+	        details.put(PROVIDED, gateHeight.toPlainString() + " m");
 	        details.put(STATUS, Result.Not_Accepted.getResultVal());
 	    }
 

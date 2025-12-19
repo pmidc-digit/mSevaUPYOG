@@ -125,7 +125,13 @@
 @import "./pages/common/sanctionFeeTable.scss";
 @import "./pages/citizen/loaderMessage.scss";
 @import "./pages/employee/disconnection.scss";
+@import "./pages/citizen/InboxCard.scss";
+@import "./pages/employee/header.scss";
+
 @import "./pages/common/pgrUICssfix.scss";
+@import "./components/newFooter.scss";
+@import "./pages/citizen/CitizenLogin.scss";
+@import "./components/NewAccordianCitizen.scss";
 
 .display-none {
   display: none;
@@ -639,7 +645,7 @@
     width: calc(100% - 219px);
     padding-left: 16px;
     padding-right: 16px;
-    margin-top: 1rem;
+    margin-top: 3rem;
   }
 }
 @media only screen and (max-width: 768px) {

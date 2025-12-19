@@ -90,34 +90,13 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
 
 console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]);
 
-  // ---------------- UI Styles ----------------
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f1f1f1ff",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-    paddingBottom: "5rem",
-  };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  };
-
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-
-
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
     
-    <div style={{ marginBottom: "1rem" }}>
+    <div>
       <CardLabel>{label}</CardLabel>
       <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => setValue(e.target.value)} disable={isDisabled}/>
       {errors[errorKey] && (
-        <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors[errorKey]}</CardLabelError>
+        <CardLabelError >{errors[errorKey]}</CardLabelError>
       )}
     </div>
   );
@@ -687,8 +666,8 @@ useEffect(() => {
   return (
     <div>
       {/* {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
-      <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
-        <FormStep style={pageStyle} config={{ ...config, texts: {
+      <div>
+        <FormStep config={{ ...config, texts: {
           // headerCaption: "BPA_PLOT_DETAILS_TITLE",
           header: "BPA_PLOT_DETAILS_TITLE",cardText: "",skipText: null,} }}  onSelect={handleSubmit} childrenAtTheBottom={false} t={t}  onSkip={onSkip}>
           <StatusTable >
@@ -736,7 +715,7 @@ useEffect(() => {
           <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>}
 
           {errors["propertyuid"] && (
-          <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
+          <CardLabelError>{errors["propertyuid"]}</CardLabelError>
           )}
 
           {isPropertyAvailable?.value &&(currentStepData?.createdResponse?.additionalDetails?.propertyuid || currentStepData?.cpt?.id) && <StatusTable style={{marginBottom:"1rem"}} >
@@ -758,7 +737,7 @@ useEffect(() => {
             t={t}
           />
           {errors["isClubbedPlot"] && (
-            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isClubbedPlot"]}</CardLabelError>
+            <CardLabelError>{errors["isClubbedPlot"]}</CardLabelError>
           )}
           
           {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code?.includes("A") &&
@@ -813,12 +792,7 @@ useEffect(() => {
           <ActionBar>
             <SubmitBar
                       label="Back"
-                      style={{
-                        border: "1px solid",
-                        background: "transparent",
-                        color: "#2947a3",
-                        marginRight: "5px",
-                      }}
+                     
                       onSubmit={onGoBack}
             />
             {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading} />}

@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@mseva/digit-ui-libraries": "1.1.47",
-    "@mseva/digit-ui-react-components": "1.0.7",
+    "@mseva/digit-ui-react-components": "1.0.8",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "lodash.merge": "^4.6.2",

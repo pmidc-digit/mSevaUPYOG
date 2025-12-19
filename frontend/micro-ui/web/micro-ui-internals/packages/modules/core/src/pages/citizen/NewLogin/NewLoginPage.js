@@ -14,7 +14,7 @@ const NewLogin = ({ stateCode }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const history = useHistory();
-  const [mobileNumber, setMobileNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState(() => location.state?.mobileNumber || "");
   const [lastSubmittedMobile, setLastSubmittedMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("MOBILE"); // MOBILE | OTP
@@ -22,9 +22,9 @@ const NewLogin = ({ stateCode }) => {
   const [canSubmit, setCanSubmit] = useState(true);
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [user, setUser] = useState(null);
-  const [selectedLanguage, setSelectedLanguage] = useState(() => Digit.StoreData.getCurrentLanguage());
+  const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
-  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(() => location.state?.selectedCity || null);
 
   useEffect(() => {
     let to;
@@ -47,11 +47,11 @@ const NewLogin = ({ stateCode }) => {
     setCitizenDetail(user?.info, user?.access_token, stateCode);
     const redirectPath = getFromLocation(location.state);
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
-      history.replace("/digit-ui/citizen/select-location", {
-        redirectBackTo: redirectPath,
-      });
+      // Use full page reload to ensure all components get fresh user data
+      window.location.href = "/digit-ui/citizen/select-location";
     } else {
-      history.replace(redirectPath);
+      // Use full page reload to ensure all components get fresh user data
+      window.location.href = redirectPath;
     }
   }, [user, stateCode, location.state, history]);
 
@@ -98,9 +98,13 @@ const NewLogin = ({ stateCode }) => {
           err?.response?.data?.error?.fields?.[0]?.code === "OTP.UNKNOWN_CREDENTIAL" &&
           err?.response?.data?.error?.fields?.[0]?.message?.includes("No such username")
         ) {
-          // User not registered, show error and navigate to registration
-          setError(t("CS_COMMON_USER_NOT_REGISTERED"));
-          setLastSubmittedMobile(mobileNumber);
+          // User not registered, redirect to registration page
+          history.push("/digit-ui/citizen/new-registration", {
+            from: getFromLocation(location.state),
+            mobileNumber: mobileNumber,
+            selectedLanguage: selectedLanguage,
+            selectedCity: selectedCity,
+          });
         } else {
           setError(t("CS_COMMON_ERROR"));
         }
@@ -175,42 +179,139 @@ const NewLogin = ({ stateCode }) => {
     });
   };
   return (
-    <div className="login-page-cover"> 
+    // <div className="login-page-cover"> 
 
-      <div className="login-container" >
+    //   <div className="login-container" >
         
-         <div className="login-wrapper" >
-           <div className="login-circle"> <LoginIcon  /> </div>
-        <div className="login-title" >{t("CORE_COMMON_LOGIN")}</div>
-          {/* <div className="lag-loc-wrapper"> */}
-          <LanguageSelect onLanguageChange={setSelectedLanguage} />
-          <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
-          {/* </div> */}
-          {/* Step 1: Mobile Input */}
-          <MobileInput
-            mobileNumber={mobileNumber}
-            onMobileChange={handleMobileChange}
-            onSendOtp={onSendOtp}
-            canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
-            step={step}
-          />
+    //      <div className="login-wrapper" >
+    //        <div className="login-circle"> <LoginIcon  /> </div>
+    //     <div className="login-title" >{t("CORE_COMMON_LOGIN")}</div>
+         
+    //       <LanguageSelect onLanguageChange={setSelectedLanguage} />
+    //       <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
 
-          {/* Step 2: OTP Input */}
-          {step === "OTP" && (
-            <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />
-          )}
+    //       <MobileInput
+    //         mobileNumber={mobileNumber}
+    //         onMobileChange={handleMobileChange}
+    //         onSendOtp={onSendOtp}
+    //         canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
+    //         step={step}
+    //       />
 
-          {step !== "OTP" && (
-            <div className="account-link">
-              <span>
-                {t("CS_COMMON_DONT_HAVE_ACCOUNT")}
-              </span>
-              <span className="link" onClick={handleRegisterClick}>
-                {t("CS_COMMON_REGISTER")}
-              </span>
+
+    //       {step === "OTP" && (
+    //         <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />
+    //       )}
+
+    //       {step !== "OTP" && (
+    //         <div className="account-link">
+    //           <span>
+    //             {t("CS_COMMON_DONT_HAVE_ACCOUNT")}
+    //           </span>
+    //           <span className="link" onClick={handleRegisterClick}>
+    //             {t("CS_COMMON_REGISTER")}
+    //           </span>
+    //         </div>
+    //       )}
+    //       {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
+    //     </div>
+    //   </div>
+    // </div>
+
+
+
+    <div className="login-page-cover">
+      <div className="login-container">
+        {/* Left Panel - Hero Section */}
+        <div className="login-hero-panel">
+          <div className="hero-content">
+            <div className="hero-icon-circle">
+              <LoginIcon />
             </div>
-          )}
-          {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
+            <h1 className="hero-title">Welcome to UPYOG</h1>
+            <p className="hero-description">
+              Your digital gateway to urban governance services. Access all municipal services in one place.
+            </p>
+            <div className="hero-features">
+              <div className="feature-item">
+                <div className="feature-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+                <span className="feature-text">Multi-lingual</span>
+              </div>
+              <div className="feature-item">
+                <div className="feature-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+                <span className="feature-text">Location Based</span>
+              </div>
+              <div className="feature-item">
+                <div className="feature-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.1-.03-.21-.05-.31-.05-.26 0-.51.1-.71.29l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM19 12h2c0-4.97-4.03-9-9-9v2c3.87 0 7 3.13 7 7zm-4 0h2c0-2.76-2.24-5-5-5v2c1.66 0 3 1.34 3 3z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+                <span className="feature-text">Secure Login</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel - Login Form */}
+        <div className="login-form-panel">
+          <div className="login-wrapper">
+            <div className="login-form-header">
+              <h2 className="login-title">{t("CORE_COMMON_LOGIN")}</h2>
+              <p className="login-subtitle">Enter your details to access your account</p>
+            </div>
+
+            <LanguageSelect onLanguageChange={setSelectedLanguage} />
+            <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
+
+            <MobileInput
+              mobileNumber={mobileNumber}
+              onMobileChange={handleMobileChange}
+              onSendOtp={onSendOtp}
+              canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
+              step={step}
+            />
+
+            {step === "OTP" && (
+              <OtpInput
+                otp={otp}
+                onOtpChange={setOtp}
+                onVerifyOtp={onVerifyOtp}
+                onResendOtp={resendOtp}
+                canSubmit={canSubmit}
+                isOtpValid={isOtpValid}
+              />
+            )}
+
+            {step !== "OTP" && (
+              <div className="account-link">
+                <span>{t("CS_COMMON_DONT_HAVE_ACCOUNT")} </span>
+                <span className="link" onClick={handleRegisterClick}>
+                  {t("CS_COMMON_REGISTER")}
+                </span>
+              </div>
+            )}
+
+            {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
+          </div>
         </div>
       </div>
     </div>

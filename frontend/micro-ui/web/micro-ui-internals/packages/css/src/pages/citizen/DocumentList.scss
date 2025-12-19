@@ -6,6 +6,22 @@
     margin-top: 0.5em;
   }
 }
+.document-required-options{
+  display: flex;
+  .document-index{
+    min-width:20px;
+    text-align: right;
+    padding: 5px;
+  }
+  .document-description{
+    flex-grow:1;
+    word-break: break-word;
+    padding: 5px;
+    
+
+  }
+}
+
 .accordion-item {
   overflow: hidden;
   transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);
@@ -281,7 +297,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+.documentation-list{
+  display: flex;
+}
 .Docs_CardWrapper{
   @apply bg-white m-sm px-md pt-md pb-lg shadow-card;
   border-radius: 4px;
@@ -302,4 +320,130 @@
   .documentDetails_row_items{
     @apply grid grid-cols-2 gap-4;
   }
+}
+
+
+/* When there are no documents */
+.obps-document-detail-no-doc {
+  padding: 10px 0px;
+}
+
+/* Row (Label) */
+.obps-document-detail-row {
+  padding-top: 10px;
+  width: 100%;
+}
+
+/* Outer container for files */
+.obps-document-detail-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Each document block */
+.obps-document-detail-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-content: center;
+}
+
+/* Clickable link */
+.obps-document-detail-link {
+  min-width: 100px;
+  max-width: 100px;
+  margin-right: 10px;
+  height: auto;
+  text-decoration: none;
+}
+
+/* SVG icon wrapper */
+.obps-document-detail-icon-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* Document Title */
+.obps-document-detail-title {
+  margin-top: 8px;
+  text-align: center;
+  color: #505a5f;
+  font-weight: 400;
+  line-height: 19px;
+  font-size: 16px;
+}
+
+/* Divider line */
+.obps-document-detail-divider {
+  color: #d6d5d4;
+  background-color: #d6d5d4;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border: none;
+}
+
+.clu-doc-required-card {
+    background: #FAFAFA;
+    border: 1px solid #D6D5D4;
+    padding: 8px;
+    border-radius: 4px;
+    max-width: 600px;
+    min-width: 280px;
+    margin-bottom: 15px;
+    padding-top: 15px;
+}
+
+.clu-doc-required-wrapper {
+    margin-bottom: 24px;
+}
+
+.clu-doc-required-label {
+    width: 100%;
+}
+
+.clu-doc-required-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.clu-doc-required-coordinates {
+    padding: 10px;
+    font-size: 14px;
+}
+.clu-doc-view-container {
+    margin-top: 19px;
+}
+
+.clu-doc-view-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.clu-doc-view-link {
+    width: 120px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.clu-doc-view-pdf-icon {
+    background: #f6f6f6;
+    padding: 8px;
+}
+
+.clu-doc-view-label {
+    margin-top: 8px;
+    font-size: 12px;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }

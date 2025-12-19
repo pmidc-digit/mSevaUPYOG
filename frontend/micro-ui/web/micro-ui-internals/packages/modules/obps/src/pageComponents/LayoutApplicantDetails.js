@@ -15,6 +15,9 @@ import {
   SearchIcon,
   Toast,
   CardSectionSubText,
+  DeleteIcon,
+  LinkButton,
+  UploadFile,
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 
@@ -27,6 +30,9 @@ const LayoutApplicantDetails = (_props) => {
   const [mobileNo, setMobileNo] = useState("");
   const [showToast, setShowToast] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
+  const [applicants, setApplicants] = useState([{ name: "", mobileNumber: "", email: "", fatherHusbandName: "", address: "", dob: "", gender: "" }]);
+  const [documentUploadedFiles, setDocumentUploadedFiles] = useState({});
+  const [loader, setLoader] = useState(false);
 
   const closeToast = () => setShowToast(null);
 
@@ -37,6 +43,62 @@ const LayoutApplicantDetails = (_props) => {
     genderTypeData["common-masters"].GenderType.filter((data) => data.active).map((genderDetails) => {
       menu.push({ i18nKey: `COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
     });
+
+  // Define styles
+  const sectionStyle = {
+    marginTop: "30px",
+    paddingTop: "20px",
+    borderTop: "1px solid #e0e0e0",
+  };
+
+  const HeadingStyle = {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#0B0C0C",
+    marginBottom: "15px",
+  };
+
+  // Handle adding multiple applicants
+  const handleAddApplicant = () => {
+    setApplicants([...applicants, { name: "", mobileNumber: "", email: "", fatherHusbandName: "", address: "", dob: "", gender: "" }]);
+  };
+
+  // Handle removing applicant
+  const handleRemoveApplicant = (index) => {
+    if (applicants.length > 1) {
+      const updatedApplicants = applicants.filter((_, i) => i !== index);
+      setApplicants(updatedApplicants);
+    }
+  };
+
+  // Update applicant field
+  const updateApplicant = (index, field, value) => {
+    const updatedApplicants = [...applicants];
+    updatedApplicants[index][field] = value;
+    setApplicants(updatedApplicants);
+  };
+
+  // Handle document file upload
+  const handleDocumentUpload = async (docType, file) => {
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ key: "true", error: true, message: "File size should be less than 5MB" });
+      return;
+    }
+    try {
+      setLoader(true);
+      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      setLoader(false);
+      if (response?.data?.files?.length > 0) {
+        setDocumentUploadedFiles((prev) => ({ ...prev, [docType]: response?.data?.files[0]?.fileStoreId }));
+        setShowToast({ key: "true", error: false, message: t("FILE_UPLOAD_SUCCESS") });
+      } else {
+        setShowToast({ key: "true", error: true, message: t("CS_FILE_UPLOAD_ERROR") });
+      }
+    } catch (err) {
+      setLoader(false);
+      setShowToast({ key: "true", error: true, message: t("CS_FILE_UPLOAD_ERROR") });
+    }
+  };
 
   //   useEffect(() => {
   //   // <CHANGE> Added comprehensive debug logs
@@ -128,7 +190,7 @@ const LayoutApplicantDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
           <div style={{display:"flex"}} className="field">
             <Controller
               control={control}
@@ -163,7 +225,7 @@ const LayoutApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -179,7 +241,7 @@ const LayoutApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -231,7 +293,7 @@ const LayoutApplicantDetails = (_props) => {
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}

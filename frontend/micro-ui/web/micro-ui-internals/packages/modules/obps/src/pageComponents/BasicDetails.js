@@ -149,7 +149,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
           signature={true} 
           signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
           disable={disableVlaue}
-          style={{ marginBottom: "10px" }}
+         
         />
       </div>
       {scrutinyNumber && basicData && (!riskType ?  <Loader /> :  <div>{basicData && (

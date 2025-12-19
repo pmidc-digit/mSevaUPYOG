@@ -67,25 +67,25 @@ const CitizenAndArchitectPhoto = ({data}) => {
     
 return(
     <Card>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_CITIZEN_AND_ARCHITECT_PHOTO")}</CardSubHeader>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: "20px", marginTop: "10px", padding: "0px 20px" }}>
-            <div style={{ textAlign: "center" }}>
+        <CardSubHeader className="citizen-and-architect-photo-header">{t("BPA_CITIZEN_AND_ARCHITECT_PHOTO")}</CardSubHeader>
+        <div className="citizen-and-architect-photo-container">
+            <div className="citizen-and-architect-photo-item">
                 <img
                     src={imageCitizenZoom}
                     alt="Citizen"
-                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
+                    className={`citizen-and-architect-photo-image ${imageCitizenZoom ? "citizen-and-architect-photo-clickable" : ""}`}
                     onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
                 />
-                <div>{data?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true)?.name || t("BPA_CITIZEN_PHOTO")}</div>
+                <div className="citizen-and-architect-photo-label">{data?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true)?.name || t("BPA_CITIZEN_PHOTO")}</div>
             </div>
-            <div style={{ textAlign: "center" }}>
+            <div className="citizen-and-architect-photo-item">
                 <img
                     src={imageArchitectZoom}
                     alt="Architect"
-                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageArchitectZoom ? "pointer" : "default" }}
+                    className={`citizen-and-architect-photo-image ${imageArchitectZoom ? "citizen-and-architect-photo-clickable" : ""}`}
                     onClick={() => imageArchitectZoom && setImageZoom(imageArchitectZoom)}
                 />
-                <div>{data?.additionalDetails?.stakeholderName || t("BPA_ARCHITECT_PHOTO")}</div>
+                <div className="citizen-and-architect-photo-label">{data?.additionalDetails?.stakeholderName || t("BPA_ARCHITECT_PHOTO")}</div>
             </div>
         </div>
         {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}

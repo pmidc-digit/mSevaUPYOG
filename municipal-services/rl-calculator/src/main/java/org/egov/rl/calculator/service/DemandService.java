@@ -615,10 +615,39 @@ public class DemandService {
 		log.info("Finished demand generation job.");
 
 	}
+	
+	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo) {
+		List<String> tenantIds = masterDataService.getTenantIds(requestInfo, requestInfo.getUserInfo().getTenantId());
+		log.info("Starting demand generation job for tenants: {}", tenantIds);
 
-	public List<Demand> sendNotificationAndUpdateDemand(AllotmentRequest allotmentRequest,RequestInfo requestInfo) {
+		for (String tenantId : tenantIds) {
+			log.info("Generating demands for tenant: {}", tenantId);
+			Runnable task = new Runnable() {
+			
+				@Override
+				public void run() {
+					try {
+						sendNotificationUpdateDemand(tenantId, requestInfo);
+					} catch (Exception e) {
+						log.error("Error while generating demands for tenant: " + tenantId, e);
+					}
+				}
+			};
+
+			Thread t = new Thread(task);
+			t.start();
+
+		}
+		log.info("Finished demand generation job.");
+
+	}
+
+
+	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo) {
+		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo);
+		allotmentDetails.stream().forEach(alt->{
 		long now=LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		List<Demand> dmdlist = demandRepository.getDemandsByConsumerCode(Arrays.asList(allotmentRequest.getAllotment().getApplicationNumber()));
+		List<Demand> dmdlist = demandRepository.getDemandsByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
 		dmdlist = dmdlist.stream().map(d -> {
 			d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getConsumerCode())));
 			return d;
@@ -630,11 +659,12 @@ public class DemandService {
 				List<Demand> penalityDemand = addPenalty(demandDetail.getCollectionAmount(),d, requestInfo);
 				demandRepository.updateDemand(requestInfo, penalityDemand);
 			} else {
-				notificationService.sendNotificationSMS(allotmentRequest);
+				notificationService.sendNotificationSMS(AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
 			}
 		});
-
-		return dmdlist;
+		
+		});
+	
 	}
 
 	public List<Demand> addPenalty(BigDecimal basicAmount,Demand demand, RequestInfo requestInfo) {

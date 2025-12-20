@@ -15,16 +15,13 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Service
-public class CalculationService {
+public class LastCalculationService {
 
 	@Autowired
 	private PropertyUtil mdmsUtil;
@@ -43,12 +40,7 @@ public class CalculationService {
 
 	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposite, String tenantId,
 			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
-	    AllotmentDetails allotmentDetails =	allotmentRequest.getAllotment();
-	  long startDate = allotmentDetails.getStartDate();
-	  long endDate = allotmentDetails.getEndDate();
-	  
-	  
-	  
+
 		String applicationType = allotmentRequest.getAllotment().getApplicationType();
 		BigDecimal fee = BigDecimal.ZERO;
 		List<DemandDetail> demandDetails = new ArrayList<>();
@@ -61,9 +53,7 @@ public class CalculationService {
 			}
 			if ((applicationType.equalsIgnoreCase(RLConstants.NEW_RL_APPLICATION))
 					|| (applicationType.equalsIgnoreCase(RLConstants.RENEWAL_RL_APPLICATION))) {
-				
 				fee = new BigDecimal(amount.getBaseRent());
-				
 				demandDetails.add(DemandDetail.builder().taxAmount(fee)
 						.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
 			}
@@ -85,14 +75,14 @@ public class CalculationService {
 		List<TaxRate> taxRate = mdmsUtil.getHeadTaxAmount(allotmentRequest.getRequestInfo(), tenantId,
 				RLConstants.RL_MASTER_MODULE_NAME);
 		List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION,
-				RLConstants.PENALTY_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
+				 RLConstants.COWCESS_FEE_RL_APPLICATION);
 		taxRate.stream().forEach(t -> {
 //			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;
 			if (taxList.stream().anyMatch(d -> d.equals(t.getTaxType())) && t.isActive()) {
 				if (t.getType().contains("%")) {
 					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
-				} else {
+				} else{
 					amount = new BigDecimal(t.getAmount());
 				}
 				if (!amount.equals(BigDecimal.ZERO)) {

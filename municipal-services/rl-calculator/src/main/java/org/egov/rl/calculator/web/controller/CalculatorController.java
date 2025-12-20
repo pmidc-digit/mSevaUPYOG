@@ -53,12 +53,12 @@ public class CalculatorController {
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}
 
-//	@PostMapping("/_jobscheduler")
-//	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
-//		log.info("Starting job scheduler for rent demands.");
-//		demandService.generateDemands(requestInfo);
-//		log.info("Finished job scheduler for rent demands.");
-//		return new ResponseEntity<>(HttpStatus.OK);
-//	}
+	@PostMapping("/_jobscheduler")
+	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
+		log.info("Starting job scheduler for rent demands.");
+		demandService.generateDemands(requestInfo);
+		log.info("Finished job scheduler for rent demands.");
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
 }

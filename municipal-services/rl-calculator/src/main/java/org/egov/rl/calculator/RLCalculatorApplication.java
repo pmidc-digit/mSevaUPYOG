@@ -20,6 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
+@EnableScheduling
 @EnableCaching
 @Import({ TracerConfiguration.class })
 public class RLCalculatorApplication {

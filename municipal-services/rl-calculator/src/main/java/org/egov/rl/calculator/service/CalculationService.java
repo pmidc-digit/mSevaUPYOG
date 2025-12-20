@@ -75,11 +75,11 @@ public class CalculationService {
 		List<TaxRate> taxRate = mdmsUtil.getHeadTaxAmount(allotmentRequest.getRequestInfo(), tenantId,
 				RLConstants.RL_MASTER_MODULE_NAME);
 		List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION,
-				RLConstants.PENALTY_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
-		taxRate.stream().forEach(t -> {
+				RLConstants.COWCESS_FEE_RL_APPLICATION);
+			taxRate.stream().forEach(t -> {
 //			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;
-			if (taxList.stream().anyMatch(d -> d.equals(t.getTaxType())) && t.isActive()) {
+			if (taxList.contains(t.getTaxType()) && t.isActive()) {
 				if (t.getType().contains("%")) {
 					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
 				} else {

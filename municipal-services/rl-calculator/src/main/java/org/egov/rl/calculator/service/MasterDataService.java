@@ -110,11 +110,13 @@ public class MasterDataService {
 
     public List<Penalty> getPenaltySlabs(RequestInfo requestInfo, String tenantId) {
         // Using RL_SERVICES_MASTER_MODULE to fetch service-specific penalty
-        MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
-                RLConstants.RL_SERVICES_MASTER_MODULE, RLConstants.PENALTY_MASTER, null);
         try {
+        	  MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
+                      RLConstants.RL_SERVICES_MASTER_MODULE, RLConstants.PENALTY_MASTER, null);
+            
             Object result = repository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
             MdmsResponse mdmsResponse = mapper.convertValue(result, MdmsResponse.class);
+            System.out.println("--mdmsResponse-----"+mdmsResponse.getMdmsRes().get("rl-services-masters"));
             List<Penalty> penaltySlabs = mapper.convertValue(
                     mdmsResponse.getMdmsRes()
                             .get(RLConstants.RL_SERVICES_MASTER_MODULE)
@@ -122,12 +124,13 @@ public class MasterDataService {
                     new TypeReference<List<Penalty>>() {}
             );
             LocalDate now=LocalDate.now();
-     	   
-            penaltySlabs = penaltySlabs.stream().filter(p -> {
-                int start = Integer.valueOf(p.getFromFY().split("-")[0]);
-                int end   = Integer.valueOf("20"+p.getFromFY().split("-")[0]);
-                return (start<now.getYear()&&now.getYear()<end)?true:false;
-               }).collect(Collectors.toList());
+//     	   System.out.println("------------penaltySlabs----------"+penaltySlabs);
+//            penaltySlabs = penaltySlabs.stream().filter(p -> {
+//                int start = Integer.valueOf(p.getFromFY().split("-")[0]);
+//                int end   = Integer.valueOf("20"+p.getFromFY().split("-")[1]);
+//                return (start<now.getYear()&&now.getYear()<end)?true:false;
+//               }).collect(Collectors.toList());
+//            System.out.println("ssssssss-------------sssssss---------"+penaltySlabs.size());
             return penaltySlabs;
         } catch (Exception e) {
             log.error("Failed to get Penalty slabs from MDMS for tenant " + tenantId, e);

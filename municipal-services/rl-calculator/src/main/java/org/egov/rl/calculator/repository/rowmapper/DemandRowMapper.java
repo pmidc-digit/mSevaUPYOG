@@ -2,6 +2,8 @@ package org.egov.rl.calculator.repository.rowmapper;
 
 import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -11,31 +13,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class DemandRowMapper implements RowMapper<Demand> {
+public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 
-    @Override
-    public Demand mapRow(ResultSet rs, int rowNum) throws SQLException {
-        // Map the basic fields of the Demand object
-        Demand demand = Demand.builder()
-                .id(rs.getString("id"))
-                .ispaymentcompleted(rs.getBoolean("ispaymentcompleted"))
-                .consumerCode(rs.getString("consumercode"))
-                .tenantId(rs.getString("tenantid"))
-                .taxPeriodFrom(rs.getLong("taxperiodfrom"))
-                .taxPeriodTo(rs.getLong("taxperiodto"))
-                .businessService(rs.getString("businessservice"))
-                .fixedbillexpirydate(rs.getLong("fixedbillexpirydate"))
-                .billExpiryTime(rs.getLong("billexpirytime"))
-                .minimumAmountPayable(rs.getBigDecimal("minimumamountpayable"))
-                .status(Demand.DemandStatusEnum.valueOf(rs.getString("status")))
-                .build();
+	@Override
+	public List<Demand> extractData(ResultSet rs) throws SQLException, DataAccessException {
+		// Map the basic fields of the Demand object
 
-        // Map the DemandDetails if available
-        List<DemandDetail> demandDetails = new ArrayList<>();
-        // Assuming you have a separate table for demand details, you can fetch and map them here
-        // For now, this is left as an empty list
-        demand.setDemandDetails(demandDetails);
+		List<Demand> demandList = new ArrayList<>();
+		while (rs.next()) {
 
-        return demand;
-    }
+			// Map the basic fields of the Demand object
+			demandList.add(Demand.builder().id(rs.getString("id"))
+					.ispaymentcompleted(rs.getBoolean("ispaymentcompleted")).consumerCode(rs.getString("consumercode"))
+					.consumerType(rs.getString("consumertype")).tenantId(rs.getString("tenantid"))
+					.taxPeriodFrom(rs.getLong("taxperiodfrom")).taxPeriodTo(rs.getLong("taxperiodto"))
+					.businessService(rs.getString("businessservice"))
+					.fixedbillexpirydate(rs.getLong("fixedbillexpirydate")).billExpiryTime(rs.getLong("billexpirytime"))
+					.minimumAmountPayable(rs.getBigDecimal("minimumamountpayable"))
+					.status(Demand.DemandStatusEnum.valueOf(rs.getString("status"))).build());
+		}
+		return demandList;
+	}
 }

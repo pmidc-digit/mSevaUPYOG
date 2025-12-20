@@ -555,7 +555,7 @@ public class DemandService {
 //	
 	public void generateBatchDemand(RequestInfo requestInfo) {
 		LocalDate currentDate = LocalDate.now(); // today
-		List<String> tenantIds = masterDataService.getTenantIds(requestInfo, requestInfo.getUserInfo().getTenantId());
+		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo, requestInfo.getUserInfo().getTenantId());
 		log.info("Starting demand generation job for tenants: {}", tenantIds);
 
 		for (String tenantId : tenantIds) {

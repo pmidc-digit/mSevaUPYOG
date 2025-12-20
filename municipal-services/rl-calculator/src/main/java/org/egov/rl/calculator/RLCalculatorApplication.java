@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication
 @EnableCaching
 @Import({ TracerConfiguration.class })
-@EnableScheduling
 public class RLCalculatorApplication {
 
 	@Value("${cache.expiry.billing.slab.minutes:360}")

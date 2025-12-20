@@ -34,9 +34,12 @@ public class JobScheduler {
 
 	
 	// Runs every day at 09:30 IST // 24 hr time
-	@Scheduled(cron = "0 30 9 * * *", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 50 8 * * *", zone = "Asia/Kolkata")
+	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEvery3DaysCron() {
-		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
+		System.out.println("scheduller call");
+//		demandService.generateBatchDemand(getOAuthToken());
+//		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
 	}
 
 	// Runs on 1st of every month at midnight IST

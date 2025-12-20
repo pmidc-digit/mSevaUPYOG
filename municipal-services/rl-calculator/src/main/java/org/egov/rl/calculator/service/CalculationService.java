@@ -13,11 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,12 +38,7 @@ public class CalculationService {
 
 	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposite, String tenantId,
 			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
-	    AllotmentDetails allotmentDetails =	allotmentRequest.getAllotment();
-	  long startDate = allotmentDetails.getStartDate();
-	  long endDate = allotmentDetails.getEndDate();
-	  
-	  
-	  
+
 		String applicationType = allotmentRequest.getAllotment().getApplicationType();
 		BigDecimal fee = BigDecimal.ZERO;
 		List<DemandDetail> demandDetails = new ArrayList<>();
@@ -56,7 +46,7 @@ public class CalculationService {
 		for (RLProperty amount : calculateAmount) {
 			if (isSecurityDeposite) {
 				fee = new BigDecimal(amount.getSecurityDeposit());
-				demandDetails.add(DemandDetail.builder().taxAmount(fee)
+				demandDetails.add(DemandDetail.builder().taxAmount(fee).collectionAmount(fee)
 						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build());
 			}
 			if ((applicationType.equalsIgnoreCase(RLConstants.NEW_RL_APPLICATION))
@@ -64,7 +54,7 @@ public class CalculationService {
 				
 				fee = new BigDecimal(amount.getBaseRent());
 				
-				demandDetails.add(DemandDetail.builder().taxAmount(fee)
+				demandDetails.add(DemandDetail.builder().taxAmount(fee).collectionAmount(fee)
 						.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
 			}
 		}
@@ -96,7 +86,7 @@ public class CalculationService {
 					amount = new BigDecimal(t.getAmount());
 				}
 				if (!amount.equals(BigDecimal.ZERO)) {
-					demandDetails.add(DemandDetail.builder().taxAmount(amount).taxHeadMasterCode(t.getTaxType())
+					demandDetails.add(DemandDetail.builder().taxAmount(amount).collectionAmount(amount).taxHeadMasterCode(t.getTaxType())
 							.tenantId(tenantId).build());
 				}
 			}

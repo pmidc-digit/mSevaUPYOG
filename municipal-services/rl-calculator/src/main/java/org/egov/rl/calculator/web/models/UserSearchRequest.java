@@ -1,13 +1,19 @@
 package org.egov.rl.calculator.web.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-import lombok.Builder.Default;
-import org.egov.common.contract.request.RequestInfo;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import org.egov.common.contract.request.RequestInfo;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter

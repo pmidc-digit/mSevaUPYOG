@@ -56,20 +56,61 @@ public class Configurations {
 
 	@Value("${state.level.tenant.id}")
 	private String stateLevelTenantId;
-	@Value("${kafka.topics.notification.sms}")
-	private String smsNotifTopic;
-	@Value("${egov.localization.host}")
-	private String localizationServiceHost;
-	@Value("${egov.localization.context.path}")
-	private String localizationContextPath;
-	@Value("${egov.localization.search.endpoint}")
-	private String localizationSearchEndpoint;
+	
 	@Value("${egov.rl.service.host}")
 	private String rlServiceHost;
 	@Value("${egov.rl.search.endpoint}")
 	private String rlSearchEndpoint;
 	@Value("${demand.generation.batch.size}")
 	private Integer demandGenerationBatchSize;
+	
+	  //USER
+    @Value("${egov.user.host}")
+    private String userHost;
+    
+    @Value("${egov.user.search.path}")
+    private String userSearchEndpoint;
+    
+
+    @Value("${egov.internal.microservice.user.uuid}")
+    private String egovInternalMicroserviceUserUuid;
+    
+    //NOTIFICATION TOPICS
+    @Value("${kafka.topics.notification.sms}")
+    private String smsNotifTopic;
+
+    @Value("${kafka.topics.notification.email}")
+    private String emailNotifTopic;
+
+    @Value("${egov.localization.statelevel}")
+    private Boolean isStateLevel;
+
+    @Value("${notif.sms.enabled}")
+    private Boolean isSMSNotificationEnabled;
+
+    @Value("${notif.email.enabled}")
+    private Boolean isEmailNotificationEnabled;
+    
+    //Localization
+
+    @Value("${egov.localization.host}")
+    private String localizationHost;
+
+    @Value("${egov.localization.context.path}")
+    private String localizationContextPath;
+
+    @Value("${egov.localization.search.endpoint}")
+    private String localizationSearchEndpoint;
+
+    @Value("${egov.localization.fallback.locale}")
+    private String fallBackLocale;
+    
+
+    @Value("${egov.localization.statelevel}")
+    private Boolean isLocalizationStateLevel;
+
+
+
 
 
 

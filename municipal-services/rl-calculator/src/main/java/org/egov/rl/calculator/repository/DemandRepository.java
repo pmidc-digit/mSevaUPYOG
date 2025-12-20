@@ -3,10 +3,11 @@ package org.egov.rl.calculator.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
-
+import org.egov.rl.calculator.repository.rowmapper.DemandDetailRowMapper;
 import org.egov.rl.calculator.repository.rowmapper.DemandRowMapper;
 import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.web.models.demand.Demand;
+import org.egov.rl.calculator.web.models.demand.DemandDetail;
 import org.egov.rl.calculator.web.models.demand.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.tracer.model.CustomException;
@@ -30,6 +31,13 @@ public class DemandRepository {
 
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private DemandRowMapper demandRowMapper;
+	
+
+	@Autowired
+	private DemandDetailRowMapper demandDetailRowMapper;
 
 
 	@Autowired
@@ -80,19 +88,49 @@ public class DemandRepository {
 
 	}
 
-	public List<Demand> getDemandsForRentableIdsAndPeriod(List<String> rentableIds, Long fromDate, Long toDate) {
-		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom >= :fromDate AND taxperiodto <= :toDate";
+//	public List<Demand> getDemandsForRentableIdsAndPeriod(List<String> rentableIds, Long fromDate, Long toDate) {
+//		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom >= :fromDate AND taxperiodto <= :toDate";
+//		Map<String, Object> params = new HashMap<>();
+//		params.put("rentableIds", rentableIds);
+//		params.put("fromDate", fromDate);
+//		params.put("toDate", toDate);
+//		Object[] queryParams = new Object[] {
+//				params.get("rentableIds"),
+//				params.get("fromDate"),
+//				params.get("toDate")
+//		};
+//		try {
+//			return jdbcTemplate.query(query, queryParams, new DemandRowMapper());
+//		} catch (Exception e) {
+//			log.error("Error while fetching demands for rentable IDs and period", e);
+//			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch demands for the given rentable IDs and period");
+//		}
+//	}
+	
+	public List<Demand> getDemandsByConsumerCode(List<String> rentableIds) {
+		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds)";
 		Map<String, Object> params = new HashMap<>();
 		params.put("rentableIds", rentableIds);
-		params.put("fromDate", fromDate);
-		params.put("toDate", toDate);
 		Object[] queryParams = new Object[] {
 				params.get("rentableIds"),
-				params.get("fromDate"),
-				params.get("toDate")
 		};
 		try {
-			return jdbcTemplate.query(query, queryParams, new DemandRowMapper());
+			return jdbcTemplate.query(query, queryParams, demandRowMapper);
+		} catch (Exception e) {
+			log.error("Error while fetching demands for rentable IDs and period", e);
+			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
+	
+	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> rentableIds) {
+		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (:rentableIds)";
+		Map<String, Object> params = new HashMap<>();
+		params.put("rentableIds", rentableIds);
+		Object[] queryParams = new Object[] {
+				params.get("rentableIds"),
+		};
+		try {
+			return jdbcTemplate.query(query, queryParams, demandDetailRowMapper);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch demands for the given rentable IDs and period");

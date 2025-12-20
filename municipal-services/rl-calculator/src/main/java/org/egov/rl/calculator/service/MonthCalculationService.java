@@ -14,11 +14,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.calculator.web.models.DemandPerioud;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MonthCalculationService {
+	
+	@Autowired
+	private MasterDataService masterDataService;
 
 	public List<DemandPerioud> datePerioudCalculate(String oneMonth,long startEpochMilli, long endEpochMilli,String applicationNumber) {
 
@@ -96,7 +101,7 @@ public class MonthCalculationService {
 	}
 
 	// "MMMM" (FULL month name) ke liye parser: Locale.ENGLISH
-	private static Month parseFullMonthName(String monthName) {
+	public static Month parseFullMonthName(String monthName) {
 		try {
 			DateTimeFormatter fullFmt = DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH);
 			return Month.from(fullFmt.parse(monthName));
@@ -106,7 +111,7 @@ public class MonthCalculationService {
 		}
 	}
 
-	private static long formatDay(LocalDate date, boolean endOfDay) {
+	public static long formatDay(LocalDate date, boolean endOfDay) {
 		ZoneId zone = ZoneId.of("Asia/Kolkata");
 		ZonedDateTime zdt = endOfDay ? date.atTime(java.time.LocalTime.MAX).atZone(zone) : date.atStartOfDay(zone);
 		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss z");
@@ -116,6 +121,7 @@ public class MonthCalculationService {
 	}
 
 	private boolean returnEndDate(long date) {
+
 		// Convert long (epoch milli) to LocalDate
 		LocalDate start = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate();
 
@@ -143,6 +149,23 @@ public class MonthCalculationService {
 
 		// Same month ka 15th day
 		LocalDate fifteenthDay = date.withDayOfMonth(15);
+
+		// Convert back to epoch milli (start of day)
+		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+		System.out.println("Original Date: " + date);
+		System.out.println("15th Day of Month: " + fifteenthDay);
+		System.out.println("Epoch Milli of 15th Day: " + fifteenthEpochMilli);
+		return fifteenthEpochMilli;
+	}
+	
+	public long addAfterPenaltyDays(long sdate,RequestInfo requestInfo,String tenantId) {
+		// Convert long → LocalDate
+		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
+		int afterday=masterDataService.getPenaltySlabs(requestInfo, tenantId).get(0).getApplicableAfterDays();
+		   
+		// Same month ka 15th day
+		LocalDate fifteenthDay = date.withDayOfMonth(afterday);
 
 		// Convert back to epoch milli (start of day)
 		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();

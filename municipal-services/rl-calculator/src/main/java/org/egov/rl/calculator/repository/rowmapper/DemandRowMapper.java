@@ -16,11 +16,14 @@ public class DemandRowMapper implements RowMapper<Demand> {
         // Map the basic fields of the Demand object
         Demand demand = Demand.builder()
                 .id(rs.getString("id"))
+                .ispaymentcompleted(rs.getBoolean("ispaymentcompleted"))
                 .consumerCode(rs.getString("consumercode"))
                 .tenantId(rs.getString("tenantid"))
                 .taxPeriodFrom(rs.getLong("taxperiodfrom"))
                 .taxPeriodTo(rs.getLong("taxperiodto"))
                 .businessService(rs.getString("businessservice"))
+                .fixedbillexpirydate(rs.getLong("fixedbillexpirydate"))
+                .billExpiryTime(rs.getLong("billexpirytime"))
                 .minimumAmountPayable(rs.getBigDecimal("minimumamountpayable"))
                 .status(Demand.DemandStatusEnum.valueOf(rs.getString("status")))
                 .build();

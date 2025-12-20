@@ -16,6 +16,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -120,6 +121,13 @@ public class MasterDataService {
                             .get(RLConstants.PENALTY_MASTER),
                     new TypeReference<List<Penalty>>() {}
             );
+            LocalDate now=LocalDate.now();
+     	   
+            penaltySlabs = penaltySlabs.stream().filter(p -> {
+                int start = Integer.valueOf(p.getFromFY().split("-")[0]);
+                int end   = Integer.valueOf("20"+p.getFromFY().split("-")[0]);
+                return (start<now.getYear()&&now.getYear()<end)?true:false;
+               }).collect(Collectors.toList());
             return penaltySlabs;
         } catch (Exception e) {
             log.error("Failed to get Penalty slabs from MDMS for tenant " + tenantId, e);

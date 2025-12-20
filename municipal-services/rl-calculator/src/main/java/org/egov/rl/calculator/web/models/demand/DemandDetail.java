@@ -64,9 +64,9 @@ public class DemandDetail {
 	@NotNull
 	private BigDecimal taxAmount;
 	
-	@NotNull
-	@Builder.Default
-	private BigDecimal collectionAmount = BigDecimal.valueOf(0d);
+//	@NotNull
+//	@Builder.Default
+	private BigDecimal collectionAmount;// = BigDecimal.valueOf(0d);
 
 	private AuditDetails auditDetails;
 

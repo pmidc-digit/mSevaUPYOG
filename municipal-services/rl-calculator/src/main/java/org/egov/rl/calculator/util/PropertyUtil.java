@@ -11,6 +11,7 @@ import org.egov.rl.calculator.repository.Repository;
 import org.egov.rl.calculator.web.models.GetBillCriteria;
 import org.egov.rl.calculator.web.models.RLProperty;
 import org.egov.rl.calculator.web.models.TaxRate;
+import org.egov.rl.calculator.web.models.property.AuditDetails;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,16 @@ public class PropertyUtil{
 
 		@Autowired
 		private Configurations config;
+		
+		 public AuditDetails getAuditDetails(String by, Boolean isCreate) {
+		    	
+		        Long time = System.currentTimeMillis();
+		        
+		        if(isCreate)
+		            return AuditDetails.builder().createdBy(by).createdTime(time).lastModifiedBy(by).lastModifiedTime(time).build();
+		        else
+		            return AuditDetails.builder().lastModifiedBy(by).lastModifiedTime(time).build();
+		    }
 
 
 		public List<RLProperty> getCalculateAmount(String propertyId, RequestInfo requestInfo, String tenantId, String moduleName) {

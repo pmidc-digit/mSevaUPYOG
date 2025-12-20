@@ -41,11 +41,11 @@ public class CalculatorController {
         return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
     }
 
-	@PostMapping("/_updatedemand")
-	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
-													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
-		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
-	}
+//	@PostMapping("/_updatedemand")
+//	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
+//													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
+//		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
+//	}
 	@PostMapping("/_estimate")
 	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
 		DemandResponse demandResponse =demandService.estimate(allotmentRequest.getCalculationCriteria().stream().findFirst().get().isSecurityDeposite(),allotmentRequest);
@@ -53,12 +53,19 @@ public class CalculatorController {
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}
 
-	@PostMapping("/_jobscheduler")
-	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
+//	@PostMapping("/_jobscheduler")
+//	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
+//		log.info("Starting job scheduler for rent demands.");
+//		demandService.generateDemands(requestInfo);
+//		log.info("Finished job scheduler for rent demands.");
+//		return new ResponseEntity<>(HttpStatus.OK);
+//	}
+
+    @PostMapping("/_batchDemandGenerate")
+	public ResponseEntity<Void> batchDemandGenerate(@Valid @RequestBody RequestInfo requestInfo) {
 		log.info("Starting job scheduler for rent demands.");
-		demandService.generateDemands(requestInfo);
+		demandService.generateBatchDemand(requestInfo);
 		log.info("Finished job scheduler for rent demands.");
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
 }

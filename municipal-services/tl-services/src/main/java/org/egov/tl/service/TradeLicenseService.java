@@ -31,6 +31,7 @@ import static org.egov.tracer.http.HttpUtils.isInterServiceCall;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jayway.jsonpath.JsonPath;
 
 @Service
@@ -165,6 +166,7 @@ public class TradeLicenseService {
                         if (!StringUtils.equals(result.getApplicationNumber(), license.getApplicationNumber()) && 
                         		!(StringUtils.equals(result.getStatus(),STATUS_REJECTED) || 
                         				StringUtils.equals(result.getStatus(),STATUS_EXPIRED) || 
+                        				STATUS_INACTIVE.equalsIgnoreCase(license.getAction()) ||
                         				(validToDate != null && (validToDate - currentTime) <= reminderPeriods && APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(applicationType)))) {
                             tradeTypeResultforSameMobNo.add(result.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0]);
                         }
@@ -623,6 +625,9 @@ public class TradeLicenseService {
 	 * @param tradeLicense
 	 */
 	public void inactivepreviousApplications(TradeLicense tradeLicense) {
+		String applicationType = tradeLicense.getApplicationType() != null
+				? tradeLicense.getApplicationType().toString()
+				: "";
 		TradeLicenseSearchCriteria criteria = TradeLicenseSearchCriteria.builder()
 				.status(Collections.singletonList(TLConstants.STATUS_APPROVED))
 				.tenantId(tradeLicense.getTenantId())
@@ -650,6 +655,9 @@ public class TradeLicenseService {
 			// Set Inactive Action on all the previous application
 			licenses.forEach(license -> {
 				license.setAction(STATUS_INACTIVE);
+				ObjectNode additionalDetails = (ObjectNode)license.getTradeLicenseDetail().getAdditionalDetail();
+				additionalDetails.put("inactiveType", applicationType);
+				license.getTradeLicenseDetail().setAdditionalDetail(additionalDetails);
 			});
 			TradeLicenseRequest tradeLicenseRequest = TradeLicenseRequest.builder().requestInfo(requestInfo).licenses(licenses).build();
 			update(tradeLicenseRequest, businessService_BPA);

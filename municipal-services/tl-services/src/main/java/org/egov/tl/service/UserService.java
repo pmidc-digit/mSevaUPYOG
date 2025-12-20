@@ -120,7 +120,7 @@ public class UserService{
                      // Update the professional role
                         updateProfessionalUserRoles(tradeLicense, user, licenseeTyperRole);
                         ObjectNode additionalDetails = (ObjectNode)tradeLicense.getTradeLicenseDetail().getAdditionalDetail();
-                        String inactiveType = additionalDetails.get("inactiveType").asText("");
+                        String inactiveType = additionalDetails.get("inactiveType") == null ? "" : additionalDetails.get("inactiveType").asText("");
                         if(!APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(inactiveType))
                         	user.setIsRoleUpdatable(true);
                    }

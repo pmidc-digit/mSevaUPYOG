@@ -171,7 +171,7 @@ public class MonthCalculationService {
 		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
 		System.out.println("Original Date: " + date);
-		System.out.println("15th Day of Month: " + fifteenthDay);
+		System.out.println("added 15th Day of Month: " + fifteenthDay);
 		System.out.println("Epoch Milli of 15th Day: " + fifteenthEpochMilli);
 		return fifteenthEpochMilli;
 	}

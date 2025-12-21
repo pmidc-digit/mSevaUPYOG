@@ -659,10 +659,8 @@ public class DemandService {
 
 		dmdlist.stream().filter(d->!d.isIspaymentcompleted()).forEach(d -> {
 		    if (now > d.getBillExpiryTime()) {
-    			DemandDetail demandDetail=d.getDemandDetails().stream().filter(dt->dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)).findFirst().get();
-//				List<Demand> penalityDemand = 
-						updatePenalty(demandDetail.getCollectionAmount(),d, requestInfo);
-//				demandRepository.updateDemand(requestInfo, penalityDemand);
+    			DemandDetail baseAmount=d.getDemandDetails().stream().filter(dt->dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)).findFirst().get();
+				updatePenalty(baseAmount.getTaxAmount(),d, requestInfo);
 			} else {
 				notificationService.sendNotificationSMS(AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
 			}
@@ -687,14 +685,14 @@ public class DemandService {
 						.taxAmount(paneltyAmount)
 						.collectionAmount(paneltyAmount)
 						.build();
- 	 	addRoundOffTaxHead(demand.getTenantId(),dataList);
  	 	dataList.add(demandDetail);
  	 	demand.setPayer(demand.getPayer());
  	 	demand.setMinimumAmountPayable(demand.getMinimumAmountPayable().add(demandDetail.getTaxAmount()));
  	 	demand.setDemandDetails(dataList);
 		demand.setBillExpiryTime(exparyDate);
 		demand.setFixedbillexpirydate(exparyDate);
-		demandRepository.updateDemand(requestInfo,Arrays.asList(demand));
+		addRoundOffTaxHead(demand.getTenantId(),dataList);
+	 	demandRepository.updateDemand(requestInfo,Arrays.asList(demand));
 	}
 	
 

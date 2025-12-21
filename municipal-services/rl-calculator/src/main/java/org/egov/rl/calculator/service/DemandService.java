@@ -1,5 +1,6 @@
 package org.egov.rl.calculator.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
@@ -571,43 +572,25 @@ public class DemandService {
 						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo);
 						System.out.println("list----" + list.size());
 						list.forEach(d -> {
-							System.out.println("----------ffffffffff------" + d.getDemandId());
-							boolean isBetween = !currentDate.isBefore(
-									Instant.ofEpochMilli(d.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate())
-									&& !currentDate.isAfter(Instant.ofEpochMilli(d.getEndDate())
-											.atZone(ZoneId.systemDefault()).toLocalDate());
-							if (isBetween) {
-								LocalDate enDate = Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault())
-										.toLocalDate();
-								String endDateMonth = enDate.getMonth().toString();
-								String currentMonth = currentDate.getMonth().toString();
-								if (endDateMonth.equals(currentMonth) && enDate.getYear() == currentDate.getYear()) {
-									long startDay = monthCalculationService.formatDay(monthCalculationService
-											.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
-									long endDay = d.getEndDate();
-									long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-											d.getTenantId());
-									System.out.println(startDay + "----" + endDay);
-									d.setStartDate(startDay);
-									d.setEndDate(endDay);
-									createSingleDemand(exparyDate, d, requestInfo);
+							JsonNode property = d.getAdditionalDetails();
+							String status = property.path("feesPeriodCycle").asText();
 
-								} else {
-									long startDay = monthCalculationService.formatDay(monthCalculationService
-											.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
-									long endDay = monthCalculationService.formatDay(
-											monthCalculationService.lastDayOfMonth(currentMonth, currentDate.getYear()),
-											true);
-									long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-											d.getTenantId());
-									d.setStartDate(startDay);
-									d.setEndDate(endDay);
-									createSingleDemand(exparyDate, d, requestInfo);
-
+							switch (status) {
+	                            
+								case RLConstants.RL_MONTHLY_CYCLE:
+									monthlyBillGenerate(currentDate, d, requestInfo);
+									break;
+			                    
+								case RLConstants.RL_QUATERLY_CYCLE:
+									System.out.println("Waiting for payment");
+									break;
+			                    
+								case RLConstants.RL_BIAANNUALY_CYCLE:
+									System.out.println("Payment failed");
+									break;
+								default:
+									System.out.println("Unknown status");
 								}
-
-							}
-
 						});
 					} catch (Exception e) {
 						log.error("Error while generating demands for tenant: " + tenantId, e);
@@ -621,6 +604,41 @@ public class DemandService {
 		}
 		log.info("Finished demand generation job.");
 
+	}
+
+	public void monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
+		System.out.println("----------Monthly create demand------");
+		boolean isBetween = !currentDate
+				.isBefore(Instant.ofEpochMilli(d.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate())
+				&& !currentDate
+						.isAfter(Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate());
+		if (isBetween) {
+			LocalDate enDate = Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate();
+			String endDateMonth = enDate.getMonth().toString();
+			String currentMonth = currentDate.getMonth().toString();
+			if (endDateMonth.equals(currentMonth) && enDate.getYear() == currentDate.getYear()) {
+				long startDay = monthCalculationService
+						.formatDay(monthCalculationService.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
+				long endDay = d.getEndDate();
+				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
+				System.out.println(startDay + "----" + endDay);
+				d.setStartDate(startDay);
+				d.setEndDate(endDay);
+				createSingleDemand(exparyDate, d, requestInfo);
+
+			} else {
+				long startDay = monthCalculationService
+						.formatDay(monthCalculationService.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
+				long endDay = monthCalculationService
+						.formatDay(monthCalculationService.lastDayOfMonth(currentMonth, currentDate.getYear()), true);
+				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
+				d.setStartDate(startDay);
+				d.setEndDate(endDay);
+				createSingleDemand(exparyDate, d, requestInfo);
+
+			}
+
+		}
 	}
 
 	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo) {

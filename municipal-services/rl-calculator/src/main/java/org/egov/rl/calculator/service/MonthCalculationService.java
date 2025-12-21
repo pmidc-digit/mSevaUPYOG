@@ -25,73 +25,28 @@ public class MonthCalculationService {
 	@Autowired
 	private MasterDataService masterDataService;
 
-	public List<DemandPerioud> datePerioudCalculate(String oneMonth,long startEpochMilli, long endEpochMilli,String applicationNumber) {
+	// --------------------------------quterly scheduler-----------------------------------------------------
 
-		LocalDate startDate = Instant.ofEpochMilli(startEpochMilli)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-		LocalDate endDate = Instant.ofEpochMilli(endEpochMilli)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-		
-		// Total months difference
-		long monthsBetween = ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1));
-//		System.out.println("Total Months: " + monthsBetween);
-		int monthcount = 0;
-		// Print month names
-		LocalDate tempDate = startDate;
-		List<DemandPerioud> demandPerioudList=new ArrayList<>();
-		while (!tempDate.isAfter(endDate)) {
-			tempDate = tempDate.plusMonths(1);
-			++monthcount;
-			Month month = tempDate.getMonth();
-			int year = tempDate.getYear();
-			if (monthcount == 1) {
-				long startDay = startDate.atStartOfDay(ZoneId.systemDefault()) // दिन की शुरुआत
-						.toInstant().toEpochMilli();
-				long endDay = formatDay(lastDayOfMonth(month.toString(), year), true);
-				long exparyDate=add15Days(endDay);
-				demandPerioudList.add(DemandPerioud.builder()
-						.consumerType(applicationNumber)
-						.startDate(startDay)
-						.endDate(endDay)
-						.expireDate(exparyDate)
-						.cycle(month.toString())
-						.build());	
-
-			} else if (monthcount == monthsBetween) {
-
-				long startDay = formatDay(firstDayOfMonth(month.toString(), year), false);
-				long endDay = endDate.atStartOfDay(ZoneId.systemDefault()) // दिन की शुरुआत
-						.toInstant().toEpochMilli();
-				long exparyDate=add15Days(endDay);
-				demandPerioudList.add(DemandPerioud.builder()
-						.consumerType(applicationNumber)
-						.startDate(startDay)
-						.endDate(endDay)
-						.expireDate(exparyDate)
-						.cycle(month.toString())
-						.build());	
-			} else {
-				long endDay = formatDay(lastDayOfMonth(month.toString(), year), true);
-				long startDay = formatDay(firstDayOfMonth(month.toString(), year), false);
-				long exparyDate=add15Days(endDay);
-				demandPerioudList.add(DemandPerioud.builder()
-						.consumerType(applicationNumber)
-						.startDate(startDay)
-						.endDate(endDay)
-						.expireDate(exparyDate)
-						.cycle(month.toString())
-						.build());	
-			}
-		}
-		
-		return demandPerioudList.stream().filter(m->m.getCycle().equals(null)?true:m.getCycle().equals(oneMonth)).collect(Collectors.toList());
+	public static LocalDate lastDayOfQuaterly(String monthName, int currentYear) {
+		LocalDate first = firstDayOfMonth(monthName, currentYear);
+		return first.withDayOfMonth(first.lengthOfMonth()).plusMonths(2);
 	}
-
+	
+	public static LocalDate lastDayOfHelfYearly(String monthName, int currentYear) {
+		LocalDate first = firstDayOfMonth(monthName, currentYear);
+		return first.withDayOfMonth(first.lengthOfMonth()).plusMonths(5);
+	}
+	
+	public static LocalDate lastDayOfYearly(String monthName, int currentYear) {
+		LocalDate first = firstDayOfMonth(monthName, currentYear);
+		return first.withDayOfMonth(first.lengthOfMonth()).plusMonths(11);
+	}
+	
+	// --------------------------------monthly scheduler----------------------------------------------------- 
+	
 	public static LocalDate firstDayOfMonth(String monthName, int currentYear) {
 		Month month = parseFullMonthName(monthName);
-		return LocalDate.of(currentYear, month, 1).minusDays(1);
+		return LocalDate.of(currentYear, month, 1);
 	}
 
 	// Month name (FULL) ko parse karke last day
@@ -120,26 +75,93 @@ public class MonthCalculationService {
 		return parsed.toInstant().toEpochMilli();
 	}
 
-	private boolean returnEndDate(long date) {
+	
+	
+//	public List<DemandPerioud> datePerioudCalculate(String oneMonth,long startEpochMilli, long endEpochMilli,String applicationNumber) {
+//
+//		LocalDate startDate = Instant.ofEpochMilli(startEpochMilli)
+//                .atZone(ZoneId.systemDefault())
+//                .toLocalDate();
+//		LocalDate endDate = Instant.ofEpochMilli(endEpochMilli)
+//                .atZone(ZoneId.systemDefault())
+//                .toLocalDate();
+//		
+//		// Total months difference
+//		long monthsBetween = ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1));
+////		System.out.println("Total Months: " + monthsBetween);
+//		int monthcount = 0;
+//		// Print month names
+//		LocalDate tempDate = startDate;
+//		List<DemandPerioud> demandPerioudList=new ArrayList<>();
+//		while (!tempDate.isAfter(endDate)) {
+//			tempDate = tempDate.plusMonths(1);
+//			++monthcount;
+//			Month month = tempDate.getMonth();
+//			int year = tempDate.getYear();
+//			if (monthcount == 1) {
+//				long startDay = startDate.atStartOfDay(ZoneId.systemDefault()) // दिन की शुरुआत
+//						.toInstant().toEpochMilli();
+//				long endDay = formatDay(lastDayOfMonth(month.toString(), year), true);
+//				long exparyDate=add15Days(endDay);
+//				demandPerioudList.add(DemandPerioud.builder()
+//						.consumerType(applicationNumber)
+//						.startDate(startDay)
+//						.endDate(endDay)
+//						.expireDate(exparyDate)
+//						.cycle(month.toString())
+//						.build());	
+//
+//			} else if (monthcount == monthsBetween) {
+//
+//				long startDay = formatDay(firstDayOfMonth(month.toString(), year), false);
+//				long endDay = endDate.atStartOfDay(ZoneId.systemDefault()) // दिन की शुरुआत
+//						.toInstant().toEpochMilli();
+//				long exparyDate=add15Days(endDay);
+//				demandPerioudList.add(DemandPerioud.builder()
+//						.consumerType(applicationNumber)
+//						.startDate(startDay)
+//						.endDate(endDay)
+//						.expireDate(exparyDate)
+//						.cycle(month.toString())
+//						.build());	
+//			} else {
+//				long endDay = formatDay(lastDayOfMonth(month.toString(), year), true);
+//				long startDay = formatDay(firstDayOfMonth(month.toString(), year), false);
+//				long exparyDate=add15Days(endDay);
+//				demandPerioudList.add(DemandPerioud.builder()
+//						.consumerType(applicationNumber)
+//						.startDate(startDay)
+//						.endDate(endDay)
+//						.expireDate(exparyDate)
+//						.cycle(month.toString())
+//						.build());	
+//			}
+//		}
+//		
+//		return demandPerioudList.stream().filter(m->m.getCycle().equals(null)?true:m.getCycle().equals(oneMonth)).collect(Collectors.toList());
+//	}
 
-		// Convert long (epoch milli) to LocalDate
-		LocalDate start = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate();
 
-		// Current month
-		YearMonth currentMonth = YearMonth.now();
-
-		// Start month
-		YearMonth startMonth = YearMonth.from(start);
-
-		// Check if startDate is in current month
-		boolean isSameMonth = currentMonth.equals(startMonth);
-
-		System.out.println("Start Date: " + start);
-		System.out.println("Current Month: " + currentMonth);
-		System.out.println("Is startDate in current month? " + isSameMonth);
-		return isSameMonth;
-
-	}
+//	private boolean returnEndDate(long date) {
+//
+//		// Convert long (epoch milli) to LocalDate
+//		LocalDate start = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//		// Current month
+//		YearMonth currentMonth = YearMonth.now();
+//
+//		// Start month
+//		YearMonth startMonth = YearMonth.from(start);
+//
+//		// Check if startDate is in current month
+//		boolean isSameMonth = currentMonth.equals(startMonth);
+//
+//		System.out.println("Start Date: " + start);
+//		System.out.println("Current Month: " + currentMonth);
+//		System.out.println("Is startDate in current month? " + isSameMonth);
+//		return isSameMonth;
+//
+//	}
 
 	
 

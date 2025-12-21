@@ -36,6 +36,12 @@ public class RLConstants {
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	
+	public static final String RL_MONTHLY_CYCLE = "MONTHLY";
+	public static final String RL_QUATERLY_CYCLE = "QUTERLY";
+	public static final String RL_BIAANNUALY_CYCLE = "BIAANUALY";
+	public static final String RL_YEARLY_CYCLE = "YEARLY";
+	
+	
     public static final String TAX_PERIOD_MASTER = "TaxPeriod";
     public static final String BILLING_SERVICE_MASTER = "BillingService";
     public static final String DEMAND_CANCELLED_STATUS = "CANCELLED";

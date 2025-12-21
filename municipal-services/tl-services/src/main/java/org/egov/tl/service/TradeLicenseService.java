@@ -659,8 +659,14 @@ public class TradeLicenseService {
 				additionalDetails.put("inactiveType", applicationType);
 				license.getTradeLicenseDetail().setAdditionalDetail(additionalDetails);
 			});
-			TradeLicenseRequest tradeLicenseRequest = TradeLicenseRequest.builder().requestInfo(requestInfo).licenses(licenses).build();
-			update(tradeLicenseRequest, businessService_BPA);
+			if(!licenses.isEmpty()) {
+				try {
+					TradeLicenseRequest tradeLicenseRequest = TradeLicenseRequest.builder().requestInfo(requestInfo).licenses(licenses).build();
+					update(tradeLicenseRequest, businessService_BPA);
+				} catch (Exception e) {
+					log.error("Enable to Inactive Previous Applications for user: " + tradeLicense.getTradeLicenseDetail().getOwners().get(0).getMobileNumber());
+				}
+			}
 		}
 		
 	}

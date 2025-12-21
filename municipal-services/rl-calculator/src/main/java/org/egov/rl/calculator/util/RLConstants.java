@@ -31,7 +31,11 @@ public class RLConstants {
 	
 	public static final String SGST_FEE_RL_APPLICATION = "RL_SGST_FEE";
 
+	public static final String ROUND_OFF_RL_APPLICATION = "RL_FEE_ROUND_OFF";
+	
+
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
+	
     public static final String TAX_PERIOD_MASTER = "TaxPeriod";
     public static final String BILLING_SERVICE_MASTER = "BillingService";
     public static final String DEMAND_CANCELLED_STATUS = "CANCELLED";

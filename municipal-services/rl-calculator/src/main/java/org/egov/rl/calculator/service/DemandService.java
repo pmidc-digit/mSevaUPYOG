@@ -679,17 +679,22 @@ public class DemandService {
  	    long now=LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
  	 	long exparyDate=monthCalculationService.addAfterPenaltyDays(now,requestInfo,demand.getTenantId());
  	 	List<DemandDetail> dataList=demand.getDemandDetails();
- 	 	DemandDetail demandDetail=DemandDetail.builder().id(UUID.randomUUID().toString()).demandId(demand.getId())
- 	 			       .tenantId(demand.getTenantId())
-						.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION).auditDetails(auditDetails)
-						.taxAmount(paneltyAmount).collectionAmount(paneltyAmount).build();
-//		demand.setDemandDetails(dataList);
+ 	 	DemandDetail demandDetail=DemandDetail.builder()
+ 	 			        .demandId(demand.getId())
+ 	 			        .tenantId(demand.getTenantId())
+						.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION)
+						.auditDetails(auditDetails)
+						.taxAmount(paneltyAmount)
+						.collectionAmount(paneltyAmount)
+						.build();
+ 	 	addRoundOffTaxHead(demand.getTenantId(),dataList);
+ 	 	dataList.add(demandDetail);
+ 	 	demand.setPayer(demand.getPayer());
+ 	 	demand.setMinimumAmountPayable(demand.getMinimumAmountPayable().add(demandDetail.getTaxAmount()));
+ 	 	demand.setDemandDetails(dataList);
 		demand.setBillExpiryTime(exparyDate);
 		demand.setFixedbillexpirydate(exparyDate);
-		demandRepository.updateDemand(demand);
-		demandRepository.updateDemandDetails(demandDetail);
-		
-//		return Arrays.asList(demand);
+		demandRepository.updateDemand(requestInfo,Arrays.asList(demand));
 	}
 	
 
@@ -729,6 +734,67 @@ public class DemandService {
 		demandRepository.saveDemand(requestInfo, demands);
 //		}
 
+	}
+	
+	/**
+	 * Adds roundOff taxHead if decimal values exists
+	 * 
+	 * @param tenantId      The tenantId of the demand
+	 * @param demandDetails The list of demandDetail
+	 */
+	public void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
+		BigDecimal totalTax = BigDecimal.ZERO;
+
+		BigDecimal previousRoundOff = BigDecimal.ZERO;
+
+		/*
+		 * Sum all taxHeads except RoundOff as new roundOff will be calculated
+		 */
+		for (DemandDetail demandDetail : demandDetails) {
+			if (!demandDetail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.ROUND_OFF_RL_APPLICATION))
+				totalTax = totalTax.add(demandDetail.getTaxAmount());
+			else
+				previousRoundOff = previousRoundOff.add(demandDetail.getTaxAmount());
+		}
+
+		BigDecimal decimalValue = totalTax.remainder(BigDecimal.ONE);
+		BigDecimal midVal = BigDecimal.valueOf(0.5);
+		BigDecimal roundOff = BigDecimal.ZERO;
+
+		/*
+		 * If the decimal amount is greater than 0.5 we subtract it from 1 and put it as
+		 * roundOff taxHead so as to nullify the decimal eg: If the tax is 12.64 we will
+		 * add extra tax roundOff taxHead of 0.36 so that the total becomes 13
+		 */
+		if (decimalValue.compareTo(midVal) >= 0)
+			roundOff = BigDecimal.ONE.subtract(decimalValue);
+
+		/*
+		 * If the decimal amount is less than 0.5 we put negative of it as roundOff
+		 * taxHead so as to nullify the decimal eg: If the tax is 12.36 we will add
+		 * extra tax roundOff taxHead of -0.36 so that the total becomes 12
+		 */
+		if (decimalValue.compareTo(midVal) < 0)
+			roundOff = decimalValue.negate();
+
+		/*
+		 * If roundOff already exists in previous demand create a new roundOff taxHead
+		 * with roundOff amount equal to difference between them so that it will be
+		 * balanced when bill is generated. eg: If the previous roundOff amount was of
+		 * -0.36 and the new roundOff excluding the previous roundOff is 0.2 then the
+		 * new roundOff will be created with 0.2 so that the net roundOff will be 0.2
+		 * -(-0.36)
+		 */
+		if (previousRoundOff.compareTo(BigDecimal.ZERO) != 0) {
+			roundOff = roundOff.subtract(previousRoundOff);
+		}
+
+		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
+			DemandDetail roundOffDemandDetail = DemandDetail.builder().taxAmount(roundOff)
+					.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).tenantId(tenantId)
+					.collectionAmount(BigDecimal.ZERO).build();
+			demandDetails.add(roundOffDemandDetail);
+		}
 	}
 
 }

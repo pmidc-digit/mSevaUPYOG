@@ -91,7 +91,7 @@ public class MonthCalculationService {
 
 	public static LocalDate firstDayOfMonth(String monthName, int currentYear) {
 		Month month = parseFullMonthName(monthName);
-		return LocalDate.of(currentYear, month, 1);
+		return LocalDate.of(currentYear, month, 1).minusDays(1);
 	}
 
 	// Month name (FULL) ko parse karke last day

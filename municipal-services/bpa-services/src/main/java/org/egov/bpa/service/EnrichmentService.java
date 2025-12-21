@@ -1,6 +1,8 @@
 package org.egov.bpa.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +28,8 @@ import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.edcr.RequestInfoWrapper;
 import org.egov.bpa.web.model.idgen.IdResponse;
+import org.egov.bpa.web.model.landInfo.LandInfo;
+import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.workflow.BusinessService;
 import org.egov.bpa.workflow.WorkflowIntegrator;
 import org.egov.bpa.workflow.WorkflowService;
@@ -83,6 +87,9 @@ public class EnrichmentService {
 	
 	@Autowired
 	CalculationService calculationService;
+	
+	@Autowired
+	private BPALandService landService;
 
 	/**
 	 * encrich create BPA Reqeust by adding audidetails and uuids
@@ -229,6 +236,10 @@ public class EnrichmentService {
 		String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
 
 		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+		
+		if(bpa.getLandInfo() == null) {
+			addLandInfo(bpaRequest);
+		}
 		
 		if ((state.equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || state.equalsIgnoreCase(BPAConstants.FI_STATUS) || state.equalsIgnoreCase(BPAConstants.PENDINGVERIFICATION_STATE))
 				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
@@ -420,6 +431,17 @@ public class EnrichmentService {
 			bpa.setWorkflow(wfNew);
 		} else {
 			bpa.getWorkflow().setAssignes(new LinkedList<>(assignes));
+		}
+	}
+	
+	private void addLandInfo(BPARequest bpaRequest) {
+		LandSearchCriteria landcriteria = new LandSearchCriteria();
+		landcriteria.setTenantId(bpaRequest.getBPA().getTenantId());
+		landcriteria.setIds(Arrays.asList(bpaRequest.getBPA().getLandId()));
+		ArrayList<LandInfo> landInfos = landService.searchLandInfoToBPA(bpaRequest.getRequestInfo(), landcriteria);
+		
+		if(!landInfos.isEmpty()) {
+			bpaRequest.getBPA().setLandInfo(landInfos.get(0));
 		}
 	}
 }

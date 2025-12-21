@@ -648,7 +648,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                     				: "";
                             if(!(tradeType.equalsIgnoreCase("ARCHITECT") || ACTION_REAPPROVE.equalsIgnoreCase(license.getAction()))) {
                             	TradeLicense existingLicense = getExistingApplication(requestInfo, license.getTenantId(), 
-                        				license.getTradeLicenseDetail().getOwners().get(0).getMobileNumber(), tradeType, license.getApplicationNumber());
+                        				license.getTradeLicenseDetail().getOwners().get(0).getMobileNumber(), license.getApplicationNumber());
                             	switch (applicationType) {
 								case APPLICATION_TYPE_UPGRADE:
 									if(existingLicense != null && existingLicense.getValidTo() != null)
@@ -800,10 +800,9 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 	 * @param tradeType
 	 * @return Existing Professional Application
 	 */
-	private TradeLicense getExistingApplication(RequestInfo requestInfo, String tenantId, String mobileNumber,
-			String tradeType, String newApplicationNo) {
+	private TradeLicense getExistingApplication(RequestInfo requestInfo, String tenantId, String mobileNumber, String newApplicationNo) {
 		TradeLicenseSearchCriteria criteria = TradeLicenseSearchCriteria.builder().tenantId(tenantId)
-				.status(Arrays.asList(TLConstants.STATUS_APPROVED)).mobileNumber(mobileNumber).tradeType(tradeType)
+				.status(Arrays.asList(STATUS_APPROVED,STATUS_EXPIRED)).mobileNumber(mobileNumber)
 				.businessService(businessService_BPA).build();
 
 		List<TradeLicense> licenses = licenseService.getLicensesFromMobileNumber(criteria, requestInfo);

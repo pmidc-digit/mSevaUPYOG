@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
@@ -52,6 +53,8 @@ import org.kabeja.dxf.DXFLWPolyline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import bsh.StringUtil;
+
 @Service
 public class FarExtract extends FeatureExtract {
 
@@ -77,6 +80,8 @@ public class FarExtract extends FeatureExtract {
 
     private static final String VALIDATION_WRONG_COLORCODE_FLOORAREA = "msg.error.wrong.colourcode.floorarea";
     public static final String RULE_31_1 = "31(1)";
+    
+    private static final String INVALID_COLOR_CODE = "Invalid color code";
 
     /**
      * @param doc
@@ -172,11 +177,14 @@ public class FarExtract extends FeatureExtract {
                             occupancy.setExistingBuiltUpArea(BigDecimal.ZERO);
                             occupancy.setType(Util.findOccupancyType(pline));
                             occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                            LOG.error("Stilt Floor occupancy type " + occupancy.getType().getOccupancyTypeVal());
-                            if (occupancy.getTypeHelper() == null)
-                                pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(
-                                        VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()), s));
-                            else
+                            LOG.error("Stilt Floor occupancy type " + occupancy.getType());
+                            if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
+                            		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
+//                                pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(
+//                                        VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()), s));
+                                pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                                pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                            }else
                                 floor.addBuiltUpArea(occupancy);
                         }
                     }
@@ -194,10 +202,10 @@ public class FarExtract extends FeatureExtract {
                     occupancy.setType(Util.findOccupancyType(pline));
                     occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
                     LOG.error(" occupancy type " + occupancy.getType());
-                    if (occupancy.getTypeHelper() == null)
-                        pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(
-                                VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()), s));
-                    else
+                    if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
+                    		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
+                        pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                    }else
                         floor.addBuiltUpArea(occupancy);
                 }
                 if (block.getBuilding().getFloorNumber(floorNo) == null)
@@ -232,12 +240,10 @@ public class FarExtract extends FeatureExtract {
                         occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
                         LOG.info("occupancy type deduction " + occupancy.getType());
 
-    					if (occupancy.getTypeHelper() == null
-    							|| (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() == null))
-    						pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
-    								getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
-    										layer));
-    					else
+                        if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
+                        		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
+                            pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                        }else
     						floor.addDeductionArea(occupancy);
                     }                    
                 } 
@@ -309,10 +315,10 @@ public class FarExtract extends FeatureExtract {
                     occupancy.setExistingBuiltUpArea(occupancyArea == null ? BigDecimal.ZERO : occupancyArea);
                     occupancy.setType(Util.findOccupancyType(pline));
                     occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                    if (occupancy.getTypeHelper() == null)
-                        pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(
-                                VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()), layer));
-                    else
+                    if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
+                    		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
+                        pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                    }else
                         floor.addBuiltUpArea(occupancy);
 
                 }
@@ -330,11 +336,10 @@ public class FarExtract extends FeatureExtract {
                     occupancy.setExistingDeduction(deductionArea == null ? BigDecimal.ZERO : deductionArea);
                     occupancy.setType(Util.findOccupancyType(pline));
                     occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                    if (occupancy.getTypeHelper() == null)
-                        pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
-                                getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
-                                        deductLayerName));
-                    else
+                    if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
+                    		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
+                        pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                    }else
                         floor.addDeductionArea(occupancy);
                 }
             }
@@ -388,6 +393,14 @@ public class FarExtract extends FeatureExtract {
             LOG.debug("End of FAR Extract......");
         return pl;
     }
+    
+    private String errorMessage(String layerName, Integer colorCode) {
+    	return String.format(
+    	        "Invalid color code (%d) for layer \"%s\". Please refer to the user manual and try again.",
+    	        colorCode, layerName
+    	    );
+    }
+
 
     private void addExistingCarpetArea(PlanDetail pl, Block block, Floor floor) {
         String existingCarpetAreaLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber()

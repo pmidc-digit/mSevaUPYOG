@@ -321,9 +321,8 @@ public class Coverage extends FeatureProcess {
 //						permissibleCoverageValue,coverageArea,plotArea);			
 			processCoverage(pl,mostRestrictiveOccupancy, totalCoverageArea, 
 					permissibleCoverageValue,coverageArea,plotArea);
-			}else if (A.equals(mostRestrictiveOccupancy.getType().getCode())
-					|| F.equals(mostRestrictiveOccupancy.getType().getCode())) {
-				processCoverage(pl, mostRestrictiveOccupancy, totalCoverage,
+			}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) {
+				processCoverage(pl, mostRestrictiveOccupancy, totalCoverageArea,
 						permissibleCoverageValue,coverageArea,plotArea);
 			} 
 			else {
@@ -555,8 +554,10 @@ public class Coverage extends FeatureProcess {
 		if(occupancyTypeHelper!=null && occupancyTypeHelper.getType().getName()!=null) {
 			occupancy = occupancyTypeHelper.getType().getName();
 			if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
-					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())) {
-				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + "m²";
+					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
+					|| F.equalsIgnoreCase(occupancyTypeHelper.getType().getCode())
+					) {
+				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + " m²";
 				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
 			}else {
 				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverageArea.setScale(2, RoundingMode.HALF_UP).toString() +" %");

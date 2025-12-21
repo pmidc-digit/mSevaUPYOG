@@ -147,6 +147,7 @@ public class FrontYardService extends GeneralRule {
 	// Constants for Commercial
 	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_20 = BigDecimal.valueOf(0.20);
 	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_15 = BigDecimal.valueOf(0.15);
+	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_10 = BigDecimal.valueOf(0.10);
 
 	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_41_82 = BigDecimal.valueOf(41.82);
 	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_104_5 = BigDecimal.valueOf(104.5);
@@ -836,34 +837,45 @@ private class FrontYardResult {
 		// IT,ITES
 		if (mostRestrictiveOccupancy.getType() != null
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
-			minVal = getMinValueForCommercial(pl,plot.getArea(),errors, frontYardResult);
+			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, frontYardResult, buildingHeight);
 			subRule = RULE_37_TWO_I;
-		}
-		if (mostRestrictiveOccupancy.getType() != null
-				&& G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
-			minVal = getMinValueForIndustrial(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
-			subRule = RULE_37_TWO_I;
-		}
-
-		//valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
-		
-		if(!isNbcType) {
-	    	// Validate using common function
-		    valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);		    
-		    // Save result
-		    compareFrontYardResultIndustry(blockName, min, mean, mostRestrictiveOccupancy,
-		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);		   
-	    }else {
-	    	// Validate using common function
-	    	valid = validateMinimumAndMeanValue(min, setback.getFrontYard().getWidth(), minVal, meanVal);
+			valid = validateMinimumAndMeanValue(min, setback.getFrontYard().getWidth(), minVal, meanVal);
 	    	if (setback.getFrontYard().getWidth().compareTo(minVal) >= 0) {		    
 			}else {
 				valid=false;
 			}
 	    	// Save result
 	    	compareFrontYardResult(blockName, min, setback.getFrontYard().getWidth(), mostRestrictiveOccupancy,
-	    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);	    	
-	    }
+	    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);	 
+		}
+		if (mostRestrictiveOccupancy.getType() != null
+				&& G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
+			minVal = getMinValueForIndustrial(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
+			subRule = RULE_37_TWO_I;
+			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
+			compareFrontYardResult(blockName, min, setback.getFrontYard().getWidth(), mostRestrictiveOccupancy,
+	    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);
+		}
+
+		//valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
+		
+//		if(!isNbcType) {
+//	    	// Validate using common function
+//		    valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);		    
+//		    // Save result
+//		    compareFrontYardResultIndustry(blockName, min, mean, mostRestrictiveOccupancy,
+//		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);		   
+//	    }else {
+//	    	// Validate using common function
+//	    	valid = validateMinimumAndMeanValue(min, setback.getFrontYard().getWidth(), minVal, meanVal);
+//	    	if (setback.getFrontYard().getWidth().compareTo(minVal) >= 0) {		    
+//			}else {
+//				valid=false;
+//			}
+//	    	// Save result
+//	    	compareFrontYardResult(blockName, min, setback.getFrontYard().getWidth(), mostRestrictiveOccupancy,
+//	    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);	    	
+//	    }
 
 //		compareFrontYardResult(blockName, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule,
 //				minVal, meanVal, level);
@@ -1121,17 +1133,51 @@ private class FrontYardResult {
 		return valid;
 	}
 	
-	private BigDecimal getMinValueForCommercial(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, FrontYardResult frontYardResult) {
-
-	    LOG.info("getMinValueForCommercial for Commercial:");
-
+	private BigDecimal getMinValueForCommercialFromMdms(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, 
+			FrontYardResult frontYardResult, BigDecimal buildingHeight) {
+	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
 	    BigDecimal minVal = BigDecimal.ZERO;
 	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
 	    	errors.put("Plot Area error","Plot area can not be 0");
 	    	pl.addErrors(errors);
 	    	return BigDecimal.ZERO;
 	    }
-
+	    
+	    /* ======================================================
+	     * HIGH RISE BUILDINGS (Height > 21 m)
+	     * ====================================================== */
+	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
+	    	if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	             requiredSetback.ifPresent(
+	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	             );
+	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	             frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");
+	        }	    	
+	    }else {
+	    	 /* ======================================================
+	         * LOW RISE BUILDINGS (Height ≤ 21 m)
+	         * ====================================================== */
+	    	minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // 10%
+		    frontYardResult.setBackPercentage = "10";			
+	    }
+	    return minVal.setScale(2, RoundingMode.HALF_UP);
+	}
+	
+	private BigDecimal getMinValueForCommercial(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, 
+			FrontYardResult frontYardResult) {
+	    LOG.info("getMinValueForCommercial for Commercial:");
+	    BigDecimal minVal = BigDecimal.ZERO;
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	    	errors.put("Plot Area error","Plot area can not be 0");
+	    	pl.addErrors(errors);
+	    	return BigDecimal.ZERO;
+	    }
 	    //Set minVal dynamically using constants
 	    if (plotArea.compareTo(BigDecimal.ZERO) > 0 
 	    		&& plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_41_82) <= 0) {

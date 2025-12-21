@@ -771,7 +771,9 @@
 					<font size="8"/>
 					<paragraph leftIndent="3"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Residential".equals($F{planInformation}.getOccupancy()) ? "Residential Plotted" : $F{planInformation}.getOccupancy()]]></textFieldExpression>
+				<!-- <textFieldExpression><![CDATA["Residential".equals($F{planInformation}.getOccupancy()) ? "Residential Plotted" : $F{planInformation}.getOccupancy()]]></textFieldExpression> -->
+				<textFieldExpression><![CDATA["Residential".equals($F{planInformation}.getOccupancy()) ? "Residential" : $F{planInformation}.getOccupancy()]]></textFieldExpression>
+				
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement x="28" y="165" width="114" height="21" uuid="cf89ccc2-267a-4e0d-8e8c-7cb9cdc4c1a9"/>

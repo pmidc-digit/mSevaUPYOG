@@ -129,29 +129,29 @@ public class PlanReportService {
     private static final String BLOCK_WISE_SUMMARY = "Block Wise Summary";
     private static final BigDecimal BUILDING_HEIGHT = BigDecimal.valueOf(21);
     
- // === MANDATORY KEYS THAT DECIDE FINAL REPORT STATUS ===
-    private static final List<String> MANDATORY_KEYS = Arrays.asList(
-        "1General Stair - Mid landing",
-        "1General Stair - Number of risers",
-        "1General Stair - Riser Height",
-        "1General Stair - Width",
-        "1General Stair - Tread width",
-        "1Height of Building",
-        "1Height of Floor",
-        //"1Number of Floors",
-        "1Plantation Area",
-        "1Plinth",
-        "Coverage",
-        "FAR",
-        "Green buildings and sustainability provisions",
-        "Location Plan",
-        "MainGate",
-        "North Direction",
-        "Parking",
-        "Travel Distance To Emergency Exits",
-        //"1Fire Tender Movement",
-        "1FrontRearSideYardDetails"
-    );
+    private static final List<String> MANDATORY_KEYS = new ArrayList<>(Arrays.asList(
+    	    "1General Stair - Mid landing",
+    	    "1General Stair - Number of risers",
+    	    "1General Stair - Riser Height",
+    	    "1General Stair - Width",
+    	    "1General Stair - Tread width",
+    	    "1Height of Building",
+    	    "1Height of Floor",
+    	    //"1Number of Floors",
+    	    "1Plantation Area",
+    	    "1Plinth",
+    	    "Coverage",
+    	    "FAR",
+    	    "Green buildings and sustainability provisions",
+    	    "Location Plan",
+    	    "MainGate",
+    	    "North Direction",
+    	    "Parking",
+    	    "Travel Distance To Emergency Exits",
+    	    //"1Fire Tender Movement",
+    	    "1FrontRearSideYardDetails"
+    	));
+
 
     public InputStream generateDynamicReport(Plan plan, EdcrApplication dcrApplication) {
         FastReportBuilder drb = new FastReportBuilder();

@@ -139,7 +139,7 @@ public class RearYardService extends GeneralRule {
 	public static final BigDecimal ROAD_WIDTH_TWELVE_POINTTWO = BigDecimal.valueOf(12.2);
 	
 	// Constants for Commercial
-	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_10 = BigDecimal.valueOf(0.10);
+	private static final BigDecimal COMMERCIAL_REAR_SETBACK_PERCENT_10 = BigDecimal.valueOf(0.10);
 	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_20 = BigDecimal.valueOf(0.20);
 	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_25 = BigDecimal.valueOf(0.25);
 	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_30 = BigDecimal.valueOf(0.30);
@@ -1087,11 +1087,14 @@ public class RearYardService extends GeneralRule {
 		// IT,ITES
 		if (mostRestrictiveOccupancy.getType() != null
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-			minVal = getMinValueForCommercial(pl, plot.getArea(), errors, buildingHeight, rearYardResult);
+			minVal = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, rearYardResult);
 			subRule = RULE_37_TWO_I;
+			valid = validateMinimumAndMeanValue(min, setback.getRearYard().getWidth(), minVal, meanVal);
+	    	if (setback.getRearYard().getWidth().compareTo(minVal) >= 0) {		    
+			}else {
+				valid=false;
+			}	    	
 		}
-
-		valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
 
 		compareRearYardResult(block.getName(), min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule,
 				rule, minVal, meanVal, level);
@@ -1243,7 +1246,7 @@ public class RearYardService extends GeneralRule {
 		        minVal = BigDecimal.ZERO; // Up to 41.82 → Not compulsory → keep ZERO
 		    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_41_82) > 0
 		            && plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_104_5) <= 0) {	        
-		        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // >41.82 and <=104.5 → 10%
+		        minVal = plotArea.multiply(COMMERCIAL_REAR_SETBACK_PERCENT_10); // >41.82 and <=104.5 → 10%
 		        rearYardResult.setBackPercentage = "10";
 		    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_104_5) > 0
 		            && plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_209) <= 0) {	        
@@ -1287,6 +1290,44 @@ public class RearYardService extends GeneralRule {
 	            minVal = BigDecimal.valueOf(16);
 	            rearYardResult.setBackPercentage = minVal.toPlainString().concat("m");
 	        }
+	    }
+
+	    return minVal.setScale(2, RoundingMode.HALF_UP);
+	}
+	
+	private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, HashMap<String, String> errors, 
+			BigDecimal buildingHeight, RearYardResult rearYardResult) {
+	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
+
+	    BigDecimal minVal = BigDecimal.ZERO;
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	        errors.put("Plot Area error", "Plot area can not be 0");
+	        pl.addErrors(errors);
+	        return BigDecimal.ZERO;
+	    }
+
+	    /* ======================================================
+	     * HIGH RISE BUILDINGS (Height > 21 m)
+	     * ====================================================== */
+	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
+	    	if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	             requiredSetback.ifPresent(
+	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	             );
+	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	             rearYardResult.setBackPercentage = minVal.toPlainString().concat("m");
+	        }	    	
+	    }else {
+	    	 /* ======================================================
+	         * LOW RISE BUILDINGS (Height ≤ 21 m)
+	         * ====================================================== */
+	    	minVal = plotArea.multiply(COMMERCIAL_REAR_SETBACK_PERCENT_10); // 10%
+	    	rearYardResult.setBackPercentage = "10";			
 	    }
 
 	    return minVal.setScale(2, RoundingMode.HALF_UP);

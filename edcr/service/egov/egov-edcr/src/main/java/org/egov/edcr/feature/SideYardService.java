@@ -143,7 +143,7 @@ public class SideYardService extends GeneralRule {
     private static final double THREE_MTR = 3.0;
     
  // Constants for Commercial
- 	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_10 = BigDecimal.valueOf(0.10);
+ 	private static final BigDecimal COMMERCIAL_SIDE_SETBACK_PERCENT_10 = BigDecimal.valueOf(0.10);
  	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_20 = BigDecimal.valueOf(0.20);
  	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_25 = BigDecimal.valueOf(0.25);
  	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_30 = BigDecimal.valueOf(0.30);
@@ -1201,8 +1201,8 @@ public class SideYardService extends GeneralRule {
         }
         // IT,ITES
         if (mostRestrictiveOccupancy.getType() != null && F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-        	side2val = getMinValueForCommercial(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result);
-        	side1val = getMinValueForCommercial(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result);
+        	side2val = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result);
+        	side1val = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result);        	
             subRule = RULE_37_TWO_I;
         }
         
@@ -1715,7 +1715,7 @@ public class SideYardService extends GeneralRule {
 		        minVal = BigDecimal.ZERO; // Up to 41.82 → Not compulsory → keep ZERO
 		    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_41_82) > 0
 		            && plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_104_5) <= 0) {	        
-		        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // >41.82 and <=104.5 → 10%
+		        minVal = plotArea.multiply(COMMERCIAL_SIDE_SETBACK_PERCENT_10); // >41.82 and <=104.5 → 10%
 		        sideYard1Result.setBackPercentage = "10";
 		        sideYard2Result.setBackPercentage = "10";
 		    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_104_5) > 0
@@ -1777,4 +1777,45 @@ public class SideYardService extends GeneralRule {
 	    return minVal.setScale(2, RoundingMode.HALF_UP);
 	}
 
+    private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, HashMap<String, String> errors, 
+			BigDecimal buildingHeight, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+
+	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
+
+	    BigDecimal minVal = BigDecimal.ZERO;
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	        errors.put("Plot Area error", "Plot area can not be 0");
+	        pl.addErrors(errors);
+	        return BigDecimal.ZERO;
+	    }
+
+	    /* ======================================================
+	     * HIGH RISE BUILDINGS (Height > 21 m)
+	     * ====================================================== */
+	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
+	    	if (fullListOpt.isPresent()) {
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	             requiredSetback.ifPresent(
+	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	             );
+	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	             sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
+	             sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
+	        }	    	
+	    }else {
+	    	 /* ======================================================
+	         * LOW RISE BUILDINGS (Height ≤ 21 m)
+	         * ====================================================== */
+	    	minVal = plotArea.multiply(COMMERCIAL_SIDE_SETBACK_PERCENT_10); // 10%
+	    	sideYard1Result.setBackPercentage = "10";	
+	    	sideYard2Result.setBackPercentage = "10";	
+	    }
+
+	    return minVal.setScale(2, RoundingMode.HALF_UP);
+	}
+    
 }

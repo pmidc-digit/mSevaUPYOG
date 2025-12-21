@@ -246,6 +246,13 @@ public class Far extends FeatureProcess {
 	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_2000 = BigDecimal.valueOf(2000);
 	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_10000 = BigDecimal.valueOf(10000);
 	
+	private static final BigDecimal ROAD_WIDTH_18 = BigDecimal.valueOf(18);
+	private static final BigDecimal ROAD_WIDTH_24 = BigDecimal.valueOf(24);
+	private static final BigDecimal ROAD_WIDTH_45 = BigDecimal.valueOf(45);
+
+	private static final BigDecimal FAR_2 = BigDecimal.valueOf(2.00);
+	private static final BigDecimal FAR_3 = BigDecimal.valueOf(3.00);
+	
 	@Override
 	public Plan validate(Plan pl) {
 		if (pl.getPlot() == null || (pl.getPlot() != null
@@ -748,8 +755,9 @@ public class Far extends FeatureProcess {
 			}
 			if (mostRestrictiveOccupancyType.getType() != null
 					&& DxfFileConstants.F.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-				processFarNonResidential(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
-						errorMsgs,plotArea);
+//				processFarNonResidential(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
+//						errorMsgs,plotArea);
+				processFarCommercial(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs, plotArea);
 			}
 			if (mostRestrictiveOccupancyType.getType() != null
 					&& DxfFileConstants.C.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
@@ -1417,6 +1425,58 @@ public class Far extends FeatureProcess {
 			//buildResult(pl, occupancyType, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 		}
 	}
+
+	private void processFarCommercial(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far,
+	        String typeOfArea, BigDecimal roadWidth, HashMap<String, String> errors,
+	        BigDecimal plotArea) {
+
+	    String expectedResult = StringUtils.EMPTY;
+	    boolean isAccepted = false;
+
+	    /* ---------- Plot Area Validation ---------- */
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	        if (!shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_AREA)) {
+	            errors.put("Plot Area Error", "Plot area must be greater than 0.");
+	            pl.addErrors(errors);
+	        }
+	        return;
+	    }
+
+	    /* ---------- Road Width Validation ---------- */
+	    if (roadWidth == null || roadWidth.compareTo(ROAD_WIDTH_18) < 0) {
+	        errors.put("Road Width Error", "Road width below 18 meters is not permitted for FAR.");
+	        pl.addErrors(errors);
+	        return;
+	    }
+
+	    /* ---------- FAR Determination (Ascending Order) ---------- */
+	    if (roadWidth.compareTo(ROAD_WIDTH_18) >= 0
+	            && roadWidth.compareTo(ROAD_WIDTH_24) < 0) {
+
+	        expectedResult = "2.0";
+	        isAccepted = far != null && far.compareTo(FAR_2) <= 0;
+
+	    } else if (roadWidth.compareTo(ROAD_WIDTH_24) >= 0
+	            && roadWidth.compareTo(ROAD_WIDTH_45) < 0) {
+
+	        expectedResult = "3.0";
+	        isAccepted = far != null && far.compareTo(FAR_3) <= 0;
+
+	    } else { // roadWidth >= 45
+
+	        expectedResult = "UNLIMITED";
+	        isAccepted = true;
+	    }
+
+	    /* ---------- Build Result ---------- */
+	    String occupancyName = occupancyType.getType().getName();
+
+	    if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
+	        buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+	    }
+	}
+
+
 
 	private void processFarNonResidential(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far, String typeOfArea,
 			BigDecimal roadWidth, HashMap<String, String> errors, BigDecimal plotArea) {
@@ -2114,7 +2174,10 @@ public class Far extends FeatureProcess {
 	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
 	            Object mdmsData = null;
 	            
-	            if (occupancyType != null && occupancyType.getSubtype().getCode() != null) {
+	            if (occupancyType != null
+	                    && occupancyType.getSubtype() != null
+	                    && occupancyType.getSubtype().getCode() != null
+	                    && !DxfFileConstants.F.equalsIgnoreCase(occupancyType.getType().getCode())) {
 	                mdmsData = bpaMdmsUtil.mDMSCall(
 	                		new RequestInfo(),pl.getEdcrRequest(), occupancyType.getSubtype().getCode(), plotArea);	               
 	            }else {

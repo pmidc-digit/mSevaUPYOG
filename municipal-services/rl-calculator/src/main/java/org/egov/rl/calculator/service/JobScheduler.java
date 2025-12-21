@@ -50,7 +50,7 @@ public class JobScheduler {
 	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEvery3DaysCron() {
 		System.out.println("scheduller call");
-//		demandService.generateBatchDemand(getOAuthToken());
+		demandService.generateBatchDemand(getOAuthToken());
 //		getOAuthToken();
 		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
 	}

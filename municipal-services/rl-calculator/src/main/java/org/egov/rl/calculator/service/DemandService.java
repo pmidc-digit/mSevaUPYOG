@@ -62,10 +62,10 @@ public class DemandService {
 
 	@Autowired
 	MonthCalculationService monthCalculationService;
-	
+
 	@Autowired
 	NotificationUtil notificationUtil;
-	
+
 	@Autowired
 	NotificationService notificationService;
 
@@ -107,19 +107,19 @@ public class DemandService {
 						.atZone(ZoneId.systemDefault()).toLocalDate();
 				String startMonth = stateDate.getMonth().toString();
 				int startYear = stateDate.getYear();
-				
-				long endDay = monthCalculationService.formatDay(monthCalculationService.lastDayOfMonth(startMonth, startYear), true);
-			   	long exparyDate=monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,allotmentDetails.getTenantId());
-			   
+
+				long endDay = monthCalculationService
+						.formatDay(monthCalculationService.lastDayOfMonth(startMonth, startYear), true);
+				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+						allotmentDetails.getTenantId());
+
 				amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 						BigDecimal::add);
 
 				Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
 						.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)
-						.taxPeriodFrom(allotmentDetails.getStartDate())
-						.taxPeriodTo(endDay)
-						.fixedbillexpirydate(exparyDate)
-						.billExpiryTime(exparyDate).consumerType(applicationType)
+						.taxPeriodFrom(allotmentDetails.getStartDate()).taxPeriodTo(endDay)
+						.fixedbillexpirydate(exparyDate).billExpiryTime(exparyDate).consumerType(applicationType)
 						.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 				demands.add(demand);
 			}
@@ -206,16 +206,16 @@ public class DemandService {
 //	}
 
 	public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {
-        
+
 		List<Demand> demands = new ArrayList<>();
 		RequestInfo requestInfo = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo();
 		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
 				.getTenantId();
-        
+
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 		BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of
 																// billing
-        
+
 		for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
 
 			AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
@@ -491,7 +491,7 @@ public class DemandService {
 		try {
 			Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
 			AllotmentSearchResponse response = mapper.convertValue(result, AllotmentSearchResponse.class);
-			System.out.println("---------gggggggggggg-------"+response.getAllotment().get(0).getApplicationNumber());
+			System.out.println("---------gggggggggggg-------" + response.getAllotment().get(0).getApplicationNumber());
 			return response.getAllotment();
 		} catch (Exception e) {
 			log.error("Error while fetching approved allotment applications for tenant: {}", tenantId, e);
@@ -556,21 +556,22 @@ public class DemandService {
 //	
 	public void generateBatchDemand(RequestInfo requestInfo) {
 		LocalDate currentDate = LocalDate.now(); // today
-		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo, requestInfo.getUserInfo().getTenantId());
+		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo,
+																// requestInfo.getUserInfo().getTenantId());
 		log.info("Starting demand generation job for tenants: {}", tenantIds);
 
 		for (String tenantId : tenantIds) {
 			log.info("Generating demands for tenant: {}", tenantId);
 			Runnable task = new Runnable() {
-			
+
 				@Override
 				public void run() {
 					try {
 
-					List<AllotmentDetails> list=fetchApprovedAllotmentApplications(tenantId, requestInfo);
-					System.out.println("list----"+list.size());
-					list.forEach(d -> {
-							System.out.println("----------ffffffffff------"+d.getDemandId());
+						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo);
+						System.out.println("list----" + list.size());
+						list.forEach(d -> {
+							System.out.println("----------ffffffffff------" + d.getDemandId());
 							boolean isBetween = !currentDate.isBefore(
 									Instant.ofEpochMilli(d.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate())
 									&& !currentDate.isAfter(Instant.ofEpochMilli(d.getEndDate())
@@ -584,8 +585,9 @@ public class DemandService {
 									long startDay = monthCalculationService.formatDay(monthCalculationService
 											.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
 									long endDay = d.getEndDate();
-								 	long exparyDate=monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
-									  System.out.println(startDay+"----"+endDay);
+									long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+											d.getTenantId());
+									System.out.println(startDay + "----" + endDay);
 									d.setStartDate(startDay);
 									d.setEndDate(endDay);
 									createSingleDemand(exparyDate, d, requestInfo);
@@ -596,8 +598,9 @@ public class DemandService {
 									long endDay = monthCalculationService.formatDay(
 											monthCalculationService.lastDayOfMonth(currentMonth, currentDate.getYear()),
 											true);
-								 	long exparyDate=monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
-									  	d.setStartDate(startDay);
+									long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+											d.getTenantId());
+									d.setStartDate(startDay);
 									d.setEndDate(endDay);
 									createSingleDemand(exparyDate, d, requestInfo);
 
@@ -619,15 +622,16 @@ public class DemandService {
 		log.info("Finished demand generation job.");
 
 	}
-	
+
 	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo) {
-		List<String> tenantIds = Arrays.asList("pb.testing");//masterDataService.getTenantIds(requestInfo, requestInfo.getUserInfo().getTenantId());
+		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo,
+																// requestInfo.getUserInfo().getTenantId());
 		log.info("Starting demand generation job for tenants: {}", tenantIds);
 
 		for (String tenantId : tenantIds) {
 			log.info("Generating demands for tenant: {}", tenantId);
 			Runnable task = new Runnable() {
-			
+
 				@Override
 				public void run() {
 					try {
@@ -646,55 +650,52 @@ public class DemandService {
 
 	}
 
-
 	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo) {
 		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo);
-		allotmentDetails.stream().forEach(alt->{
-		long now=LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		List<Demand> dmdlist = demandRepository.getDemandsByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
-		dmdlist = dmdlist.stream().map(d -> {
-			d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
-			return d;
-		}).collect(Collectors.toList());
+		allotmentDetails.stream().forEach(alt -> {
+			long now = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+			List<Demand> dmdlist = demandRepository.getDemandsByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
+			dmdlist = dmdlist.stream().map(d -> {
+				d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
+				return d;
+			}).collect(Collectors.toList());
 
-		dmdlist.stream().filter(d->!d.isIspaymentcompleted()).forEach(d -> {
-		    if (now > d.getBillExpiryTime()) {
-    			DemandDetail baseAmount=d.getDemandDetails().stream().filter(dt->dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)).findFirst().get();
-				updatePenalty(baseAmount.getTaxAmount(),d, requestInfo);
-			} else {
-				notificationService.sendNotificationSMS(AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
-			}
+			dmdlist.stream().filter(d -> !d.isIspaymentcompleted()).forEach(d -> {
+				if (now > d.getBillExpiryTime()) {
+					DemandDetail baseAmount = d.getDemandDetails().stream()
+							.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
+							.findFirst().get();
+					updatePenalty(baseAmount.getTaxAmount(), d, requestInfo);
+				} else {
+					notificationService.sendNotificationSMS(
+							AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
+				}
+			});
+
 		});
-		
-		});
-	
+
 	}
 
-	public void updatePenalty(BigDecimal basicAmount,Demand demand, RequestInfo requestInfo) {
+	public void updatePenalty(BigDecimal basicAmount, Demand demand, RequestInfo requestInfo) {
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-	    List<Penalty> panelty=masterDataService.getPenaltySlabs(requestInfo, demand.getTenantId());
- 	    BigDecimal paneltyAmount = basicAmount.multiply(panelty.get(0).getRate()).divide(new BigDecimal(100));
- 	    long now=LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
- 	 	long exparyDate=monthCalculationService.addAfterPenaltyDays(now,requestInfo,demand.getTenantId());
- 	 	List<DemandDetail> dataList=demand.getDemandDetails();
- 	 	DemandDetail demandDetail=DemandDetail.builder()
- 	 			        .demandId(demand.getId())
- 	 			        .tenantId(demand.getTenantId())
-						.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION)
-						.auditDetails(auditDetails)
-						.taxAmount(paneltyAmount)
-						.collectionAmount(paneltyAmount)
-						.build();
- 	 	dataList.add(demandDetail);
- 	 	demand.setPayer(demand.getPayer());
- 	 	demand.setMinimumAmountPayable(demand.getMinimumAmountPayable().add(demandDetail.getTaxAmount()));
- 	 	demand.setDemandDetails(dataList);
+		List<Penalty> panelty = masterDataService.getPenaltySlabs(requestInfo, demand.getTenantId());
+		BigDecimal paneltyAmount = basicAmount.multiply(panelty.get(0).getRate()).divide(new BigDecimal(100));
+		long now = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		long exparyDate = monthCalculationService.addAfterPenaltyDays(now, requestInfo, demand.getTenantId());
+		List<DemandDetail> dataList = demand.getDemandDetails();
+		DemandDetail demandDetail = DemandDetail.builder().demandId(demand.getId()).tenantId(demand.getTenantId())
+				.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION).auditDetails(auditDetails)
+				.taxAmount(paneltyAmount).collectionAmount(paneltyAmount).build();
+		dataList.add(demandDetail);
+		demand.setPayer(demand.getPayer());
+		demand.setMinimumAmountPayable(demand.getMinimumAmountPayable().add(demandDetail.getTaxAmount()));
+		demand.setDemandDetails(dataList);
 		demand.setBillExpiryTime(exparyDate);
 		demand.setFixedbillexpirydate(exparyDate);
-		addRoundOffTaxHead(demand.getTenantId(),dataList);
-	 	demandRepository.updateDemand(requestInfo,Arrays.asList(demand));
+//		addRoundOffTaxHead(demand.getTenantId(), dataList);
+//		System.out.println(demand.getPayer()+"---------------"+demand);
+		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
 	}
-	
 
 	public void createSingleDemand(long expireDate, AllotmentDetails allotmentDetails, RequestInfo requestInfo) {
 		List<Demand> demands = new ArrayList<>();
@@ -708,7 +709,7 @@ public class DemandService {
 				.build();
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(false,
 				AllotmentRequest.builder().allotment(allotmentDetails).requestInfo(requestInfo).build());
-		System.out.println("---------------d--------------ddddd-"+demandDetails);
+		System.out.println("---------------d--------------ddddd-" + demandDetails);
 		BigDecimal amountPayable = new BigDecimal(0);
 		String applicationType = allotmentDetails.getApplicationType();
 
@@ -722,10 +723,8 @@ public class DemandService {
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(allotmentDetails.getTenantId())
 				.taxPeriodFrom(allotmentDetails.getStartDate()).taxPeriodTo(allotmentDetails.getEndDate())
-				.billExpiryTime(expireDate)
-				.fixedbillexpirydate(expireDate)
-				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME)
-				.additionalDetails(null).build();
+				.billExpiryTime(expireDate).fixedbillexpirydate(expireDate).consumerType(applicationType)
+				.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 		demands.add(demand);
 //		List<Demand> demandsdata=demandRepository.getDemandsForRentableIdsAndPeriod(Arrays.asList(demand.getConsumerCode()),demand.getTaxPeriodFrom(), demand.getTaxPeriodTo());
 //		if(demandsdata==null||(demandsdata!=null&&demandsdata.isEmpty())) {
@@ -733,66 +732,51 @@ public class DemandService {
 //		}
 
 	}
-	
+
 	/**
 	 * Adds roundOff taxHead if decimal values exists
 	 * 
 	 * @param tenantId      The tenantId of the demand
 	 * @param demandDetails The list of demandDetail
 	 */
-	public void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
-		BigDecimal totalTax = BigDecimal.ZERO;
 
+	public void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
+		if (demandDetails == null || demandDetails.isEmpty())
+			return;
+
+		BigDecimal totalTax = BigDecimal.ZERO;
 		BigDecimal previousRoundOff = BigDecimal.ZERO;
 
-		/*
-		 * Sum all taxHeads except RoundOff as new roundOff will be calculated
-		 */
-		for (DemandDetail demandDetail : demandDetails) {
-			if (!demandDetail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.ROUND_OFF_RL_APPLICATION))
-				totalTax = totalTax.add(demandDetail.getTaxAmount());
-			else
-				previousRoundOff = previousRoundOff.add(demandDetail.getTaxAmount());
+		// Sum all taxHeads except RoundOff
+		for (DemandDetail dd : demandDetails) {
+			String code = dd.getTaxHeadMasterCode();
+			if (code != null && RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(code)) {
+				previousRoundOff = previousRoundOff.add(safe(dd.getTaxAmount()));
+			} else {
+				totalTax = totalTax.add(safe(dd.getTaxAmount()));
+			}
 		}
 
-		BigDecimal decimalValue = totalTax.remainder(BigDecimal.ONE);
-		BigDecimal midVal = BigDecimal.valueOf(0.5);
-		BigDecimal roundOff = BigDecimal.ZERO;
+		// Nearest rupee target via HALF_UP
+		BigDecimal rounded = totalTax.setScale(0, RoundingMode.HALF_UP);
+		BigDecimal roundOff = rounded.subtract(totalTax); // +ve to go up, -ve to go down
 
-		/*
-		 * If the decimal amount is greater than 0.5 we subtract it from 1 and put it as
-		 * roundOff taxHead so as to nullify the decimal eg: If the tax is 12.64 we will
-		 * add extra tax roundOff taxHead of 0.36 so that the total becomes 13
-		 */
-		if (decimalValue.compareTo(midVal) >= 0)
-			roundOff = BigDecimal.ONE.subtract(decimalValue);
-
-		/*
-		 * If the decimal amount is less than 0.5 we put negative of it as roundOff
-		 * taxHead so as to nullify the decimal eg: If the tax is 12.36 we will add
-		 * extra tax roundOff taxHead of -0.36 so that the total becomes 12
-		 */
-		if (decimalValue.compareTo(midVal) < 0)
-			roundOff = decimalValue.negate();
-
-		/*
-		 * If roundOff already exists in previous demand create a new roundOff taxHead
-		 * with roundOff amount equal to difference between them so that it will be
-		 * balanced when bill is generated. eg: If the previous roundOff amount was of
-		 * -0.36 and the new roundOff excluding the previous roundOff is 0.2 then the
-		 * new roundOff will be created with 0.2 so that the net roundOff will be 0.2
-		 * -(-0.36)
-		 */
+		// Adjust with any previous round-off already present
 		if (previousRoundOff.compareTo(BigDecimal.ZERO) != 0) {
 			roundOff = roundOff.subtract(previousRoundOff);
 		}
 
+		// Add only if non-zero
 		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
-			DemandDetail roundOffDemandDetail = DemandDetail.builder().taxAmount(roundOff)
-					.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).tenantId(tenantId)
-					.collectionAmount(BigDecimal.ZERO).build();
+			DemandDetail roundOffDemandDetail = DemandDetail.builder()
+					.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).taxAmount(roundOff)
+					.collectionAmount(BigDecimal.ZERO).tenantId(tenantId).build();
 			demandDetails.add(roundOffDemandDetail);
 		}
+	}
+
+	private static BigDecimal safe(BigDecimal value) {
+		return value == null ? BigDecimal.ZERO : value;
 	}
 
 }

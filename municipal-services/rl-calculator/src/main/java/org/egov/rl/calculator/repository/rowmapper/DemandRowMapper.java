@@ -1,5 +1,6 @@
 package org.egov.rl.calculator.repository.rowmapper;
 
+import org.egov.rl.calculator.web.models.Owner;
 import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
 import org.springframework.dao.DataAccessException;
@@ -24,9 +25,13 @@ public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 
 			// Map the basic fields of the Demand object
 			demandList.add(Demand.builder().id(rs.getString("id"))
-					.ispaymentcompleted(rs.getBoolean("ispaymentcompleted")).consumerCode(rs.getString("consumercode"))
-					.consumerType(rs.getString("consumertype")).tenantId(rs.getString("tenantid"))
-					.taxPeriodFrom(rs.getLong("taxperiodfrom")).taxPeriodTo(rs.getLong("taxperiodto"))
+					.ispaymentcompleted(rs.getBoolean("ispaymentcompleted"))
+					.consumerCode(rs.getString("consumercode"))
+					.consumerType(rs.getString("consumertype"))
+					.tenantId(rs.getString("tenantid"))
+					.payer(Owner.builder().uuid(rs.getString("payer")).build())
+					.taxPeriodFrom(rs.getLong("taxperiodfrom"))
+					.taxPeriodTo(rs.getLong("taxperiodto"))
 					.businessService(rs.getString("businessservice"))
 					.fixedbillexpirydate(rs.getLong("fixedbillexpirydate")).billExpiryTime(rs.getLong("billexpirytime"))
 					.minimumAmountPayable(rs.getBigDecimal("minimumamountpayable"))

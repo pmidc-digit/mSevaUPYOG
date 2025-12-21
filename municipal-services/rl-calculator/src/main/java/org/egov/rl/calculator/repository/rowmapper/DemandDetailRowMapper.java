@@ -2,6 +2,8 @@ package org.egov.rl.calculator.repository.rowmapper;
 
 import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
+import org.egov.rl.calculator.web.models.property.AuditDetails;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -28,8 +30,23 @@ public class DemandDetailRowMapper implements ResultSetExtractor<List<DemandDeta
                     .taxHeadMasterCode(rs.getString("taxheadcode"))
                     .collectionAmount(rs.getBigDecimal("collectionamount"))
                     .taxAmount(rs.getBigDecimal("taxamount"))
+                    .auditDetails(auditDetails(rs))
                     .build());
     	}
         return demandDetails;
     }
+    
+    public AuditDetails auditDetails(ResultSet rs) {
+    	try {
+			return AuditDetails.builder()
+					.createdBy(rs.getString("createdby")).createdTime(rs.getLong("createdtime"))
+					.lastModifiedBy(rs.getString("lastmodifiedby")).lastModifiedTime(rs.getLong("lastmodifiedtime"))
+					.build();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return null;
+    }
+    
 }

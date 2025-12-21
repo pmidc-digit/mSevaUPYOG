@@ -43,7 +43,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder.Default;
+
 import org.egov.rl.calculator.web.models.property.AuditDetails;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -65,8 +69,11 @@ public class DemandDetail {
 	private BigDecimal taxAmount;
 	
 //	@NotNull
-//	@Builder.Default
-	private BigDecimal collectionAmount;// = BigDecimal.valueOf(0d);
+////	@Builder.Default
+//	private BigDecimal collectionAmount;// = BigDecimal.valueOf(0d);
+	
+	 @NotNull @JsonProperty("collectionAmount") @Default 
+     private BigDecimal collectionAmount = BigDecimal.ZERO;
 
 	private AuditDetails auditDetails;
 

@@ -453,12 +453,12 @@ public class BPAService {
                  * or not for that purpose on PENDING_APPROVAL_STATE the demand is generating.
                  */
                 // Generate the sanction Demand
-                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_LOW_MODULE_CODE))
-                        && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_VERIFY)) {
-                    calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-                }
+//                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
+//                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE)
+//                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_LOW_MODULE_CODE))
+//                        && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_VERIFY)) {
+//                    calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+//                }
                 
                 
                 /*
@@ -509,6 +509,11 @@ public class BPAService {
 
 		
 		repository.update(bpaRequest, workflowService.isStateUpdatable(bpa.getStatus(), businessService));
+		
+		// Generate the sanction Fees Demand
+		if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
+			calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+		
 		return bpaRequest.getBPA();
 
 	}

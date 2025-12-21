@@ -47,11 +47,13 @@ public class PaymentUpdateService {
 	private WorkflowService workflowService;
 	
 	private UserService userService;
+	
+	private CalculationService calculationService;
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
 			WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper,
-			WorkflowService workflowService, UserService userService) {
+			WorkflowService workflowService, UserService userService, CalculationService calculationService) {
 		this.config = config;
 		this.repository = repository;
 		this.wfIntegrator = wfIntegrator;
@@ -59,6 +61,7 @@ public class PaymentUpdateService {
 		this.mapper = mapper;
 		this.workflowService = workflowService;
 		this.userService = userService;
+		this.calculationService = calculationService;
 
 	}
 
@@ -146,6 +149,10 @@ public class PaymentUpdateService {
 					 */
 					enrichmentService.postStatusEnrichment(updateRequest);
 
+					// Generate the sanction Fees Demand
+					if(updateRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
+						calculationService.addCalculation(updateRequest, BPAConstants.SANCTION_FEE_KEY);
+					
 					repository.update(updateRequest, true);
 
 				}

@@ -509,11 +509,6 @@ public class BPAService {
 
 		
 		repository.update(bpaRequest, workflowService.isStateUpdatable(bpa.getStatus(), businessService));
-		
-		// Generate the sanction Fees Demand
-		if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
-			calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-		
 		return bpaRequest.getBPA();
 
 	}

@@ -80,6 +80,9 @@ public class EnrichmentService {
 	private MDMSValidator mdmsValidator;
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
+	
+	@Autowired
+	CalculationService calculationService;
 
 	/**
 	 * encrich create BPA Reqeust by adding audidetails and uuids
@@ -288,6 +291,11 @@ public class EnrichmentService {
 
 		log.info("Application state is : " + state);
 		this.generateApprovalNo(bpaRequest, state);
+		
+		// Generate the sanction Fees Demand
+				if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
+					calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+				
 //		nocService.initiateNocWorkflow(bpaRequest, mdmsData);
 
 	}

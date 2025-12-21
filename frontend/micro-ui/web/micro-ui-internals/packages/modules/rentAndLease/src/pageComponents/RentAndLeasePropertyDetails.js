@@ -222,8 +222,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     }
   }, [watch("startDate"), watch("endDate")]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
-  const mandatoryStyle = { color: "red" };
   // const checkStyles = { marginBottom: "15px" };
   // const radioStyles = { width: "18px", height: "18px", cursor: "pointer" };
   // const wrapper = { display: "flex", alignItems: "center", gap: "10px", margin: "10px 0px 20px 0px" };
@@ -235,7 +233,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Property Type Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_TYPE")} <span style={mandatoryStyle}>*</span>
+          {t("RENT_LEASE_PROPERTY_TYPE")} <span>*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -246,12 +244,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           )}
         />
       </LabelFieldPair>
-      {errors.propertyType && <CardLabelError style={errorStyle}>{getErrorMessage("propertyType")}</CardLabelError>}
+      {errors.propertyType && <CardLabelError className="ral-error-label">{getErrorMessage("propertyType")}</CardLabelError>}
 
       {/* Property Specific Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_SPECIFIC")} <span style={mandatoryStyle}>*</span>
+          {t("RENT_LEASE_PROPERTY_SPECIFIC")} <span>*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -262,12 +260,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           )}
         />
       </LabelFieldPair>
-      {errors.propertySpecific && <CardLabelError style={errorStyle}>{getErrorMessage("propertySpecific")}</CardLabelError>}
+      {errors.propertySpecific && <CardLabelError className="ral-error-label">{getErrorMessage("propertySpecific")}</CardLabelError>}
 
       {/* Location Type Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_LOCATION_TYPE")} <span style={mandatoryStyle}>*</span>
+          {t("RENT_LEASE_LOCATION_TYPE")} <span>*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -278,12 +276,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           )}
         />
       </LabelFieldPair>
-      {errors.locationType && <CardLabelError style={errorStyle}>{getErrorMessage("locationType")}</CardLabelError>}
+      {errors.locationType && <CardLabelError className="ral-error-label">{getErrorMessage("locationType")}</CardLabelError>}
 
       {/* Property Name Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_NAME")} <span style={mandatoryStyle}>*</span>
+          {t("RENT_LEASE_PROPERTY_NAME")} <span>*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -306,12 +304,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           )}
         />
       </LabelFieldPair>
-      {errors.propertyName && <CardLabelError style={errorStyle}>{getErrorMessage("propertyName")}</CardLabelError>}
+      {errors.propertyName && <CardLabelError className="ral-error-label">{getErrorMessage("propertyName")}</CardLabelError>}
 
       {/* Property ID */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_ID")} <span style={mandatoryStyle}>*</span>
+          {t("RENT_LEASE_PROPERTY_ID")} <span>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -324,13 +322,13 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.propertyId && <CardLabelError style={errorStyle}>{getErrorMessage("propertyId")}</CardLabelError>}
+      {errors.propertyId && <CardLabelError className="ral-error-label">{getErrorMessage("propertyId")}</CardLabelError>}
       {/* Hidden field for selected property */}
       <Controller control={control} name="selectedProperty" render={() => null} />
       {/* Start Date */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RAL_START_DATE")} <span style={mandatoryStyle}>*</span>
+          {t("RAL_START_DATE")} <span>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -371,7 +369,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.startDate && <CardLabelError style={errorStyle}>{getErrorMessage("startDate")}</CardLabelError>}
+      {errors.startDate && <CardLabelError className="ral-error-label">{getErrorMessage("startDate")}</CardLabelError>}
 
       {/* End Date */}
       <LabelFieldPair>
@@ -420,7 +418,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.endDate && <CardLabelError style={errorStyle}>{getErrorMessage("endDate")}</CardLabelError>}
+      {errors.endDate && <CardLabelError className="ral-error-label">{getErrorMessage("endDate")}</CardLabelError>}
 
       {/* Duration (optional, auto-filled) */}
       <LabelFieldPair>
@@ -433,7 +431,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Rent Amount */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RAL_RENT_AMOUNT")} <span style={mandatoryStyle}>*</span>
+          {t("RAL_RENT_AMOUNT")} <span>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -444,7 +442,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.baseRent && <CardLabelError style={errorStyle}>{getErrorMessage("baseRent")}</CardLabelError>}
+      {errors.baseRent && <CardLabelError className="ral-error-label">{getErrorMessage("baseRent")}</CardLabelError>}
 
       {/* Penalty Type */}
       {/* <LabelFieldPair>
@@ -467,7 +465,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Security Amount */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RAL_SECURITY_AMOUNT")} <span style={mandatoryStyle}>*</span>
+          {t("RAL_SECURITY_AMOUNT")} <span>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -480,7 +478,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.securityDeposit && <CardLabelError style={errorStyle}>{getErrorMessage("securityDeposit")}</CardLabelError>}
+      {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
 
       {/* Late Payment % */}
       {/* <LabelFieldPair>
@@ -675,11 +673,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
       {/* Action Bar */}
       <ActionBar>
-        <SubmitBar
-          label={t("Back")}
-          style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "8px" }}
-          onSubmit={onGoBack}
-        />
+        <SubmitBar label={t("Back")} className="ral-back-btn" onSubmit={onGoBack} />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
     </form>

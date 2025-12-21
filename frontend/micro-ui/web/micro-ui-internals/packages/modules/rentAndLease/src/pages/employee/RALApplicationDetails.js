@@ -273,11 +273,11 @@ const RALApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginLeft: "14px", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
+        <div className="cardHeaderWithOptions ral-app-details-header">
+          <Header className="ral-header-32">{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
@@ -286,7 +286,7 @@ const RALApplicationDetails = () => {
                 return (
                   <React.Fragment key={owner.ownerId || index}>
                     {multipleOwners && (
-                      <CardSectionHeader style={{ padding: "5px 24px 0px 24px", fontWeight: "600" }}>
+                      <CardSectionHeader className="ral-app-details-owner-header">
                         {t("RAL_OWNER")} {index + 1}
                       </CardSectionHeader>
                     )}
@@ -305,7 +305,7 @@ const RALApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
@@ -324,14 +324,14 @@ const RALApplicationDetails = () => {
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+            <Card className="ral-app-details-docs-card">
               {applicationData?.Document?.length > 0 ? (
                 applicationData.Document.map((doc, index) => (
                   <div key={index}>
                     <RALDocuments value={applicationData.Document} Code={doc?.documentType} index={index} />
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    {t(doc?.documentType)}
                   </div>
                 ))
               ) : (

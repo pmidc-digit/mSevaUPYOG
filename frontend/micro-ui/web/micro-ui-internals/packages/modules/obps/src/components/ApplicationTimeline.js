@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { ActionLinks, CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader, SubmitBar, LinkButton } from "@mseva/digit-ui-react-components";
 import BPACaption from "../pages/citizen/BpaApplicationDetail/BPACaption";
+import ApplicationTimelineTemplate from "../../../templates/ApplicationDetails/components/ApplicationTimeline"
 
 const ApplicationTimeline = ({ id, tenantId }) => {
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
     switch (nextAction?.action) {
       case "PAY":
         return (
-          <div style={{ marginTop: "24px" }} className="action-bar-wrap">
+          <div className="action-bar-wrap">
             <Link
               to={{ pathname: `/digit-ui/citizen/payment/collect/${data?.processInstances?.[0]?.moduleName}/${data?.processInstances?.[0]?.businessId}/${data?.processInstances?.[0]?.tenantId}?tenantId=${data?.processInstances?.[0]?.tenantId}`,
               state: { tenantId: data?.processInstances?.[0]?.tenantId },}}
@@ -62,7 +63,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
         );
       case "SUBMIT_FEEDBACK":
         return (
-          <div style={{ marginTop: "24px" }}>
+          <div className="obps-timeline-submit-feedback" >
             <Link to={`/digit-ui/citizen/fsm/rate/${props.id}`}>
               <SubmitBar label={t("CS_APPLICATION_DETAILS_RATE")} />
             </Link>
@@ -71,56 +72,58 @@ const ApplicationTimeline = ({ id, tenantId }) => {
     }
   };
 
-  return (
-    <React.Fragment>
-      {!isLoading && (
-        <Fragment>
-          {data?.timeline?.length > 0 && (
-            <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-              {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
-            </CardSectionHeader>
-          )}
-          {data?.timeline && data?.timeline?.length === 1 ? (
-            <CheckPoint
-              isCompleted={true}
-              label={t((data?.timeline[0]?.state && `WF_ARCHITECT_${data.timeline[0].state}`) || "NA")}
-              customChild={getTimelineCaptions(data?.timeline[0])}
-            />
-          ) : (
-            <ConnectingCheckPoints>
-              {data?.timeline &&
-                data?.timeline.slice(0,showAllTimeline? data.timeline.length:2).map((checkpoint, index, arr) => {
-                  let timelineStatusPostfix = "";
-                  if (window.location.href.includes("/obps")) {
-                    if(data?.timeline[index-1]?.state?.includes("BACK_FROM") || data?.timeline[index-1]?.state?.includes("SEND_TO_CITIZEN"))
-                        timelineStatusPostfix = `_NOT_DONE`
-                    else if(checkpoint?.performedAction === "SEND_TO_ARCHITECT")
-                        timelineStatusPostfix = `_BY_ARCHITECT_DONE`
-                    else
-                        timelineStatusPostfix = index == 0 ? "" : `_DONE`;
-                  }
-                  return (
-                    <React.Fragment key={index}>
-                      <CheckPoint
-                        keyValue={index}
-                        isCompleted={index === 0}
-                        label={checkpoint.state ? t(`WF_ARCHITECT_${checkpoint.state}${timelineStatusPostfix}`) : "NA"}
-                        customChild={getTimelineCaptions(checkpoint)}
-                      />
-                    </React.Fragment>
-                  );
-                })}
-            </ConnectingCheckPoints>
-          )}
-          {data?.timeline?.length > 2 && (
-            <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
-            </LinkButton>   
-          )}
-        </Fragment>
-      )}
-      {data && showNextActions(data?.nextActions?.[0])}
-    </React.Fragment>
-  );
+  return <ApplicationTimelineTemplate workflowDetails={data} t={t} />
+
+  // return (
+  //   <React.Fragment>
+  //     {!isLoading && (
+  //       <Fragment>
+  //         {data?.timeline?.length > 0 && (
+  //           <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+  //             {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
+  //           </CardSectionHeader>
+  //         )}
+  //         {data?.timeline && data?.timeline?.length === 1 ? (
+  //           <CheckPoint
+  //             isCompleted={true}
+  //             label={t((data?.timeline[0]?.state && `WF_ARCHITECT_${data.timeline[0].state}`) || "NA")}
+  //             customChild={getTimelineCaptions(data?.timeline[0])}
+  //           />
+  //         ) : (
+  //           <ConnectingCheckPoints>
+  //             {data?.timeline &&
+  //               data?.timeline.slice(0,showAllTimeline? data.timeline.length:2).map((checkpoint, index, arr) => {
+  //                 let timelineStatusPostfix = "";
+  //                 if (window.location.href.includes("/obps")) {
+  //                   if(data?.timeline[index-1]?.state?.includes("BACK_FROM") || data?.timeline[index-1]?.state?.includes("SEND_TO_CITIZEN"))
+  //                       timelineStatusPostfix = `_NOT_DONE`
+  //                   else if(checkpoint?.performedAction === "SEND_TO_ARCHITECT")
+  //                       timelineStatusPostfix = `_BY_ARCHITECT_DONE`
+  //                   else
+  //                       timelineStatusPostfix = index == 0 ? "" : `_DONE`;
+  //                 }
+  //                 return (
+  //                   <React.Fragment key={index}>
+  //                     <CheckPoint
+  //                       keyValue={index}
+  //                       isCompleted={index === 0}
+  //                       label={checkpoint.state ? t(`WF_ARCHITECT_${checkpoint.state}${timelineStatusPostfix}`) : "NA"}
+  //                       customChild={getTimelineCaptions(checkpoint)}
+  //                     />
+  //                   </React.Fragment>
+  //                 );
+  //               })}
+  //           </ConnectingCheckPoints>
+  //         )}
+  //         {data?.timeline?.length > 2 && (
+  //           <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
+  //           </LinkButton>   
+  //         )}
+  //       </Fragment>
+  //     )}
+  //     {data && showNextActions(data?.nextActions?.[0])}
+  //   </React.Fragment>
+  // );
 };
 
 export default ApplicationTimeline;

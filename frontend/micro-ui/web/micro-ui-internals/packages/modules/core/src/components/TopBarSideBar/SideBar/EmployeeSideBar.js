@@ -8,7 +8,6 @@ import _, { findIndex } from "lodash";
 const EmployeeSideBar = () => {
   const sidebarRef = useRef(null);
   const { isLoading, data } = Digit.Hooks.useAccessControl();
-  // console.log("Sidebar Data: ",data);
   const [search, setSearch] = useState("");
   const { t } = useTranslation();
   useEffect(() => {
@@ -20,7 +19,7 @@ const EmployeeSideBar = () => {
   }, [isLoading]);
 
   const expandNav = () => {
-    sidebarRef.current.style.width = "260px";
+    sidebarRef.current.style.width = "350px";
     sidebarRef.current.style.overflow = "auto";
 
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((element) => {
@@ -28,7 +27,7 @@ const EmployeeSideBar = () => {
     });
   };
   const collapseNav = () => {
-    sidebarRef.current.style.width = "55px";
+    sidebarRef.current.style.width = "65px";
     sidebarRef.current.style.overflow = "hidden";
 
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((element) => {
@@ -43,24 +42,31 @@ const EmployeeSideBar = () => {
 
   //creating the object structure from mdms value for easy iteration
   let configEmployeeSideBar1 = {};
-  data?.actions?.filter((e) => e.url === "url")?.forEach((item) => {
-    _.set(configEmployeeSideBar1,item.path,{...item}) 
-  })
+  data?.actions
+    ?.filter((e) => e.url === "url")
+    ?.forEach((item) => {
+      _.set(configEmployeeSideBar1, item.path, { ...item });
+    });
 
   data?.actions
     .filter((e) => e.url === "url")
     .forEach((item) => {
       let index = item.path.split(".")[0];
       if (search == "" && item.path !== "") {
-         index = item.path.split(".")[0];
+        index = item.path.split(".")[0];
         if (index === "TradeLicense") index = "Trade License";
         if (!configEmployeeSideBar[index]) {
           configEmployeeSideBar[index] = [item];
         } else {
           configEmployeeSideBar[index].push(item);
         }
-      } else if (item.path !== "" && t(`ACTION_TEST_${index?.toUpperCase()?.replace(/[ -]/g, "_")}`)?.toLowerCase().includes(search.toLowerCase())) {
-         index = item.path.split(".")[0];
+      } else if (
+        item.path !== "" &&
+        t(`ACTION_TEST_${index?.toUpperCase()?.replace(/[ -]/g, "_")}`)
+          ?.toLowerCase()
+          .includes(search.toLowerCase())
+      ) {
+        index = item.path.split(".")[0];
         if (index === "TradeLicense") index = "Trade License";
         if (!configEmployeeSideBar[index]) {
           configEmployeeSideBar[index] = [item];
@@ -72,20 +78,19 @@ const EmployeeSideBar = () => {
   let res = [];
 
   //method is used for restructing of configEmployeeSideBar1 nested object into nested array object
-  function restructuringOfConfig (tempconfig){
+  function restructuringOfConfig(tempconfig) {
     const result = [];
-    for(const key in tempconfig){
-      const value= tempconfig[key];
-      if(typeof value === "object" && !(value?.id)){
-      const children = restructuringOfConfig(value);
-      result.push({label : key,children, icon:children?.[0]?.icon, to:""});
-      }
-      else{
-        result.push({label: key, value, icon:value?.leftIcon, to: key === "Home" ? "/digit-ui/employee" : value?.navigationURL});
+    for (const key in tempconfig) {
+      const value = tempconfig[key];
+      if (typeof value === "object" && !value?.id) {
+        const children = restructuringOfConfig(value);
+        result.push({ label: key, children, icon: children?.[0]?.icon, to: "" });
+      } else {
+        result.push({ label: key, value, icon: value?.leftIcon, to: key === "Home" ? "/digit-ui/employee" : value?.navigationURL });
       }
     }
 
-    return result
+    return result;
   }
   const splitKeyValue = () => {
     const keys = Object.keys(configEmployeeSideBar);
@@ -117,18 +122,15 @@ const EmployeeSideBar = () => {
         });
       }
     }
-    if(res.find(a => a.moduleName === "HOME"))
-    {
+    if (res.find((a) => a.moduleName === "HOME")) {
       //res.splice(0,1);
-      const indx = res.findIndex(a => a.moduleName === "HOME");
-      const home = res?.filter((ob) => ob?.moduleName === "HOME")
-      let res1 = res?.filter((ob) => ob?.moduleName !== "HOME")
-      res = res1.sort((a,b) => a.moduleName.localeCompare(b.moduleName));
+      const indx = res.findIndex((a) => a.moduleName === "HOME");
+      const home = res?.filter((ob) => ob?.moduleName === "HOME");
+      let res1 = res?.filter((ob) => ob?.moduleName !== "HOME");
+      res = res1.sort((a, b) => a.moduleName.localeCompare(b.moduleName));
       home?.[0] && res.unshift(home[0]);
-    }
-    else
-    {
-      res.sort((a,b) => a.moduleName.localeCompare(b.moduleName));
+    } else {
+      res.sort((a, b) => a.moduleName.localeCompare(b.moduleName));
     }
     //reverting the newsidebar change for now, in order to solve ndss login issue
     //let newconfig = restructuringOfConfig(configEmployeeSideBar1);
@@ -176,7 +178,13 @@ const EmployeeSideBar = () => {
   };
 
   return (
-    <div className="sidebar" ref={sidebarRef} onMouseOver={expandNav} onMouseLeave={collapseNav} style={{display:window.location.href.includes("main-dashboard-landing")?"none":""}}>
+    <div
+      className="sidebar"
+      ref={sidebarRef}
+      onMouseOver={expandNav}
+      onMouseLeave={collapseNav}
+      style={{ display: window.location.href.includes("main-dashboard-landing") ? "none" : "" }}
+    >
       {renderSearch()}
       {splitKeyValue()}
     </div>

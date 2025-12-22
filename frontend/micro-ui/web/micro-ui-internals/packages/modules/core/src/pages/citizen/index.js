@@ -1,4 +1,4 @@
-import { BackButton, WhatsappIcon, Card, CitizenHomeCard, CitizenInfoLabel, PrivateRoute } from "@mseva/digit-ui-react-components";
+import { BackButton, WhatsappIcon, Card, CitizenInfoLabel, PrivateRoute } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory, Link } from "react-router-dom";
@@ -11,7 +11,7 @@ import LanguageSelection from "./Home/LanguageSelection";
 import LocationSelection from "./Home/LocationSelection";
 import Login from "./Login";
 import NewLoginPage from "./NewLogin/NewLoginPage";
-import NewRegistration from "./NewRegistration/index"
+import NewRegistration from "./NewRegistration/index";
 import UserProfile from "./Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
 import FAQsSection from "./FAQs/FAQs";
@@ -24,13 +24,15 @@ import QRCode from "./QRCode";
 import ChallanQRCode from "./ChallanQRCode";
 import AcknowledgementQRCode from "./AcknowledgementQRCode";
 import EDCRScrutiny from "./Home/EdcrScrutiny";
-import { newConfig as newConfigEDCR  } from "../../config/edcrConfig";
+import { newConfig as newConfigEDCR } from "../../config/edcrConfig";
 import CreateEDCR1 from "./Home/EDCR";
 import EDCRAcknowledgement1 from "./Home/EDCR/EDCRAcknowledgement1";
 import FAQ from "../../FAQ";
 import FAQS from "../citizen/FAQs/FAQs";
 import NavigationPage from "./NavigationPage";
 import CitizenHomeCardWithExternalLink from "./CitizenHomeCardWithExternalLink";
+import DashboardFooter from "./Home/DashboardFooter";
+import CitizenHomeCardSecond from "./CitizenHomeCardSecond";
 const sidebarHiddenFor = [
   "digit-ui/citizen/register/name",
   "/digit-ui/citizen/select-language",
@@ -39,13 +41,10 @@ const sidebarHiddenFor = [
   "/digit-ui/citizen/register/otp",
   "/digit-ui/citizen/sso/login",
   "/digit-ui/citizen/login-page",
-  "/digit-ui/citizen/new-registration"
+  "/digit-ui/citizen/new-registration",
 ];
 
-const topSidebarHiddenFor=[
-  "/digit-ui/citizen/sso/login"
-]
-
+const topSidebarHiddenFor = ["/digit-ui/citizen/sso/login"];
 
 const getTenants = (codes, tenants) => {
   return tenants.filter((tenant) => codes.map((item) => item.code).includes(tenant.code));
@@ -93,7 +92,7 @@ const Home = ({
   const { t } = useTranslation();
   const { path } = useRouteMatch();
   sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
-  const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf"
+  const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
   const history = useHistory();
   const handleClickOnWhatsApp = (obj) => {
     window.open(obj);
@@ -113,63 +112,167 @@ const Home = ({
   });
 
   const ModuleLevelLinkHomePages = modules.map(({ code, bannerImage }, index) => {
-    let Links = Digit.ComponentRegistryService.getComponent(`${code}Links`) || (() => <React.Fragment />);
-    let mdmsDataObj = isLinkDataFetched ? processLinkData(linkData, code, t) : undefined;
+    const Links = Digit.ComponentRegistryService.getComponent(`${code}Links`) || (() => <React.Fragment />);
+    const mdmsDataObj = isLinkDataFetched ? processLinkData(linkData, code, t) : undefined;
 
-    //if (mdmsDataObj?.header === "ACTION_TEST_WS") {
-      mdmsDataObj?.links && mdmsDataObj?.links.sort((a, b) => {
+    mdmsDataObj?.links &&
+      mdmsDataObj?.links.sort((a, b) => {
         return a.orderNumber - b.orderNumber;
       });
     // }
+
     return (
-      <React.Fragment>
+      <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
-          <div className="moduleLinkHomePage">
-            <img src={ "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F16%2F1760620815250vZVIeEsyde.jpeg"||bannerImage || stateInfo?.bannerUrl} alt="noimagefound" />
-            <BackButton className="moduleLinkHomePageBackButton" />
-           {isMobile? <h4 style={{top: "calc(16vw + 40px)",left:"1.5rem",position:"absolute",color:"white"}}>{t("MODULE_" + code.toUpperCase())}</h4>:<h1>{t("MODULE_" + code.toUpperCase())}</h1>}
-            <div className="moduleLinkHomePageModuleLinks">
-              {mdmsDataObj && code != "OBPS" && (
-                <CitizenHomeCard
-                  header={t(mdmsDataObj?.header)}
-                  links={mdmsDataObj?.links}
-                  Icon={() => <span />}
-                  Info={
-                    code === "OBPS"
-                      ? () => (
-                          <CitizenInfoLabel
-                            style={{ margin: "0px", padding: "10px" }}
-                            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                            text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                          />
-                        )
-                      : null
-                  }
-                  isInfo={code === "OBPS" ? true : false}
-                />
-              )}
-              {mdmsDataObj && code === "OBPS" && (
-                <CitizenHomeCardWithExternalLink
-                  header={t(mdmsDataObj?.header)}
-                  links={mdmsDataObj?.links}
-                  Icon={() => <span />}
-                  Info={
-                    code === "OBPS"
-                      ? () => (
-                          <CitizenInfoLabel
-                            style={{ margin: "0px", padding: "10px" }}
-                            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                            text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                          />
-                        )
-                      : null
-                  }
-                  isInfo={code === "OBPS" ? true : false}
-                />
-              )}
-              {/* <Links key={index} matchPath={`/digit-ui/citizen/${code.toLowerCase()}`} userType={"citizen"} /> */}
+          <div
+            className="moduleLinkHomePage"
+            style={{
+              width: "100%",
+              minHeight: "100vh",
+              backgroundColor: "#F9FAFB",
+              paddingTop: isMobile ? "20px" : "32px",
+              paddingBottom: "80px",
+            }}
+          >
+            {/* Content Container */}
+            <div
+              style={{
+                margin: "0 auto",
+                padding: isMobile ? "0 20px" : "0 40px",
+              }}
+            >
+              {/* Back Button - Outside purple card */}
+              <BackButton
+                className="moduleLinkHomePageBackButton"
+                style={{
+                  color: "#7C3AED",
+                  cursor: "pointer",
+                  fontSize: isMobile ? "14px" : "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontWeight: "500",
+                  marginBottom: "16px",
+                }}
+              />
+
+              {/* Breadcrumb - Outside purple card */}
+              <div
+                style={{
+                  fontSize: isMobile ? "13px" : "14px",
+                  color: "#6B7280",
+                  marginBottom: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontWeight: "400",
+                }}
+              >
+                <span>{t("HOME")}</span>
+                <span>›</span>
+                <span>{t("MODULE_" + code.toUpperCase())}</span>
+              </div>
+
+              {/* Purple Gradient Rounded Card Banner */}
+              <div
+                style={{
+                  background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
+                  borderRadius: "16px",
+                  padding: "60px 40px",
+                  margin: "24px 0",
+                  textAlign: "center",
+                  color: "#FFF",
+                }}
+              >
+                {/* Title */}
+                <h1
+                  style={{
+                    fontSize: isMobile ? "28px" : "40px",
+                    fontWeight: "700",
+                    color: "white",
+                    margin: 0,
+                    lineHeight: "1.2",
+                    marginBottom: "12px",
+                    textAlign: "center",
+                  }}
+                >
+                  {t("MODULE_" + code.toUpperCase())}
+                </h1>
+
+                {/* Subtitle */}
+                <p
+                  style={{
+                    fontSize: isMobile ? "14px" : "16px",
+                    color: "rgba(255, 255, 255, 0.95)",
+                    margin: 0,
+                    fontWeight: "400",
+                    lineHeight: "1.5",
+                    textAlign: "center",
+                  }}
+                >
+                  {t(`${code.toUpperCase()}_SUBTITLE`) ||
+                    t("APPLY_RENEW_MANAGE_" + code.toUpperCase() + "_ONLINE") ||
+                    "Apply, renew, and manage your services online"}
+                </p>
+              </div>
+
+              {/* Services Section Header */}
+              <h2
+                style={{
+                  fontSize: isMobile ? "18px" : "20px",
+                  fontWeight: "600",
+                  marginBottom: "20px",
+                  color: "#1F1F1F",
+                }}
+              >
+                {t("SERVICES")}
+              </h2>
+
+              {/* Service Cards */}
+              <div className="moduleLinkHomePageModuleLinks">
+                {mdmsDataObj && code != "OBPS" && (
+                  <CitizenHomeCardSecond
+                    header=""
+                    links={mdmsDataObj?.links}
+                    Icon={() => <span />}
+                    Info={
+                      code === "OBPS"
+                        ? () => (
+                            <CitizenInfoLabel
+                              style={{ margin: "0px", padding: "10px" }}
+                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                            />
+                          )
+                        : null
+                    }
+                    isInfo={code === "OBPS" ? true : false}
+                  />
+                )}
+                {mdmsDataObj && code === "OBPS" && (
+                  <CitizenHomeCardWithExternalLink
+                    header=""
+                    links={mdmsDataObj?.links}
+                    Icon={() => <span />}
+                    Info={
+                      code === "OBPS"
+                        ? () => (
+                            <CitizenInfoLabel
+                              style={{ margin: "0px", padding: "10px" }}
+                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                            />
+                          )
+                        : null
+                    }
+                    isInfo={code === "OBPS" ? true : false}
+                  />
+                )}
+              </div>
+
+              {/* Statistics and Info Section */}
+              <StaticDynamicCard moduleCode={code?.toUpperCase()} />
             </div>
-            <StaticDynamicCard moduleCode={code?.toUpperCase()}/>
           </div>
         </Route>
         <Route key={"faq" + index} path={`${path}/${code.toLowerCase()}-faq`}>
@@ -200,7 +303,7 @@ const Home = ({
         />
       )}
 
-      <div className={`main center-container citizen-home-container mb-25`}>
+      <div style={{justifyContent:"center"}} className={`main center-container citizen-home-container mb-25`}>
         {/* {hideSidebar ? null : (
           <div className="SideBarStatic">
             <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />
@@ -224,7 +327,7 @@ const Home = ({
           <PrivateRoute path={`${path}/feedback-acknowledgement`} component={AcknowledgementCF}></PrivateRoute>
 
           <Route exact path={`${path}/login-page`}>
-            <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
 
           <Route path={`${path}/new-registration`}>
@@ -233,12 +336,12 @@ const Home = ({
 
           <Route exact path={`${path}/select-language`}>
             {/* <LanguageSelection /> */}
-            <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
 
           <Route exact path={`${path}/select-location`}>
             {/* <LocationSelection /> */}
-            <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
           <Route path={`${path}/error`}>
             <ErrorComponent
@@ -260,13 +363,12 @@ const Home = ({
 
           <Route path={`${path}/login`}>
             {/* <Login stateCode={stateCode} /> */}
-             <NewLoginPage stateCode={stateCode}/>
+            <NewLoginPage stateCode={stateCode} />
           </Route>
-          
 
           <Route path={`${path}/register`}>
             {/* <Login stateCode={stateCode} isUserRegistered={false} /> */}
-             <NewRegistration stateCode={stateCode} />
+            <NewRegistration stateCode={stateCode} />
           </Route>
 
           <PrivateRoute path={`${path}/user/profile`}>
@@ -274,7 +376,7 @@ const Home = ({
           </PrivateRoute>
 
           <Route path={`${path}/Audit`}>
-            <Search/>
+            <Search />
           </Route>
           <Route path={`${path}/payment/verification`}>
             <QRCode></QRCode>
@@ -289,7 +391,7 @@ const Home = ({
             {/* <EDCRScrutiny config={newConfigEDCR} isSubmitBtnDisable={false}/>
             
             */}
-              <CreateEDCR1/>
+            <CreateEDCR1 />
           </Route>
           <Route path={`/digit-ui/citizen/core/edcr/scrutiny/acknowledgement`}>
             <EDCRAcknowledgement1 />
@@ -298,7 +400,7 @@ const Home = ({
             <NavigationPage stateCode={stateCode} />
           </Route>
           <Route path={`${path}/faqss`}>
-             <FAQ />
+            <FAQ />
           </Route>
           <ErrorBoundary initData={initData}>
             {appRoutes}
@@ -306,23 +408,7 @@ const Home = ({
           </ErrorBoundary>
         </Switch>
       </div>
-
-      <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
-        <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>
-          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
-          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px"}}>|</span>
-          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
-
-          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
-
-          {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
-
-        </div>
-        <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
-        </div>
-      </div>
+              <div><DashboardFooter /></div>
     </div>
   );
 };

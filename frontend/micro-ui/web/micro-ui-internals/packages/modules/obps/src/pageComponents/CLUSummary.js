@@ -12,8 +12,14 @@ function CLUSummary({ currentStepData: formData, t }) {
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
+    
+  const ownerPhotos = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerPhotos;
+  });
 
-  console.log("coordinates in summary page", coordinates);
+  //console.log("coordinates in summary page", coordinates);
+  console.log("ownerPhotos(redux)", ownerPhotos);
+  console.log("ownerFileStoreId", ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId);
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -50,8 +56,8 @@ function CLUSummary({ currentStepData: formData, t }) {
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+    <div className="clu-summary-label-field-pair">
+      <CardLabel className="clu-summary-bold-label">{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -60,38 +66,46 @@ function CLUSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs);
 
   return (
-    <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
-      <div style={sectionStyle}>
-        <CLUImageView documents={formData?.documents?.documents?.documents} />
+    <div className="clu-summary-page">
+      <h2 className="clu-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
+      <div className="clu-summary-section">
+        <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
-      <div style={sectionStyle}>
-        {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
-        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
-        {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
-        {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), formData?.applicationDetails?.applicantMobileNumber)}
-        {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
-        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
-      </div>
+      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
+        return (
+        <div key={index} className="clu-summary-section">
+         <h2 className="clu-summary-heading">
+           {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("BPA_OWNER")} #${index + 1}`}
+         </h2>
+
+         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.ownerOrFirmName)}
+         {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+         {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+         {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+         {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dateOfBirth)}
+         {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code)}
+         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.address)}
+        </div>
+        )
+      })}
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-          <h2 style={headingStyle}>{t("BPA_PROFESSIONAL_DETAILS")}</h2>
-          <div style={sectionStyle}>
+          <h2 className="clu-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
+          <div className="clu-summary-section">
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
+            {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formData?.applicationDetails?.professionalRegIdValidity)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
           </div>
         </React.Fragment>
       )}
 
-      <h2 style={headingStyle}>{t("BPA_LOCALITY_INFO_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="clu-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
+      <div className="clu-summary-section">
         {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.localityAreaType?.name)}
 
         {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
@@ -112,9 +126,14 @@ function CLUSummary({ currentStepData: formData, t }) {
 
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="clu-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
+      <div className="clu-summary-section">
         {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
+
+        {renderLabel(t("BPA_PLOT_AREA_LABEL"), formData?.siteDetails?.plotArea)}
+        {renderLabel(t("BPA_KHEWAT_KHATUNI_NO_LABEL"), formData?.siteDetails?.khewatOrKhatuniNo)}
+        {renderLabel(t("BPA_CORE_AREA_LABEL"), formData?.siteDetails?.coreArea?.code)}
+
         {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
         {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
         {renderLabel(t("BPA_ULB_TYPE_LABEL"), formData?.siteDetails?.ulbType)}
@@ -137,14 +156,22 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_OWNERSHIP_IN_PCT_LABEL"), formData?.siteDetails?.ownershipInPct)}
 
         {renderLabel(t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"), formData?.siteDetails?.proposedRoadWidthAfterWidening)}
+
+        {renderLabel(t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"), formData?.siteDetails?.appliedCluCategory?.name)}
+        {renderLabel(t("BPA_PROPERTY_UID_LABEL"), formData?.siteDetails?.propertyUid)}
+        {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), formData?.siteDetails?.buildingStatus?.name)}
+        {renderLabel(t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL"), formData?.siteDetails?.isOriginalCategoryAgriculture?.code)}
+        {renderLabel(t("BPA_RESTRICTED_AREA_LABEL"), formData?.siteDetails?.restrictedArea?.code)}
+        {renderLabel(t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isSiteUnderMasterPlan?.code)}
+
         {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_SPECIFICATION_DETAILS")}</h2>
-      <div style={sectionStyle}>{renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}</div>
+      <h2 className="clu-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
+      <div className="clu-summary-section">{renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}</div>
 
-      <h2 style={headingStyle}>{t("BPA_SITE_COORDINATES_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="clu-summary-heading">{t("BPA_SITE_COORDINATES_LABEL")}</h2>
+      <div className="clu-summary-section">
         {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
         {renderLabel(t("COMMON_LONGITUDE1_LABEL"), coordinates?.Longitude1)}
 
@@ -152,13 +179,13 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="clu-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div className="clu-summary-section">
         {formData?.documents?.documents?.documents?.length > 0 && <CLUDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="clu-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div className="clu-summary-section">
         {formData && <CLUFeeEstimationDetails formData={formData}/>}
       </div>
 

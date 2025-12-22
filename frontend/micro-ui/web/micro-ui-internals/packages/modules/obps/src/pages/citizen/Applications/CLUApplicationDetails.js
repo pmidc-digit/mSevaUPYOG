@@ -27,6 +27,7 @@ import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
+import { amountToWords } from "../../../utils/index";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -83,6 +84,7 @@ const CLUApplicationDetails = () => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const [displayData, setDisplayData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
@@ -126,50 +128,97 @@ const CLUApplicationDetails = () => {
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "obpas_noc",
+      businessService: "clu",
       consumerCodes: id,
       isEmployee: false,
     },
     { enabled: id ? true : false }
   );
 
-  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
-  const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Clu?.[0];
-    //console.log("tenants", tenants);
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
 
-    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, t);
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: id,
+    moduleCode: businessServiceCode, 
+  });
 
-    Digit.Utils.pdf.generate(acknowledgementData);
-  };
+  console.log('workflowDetails', workflowDetails)
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "noc-receipt");
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  let approveComments = []
+  let approvalDate ,approvalTime= ""
+  // Assuming workflowDetails.timeline exists
+  if (workflowDetails?.data && !workflowDetails.isLoading) {
+    approveComments = workflowDetails?.data?.timeline?.filter((item) => item?.performedAction === "APPROVE")?.flatMap((item) => item?.wfComment || []);
+    approvalDate = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.lastModified || "";
+    approvalTime = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.timing || "";
+
   }
 
-  const downloadSanctionLetter = async () => {
-    const application = applicationDetails?.Clu?.[0];
-    try {
+ // console.log("Approve Comments:", approveComments);
+
+
+  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
+  
+  const handleDownloadPdf = async () => {
+  try {
+    setLoading(true);
+    const Property = applicationDetails?.Clu?.[0];
+    const site = Property?.cluDetails?.additionalDetails?.siteDetails;
+    const ulbType = site?.ulbType;
+    const ulbName = site?.ulbName?.city?.name;
+
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+
+    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
+    
+     try {
+      setLoading(true);
+        const application = applicationDetails?.Clu;
+        const approvecomments = approveComments?.[0];
+        const finalComment = approvecomments
+      ? `The above approval is subjected to followings conditions: ${approvecomments}`
+      : "";
+    console.log('application', application)
+      let response = null;
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
-      //we will add sanctionLetter also
-      //await getNOCSanctionLetter(application, t, amountPaid);
+      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      } else {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey, "garbage-receipt");
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+
     } catch (error) {
       console.error("Sanction Letter download error:", error);
+      }
+      finally { setLoading(false); }
     }
-  };
+
 
   const dowloadOptions = [];
   if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
-      label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-      onClick: downloadSanctionLetter,
-    });
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"clu-sanctionletter" }),
+      });
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
@@ -178,7 +227,7 @@ const CLUApplicationDetails = () => {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"clu-receipt" }),
       });
     }
   }
@@ -201,14 +250,8 @@ const CLUApplicationDetails = () => {
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
   
-  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
 
-  const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId,
-    id: id,
-    moduleCode: businessServiceCode, 
-  });
-
+  
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -217,6 +260,7 @@ const CLUApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
+  
   useEffect(() => {
     if (workflowDetails) {
       workflowDetails.revalidate();
@@ -235,7 +279,7 @@ const CLUApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  //console.log("actions here", actions);
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -306,6 +350,8 @@ const CLUApplicationDetails = () => {
     }
   };
 
+  console.log("displayData==>", displayData);
+
   if (isLoading) {
     return <Loader />;
   }
@@ -314,6 +360,7 @@ const CLUApplicationDetails = () => {
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
+        {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
@@ -324,22 +371,24 @@ const CLUApplicationDetails = () => {
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("BPA_APPLICANT_DETAILS")}</CardSubHeader>
-        {displayData?.applicantDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
-              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
-              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
-              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card>
+      {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
+      <React.Fragment>
+        <Card>
+          <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={detail?.dateOfBirth || "N/A"} />
+              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
+              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+              </StatusTable>
+            </div>
+        </Card>
+        </React.Fragment>
+      ))}
 
       {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
@@ -351,13 +400,14 @@ const CLUApplicationDetails = () => {
                   <Row label={t("BPA_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} text={detail?.professionalRegIdValidity || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
             </Card>
           </React.Fragment>
-        ))}
+       ))}
 
       <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
@@ -395,6 +445,11 @@ const CLUApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
+
+              <Row label={t("BPA_PLOT_AREA_LABEL")} text={detail?.plotArea || "N/A"} />
+              <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
+              <Row label={t("BPA_CORE_AREA_LABEL")} text={detail?.coreArea?.code || "N/A"} />
+
               <Row label={t("BPA_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("BPA_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("BPA_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
@@ -416,6 +471,14 @@ const CLUApplicationDetails = () => {
 
               <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
               <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={detail?.proposedRoadWidthAfterWidening || "N/A"} />
+
+              <Row label={t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")} text={detail?.appliedCluCategory?.name || "N/A"} />
+              <Row label={t("BPA_PROPERTY_UID_LABEL")} text={detail?.propertyUid || "N/A"} />
+              <Row label={t("BPA_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || "N/A"} />
+              <Row label={t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")} text={detail?.isOriginalCategoryAgriculture?.code || "N/A"} />
+              <Row label={t("BPA_RESTRICTED_AREA_LABEL")} text={detail?.restrictedArea?.code || "N/A"} />
+              <Row label={t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.isSiteUnderMasterPlan?.code || "N/A"} />
+
               <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={detail?.buildingCategory?.name || "N/A"} />
             </StatusTable>
           </div>

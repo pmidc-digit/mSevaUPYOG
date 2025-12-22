@@ -11,55 +11,65 @@ const Header = () => {
   if (isLoading) return <Loader />;
 
   return (
-    <div className="bannerHeader">
-      <div className="appbar">
-        <div className="appbar-container">
-          <div className="appbar-box-left">Government of India</div>
-          <div className="appbar-box-right">
-            <span>Skip to Main Content</span>
+    <div className="employee-header-bannerHeader">
+    
+      {/* <div className="employee-header-appbar">
+        <div className="employee-header-appbar-container">
+          <div className="employee-header-appbar-box-left">Government of India</div>
+          <div className="employee-header-appbar-box-right">
+            <a href="#main-content">Skip to Main Content</a>
           </div>
         </div>
-      </div>
-      <div className="topHeader">
-        <div className="topHeader-container">
-          <div className="topHeader-box-left">
-            <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/pmidc%20logo.png" alt="pmidcLogo" />
-            <img src="https://filesuploadbucket1aws.s3.amazonaws.com/tcp-haryana/Upyog-logo.png" alt="upyogLogo" />
-          </div>
-          <div className="topHeader-box-center">
-            <ul>
-              <li>
-                {/* <a href="https://mseva-uat.lgpunjab.gov.in/digit-ui/landing-page"> */}
-                HOME
-                {/* </a> */}
-              </li>
-              <li>
-                {/* <a href="https://mseva-uat.lgpunjab.gov.in/digit-ui/landing-page"> */}
-                QUICK PAY
-                {/* </a> */}
-              </li>
+      </div> */}
 
-              <li>
-                {/* <a href="https://mseva-uat.lgpunjab.gov.in/digit-ui/landing-page"> */}
-                FAQ
-                {/* </a> */}
-              </li>
-              <li>
-                {/* <a href="https://mseva-uat.lgpunjab.gov.in/digit-ui/landing-page"> */}
-                CONTACT
-                {/* </a> */}
-              </li>
-            </ul>
+     
+      {/* <div className="employee-header-topHeader">
+        <div className="employee-header-topHeader-container">
+         
+          <div className="employee-header-topHeader-box-left">
+            <img
+              src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/pmidc%20logo.png"
+              alt="PMIDC Logo"
+              className="employee-header-header-logo"
+            />
+            <img
+              src="https://filesuploadbucket1aws.s3.amazonaws.com/tcp-haryana/Upyog-logo.png"
+              alt="UPYOG Logo"
+              className="employee-header-header-logo"
+            />
           </div>
-          <div className="topHeader-box-right">
-            <button>Login</button>
-            <button>Register</button>
+
+         
+          <div className="employee-header-topHeader-box-center">
+            <nav className="employee-header-header-nav">
+              <ul>
+                <li>
+                  <a href="/">HOME</a>
+                </li>
+                <li>
+                  <a href="/quick-pay">QUICK PAY</a>
+                </li>
+                <li>
+                  <a href="/faq">FAQ</a>
+                </li>
+                <li>
+                  <a href="/contact">CONTACT</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+         
+          <div className="employee-header-topHeader-box-right">
+            <button className="employee-header-header-btn employee-header-header-btn-login" onClick={() => history.push("/login")}>
+              Login
+            </button>
+            <button className="employee-header-header-btn employee-header-header-btn-register" onClick={() => history.push("/register")}>
+              Register
+            </button>
           </div>
         </div>
-      </div>
-      <div className="heroSection">
-        <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg" alt="banner Image" />
-      </div>
+      </div> */}
     </div>
   );
 };

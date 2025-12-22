@@ -13,41 +13,54 @@ import {
   ActionBar,
   SubmitBar,
   Toast,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect, useMemo } from "react";
 import Timeline from "../components/Timeline";
 import { convertDateToEpoch } from "../utils";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 import { LoaderNew } from "../components/LoaderNew";
+import { set } from "lodash";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
   const [loader, setLoader] = useState(false);
   const onSkip = () => onSelect();
   const [PermanentAddress, setPermanentAddress] = useState(
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ||
     formData?.LicneseDetails?.PermanentAddress ||
-      formData?.formData?.LicneseDetails?.PermanentAddress ||
-      formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress
+      formData?.formData?.LicneseDetails?.PermanentAddress      
   );
-  const { pathname: url } = useLocation();
+  const { pathname } = useLocation();
   const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
+  const [pinCode, setPinCode] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode  || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedState, setSelectedState] = useState(
-    formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState || {}
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentState || formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState ||  {}
   );
   const [selectedDistrict, setSelectedDistrict] = useState(
-    formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict || {}
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict || formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict ||  {}
   );
 
-  const [isAddressSame, setIsAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.isAddressSame || false);
+  const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || formData?.LicneseDetails?.PincodeCorrespondent || formData?.formData?.LicneseDetails?.PincodeCorrespondent ||  "");
+  const [selectedCorrespondentState, setSelectedCorrespondentState] = useState(
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceState || formData?.LicneseDetails?.SelectedCorrespondentState || formData?.formData?.LicneseDetails?.SelectedCorrespondentState ||  {}
+  );
+  const [selectedCorrespondentDistrict, setSelectedCorrespondentDistrict] = useState(
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict || formData?.LicneseDetails?.SelectedCorrespondentDistrict || formData?.formData?.LicneseDetails?.SelectedCorrespondentDistrict || {}
+  );
+  console.log("selectedDistrict", selectedCorrespondentDistrict, selectedState, formData);
+
+  const [isAddressSame, setIsAddressSame] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.isAddressSame || formData?.isAddressSame || formData?.formData?.isAddressSame ||  false);
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(null);
+  let currentPath = pathname.split("/").pop();
+  let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
   // merging the CorrospondenceAddress to this page
 
   const [correspondenceAddress, setCorrespondenceAddress] = useState(
@@ -55,33 +68,45 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       formData?.formData?.LicneseDetails?.correspondenceAddress ||
       formData?.Correspondenceaddress ||
       formData?.formData?.Correspondenceaddress ||
+      formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
       ""
   );
+  const userInfo = Digit.UserService.getUser();
+  const uuid = userInfo?.info?.uuid;
 
   // const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState.code, "BPA", [{ name: "Ulb" }]);
-  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState?.code || "pb", "BPA", [{ name: "Ulb" }]);
+  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster" }]);
+  // const { data: districtList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster", filter: `$.[?(@.state_code == '${selectedCorrespondentState?.state_code}')]` }]);
+  const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(stateId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
+  const { data: StateData, isLoading: isStateLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{name:"StateMaster"}]);
 
   const stateOptions = useMemo(() => {
-    return [{ code: "pb", name: "Punjab", i18Code: "Punjab" }];
-  }, []);
+    if(StateData?.["common-masters"]?.StateMaster?.length > 0){
+      return StateData["common-masters"].StateMaster;
+    }else{
+      return [];
+    }
+  }, [StateData, isStateLoading]);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const uniqueDistricts = useMemo(() => {
-    if (isLoading || !districtList?.BPA?.Ulb?.length) return [];
+    if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
 
-    return [...new Set(districtList.BPA.Ulb.map((item) => item.Districts?.trim()))]
-      .filter(Boolean) // remove null/undefined/empty
-      .sort((a, b) => a.localeCompare(b))
-      .map((district) => ({
-        name: district,
-        code: district,
-      }));
-  }, [isLoading, districtList]);
+    return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedState?.state_code);
+      
+  }, [isLoading, districtList, selectedState]);
+  
+  const uniqueDistrictsCor = useMemo(() => {
+    if (isLoading || !districtList["common-masters"]?.DistrictMaster?.length) return [];
+
+    console.log("districtList", districtList["common-masters"]?.DistrictMaster, selectedCorrespondentState);
+    return districtList["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedCorrespondentState?.state_code);
+  }, [isLoading, districtList, selectedCorrespondentState]);
 
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
   const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
 
-  console.log("formData==????", formData);
+  console.log("HelloData",  uniqueDistrictsCor, selectedCorrespondentState);
 
   // useEffect(() => {
   //   const role = formData?.LicneseType?.LicenseType?.role;
@@ -103,24 +128,73 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   }, [formData?.LicneseType?.LicenseType?.role]);
 
   useEffect(() => {
-    if (typeof selectedState === "string") {
-      const state = stateOptions.find((state) => state.name === selectedState);
-      setSelectedState(state);
+    if (typeof selectedState === "string" && stateOptions?.length > 0) {
+      const state = stateOptions.find((state) => state.state_name === selectedState);      
+      setSelectedState(state);     
     }
-  }, [selectedState]);
+  }, [selectedState, stateOptions]);
 
   useEffect(() => {
-    if (typeof selectedDistrict === "string" && !isLoading && uniqueDistricts.length > 0) {
-      const district = uniqueDistricts.find((district) => district.code === selectedDistrict);
+    if (typeof selectedCorrespondentState === "string" && stateOptions?.length > 0) {
+      const state = stateOptions.find((state) => state.state_name === selectedCorrespondentState);      
+      setSelectedCorrespondentState(state);
+    }
+  }, [selectedCorrespondentState, stateOptions]);
+
+  useEffect(() => {
+    if (typeof selectedDistrict === "string" &&  uniqueDistricts.length > 0) {
+      const district = uniqueDistricts.find((district) => district.district_name_english === selectedDistrict);
+      console.log("selectedDistrict_1", district, uniqueDistricts, selectedDistrict);
       setSelectedDistrict(district);
     }
   }, [selectedDistrict, isLoading, uniqueDistricts]);
+  useEffect(() => {
+    if (typeof selectedCorrespondentDistrict === "string" && uniqueDistrictsCor.length > 0) {
+      const district = uniqueDistrictsCor.find((district) => district.district_name_english === selectedCorrespondentDistrict);
+      setSelectedCorrespondentDistrict(district);
+    }
+  }, [selectedCorrespondentDistrict, isLoading, uniqueDistrictsCor]);
 
   useEffect(() => {
-    if (selectedState === "undefined" || !selectedState?.code) {
-      setSelectedState({ code: "pb", name: "Punjab" });
+    if (!isUserLoading && userDetails?.user?.length > 0) {
+      console.log("userDetails", userDetails?.user[0]);
+      if(!PermanentAddress || PermanentAddress === ""){
+        setPermanentAddress(userDetails?.user[0]?.permanentAddress || "");
+      }
+      if(!pinCode || pinCode === ""){
+        setPinCode(userDetails?.user[0]?.permanentPinCode || "");
+      }
+      if(!selectedState || !selectedState?.state_code){
+        const state = stateOptions.find((state) => state.state_name === userDetails?.user[0]?.permanentState);
+        console.log("SettingSelectedState 2", stateOptions, state, selectedState)
+        setSelectedState(state);
+      }
+      if(!selectedDistrict || !selectedDistrict?.state_code){
+        const district = uniqueDistricts.find((district) => district.district_name_english === userDetails?.user[0]?.permanentDistrict);
+        console.log("SettingSelectedDistrict 2", uniqueDistricts, district, userDetails?.user[0]?.permanentDistrict)
+        setSelectedDistrict(district);
+      }
+      if(!isAddressSame){
+        if(!correspondenceAddress || correspondenceAddress === ""){
+          setCorrespondenceAddress(userDetails?.user[0]?.correspondenceAddress || "");
+        }
+        if(!pinCodeCorrespondent || pinCodeCorrespondent === ""){
+          setPinCodeCorrespondent(userDetails?.user[0]?.correspondencePinCode || "");
+        }
+        if(!selectedCorrespondentState || !selectedCorrespondentState?.state_code){
+          const state = stateOptions.find((state) => state.state_name === userDetails?.user[0]?.correspondenceState);
+          setSelectedCorrespondentState(state);
+        }
+        if(!selectedCorrespondentDistrict || !selectedCorrespondentDistrict?.state_code){
+          const district = uniqueDistrictsCor.find((district) => district.district_name_english === userDetails?.user[0]?.correspondenceDistrict);
+          console.log("SettingSelectedCorrespondentDistrict 2", uniqueDistrictsCor, district, userDetails?.user[0]?.correspondenceDistrict);
+          
+          setSelectedCorrespondentDistrict(district);
+        }
+      }
     }
-  }, []);
+  } ,[userDetails, isUserLoading, stateOptions, uniqueDistricts, uniqueDistrictsCor])
+
 
   // useEffect(() => {
   //   console.log("come here", formData?.formData);
@@ -136,20 +210,23 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   useEffect(() => {
     if (formData?.result?.Licenses) {
-      console.log("eya come here");
-      const selCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentCity;
+      console.log("eya come here", formData);
+      const selCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+      const selCorCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict;
       console.log("selState", selCity);
       console.log("stateOptions", uniqueDistricts);
-      const cityOpt = uniqueDistricts?.find((state) => state.code === selCity);
-      setSelectedDistrict(cityOpt);
+      const cityOpt = uniqueDistricts?.find((state) => state.district_name_english === selCity);
+      // if(cityOpt)setSelectedDistrict(cityOpt);
+      const cityCorOpt = uniqueDistrictsCor?.find((state) => state.district_name_english === selCorCity);
+      // if(cityCorOpt) setSelectedCorrespondentDistrict(cityCorOpt);
     }
-  }, [formData, uniqueDistricts]);
+  }, [formData, uniqueDistricts, uniqueDistrictsCor]);
 
   //const isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("renew-trade");
   //const { isLoading, data: fydata = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", "FinancialYear");
 
   //   let mdmsFinancialYear = fydata["egf-master"] ? fydata["egf-master"].FinancialYear.filter(y => y.module === "TL") : [];
-  //   let FY = mdmsFinancialYear && mdmsFinancialYear.length > 0 && mdmsFinancialYear.sort((x, y) => y.endingDate - x.endingDate)[0]?.code;
+  //   let FY = mdmsFinancialYear && mdmsFinancialYear.length > 0 && mdmsFinancialYear.sort((x, y) => y.endingDate - x.endingDate)[0]?.state_code;
 
   if (isopenlink)
     window.onunload = function () {
@@ -186,6 +263,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       setPinCode(value);
     }
   }
+  function SelectPincodeCorrespondent(e) {
+    const value = e.target.value;
+    if (/^[0-9]*$/.test(value) && value.length <= 6) {
+      setPinCodeCorrespondent(value);
+    }
+  }
 
   function SelectState(e) {
     setSelectedState(e);
@@ -193,6 +276,14 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   function SelectDistrict(e) {
     setSelectedDistrict(e);
+  }
+
+  function SelectCorrespondentState(e) {
+    setSelectedCorrespondentState(e);
+  }
+
+  function SelectCorrespondentDistrict(e) {
+    setSelectedCorrespondentDistrict(e);
   }
 
   function handleAddressSame(e) {
@@ -239,6 +330,55 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       setShowToast({ error: true, message: t("BPA_PINCODE_ERROR_MESSAGE") });
       return;
     }
+    if (!isAddressSame && (pinCodeCorrespondent === "" || pinCodeCorrespondent.length < 6)) {
+      setErrorMessage(t("BPA_PINCODE_ERROR_MESSAGE"));
+      setShowToast({ error: true, message: t("BPA_PINCODE_ERROR_MESSAGE") });
+      return;
+    }
+
+    if(!PermanentAddress || PermanentAddress === ""){
+      setErrorMessage(t("Permanent Address Is Mandatory"));
+      setShowToast({ error: true, message: t("Permanent Address Is Mandatory") });
+      return;
+    }
+    else if(!selectedState){
+      setErrorMessage(t("Permanent State Is Mandatory"));
+      setShowToast({ error: true, message: t("Permanent State Is Mandatory") });
+      return;
+    }
+    else if(!selectedDistrict){
+      setErrorMessage(t("Permanent State Is Mandatory"));
+      setShowToast({ error: true, message: t("Permanent State Is Mandatory") });
+      return;
+    }
+    else if(!pinCode || pinCode === ""){
+      setErrorMessage(t("Permanent State Is Mandatory"));
+      setShowToast({ error: true, message: t("Permanent State Is Mandatory") });
+      return;
+    }
+
+    if(!isAddressSame){
+      if(!correspondenceAddress || correspondenceAddress === ""){
+      setErrorMessage(t("Correspondence Address Is Mandatory"));
+      setShowToast({ error: true, message: t("Correspondence Address Is Mandatory") });
+      return;
+    }
+    else if(!selectedCorrespondentState){
+      setErrorMessage(t("Correspondence State Is Mandatory"));
+      setShowToast({ error: true, message: t("Correspondence State Is Mandatory") });
+      return;
+    }
+    else if(!selectedCorrespondentDistrict){
+      setErrorMessage(t("Correspondence State Is Mandatory"));
+      setShowToast({ error: true, message: t("Correspondence State Is Mandatory") });
+      return;
+    }
+    else if(!pinCodeCorrespondent || pinCodeCorrespondent === ""){
+      setErrorMessage(t("Correspondence Pincode Is Mandatory"));
+      setShowToast({ error: true, message: t("Correspondence Pincode Is Mandatory") });
+      return;
+    }
+    }
 
     // If first time, API call
     if (!(formData?.result && formData?.result?.Licenses?.[0]?.id)) {
@@ -251,11 +391,29 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
 
       const actionToSend = selectedAction?.action || "NOWORKFLOW";
+      let validTo
+      if(formData?.LicneseType?.validTo){
+        if(typeof formData?.LicneseType?.validTo === "string" && formData?.LicneseType?.validTo?.includes("/")){
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        }else if (typeof formData?.LicneseType?.validTo === "string"){
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo)
+        }else{
+          validTo = formData?.LicneseType?.validTo
+        }
+      }else if(formData?.formData?.LicneseType?.validTo){
+        if(typeof formData?.formData?.LicneseType?.validTo === "string" && formData?.formData?.LicneseType?.validTo?.includes("/")){
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        }else if (typeof formData?.formData?.LicneseType?.validTo === "string"){
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo)
+        }else{
+          validTo = formData?.formData?.LicneseType?.validTo
+        }
+      }
 
       const payload = {
         Licenses: [
           {
-            validTo: formData?.LicneseType?.validTo ? convertDateToEpoch(formData?.LicneseType?.validTo) : null,
+            validTo,
             tradeLicenseDetail: {
               owners: [
                 {
@@ -267,7 +425,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   permanentAddress: PermanentAddress,
                   correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
                   pan: formData?.LicneseDetails?.PanNumber,
-                  permanentCity: selectedDistrict.code,
+                  permanentDistrict: selectedDistrict.district_name_english,
+                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
+                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+                  permanentPinCode : pinCode,
+                  permanentState: selectedState.state_name,
+                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,                  
                 },
               ],
               subOwnerShipCategory: "INDIVIDUAL",
@@ -280,8 +443,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 qualificationType: formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
-                isAddressSame: isAddressSame,
-
+                isAddressSame: isAddressSame,                
                 // Ulb: selectedUlbTypes,
                 // Ulb: isArchitect ? [] : selectedUlbTypes,
                 Ulb: tenantToSend,
@@ -309,22 +471,16 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         .then((result) => {
           setLoader(false);
           let data = {
+            ...formData,
             result: result,
-            formData: {
-              ...formData,
-              LicneseDetails: {
-                ...formData?.LicneseDetails,
-                PermanentAddress,
-                correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                isAddressSame,
-                Pincode: pinCode,
-                // Ulb: selectedUlbTypes,
-                // Ulb: isArchitect ? [] : selectedUlbTypes,
-                Ulb: tenantToSend,
-                SelectedState: selectedState,
-                SelectedDistrict: selectedDistrict,
-              },
-            },
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }               
           };
           onSelect("", data, "", true);
         })
@@ -333,21 +489,319 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
           setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
         });
-    } else {
-      // ✅ Update Flow - ensure nested objects exist
-      let updatedFormData = { ...formData };
-      updatedFormData.LicneseDetails = updatedFormData.LicneseDetails || {};
+    } else if(formData?.result && formData?.result?.Licenses?.[0]?.id && formData?.editableFields?.applicationType === "NEW" && formData?.result?.Licenses?.[0]?.tenantId !== tenantId) {
+      setErrorMessage("");
+      setShowToast(null); // reset errors
 
-      updatedFormData.LicneseDetails.PermanentAddress = PermanentAddress;
-      updatedFormData.LicneseDetails.correspondenceAddress = isAddressSame ? PermanentAddress : correspondenceAddress;
-      updatedFormData.isAddressSame = isAddressSame;
-      updatedFormData.LicneseDetails.Pincode = pinCode;
-      updatedFormData.LicneseDetails.Ulb = selectedUlbTypes;
-      updatedFormData.LicneseDetails.SelectedState = selectedState;
-      updatedFormData.LicneseDetails.SelectedDistrict = selectedDistrict;
+      const role = formData?.LicneseType?.LicenseType?.role;
+      const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
 
-      onSelect("", updatedFormData, "", true);
+      const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
+
+      const actionToSend = selectedAction?.action || "NOWORKFLOW";
+
+      let validTo
+      if(formData?.LicneseType?.validTo){
+        if(typeof formData?.LicneseType?.validTo === "string" && formData?.LicneseType?.validTo?.includes("/")){
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        }else if (typeof formData?.LicneseType?.validTo === "string"){
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo)
+        }else{
+          validTo = formData?.LicneseType?.validTo
+        }
+      }else if(formData?.formData?.LicneseType?.validTo){
+        if(typeof formData?.formData?.LicneseType?.validTo === "string" && formData?.formData?.LicneseType?.validTo?.includes("/")){
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        }else if (typeof formData?.formData?.LicneseType?.validTo === "string"){
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo)
+        }else{
+          validTo = formData?.formData?.LicneseType?.validTo
+        }
+      }
+
+      const payload = {
+        Licenses: [
+          {
+            validTo: validTo,
+            tradeLicenseDetail: {
+              ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              owners: [
+                {
+                  // gender: formData?.LicneseDetails?.gender?.code,
+                  // mobileNumber: formData?.LicneseDetails?.mobileNumber,
+                  // name: formData?.LicneseDetails?.name,
+                  // dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
+                  // emailId: formData?.LicneseDetails?.email,
+                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
+                  permanentAddress: PermanentAddress,
+                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+                  pan: formData?.LicneseDetails?.PanNumber,
+                  permanentDistrict: selectedDistrict.district_name_english,
+                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
+                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+                  permanentState: selectedState.state_name,
+                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
+                  permanentPinCode : pinCode,
+                },
+              ],
+              tradeUnits: [
+                {
+                  tradeType: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
+                },
+              ],
+              additionalDetail: {
+                // qualificationType: formData?.LicneseType?.qualificationType?.name,
+                // counsilForArchNo: formData?.LicneseType?.ArchitectNo,
+                // isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
+                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
+                isAddressSame: isAddressSame,                
+                Ulb: tenantToSend,
+              },
+              address: {
+                city: "",
+                landmark: "",
+                pincode: pinCode,
+              },
+            },
+            licenseType: "PERMANENT",
+            businessService: "BPAREG",
+            tenantId: tenantToSend,
+            // action: "NOWORKFLOW",
+            action: "APPLY",
+            assignee: selectedAction?.assignee || null,
+            comment: selectedAction?.comment || null,
+            wfDocuments: selectedAction?.wfDocuments || null,
+          },
+        ],
+      };
+      console.log("payload", payload);
+      setLoader(true);
+      Digit.OBPSService.BPAREGCreate(payload, tenantId)
+        .then((result) => {
+          setLoader(false);
+          let data = {
+            ...formData,
+            result: result,
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }                   
+          };
+          onSelect("", data, "", true);
+        })
+        .catch((e) => {
+          setLoader(false);
+          setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
+          setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
+        });
+    } else if(formData?.result && formData?.result?.Licenses?.[0]?.id && formData?.editableFields?.applicationType === "UPGRADE") {
+      setErrorMessage("");
+      setShowToast(null); // reset errors
+
+      const role = formData?.LicneseType?.LicenseType?.role || formData?.formData?.LicneseType?.LicenseType?.role
+      const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
+
+      const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
+
+      const actionToSend = selectedAction?.action || "NOWORKFLOW";
+
+      let validTo
+      if(formData?.LicneseType?.validTo){
+        if(typeof formData?.LicneseType?.validTo === "string" && formData?.LicneseType?.validTo?.includes("/")){
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        }else if (typeof formData?.LicneseType?.validTo === "string"){
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo)
+        }else{
+          validTo = formData?.LicneseType?.validTo
+        }
+      }else if(formData?.formData?.LicneseType?.validTo){
+        if(typeof formData?.formData?.LicneseType?.validTo === "string" && formData?.formData?.LicneseType?.validTo?.includes("/")){
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        }else if (typeof formData?.formData?.LicneseType?.validTo === "string"){
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo)
+        }else{
+          validTo = formData?.formData?.LicneseType?.validTo
+        }
+      }
+
+      const payload = {
+        Licenses: [
+          {
+            validTo,
+            tradeLicenseDetail: {
+              ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              owners: [
+                {
+                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
+                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
+                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
+                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
+                  permanentAddress: PermanentAddress,
+                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+                  pan: formData?.LicneseDetails?.PanNumber,
+                  permanentDistrict: selectedDistrict.district_name_english,
+                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
+                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+                  permanentPinCode : pinCode,
+                  permanentState: selectedState.state_name,
+                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
+                },
+              ],
+              tradeUnits: [
+                {
+                  tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
+                },
+              ],
+              additionalDetail: {                
+                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
+                qualificationType: formData?.LicneseType?.qualificationType?.name || formData?.formData?.LicneseType?.qualificationType?.name,
+                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo,
+                isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
+                isAddressSame: isAddressSame,                
+                Ulb: tenantToSend,
+              },
+              address: {
+                city: "",
+                landmark: "",
+                pincode: pinCode,
+              },
+            },
+            licenseType: "PERMANENT",
+            businessService: "BPAREG",
+            tenantId: tenantToSend,
+            // action: "NOWORKFLOW",
+            action: "APPLY",
+            applicationType: "UPGRADE",
+            assignee: selectedAction?.assignee || null,
+            comment: selectedAction?.comment || null,
+            wfDocuments: selectedAction?.wfDocuments || null,
+          },
+        ],
+      };
+      console.log("payload", payload);
+      setLoader(true);
+      Digit.OBPSService.BPAREGCreate(payload, tenantId)
+        .then((result) => {
+          setLoader(false);
+          let data = {
+            ...formData,
+            result: result,  
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }          
+          };          
+          onSelect("", data, "", true);
+        })
+        .catch((e) => {
+          setLoader(false);
+          setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
+          setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
+        });
+    }else {
+      setErrorMessage("");
+      setShowToast(null); // reset errors
+
+      const role = formData?.LicneseType?.LicenseType?.role || formData?.formData?.LicneseType?.LicenseType?.role;
+      const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
+
+      console.log("isArchitect",isArchitect)
+
+      const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
+
+      const actionToSend = selectedAction?.action || "NOWORKFLOW";
+      const licenseData = formData?.result?.Licenses[0];
+      console.log("formData?.formData?.LicneseType?.validTo",formData?.formData?.LicneseType?.validTo)
+
+      const payload = {
+        Licenses: [
+          {
+            ...licenseData,            
+            tradeLicenseDetail: {
+              ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              owners: [
+                {                  
+                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
+                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
+                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
+                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,
+                  permanentAddress: PermanentAddress,
+                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+                  pan: formData?.LicneseDetails?.PanNumber,
+                  permanentDistrict: selectedDistrict.district_name_english,
+                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
+                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+                  permanentPinCode : pinCode,
+                  permanentState: selectedState.state_name,
+                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
+                },
+              ],
+              additionalDetail: {                
+                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),                
+                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,                
+                isAddressSame: isAddressSame,                
+                Ulb: tenantToSend,
+              },              
+            },         
+            action: "SAVE_AS_DRAFT",            
+          },
+        ],
+      };
+      console.log("payload", payload);
+      setLoader(true);
+      Digit.OBPSService.BPAREGupdate(payload, tenantId)
+        .then((result) => {
+          setLoader(false);
+          let data = {
+            ...formData,
+            result: result,  
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }          
+          };          
+          onSelect("", data, "", true);
+        })
+        .catch((e) => {
+          setLoader(false);
+          setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
+          setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
+        });
     }
+    // else {
+    //   // ✅ Update Flow - ensure nested objects exist
+    //   let updatedFormData = { ...formData };
+    //   updatedFormData.LicneseDetails = updatedFormData.LicneseDetails || {};
+
+    //   updatedFormData.LicneseDetails.PermanentAddress = PermanentAddress;
+    //   updatedFormData.LicneseDetails.correspondenceAddress = isAddressSame ? PermanentAddress : correspondenceAddress;
+    //   updatedFormData.isAddressSame = isAddressSame;
+    //   updatedFormData.LicneseDetails.Pincode = pinCode;
+    //   updatedFormData.LicneseDetails.Ulb = selectedUlbTypes;
+    //   updatedFormData.LicneseDetails.SelectedState = selectedState;
+    //   updatedFormData.LicneseDetails.SelectedDistrict = selectedDistrict;
+    //   updatedFormData.LicneseDetails.SelectedCorrespondentState = isAddressSame ? selectedState : selectedCorrespondentState,
+    //   updatedFormData.LicneseDetails.SelectedCorrespondentDistrict = isAddressSame ? selectedDistrict : selectedCorrespondentDistrict,
+    //   updatedFormData.LicneseDetails.PincodeCorrespondent = isAddressSame ? pinCode : pinCodeCorrespondent,
+
+    //   onSelect("", updatedFormData, "", true);
+    // }
   };
 
   const role = formData?.LicneseType?.LicenseType?.role;
@@ -359,7 +813,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   return (
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+        {isopenlink && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep
           config={config}
@@ -380,11 +834,11 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             // disable={!isCitizenEditable}
           />
 
-          <CheckBox
+          {/* <CheckBox
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={handleAddressSame}
             checked={isAddressSame}
-            style={{ paddingBottom: "10px", paddingTop: "10px" }}
+           
             //  disable={!isCitizenEditable}
           />
 
@@ -397,36 +851,36 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             value={correspondenceAddress}
             onChange={(e) => setCorrespondenceAddress(e.target.value)}
             // disable={isAddressSame}
-          />
+          /> */}
 
           <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
-          <div>
+          {isStateLoading ? <Loader /> : <div>
             <Dropdown
               t={t}
-              optionKey="code"
+              optionKey="state_name"
               // isMandatory={config.isMandatory}
-              option={stateOptions}
+              option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
               selected={selectedState}
               select={SelectState}
-              // disable={true}
+              disable={!isEditable}
               // disable={!isCitizenEditable}
             />
-          </div>
+          </div>}
 
           <div>
             {" "}
             <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
-            <Dropdown
+            {isLoading? <Loader/> : <Dropdown
               t={t}
-              optionKey="code"
+              optionKey="district_name_english"
               // isMandatory={config.isMandatory}
               // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
-              option={uniqueDistricts}
+              option={uniqueDistricts?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
               selected={selectedDistrict}
               select={SelectDistrict}
-              // disable={true}
+              disable={!isEditable}
               // disable={!isCitizenEditable}
-            />
+            />}
           </div>
 
           <div>
@@ -441,7 +895,94 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               value={pinCode}
               onChange={SelectPincode}
               // disable={name && !isOpenLinkFlow ? true : false}
+              disable={!isEditable}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[0-9]{6}$",
+                type: "number",
+                title: t("BPA_PINCODE_ERROR_MESSAGE"),
+              })}
+            />
+            {/* {errorMessage && (
+              <div
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  marginTop: "4px",
+                  marginBottom: "12px",
+                }}
+              >
+                {errorMessage}
+              </div>
+            )} */}
+
+            {showToast && (
+              <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} isDleteBtn={true} onClose={closeToast} />
+            )}
+          </div>
+
+          <CheckBox
+            label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
+            onChange={handleAddressSame}
+            checked={isAddressSame}
+            style={{ paddingBottom: "10px", paddingTop: "10px" }}
+             disable={!isEditable}
+          />
+
+          <CardLabel>{t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}</CardLabel>
+          <TextArea
+            t={t}
+            isMandatory={false}
+            type={"text"}
+            name="correspondenceAddress"
+            value={isAddressSame ? PermanentAddress : correspondenceAddress}
+            onChange={(e) => setCorrespondenceAddress(e.target.value)}
+            disable={!isEditable || isAddressSame}
+          />
+
+          <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
+          <div>
+            <Dropdown
+              t={t}
+              optionKey="state_name"
+              // isMandatory={config.isMandatory}
+              option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
+              selected={isAddressSame? selectedState : selectedCorrespondentState}
+              select={SelectCorrespondentState}
+              disable={!isEditable || isAddressSame}
               // disable={!isCitizenEditable}
+            />
+          </div>
+
+          <div>
+            {" "}
+            <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
+            {isLoading? <Loader/> : <Dropdown
+              t={t}
+              optionKey="district_name_english"
+              // isMandatory={config.isMandatory}
+              // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+              option={uniqueDistrictsCor?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
+              selected={isAddressSame? selectedDistrict : selectedCorrespondentDistrict}
+              select={SelectCorrespondentDistrict}
+              disable={!isEditable || isAddressSame}
+              // disable={!isCitizenEditable}
+            />}
+          </div>
+
+          <div>
+            <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="Pcode"
+              minLength="6"
+              value={isAddressSame ? pinCode : pinCodeCorrespondent}
+              onChange={SelectPincodeCorrespondent}
+              // disable={name && !isOpenLinkFlow ? true : false}
+              disable={!isEditable || isAddressSame}
               {...(validation = {
                 isRequired: true,
                 pattern: "^[0-9]{6}$",
@@ -508,10 +1049,10 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         <SubmitBar
           label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={!PermanentAddress || pinCode === "" || !selectedState?.code || !PermanentAddress || !selectedDistrict?.code}
+          disabled={isStateLoading || isLoading ||  isLoading}
         />
       </ActionBar>
-      {(isLoading || loader) && <LoaderNew page={true} />}
+      {(loader) && <LoaderNew page={true} />}
     </React.Fragment>
   );
 };

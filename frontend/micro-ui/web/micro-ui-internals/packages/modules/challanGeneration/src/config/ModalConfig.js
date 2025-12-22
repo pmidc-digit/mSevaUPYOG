@@ -1,32 +1,9 @@
-import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
 import React from "react";
 
-export const ModalConfig = ({
-  t,
-  action,
-  approvers,
-  selectedApprover,
-  setSelectedApprover,
-  selectFile,
-  uploadedFile,
-  setUploadedFile,
-  assigneeLabel,
-  businessService,
-}) => {
-  console.log("action=====", action);
-  let checkCondtions = true;
-  if (
-    action?.action == "SENDBACKTOCITIZEN" ||
-    action?.action == "APPROVE" ||
-    action?.action == "NOT_VERIFIED" ||
-    action?.action == "SENDBACK" ||
-    action?.action == "VERIFIED"
-  )
-    checkCondtions = false;
-  if (action.isTerminateState) checkCondtions = false;
-
-  console.log("action=====", action.action);
-
+export const ModalConfig = ({ t, action, setAmount, getChallanData }) => {
+  console.log("getChallanData", getChallanData);
+  const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
+  console.log("finalAmount", finalAmount);
   return {
     label: {
       heading: ``,
@@ -37,39 +14,26 @@ export const ModalConfig = ({
       {
         body: [
           {
-            label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")} *`,
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-            type: "dropdown",
-            populators: !checkCondtions ? null : (
-              <Dropdown
-                option={approvers}
-                autoComplete="off"
-                optionKey="name"
-                id="fieldInspector"
-                select={setSelectedApprover}
-                selected={selectedApprover}
-              />
-            ),
-          },
-          {
-            label: `${t("CS_COMMON_COMMENTS")} *`,
-            type: "textarea",
-            populators: {
-              name: "comments",
-            },
-          },
-          {
-            label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
+            label: `${t("FEE_WAIVER_AMOUNT")} *`,
             populators: (
-              <UploadFile
-                id={"workflow-doc"}
-                // accept=".jpg"
-                onUpload={selectFile}
-                onDelete={() => {
-                  setUploadedFile(null);
-                }}
-                message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-              />
+              <div>
+                <input
+                  className="employee-card-input focus-visible"
+                  type="number"
+                  style={{ marginBottom: 0, width: "100%" }}
+                  onChange={(e) => setAmount(e.target.value)}
+                  onWheel={(e) => e.target.blur()}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+                <span style={{ color: "green" }}>
+                  <span style={{ color: " red", paddingRight: " 3px" }}>Note:</span>Please enter amount less than{" "}
+                  <span style={{ fontWeight: "bolder", color: "green" }}> {finalAmount}</span>{" "}
+                </span>
+              </div>
             ),
           },
         ],

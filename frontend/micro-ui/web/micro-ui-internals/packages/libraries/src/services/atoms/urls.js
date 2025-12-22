@@ -8,6 +8,7 @@ const Urls = {
     revenue_localities: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Locality`,
     revenue_blocks: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Block`,
   },
+  bathindaAuth: "/api/Authenticate/GetToken",
 
   pgr_search: `/pgr-services/v2/request/_search`,
   pgr_update: `/pgr-services/v2/request/_update`,
@@ -37,6 +38,7 @@ const Urls = {
 
   UserSearch: "/user/_search",
   UserLogout: "/user/_logout",
+  UserCreate: "/user/users/_createnovalidate",
 
   Shortener: "/egov-url-shortening/shortener",
 
@@ -93,6 +95,8 @@ const Urls = {
     cfsearch: "/service-request/service/v1/_search",
     defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
     getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
+    ludhianaSearch: "/property-services/api/fetch",
+    bathindaSearch: "/api/Property/GetPropertyDetail",
   },
 
   dss: {
@@ -135,13 +139,14 @@ const Urls = {
     update_new: "/challan-generation/challan/_update",
   },
 
+  // Todo
   rentAndLease: {
-    search: "/echallan-services/eChallan/v1/_search",
-    create: "/echallan-services/eChallan/v1/_create?",
+    create: "/rl-services/allotment/_create",
+    update: "/rl-services/allotment/_update",
+    search: "/rl-services/allotment/v1/_search",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
     search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
-    update: "/echallan-services/eChallan/v1/_update",
     download_pdf: "/egov-pdf/download/UC/mcollect-challan",
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
     bill_download: "/egov-pdf/download/BILL/consolidatedbill",
@@ -158,6 +163,9 @@ const Urls = {
     update: "/egov-hrms/employees/_update",
     employee_wise_report: "/report/rainmaker-hrms/_get",
     sso_authenticate_user: "/egov-hrms/employees/sso/authenticate-user",
+    empmap_search: "/egov-hrms/obpass/employees/_search",
+    createEmpMapping: "/egov-hrms/obpass/employees/_create",
+    deleteEmpMapping: "/egov-hrms/obpass/employees/_delete",
   },
   tl: {
     create: "/tl-services/v1/_create",
@@ -196,8 +204,8 @@ const Urls = {
     cluUpdate: "/clu-services/v1/clu/_update",
     cluSearch: "/clu-services/v1/clu/_search",
     cluCalculator: "/clu-calculator/v1/_calculate",
-    layoutCalculator:"/layout-calculator/v1/_calculate",
-    layoutCollectionSearch:"/collection-services/payments/layout/_search",
+    layoutCalculator: "/layout-calculator/v1/_calculate",
+    layoutCollectionSearch: "/collection-services/payments/layout/_search",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",
@@ -360,6 +368,13 @@ const Urls = {
     search: "/ndc-services/ndc/_search",
     update: "/ndc-services/ndc/_update",
     billingCalculate: "/ndc-calculator/v1/_calculate",
+  },
+
+  gc: {
+    create: "/gc-services/gc/_create",
+    search: "/gc-services/gc/_search",
+    update: "/gc-services/gc/_update",
+    location: "/egov-location/location/v11/boundarys/_search",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

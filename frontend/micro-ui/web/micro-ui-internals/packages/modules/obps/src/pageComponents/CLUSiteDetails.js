@@ -167,13 +167,14 @@ const CLUSiteDetails = (_props) => {
 
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
 
-  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
+  const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "CLUAppliedCategory" }]);
 
-  const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || [];
+  const appliedCluCategoryOptions = mdmsData?.BPA?.CLUAppliedCategory || [];
+
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
+      <div>
         <CardSectionHeader className="card-section-header">{t("BPA_SITE_DETAILS")}</CardSectionHeader>
         <div>
           <LabelFieldPair>
@@ -209,6 +210,94 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.plotNo?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="plotArea"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.plotArea?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_KHEWAT_KHATUNI_NO_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="khewatOrKhatuniNo"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.khewatOrKhatuniNo?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_CORE_AREA_LABEL")}`}*</CardLabel>
+              <Controller
+                control={control}
+                name="coreArea"
+                rules={{required: t("REQUIRED_FIELD")}}
+                render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+                )}
+              />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.coreArea?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")}*</CardLabel>
@@ -720,6 +809,30 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.proposedRoadWidthAfterWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")}`}*</CardLabel>
+            {!isMdmsLoading && (
+              <Controller
+                control={control}
+                name={"appliedCluCategory"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={appliedCluCategoryOptions}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+            )}
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.appliedCluCategory?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}*</CardLabel>
             {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
               <Controller
@@ -733,6 +846,132 @@ const CLUSiteDetails = (_props) => {
             )}
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_PROPERTY_UID_LABEL")}`}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="propertyUid"
+                rules={{
+                  // required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.propertyUid?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}*</CardLabel>
+            {!isBuildingTypeLoading && (
+              <Controller
+                control={control}
+                name={"buildingStatus"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={buildingType}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+            )}
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
+
+           <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")}`} *</CardLabel>
+             <Controller
+              control={control}
+              name={"isOriginalCategoryAgriculture"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.isOriginalCategoryAgriculture?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_RESTRICTED_AREA_LABEL")}`} *</CardLabel>
+             <Controller
+              control={control}
+              name={"restrictedArea"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.restrictedArea?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`} *</CardLabel>
+             <Controller
+              control={control}
+              name={"isSiteUnderMasterPlan"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.isSiteUnderMasterPlan?.message || ""}</CardLabelError>
+
+
         </div>
         <BreakLine />
       </div>

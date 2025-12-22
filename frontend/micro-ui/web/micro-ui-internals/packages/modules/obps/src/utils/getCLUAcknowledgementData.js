@@ -2,7 +2,6 @@ import React from "react";
 import { pdfDownloadLink, pdfDocumentName } from "./index";
 import { Loader } from "@mseva/digit-ui-react-components";
 
-
 const getRegistrationDetails = (appData, t) => {
   let values = [
     {
@@ -36,6 +35,10 @@ const getProfessionalDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalRegId || "N/A",
     },
     {
+      title: t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalRegIdValidity || "N/A",
+    },
+    {
       title: t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalMobileNumber || "N/A",
     },
@@ -52,43 +55,45 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  let values = [
-    {
-      title: t("BPA_FIRM_OWNER_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_EMAIL_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantEmailId || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantFatherHusbandName || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_MOBILE_NO_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantMobileNumber || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_DOB_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_GENDER_LABEL"),
-      value:
-        appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantGender?.code ||
-        appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantGender ||
-        "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_ADDRESS_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
-    },
-  ];
+  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
+
+  const updatedOwnersList = owners?.map((owner, index) => ({
+    title: index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`,
+    values: [
+      {
+        title: t("BPA_FIRM_OWNER_NAME_LABEL"),
+        value: owner?.ownerOrFirmName || "N/A",
+      },
+      {
+        title: t("BPA_APPLICANT_EMAIL_LABEL"),
+        value: owner.emailId || "N/A",
+      },
+      {
+        title: t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
+        value: owner?.fatherOrHusbandName || "N/A",
+      },
+      {
+        title: t("BPA_APPLICANT_MOBILE_NO_LABEL"),
+        value: owner?.mobileNumber || "N/A",
+      },
+      {
+        title: t("BPA_APPLICANT_DOB_LABEL"),
+        value: owner?.dateOfBirth ? new Date(owner?.dateOfBirth).toLocaleDateString("en-GB") : "N/A",
+      },
+      {
+        title: t("BPA_APPLICANT_GENDER_LABEL"),
+        value: owner?.gender?.code || app.applicantGender || "N/A",
+      },
+      {
+        title: t("BPA_APPLICANT_ADDRESS_LABEL"),
+        value: owner?.address || "N/A",
+      },
+    ],
+  }));
 
   return {
     title: t("NOC_APPLICANT_DETAILS"),
-    values: values,
+    values: updatedOwnersList,
   };
 };
 
@@ -108,9 +113,8 @@ const getLocationInfo = (appData, t) => {
     },
     {
       title: t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name|| "N/A",
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name || "N/A",
     },
-
   ];
 
   if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
@@ -152,6 +156,18 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_PLOT_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotNo || "N/A",
+    },
+    {
+      title: t("BPA_PLOT_AREA_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotArea || "N/A",
+    },
+    {
+      title: t("BPA_KHEWAT_KHATUNI_NO_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.khewatOrKhatuniNo || "N/A",
+    },
+    {
+      title: t("BPA_CORE_AREA_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.coreArea?.code || "N/A",
     },
     {
       title: t("BPA_PROPOSED_SITE_ADDRESS"),
@@ -223,6 +239,31 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.proposedRoadWidthAfterWidening || "N/A",
+    },
+
+    {
+      title: t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name || "N/A",
+    },
+    {
+      title: t("BPA_PROPERTY_UID_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.propertyUid || "N/A",
+    },
+    {
+      title: t("BPA_BUILDING_STATUS_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.buildingStatus?.name || "N/A",
+    },
+    {
+      title: t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.isOriginalCategoryAgriculture?.code || "N/A",
+    },
+    {
+      title: t("BPA_RESTRICTED_AREA_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.restrictedArea?.code || "N/A",
+    },
+    {
+      title: t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.isSiteUnderMasterPlan?.code || "N/A",
     },
     {
       title: t("BPA_BUILDING_CATEGORY_LABEL"),
@@ -301,15 +342,14 @@ const getDocuments = async (appData, t) => {
   };
 };
 
-export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   //console.log("appData here in DownloadACK", appData);
 
-  let detailsArr = [],
-    imageURL = "";
-  const ownerObj = appData?.documents?.find((doc) => doc?.documentType === "OWNER.OWNERPHOTO") || null;
-  const ownerFileStoreId = ownerObj?.documentAttachment || "";
+  let detailsArr = [], imageURL = "";
+
+  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.fileStoreId || "";
 
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 
@@ -330,12 +370,14 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getRegistrationDetails(appData, t),
       ...detailsArr,
       getApplicantDetails(appData, t),
-      getLocationInfo(appData,t),
+      getLocationInfo(appData, t),
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
       getCoordinateDetails(appData, t),
       getDocuments(appData, t),
     ],
     imageURL,
+    ulbType,
+    ulbName
   };
 };

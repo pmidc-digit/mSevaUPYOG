@@ -4,6 +4,7 @@ import { Card, KeyNote, Loader, SubmitBar, Header } from "@mseva/digit-ui-react-
 import { Fragment } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { getBPAFormData } from "../../../utils/index";
+import CustomCard from "../../../pageComponents/CustomCard";
 
 const getServiceType = () => {
   return `BPA_APPLICATIONTYPE_BUILDING_PLAN_SCRUTINY`;
@@ -84,43 +85,16 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     mobileNumber:""
   };
 
-// <CHANGE> Fixed destructuring to match what the hook actually returns
-const { isLoading: isLoadinglayout, data: datalayout, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(
-  {
-    ...searchListDefaultValues,
-    mobileNumber: userInfoforLayout?.mobileNumber || ""
-  },
-  tenantId
-);
-
-// <CHANGE> Add debug logs to see what the hook returns
-console.log("  Layout hook response:", { isLoadinglayout, datalayout, isError, error });
-console.log("  Layout data structure:", datalayout);
-console.log("  Layout search params:", {
-  ...searchListDefaultValues,
-  mobileNumber: userInfoforLayout?.mobileNumber || "",
-  tenantId
-});
 
 
-    console.log("layout data here==>", datalayout);
-
-
-    useEffect(() => {
-      if(datalayout){
-        datalayout.revalidate();
-      }
-    }, []);
-
-  console.log(bpaData, "BBBB");
   const getBPAREGFormData = (data) => {
     console.log("data in getBPAREGFormData", data);
     let license = data;
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
-    const state = address?.split(",")?.[address?.split(",")?.length - 1]?.trim();
-    const distrcit = address?.split(",")?.[address?.split(",")?.length - 2]?.trim();
-    const permanentAddress = address?.split(",")?.slice(0, address?.split(",")?.length - 2)?.join(",")?.trim();
-    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim().split(/\s+/);
+    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+    const permanentAddress = address
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
 
     let name = "";
     let middleName = "";
@@ -154,6 +128,7 @@ console.log("  Layout search params:", {
         LicneseDetails: {
           PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
           PermanentAddress: permanentAddress,
+
           email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
           gender: {
             code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
@@ -166,14 +141,17 @@ console.log("  Layout search params:", {
           middleName: middleName,
           SelectedState: state || "",
           SelectedDistrict: distrcit || "",
-          Pincode: license?.tradeLicenseDetail?.address?.pincode || "",
+          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
           Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
           dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
+          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
+          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
         },
         LicneseType: {
           LicenseType: {
-            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.split(".")[0]}`,
-            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.split(".")[0]}`],
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
             tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
           },
           ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
@@ -187,11 +165,112 @@ console.log("  Layout search params:", {
         Licenses: [{ ...data }],
       },
       initiationFlow: true,
+      editableFields: {
+        "provide-license-type": false,
+        "licensee-details": false,
+        "Permanent-address": true,
+        "professional-document-details": true,
+        isCreate: false,
+        applicationType: "EDIT"
+      }
     };
 
     sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
     history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
   };
+
+  const getBPAREGFormDataForUpgrade = (data) => {
+    console.log("getBPAREGFormDataForUpgrade", data);
+    let license = data;
+    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
+    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+    const permanentAddress = address
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
+
+    let name = "";
+    let middleName = "";
+    let lastName = "";
+
+    if (nameParts.length === 1) {
+  // Single name
+      name = nameParts[0];
+    } else if (nameParts.length === 2) {
+      // Two names → first is name, second is lastName
+      name = nameParts[0];
+      lastName = nameParts[1];
+    } else if (nameParts.length > 2) {
+      // More than two names → first = name, last = lastName, middle = rest
+      name = nameParts[0];
+      lastName = nameParts[nameParts.length - 1];
+      middleName = nameParts.slice(1, -1).join(" ");
+    }
+
+    let intermediateData = {
+      Correspondenceaddress:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
+        `${license?.tradeLicenseDetail?.address?.doorNo ? `${license?.tradeLicenseDetail?.address?.doorNo}, ` : ""} ${
+          license?.tradeLicenseDetail?.address?.street ? `${license?.tradeLicenseDetail?.address?.street}, ` : ""
+        }${license?.tradeLicenseDetail?.address?.landmark ? `${license?.tradeLicenseDetail?.address?.landmark}, ` : ""}${t(
+          license?.tradeLicenseDetail?.address?.locality.code
+        )}, ${t(license?.tradeLicenseDetail?.address?.city ? license?.tradeLicenseDetail?.address?.city.code : "")},${
+          t(license?.tradeLicenseDetail?.address?.pincode) ? `${license.tradeLicenseDetail?.address?.pincode}` : " "
+        }`,
+      formData: {
+        LicneseDetails: {
+          PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
+          PermanentAddress: permanentAddress,
+
+          email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
+          gender: {
+            code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+            i18nKey: `COMMON_GENDER_${license?.tradeLicenseDetail?.owners?.[0]?.gender}`,
+            value: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+          },
+          mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+          name: name,
+          lastName: lastName,
+          middleName: middleName,
+          SelectedState: state || "",
+          SelectedDistrict: distrcit || "",
+          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
+          Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
+          dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
+          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
+          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
+        },
+        LicneseType: {
+          LicenseType: {
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
+            tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
+          },
+          ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
+          selfCertification: license?.tradeLicenseDetail?.additionalDetail?.isSelfCertificationRequired || false,
+          qualificationType: license?.tradeLicenseDetail?.additionalDetail?.qualificationType || null,
+        },
+      },
+      isAddressSame:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress === license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ? true : false,
+      result: {
+        Licenses: [{ ...data }],
+      },
+      initiationFlow: true,
+      editableFields: {
+        "provide-license-type": true,
+        "licensee-details": false,
+        "Permanent-address": true,
+        "professional-document-details": true,
+        isCreate: false,
+        applicationType: "UPGRADE"
+      }
+    };
+
+    sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
+    history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
+  };
+
   useEffect(() => {
     return () => {
       setFinalData([]);
@@ -208,7 +287,7 @@ console.log("  Layout search params:", {
   // }, [requestor])
 
   useEffect(() => {
-    if (!isLoading && !isBpaSearchLoading && !isLoadinglayout) {
+    if (!isLoading && !isBpaSearchLoading) {
       let searchConvertedArray = [];
       let sortConvertedArray = [];
       if (data?.Licenses?.length) {
@@ -247,31 +326,7 @@ console.log("  Layout search params:", {
         });
       }
 
-    // <CHANGE> Accessing layout data from the correct property: datalayout.data instead of datalayout.Layout
-     // <CHANGE> Accessing the nested Applications object from layout data
-      if (datalayout?.data?.length) {
-        console.log("  Processing layout data, count:", datalayout.data.length);
-        datalayout.data.forEach((layoutWrapper) => {
-          // <CHANGE> Extract the actual application from Applications property
-          const layout = layoutWrapper.Applications;
-          layout.sortNumber = 0
-          layout.modifiedTime = layout.auditDetails?.lastModifiedTime || null
-          layout.type = "LAYOUT"
-          searchConvertedArray.push(layout)
-        })
-      }
-      // useEffect(() => {
-      //   if (!isBpaSearchLoading) {
-      //     console.log("Raw BPA Data ===>", bpaData);
-      //     console.log("BPA Array ===>", bpaData?.BPA);
-      //   }
-      // }, [bpaData, isBpaSearchLoading]);
-
-      console.log("  All hook data:", { 
-    datalayout, 
-    layoutArray: datalayout?.Layout,
-    rawLayout: datalayout 
-  });
+        
 
       sortConvertedArray = [].slice.call(searchConvertedArray).sort(function (a, b) {
         return new Date(b.modifiedTime) - new Date(a.modifiedTime) || a.sortNumber - b.sortNumber;
@@ -281,13 +336,12 @@ console.log("  Layout search params:", {
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, isLoadinglayout, bpaData, data, layoutData]);
+  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
 
-  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isLoadinglayout) {
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading) {
     return <Loader />;
   }
 
-  console.log("YYyyyy");
 
   const getTotalCount = (LicensesLength, bpaDataLength) => {
     let count = 0;
@@ -298,10 +352,6 @@ console.log("  Layout search params:", {
     if (typeof bpaDataLength == "number") {
       count = count + bpaDataLength;
     }
-
-    if (typeof layoutDataLength == "number") {
-        count = count + layoutDataLength;
-      }
 
     if (count > 0) return `(${count})`;
     else return "";
@@ -326,7 +376,7 @@ console.log("  Layout search params:", {
   return (
     <Fragment>
   
-      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length, datalayout?.data?.length)}`}</Header>
+      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
       <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
         <span className="link">
@@ -337,14 +387,15 @@ console.log("  Layout search params:", {
 {console.log(finalData, "VVV")}
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
+          console.log("applicationDataForBPAREG", application)
           return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
               <KeyNote
                 keyValue={t("BPA_LICENSE_TYPE")}
                 note={t(`TRADELICENSE_TRADETYPE_${application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`)}
               />
-              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") && (
+              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT") && (
                 <KeyNote keyValue={t("BPA_COUNCIL_OF_ARCH_NO_LABEL")} note={application?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo} />
               )}
               <KeyNote keyValue={t("BPA_APPLICANT_NAME_LABEL")} note={application?.tradeLicenseDetail?.owners?.[0]?.name} />
@@ -366,70 +417,62 @@ console.log("  Layout search params:", {
               </div>
               </Link>
               ) : null} */}
+              <div style={{display: "flex", flexDirection: "row", gap: "5px"}}>
 
-              {application.status === "CITIZEN_ACTION_REQUIRED" ? (
-                <SubmitBar
-                  label={t("EDIT")}
-                  onSubmit={() => getBPAREGFormData(application)}
-                />
-              ) : application.status !== "INITIATED" ? (
-                <Link
-                  to={{
-                    pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`,
-                    state: { tenantId: application?.tenantId },
-                  }}
-                >
-                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
-                </Link>
-              ) : (
-                <SubmitBar
-                  label={t("BPA_COMP_WORKFLOW")}
-                  onSubmit={() => getBPAREGFormData(application)}
-                />
-              )}
+                {application.status === "CITIZEN_ACTION_REQUIRED" ? (
+                  <SubmitBar
+                    label={t("EDIT")}
+                    onSubmit={() => getBPAREGFormData(application)}
+                  />
+                ) : application.status !== "INITIATED" ? (
+                  <Link
+                    to={{
+                      pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`,
+                      state: { tenantId: application?.tenantId },
+                    }}
+                  >
+                    <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                  </Link>
+                ) : (
+                  <SubmitBar
+                    label={t("BPA_COMP_WORKFLOW")}
+                    onSubmit={() => getBPAREGFormData(application)}
+                  />
+                )}
 
-              {application.status === "PENDINGPAYMENT" ? (
-                <Link
-                  to={{
-                    pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}/${application?.tenantId}?tenantId=${application?.tenantId}`,
-                  }}
-                >
-                  <div style={{ marginTop: "10px" }}>
-                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
-                  </div>
-                </Link>
-              ) : null}
+                {(application.status === "APPROVED" && !application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT")) ? (
+                  <React.Fragment>
+                    {/* <SubmitBar
+                      label={t("BPA_PROFESSIONAL_UPDATE")}
+                      onSubmit={() => getBPAREGFormDataForUpdate(application)}
+                    /> */}
+                    <SubmitBar
+                      label={t("BPA_PROFESSIONAL_UPGRADE")}
+                      onSubmit={() => getBPAREGFormDataForUpgrade(application)}
+                    />
+                  </React.Fragment>
+                ) : null}
 
-            </Card>
+                {application.status === "PENDINGPAYMENT" ? (
+                  <Link
+                    to={{
+                      pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}/${application?.tenantId}?tenantId=${application?.tenantId}`,
+                    }}
+                  >
+                    <div style={{ marginTop: "10px" }}>
+                      <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+                    </div>
+                  </Link>
+                ) : null}
+
+              </div>
+
+            </CustomCard>
           );
-        } else if (application.type === "LAYOUT") {
+        } 
+         else {
           return (
-            <Card key={index}>
-              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
-              <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={t("LAYOUT_APPLICATION")} />
-              <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
-              <KeyNote
-                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
-                noteStyle={application?.applicationStatus === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
-              />
-              <Link
-                to={{
-                  pathname: `/digit-ui/citizen/obps/layout/${application?.applicationNo}`,
-                  state: { data: { Layout: [application] } },
-                }}
-              >
-
-                <SubmitBar label={t("TL_VIEW_DETAILS")} />
-              </Link>
-            </Card>
-          )
-        
-        
-        
-         } else {
-          return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
               <KeyNote
                 keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")}
@@ -471,7 +514,7 @@ console.log("  Layout search params:", {
                   </div>
                 </Link>
               ) : null}
-            </Card>
+            </CustomCard>
           );
         }
       })}

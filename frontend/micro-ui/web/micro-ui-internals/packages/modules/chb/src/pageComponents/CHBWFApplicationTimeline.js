@@ -1,8 +1,13 @@
-import { ActionLinks, CardSectionHeader, CheckPoint, CloseSvg, ConnectingCheckPoints, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
+import { ActionLinks, CardSectionHeader,
+  //  CheckPoint,
+    CloseSvg,
+  //  ConnectingCheckPoints,
+   Loader, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import CHBWFCaption from "./CHBWFCaption";
+// import CHBWFCaption from "./CHBWFCaption";
+import ApplicationTimeline from "../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 
 const CHBWFApplicationTimeline = (props) => {
@@ -22,38 +27,38 @@ const CHBWFApplicationTimeline = (props) => {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
-  const getTimelineCaptions = (checkpoint) => {
+  // const getTimelineCaptions = (checkpoint) => {
     
-    if (checkpoint.state === "OPEN")
-    {
-      const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
-        source: props.application?.channel || "",
-      };
-      return <CHBWFCaption data={caption} />;
-    }
-    else if (checkpoint.state) {
-      const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-        comment: t(checkpoint?.comment),
-        wfComment: checkpoint.wfComment,
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
-      };
-      return <CHBWFCaption data={caption} OpenImage={OpenImage} />;
-    } 
+  //   if (checkpoint.state === "OPEN")
+  //   {
+  //     const caption = {
+  //       date: checkpoint?.auditDetails?.lastModified,
+  //       source: props.application?.channel || "",
+  //     };
+  //     return <CHBWFCaption data={caption} />;
+  //   }
+  //   else if (checkpoint.state) {
+  //     const caption = {
+  //       date: checkpoint?.auditDetails?.lastModified,
+  //       name: checkpoint?.assignes?.[0]?.name,
+  //       mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+  //       comment: t(checkpoint?.comment),
+  //       wfComment: checkpoint.wfComment,
+  //       thumbnailsToShow: checkpoint?.thumbnailsToShow,
+  //     };
+  //     return <CHBWFCaption data={caption} OpenImage={OpenImage} />;
+  //   } 
     
    
-    else {
-      const caption = {
-        date: Digit.DateUtils.ConvertTimestampToDate(props.application?.auditDetails.lastModified),
-        name: checkpoint?.assigner?.name,
-        comment: t(checkpoint?.comment),
-      };
-      return <CHBWFCaption data={caption} />;
-    }
-  };
+  //   else {
+  //     const caption = {
+  //       date: Digit.DateUtils.ConvertTimestampToDate(props.application?.auditDetails.lastModified),
+  //       name: checkpoint?.assigner?.name,
+  //       comment: t(checkpoint?.comment),
+  //     };
+  //     return <CHBWFCaption data={caption} />;
+  //   }
+  // };
 
   const showNextActions = (nextActions) => {
     let nextAction = nextActions[0];
@@ -99,7 +104,7 @@ const CHBWFApplicationTimeline = (props) => {
     <React.Fragment>
       {!isLoading && (
         <Fragment>
-          {data?.timeline?.length > 0 && (
+          {/* {data?.timeline?.length > 0 && (
             <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
               {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
             </CardSectionHeader>
@@ -140,7 +145,8 @@ const CHBWFApplicationTimeline = (props) => {
                   );
                 })}
             </ConnectingCheckPoints>
-          )}
+          )} */}
+          <ApplicationTimeline workflowDetails={data} t={t} />
         </Fragment>
       )}
       {data && showNextActions(data?.nextActions)}

@@ -1,12 +1,15 @@
 
 
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker, Toast } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
+import { EmployeeData, getNOCSanctionLetter } from "../utils";
+import { set } from "lodash";
+
 
 
 
@@ -64,6 +67,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [buildingStatus, setbuildingStatus] = useState(currentStepData?.createdResponse?.additionalDetails?.buildingStatus || "")
   const [purchasedFAR, setpurchasedFAR] = useState(currentStepData?.createdResponse?.additionalDetails?.purchasedFAR || "")
   const [providedFAR, setProvidedFAR] = useState(0);
+  const [purchasableFAR, setPurchasableFAR] = useState(0);
   const [greenbuilding, setgreenbuilding] = useState(currentStepData?.createdResponse?.additionalDetails?.greenbuilding || "")
   const [restrictedArea, setrestrictedArea] = useState(currentStepData?.createdResponse?.additionalDetails?.restrictedArea || "")
   const [proposedSite, setproposedSite] = useState(currentStepData?.createdResponse?.additionalDetails?.proposedSite || "")
@@ -105,6 +109,10 @@ useEffect(() => {
     });
 }, [])
 
+useEffect(() => {
+  console.log("loader",loader)
+}, [loader])
+
 useEffect(()=>{
   if(UlbName === "" && currentStepData?.LocationDetails?.selectedCity?.city?.name){
     setUlbName(currentStepData?.LocationDetails?.selectedCity?.city?.name)
@@ -142,9 +150,14 @@ useEffect(()=>{
       newErrors.nameofApprovedcolony = t("Approved Colony Name is required")
     }
 
-    if (approvedColony?.code === "NO" && !NocNumber && !uploadedFile) {
-      newErrors.NocNumber = t("NOC Number or NOC Document is required")
-    }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName.trim() === ""){
+    if (approvedColony?.code === "NO" && !NocNumber) {
+      newErrors.NocNumber = t("NOC Number is required")
+    }
+    
+    if(approvedColony?.code === "NO" && !uploadedFile){
+      newErrors.NocDocument = t("NOC Document is required")
+    }
+    if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName.trim() === ""){
       newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Required")
     }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName && !nameRegex.test(applicantOwnerOrFirmName.trim())){
       newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Invalid")
@@ -203,12 +216,15 @@ if (anyYes && !ecbcCertificateFile) {
   const file = e.target.files[0];
   if (file) {
     try {
+      setLoader(true)
       const response = await Digit.UploadServices.Filestorage("OBPS", file, Digit.ULBService.getStateId());
+      setLoader(false)
       if (response?.data?.files?.length > 0) {
         setEcbcCertificateFile(response.data.files[0].fileStoreId); // ✅ fileStoreId
         setEcbcCertificateFileObj(file); // optional for preview
       }
     } catch (err) {
+      setLoader(false)
       console.error("File upload failed", err);
     }
   }
@@ -236,10 +252,8 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (file && file?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, file: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (file.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, file: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
+        if (file.size >= 2000000) {
+          setErrors((prev) => ({ ...prev, NocDocument: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
           try {
@@ -252,7 +266,7 @@ if (anyYes && !ecbcCertificateFile) {
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, file: t("PT_FILE_UPLOAD_ERROR") }))
+              setErrors((prev) => ({ ...prev, NocDocument: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {
             setLoader(false);
@@ -265,10 +279,8 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (files && files?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${files?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, files: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (files.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, files: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
+        if (files.size >= 2000000) {
+          setErrors((prev) => ({ ...prev, greenuploadedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
           try {            
@@ -281,7 +293,7 @@ if (anyYes && !ecbcCertificateFile) {
             if (response?.data?.files?.length > 0) {
               setGreenUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, files: t("PT_FILE_UPLOAD_ERROR") }))
+              setErrors((prev) => ({ ...prev, greenuploadedFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {
             setLoader(false);
@@ -294,9 +306,7 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (ecbcElectricalLoadFileObj && ecbcElectricalLoadFileObj?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${ecbcElectricalLoadFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (ecbcElectricalLoadFileObj.size >= 2000000) {
+        if (ecbcElectricalLoadFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
@@ -323,9 +333,7 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (ecbcDemandLoadFileObj && ecbcDemandLoadFileObj?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${ecbcDemandLoadFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (ecbcDemandLoadFileObj.size >= 2000000) {
+        if (ecbcDemandLoadFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
@@ -352,9 +360,7 @@ if (anyYes && !ecbcCertificateFile) {
   useEffect(() => {
     ;(async () => {
       if (ecbcAirConditionedFileObj && ecbcAirConditionedFileObj?.type) {
-        if (!acceptFormat?.split(",")?.includes(`.${ecbcAirConditionedFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
-        } else if (ecbcAirConditionedFileObj.size >= 2000000) {
+        if (ecbcAirConditionedFileObj.size >= 2000000) {
           setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
@@ -413,10 +419,17 @@ if (anyYes && !ecbcCertificateFile) {
     //providedFAR
     useEffect(() => {
       console.log("ProvidedFAR", providedFAR, currentStepData);
-      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar){
-        setProvidedFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar)
+      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedPurchasableFar){
+        setProvidedFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedPurchasableFar)
+      }else{
+        setProvidedFAR("0.00");
       }
-    }, [currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedFar])
+      if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.purchasableFar){
+        setPurchasableFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.purchasableFar)
+      }else{
+        setPurchasableFAR("0.00");
+      }
+    }, [currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails])
 
     // ✅ greenbuilding
     useEffect(() => {
@@ -778,6 +791,27 @@ console.log("appDate", nocApprovedOn);
     setErrors((prev) => ({ ...prev, file: "" }))
   }
 
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, applicationDetails, ...params }) {
+    const application = applicationDetails?.Noc?.[0];
+    try {
+      if (!application) {
+        throw new Error("Noc Application data is missing");
+      }
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );
+
+      let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
+    setUploadedFile(response?.filestoreIds[0]);
+    setLoader(false);
+    // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    // window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      setLoader(false);
+      console.error("Sanction Letter download error:", error);
+    }
+    
+  }
+
   async function onClick(e) {
     if(!NocNumber || NocNumber === ""){
       alert(t("NOC NUMBER IS REQUIRED BEFORE SEARCH"));
@@ -811,6 +845,15 @@ console.log("appDate", nocApprovedOn);
             setNocApprovedOn(`${y1}-${m1}-${d1}`)
           }          
         }
+        setLoader(true);
+        let EmpData = await EmployeeData(tenantId, NocNumber);
+        console.log("Employee Data", EmpData);
+
+        const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
+        if(reciept_data?.Payments?.length > 0){
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        }
+        setLoader(false);
         return;
       }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
         alert(t("NOC NOT APPROVED"));
@@ -897,6 +940,7 @@ console.log("appDate", nocApprovedOn);
       buildingStatus:"",
       purchasedFAR: purchasedFAR?.value,
       providedFAR,
+      purchasableFAR,
       greenbuilding: greenbuilding?.code,
       restrictedArea: restrictedArea?.code,
       proposedSite: proposedSite?.code,
@@ -960,73 +1004,16 @@ console.log("appDate", nocApprovedOn);
 
   const ErrorMessage = ({ error }) => {
     if (!error) return null
-    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{error}</div>
+    return <div className="newbuilding-error-message">{error}</div>
   }
 
 
   
-    // ---------------- UI Styles ----------------
-    const pageStyle = {
-      padding: "2rem",
-      backgroundColor: "#f1f1f1ff",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      color: "#333",
-      paddingBottom: "5rem",
-    };
-  
-    const sectionStyle = {
-      backgroundColor: "#ffffff",
-  
-      borderRadius: "8px",
-   
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+    // ---------------- UI Classes are defined in BPANewBuildingdetails.css ----------------
 
-      paddingBottom: "50px"
-    };
-  
-    const headingStyle = {
-      fontSize: "1.5rem",
-      borderBottom: "2px solid #ccc",
-      paddingBottom: "0.3rem",
-      color: "#2e4a66",
-      marginTop: "2rem",
-      marginBottom: "1rem",
-    };
-  
-    const labelFieldPairStyle = {
-      display: "flex",
-      justifyContent: "space-between",
-      borderBottom: "1px dashed #e0e0e0",
-      padding: "0.5rem 0",
-      color: "#333",
-    };
-  
-    const documentsContainerStyle = {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "1rem",
-      
-    };
-  
-    const documentCardStyle = {
-  
-      minWidth: "200px",
-      maxWidth: "250px",
-      backgroundColor: "#fdfdfd",
-      padding: "0.75rem",
-      border: "1px solid #e0e0e0",
-      borderRadius: "6px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      justifyContent:"center",
-      display:"flex",
-      
-    };
-  
-    const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-  
     const renderLabel = (label, value) => (
-      <div style={labelFieldPairStyle}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div className="bpa-newbuilding-label-field-pair">
+        <CardLabel className="bpa-newbuilding-bold-label">{label}</CardLabel>
         <div>{value || t("CS_NA")}</div>
       </div>
     );
@@ -1037,8 +1024,8 @@ console.log("appDate", nocApprovedOn);
   <div >
     {/* {!Webview && <Timeline currentStep={2} />} */}
     <FormStep config={{...config, texts:{header: "BPA_ADDITIONAL_BUILDING_DETAILS"}}} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
-      <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2>
+      <div className="bpa-newbuilding-bpa-section">
+        {/* <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2> */}
 
         <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
         <TextInput
@@ -1128,7 +1115,7 @@ console.log("appDate", nocApprovedOn);
         {approvedColony?.code === "NO" && (
           <React.Fragment>
             <CardLabel>{`${t("BPA_NOC_NUMBER")} *`}</CardLabel>
-            <div className="field-container">
+            <div className="bpa-newbuilding-field-container">
               <TextInput
                 t={t}
                 type={"text"}
@@ -1143,19 +1130,11 @@ console.log("appDate", nocApprovedOn);
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: "1",
-                  right: "95px",
-                  marginTop: "-24px",
-                  marginRight: Webview ? "-20px" : "-20px",
-                }}
-                onClick={(e) => onClick(e)}
-              >
+              <div className="bpa-newbuilding-search-icon-container" onClick={(e) => onClick(e)}>
                 <SearchIcon />
               </div>
             </div>
+            {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
             <CardLabel>{`${t("BPA_NOC_APPLICANT_NAME")} *`}</CardLabel>
             <TextInput
                 t={t}
@@ -1217,7 +1196,6 @@ console.log("appDate", nocApprovedOn);
                 {errors.nocApprovedOn && <ErrorMessage error={errors.nocApprovedOn} />}
               </div>         
             
-            <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
             <div style={{marginBottom: "15px"}}>
             <CustomUploadFile
               id={"noc-doc"}
@@ -1229,8 +1207,9 @@ console.log("appDate", nocApprovedOn);
               uploadedFile={uploadedFile}
               message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.file}
+              accept="image/*,.pdf"
             />
-            {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
+            {errors.NocDocument && <ErrorMessage error={errors.NocDocument} />}
             </div>
           </React.Fragment>
         )}
@@ -1317,6 +1296,15 @@ console.log("appDate", nocApprovedOn);
 
         {purchasedFAR?.code === "YES" && (
           <React.Fragment>
+            <CardLabel>{`${t("BPA_ALLOWED_PROVIDED_FAR")} *`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              name="purchasableFAR"
+              value={purchasableFAR}
+              disable={true}
+            />
+            {errors.purchasableFAR && <ErrorMessage error={errors.purchasableFAR} />}
             <CardLabel>{`${t("BPA_PROVIDED_FAR")} *`}</CardLabel>
             <TextInput
               t={t}
@@ -1359,7 +1347,9 @@ console.log("appDate", nocApprovedOn);
               uploadedFile={greenuploadedFile}
               message={greenuploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.files}
+              accept="image/*,.pdf"
             />
+            {errors.greenuploadedFile && <ErrorMessage error={errors.greenuploadedFile} />}
             <br />
 
             <CardLabel>{`${t("BPA_SELECT_RATINGS")} *`}</CardLabel>
@@ -1496,29 +1486,18 @@ console.log("appDate", nocApprovedOn);
               message={ecbcCertificateFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
             />
             {errors.ecbcCertificateFile && (
-              <p className="error" style={{ color: "red" }}>
-                {errors.ecbcCertificateFile}
-              </p>
+              <p className="error ecbc-error-text">{errors.ecbcCertificateFile}</p>
             )}
           </div>
         )}
       </div>
-    </FormStep>
-    {(loader) && <LoaderNew page={true} />}
+    </FormStep>    
 
     <ActionBar>
-        <SubmitBar
-          label="Back"
-          style={{
-            border: "1px solid",
-            background: "transparent",
-            color: "#2947a3",
-            marginRight: "5px",
-          }}
-          onSubmit={onGoBack}
-        />
-      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading}/>
+        <SubmitBar label="Back" className="submit-back" onSubmit={onGoBack} />
+      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading} />
     </ActionBar>
+    {loader && <LoaderNew page={true} />}
   </div>
   )
 }

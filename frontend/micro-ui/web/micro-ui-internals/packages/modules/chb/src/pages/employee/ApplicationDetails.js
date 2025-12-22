@@ -10,9 +10,6 @@ import {
   PopUp,
   Toast,
   SubmitBar,
-  CardHeader,
-  CheckPoint,
-  ConnectingCheckPoints,
   Menu,
   ActionBar,
 } from "@mseva/digit-ui-react-components";
@@ -32,54 +29,7 @@ import { Loader } from "../../components/Loader";
 
 import get from "lodash/get";
 import { size } from "lodash";
-
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
-
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
-
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
-
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
+import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -277,11 +227,43 @@ const CHBApplicationDetails = () => {
       history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
+    } else if (action?.action == "CANCEL") {
+      handleCancel();
     } else {
       setShowModal(true);
       setSelectedAction(action);
     }
   }
+
+  const handleCancel = async () => {
+    console.log("displayData?.applicantData", data?.hallsBookingApplication);
+    // return
+    setLoader(true);
+    // ✅ Final payload
+    const finalPayload = {
+      hallsBookingApplication: {
+        ...application,
+        workflow: {
+          action: "CANCEL",
+        },
+      },
+    };
+    try {
+      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
+
+      workflowDetails.revalidate();
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/chb/inbox");
+        window.location.reload();
+      }, 2000);
+      setLoader(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
+    }
+  };
 
   const fetchBillData = async () => {
     setLoading(true);
@@ -337,7 +319,7 @@ const CHBApplicationDetails = () => {
     let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
       let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments , ...application }] }, "chbservice-receipt");
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
       const updatedApplication = {
         ...application,
         paymentReceiptFilestoreId: response?.filestoreIds[0],
@@ -351,16 +333,17 @@ const CHBApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
   }
+
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = {
-      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
-          return {
-            ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            })
-          };
-        })
+      hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+        return {
+          ...app,
+          bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
+            return new Date(a.bookingDate) - new Date(b.bookingDate);
+          }),
+        };
+      }),
     };
 
     let fileStoreId = application?.permissionLetterFilestoreId;
@@ -372,17 +355,8 @@ const CHBApplicationDetails = () => {
     window.open(fileStore[fileStoreId], "_blank");
   }
 
-  const handleDownload = async (document, tenantid) => {
-    let tenantId = tenantid ? tenantid : tenantId;
-    const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], tenantId);
-    let documentLink = pdfDownloadLink(res.data, document?.fileStoreId);
-    window.open(documentLink, "_blank");
-  };
-
   let dowloadOptions = [];
 
-  //commented out, need later for download receipt and certificate
-  // if (reciept_data?.Payments[0]?.paymentStatus !== "NEW")
   dowloadOptions.push({
     label: t("CHB_DOWNLOAD_ACK_FORM"),
     onClick: () => getChbAcknowledgement(),
@@ -487,8 +461,6 @@ const CHBApplicationDetails = () => {
     } catch (err) {
       setErrorOne("Something went wrong");
       setShowErrorToastt(true);
-      // setShowToast({ key: "error", message: "Something went wrong" });
-      // setError("Something went wrong");
     }
   };
 
@@ -497,22 +469,7 @@ const CHBApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
-        </div>
         <Card>
-          {/* <StatusTable>
-              
-            </StatusTable> */}
-
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CHB_APPLICANT_NAME")} text={chb_details?.applicantDetail?.applicantName || t("CS_NA")} />
@@ -544,24 +501,6 @@ const CHBApplicationDetails = () => {
             isPaginationRequired={false}
             totalRecords={slotlistRows.length}
           />
-          {/* {docs?.map((doc, index) => (
-            <React.Fragment>
-              <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
-              <StatusTable>
-                <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
-                  <React.Fragment>
-                    <div>
-                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                        {t(doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                      </CardSectionHeader>
-                    </div>
-                  </React.Fragment>
-                </Card>
-              </StatusTable>
-            </React.Fragment>
-          ))} */}
-
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
@@ -581,25 +520,8 @@ const CHBApplicationDetails = () => {
           </StatusTable>
         </Card>
 
-        {workflowDetails?.data?.timeline && (
-          <Card style={{ marginTop: "20px" }}>
-            <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-            {workflowDetails?.data?.timeline.length === 1 ? (
-              <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-            ) : (
-              <ConnectingCheckPoints>
-                {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                  <CheckPoint
-                    keyValue={index}
-                    isCompleted={index === 0}
-                    label={t(checkpoint.status)}
-                    customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                  />
-                ))}
-              </ConnectingCheckPoints>
-            )}
-          </Card>
-        )}
+        <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
@@ -632,7 +554,7 @@ const CHBApplicationDetails = () => {
           />
         ) : null}
         {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
-        {(isLoading || auditDataLoading || getLoader) && <Loader page={true} />}
+        {(isLoading || auditDataLoading || getLoader || workflowDetails.isLoading || recieptDataLoading) && <Loader page={true} />}
       </div>
     </React.Fragment>
   );

@@ -37,6 +37,7 @@ import { stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
 import EXIF from "exif-js";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { LoaderNew } from "../components/LoaderNew";
 
 const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, currentStepData, onGoBack }) => {
   const stateId = Digit.ULBService.getStateId();
@@ -215,16 +216,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
             .map((document, index) => {
               return (
                 <div
-                  style={{
-                    background: "#FAFAFA",
-                    border: "1px solid #D6D5D4",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    maxWidth: "600px",
-                    minWidth: "280px",
-                    marginBottom: "15px",
-                    paddingTop: "15px",
-                  }}
+                
                 >
                   <SelectDocument
                     key={index}
@@ -252,12 +244,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       <ActionBar>
         <SubmitBar
           label="Back"
-          style={{
-            border: "1px solid",
-            background: "transparent",
-            color: "#2947a3",
-            marginRight: "5px",
-          }}
+        
           onSubmit={onGoBack}
         />
         {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading}/>}
@@ -297,6 +284,7 @@ function SelectDocument({
 
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [loader, setLoader] = useState(false);
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
@@ -374,15 +362,18 @@ function SelectDocument({
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
           if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
+          setLoader(true);
           try {
             setUploadedFile(null);
             const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
+            setLoader(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -416,13 +407,13 @@ function SelectDocument({
 
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div>
       <LabelFieldPair>
         {/* {console.log("doc", doc)} */}
-        <CardLabel style={{ width: "100%" }} className="card-label-smaller">
+        <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
-        <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
+        <div className="field">
           <CustomUploadFile
             id={"tl-doc"}
             onUpload={selectfile}
@@ -435,12 +426,13 @@ function SelectDocument({
             accept="image/*,.pdf"
           // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
+          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           {/* {uploadedFile ? <div>
             <SubmitBar onSubmit={() => {routeTo(uploadedFile)}} label={t("CS_VIEW_DOCUMENT")} />
           </div> : null } */}
         </div>
       </LabelFieldPair>
-
+      {loader && <LoaderNew page={true} />}
 
     </div>
   );

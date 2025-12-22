@@ -34,7 +34,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           : businessService
           ? [businessService.identifier]
           // ? [businessService]
-          :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR"],
+          :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR", "ARCHITECT_UPGRADE", "BPAREG_UPGRADE"],
           // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
     },
@@ -55,7 +55,14 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     _filters = { ..._filters, offset };
   }
 
+  const getDaysSinceCreated = (createdTime) => {
+    if (!createdTime) return "CS_NA";
 
+    const today = Date.now(); // current time in epoch (ms)
+    const diffInMs = today - createdTime;
+
+    return Math.floor(diffInMs / (24 * 60 * 60 * 1000));
+  };
 
   return useInbox({
     tenantId,
@@ -81,7 +88,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
           sla: application?.businessObject?.status.match(/^(APPROVED)$/)
             ? "CS_NA"
-            : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
+            : getDaysSinceCreated(application?.ProcessInstance?.auditDetails?.createdTime),
           assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER",)
         })),
         totalCount: data.totalCount,

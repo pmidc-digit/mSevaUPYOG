@@ -8,10 +8,23 @@ import { config } from "../../../config/selfCertificationConfig";
 import { SET_OBPS_STEP, UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
-const createEmployeeConfig = [
+
+export const NewSelfCertificationStepForm = () => {
+  const history = useHistory();
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(null);
+  const formState = useSelector((state) => state.obps.OBPSFormReducer);
+  console.log("FORMSTATE-Inital-OBPS", formState);
+  const formData = formState.formData;
+  const step = formState.step;
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
+  const createEmployeeConfig = [
   {
-    head: "Basic Details",
-    stepLabel: "Basic Details",
+    head: t("Basic Details"),
+    stepLabel: t("Basic Details"),
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -23,8 +36,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Plot Details",
-    stepLabel: "Plot Details",
+    head: t("Plot Details"),
+    stepLabel: t("Plot Details"),
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -36,8 +49,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Scrutiny Details",
-    stepLabel: "Scrutiny Details",
+    head: t("Scrutiny Details"),
+    stepLabel: t("Scrutiny Details"),
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
@@ -49,8 +62,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Location Details",
-    stepLabel: "Location Details",
+    head: t("Site Details"),
+    stepLabel: t("Site Details"),
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
@@ -62,8 +75,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Additional Details",
-    stepLabel: "Additional Details",
+    head: t("Additional Details"),
+    stepLabel: t("Additional Details"),
     stepNumber: 5,
     isStepEnabled: true,
     type: "component",
@@ -75,8 +88,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Owner Details",
-    stepLabel: "Owner Details",
+    head: t("Owner Details"),
+    stepLabel: t("Owner Details"),
     stepNumber: 6,
     isStepEnabled: true,
     type: "component",
@@ -88,8 +101,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Documents Details",
-    stepLabel: "Documents Details",
+    head: t("Documents Details"),
+    stepLabel: t("Documents Details"),
     stepNumber: 7,
     isStepEnabled: true,
     type: "component",
@@ -101,8 +114,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "Summary Details",
-    stepLabel: "Summary Details",
+    head: t("Summary Details"),
+    stepLabel: t("Summary Details"),
     stepNumber: 8,
     isStepEnabled: true,
     type: "component",
@@ -118,18 +131,6 @@ const createEmployeeConfig = [
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: config.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
-
-export const NewSelfCertificationStepForm = () => {
-  const history = useHistory();
-  const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.obps.OBPSFormReducer);
-  console.log("FORMSTATE-Inital-OBPS", formState);
-  const formData = formState.formData;
-  const step = formState.step;
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
   //   const id = window.location.pathname.split("/").pop();
 
@@ -159,8 +160,8 @@ export const NewSelfCertificationStepForm = () => {
   }, [history, dispatch]);
 
   return (
-    <div className={isMobile?"":"pageCard"}>
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+    <div className={isMobile?"":"card"}>
+      <CardHeader divider={true}>
         {t("bpa_header_application")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

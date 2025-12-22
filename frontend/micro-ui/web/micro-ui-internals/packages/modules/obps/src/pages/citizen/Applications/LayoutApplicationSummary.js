@@ -29,6 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
+import { amountToWords } from "../../../utils/index";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -87,13 +88,14 @@ const LayoutApplicationOverview = () => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")
 const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
+  const [loading, setLoading] = useState(false);
 
 // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
   const applicationDetails = data?.resData
 
   console.log(applicationDetails,data, "DATALAYOUT")
-
+const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
@@ -109,11 +111,18 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const userRoles = user?.info?.roles?.map((e) => e.code)
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Layout?.[0]
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId)
-    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t)
-    Digit.Utils.pdf.generate(acknowledgementData)
-  }
+    try {
+      const Property = applicationDetails?.Layout?.[0];
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+      const ulbType = tenantInfo?.city?.ulbType;
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
+      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
@@ -147,19 +156,33 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
+    const downloadSanctionLetter = async () => {
+    const application = applicationDetails?.Layout?.[0];
+    try {
+      if (!application) {
+        throw new Error("Layout Application data is missing");
+      }
+      //we will add sanctionLetter also
+      //await getNOCSanctionLetter(application, t, amountPaid);
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    }
+  };
+
+
   const dowloadOptions = []
   if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
+
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
-    })
+    });
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-      })
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      });
     }
   }
 
@@ -196,11 +219,12 @@ const [viewTimeline, setViewTimeline] = useState(false);
   }
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
+  const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "Layout_mcUp",
+    moduleCode: businessServiceCode,
   })
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
@@ -252,6 +276,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
+    console.log("payload data======> ",payloadData);
 
     const updatedApplicant = {
       ...payloadData,
@@ -295,10 +320,24 @@ const [viewTimeline, setViewTimeline] = useState(false);
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] }
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "layout-receipt")
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
-    window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    try {
+      setLoading(true);
+      let response = null;
+      const fee = payments?.totalAmountPaid;
+      console.log("fee here here", fee);
+      const amountinwords = amountToWords(fee);
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      } else {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, amountinwords, usage }] }, "layout-receipt");
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
@@ -371,6 +410,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
          <LinkButton  label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+        {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <div>
 

@@ -14,8 +14,6 @@ import {
   SubmitBar,
   Menu,
   LinkButton,
-  ConnectingCheckPoints,
-  CheckPoint,
   TLTimeLine,
   DisplayPhotos,
   StarRated,
@@ -23,63 +21,14 @@ import {
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import { businessServiceList, convertEpochToDate, stringReplaceAll } from "../../../utils";
 import { format } from "date-fns";
 import NDCDocument from "../../../pageComponents/NDCDocument";
-import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
+import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
-
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
-
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
-
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
@@ -162,10 +111,10 @@ const CitizenApplicationOverview = () => {
           item?.businessService === "WS"
             ? "NDC_WATER_SERVICE_CONNECTION"
             : item?.businessService === "SW"
-            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-            : item?.businessService === "PT"
-            ? "NDC_PROPERTY_TAX"
-            : item?.businessService,
+              ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+              : item?.businessService === "PT"
+                ? "NDC_PROPERTY_TAX"
+                : item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
@@ -247,16 +196,16 @@ const CitizenApplicationOverview = () => {
         )}
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
           applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
-          <ActionBar>
-            <SubmitBar
-              label={t("COMMON_EDIT")}
-              onSubmit={() => {
-                const id = applicationDetails?.Applications?.[0]?.applicationNo;
-                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
-              }}
-            />
-          </ActionBar>
-        )}
+            <ActionBar>
+              <SubmitBar
+                label={t("COMMON_EDIT")}
+                onSubmit={() => {
+                  const id = applicationDetails?.Applications?.[0]?.applicationNo;
+                  history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+                }}
+              />
+            </ActionBar>
+          )}
       </div>
 
       <Card className="ndc_card_main">
@@ -271,8 +220,8 @@ const CitizenApplicationOverview = () => {
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
                     : typeof value === "object"
-                    ? t(value?.code || "N/A")
-                    : t(value || "N/A")
+                      ? t(value?.code || "N/A")
+                      : t(value || "N/A")
                 }
               />
             ))}
@@ -347,26 +296,7 @@ const CitizenApplicationOverview = () => {
           )}
         </div>
       </Card>
-
-      {workflowDetails?.data?.timeline && (
-        <Card className="ndc_card_main">
-          <CardSubHeader className="ndc_label">{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-          {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-          ) : (
-            <ConnectingCheckPoints>
-              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                <CheckPoint
-                  keyValue={index}
-                  isCompleted={index === 0}
-                  label={t(checkpoint.status)}
-                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                />
-              ))}
-            </ConnectingCheckPoints>
-          )}
-        </Card>
-      )}
+      <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
     </div>
   );
 };

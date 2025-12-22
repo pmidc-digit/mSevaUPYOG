@@ -125,6 +125,14 @@
 @import "./pages/common/sanctionFeeTable.scss";
 @import "./pages/citizen/loaderMessage.scss";
 @import "./pages/employee/disconnection.scss";
+@import "./pages/citizen/InboxCard.scss";
+@import "./pages/employee/header.scss";
+
+@import "./pages/common/pgrUICssfix.scss";
+@import "./pages/common/newApplicationTimeline.scss";
+@import "./components/newFooter.scss";
+@import "./pages/citizen/CitizenLogin.scss";
+@import "./components/NewAccordianCitizen.scss";
 
 .display-none {
   display: none;
@@ -320,13 +328,14 @@
   justify-content: space-between;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+.hide-number-spinner input[type="number"]::-webkit-inner-spin-button,
+.hide-number-spinner input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] {
-  -moz-appearance: textfield;
+
+.hide-number-spinner input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
 }
 
 .static {
@@ -637,7 +646,7 @@ input[type="number"] {
     width: calc(100% - 219px);
     padding-left: 16px;
     padding-right: 16px;
-    margin-top: 1rem;
+    margin-top: 3rem;
   }
 }
 @media only screen and (max-width: 768px) {
@@ -876,4 +885,145 @@ input[type="number"] {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   padding: 4px 0;
   z-index: 1000; /* Ensure it appears above other elements */
+}
+
+/* ===== TimelineHOC CSS ===== */
+.timeline-hoc-container .checkpoint header,
+.timeline-hoc-container .checkpoint-done header {
+  flex: 1;
+  background: #ccffcc;
+  padding: 4px 8px;
+}
+
+.timeline-hoc-container .checkpoint-connect-wrap {
+  padding: 0px;
+}
+
+.timeline-card {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: clamp(12px, 3vw, 20px);
+  margin: 10px 0;
+  background: #ccffcc;
+  font-family: "verdana";
+}
+
+.timeline-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.timeline-header-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.timeline-label {
+  color: #0d43a7 !important;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.timeline-value {
+  color: #0d43a7 !important;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.timeline-note {
+  margin: 10px 0;
+}
+
+.timeline-note .note-box {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 40px;
+  word-break: break-word;
+  font-size: 10px;
+  font-weight: 800;
+  background: #ccffcc;
+}
+
+.timeline-docs {
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeline-header-item {
+    width: 100%;
+  }
+
+  .timeline-card {
+    padding: 12px;
+  }
+}
+
+.engagement-citizen-wrapper {
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+@media screen and (max-width: 768px) {
+  .engagement-citizen-wrapper {
+    overflow: hidden;
+  }
+}
+
+/* Application Timeline Styles */
+.timeline-header-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 20px 8px;
+  gap: 16px;
+}
+
+.download-button {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 5px;
+  color: #0d43a7;
+  border: 1px solid #0d43a7;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+  display: inline-block;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.timeline-docs-wrapper {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.timeline-doc-link {
+  min-width: 100px;
+}
+
+.timeline-doc-icon {
+  background: #f6f6f6;
+  padding: 8px;
+}
+
+.timeline-subheader {
+  font-size: 22px !important;
+  font-weight: 500 !important;
 }

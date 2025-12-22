@@ -1,42 +1,15 @@
 import { Card, KeyNote, SubmitBar, Toast, CardSubHeader } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
-
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
+import { Loader } from "../../../components/Loader";
 
-const ChbApplication = ({ application, tenantId, buttonLabel }) => {
+const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
+  const [loader, setLoader] = useState(false);
 
-  console.log("application", application);
-
-  /*
-  const [timeRemaining, setTimeRemaining] = useState(application?.timerValue);
-  // Initialize time remaining on mount or when application changes
-  useEffect(() => {
-    setTimeRemaining(application?.timerValue || 0);
-  }, [application?.timerValue]);
-  
-  // Timer logic
-  useEffect(() => {
-    if (timeRemaining <= 0) return;
-  
-    const interval = setInterval(() => {
-      setTimeRemaining((prevTime) => Math.max(prevTime - 1, 0));
-    }, 1000);
-  
-    return () => clearInterval(interval); // Cleanup interval
-  }, [timeRemaining]);
-  
-  // Format seconds into "minutes:seconds" format
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
-  };
-
-  */
   const getBookingDateRange = (bookingSlotDetails) => {
     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
       return t("CS_NA");
@@ -50,9 +23,32 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
       return startDate && endDate ? `${startDate}  -  ${endDate}` : t("CS_NA");
     }
   };
+
   const handleMakePayment = async () => {
     history.push(`/digit-ui/citizen/payment/collect/chb-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
   };
+
+  const handleCancel = async () => {
+    setLoader(true);
+    // ✅ Final payload
+    const finalPayload = {
+      hallsBookingApplication: {
+        ...application,
+        workflow: {
+          action: "CANCEL",
+        },
+      },
+    };
+    try {
+      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
+      refetch();
+      setLoader(false);
+    } catch (err) {
+      setLoader(false);
+      return err;
+    }
+  };
+
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -79,14 +75,19 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
       {/* <KeyNote keyValue={t("CHB_COMMUNITY_HALL_NAME")} note={t(`${application?.communityHallCode}`)} /> */}
       <KeyNote keyValue={t("CHB_BOOKING_DATE")} note={getBookingDateRange(application?.bookingSlotDetails)} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
-      <div>
-        {application.bookingStatus === "PENDING_FOR_PAYMENT" ? (
+      <div
+        style={{
+          display: "flex",
+          gap: "15px",
+        }}
+      >
+        <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
+          <SubmitBar label={buttonLabel} />
+        </Link>
+        {application.bookingStatus === "PENDING_FOR_PAYMENT" && (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} />
-        ) : (
-          <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
-            <SubmitBar label={buttonLabel} />
-          </Link>
         )}
+        {application.bookingStatus === "BOOKED" && <SubmitBar label={t("WF_EMPLOYEE_NDC_CANCEL")} onSubmit={handleCancel} />}
       </div>
       {showToast && (
         <Toast
@@ -98,6 +99,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
           }}
         />
       )}
+      {loader && <Loader page={true} />}
     </Card>
   );
 };

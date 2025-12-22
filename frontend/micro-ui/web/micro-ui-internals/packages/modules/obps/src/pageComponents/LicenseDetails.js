@@ -1,4 +1,15 @@
-import { BackButton, CardLabel, FormStep, Loader, MobileNumber, RadioButtons, TextInput, DatePicker, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import {
+  BackButton,
+  CardLabel,
+  FormStep,
+  Loader,
+  MobileNumber,
+  RadioButtons,
+  TextInput,
+  DatePicker,
+  ActionBar,
+  SubmitBar,
+} from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/Timeline";
@@ -8,25 +19,28 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   // const userInfo = Digit.UserService.getUser();
   const userInfo = Digit.UserService.getUser();
   let validation = {};
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("Citizen.tenant-id");
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
   const [disable, setDisable] = useState({
-
     gender: false,
     dateOfBirth: false,
   });
+
+  const { pathname } = useLocation();
+  let currentPath = pathname.split("/").pop();
+  let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
   const [getUserDetails, setGetUserDetails] = useState(null);
   const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(tenantId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const [name, setName] = useState(() => {
     // (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
     const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
-    const nameParts = fullName
+    const nameParts = fullName;
     //console.log("firstName here", nameParts[0]);
     return nameParts.length ? nameParts : "";
   });
 
-  console.log("disable state", disable);
+  console.log("disable state", disable, userDetails, tenantId);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
@@ -55,12 +69,10 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     dateOfBirth: "",
   });
 
-
-const status = formData?.result?.Licenses?.[0]?.status;
-console.log(formData, "EDIT FORMDATA");
-const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
-console.log(isCitizenEditable, "EDIT");
-
+  const status = formData?.result?.Licenses?.[0]?.status;
+  console.log(formData, "EDIT FORMDATA");
+  const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
+  console.log(isCitizenEditable, "EDIT");
 
   // get user info from api
   const getUserInfo = async () => {
@@ -180,15 +192,15 @@ console.log(isCitizenEditable, "EDIT");
     // }
 
     if (gender?.code === null) {
-      setErrorMessage((prev) => ({...prev, gender: t("BPA_APPLICANT_GENDER_PLACEHOLDER")}));
+      setErrorMessage((prev) => ({ ...prev, gender: t("BPA_APPLICANT_GENDER_PLACEHOLDER") }));
       return;
     }
     if (age < 18) {
-      setErrorMessage((prev) => ({...prev, dateOfBirth: t("BPA_DOB_VALIDATION_MESSAGE")}));
+      setErrorMessage((prev) => ({ ...prev, dateOfBirth: t("BPA_DOB_VALIDATION_MESSAGE") }));
       // alert(t("BPA_DOB_VALIDATION_MESSAGE"));
       return;
     }
-    if(!email.match(Digit.Utils.getPattern("Email"))){
+    if (!email.match(Digit.Utils.getPattern("Email"))) {
       setErrorMessage((prev) => ({ ...prev, email: t("BPA_APPLICANT_EMAIL_VALIDATION_MESSAGE") }));
       return;
     }
@@ -200,13 +212,13 @@ console.log(isCitizenEditable, "EDIT");
       // console.log("lastName before saving", lastName);
       // console.log("fullName here", fullName);
       let fullName = "";
-      if(name?.length>0){
+      if (name?.length > 0) {
         fullName = name;
       }
       let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {
-      let data = formData?.formData;
+      let data = formData?.LicneseDetails ? formData : formData?.formData;
       data.LicneseDetails.name = name;
       data.LicneseDetails.mobileNumber = mobileNumber;
       data.LicneseDetails.gender = gender;
@@ -223,7 +235,7 @@ console.log(isCitizenEditable, "EDIT");
 
   return (
     <div>
-      <div className={isOpenLinkFlow ? "OpenlinkContainer" : ""}>
+      <div className={isOpenLinkFlow ? "OpenlinkContainer" : ""} style={{ paddingBottom: "30px" }}>
         {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
         {!isLoading || !isUserLoading ? (
@@ -245,8 +257,7 @@ console.log(isCitizenEditable, "EDIT");
                 value={name}
                 onChange={SelectName}
                 // disable={name && !isOpenLinkFlow ? true : false}
-                 disable={!isCitizenEditable && (name && !isOpenLinkFlow ? true : false)}
-               
+                disable={!isEditable || (name && !isOpenLinkFlow ? true : false)}
                 {...(validation = {
                   isRequired: true,
                   pattern: "^[a-zA-Z ]*$",
@@ -297,11 +308,11 @@ console.log(isCitizenEditable, "EDIT");
                 max={new Date().toISOString().split("T")[0]}
                 isRequired={true}
                 // disabled={disable?.dateOfBirth}
-                disabled={!isCitizenEditable && disable?.dateOfBirth}
+                disabled={!isEditable || disable?.dateOfBirth}
               />
               {errorMessage?.dateOfBirth?.length>0 && (
                   <div
-                    style={errorStyle}
+                   
                   >
                     {errorMessage?.dateOfBirth}
                   </div>
@@ -338,12 +349,12 @@ console.log(isCitizenEditable, "EDIT");
                   labelKey="COMMON_GENDER"
                   // disable={gender && !isOpenLinkFlow ? true : false}
                   // disabled={disable?.gender}
-                  disabled={!isCitizenEditable && disable?.gender}
+                  disabled={!isEditable || disable?.gender}
                 />
 
                 {errorMessage?.gender?.length>0 && (
                   <div
-                    style={errorStyle}
+                  
                   >
                     {errorMessage?.gender}
                   </div>
@@ -355,7 +366,7 @@ console.log(isCitizenEditable, "EDIT");
                 value={mobileNumber}
                 name="mobileNumber"
                 onChange={(value) => setMobileNo({ target: { value } })}
-                disable={mobileNumber && !isOpenLinkFlow ? true : false}
+                disable={!isEditable || (mobileNumber && !isOpenLinkFlow) ? true : false}
                 {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
               />
               <div>
@@ -369,7 +380,7 @@ console.log(isCitizenEditable, "EDIT");
                 value={email}
                 onChange={selectEmail}
                 // disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
-                 disable={!isCitizenEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
+                 disable={!isEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
                 
                 // disable={editScreen}
                 {...{
@@ -381,7 +392,7 @@ console.log(isCitizenEditable, "EDIT");
               />
               {errorMessage?.email?.length>0 && (
                   <div
-                    style={errorStyle}
+                   
                   >
                     {errorMessage?.email}
                   </div>
@@ -468,7 +479,7 @@ console.log(isCitizenEditable, "EDIT");
         <SubmitBar
           label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={!name || !mobileNumber || !gender || !dateOfBirth  || !email }
+          disabled={!name || !mobileNumber || !gender || !dateOfBirth || !email || isLoading || !menu?.length}
         />
       </ActionBar>
     </div>

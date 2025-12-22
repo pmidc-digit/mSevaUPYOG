@@ -1,39 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Header, ResponseComposer, Loader } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
 import Axios from "axios";
 import { useHistory, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const MyChallanResult = ({ template, header, actionButtonLabel }) => {
+const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   const { t } = useTranslation();
   const history = useHistory();
+  const { mobileNumber, challanNo, Servicecategory,tenantId } = Digit.Hooks.useQueryParams();
   const filters = {};
-  const userInfo = Digit.UserService.getUser();
-  const tenantId = userInfo?.info?.tenantId;
-
-  filters.mobileNumber = userInfo?.info?.mobileNumber;
+  if (mobileNumber) filters.mobileNumber = mobileNumber;
+  if (challanNo) filters.consumerCode = challanNo;
+  if (Servicecategory) filters.businesService = Servicecategory;
 
   const result = Digit.Hooks.mcollect.useMcollectSearchBill({ tenantId, filters });
+  let bills = result?.data?.Bills;
+
+  if (result.isLoading) {
+    return <Loader />;
+  }
+
 
   const onSubmit = (data) => {
-   history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
+ history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
   };
 
   const payment = {};
-  function getBillingPeriod(fromPeriod, toPeriod) {
-    if (fromPeriod && toPeriod) {
-      let from =
-        new Date(fromPeriod).getDate() +
-        " " +
-        Digit.Utils.date.monthNames[new Date(fromPeriod).getMonth()] +
-        " " +
-        new Date(fromPeriod).getFullYear();
-      let to =
-        new Date(toPeriod).getDate() + " " + Digit.Utils.date.monthNames[new Date(toPeriod).getMonth()] + " " + new Date(toPeriod).getFullYear();
-      return from + " - " + to;
-    } else return "N/A";
-  }
 
   /* paymentDetails?.data?.Bill?.forEach((element) => {
     if (element?.consumerCode) {
@@ -47,9 +40,8 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   const searchResults = result?.data?.Bills?.map((bill) => {
     return {
       businesService: bill.businessService,
-      total_due:bill.status === "ACTIVE" ? bill.totalAmount : 0 ,
+      total_due: bill.status === "ACTIVE" ? bill.totalAmount : 0,
       OwnerName: bill.payerName || t("CS_NA"),
-      BillingPeriod: getBillingPeriod(bill.billDetails[0].fromPeriod, bill.billDetails[0].toPeriod),
       //bil_due__date: bill.billDetails[0].expiryDate || 0,
       bil_due__date: `${
         new Date(bill.billDetails[0].expiryDate).getDate().toString() +
@@ -71,31 +63,22 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
             {t(header)} ({searchResults?.length})
           </Header>
         )}
-        <div >
-          <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel} onSubmit={onSubmit} />
-        </div>
-      </div>
-
-      <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
-        <p>{t("UC_NOT_ABLE_TO_FIND_BILL_MSG")} </p>
-        <p className="link">
-          <Link to="/digit-ui/citizen/mcollect/search">{t("UC_CLICK_HERE_TO_SEARCH_LINK")}</Link>
-        </p>
+        <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel} onSubmit={onSubmit} />
       </div>
     </div>
   );
 };
 
-MyChallanResult.propTypes = {
+ChallanSearchResults.propTypes = {
   template: PropTypes.any,
   header: PropTypes.string,
   actionButtonLabel: PropTypes.string,
 };
 
-MyChallanResult.defaultProps = {
+ChallanSearchResults.defaultProps = {
   template: [],
   header: null,
   actionButtonLabel: null,
 };
 
-export default MyChallanResult;
+export default ChallanSearchResults;

@@ -15,6 +15,7 @@ import EXIF from "exif-js";
 import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
 import { UPDATE_OBPS_FORM, UPDATE_OBPS_CoOrdinates } from "../redux/actions/OBPSActions";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
@@ -97,7 +98,8 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.BPA?.CLUDocuments?.map((document, index) => {
             return (
-              <PTRSelectDocument
+              <div className="clu-doc-required-card">
+              <CLUSelectDocument
                 key={index}
                 document={document}
                 t={t}
@@ -112,6 +114,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
                 dispatch={dispatch}
                 previewLink={documentLinks?.find((link) => link.code === document.code)?.link}
               />
+               </div>
             );
           })}
           {error && <Toast label={error} isDleteBtn={true} onClose={() => setError(null)} error />}
@@ -123,7 +126,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   );
 };
 
-function PTRSelectDocument({
+function CLUSelectDocument({
   t,
   document: doc,
   setDocuments,
@@ -285,7 +288,7 @@ function PTRSelectDocument({
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage("CLU", file, Digit.ULBService.getStateId());
             setLoading(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
@@ -350,93 +353,43 @@ function PTRSelectDocument({
   }
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="clu-doc-required-wrapper">
       {getLoading && <Loader />}
-      {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null}
-      {!doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">
-            {t(doc?.code.replaceAll(".", "_"))}
-            <span>{doc?.required ? " *" : ""}</span>
+          <CardLabel className="clu-doc-required-label">
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"} 
           </CardLabel>
-        </LabelFieldPair>
-      ) : null}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller"></CardLabel>
+
+      <div className="clu-doc-required-field">
         {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
-          <UploadFile
+          <CustomUploadFile
+            id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
             }}
-            id={id}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
             accept=".jpg, .jpeg, .png"
-            buttonType="button"
-            error={!uploadedFile}
           />
-        ) : (
-          <UploadFile
+        ):(
+          <CustomUploadFile
+            id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
             }}
-            id={id}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
-            buttonType="button"
-            error={!uploadedFile}
+            accept=".pdf, .jpeg, .jpg, .png"
           />
         )}
 
-        {previewLink && (
-        <div
-            style={{ cursor: "pointer", padding:"10px", marginLeft:"25px"}}
-            onClick={(e) => {
-             e.preventDefault(); // Prevent any default behavior
-             window.open(previewLink, "_blank"); // Open in new tab
-            }}
-        >
-         <ViewsIcon/>
-        </div> 
-       )}
-
-       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
-        (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
-            <CardLabel>
-              <div style={{paddingLeft:"30px"}}>
-               <p>Latitude: {geocoordinates.Latitude1}</p>
-               <p>Longitude: {geocoordinates.Longitude1}</p>
-               </div>
-            </CardLabel>
-        }
-
-       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  &&
-        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
-           <CardLabel>
-              <div style={{paddingLeft:"30px"}}>
-               <p>Latitude: {geocoordinates.Latitude2}</p>
-               <p>Longitude: {geocoordinates.Longitude2}</p>
-               </div>
-           </CardLabel>  
-        }
+            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="clu-doc-required-coordinates">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
+            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="clu-doc-required-coordinates">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
+          </div>
 
       </LabelFieldPair>
     </div>

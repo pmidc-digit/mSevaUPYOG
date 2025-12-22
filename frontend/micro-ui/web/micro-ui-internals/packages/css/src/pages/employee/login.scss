@@ -1,595 +1,253 @@
+/* Employee Login - Centered Design */
 
-.loginFormStyleEmployee {
-
-  .employeeCard {
-   margin-top: 0px;
-    .submit-bar {
-      @apply w-full;
-  
-      height: 2rem !important;
-     
-      padding-top: 14px;
-      padding-bottom: 14px;
-      padding-left: 32px;
-      padding-right: 32px;
-    }
-    .employeeCard 
-      .submit-bar .submit-bar header
-      {
-        line-height: 2rem !important;
-        font-size: 16px; 
-        background-color: #2947A3;
-        border-radius: 8px;
-        align-content: center;
-        
-      }
-  }
-}
-.employeeCard{
-  width:100% !important;
-}
-.banner .bannerCard{
-  min-width: 420px !important;
-  background-color: transparent;
-}
-.employeeForgotPassword .employeeCard .field .field-container .component-in-front {
-  border: 1px solid;
-  border-right: none;
-  height: 32px !important;
-  margin-top: -16px !important;
-  z-index: 999;
-  background-color:#ffffffeb;
-}
-@screen dt {
-  .employeeForgotPassword .employeeCard .field .field-container .component-in-front {
-    
-    border-right: none;
-    height: 32px !important;
-    margin-top: -16px !important;
-    z-index: 999;
-    background-color: #ffffffeb;
-
-  }
- .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
-    min-width: 270px !important;
-   
-    background-color: #ffffffff !important;
-    
-
-
-    
-  }
-  .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
-    max-width: 270px !important;
-    min-width: 270px !important;
-    background-color: #ffffffeb
-  }
-}
-
-.employeeForgotPassword .employee-card-input {
-  margin-bottom: 0px;
-  border-left: none;
-}
-
-.employeeForgotPassword .field-container {
-  margin: 10px 0;
-}
-.employeeForgotPassword {
-  .submit-bar {
-    @apply w-full;
-    background-color: #5a1166 !important;
-  }
-}
-.employeeChangePassword .submit-bar {
-  width: 100% !important;
-}
-.employeeChangePassword .card-text {
-  text-align: center;
-}
-.employeeChangePassword .input-otp-wrap {
-  text-align: center;
-}
-.submit-bar {
-  .submit-bar {
-    @apply w-full;
-   
-  }
-}
-.loginFormStyleEmployee .bannerHeader p,
-.employeeForgotPassword .bannerHeader p,
-.employeeChangePassword .bannerHeader p {
-  font-size: 19px;
-}
-.employeeCard .card-sub-header {
-  font-size: 24px;
-}
-.loginFormStyleEmployee .employeeCard .card-label, .employeeForgotPassword .employeeCard .card-label{
-  font-weight: 400 !important;
-  font-size: 16px !important;
-  line-height: 21px !important;
-  color: #232323;
-  z-index: 10 !important;
-   font-family: "Roboto", serif;;
-
-
- 
-  
-}
-
-.employeeCard .card-label{
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 21.7px;
-  color: #232323;
-   font-family: "Roboto", serif;;
-}
-.profile-label-margin{
-   margin-top: 10px;
-}
-.loginFormStyleEmployee .primary-label-btn{
-  font-size: 12px;
-
-}
-.employeeForgotPassword .employeeCard .card-label-desc {
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 24px;
-  color: #505a5f;
-  margin-top: 15px;
-}
-.employeeChangePassword .employeeCard .card-text {
-  margin-bottom: 15px;
-  font-size: 16px;
-  color: #505a5f;
-}
-.employeeCard .card-label{
-  font-weight: 400 !important;
-  font-size: 16px !important;
-  line-height: 21.7px !important;
-  color: #232323;
-  font-family: "Noto Sans";
-  
-}
-@media screen and (max-width: 768px) {
-  .employeeChangePassword .employeeCard .card-text {
-    margin-top: 7px;
-  }
-  .employeeCard .card-sub-header {
-    font-size: 18px;
-  }
-}
-.employeeChangePassword .employeeCard .card-text-button {
-  text-align: center !important;
-  margin-bottom: 12px !important;
-}
-.employeeChangePassword .employeeCard .input-otp-wrap {
-  margin-bottom: 10px;
-}
-.employee .loginContainer {
-  padding-top: 0px !important;
-}
-.banner {
-  height: calc(100vh ) !important;
-}
-
-.employeeChangePassword .employeeCard .field .field-container{
-  margin-bottom: 24px;
-}
-.upyog-copyright-footer-web
-{
-  display: none;
-}
-.employeeForgotPassword .employeeCard  .employee-card-sub-header, .employeeChangePassword .employeeCard  .employee-card-sub-header, .loginFormStyleEmployee .employeeCard .employee-card-sub-header{
-  font-size: 24px !important;
-  line-height: 28px !important;
-  margin-bottom: 0px !important;
-}
-@media screen and (max-width : 768px){
-  .employeeForgotPassword .employeeCard  .employee-card-sub-header, .employeeChangePassword .employeeCard  .employee-card-sub-header, .loginFormStyleEmployee .employeeCard .employee-card-sub-header{
-    font-size: 18px !important;
-    line-height: 21px !important;
-    margin-bottom: 0px !important;
-    z-index: 10 !important;
-  }
-  .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
-   min-width: 270px !important;
-    z-index: 10 !important;
-    background-color: #ffffffff !important;
-    margin-top: 0 !important;
-
-
-   
-
-  }
-  .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
-    max-width: 250px !important;
-    min-width: 250px !important;
-    margin-top: -50% !important;
-    background-color: #ffffffeb;
-  }
-}
-.employeeChangePassword .employeeCard .card-text{
-  margin-top: 18px !important;
-  margin-bottom: 20px !important;
-}
-.employeeBackbuttonAlign{
-  display: none;
-}
-.employee-select-wrap .select{
-  height: 2.0rem !important;
-  background-color: white !important;
-  padding: 1.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #b4b4b4;
-}
-.employee-select-wrap.login-city-dd {
-  .options-card{
-  max-height: 150px;
-  }
-}
-.banner .bannerCard, .loginFormStyleEmployee .employeeCard{
-  background-color: #FFFFFF;
-
-  margin-top: 0px;
-  margin-left: 418px;
-  height: 400px;
-  width: 400px;
-  padding-top: 56px;
-  padding-bottom: 56px;
-  padding-left: 48px;
-  padding-right: 48px;
-  border-radius: 8px;
-}
-
-.langSelection {
-  width: 30% !important;
-  margin: 0px;
-  padding: 2rem;
-}
-
-@media screen and (max-width: 768px){
-  .employeeBackbuttonAlign{
-    display: block;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-  }
-  .banner{
-    padding-bottom: 40px;
-    height: 100vh !important;
-    z-index: 1;
-  }
-  .topbar{
-    background: white;
-  }
-  .employee .loginContainer{
-    padding-top: 0px !important;
-  }
-  .removeBottomMargin{
-    margin-bottom: 0px !important;
-  }
-  .employee-select-wrap.login-city-dd {
-    .options-card{
-    max-height: 160px;
-    }
-  }
-  .banner .upyog-copyright-footer
-  {
-    display: none;
-  }
-  .banner .upyog-copyright-footer-web
-  {
-    display: block;
-  }
-}
-@media screen and (max-width:900px) {
-
-  .loginFormStyleEmployee .employeeForgotPassword
-  {
-    margin-top: -50% !important;
-    background-color: #ffffffeb !important;
-    z-index: 2;
-  }
-  .psuedo-banner{
-    font-size: 20px;
-  }
-  .banner-slogan{
-    font-size: 14px;
-  }
-  .loginFormStyleEmployee, .employeeForgotPassword{
-    margin-top: -30% !important;
-   
-  }
-}
-.employeeForgotPassword{
-  z-index: 2;
-}
-
-
-.loginnew{
-  margin-top: -288px;
-  background-color: #FFFFFF;
-}
-.appbar {
-  display: flex;
+.employee-login-page {
+  min-height: 90vh;
   width: 100%;
-  background-color: #294a97;
-  overflow: none;
-  box-sizing: border-box;
-}
-.appbar-container {
+  background: linear-gradient(180deg, #e8eaf6 0%, #f5f5f5 100%);
   display: flex;
-  width: 1300px;
-  max-width: 100%;
-  flex-direction: row;
-  align-items: flex-start;
-  margin: auto;
-  padding: 0.8rem;
-  color: #fff;
-}
-.appbar-box-left {
-  display: flex;
-  width: 50%;
-  margin: auto;
-  padding: 0px;
-}
-.appbar-box-right {
-  display: flex;
-  width: 50%;
-  margin: auto;
-  padding: 0px;
-}
-
-@media screen and (max-width: 768px) {
-  .appbar-container {
-    flex-direction: column;
-  }
-  .appbar-box-right {
-    display: none;
-  }
-}
-
-.topHeader-container {
-  display: flex;
-  justify-content: space-evenly;
-  padding: 20px 40px;
-}
-
-.topHeader-box-left img {
-  width: 50px;
-  height: 50px;
-}
-.topHeader-box-left img:first-child {
-  margin-right: 20px;
-}
-.topHeader-box-center {
-  font-weight: 500;
-  font-family: "Inter", serif;
-  margin-top: 20px;
-}
-.topHeader-box-center ul {
-  list-style-type: none;
-  display: flex;
-  padding: 0;
-  margin: 0;
-  flex-wrap: wrap;
-}
-.topHeader-box-center li {
-  margin-right: 20px;
-  font-weight: 500;
-}
-.topHeader-box-center a {
-  text-decoration: none;
-  color: black;
-}
-.topHeader-box-right {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.topHeader-box-right button {
-  width: 75px;
-  height: 30px;
-  border-radius: 5px;
-  margin-right: 10px;
-  border: none;
-}
-.topHeader-box-right button:first-child {
-  background-color: white;
-  border: 1px solid #294a97;
-  color: #294a97;
-  font-weight: 500;
-}
-.topHeader-box-right button:last-child {
-  background-color: #294a97;
-  color: white;
-}
-.heroSection {
-  width: 100%;
-  max-height: 508px;
-  margin: auto;
-  padding: 0;
-  background: #294a9733;
-  img {
-    width: 100%;
-    object-fit: cover;
-    opacity: 0.75;
-    max-height: 508px;
-  }
-}
-
-.heroSection{
-  width: 100%;
-  max-height: 508px;
-  margin: auto;
-  padding: 0;
-  background: #294A9733;
-  img{
-    width: 100%;
-    object-fit: cover;
-    opacity: 0.75;
-    max-height: 508px;
-  }
-}
-.loginpic{
-  margin-top: 50px;
-  height: '300px';
-  width: 100%;
-  
-  position: absolute; 
-
-} 
-.loginContainernew{
-  height: 100px;
-  width: 100%;
-  overflow: auto;
-  box-sizing: border-box;
-  /* margin-top: 10px; */
-  display: flex;
-}
-.loginFormStyleEmployeeNew {
-  
-  width :40%;
-  
-  
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  
+  padding: 20px;
+}
+
+.employee-login-container {
+  width: 100%;
+  max-width: 480px;
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  position: absolute;
-  top: -90px;
+  min-height: 100vh;
+  padding: 40px 0;
 }
-@media screen and (max-width : 1024px) and (min-width:468px) {
-  .loginFormStyleEmployeeNew{
-    width: 60%;
-    padding: 2rem;
 
-  }
-}
-@media screen and (max-width : 467px) {
-  .loginFormStyleEmployeeNew{
-    width: 80%;
-    padding: 1rem;
-
-  }
-}
-.employeeCardNew{
-  box-sizing: border-box;
-  margin-bottom: 0px;
+.employee-login-content {
   width: 100%;
-  margin-left: 0px;
- 
-  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.headerStyle{
-  font-family: "Roboto", serif;
-  font-weight: 700;
-  text-align: left;
+
+/* Icon Circle at Top */
+.employee-login-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5243e9 0%, #7c6fff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   font-size: 36px;
-  line-height: 42px;
-}
-.descStyle{
- font-family: 'Roboto';
- font-weight: 400;
- color: #8F8F8F;
- text-align: left;
- line-height: 21.09px;
- padding: 0.5rem 0rem 2rem 0rem;
-}
-.labelStyle{
-  font-family: 'Roboto';
-  font-weight: 400;
-  font-size: 18px;
-  color: #232323;
-  line-height: 21.79px;
-}
-.footer{
-  display: -webkit-box;
-  box-sizing: border-box;
-  width: '100%';
-  position: 'fixed';
-  bottom: 0;
-  background-color:"#152265";
-  text-align:"center";
-  color:white;
-  margin-top: 170px;
-}
-.footerText{
-  display: 'flex';
-   justify-content: 'center';
-    color:"white" ;
-  background-color: #152265;
-  width: 100%;
-    text-align: center;
-}
-.footerContainer{
-  box-sizing: border-box;
-  height: 200px;
-  background-color: #294A97;
-  width:100%;
-  border-top: 2px solid #294A97;
-    text-align:'center';
-    color: 'white';
-    margin-top: 0px;
-   
-
-}
-.cityCss{
-  border-radius: 8px;
-}
-.fieldNew{
-  border-radius: 8px;
-}
-.submitButtonNew{
-  background-color: #2947A3;
-  height: 3rem;
-  text-align: center;
-  outline: 2px solid transparent;
-    outline-offset: 2px;
-    width: 100%;
-   /* width: 330px; */
-   padding: 0.8rem 0rem;
-    box-sizing: content-box;
-    height: 20px;
-    border-radius: 8px;
-    color: #FFFFFF; 
+  box-shadow: 0 4px 12px rgba(82, 67, 233, 0.3);
+  margin-bottom: 24px;
 }
 
-.body-container-new{
-  background-color: white;
-}
-.background-login{
-  position: absolute;
-    height: 100%;
-    width: 100%;
-  
-}
-.footerLinks{
-  box-sizing: border-box;
-  background-color: #F5FBFF;
+.employee-login-icon-circle svg {
+  width: 40px;
   height: 40px;
-  width:100%;
-  justify-content: space-between;
-  display: -webkit-box;
-  padding-top: 30px ;
-  padding-left: 164px ;
-  padding-right: 164px;
-  padding-bottom: 60px;
-} 
-.footerCont{
-  box-sizing: border-box;
-  height: auto;
-  width:100%;
-  display: -webkit-box;
-  background-color: #294A97;
-  border-top: 2px solid #294A97;
+  fill: white;
 }
 
+/* UPYOG Branding */
+.employee-login-branding {
+  text-align: center;
+  margin-bottom: 32px;
+}
 
+.employee-upyog-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0b0c0c;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.5px;
+}
 
- 
+.employee-upyog-subtitle {
+  font-size: 16px;
+  font-weight: 400;
+  color: #686677;
+  margin: 0;
+}
+
+/* Login Card */
+.employee-login-card {
+  padding: 20px;
+  width: 650px;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+/* Form Styles */
+.employee-login-form {
+  width: 100%;
+}
+
+.employee-login-form .card-label {
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: #5c5c5c !important;
+  margin-bottom: 8px !important;
+}
+
+.employee-login-form .card-label span {
+  color: #d73c3c;
+}
+
+.employee-login-form input {
+  
+  outline: none;
+  border-color: #5243e9;
+  transition: all 0.2s ease;
+}
+
+.employee-login-form input:focus {
+  outline: none;
+  border-color: #5243e9;
+
+}
+
+.employee-city-dropdown {
+  width: 100%;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  background: white !important;
+  font-size: 16px !important;
+}
+
+.employee-city-dropdown:focus {
+  border-color: #5243e9 !important;
+  box-shadow: 0 0 0 3px rgba(82, 67, 233, 0.1) !important;
+}
+
+/* Button Styling */
+.employee-login-form button[type="submit"] {
+  margin-top: 24px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.employee-login-form button[type="submit"]:hover {
+  background-color: #3e33c4 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(82, 67, 233, 0.3) !important;
+}
+
+.employee-login-form button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button (Forgot Password) */
+.employee-login-form .secondary-label {
+  margin-top: 16px !important;
+  color: #5243e9 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+}
+
+.employee-login-form .secondary-label:hover {
+  color: #3e33c4 !important;
+}
+
+/* Footer */
+.employee-login-footer {
+  font-size: 14px;
+  font-weight: 400;
+  color: #686677;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.employee-login-footer span {
+  color: #686677;
+}
+
+.employee-login-footer a {
+  color: #5243e9;
+  text-decoration: none;
+}
+
+.employee-login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .employee-login-container {
+    max-width: 100%;
+    padding: 20px 0;
+  }
+
+  .employee-login-card {
+    padding: 32px 24px;
+    border-radius: 8px;
+  }
+
+  .employee-login-icon-circle {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 20px;
+  }
+
+  .employee-upyog-title {
+    font-size: 28px;
+  }
+
+  .employee-upyog-subtitle {
+    font-size: 14px;
+  }
+
+  .employee-login-footer {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-login-page {
+    padding: 16px;
+  }
+
+  .employee-login-card {
+    padding: 24px 20px;
+  }
+
+  .employee-login-icon-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .employee-upyog-title {
+    font-size: 24px;
+  }
+
+  .employee-login-footer {
+    font-size: 11px;
+  }
+}
+
+/* Override FormComposer default styles */
+.employee-login-form .card {
+  box-shadow: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.employee-login-form .card-header {
+  padding: 0 0 16px 0 !important;
+}
+
+.employee-login-form .card-body {
+  padding: 0 !important;
+}
+
+.employee-login-form .submit-bar {
+  padding: 0 !important;
+  margin-top: 0 !important;
+}

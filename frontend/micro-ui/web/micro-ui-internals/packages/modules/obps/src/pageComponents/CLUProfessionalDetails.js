@@ -16,11 +16,19 @@ import {
 const CLUProfessionalDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const [profData, setProfData] = useState(null);
+  const [regId, setRegId]= useState(null);
+  const [address, setAddress] = useState(null);
+  const [licenseValidity, setLicenseValidity]=useState(null);
 
   const userInfo = Digit.UserService.getUser();
-  //console.log("userInfo here", userInfo);
+ // console.log("userInfo here", userInfo);
+  
+  const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
+  const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isUserArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: userInfo?.info?.mobileNumber}, {cacheTime : 0});
+
+  //console.log("Professional==>", professionalData);
 
   useEffect(() => {
     console.log("currentStepData2", currentStepData);
@@ -33,10 +41,42 @@ const CLUProfessionalDetails = (_props) => {
     }
   }, [currentStepData, setValue]);
 
-//   const { data: allCities, isLoading: isAllCitiesLoading } = Digit.Hooks.obps.useTenants();
-//   const [cities, setCities] = useState(allCities);
-  // console.log("allCities here", allCities);
-  // console.log("cities here ", cities);
+
+  useEffect(() => {
+      if(professionalData){
+        for (let i = 0; i < professionalData?.Licenses?.length; i++) {
+        if (professionalData?.Licenses?.[i]?.status === "APPROVED") {
+          setProfData(professionalData?.Licenses?.[i]);
+          break;
+        }
+      }}
+  }, [professionalData]);
+
+  useEffect(()=>{
+    if(profData){
+     if(isUserArchitect){
+      setRegId(profData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo);
+     }
+     else{
+      setRegId(profData?.licenseNumber);
+     }
+
+     setAddress(profData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || profData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress);
+     setLicenseValidity( Digit.DateUtils.ConvertEpochToDate(profData?.validTo));
+    }
+  },[profData]);
+  
+  useEffect(() => {
+    if (regId) {
+      setValue("professionalRegId", regId, { shouldValidate: true, shouldDirty: false });
+      setValue("professionalAddress", address);
+      setValue("professionalRegIdValidity", licenseValidity, { shouldValidate: true, shouldDirty: false });
+    }
+  }, [address,regId, setValue,licenseValidity]);
+
+  //console.log("profData=>>", profData);
+
+
 
   return (
     <React.Fragment>
@@ -133,12 +173,44 @@ const CLUProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />
         </div>
       </LabelFieldPair>
       <CardLabelError style={errorStyle}>{errors?.professionalRegId?.message || ""}</CardLabelError>
+
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}*</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="professionalRegIdValidity"
+            rules={{
+              required: t("REQUIRED_FIELD"),
+              // pattern: {
+              //   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              //   message: t("INVALID_EMAIL_FORMAT"),
+              // },
+            }}
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  props.onBlur(e);
+                }}
+                t={t}
+                disabled="true"
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}*</CardLabel>
@@ -187,6 +259,7 @@ const CLUProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />

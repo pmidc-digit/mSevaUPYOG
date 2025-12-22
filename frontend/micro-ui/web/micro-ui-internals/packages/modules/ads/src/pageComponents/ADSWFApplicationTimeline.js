@@ -2,6 +2,7 @@ import { CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader } from "@m
 import React from "react";
 import { useTranslation } from "react-i18next";
 import ADSWFCaption from "./ADSWFCaption";
+import ApplicationTimeline from "../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 const ADSWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
@@ -48,11 +49,7 @@ const ADSWFApplicationTimeline = (props) => {
 
   return (
     <React.Fragment>
-      {data?.timeline?.length > 0 && (
-        <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSectionHeader>
-      )}
-
-      {data?.timeline && data?.timeline?.length === 1 ? (
+      {/* {data?.timeline && data?.timeline?.length === 1 ? (
         <CheckPoint
           isCompleted={true}
           label={t((data?.timeline[0]?.state && `WF_${businessService}_${data.timeline[0].state}`) || "NA")}
@@ -86,7 +83,9 @@ const ADSWFApplicationTimeline = (props) => {
               );
             })}
         </ConnectingCheckPoints>
-      )}
+      )} */}
+
+      <ApplicationTimeline workflowDetails={data} t={t} />
     </React.Fragment>
   );
 };

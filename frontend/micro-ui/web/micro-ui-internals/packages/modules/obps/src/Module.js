@@ -83,6 +83,7 @@ import CLUApplicationDetails from "./pages/citizen/Applications/CLUApplicationDe
 import CLUSearchApplication from "./pages/citizen/CLUSearchApplication/index";
 import CLUInbox from "./pages/employee/cluInbox/CLUInbox"
 import CLUEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/CLUApplicationOverview";
+import LayoutEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
@@ -97,6 +98,8 @@ import LayoutCLUDetails from "./pageComponents/LayoutCLUDetails";
 import LayoutSpecificationDetails from "./pageComponents/LayoutSpecificationDetails";
 import LayoutDocumentsRequired from "./pageComponents/LayoutDocumentsRequired";
 import LayoutSummary from "./pageComponents/LayoutSummary";
+import LayoutSearchApplication from "./pages/citizen/LayoutSearchApplication/index";
+
 import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
 import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
 import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
@@ -116,6 +119,7 @@ import LayoutInbox from "./pages/employee/Inbox/LayoutInbox";
 import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
 import LayoutResponseEmployee from "./pages/employee/ApplicationOverview/LayoutResponseEmployee";
 import EditLayoutApplication from "./pageComponents/EditApplication/EditLayoutApplication";
+import LayoutMyApplications from "./pages/citizen/Applications/LayoutMyApplications";
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -162,7 +166,7 @@ const OBPSLinks = ({ matchPath, userType }) => {
 
   return (
     <CitizenHomeCard header={t("ACTION_TEST_BUILDING_PLAN_APPROVAL")} links={links} Icon={() => <OBPSIcon />}
-      Info={() => <CitizenInfoLabel style={{margin: "0px", padding: "10px"}} info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)} />} isInfo={true}
+      Info={() => <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)} />} isInfo={true}
     />
   );
 } 
@@ -274,7 +278,10 @@ const componentsToRegister = {
   CLUMyApplications,
   CLUEditApplication,
   CLUApplicationDetails,
+  LayoutApplicationDetails,
   CLUSearchApplication,
+  LayoutSearchApplication,
+  LayoutMyApplications,
   CLUInbox,
   CLUEmployeeApplicationDetails
 }

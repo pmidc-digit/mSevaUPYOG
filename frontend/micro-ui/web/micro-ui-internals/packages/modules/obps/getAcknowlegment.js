@@ -43,7 +43,7 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 const getAcknowledgementData = async (application, tenantInfo, t) => {
   console.log("application in getAcknowledgement", application);
-
+ const licenseNumber = application?.applicationData?.licenseNumber;
   const details = [];
 
   // Application Details
@@ -62,20 +62,53 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   });
 
   // License Details
-  details.push({
-    title: t("BPA_LICENSE_DETAILS_LABEL"),
-    values: [
-      {
-        title: t("BPA_LICENSE_TYPE"),
-        value: t(`${application?.applicationDetails?.[1]?.values?.[0]?.value}`) || "NA",
-      },
-      {
-        title: t("BPA_COUNCIL_NUMBER"),
-        value: application?.applicationDetails?.[1]?.values?.[1]?.value || "NA",
-      },
-    ],
-  });
+  if (application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] === "ARCHITECT") {
+    details.push({
+      title: t("BPA_LICENSE_DETAILS_LABEL"),
+      values: [
+        {
+          title: t("BPA_LICENSE_TYPE"),
+          value: t(`TRADELICENSE_TRADETYPE_${application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "NA",
+        },
+        {
+          title: t("BPA_QUALIFICATION_TYPE"),
+          value: t(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType) || "NA",
+        },
+        ...(application?.applicationData?.licenseNumber!== null ? [ { title: t("BPA_COUNCIL_NUMBER"), value: application.applicationData.licenseNumber } ] : []),
 
+        ...(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo!== null ? [ { title: t("BPA_COUNCIL_OF_ARCH_NO_LABEL"), value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo } ] : [])
+      ],
+    });
+  }else{
+    details.push({
+      title: t("BPA_LICENSE_DETAILS_LABEL"),
+      values: [
+        {
+          title: t("BPA_LICENSE_TYPE"),
+          value: t(`TRADELICENSE_TRADETYPE_${application?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "NA",
+        },
+        {
+          title: t("BPA_QUALIFICATION_TYPE"),
+          value: t(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType) || "NA",
+        },
+        ...(application?.applicationData?.licenseNumber!== null ? [ { title: t("BPA_COUNCIL_NUMBER"), value: application?.applicationData?.licenseNumber } ] : [])
+      ],
+    });
+  }
+  
+
+  const getFormattedULBName = (ulbCode = "") => {
+    if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+    if(typeof ulbCode !== "string") return ""
+
+    const parts = ulbCode?.split(".");
+    if (parts.length < 2) return ulbCode?.charAt(0)?.toUpperCase() + ulbCode?.slice(1);
+
+    const namePart = parts[1];
+    return namePart?.charAt(0)?.toUpperCase() + namePart?.slice(1);
+  };
+
+  const ulbName = getFormattedULBName(application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb);
   // Licensee Details
   details.push({
     title: t("BPA_LICENSEE_DETAILS_HEADER_OWNER_INFO"),
@@ -98,7 +131,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("BPA_APPLICANT_ULB_LIST"),
-        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb || "N/A",
+        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : ulbName || "N/A",
       },
     ],
   });
@@ -109,21 +142,33 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
     values: [
       {
         title: t("BPA_PERMANANT_ADDRESS_LABEL"),
-        value: application?.applicationDetails?.[3]?.values?.[0]?.value || "NA",
+        value: [
+          `${application?.applicationDetails?.[3]?.values?.[0]?.value || "NA"}`,
+          `${application?.applicationDetails?.[3]?.values?.[1]?.value || "NA"}`,
+          `${application?.applicationDetails?.[3]?.values?.[2]?.value || "NA"}`,
+          `${application?.applicationDetails?.[3]?.values?.[3]?.value || "NA"}`,
+        ].join(", "),
       },
       {
         title: t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL"),
-        value: application?.applicationDetails?.[4]?.values?.[0]?.value || "NA",
+        value: [
+          `${application?.applicationDetails?.[4]?.values?.[0]?.value || "NA"}`,
+          `${application?.applicationDetails?.[4]?.values?.[1]?.value || "NA"}`,
+          `${application?.applicationDetails?.[4]?.values?.[2]?.value || "NA"}`,
+          `${application?.applicationDetails?.[4]?.values?.[3]?.value || "NA"}`,
+        ].join(", "),
       },
     ],
   });
+
+
 
   // Documents
   // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
   const documents = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values
   const docDetails = documents?.map((doc, index) => ({
-    title: `${index + 1}`,
-    value: t(`DOC_${doc.documentType}`) || "NA",
+    title: t(`DOC_${doc.documentType}`) || "NA",
+    value: " ",
     link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
   }));
 

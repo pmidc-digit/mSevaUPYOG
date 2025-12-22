@@ -244,7 +244,7 @@ useEffect(() => {
           }
         }}
         />
-        <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError>
+        {/* <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError> */}
   
         
 
@@ -296,7 +296,7 @@ useEffect(() => {
                 <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
                 <UploadFile
                   id={"edcr-layout"}
-                  extraStyleName={"propertyCreate"}
+                 
                   onUpload={handleLayoutUpload}
                   onDelete={() => {
                     setLayoutFile(null);
@@ -336,7 +336,7 @@ useEffect(() => {
             <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
             <UploadFile
               id={"edcr-doc"}
-              extraStyleName={"propertyCreate"}
+             
               onUpload={handleDXFUpload}
               accept=".dxf"
               onDelete={() => {
@@ -347,7 +347,8 @@ useEffect(() => {
               error={error}
               uploadMessage={uploadMessage}
             />
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p>
+            {/* <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p> */}
+            <p>{t("EDCR_ONLY_DXF_FILE")}</p>
           </React.Fragment>
         )}
         

@@ -318,6 +318,18 @@ const formatDate = (timestamp) => {
   return `${day}/${month}/${year}`;
 };
 
+const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? License?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(License?.tradeLicenseDetail?.owners?.[0]?.dob)
+const getFormattedULBName = (ulbCode = "") => {
+    if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
+
+    const parts = ulbCode.split(".");
+    if (parts.length < 2) return ulbCode.charAt(0).toUpperCase() + ulbCode.slice(1);
+
+    const namePart = parts[1];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  };
+
+  const ulbName = getFormattedULBName(License?.tradeLicenseDetail?.additionalDetail?.Ulb);
 
 
 
@@ -333,21 +345,46 @@ const formatDate = (timestamp) => {
           asSectionHeader: true,
           values: [
             {
-              title: "BPA_LICENSE_TYPE",
-              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
             },
-            { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
-            { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
-          ],
-        }
-        : {
-          title: "BPA_LICENSE_DETAILS_LABEL",
-          asSectionHeader: true,
-          values: [
             {
               title: "BPA_LICENSE_TYPE",
               value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
             },
+            { title: "BPA_COUNCIL_OF_ARCH_NO_LABEL", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },
+            { title: "BPA_SELECTED_ULB", value:"BPA_ULB_SELECTED_MESSAGE" || "NA" },
+            { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
+          ],
+        }
+        : License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("TOWNPLANNER") ? {
+          title: "BPA_LICENSE_DETAILS_LABEL",
+          asSectionHeader: true,
+          values: [
+            {
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
+            },
+            { title: "BPA_ASSOCIATE_OR_FELLOW_NUMBER", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },         
+            {
+              title: "BPA_LICENSE_TYPE",
+              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+            },
+            { title: "BPA_SELECTED_ULB", value:  ulbName || "NA" },
+          ],
+        } : {
+          title: "BPA_LICENSE_DETAILS_LABEL",
+          asSectionHeader: true,
+          values: [
+            {
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
+            },            
+            {
+              title: "BPA_LICENSE_TYPE",
+              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+            },
+            { title: "BPA_SELECTED_ULB", value:  ulbName || "NA" },
           ],
         },
       {
@@ -358,19 +395,28 @@ const formatDate = (timestamp) => {
           { title: "BPA_APPLICANT_GENDER_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.gender || "NA" },
           { title: "BPA_OWNER_MOBILE_NO_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA" },
           { title: "BPA_APPLICANT_EMAIL_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.emailId || "NA" },
+          { title: "BPA_APPLICANT_DOB_LABEL", value: dob || "NA" },
           // { title: "BPA_APPLICANT_PAN_NO", value: License?.tradeLicenseDetail?.owners?.[0]?.pan || "NA" },
         ],
       },
       {
         title: "BPA_PERMANANT_ADDRESS_LABEL",
         asSectionHeader: true,
-        values: [{ title: "BPA_PERMANANT_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA" }],
+        values: [
+          { title: "BPA_APPLICANT_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA" },
+          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict || "NA" },
+          { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "NA" },
+        ],
       },
       {
         title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL",
         asSectionHeader: true,
         values: [
           { title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress || "NA" },
+          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict || "NA" },
+          { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || "NA" },
         ],
       },
       {
@@ -785,8 +831,10 @@ const formatDate = (timestamp) => {
         { title: "BPA_PLOT_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.plotNo || "NA", isNotTranslated: true },
         { title: "BPA_KHATHA_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.khatuniNo || "NA", isNotTranslated: true },
         // { title: "BPA_HOLDING_NUMBER_LABEL", value: BPA?.additionalDetails?.holdingNo || "NA", isNotTranslated: true },
-        { title: "PROPERTY_ID", value: BPA?.additionalDetails?.propertyuid || "NA", isNotTranslated: true },
+        { title: "BPA_IS_PROPERTY_AVAILABLE_LABEL", value: BPA?.additionalDetails?.isPropertyAvailable ? "YES" : "NO", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.propertyuid ? [{ title: "PROPERTY_ID", value: BPA?.additionalDetails?.propertyuid || "NA", isNotTranslated: true }] : []),
         { title: "BPA_IS_CLUBBED_PLOT_LABEL", value: BPA?.additionalDetails?.isClubbedPlot ? "YES" : "NO", isNotTranslated: true },
+        ...(BPA?.additionalDetails?.isSelfCertification != null ? [{ title: "BPA_IS_SELF_CERTIFICATION_REQUIRED", value: BPA?.additionalDetails?.isSelfCertification? "YES" : "NO" , isNotTranslated: true }] : []),
         { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_WALL_LENGTH_LABEL", value: BPA?.additionalDetails?.boundaryWallLength || "NA", isNotTranslated: true },
         { title: ("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },
@@ -795,7 +843,7 @@ const formatDate = (timestamp) => {
         { title: ("BPA_LAT"), value: BPA?.landInfo?.address?.geoLocation?.latitude ? BPA?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : "NA" },
         { title: ("BPA_LONG"), value: BPA?.landInfo?.address?.geoLocation?.longitude ? BPA?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : "NA" },
         { title: "BPA_WARD_NUMBER_LABEL", value: BPA?.additionalDetails?.wardnumber || "NA", isNotTranslated: true },
-        { title: "BPA_ZONE_NUMBER_LABEL", value: BPA?.additionalDetails?.zonenumber || "NA", isNotTranslated: true },
+        { title: "BPA_ZONE_NUMBER_LABEL", value: BPA?.additionalDetails?.zonenumber?.name || BPA?.additionalDetails?.zonenumber || "NA", isNotTranslated: true },
         { title: "BPA_KHASRA_NUMBER_LABEL", value: BPA?.additionalDetails?.khasraNumber || "NA", isNotTranslated: true },
         { title: "BPA_ARCHITECT_ID", value: BPA?.additionalDetails?.architectid || "NA", isNotTranslated: true },
         { title: "BPA_NUMBER_OF_BATHS", value: BPA?.additionalDetails?.bathnumber || "NA", isNotTranslated: true },
@@ -839,8 +887,15 @@ const formatDate = (timestamp) => {
           : []),
         { title: "BPA_PURCHASED_FAR", value: BPA?.additionalDetails?.purchasedFAR ? "YES" : "NO", isNotTranslated: true },
         ...(BPA?.additionalDetails?.purchasedFAR
-          ? [{ title: "BPA_PROVIDED_FAR", value: BPA?.additionalDetails?.providedFAR || "NA", isNotTranslated: true }]
+          ? [
+            { title: "BPA_PROVIDED_FAR", value: BPA?.additionalDetails?.providedFAR || "NA", isNotTranslated: true },
+            { title: "BPA_ALLOWED_PROVIDED_FAR", value: BPA?.additionalDetails?.purchasableFAR || "NA", isNotTranslated: true },
+          ]
           : []),
+        { title: "BPA_PERMISSIBLE_FAR", value: BPA?.additionalDetails?.permissableFar || "NA", isNotTranslated: true },
+        { title: "BPA_FAR_ACHIEVED", value: BPA?.additionalDetails?.achievedFar || "NA", isNotTranslated: true },
+        { title: "BPA_ECS_REQUIRED", value: BPA?.additionalDetails?.ecsRequired || "NA", isNotTranslated: true },
+        { title: "BPA_ECS_PROVIDED", value: BPA?.additionalDetails?.ecsProvided || "NA", isNotTranslated: true },
         { title: "BPA_GREEN_BUIDINGS", value: BPA?.additionalDetails?.greenbuilding || "NA", isNotTranslated: true },
         ...(BPA?.additionalDetails?.greenbuilding === "YES"
           ? [{ title: "BPA_SELECTED_RATINGS", value: BPA?.additionalDetails?.rating || "NA", isNotTranslated: true }]

@@ -43,6 +43,7 @@ import { getOrderDocuments } from "../../../obps/src/utils";
 import DcbTable from "./DcbTable";
 import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
+import ApplicationTimeline from "./ApplicationTimeline"
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -96,7 +97,7 @@ function ApplicationDetailsContent({
   ];
 
 
-  console.log("TIMELINE", applicationDetails);
+  console.log("TIMELINE", applicationDetails, moduleCode);
   // ISSUE 9 FIX: Fetch payment history for WS applications
    useEffect(() => {
     const fetchPaymentHistory = async () => {
@@ -783,7 +784,7 @@ const caption = {
         <React.Fragment>
           <BreakLine />
           {(workflowDetails?.isLoading || isDataLoading) && <Loader />}
-          {!workflowDetails?.isLoading && !isDataLoading && (
+          {!workflowDetails?.isLoading && !isDataLoading && moduleCode !== "BPAREG" && (
             <Fragment>
               <div id="timeline">
                 <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
@@ -835,6 +836,9 @@ const caption = {
                 )}
               </div>
             </Fragment>
+          )}
+          {!workflowDetails?.isLoading && !isDataLoading && moduleCode === "BPAREG" && (
+            <ApplicationTimeline workflowDetails={workflowDetails} t={t}/>
           )}
         </React.Fragment>
       )}

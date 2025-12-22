@@ -1,11 +1,12 @@
-import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile, Toast } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import { CardLabel, CardLabelError, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile, Toast } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
 import EXIF from "exif-js";
 import BharatMap from "./BharatMap";
+import CustomLocationSearch from "../components/CustomLocationSearch";
 
 
 const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepData, addNewOwner, isShowToast, onGoBack }) => {
@@ -47,12 +48,16 @@ const [apiLoading, setApiLoading] = useState(false);
 const [isUploading, setIsUploading] = useState(false);
 const [isFileLoading, setIsFileLoading] = useState(false);
 
+const geoLocations = useMemo(() => {
+  return [{...geoLocationFromImg}]
+},[geoLocationFromImg])
+
 
   if (!formData.address) {
     formData.address = {};
   }
 
-  console.log("formData in location page", selectedCity ,currentStepData, allCities);
+  console.log("formData in location page", selectedCity ,currentStepData, allCities, geoLocationFromImg);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -105,7 +110,7 @@ const [isFileLoading, setIsFileLoading] = useState(false);
 
       setcitiesopetions(filteredCities);
 
-      if (/^[1-9][0-9]{6}$/.test(pincode)) {
+      if (/^[1-9][0-9]{6}$/.test(pincode)) {        
         if (filteredCities?.length === 0) {
           setPinerror("BPA_PIN_NOT_VALID_ERROR");
         } else if (filteredCities.length === 1) {
@@ -175,7 +180,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (!propertyData?.address?.locality) {
-      if (selectedCity && fetchedLocalities && !Pinerror) {
+      if (selectedCity && fetchedLocalities) {
         let __localityList = fetchedLocalities;
         let filteredLocalityList = [];
         console.log("fetchedLocalities", fetchedLocalities);
@@ -183,10 +188,10 @@ useEffect(() => {
           setSelectedLocality(formData.address.locality);
         }
 
-        if ((formData?.address?.pincode || pincode) && !Pinerror) {
-          filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
-          // if (!formData?.address?.locality && filteredLocalityList.length <= 0) setSelectedLocality();
-        }
+        // if ((formData?.address?.pincode || pincode) && !Pinerror) {
+        //   filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
+        //   if (!formData?.address?.locality && filteredLocalityList.length <= 0) setSelectedLocality();
+        // }
         if (
           !localities ||
           (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) ||
@@ -206,7 +211,7 @@ useEffect(() => {
     } else {
       setSelectedLocality(propertyData?.address?.locality);
     }
-  }, [selectedCity, formData?.pincode, fetchedLocalities, pincode, geoLocation]);
+  }, [selectedCity, fetchedLocalities, geoLocation]);
 
   const handleGIS = () => {
     setIsOpen(!isOpen);
@@ -360,7 +365,7 @@ useEffect(() => {
     const val = typeof e === "object" && e !== null ? e.target.value : e;
     setPinerror(null);
 
-    if(!Digit.Utils.getPattern("Pincode").test(val)){
+    if(val && !Digit.Utils.getPattern("Pincode").test(val)){
       setPinerror("BPA_PIN_NOT_VALID_ERROR");
     }
 
@@ -369,8 +374,8 @@ useEffect(() => {
     sessionStorage.setItem("currentPincode", val);
     sessionStorage.setItem("currentCity", JSON.stringify({}));
     sessionStorage.setItem("currLocality", JSON.stringify({}));
-    setSelectedLocality(null);
-    setLocalities(null);
+    // setSelectedLocality(null);
+    // setLocalities(null);
   }
 
   function selectStreet(e) {
@@ -488,68 +493,9 @@ if (response?.data?.files?.length > 0) {
 }
 
 
-  // ---------------- UI Styles ----------------
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f1f1f1ff",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-    paddingBottom: "5rem",
-  };
-
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-
-    borderRadius: "8px",
- 
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-
-    maxHeight: "130px"
-  };
-
-  const headingStyle = {
-    fontSize: "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-  };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  };
-
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-    
-  };
-
-  const documentCardStyle = {
-
-    minWidth: "200px",
-    maxWidth: "250px",
-    backgroundColor: "#fdfdfd",
-    padding: "0.75rem",
-    border: "1px solid #e0e0e0",
-    borderRadius: "6px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-    justifyContent:"center",
-    display:"flex",
-    
-  };
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+    <div >
+      <CardLabel>{label}</CardLabel>
       <div>{value || t("CS_NA")}</div>
     </div>
   );
@@ -557,7 +503,7 @@ if (response?.data?.files?.length > 0) {
   if(apiLoading || isLoading) return <Loader/>
 
 return (
-  <div style={pageStyle}>
+  <div >
     {/* {!isOpen && <Timeline />} */}
     {/* {isOpen && (
       <GIS
@@ -576,7 +522,7 @@ return (
         onSelect={handleSubmit}
         isDisabled={!selectedCity || Pinerror}
         isMultipleAllow={true}
-        forcedError={t(Pinerror)}
+        // forcedError={t(Pinerror)}
       >
         {/* GIS Section */}
         {/* <div style={sectionStyle}>
@@ -628,8 +574,8 @@ return (
         </div> */}
 
         {/* Pincode Section */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_DETAILS_PIN_LABEL")}</h2>
+        <div>
+          <h2 className="card-label">{t("BPA_DETAILS_PIN_LABEL")}</h2>
           {!isOpen && (
             <TextInput
               isMandatory={false}
@@ -641,30 +587,31 @@ return (
               value={pincode}
               disabled={propertyData?.address ? true : false}
             />
-          )}
+          )}          
         </div>
+       
 
         {/* City Section */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_CITY_LABEL")}</h2>
+        <div>
+          <h2 className="card-label">{t("BPA_CITY_LABEL")}</h2>
           {!isOpen && (
             <TextInput
               value={selectedCity?.name || ""}
               disable={true}
-              style={{ background: "#f1f1f1" }}
+             
             />
           )}
         </div>
 
         {/* Locality (Mohalla) Section - RESTORED ORIGINAL GUARD */}
-        <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_LOC_MOHALLA_LABEL")}</h2>
+        <div>
+          <h2 className="card-label" >{t("BPA_LOC_MOHALLA_LABEL")}</h2>
 
           {!isOpen && selectedCity && localities && !propertyData?.address ? (
             <span className={"form-pt-dropdown-only"}>
               {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel> */}
               <RadioOrSelect
-                optionCardStyles={{ maxHeight: "20vmax", overflow: "scroll" }}
+               
                 isMandatory={false}
                 options={localities.sort((a, b) => a.name.localeCompare(b.name))}
                 selectedOption={selectedLocality}
@@ -680,7 +627,7 @@ return (
             <span className={"form-pt-dropdown-only"}>
               <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel>
               <TextInput
-                optionCardStyles={{ maxHeight: "20vmax", overflow: "scroll" }}
+               
                 isMandatory={false}
                 value={propertyData?.address?.locality?.name}
                 optionKey="i18nkey"
@@ -694,8 +641,8 @@ return (
         </div>
 
         {/* Site Photograph Section */}
-        <div style={{backgroundColor: "#ffffff", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",}}>
-          <h2 style={headingStyle}>{t("BPA_LOC_SITE_PHOTOGRAPH")}</h2>
+        <div>
+          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH")}</h2>
 
           <UploadFile
             id="loc-site-photo"
@@ -709,19 +656,19 @@ return (
           />
 
           {isFileLoading && (
-            <div style={{ marginTop: "12px" }}>
+            <div>
               <Loader />
             </div>
           )}
 
           {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
-            <div style={{ marginTop: "16px" }}>
+            <div>
               {/* <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel> */}
               <a 
                 href={viewSiteImageURL} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
+               
               >
                 {t("CS_COMMON_VIEW_SITE_PHOTOGRAPH")}
               </a>
@@ -729,30 +676,31 @@ return (
           )}
 
           {isUploading && (
-            <div style={{ marginTop: "12px" }}>
+            <div>
               <Loader />
-              <span style={{ marginLeft: "8px" }}>{t ? t("CS_FILE_UPLOADING") : "Uploading image..."}</span>
+              <span>{t ? t("CS_FILE_UPLOADING") : "Uploading image..."}</span>
             </div>
           )}
 
           {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 && (
-            <div style={{ marginTop: "12px", padding: "8px", border: "1px solid #D6D5D4", borderRadius: 8 }}>
+            <div>
               <strong>📍 Extracted Geo Location</strong>
               <div>Latitude: {Number(geoLocationFromImg.latitude).toFixed(6)}</div>
               <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
             </div>
           )}
-          {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 &&(
-            <div style={{ marginTop: "16px" }}>
-              <a 
-                href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
-              >
-                {t("CS_COMMON_VIEW_SITE_LOCATION")}
-              </a>
-            </div>
+          {!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0 &&(
+            // <div style={{ marginTop: "16px" }}>
+            //   <a 
+            //     href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 
+            //     target="_blank" 
+            //     rel="noopener noreferrer"
+            //     style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
+            //   >
+            //     {t("CS_COMMON_VIEW_SITE_LOCATION")}
+            //   </a>
+            // </div>
+            <CustomLocationSearch position={geoLocations}/>
           )}
           {/* {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
             <BharatMap mapUrl={`lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`}/>
@@ -763,12 +711,7 @@ return (
        <ActionBar>
         <SubmitBar
                                       label="Back"
-                                      style={{
-                                        border: "1px solid",
-                                        background: "transparent",
-                                        color: "#2947a3",
-                                        marginRight: "5px",
-                                      }}
+                                     
                                       onSubmit={onGoBack}
                             />
            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  disabled={!selectedCity || Pinerror || apiLoading}/>}

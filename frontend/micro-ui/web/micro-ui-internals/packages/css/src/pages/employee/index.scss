@@ -188,61 +188,84 @@
   .sidebar {
     position: fixed;
     left: 0;
-    height: 100%;
-    color: #ffffff;
-    margin-top: 80px;
-    z-index: 999;
-    transition: 0.3s ease all;
-    white-space: nowrap;
     height: calc(100vh - 36px);
+    color: #1f2937;
+    z-index: 999;
+    transition: 0.25s ease all;
+    white-space: nowrap;
     padding-bottom: 5rem;
-    background: linear-gradient(to bottom right, #3765ca, #294a97);
-    /* background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png), url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
-    background-blend-mode: lighten;
-    background-size: cover;*/
+    background: #ffffff;
+    border-right: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    border-radius: 0 12px 12px 0;
+    backdrop-filter: blur(6px);
+    margin-top: 5rem;
 
     .actions {
       cursor: pointer;
       display: flex;
       align-items: center;
       .tooltip {
-        margin-left: 16px;
+        margin-left: 12px;
       }
     }
 
     svg {
       width: 24px;
       height: 24px;
-      fill: #ffffff;
+      fill: #374151;
+      transition: fill 0.18s ease;
+          margin-right: 20px;
+    margin-left: -10px;
     }
+
     a {
       display: flex;
+      align-items: center;
+      text-decoration: none;
     }
+
     .sidebar-link {
       display: flex;
-      color: #ffffff;
+      color: #374151;
       justify-content: space-between;
       align-items: center;
-      padding: 20px;
+      padding: 12px 18px;
       font-size: 14px;
-      border-left: 4px solid #294a97;
-      border-radius: 0px 10px 10px 0px;
+      border-left: 4px solid transparent;
+      border-radius: 8px;
+      margin: 6px 8px;
+      transition: all 0.18s ease;
+
       &.active {
+        color: #ffffff !important;
+        background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+        border-left-color: #2563eb;
+        svg {
+          fill: #ffffff !important;
+        }
+      }
+
+      &:hover {
         color: #0d43a7 !important;
-        background-color: #ffffff;
+        background-color: rgba(37, 99, 235, 0.06);
+        border-left-color: rgba(37, 99, 235, 0.16);
+        cursor: pointer;
         svg {
           fill: #0d43a7 !important;
         }
       }
+
       .employee-search-input {
         border: none;
         outline: none;
-        background-color: rgba(0, 0, 0, 0);
+        background-color: transparent;
         margin-left: 13px;
       }
+
       .custom-link {
         .tooltip {
-          margin-left: 16px;
+          margin-left: 8px;
           span {
             margin-left: unset !important;
             left: unset !important;
@@ -250,41 +273,33 @@
         }
       }
 
-      svg {
-        fill: #ffffff !important;
-        width: 21px;
-        height: 21px;
-      }
-
-      &:hover {
-        color: #0d43a7 !important;
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 1rem 0.2rem;
-
-        cursor: pointer;
-        svg {
-          fill: #0d43a7 !important;
-        }
-      }
       .search-icon-wrapper {
         svg {
-          fill: #ffffff !important;
-          width: 21px;
-          height: 21px;
+          fill: #6b7280 !important;
+          width: 20px;
+          height: 20px;
           path {
-            fill: #ffffff !important;
+            fill: #6b7280 !important;
           }
         }
       }
+
+      span {
+        margin-left: 12px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        max-width: calc(100% - 56px);
+      }
     }
+
     .dropdown-link {
       height: 40px;
       display: flex;
       margin-left: 40px;
       align-items: center;
       text-decoration: none;
-      color: #ffffff;
+      color: #374151;
       font-size: 14px;
       .actions {
         .tooltiptext {
@@ -295,30 +310,11 @@
       svg {
         width: 20px;
         height: 20px;
-        fill: #ffffff;
+        fill: #6b7280;
       }
       &:hover {
-        /* color: #fe7a51 !important;
-        background-color: #486480;
-        cursor: pointer;
-        svg {
-          fill: #fe7a51 !important;
-        }
+        background: rgba(99, 102, 241, 0.06);
       }
-      &.active {
-        /* color: #a82227 !important;
-
-        border-right: 4px solid #a82227;
-        svg {
-          fill: #a82227 !important;
-        } */
-      }
-    }
-    span {
-      margin-left: 16px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
     }
   }
 
@@ -450,6 +446,9 @@
     margin-bottom: unset;
     svg {
       fill: #a82227;
+    }
+    .form-field{
+      width: 100%;
     }
   }
 }

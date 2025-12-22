@@ -99,7 +99,7 @@ const PTRModal = ({
         })
       );
     }
-  }, [approverData]);
+  }, [approverData, EmployeeStatusData]);
 
   function selectFile(e) {
     setFile(e.target.files[0]);

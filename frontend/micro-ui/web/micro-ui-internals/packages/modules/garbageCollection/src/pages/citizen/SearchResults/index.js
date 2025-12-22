@@ -2,9 +2,9 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { config } from "./config";
-import MyChallanResultsComponent from "./myChallan";
+import SearchResultsComponent from "./searchResults";
 
-const MyChallans = () => {
+const CitizenSearchResults = () => {
   const { t } = useTranslation();
   const { path } = useRouteMatch();
 
@@ -24,7 +24,7 @@ const MyChallans = () => {
   return (
     <Switch>
       <Route path={`${path}`} exact>
-        <MyChallanResultsComponent
+        <SearchResultsComponent
           template={params[0].labels}
           header={params[0].texts.header}
           actionButtonLabel={params[0].texts.actionButtonLabel}
@@ -35,4 +35,4 @@ const MyChallans = () => {
   );
 };
 
-export default MyChallans;
+export default CitizenSearchResults;

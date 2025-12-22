@@ -13,7 +13,7 @@ export const UserService = {
       url: Urls.Authenticate,
       data,
       headers: {
-        authorization: `Basic ${window?.globalConfigs?.getConfig("JWT_TOKEN")||"ZWdvdi11c2VyLWNsaWVudDo="}`,
+        authorization: `Basic ${window?.globalConfigs?.getConfig("JWT_TOKEN") || "ZWdvdi11c2VyLWNsaWVudDo="}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
@@ -27,11 +27,10 @@ export const UserService = {
       url: Urls.UserLogout,
       data: {},
       auth: true,
-      params: { tenantId: type === "CITIZEN"
-        ? Digit.ULBService.getStateId()
-        : Digit.ULBService.getCurrentTenantId(),
-      access_token: user?.access_token, // Now added in query params
-       },
+      params: {
+        tenantId: type === "CITIZEN" ? Digit.ULBService.getStateId() : Digit.ULBService.getCurrentTenantId(),
+        access_token: user?.access_token, // Now added in query params
+      },
     });
   },
   getType: () => {
@@ -49,8 +48,7 @@ export const UserService = {
     try {
       await UserService.logoutUser();
     } catch (e) {
-    }
-    finally{
+    } finally {
       window.localStorage.clear();
       window.sessionStorage.clear();
       if (userType === "citizen") {
@@ -84,6 +82,15 @@ export const UserService = {
       url: Urls.RegisterUser,
       data: {
         User: details,
+      },
+      params: { tenantId: stateCode },
+    }),
+  createUser: (details, stateCode) =>
+    ServiceRequest({
+      serviceName: "registerUser",
+      url: Urls.UserCreate,
+      data: {
+        user: details,
       },
       params: { tenantId: stateCode },
     }),

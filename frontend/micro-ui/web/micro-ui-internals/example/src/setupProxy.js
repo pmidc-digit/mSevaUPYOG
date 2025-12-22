@@ -1,4 +1,5 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const BATHINDA_API_URL = "https://apipmidc.mcbathinda.com";
 
 const createProxy = createProxyMiddleware({
   //target: process.env.REACT_APP_PROXY_API || "https://uat.digit.org",
@@ -12,6 +13,12 @@ const assetsProxy = createProxyMiddleware({
   // target: process.env.REACT_APP_PROXY_ASSETS || "https://mseva-uat.lgpunjab.gov.in/",
   changeOrigin: true,
 });
+
+const bathindaProxy = createProxyMiddleware({
+  target: BATHINDA_API_URL,
+  changeOrigin: true,
+})
+
 module.exports = function (app) {
   [
     "/access/v1/actions/mdms",
@@ -108,9 +115,14 @@ module.exports = function (app) {
     "/challan-generation",
     "/layout-services",
     "/adv-services",
+    "/rl-services",
     "/clu-services",
-    "/clu-calculator",,
-    "/layout-calculator"
+    "/clu-calculator",
+    "/layout-calculator",
+    "/gc-services",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
+   ["/api/Property/", "/api/Property/GetPropertyDetail", "/api/Authenticate", "/api/Authenticate/GetToken"].forEach((location) =>
+    app.use(location, bathindaProxy)
+  );
 };

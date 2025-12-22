@@ -1,6 +1,7 @@
 .HomePageWrapper {
   margin-top: -25px;
-
+  margin: 0 auto;
+  padding: 0 40px;
   .BannerWithSearch {
     margin-bottom: 40px;
     width: 100%;
@@ -15,6 +16,54 @@
       @apply w-full object-cover;
     }
   }
+.hero-banner-styles {
+  background: linear-gradient(135deg, #4f65d8 0%, #00157a 100%);
+  border-radius: 16px;
+  padding: 60px 40px;
+  margin: 24px 0;
+  text-align: center;
+  color: #fff;
+}
+
+.hero-title-styles {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.heroSubtitleStyles {
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 32px;
+  opacity: 0.95;
+}
+
+.searchBarStyles {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.searchInputStyles {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  margin-left: 12px;
+  color: black;
+}
+
+.searchIconStyles {
+  color: #9ca3af;
+  font-size: 20px;
+}
+
 
   .ServicesSection {
     @apply flex flex-wrap;
@@ -46,12 +95,12 @@
     }
   }
 
-  .WhatsAppBanner{
+  .WhatsAppBanner {
     width: 100%;
     padding: 0px 20px 0px 20px;
     margin: auto;
     cursor: pointer;
-    display:none;
+    display: none;
     img {
       width: 100%;
     }
@@ -75,6 +124,8 @@
 }
 
 .HomePageContainer {
+  width: 100%;
+  padding: 0;
   @media (min-width: 780px) {
     display: flex;
     width: 100% !important;
@@ -89,12 +140,11 @@
   margin-top: -25px;
   img {
     height: 33vw;
-    background: linear-gradient(#000000,#000000);
+    background: linear-gradient(#000000, #000000);
     @apply object-cover;
-    width:100vw;
+    width: 100vw;
   }
   h1 {
-    position: absolute;
     top: 100px;
     left: 21px;
     @apply text-heading-xl text-white font-bold;
@@ -103,9 +153,9 @@
     border: none;
     top: 76px;
     svg {
-      fill: #ffffff;
+      fill: #000000;
     }
-    @apply absolute text-white text-heading-s ml-md;
+    @apply text-black text-heading-s ml-md;
   }
 }
 
@@ -136,12 +186,11 @@
 
     .WhatsAppBanner {
       width: 100%;
-      img{
+      img {
         height: 20vw;
         width: 100%;
       }
     }
-
   }
   .moduleLinkHomePage {
     img {
@@ -160,6 +209,6 @@
 
   .moduleLinkHomePageModuleLinks {
     max-width: unset;
-    width:100%
+    width: 100%;
   }
 }

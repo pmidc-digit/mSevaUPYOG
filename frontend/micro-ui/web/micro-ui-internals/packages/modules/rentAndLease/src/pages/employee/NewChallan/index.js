@@ -65,7 +65,6 @@ const NewChallan = ({ ChallanData }) => {
     isEdit = true;
   }
 
-  console.log("here", ChallanData);
 
   const [canSubmit, setSubmitValve] = useState(false);
   const defaultValues = {};
@@ -94,7 +93,6 @@ const NewChallan = ({ ChallanData }) => {
     : {};
 
   useEffect(() => {
-    console.log("isEdit", isEdit, fetchBillData);
     if (isEdit) {
       let formdata = getformDataforEdit(ChallanData, fetchBillData);
       setdefaultUpdatedValue(true);

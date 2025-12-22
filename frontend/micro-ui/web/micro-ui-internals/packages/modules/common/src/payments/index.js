@@ -213,3 +213,18 @@ export const ChallanData = (tenantId, consumerCode) => {
 
   return { officer };
 };
+
+export const getLocationName = async (lat, lng) => {
+  try {
+    if (lat == null || lng == null || (lat === 0 && lng === 0)) {
+      return "Address not provided";
+    }
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+    );
+    const data = await res.json();
+    return data?.display_name || "Address not provided";
+  } catch {
+    return "Address not provided";
+  }
+};

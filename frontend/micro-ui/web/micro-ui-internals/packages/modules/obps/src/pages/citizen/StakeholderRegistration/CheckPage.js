@@ -19,39 +19,29 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const menuRef = useRef();
-  // console.log(value, );
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-  console.log(tenantId, "YYYYYYYYY");
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");  
   const tenant = Digit.ULBService.getStateId();
 
-  console.log(tenant, "TENANT");
 
   const isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const storedData = Digit.SessionStorage.get("Digit.BUILDING_PERMIT");
+  const storedData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
 
   const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
-  const { result, formData, documents } = safeValue;
-  const isArchitect = formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect");
-
-  console.log(formData, "FORM DATA IN CHECK PAGE");
-  console.log(safeValue, "SAFE VAKLUE IN CHECK PAGE");
-
-  console.log(safeValue, "SAFE VAKLUE");
-
-  const status = value?.result?.Licenses?.[0]?.status;
-  console.log(value, "EDIT FORMDATA CHECK");
+  const { result, formData, documents, LicneseType } = safeValue;
+  const isArchitect = formData?.LicneseType?.LicenseType?.code?.includes("Architect") || formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect") || LicneseType?.LicenseType?.code?.includes("Architect");
+  
+console.log("FormData in CheckPage", result, formData, safeValue, value, isArchitect);
+  const status = value?.result?.Licenses?.[0]?.status;  
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
-  console.log(isCitizenEditable, "EDIT CHECK");
 
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
   const userInfoData = userInfos ? JSON.parse(userInfos) : {};
   const userInfo = userInfoData?.value;
   const requestor = userInfo?.info?.mobileNumber;
 
-  console.log(requestor, "PPPP");
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const {data: bparegData, isLoading: isBPAREGLoading} = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });  
@@ -59,13 +49,56 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
   const moduleCode = tradeType ? tradeType.split(".")[0] : null;
   const applicationNo = bparegData?.Licenses?.[0]?.applicationNumber;
-console.log(bparegData, "ggggggg");
   const getDocs = JSON.parse(sessionStorage.getItem("FinalDataDoc"));
   const finalDoc = getDocs?.result?.Licenses?.[0];
 
   const tradeTypeVal = finalDoc?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
-
+  const [LicenseType, setLicenseType] = useState({});
   const mainType = tradeTypeVal?.split(".")[0];
+  const { data: EmployeeStatusData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(tenant, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
+  const formattedData = EmployeeStatusData?.StakeholderRegistraition?.TradeTypetoRoleMapping;
+
+  function getLicenseType() {
+    const list = [];
+    const found = false;
+
+    formattedData?.forEach((item) => {
+      if (item?.isActive === "true") {
+        console.log("item=====", item);
+        const mainType = item?.tradeType?.split(".")[0];
+        const i18nKey = `TRADELICENSE_TRADETYPE_${mainType}`;
+
+        const alreadyExists = list.some((el) => el.i18nKey === i18nKey);
+
+        if (!alreadyExists) {
+          list.push({
+            role: item.role,
+            i18nKey,
+            tradeType: item.tradeType,
+            code: item?.code,
+          });
+        }
+      }
+    });
+
+    return list;
+  }
+
+  function mapQualificationToLicense(qualification) {
+    
+    let qualificationCode = EmployeeStatusData?.BPA?.QualificationType?.find((type) => type.name?.includes(qualification?.trim()))?.role;
+    console.log("qualification", qualification,EmployeeStatusData, qualificationCode, getLicenseType());
+    let license = getLicenseType().find((type) => type.i18nKey.includes(qualificationCode));
+
+    if (license) {
+      setLicenseType(license);
+    }
+  }
+
+  useEffect(() => {
+    console.log("EmployeeStatusData", EmployeeStatusData);
+    mapQualificationToLicense(result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType);
+  }, [EmployeeStatusData, mdmsLoading])
 
   useEffect(() => {
     if(!isBPAREGLoading && bparegData){
@@ -80,12 +113,9 @@ console.log(bparegData, "ggggggg");
       sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(updatedFinalData));
     }
   },[bparegData, isBPAREGLoading])
+  
 
-  console.log("Dynamic moduleCode:", moduleCode);
-  console.log("finalDoc===????", finalDoc);
-  console.log("mainType????", mainType);
-
-  const checkTenant = mainType == "ARCHITECT" ? "pb.punjab" : tenantId;
+  const checkTenant = isArchitect ? "pb.punjab" : tenantId;
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: checkTenant,
@@ -93,9 +123,8 @@ console.log(bparegData, "ggggggg");
     moduleCode: mainType || "ENGINEER",
   });
 
-  const consumerCode = result?.Licenses[0].applicationNumber;
+  const consumerCode = result?.Licenses?.[0]?.applicationNumber;
 
-  console.log(consumerCode, "CONNNN");
   const fetchBillParams = { consumerCode };
 
   const { data: paymentDetails, isLoading } = Digit.Hooks.obps.useBPAREGgetbill(
@@ -107,7 +136,6 @@ console.log(bparegData, "ggggggg");
     }
   );  
 
-  console.log(paymentDetails, "PPPPPPPPP");
 
 
    const { data: reciept_data, isLoading: recieptDataLoading } =
@@ -115,14 +143,13 @@ console.log(bparegData, "ggggggg");
     {
       businessService: "BPAREG",
       ...{consumerCodes: consumerCode},
-      tenantId: mainType === "ARCHITECT" ? "pb.punjab" : (tenantId)
+      tenantId: isArchitect ? "pb.punjab" : (tenantId)
     },
     {
       enabled: consumerCode ? true : false,
       retry: false,
     }
   );
-console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -130,12 +157,7 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
-  // if (isBPAREGLoading ) {
-  //   console.log("Waiting for moduleCode to load...")
-  //   return <Loader />
-  // }
 
-  console.log("workflowDetails here=>", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -153,13 +175,11 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log(actions, "ACTION");
 
   function onActionSelect(action) {
     setDisplayMenu(false);
     sessionStorage.setItem("selectedWorkflowAction", action.action);
     if (onSubmit) {
-      console.log("Calling onSubmit with full action object:", action);
       onSubmit(action);
     }
   }
@@ -239,7 +259,7 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
   };
 
   // Usage:
-  const ulbName = getFormattedULBName(formData?.LicneseDetails?.Ulb);
+  const ulbName = getFormattedULBName(result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.Ulb);
 
   const formatDate = (timestamp) => {
   if (!timestamp) return "";
@@ -251,6 +271,8 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
   return `${day}/${month}/${year}`;
 };
+
+  const dob = typeof result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob)
 
   return (
     <div style={pageStyle}>
@@ -300,21 +322,22 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
         {renderLabel(
           t("BPA_QUALIFICATION_TYPE"),
           t(
-            typeof formData?.LicneseType?.qualificationType === "string"
-              ? formData?.LicneseType?.qualificationType
-              : formData?.LicneseType?.qualificationType?.name
+            result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
           )
         )}
-        {renderLabel(t("BPA_LICENSE_TYPE"), t(formData?.LicneseType?.LicenseType?.i18nKey))}
-        {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
-          renderLabel(t("BPA_COUNCIL_NUMBER"), formData?.LicneseType?.ArchitectNo)}
-        {formData?.LicneseType?.LicenseType?.i18nKey?.includes("TOWNPLANNER") &&
-          renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), formData?.LicneseType?.ArchitectNo)}
-           {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT") &&
+        {renderLabel(t("BPA_LICENSE_TYPE"), t(`TRADELICENSE_TRADETYPE_${result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`))}
+        {isArchitect &&
+          renderLabel(t("BPA_COUNCIL_NUMBER"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
+        {result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("TOWNPLANNER") &&
+          renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
+        {result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT")
+          ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
+          : renderLabel(t("BPA_SELECTED_ULB"), ulbName || "NA")}
+           {LicenseType?.i18nKey?.includes("ARCHITECT") &&
          renderLabel(
     t("BPA_CERTIFICATE_EXPIRY_DATE"), 
     (() => {
-      const validTo = formData?.LicneseType?.validTo;
+      const validTo = result?.Licenses?.[0]?.validTo;
       if (!validTo) return "";
       
       // Check if it's a number (epoch timestamp) or a numeric string
@@ -326,56 +349,33 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
       </div>
 
       {/* Applicant Details */}
-      <div style={sectionStyle}>
+      {mdmsLoading ? <Loader /> : <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>
-        {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), [formData?.LicneseDetails?.name])}
-        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(formData?.LicneseDetails?.gender.i18nKey))}
-        {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), formData?.LicneseDetails?.mobileNumber)}
-        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.LicneseDetails?.email)}
-        {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formData?.LicneseDetails?.dateOfBirth)}
-        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), formData?.LicneseDetails?.Pincode)}
-      </div>
+        {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), [result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name])}
+        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender))}
+        {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber)}
+        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId)}
+        {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), dob)}
+        {/* {renderLabel(t("BPA_DETAILS_PIN_LABEL"), formData?.LicneseDetails?.Pincode)} */}
+      </div>}
 
       {/* Permanent Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), value?.LicneseDetails?.PermanentAddress || formData?.LicneseDetails?.PermanentAddress)}
-
-        {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT")
-          ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
-          : renderLabel(t("BPA_SELECTED_ULB"), ulbName ? ulbName : t("BPA_ULB_NOT_AVAILABLE"))}
+        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
+        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict))}
+        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
       </div>
 
       {/* Communication Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS")}</h2>
-        {renderLabel(t("Address"), value?.LicneseDetails?.correspondenceAddress || formData?.LicneseDetails?.correspondenceAddress)}
+        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
+        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict))}
+        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
       </div>
-
-      {/* Documents */}
-      {/* <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
-        {documents?.documents?.length > 0 ? (
-          <div style={documentsContainerStyle}>
-            {documents?.documents.map((doc, index) => (
-              <div key={index} style={documentCardStyle}>
-                <OBPSDocument
-                  value={safeValue}
-                  Code={doc?.documentType}
-                  index={index}
-                  isNOC={false}
-                  svgStyles={{}}
-                  isStakeHolder={true}
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-        )}
-      </div> */}
-
-      {/* Documents - TABLE VIEW */}
 
   
 
@@ -432,7 +432,7 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
                 </tr>
               </thead>
               <tbody>
-                {documents?.documents.map((doc, index) => (
+                {(documents?.documents || result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments).map((doc, index) => (
                   <tr
                     key={index}
                     style={{
@@ -501,7 +501,7 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
 
  
-      <div style={sectionStyle}>
+      {result?.Licenses?.[0]?.applicationType != "UPGRADE" && <div style={sectionStyle}>
 
         <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
 
@@ -558,9 +558,8 @@ console.log(reciept_data, "CONNNN PAYMET DETAILS");
 
 
 
-      </div>
+      </div>}
 
-      {console.log("actions", actions)}
 
       {actions && actions.length > 0 ? (
         <ActionBar>

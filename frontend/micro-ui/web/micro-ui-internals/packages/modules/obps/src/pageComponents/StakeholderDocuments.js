@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   CardLabel,
   Dropdown,
@@ -14,15 +14,18 @@ import {
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { LoaderNew } from "../components/LoaderNew";
+import { useLocation } from "react-router-dom";
 import CustomUploadFile from "../components/CustomUploadFile";
 
-const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))
+  const formData = sessionData?.value || {};
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(
     formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ||formData?.documents?.documents ||  []
   );
-  console.log("check formData", formData);
+  console.log("check formData", formData, documents);
   const [error, setError] = useState(null);
   const [loader, setLoader] = useState(false);
   const [bpaTaxDocuments, setBpaTaxDocuments] = useState([]);
@@ -31,7 +34,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   let isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;
+  const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;  
 
   if (isopenlink)
     window.onunload = function () {
@@ -39,12 +42,13 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     };
 
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(selectedTenantId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
+  console.log("data in StakeholderDocsRequired", documents);
 
   useEffect(() => {
     let filtredBpaDocs = [];
     if (data?.StakeholderRegistraition?.TradeTypetoRoleMapping) {
       filtredBpaDocs = data?.StakeholderRegistraition?.TradeTypetoRoleMapping?.filter(
-        (ob) => ob.tradeType === formData?.formData?.LicneseType?.LicenseType?.tradeType
+        (ob) => (ob.tradeType === formData?.formData?.LicneseType?.LicenseType?.tradeType || ob.tradeType === formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType)
       );
     }
 
@@ -52,9 +56,15 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     filtredBpaDocs?.[0]?.docTypes?.forEach((doc) => {
       documentsList.push(doc);
     });
-    console.log("documentsList here", documentsList);
+    console.log("documentsList here", documentsList, filtredBpaDocs);
     setBpaTaxDocuments(documentsList);
   }, [!isLoading]);
+
+  useEffect(() => {
+    if(JSON.stringify(sessionData?.value?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments) != JSON.stringify(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments)){
+      setDocuments(sessionData?.value?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments);
+    }
+  }, [formData]);
 
   const handleSubmit = async () => {
     let document = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ? {
@@ -85,7 +95,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
           // comment: typeof selectedAction === "object" ? selectedAction.comment : null,
           tradeLicenseDetail: {
             ...licenseData.tradeLicenseDetail,
-            applicationDocuments: documentStep?.documents,
+            applicationDocuments: documents,
           },
         },
       ],
@@ -95,10 +105,16 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     try {
       const response = await Digit.OBPSService.BPAREGupdate(payload, tenantId);
       let data = {
-        result: response,
+        ...sessionData,
+        value: {
+          ...sessionData?.value,
+          result: {
+            ...response
+          }
+        }
       };
-      console.log("check data", data);
-      sessionStorage.setItem("FinalDataDoc", JSON.stringify(data));
+
+      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(data));
       setLoader(false);
       console.log("UPDATE response:", response);
     } catch (error) {
@@ -161,6 +177,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
                 documents={documents}
                 setCheckRequiredFields={setCheckRequiredFields}
                 isCitizenUrl={isCitizenUrl}
+                formData={formData}
               />
             );
           })}
@@ -176,7 +193,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   );
 };
 
-function SelectDocument({ t, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isCitizenUrl }) {
+function SelectDocument({ t, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isCitizenUrl, formData }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const [loader, setLoader] = useState(false);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -190,6 +207,11 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
   );
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const { pathname } = useLocation();
+  let currentPath = pathname.split("/").pop();
+  console.log("currentPath", formData);
+  let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
+  // let isEditable = true;
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
@@ -300,6 +322,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
           }}
           uploadedFile={uploadedFile}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          disabled={!isEditable}
           // iserror={error}
         />
       ) : (
@@ -313,9 +336,11 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
           }}
           uploadedFile={uploadedFile}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          disabled={!isEditable}
           // iserror={error}
         />
       )}
+      {doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
       {loader && <LoaderNew page={true} />}
     </div>
   );

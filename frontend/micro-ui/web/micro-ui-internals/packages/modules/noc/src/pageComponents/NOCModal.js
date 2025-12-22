@@ -103,7 +103,7 @@ const NOCModal = ({
         })
       );
     }
-  }, [approverData]);
+  }, [approverData, EmployeeStatusData]);
 
 
   function selectFile(e) {
@@ -156,7 +156,7 @@ const NOCModal = ({
 
     const commentsText = data?.comments?.toString().trim();
 
-    if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
+    if (action?.action !== "APPROVE" && action?.action !== "REJECT"  && !selectedApprover?.uuid) {
       setShowToast({ key: "true", warning:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
       return;
     }

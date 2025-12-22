@@ -16,7 +16,7 @@ import { useDispatch } from "react-redux";
 import { SET_CHBApplication_STEP } from "../redux/action/CHBApplicationActions";
 import ApplicationTable from "../components/inbox/ApplicationTable";
 import { useTranslation } from "react-i18next";
-import CHBDocument from "../components/CHBDocument";
+import CHBDocument from "../pageComponents/CHBDocument";
 
 function CHBSummary({ formData, goNext, onGoBack }) {
   const { pathname: url } = useLocation();
@@ -35,7 +35,16 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
 
-  let docs = formData?.documents?.documents?.documents;
+  const bookingId = formData?.venueDetails?.[0]?.bookingId;
+
+  console.log("docs===??", formData?.documents?.documents?.documents);
+
+  // let docs = formData?.documents?.documents?.documents;
+
+  let docs = (formData?.documents?.documents?.documents || []).map((doc) => ({
+    ...doc,
+    bookingId,
+  }));
 
   const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.[0]?.bookingNo;
 
@@ -143,6 +152,8 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
 
+  console.log("docs===", docs);
+
   return (
     <div style={pageStyle}>
       <h2 style={headingStyle}>{t("Application Summary")}</h2>
@@ -208,14 +219,18 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
         <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
-          {docs?.map((doc, index) => (
-            <React.Fragment>
-              <div>
-                <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
-              </div>
-            </React.Fragment>
-          ))}
+          {docs?.length > 0 ? (
+            docs?.map((doc, index) => (
+              <React.Fragment key={index}>
+                <div>
+                  <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                  <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                </div>
+              </React.Fragment>
+            ))
+          ) : (
+            <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+          )}
         </Card>
       </StatusTable>
 

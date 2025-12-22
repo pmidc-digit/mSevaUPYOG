@@ -43,7 +43,8 @@ const useCLUTableConfig = ({
       },
       {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-        accessor: (row) => t(row?.status),
+        // accessor: (row) => t(row?.status),
+        accessor: (row) => t(`BPA_STATUS_${row?.status}`),
         disableSortBy: true,
       },
     ]

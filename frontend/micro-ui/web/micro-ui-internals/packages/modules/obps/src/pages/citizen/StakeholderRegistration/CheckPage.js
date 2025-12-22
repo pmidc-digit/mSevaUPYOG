@@ -32,7 +32,8 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
   const { result, formData, documents, LicneseType } = safeValue;
   const isArchitect = formData?.LicneseType?.LicenseType?.code?.includes("Architect") || formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect") || LicneseType?.LicenseType?.code?.includes("Architect");
-  
+  const isRenewal = result?.Licenses?.[0]?.applicationType === "RENEWAL"
+
 console.log("FormData in CheckPage", result, formData, safeValue, value, isArchitect);
   const status = value?.result?.Licenses?.[0]?.status;  
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
@@ -531,7 +532,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
           ? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails
           : paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails
         )?.map((bill, index) =>
-          renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
+          renderLabel(t(isRenewal? bill.taxHeadCode+"_RENEWAL" : bill.taxHeadCode), `₹ ${bill?.amount}`)
         )}
 
         {/* <CHANGE> Conditionally get totalAmount from reciept_data or paymentDetails */}

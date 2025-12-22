@@ -517,6 +517,15 @@ if (anyYes && !ecbcCertificateFile) {
       code: "LAL_LAKEER",
       i18nKey: "LAL LAKEER",
     },
+    {
+      code: "Colony Prior to 1995 (colony name)",
+      i18nKey: "Colony Prior to 1995 (colony name)",
+    },
+    {
+      code: "Stand Alone Projects",
+      i18nKey: "Stand Alone Projects",
+
+    }
   ]
 
   const common = [
@@ -1090,7 +1099,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.approvedColony} />
 
-        {approvedColony?.code === "YES" && (
+        {(approvedColony?.code === "YES" || approvedColony?.code === "Colony Prior to 1995 (colony name)") && (
           <React.Fragment>
             <CardLabel>{`${t("BPA_APPROVED_COLONY_NAME")} *`}</CardLabel>
             <TextInput

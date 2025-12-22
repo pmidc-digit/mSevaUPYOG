@@ -18,7 +18,7 @@ RUN yarn add @mseva/digit-ui-module-ptr@1.1.91
 RUN yarn add @mseva/digit-ui-module-swach@1.0.47
 RUN yarn add @mseva/digit-ui-module-pt@1.0.36
 RUN yarn add @mseva/digit-ui-module-tl@1.0.19
-RUN yarn add @mseva/digit-ui-module-obps@1.1.34
+RUN yarn add @mseva/digit-ui-module-obps@1.1.35
 RUN yarn add @mseva/digit-ui-module-sv@1.1.31
 RUN yarn add @mseva/upyog-ui-module-ads@1.1.61
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.64
@@ -26,7 +26,7 @@ RUN yarn add @mseva/upyog-ui-module-asset@1.1.25
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.15
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.25
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.30
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.17
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.18
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.58
 ARG WORK_DIR
 WORKDIR /app
@@ -44,7 +44,7 @@ RUN cd web/ \
     &&  ./install-deps.sh \
     && yarn install \
     && yarn build 
-    
+
 
 FROM nginx:mainline-alpine
 #FROM ghcr.io/egovernments/nginx:mainline-alpine

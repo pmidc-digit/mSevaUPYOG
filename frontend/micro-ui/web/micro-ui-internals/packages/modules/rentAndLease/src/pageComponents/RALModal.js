@@ -1,10 +1,10 @@
-import { Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { FormComposer, Modal, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 import { ModalConfig } from "../config/ModalConfig";
 
 const Heading = (props) => {
-  return <h1 className="heading-m">{props.label}</h1>;
+  return <h1 className={`heading-m ${props.className}`}>{props.label}</h1>;
 };
 
 const Close = () => (
@@ -16,7 +16,7 @@ const Close = () => (
 
 const CloseBtn = (props) => {
   return (
-    <div className="icon-bg-secondary" onClick={props.onClick}>
+    <div className={`icon-bg-secondary ${props.className}`} onClick={props.onClick}>
       <Close />
     </div>
   );
@@ -214,8 +214,8 @@ const RALModal = ({
   if (!action || !config.form) return null;
   return (
     <Modal
-      headerBarMain={<Heading label={t(config.label.heading)} />}
-      headerBarEnd={<CloseBtn onClick={closeModal} />}
+      headerBarMain={<Heading label={t(config.label.heading)} className="ral-modal-header" />}
+      headerBarEnd={<CloseBtn onClick={closeModal} className="ral-modal-close" />}
       actionCancelLabel={t(config.label.cancel)}
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={t(config.label.submit)}

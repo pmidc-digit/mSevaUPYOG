@@ -1,6 +1,12 @@
 
 package org.egov.rl.repository.builder;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -265,10 +271,12 @@ public class AllotmentQueryBuilder {
 //		return mainQuery.toString();
 //	}
 
-	public String getAllotedByPropertyIdsAndStatusActive(String propertyId, String tenantId) {
-		long currentDate = System.currentTimeMillis(); // current timestamp in long
 
-		StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
+	public String getAllotedByPropertyIdsAndStatusActive(String propertyId, String tenantId) {
+		
+	    long currentDate=formatDay();
+		
+	    StringBuilder mainQuery = new StringBuilder(SEARCH_BASE_QUERY);
 		mainQuery.append(" WHERE status = 'APPROVED' AND expireflag=false AND tenant_id='").append(tenantId).append("'");
 //		if(previousApplicationNumber==null){
 //			mainQuery.append(" AND previous_application_number is null");	
@@ -281,4 +289,14 @@ public class AllotmentQueryBuilder {
 		System.out.println("mainQuery--------"+mainQuery);
 		return mainQuery.toString();
 	}
+	
+	public long formatDay() {
+		LocalDate date=LocalDate.now().minusDays(15);
+		ZoneId zone = ZoneId.of("Asia/Kolkata");
+		ZonedDateTime zdt =  date.atTime(java.time.LocalTime.MAX).atZone(zone);
+		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss z");
+		ZonedDateTime parsed = ZonedDateTime.parse(zdt.format(fmt), fmt);
+		return parsed.toInstant().toEpochMilli();
+	}
+
 }

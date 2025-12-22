@@ -2,6 +2,7 @@ package org.egov.rl.calculator.service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -21,29 +22,56 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MonthCalculationService {
-	
+
 	@Autowired
 	private MasterDataService masterDataService;
 
-	// --------------------------------quterly scheduler-----------------------------------------------------
+	// --------------------------------quterly
+	// scheduler-----------------------------------------------------
 
-	public static LocalDate lastDayOfQuaterly(String monthName, int currentYear) {
-		LocalDate first = firstDayOfMonth(monthName, currentYear);
-		return first.withDayOfMonth(first.lengthOfMonth()).plusMonths(2);
+	public static long lastDayTimeOfCycle(long startDate, int cycle) {
+		ZoneId zone = ZoneId.of("Asia/Kolkata");
+
+		// Start ko IST zone me laao
+		ZonedDateTime start = Instant.ofEpochMilli(startDate).atZone(zone);
+
+		// Exclusive end: start + cycle months
+		ZonedDateTime endExclusive = start.plusMonths(cycle);
+
+		// Inclusive last moment: exclusive end se 1 millisecond pehle
+		long lastMillis = endExclusive.toInstant().toEpochMilli() - 1;
+
+		return lastMillis;
 	}
-	
-	public static LocalDate lastDayOfHelfYearly(String monthName, int currentYear) {
-		LocalDate first = firstDayOfMonth(monthName, currentYear);
-		return first.withDayOfMonth(first.lengthOfMonth()).plusMonths(5);
+
+	public static long firstDay(long startDate) {
+		ZoneId zone = ZoneId.of("Asia/Kolkata");
+
+		// Start ko IST zone me laao
+		ZonedDateTime start = Instant.ofEpochMilli(startDate).atZone(zone);
+
+		// Exclusive end: start + cycle months
+		ZonedDateTime endExclusive = start.plusDays(1);
+
+		// Inclusive last moment: exclusive end se 1 millisecond pehle
+		long lastMillis = endExclusive.toInstant().toEpochMilli() - 1;
+
+		return lastMillis;
 	}
-	
-	public static LocalDate lastDayOfYearly(String monthName, int currentYear) {
-		LocalDate first = firstDayOfMonth(monthName, currentYear);
-		return first.withDayOfMonth(first.lengthOfMonth()).plusMonths(11);
+
+	public long diffDay(long day) {
+		ZoneId zone = ZoneId.of("Asia/Kolkata");
+		LocalDate startDate = Instant.ofEpochMilli(day).atZone(zone).toLocalDate();
+		LocalDate today = LocalDate.now(zone);
+		
+        // Inclusive/Exclusive rule: ChronoUnit.DAYS is date-to-date difference (exclusive of start date)
+		long daysDiff = ChronoUnit.DAYS.between(startDate, today);
+		return daysDiff;
 	}
-	
-	// --------------------------------monthly scheduler----------------------------------------------------- 
-	
+
+	// --------------------------------monthly
+	// scheduler-----------------------------------------------------
+
 	public static LocalDate firstDayOfMonth(String monthName, int currentYear) {
 		Month month = parseFullMonthName(monthName);
 		return LocalDate.of(currentYear, month, 1);
@@ -75,8 +103,6 @@ public class MonthCalculationService {
 		return parsed.toInstant().toEpochMilli();
 	}
 
-	
-	
 //	public List<DemandPerioud> datePerioudCalculate(String oneMonth,long startEpochMilli, long endEpochMilli,String applicationNumber) {
 //
 //		LocalDate startDate = Instant.ofEpochMilli(startEpochMilli)
@@ -141,7 +167,6 @@ public class MonthCalculationService {
 //		return demandPerioudList.stream().filter(m->m.getCycle().equals(null)?true:m.getCycle().equals(oneMonth)).collect(Collectors.toList());
 //	}
 
-
 //	private boolean returnEndDate(long date) {
 //
 //		// Convert long (epoch milli) to LocalDate
@@ -163,8 +188,6 @@ public class MonthCalculationService {
 //
 //	}
 
-	
-
 	public long add15Days(long sdate) {
 		// Convert long → LocalDate
 		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -180,12 +203,12 @@ public class MonthCalculationService {
 		System.out.println("Epoch Milli of 15th Day: " + fifteenthEpochMilli);
 		return fifteenthEpochMilli;
 	}
-	
-	public long addAfterPenaltyDays(long sdate,RequestInfo requestInfo,String tenantId) {
+
+	public long addAfterPenaltyDays(long sdate, RequestInfo requestInfo, String tenantId) {
 		// Convert long → LocalDate
 		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
-		int afterday=masterDataService.getPenaltySlabs(requestInfo, tenantId).get(0).getApplicableAfterDays();
-		date=date.plusDays(afterday);
+		int afterday = masterDataService.getPenaltySlabs(requestInfo, tenantId).get(0).getApplicableAfterDays();
+		date = date.plusDays(afterday);
 		// Same month ka 15th day
 //		LocalDate fifteenthDay = date.withDayOfMonth(afterday);
 

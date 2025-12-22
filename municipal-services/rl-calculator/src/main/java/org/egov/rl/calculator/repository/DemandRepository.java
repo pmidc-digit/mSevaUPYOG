@@ -155,6 +155,24 @@ public class DemandRepository {
 					"Failed to fetch demands for the given rentable IDs and period");
 		}
 	}
+	
+	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> rentableIds) {
+		if (rentableIds == null || rentableIds.isEmpty()) {
+			return Collections.emptyList(); // avoid "IN ()" SQL
+		}
+
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) ORDER BY textperiodto DESC";
+
+		MapSqlParameterSource params = new MapSqlParameterSource().addValue("rentableIds", rentableIds);
+
+		try {
+			return namedParameterJdbcTemplate.query(sql, params, demandRowMapper);
+		} catch (Exception e) {
+			log.error("Error while fetching demands for rentable IDs and period", e);
+			throw new CustomException("DEMAND_FETCH_ERROR",
+					"Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
 
 //	public List<Demand> getDemandsByConsumerCode(List<String> rentableIds) {
 //		String query = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds)";

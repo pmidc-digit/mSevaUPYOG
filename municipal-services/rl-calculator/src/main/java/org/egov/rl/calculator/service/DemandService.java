@@ -70,6 +70,9 @@ public class DemandService {
 	@Autowired
 	NotificationService notificationService;
 
+	@Autowired
+	SchedulerService schedulerService;
+
 	public DemandResponse createDemand(CalculationReq calculationReq) {
 
 		if (calculationReq.getCalculationCriteria().get(0).isSatelment()) {
@@ -103,23 +106,50 @@ public class DemandService {
 				BigDecimal amountPayable = new BigDecimal(0);
 				String applicationType = allotmentRequest.getAllotment().getApplicationType();
 
-				// Convert long (epoch milli) to LocalDate
-				LocalDate stateDate = Instant.ofEpochMilli(allotmentDetails.getStartDate())
-						.atZone(ZoneId.systemDefault()).toLocalDate();
-				String startMonth = stateDate.getMonth().toString();
-				int startYear = stateDate.getYear();
+				
+				JsonNode property = allotmentDetails.getAdditionalDetails();
+				String status = property.path("feesPeriodCycle").asText();
+				long startDay = 0;
+				long endDay = 0;
+				long exparyDate = 0;
+				switch (status) {                    
+				    case RLConstants.RL_MONTHLY_CYCLE: {
+						// Convert long (epoch milli) to LocalDate
+						LocalDate stateDate = Instant.ofEpochMilli(allotmentDetails.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate();
+						String startMonth = stateDate.getMonth().toString();
+						int startYear = stateDate.getYear();
+						startDay = allotmentDetails.getStartDate();
+						endDay = monthCalculationService.formatDay(monthCalculationService.lastDayOfMonth(startMonth, startYear), true);
+						exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
+						break;
+					}
+					case RLConstants.RL_QUATERLY_CYCLE: {
+						startDay = allotmentDetails.getStartDate();
+						endDay = monthCalculationService.lastDayTimeOfCycle(startDay,3);
+					    exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
+						break;
+					}
+                    case RLConstants.RL_BIAANNUALY_CYCLE: {
+                    	startDay = allotmentDetails.getStartDate();
+						endDay = monthCalculationService.lastDayTimeOfCycle(startDay,6);
+						exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
+						break;
+					}
+					default: {
+						startDay = allotmentDetails.getStartDate();
+						endDay = monthCalculationService.lastDayTimeOfCycle(startDay,12);
+						exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
+						break;
+					}
+				}
 
-				long endDay = monthCalculationService
-						.formatDay(monthCalculationService.lastDayOfMonth(startMonth, startYear), true);
-				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-						allotmentDetails.getTenantId());
 
 				amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 						BigDecimal::add);
 
 				Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
 						.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)
-						.taxPeriodFrom(allotmentDetails.getStartDate()).taxPeriodTo(endDay)
+						.taxPeriodFrom(startDay).taxPeriodTo(endDay)
 						.fixedbillexpirydate(exparyDate).billExpiryTime(exparyDate).consumerType(applicationType)
 						.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 				demands.add(demand);
@@ -578,16 +608,18 @@ public class DemandService {
 							switch (status) {
 	                            
 								case RLConstants.RL_MONTHLY_CYCLE:
+									schedulerService.monthlyBillGenerate(currentDate, d, requestInfo);
 									break;
 			                    
 								case RLConstants.RL_QUATERLY_CYCLE:
+									schedulerService.quterlyBillGenerate(currentDate, d, requestInfo);
 									break;
 			                    
 								case RLConstants.RL_BIAANNUALY_CYCLE:
-									monthlyBillGenerate(currentDate, d, requestInfo);
+									schedulerService.biannualBillGenerate(currentDate, d, requestInfo);
 									break;
 								default:
-									System.out.println("Unknown status");
+									schedulerService.yearlyBillGenerate(currentDate, d, requestInfo);
 								}
 						});
 					} catch (Exception e) {

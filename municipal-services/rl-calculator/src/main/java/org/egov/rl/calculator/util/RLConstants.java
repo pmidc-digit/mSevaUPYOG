@@ -39,7 +39,7 @@ public class RLConstants {
 	public static final String RL_MONTHLY_CYCLE = "MONTHLY";
 	public static final String RL_QUATERLY_CYCLE = "QUATERLY";
 	public static final String RL_BIAANNUALY_CYCLE = "BIANNUAL";
-	public static final String RL_YEARLY_CYCLE = "YEARLY";
+	public static final String RL_YEARLY_CYCLE = "ANNUAL";
 	
 	
     public static final String TAX_PERIOD_MASTER = "TaxPeriod";

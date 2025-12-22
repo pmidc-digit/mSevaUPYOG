@@ -562,6 +562,15 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                     });
                 }
             }
+            
+            //Add Signature in owner object
+            if(StringUtils.isEmpty(tradeLicense.getTradeLicenseDetail().getOwners().get(0).getSignature())) {
+            	String signatureId = tradeLicense.getTradeLicenseDetail().getApplicationDocuments().stream()
+            	.filter(documnet -> documnet.getDocumentType().equalsIgnoreCase(SIGNATURE_DOC_TYPE))
+            	.map(Document::getFileStoreId).findAny().orElse(null);
+            	tradeLicense.getTradeLicenseDetail().getOwners().get(0).setSignature(signatureId);
+            }
+            
         });
     }
 

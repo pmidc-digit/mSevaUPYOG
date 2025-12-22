@@ -156,6 +156,7 @@ public class OwnerInfo extends User  {
                 this.setBloodGroup(user.getBloodGroup());
                 this.setIdentificationMark(user.getIdentificationMark());
                 this.setPhoto(user.getPhoto());
+                this.setSignature(user.getSignature());
                 this.setTenantId(user.getTenantId());
                 this.setPermanentDistrict(user.getPermanentDistrict());
                 this.setPermanentState(user.getPermanentState());

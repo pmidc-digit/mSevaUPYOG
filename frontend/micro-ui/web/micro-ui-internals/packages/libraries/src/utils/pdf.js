@@ -195,21 +195,7 @@ const jsPdfGenerator = async ({
         fontSize: 11,
         color: "#6f777c",
         margin: [10, 10],
-      },
-      {
-        text: t("TERMS_AND_CONDITIONS_OF_LICENSE"),
-        fontSize: 16,
-        bold: true,
-        alignment: "center",
-        decoration: "underline",
-        pageBreak: "before",
-        margin: [0, 25, 0, 0],
-      },
-      {
-        text: t("TERMS_AND_CONDITIONS_OF_LICENSE_CONTENT"),
-        fontSize: 8,
-        margin: [10, 20, 10, 0],
-      },
+      }
     ],
     defaultStyle: {
       font: "Hind",
@@ -235,7 +221,25 @@ const jsPdfGeneratorFormatted = async ({
   details,
   applicationNumber,
   t = (text) => text,
+  imageURL,
+  ulbType,
+  ulbName
 }) => {
+  console.log("ulbType",ulbType)
+  const baseUrl = window.location.origin;
+  let finalUrl;
+
+  if (imageURL?.includes("filestore")) {
+    const splitURL = imageURL.split("filestore")?.[1];
+    finalUrl = `${baseUrl}/filestore${splitURL}`;
+  } else {
+    // external URL, just use it directly
+    finalUrl = imageURL;
+  }
+
+  const base64Image = imageURL
+    ? await getBase64FromUrl(finalUrl)
+    : baseUrl;
 
   const dd = {
     
@@ -250,16 +254,21 @@ background: [
 
     header: {},
     content: [
-      ...createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
-      ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
-      {
-        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
-        font: "Hind",
-        fontSize: 11,
-        color: "#6f777c",
-        margin: [10, 10],
-      }
+      ...createHeaderFormatted(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
+      ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit)
     ],
+    footer: function (currentPage, pageCount) {
+      if (currentPage === pageCount) {
+        return {
+          text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+          font: "Hind",
+          fontSize: 11,
+          color: "#6f777c",
+          margin: [80, -30, 10, 40]
+        };
+      }
+      return null; // no footer on other pages
+    },    
     defaultStyle: {
       font: "Hind",
       margin: [20, 10, 20, 10],
@@ -778,9 +787,13 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
  * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
  */
 const generateTimelinePDF = async (data) => {
-  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps } = data;
+  console.log(data,"data i get ")
+  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps,moduleName } = data;
 
+  
+  let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
+  
   const buildTimelineEntries = () => {
     const entries = [];
     
@@ -848,12 +861,22 @@ const generateTimelinePDF = async (data) => {
                                 width: 'auto'
                               },
                               {
-                                stack: row.documents.map(doc => ({
-                                  columns: [
-                                    { image: docLogo, width: 20, margin: [0, 0, 5, 0], listType: "none" },
-                                    { text: doc.name, fontSize: 10, color: '#555', margin: [5, 5, 0, 0], decoration: 'underline', listType: "none" }
-                                  ]
-                                })),
+                                stack: row.documents.map(doc => {
+                                  return {
+                                    columns: [
+                                      { 
+                                        text: doc.name,
+                                        fontSize: 10,
+                                        color: '#555',
+                                        margin: [5, 5, 0, 0],
+                                        decoration: 'underline',
+                                        listType: "none",
+                                        link: doc.link,
+                                        linkTarget: '_blank' 
+                                      }
+                                    ]
+                                  };
+                                }),
                                 margin: [10, 0, 0, 2],
                                 width: '*'
                               }
@@ -921,7 +944,7 @@ const generateTimelinePDF = async (data) => {
         {
           columns: [
             {
-              text: `${t(businessService)} Application Timeline`  || 'Government Department',
+              text: `${t(moduleNamenew)} Application Timeline`  || 'Government Department',
               fontSize: 14,
               bold: true,
               color: '#2947A3',
@@ -997,7 +1020,7 @@ const generateTimelinePDF = async (data) => {
       },
       // Section Title
       {
-        text: t ? `${t('CM_TIMELINE_WORKFLOW_HISTORY')}` : 'File Movement History',
+        text: t ? `${t('ES_NEW_APPLICATION_APPLICATION_TIMELINE')} History` : 'File Movement History',
         fontSize: 14,
         bold: true,
         color: '#2947A3',
@@ -1806,14 +1829,14 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
         text: indData?.title,
         style: "header",
         fontSize: 9,
-        margin: [10, 5, 0, 5],
+        margin: [10, 2, 0, 2],
         border: isLast ? [true, false, false, true] : [true, false, false, false]
         // left border always true, bottom border true only for last row
       },
       {
         text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
         fontSize: 9,
-        margin: [0, 5, 0, 5],
+        margin: [0, 2, 0, 2],
         border: isLast ? [false, false, true, true] : [false, false, true, false]
         // right border always true, bottom border true only for last row
       }
@@ -1834,7 +1857,7 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
       hLineColor: () => "#cccccc",
       vLineColor: () => "#cccccc"
     },
-    margin: [10, 10, 10, 10]
+    margin: [10, 2, 10, 2]
   });
 }
 
@@ -1848,8 +1871,8 @@ function createContentFormatted(details, applicationNumber, logo, tenantId, phon
   return detailsHeaders;
 }
 
-function createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType) {
-  const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
+function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
+  const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
     style: "tableExample",
@@ -1896,8 +1919,8 @@ function createHeaderFormatted(details, name, phoneNumber, email, logo, tenantId
           qrCodeDataUrl
             ? {
                 image: qrCodeDataUrl,
-                width: 78,
-                margin: [10, 10],
+                width: 70,
+                margin: [30, 15 , 2, 10],
                 alignment: "right",
               }
             : {},

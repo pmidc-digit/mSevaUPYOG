@@ -131,14 +131,26 @@ export const ApplicationTimeline = ({ workflowDetails, t }) => {
   const timeline = useMemo(() => normalizeTimeline({ data: details }), [details]);
   const currentState = workflowDetails?.data?.timeline?.[0]?.state;
 
+  const { isLoading, data } = Digit.Hooks.ads.useADSDocumentSearch(
+    { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
+    { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
+    null,
+    0
+  );
+
+  console.log('data of doc hook', data)
   // PDF Download handler
   const handleDownloadPDF = useCallback(() => {
-    const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
-    const acknowledgementData = getTimelineAcknowledgementData(workflowDetails, tenantInfo, t);
-    Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
-  }, [workflowDetails, t]);
+    if (!isLoading) {
+      const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
+      const acknowledgementData = getTimelineAcknowledgementData(workflowDetails, tenantInfo,data?.pdfFiles || {}, t);
+      Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
+    }
+    }, [workflowDetails,data, t]);
 
   if (!timeline?.length) return null;
+  if (isLoading) return <Loader />;
+
 
   return (
     <div className="timeline-hoc-container">

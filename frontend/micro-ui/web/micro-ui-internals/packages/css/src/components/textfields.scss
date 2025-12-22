@@ -8,10 +8,19 @@
 
 .employee-card-input {
   @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
-  height: 2.0rem !important;
+  height: 2rem !important;
   padding: 1.5rem 1rem;
   border-radius: 8px;
   border: 1px solid #b4b4b4;
+  color: #1f2937;
+  &::placeholder {
+    color: #9ca3af;
+  }
+  &:focus {
+    outline: none;
+    border-color: #d1d5db;
+    box-shadow: 0 0 0 3px rgba(13, 78, 255, 0.03);
+  }
 }
 .employee-card-input:disabled {
   @apply border-grey-dark text-grey-dark !important;
@@ -28,6 +37,8 @@
   background: #eeeeee;
   border-right: 0;
   padding-right: 5px;
+  position: relative;
+  z-index: 0 !important;
 }
 .employee-card-input-error {
   @apply mb-lg pl-sm block w-full h-10 outline-none border-2 border-error border-solid bg-white leading-10 text-form-field text-text-primary;
@@ -36,7 +47,7 @@
 
 .card-textarea,
 .employee-card-textarea {
-  @apply block outline-none mt-md mb-lg border w-full border-input-border border-solid bg-white h-24 text-form-field text-text-primary p-sm rounded-lg;
+  @apply block mb-lg outline-none border w-full border-input-border border-solid bg-white h-24 text-form-field text-text-primary p-sm rounded-lg;
 }
 
 .inputWrapper {
@@ -77,9 +88,9 @@
   }
 
   .card-textarea {
-   /* //width: 480px; */
+    /* //width: 480px; */
     @apply w-full;
-    max-width:540px;
+    max-width: 540px;
   }
 
   .employee-card-textarea {
@@ -93,19 +104,35 @@
 
 .citizen-card-input {
   @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
-
 }
-.citizen-card-input{
-  height:2rem !important;
+.citizen-card-input {
+  height: 2rem !important;
   margin-bottom: 16px !important;
-  line-height: 2.0rem !important;
+  line-height: 2rem !important;
+  color: #1f2937;
+  &::placeholder {
+    color: #9ca3af;
+  }
+  &:focus {
+    outline: none;
+    border-color: #d1d5db;
+    box-shadow: 0 0 0 3px rgba(13, 78, 255, 0.03);
+  }
 }
 
-.citizen-card-input--front {
-  width: fit-content !important;
-  display: flex;
-  align-items: center;
-  background: #eeeeee;
-  border-right: 0;
-  padding-right: 5px;
+/* Mobile Number Input Styles */
+.mobile-number-prefix {
+  position: absolute;
+  left: 12px;
+  top: 34%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  pointer-events: none;
+  z-index: 0 !important;
+}
+
+.mobile-number-input-with-prefix {
+  padding-left: 45px !important;
 }

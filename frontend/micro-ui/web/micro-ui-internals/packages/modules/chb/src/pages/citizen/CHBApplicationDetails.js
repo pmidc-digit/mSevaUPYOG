@@ -12,8 +12,6 @@ import {
   Toast,
   SubmitBar,
   CardHeader,
-  CheckPoint,
-  ConnectingCheckPoints,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,54 +27,7 @@ import { pdfDownloadLink } from "../../utils";
 import get from "lodash/get";
 import { size } from "lodash";
 import { doc } from "prettier";
-
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
-
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
-
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
-
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
+import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -164,11 +115,18 @@ const CHBApplicationDetails = () => {
   }
 
   const getChbAcknowledgement = async () => {
-    const applications = application || {};
-    console.log('applications for chbb', applications)
-    const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-    const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    try {
+      setLoading(true);
+      const applications = application || {};
+      console.log("applications for chbb", applications);
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
+      Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   let documentDate = t("CS_NA");
@@ -179,44 +137,58 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let application = data?.hallsBookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
-      const updatedApplication = {
-        ...application,
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
+    try {
+      setLoading(true);
+      let application = data?.hallsBookingApplication?.[0];
+      let fileStoreId = application?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const updatedApplication = {
+          ...application,
+          paymentReceiptFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+        refetch();
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   }
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = {
-      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
+    try {
+      setLoading(true);
+      let application = {
+        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
           return {
             ...app,
             bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
               return new Date(a.bookingDate) - new Date(b.bookingDate);
-            })
+            }),
           };
-        })
-    };
+        }),
+      };
 
-    let fileStoreId = application?.permissionLetterFilestoreId;
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
-      fileStoreId = response?.filestoreIds[0];
+      let fileStoreId = payments?.fileStoreId;
+      if (!fileStoreId) {
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
   }
 
   const handleDownload = async (document, tenantid) => {
@@ -292,11 +264,15 @@ const CHBApplicationDetails = () => {
       bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
+
+  console.log("docs===", docs);
+
   return (
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
+          {loading && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -375,25 +351,8 @@ const CHBApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-        {workflowDetails?.data?.timeline && (
-          <Card style={{ marginTop: "20px" }}>
-            <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-            {workflowDetails?.data?.timeline.length === 1 ? (
-              <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-            ) : (
-              <ConnectingCheckPoints>
-                {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                  <CheckPoint
-                    keyValue={index}
-                    isCompleted={index === 0}
-                    label={t(checkpoint.status)}
-                    customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                  />
-                ))}
-              </ConnectingCheckPoints>
-            )}
-          </Card>
-        )}
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
     </React.Fragment>
   );

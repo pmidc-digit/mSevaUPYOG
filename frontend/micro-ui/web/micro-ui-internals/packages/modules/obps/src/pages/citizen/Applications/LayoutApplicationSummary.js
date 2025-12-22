@@ -88,6 +88,7 @@ const LayoutApplicationOverview = () => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")
 const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
+  const [loading, setLoading] = useState(false);
 
 // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
@@ -111,11 +112,18 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const userRoles = user?.info?.roles?.map((e) => e.code)
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Layout?.[0]
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId)
-    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t)
-    Digit.Utils.pdf.generateFormatted(acknowledgementData)
-  }
+    try {
+      const Property = applicationDetails?.Layout?.[0];
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+      const ulbType = tenantInfo?.city?.ulbType;
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
+      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
@@ -316,13 +324,24 @@ const [viewTimeline, setViewTimeline] = useState(false);
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    const fee = payments?.totalAmountPaid;
-    console.log("fee here here", fee);
-    const amountinwords = amountToWords(fee);
-    let response = { filestoreIds: [payments?.fileStoreId] }
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,amountinwords,usage }] }, "layout-receipt")
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
-    window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    try {
+      setLoading(true);
+      let response = null;
+      const fee = payments?.totalAmountPaid;
+      console.log("fee here here", fee);
+      const amountinwords = amountToWords(fee);
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      } else {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, amountinwords, usage }] }, "layout-receipt");
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
@@ -395,6 +414,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
          <LinkButton  label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+        {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <div>
 

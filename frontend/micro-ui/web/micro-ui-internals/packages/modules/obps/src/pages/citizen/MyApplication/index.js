@@ -4,6 +4,7 @@ import { Card, KeyNote, Loader, SubmitBar, Header } from "@mseva/digit-ui-react-
 import { Fragment } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { getBPAFormData } from "../../../utils/index";
+import CustomCard from "../../../pageComponents/CustomCard";
 
 const getServiceType = () => {
   return `BPA_APPLICATIONTYPE_BUILDING_PLAN_SCRUTINY`;
@@ -160,8 +161,8 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
       },
       initiationFlow: true,
       editableFields: {
-        "provide-license-type": true,
-        "licensee-details": true,
+        "provide-license-type": false,
+        "licensee-details": false,
         "Permanent-address": true,
         "professional-document-details": true,
         isCreate: false,
@@ -385,7 +386,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
         if (application.type === "BPAREG") {
           console.log("applicationDataForBPAREG", application)
           return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
               <KeyNote
                 keyValue={t("BPA_LICENSE_TYPE")}
@@ -463,36 +464,12 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
 
               </div>
 
-            </Card>
+            </CustomCard>
           );
-        } else if (application.type === "LAYOUT") {
+        } 
+         else {
           return (
-            <Card key={index}>
-              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
-              <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={t("LAYOUT_APPLICATION")} />
-              <KeyNote keyValue={t("Owner")} note={application?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName} />
-              <KeyNote
-                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`WF_LAYOUT_${application?.applicationStatus || application?.status}`)}
-                noteStyle={application?.applicationStatus === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
-              />
-              <Link
-                to={{
-                  pathname: `/digit-ui/citizen/obps/layout/${application?.applicationNo}`,
-                  state: { data: { Layout: [application] } },
-                }}
-              >
-
-                <SubmitBar label={t("TL_VIEW_DETAILS")} />
-              </Link>
-            </Card>
-          )
-        
-        
-        
-         } else {
-          return (
-            <Card key={index}>
+            <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
               <KeyNote
                 keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")}
@@ -534,7 +511,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
                   </div>
                 </Link>
               ) : null}
-            </Card>
+            </CustomCard>
           );
         }
       })}

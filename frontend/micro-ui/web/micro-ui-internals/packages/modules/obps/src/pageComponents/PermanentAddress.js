@@ -472,7 +472,15 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setLoader(false);
           let data = {
             ...formData,
-            result: result,            
+            result: result,
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }               
           };
           onSelect("", data, "", true);
         })
@@ -573,7 +581,15 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setLoader(false);
           let data = {
             ...formData,
-            result: result,            
+            result: result,
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }                   
           };
           onSelect("", data, "", true);
         })
@@ -620,12 +636,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               owners: [
                 {
-                  // gender: formData?.LicneseDetails?.gender?.code,
-                  // mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  // name: formData?.LicneseDetails?.name,
-                  // dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
-                  // emailId: formData?.LicneseDetails?.email,
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
+                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
+                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
+                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
                   permanentAddress: PermanentAddress,
                   correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
                   pan: formData?.LicneseDetails?.PanNumber,
@@ -716,6 +732,11 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               owners: [
                 {                  
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
+                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
+                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
+                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,
                   permanentAddress: PermanentAddress,
                   correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
                   pan: formData?.LicneseDetails?.PanNumber,
@@ -726,9 +747,10 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   permanentState: selectedState.state_name,
                   correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
                 },
-              ],              
+              ],
               additionalDetail: {                
-                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),               
+                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),                
+                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,                
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
               },              
@@ -790,8 +812,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   };
   return (
     <React.Fragment>
-      <div className={isopenlink ? "OpenlinkContainer" : ""} style={{paddingBottom: "30px"}}>
-        {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+      <div className={isopenlink ? "OpenlinkContainer" : ""}>
+        {isopenlink && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep
           config={config}
@@ -809,8 +831,27 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             name="PermanentAddress"
             onChange={selectPermanentAddress}
             value={PermanentAddress}
-            disable={!isEditable}
+            // disable={!isCitizenEditable}
           />
+
+          {/* <CheckBox
+            label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
+            onChange={handleAddressSame}
+            checked={isAddressSame}
+           
+            //  disable={!isCitizenEditable}
+          />
+
+          <CardLabel>{t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}</CardLabel>
+          <TextArea
+            t={t}
+            isMandatory={false}
+            type={"text"}
+            name="correspondenceAddress"
+            value={correspondenceAddress}
+            onChange={(e) => setCorrespondenceAddress(e.target.value)}
+            // disable={isAddressSame}
+          /> */}
 
           <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
           {isStateLoading ? <Loader /> : <div>
@@ -818,7 +859,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               t={t}
               optionKey="state_name"
               // isMandatory={config.isMandatory}
-              option={stateOptions}
+              option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
               selected={selectedState}
               select={SelectState}
               disable={!isEditable}
@@ -834,7 +875,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               optionKey="district_name_english"
               // isMandatory={config.isMandatory}
               // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
-              option={uniqueDistricts}
+              option={uniqueDistricts?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
               selected={selectedDistrict}
               select={SelectDistrict}
               disable={!isEditable}
@@ -905,7 +946,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               t={t}
               optionKey="state_name"
               // isMandatory={config.isMandatory}
-              option={stateOptions}
+              option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
               selected={isAddressSame? selectedState : selectedCorrespondentState}
               select={SelectCorrespondentState}
               disable={!isEditable || isAddressSame}
@@ -921,7 +962,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               optionKey="district_name_english"
               // isMandatory={config.isMandatory}
               // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
-              option={uniqueDistrictsCor}
+              option={uniqueDistrictsCor?.sort((a, b) => a.district_name_english.localeCompare(b.district_name_english)) || []}
               selected={isAddressSame? selectedDistrict : selectedCorrespondentDistrict}
               select={SelectCorrespondentDistrict}
               disable={!isEditable || isAddressSame}

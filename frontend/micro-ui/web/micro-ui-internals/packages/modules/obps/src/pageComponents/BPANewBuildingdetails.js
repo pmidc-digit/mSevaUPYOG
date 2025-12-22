@@ -12,6 +12,7 @@ import { set } from "lodash";
 
 
 
+
 const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData, onGoBack }) => {
   const { pathname: url } = useLocation()
   const index = window.location.href.charAt(window.location.href.length - 1)
@@ -1003,73 +1004,16 @@ console.log("appDate", nocApprovedOn);
 
   const ErrorMessage = ({ error }) => {
     if (!error) return null
-    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{error}</div>
+    return <div className="newbuilding-error-message">{error}</div>
   }
 
 
   
-    // ---------------- UI Styles ----------------
-    const pageStyle = {
-      padding: "2rem",
-      backgroundColor: "#f1f1f1ff",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      color: "#333",
-      paddingBottom: "5rem",
-    };
-  
-    const sectionStyle = {
-      backgroundColor: "#ffffff",
-  
-      borderRadius: "8px",
-   
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+    // ---------------- UI Classes are defined in BPANewBuildingdetails.css ----------------
 
-      paddingBottom: "50px"
-    };
-  
-    const headingStyle = {
-      fontSize: "1.5rem",
-      borderBottom: "2px solid #ccc",
-      paddingBottom: "0.3rem",
-      color: "#2e4a66",
-      marginTop: "2rem",
-      marginBottom: "1rem",
-    };
-  
-    const labelFieldPairStyle = {
-      display: "flex",
-      justifyContent: "space-between",
-      borderBottom: "1px dashed #e0e0e0",
-      padding: "0.5rem 0",
-      color: "#333",
-    };
-  
-    const documentsContainerStyle = {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "1rem",
-      
-    };
-  
-    const documentCardStyle = {
-  
-      minWidth: "200px",
-      maxWidth: "250px",
-      backgroundColor: "#fdfdfd",
-      padding: "0.75rem",
-      border: "1px solid #e0e0e0",
-      borderRadius: "6px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      justifyContent:"center",
-      display:"flex",
-      
-    };
-  
-    const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-  
     const renderLabel = (label, value) => (
-      <div style={labelFieldPairStyle}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div className="bpa-newbuilding-label-field-pair">
+        <CardLabel className="bpa-newbuilding-bold-label">{label}</CardLabel>
         <div>{value || t("CS_NA")}</div>
       </div>
     );
@@ -1080,8 +1024,8 @@ console.log("appDate", nocApprovedOn);
   <div >
     {/* {!Webview && <Timeline currentStep={2} />} */}
     <FormStep config={{...config, texts:{header: "BPA_ADDITIONAL_BUILDING_DETAILS"}}} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
-      <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2>
+      <div className="bpa-newbuilding-bpa-section">
+        {/* <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2> */}
 
         <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
         <TextInput
@@ -1171,7 +1115,7 @@ console.log("appDate", nocApprovedOn);
         {approvedColony?.code === "NO" && (
           <React.Fragment>
             <CardLabel>{`${t("BPA_NOC_NUMBER")} *`}</CardLabel>
-            <div className="field-container">
+            <div className="bpa-newbuilding-field-container">
               <TextInput
                 t={t}
                 type={"text"}
@@ -1186,16 +1130,7 @@ console.log("appDate", nocApprovedOn);
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: "1",
-                  right: "95px",
-                  marginTop: "-24px",
-                  marginRight: Webview ? "-20px" : "-20px",
-                }}
-                onClick={(e) => onClick(e)}
-              >
+              <div className="bpa-newbuilding-search-icon-container" onClick={(e) => onClick(e)}>
                 <SearchIcon />
               </div>
             </div>
@@ -1551,9 +1486,7 @@ console.log("appDate", nocApprovedOn);
               message={ecbcCertificateFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
             />
             {errors.ecbcCertificateFile && (
-              <p className="error" style={{ color: "red" }}>
-                {errors.ecbcCertificateFile}
-              </p>
+              <p className="error ecbc-error-text">{errors.ecbcCertificateFile}</p>
             )}
           </div>
         )}
@@ -1561,17 +1494,8 @@ console.log("appDate", nocApprovedOn);
     </FormStep>    
 
     <ActionBar>
-        <SubmitBar
-          label="Back"
-          style={{
-            border: "1px solid",
-            background: "transparent",
-            color: "#2947a3",
-            marginRight: "5px",
-          }}
-          onSubmit={onGoBack}
-        />
-      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading}/>
+        <SubmitBar label="Back" className="submit-back" onSubmit={onGoBack} />
+      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading} />
     </ActionBar>
     {loader && <LoaderNew page={true} />}
   </div>

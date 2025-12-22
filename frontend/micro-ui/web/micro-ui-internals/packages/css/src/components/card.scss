@@ -1,56 +1,107 @@
+
+
 .card {
-  @apply bg-white m-sm px-md pt-md pb-lg shadow-card;
-  border-radius: 4px;
+  padding: 20px 24px 28px 24px;
   max-width: 95vw;
   width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(30, 58, 138, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+  margin-bottom: 15px;
+
 
   .card-header {
-    @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: left;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .card-sub-header {
-    @apply text-text-primary text-caption-xl font-bold align-middle text-left mb-sm;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: left;
+    margin-bottom: 8px;
+    margin-top: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
   }
 
   .card-caption {
-    @apply text-text-secondary text-caption-xl mb-sm;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+    font-weight: 500;
   }
 
   .card-text {
-    @apply text-text-secondary text-body-l align-middle text-left mb-lg;
+    font-size: 14px;
+    color: #475569;
+    text-align: left;
+    margin-bottom: 16px;
+    line-height: 1.6;
 
     span {
-      @apply text-text-primary;
+      color: #0f172a;
+      font-weight: 600;
     }
   }
 
   .card-text-primary {
-    @apply text-text-primary text-body-l;
+    font-size: 14px;
+    color: #0f172a;
+    font-weight: 600;
   }
 
   .card-text-button {
-    @apply text-primary-main text-text-btn;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .card-label {
-    @apply text-legend text-text-primary mb-sm;
+    font-size: 16px;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
   }
 
   .card-label-error {
-    @apply block text-body-s text-error mb-md;
+    display: block;
+    font-size: 12px;
+    color: #dc2626;
+    margin-bottom: 16px;
+    font-weight: 600;
   }
 
   .card-label-desc {
-    @apply font-bold text-text-secondary text-heading-s mb-md;
+    font-weight: 700;
+    color: #475569;
+    font-size: 13px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
-  .card-link {
-    @apply block text-center text-link text-primary-main mt-md cursor-pointer;
-  }
+
 }
 
 .validation-error {
-  @apply block text-body-s text-error;
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
 }
 
 .docsDescription {
@@ -58,66 +109,112 @@
 }
 
 .field-container {
-  @apply flex  items-center;
-  /*@apply flex  justify-center items-center;*/
+  display: flex;
+  align-items: center;
 }
 
 .employeeCard {
-  @apply bg-white  p-xxl mb-xl shadow-card;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+  padding: 24px;
+  margin-bottom: 32px;
+  border-radius: 14px;
+  border: 1px solid #e1e8f0;
+  box-shadow: 0 12px 32px rgba(30, 58, 138, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+   overflow: visible !important;
 
   .card-header {
-    @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: left;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
   }
 
   .card-sub-header,
   .employee-card-sub-header {
-    @apply text-text-primary text-caption-xl font-bold align-middle text-left;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
   }
 
   .card-section-header {
-    @apply text-text-primary text-heading-m font-medium;
+    font-size: 20px;
+    color: #0d43a7;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 12px;
   }
 
   .card-section-sub-text {
-    @apply text-text-primary text-body-s;
+    font-size: 12px;
+    color: #0f172a;
+    font-weight: 500;
   }
 
   .card-caption {
-    @apply text-text-secondary text-caption-xl mb-sm;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
   }
 
   .card-text {
-    @apply text-text-secondary text-body-l align-middle text-left mb-lg;
+    font-size: 14px;
+    color: #475569;
+    text-align: left;
+    margin-bottom: 16px;
+    line-height: 1.6;
 
     span {
-      @apply text-text-primary;
+      color: #0f172a;
+      font-weight: 600;
     }
   }
 
   .card-text-primary {
-    @apply text-text-primary text-body-l;
+    font-size: 14px;
+    color: #0f172a;
+    font-weight: 600;
   }
 
   .card-text-button {
-    @apply text-primary-main text-text-btn;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .card-label {
-    @apply text-legend text-text-primary mb-md;
+    font-size: 16px;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .card-label-error {
-    @apply block text-body-s text-error mb-md;
+    display: block;
+    font-size: 12px;
+    color: #dc2626;
+    margin-bottom: 16px;
+    font-weight: 600;
   }
 
   .card-label-desc {
-    @apply font-bold text-text-secondary text-heading-s mb-md;
+    font-weight: 700;
+    color: #475569;
+    font-size: 13px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
-  .card-link {
-    @apply block text-center text-link text-link-normal mt-md;
-  }
+
 
   .card-search-heading {
     margin-right: 0px !important;
@@ -127,19 +224,18 @@
     padding-left: 25px;
   }
 }
+
 .employeeCard.fsm {
   margin-bottom: 64px !important;
   margin-left: 0px !important;
   margin-right: 16px !important;
 }
 .header-wrap {
-  @apply flex mb-md;
+  display: flex;
+  margin-bottom: 16px;
 
   .header-start {
     margin-right: auto;
-  }
-
-  .header-content {
   }
 
   .header-end {
@@ -148,51 +244,157 @@
 }
 
 .card-emp {
-  @extend .card;
-  padding-right: 0;
-  padding-top: 0;
-  padding-left: 0;
-  @apply bg-white m-sm;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+  padding: 0;
+  margin: 8px;
+  border-radius: 14px;
+  border: 1px solid #e1e8f0;
 }
 
-.submit-bar {
-  @apply h-10 bg-primary-main text-center outline-none text-white;
-
+.card-link{
+   height: 40px;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+  text-align: center;
+  outline: none;
   width: 175px;
   border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32);
+  }
 
   &:focus {
-    @apply outline-none;
+    outline: none;
   }
 
   header {
-    @apply font-rc font-medium text-legend text-white leading-10;
+    font-weight: 600;
+    font-size: 12px;
+    color: white;
+    line-height: 40px;
+  }
+}
+
+.submit-bar, .bpa-owner-submit-back {
+  height: 40px;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+  text-align: center;
+  outline: none;
+  width: 175px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  header {
+    font-weight: 600;
+    font-size: 12px;
+    color: white;
+    line-height: 40px;
   }
 }
 
 .submit-bar-disabled {
-  @apply h-10 bg-primary-main text-center outline-none opacity-50 text-white;
-
+  height: 40px;
+  background: linear-gradient(135deg, #94a3b8 0%, #78909c 100%);
+  color: white;
+  text-align: center;
+  outline: none;
+  opacity: 0.6;
   width: 175px;
   border-radius: 8px;
+  border: none;
+  cursor: not-allowed;
 
   &:focus {
-    @apply outline-none;
+    outline: none;
   }
 
   header {
-    @apply font-rc font-medium text-legend text-white leading-10;
-    line-height: 2rem !important;
+    font-weight: 600;
+    font-size: 12px;
+    color: white;
+    line-height: 40px;
   }
 }
 
-@screen dt {
+.submit-bar-back {
+  background: transparent !important;
+  color: #2563eb !important;
+  border: 1px solid #2563eb !important;
+  box-shadow: none !important;
+  margin-right: 10px;
+
+  &:hover {
+    background: rgba(37, 99, 235, 0.08) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+  }
+}
+
+/* LinkButton styled as SubmitBar */
+.card-link.submit-bar,
+button.card-link.submit-bar {
+  height: 40px !important;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+  color: white !important;
+  text-align: center !important;
+  outline: none !important;
+  width: 175px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 16px !important;
+  margin: 0 !important;
+  text-decoration: none !important;
+
+  &:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32) !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    color: white !important;
+  }
+
+  &:focus {
+    outline: none !important;
+  }
+}
+
+
+@media (min-width: 1024px) {
   .submit-bar,
   .submit-bar-disabled {
     width: 175px;
     border-radius: 8px;
-
-    height: 2rem !important;
+    height: 40px;
   }
 
   .card {
@@ -200,29 +402,29 @@
     flex-direction: column;
 
     .card-header {
-      @apply text-heading-xl-dt;
+      font-size: 24px;
     }
 
     .card-sub-header {
-      @apply text-heading-l-dt;
+      font-size: 18px;
     }
 
     .card-caption {
-      @apply text-caption-xl-dt;
+      font-size: 14px;
     }
 
     .card-text,
     .card-text-primary {
-      @apply text-body-l-dt;
+      font-size: 16px;
     }
 
-    .card-link {
-      @apply text-left;
-    }
+
   }
 
   .employeeCard {
-    @apply mb-md mx-md !important;
+    margin-bottom: 16px !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
 
     &.filter {
       margin-left: auto;
@@ -230,16 +432,17 @@
     }
 
     .card-header {
-      @apply text-heading-xl-dt;
+      font-size: 24px;
     }
 
     .card-sub-header {
-      @apply text-heading-l-dt;
+      margin-bottom: 40px;
+      font-size: 18px;
     }
 
     .employee-card-sub-header {
       margin-bottom: 40px;
-      @apply text-heading-l-dt;
+      font-size: 18px;
     }
 
     .card-section-header {
@@ -247,12 +450,12 @@
       color: #0d43a7;
       font-size: 24px;
       line-height: 28px;
-      font-family: Noto Sans, sans-serif;
-      @apply text-heading-m-dt font-medium font-sans;
+      font-weight: 700;
     }
 
     .card-section-sub-text {
-      @apply text-text-primary text-body-s-dt;
+      font-size: 12px;
+      color: #0f172a;
     }
 
     .card-search-heading {
@@ -264,20 +467,18 @@
     }
 
     .card-caption {
-      @apply text-caption-xl-dt;
+      font-size: 14px;
     }
 
     .card-text,
     .card-text-primary {
-      @apply text-body-l-dt;
+      font-size: 16px;
     }
 
-    .card-link {
-      @apply text-left;
-    }
 
     .label-field-pair {
-      @apply flex items-center;
+      display: flex;
+      align-items: center;
 
       h2 {
         width: 30%;
@@ -294,37 +495,17 @@
 
     .field-container {
       span {
-        border: 2px solid black;
-        background: rgb(247, 247, 247);
-        width: 40px;
-        height: 40px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: -16px;
-        border-right: none;
+       
       }
-    }
-  }
-
-  .header-wrap {
-    @apply flex mb-md;
-
-    .header-start {
-      margin-right: auto;
-    }
-
-    .header-content {
-    }
-
-    .header-end {
-      margin-left: auto;
     }
   }
 }
 
 .card-section-header {
-  @apply text-text-primary text-heading-m font-bold;
+  font-size: 18px;
+  color: #0f172a;
+  font-weight: 700;
+  margin-top: 8px;
 }
 
 .card-search-heading {
@@ -340,13 +521,14 @@
 }
 
 .home-page-info-banner-wrap {
-  margin: "0px 16px 24px 16px";
+  margin: 0px 16px 24px 16px;
 }
 
 @media (min-width: 780px) {
   .button-sub-text {
     width: 240px;
   }
+
   .home-page-info-banner-wrap {
     max-width: 45%;
     min-width: 100%;
@@ -354,8 +536,7 @@
     margin-right: 24px;
     margin-bottom: 24px;
   }
-  .info-banner-wrap-citizen-override {
-  }
+
   .oc-aknowledgement-screen {
     width: auto;
     min-width: 240px;
@@ -365,7 +546,11 @@
 }
 
 .card-label-error {
-  @apply block text-body-s text-error mb-md;
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  margin-bottom: 16px;
+  font-weight: 600;
 }
 
 .employeeCard-override {
@@ -385,6 +570,7 @@
   height: 70px !important;
   margin-bottom: 15px !important;
 }
+
 .employee-main-application-details {
   padding: 10px !important;
 }
@@ -408,7 +594,7 @@
 
 .language-selector .submit-bar,
 .submit-bar-disabled {
-  background-color: rgb(178, 196, 239, 0.8) !important;
+  background: linear-gradient(135deg, rgba(178, 196, 239, 0.8) 0%, rgba(178, 196, 239, 0.8) 100%) !important;
 }
 
 .owner-details {

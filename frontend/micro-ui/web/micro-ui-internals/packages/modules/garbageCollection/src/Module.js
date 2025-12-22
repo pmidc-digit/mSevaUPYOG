@@ -19,6 +19,8 @@ import GCMyApplications from "./pages/citizen/MyChallan";
 import GCApplicationDetails from "./pages/citizen/ChallanApplicationDetails";
 import GCResponseCitizen from "./components/GCResponseCitizen";
 import ApplicationDetails from "./pages/employee/ApplicationDetails";
+import GenerateBill from "./pages/employee/GenerateBill";
+import BillGenie from "./pages/employee/BillGenie";
 
 export const GarbageCollectionModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -74,6 +76,8 @@ const componentsToRegister = {
   GCApplicationDetails,
   GCResponseCitizen,
   ApplicationDetails,
+  GenerateBill,
+  BillGenie,
 };
 
 export const initGarbageCollectionComponents = () => {

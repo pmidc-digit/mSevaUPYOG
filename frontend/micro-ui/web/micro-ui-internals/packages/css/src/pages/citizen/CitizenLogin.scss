@@ -1,0 +1,50 @@
+.newLoginlanguageWrapper {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.newLoginlabel {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 25px;
+  color: #686677;
+  margin-bottom: 8px;
+}
+
+.newLoginrequired {
+  color: #ff1515;
+}
+
+.newLoginlanguageButtonContainer {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Default button style */
+.newLoginlanguageButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #344054;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.newLogin2s ease;
+}
+
+/* Hover state */
+.newLoginlanguageButton:hover {
+  border-color: #98a2b3;
+  background-color: #f9fafb;
+}
+
+/* Selected button state */
+.newLoginselected {
+  border: 2px solid #5b68f0;
+  background-color: #f0f1ff;
+  color: #5b68f0;
+  font-weight: 600;
+}

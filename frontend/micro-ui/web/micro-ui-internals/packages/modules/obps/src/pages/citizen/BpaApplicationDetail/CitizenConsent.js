@@ -141,7 +141,7 @@ console.log('data for ownerconsent', data)
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
       const response = await Digit.UserService.sendOtp({
-        otp: { mobileNumber: mobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type, type: "login" },
+        otp: { mobileNumber: ownermobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type, type: "login" },
       })
       if (response.isSuccessful) {
         setShowOTPInput(true)
@@ -233,8 +233,9 @@ console.log('data for ownerconsent', data)
     <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
       <li style="margin-top:-5px;margin-bottom:-25px;">1. That I am/We are sole owner(s) of the site.</li>
       <li style="margin-top:-5px;margin-bottom:-25px;">2. That there is no dispute regarding the site and if any dispute arises, then I/We shall be solely responsible for the same.</li>
-      <li style="margin-top:-5px;margin-bottom:-25px;">3. That construction of the building will be undertaken as per the approved building plans and structural design given by the Structural Engineer.</li>
-      <li style="margin-top:-5px;margin-bottom:-25px;">4. That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">3. That construction of the building will be undertaken as per the approved building plans and structural design given by the Structural Engineer.</li>,
+      <li style="margin-top:-5px;margin-bottom:-25px;">4. If there is any shortfall in fees, I will be liable to pay the balance amount.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.</li>
     </ol>
 
     <!-- Signature / details table -->
@@ -311,15 +312,32 @@ console.log('data for ownerconsent', data)
       }
       setIsUploading(true); // Set isUploading to true before starting the upload
       
-      const TimeStamp=  new Date(timeStamp).toString();
+      const opts = {
+        timeZone: "Asia/Kolkata",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short"
+      };
+
+      const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(timeStamp);
+      const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+      const formattedIST = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
       const updatedAdditionalDetails = {
         ...data?.applicationData,
-        TimeStamp,
+        TimeStamp: formattedIST,
       };
 
       // Update the entire data object with the new additionalDetails
       const updatedData = {
         applicationNo: data?.applicationNo,
+        ulbselection,
         tenantId: data?.tenantId,
         applicationData: {
           ...updatedAdditionalDetails
@@ -419,7 +437,7 @@ console.log(result, "RESULT");
     },
   };
 
-  const isValidMobileNumber = mobileNumber?.length === 10 && /^[0-9]+$/.test(mobileNumber)
+  const isValidMobileNumber = ownermobileNumber?.length === 10 && /^[0-9]+$/.test(ownermobileNumber)
 
   return (
     <div>

@@ -18,22 +18,29 @@
   }
 }
 */
-.employee-select-wrap:active{
-  background-color: white
+.employee-select-wrap:active {
+  background-color: white;
+}
+.employee-select-wrap .select {
+  background-color: white;
+  border-radius: 5px;
+  border-color: 1px solid blue;
+  height: 50px;
 }
 .employee-select-wrap {
   @apply mb-lg relative;
 
   .select {
-    @apply relative block w-full h-10 border border-solid border-input-border;
-    &:hover {
-      @apply border-2 border-solid border-primary-main;
-    }
+    background-color: white;
+    border-radius: 8px;
+    border-color: rgb(46, 46, 236);
+    height: 50px;
+
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-      margin-top: -23px !important;
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -52,17 +59,18 @@
 
   .select-active {
     @apply relative block w-full h-10 border-2 border-solid border-primary-main;
-    height: 2 rem !important;
-    padding: 1.5rem 1rem;
+    height: 3rem;
+    border: 1px solid #2563eb;
     border-radius: 8px;
-    border: 1px solid #b4b4b4;
     background-color: white;
+    box-shadow: 0 8px 26px rgba(37, 99, 235, 0.12);
+    position: relative;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-      margin-top: -23px;
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -78,17 +86,23 @@
     }
 
     svg {
-      @apply absolute right-0 float-right h-6 w-6 mt-sm mr-sm;
+      position: absolute !important;
+      top: 50% !important;
+      right: 12px !important;
+      transform: translateY(-50%) !important;
+      margin: 0 !important;
+      float: none !important;
     }
   }
 
   .options-card {
-    width: 100% !important;
+    right: 0px;
+    width: 144px;
     box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
     max-height: 250px !important;
     overflow: auto;
     z-index: 1000 !important;
-    @apply absolute z-20 mt-xs bg-white max-w-full;
+    @apply absolute z-20 mt-xs bg-white;
 
     p {
       padding-top: 14px;
@@ -118,7 +132,7 @@
   margin-bottom: 0;
 }
 
-.employee-select-wrap--elipses {
+.employee-select-wrap-elipses {
   width: 85% !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -128,19 +142,21 @@
 .select-wrap {
   @apply mb-lg relative;
   max-width: 540px;
-  width:100%;
+  width: 100%;
 
   .select {
     @apply relative block w-full;
     height: 3rem;
-    border: 1px solid #b4b4b4;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    background-color: #ffffff;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -153,8 +169,23 @@
     }
 
     svg {
-      @apply absolute right-0 float-right h-6 w-6 mt-sm mr-sm;
+      position: absolute !important;
+      top: 50% !important;
+      right: 12px !important;
+      transform: translateY(-50%) !important;
+      margin: 0 !important;
+      float: none !important;
     }
+  }
+
+  .select:hover {
+    border-color: #2563eb;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.06);
+  }
+
+  .select:focus-within {
+    border-color: #2563eb !important;
+    box-shadow: 0 8px 26px rgba(37, 99, 235, 0.12) !important;
   }
 
   .select-active {
@@ -163,8 +194,8 @@
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-      margin-top: -23px; 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -200,6 +231,46 @@
   }
 }
 
-.employee-select-wrap .select img, .employee-select-wrap .select svg{
+.employee-select-wrap .select img {
   margin-top: -10px;
+}
+
+.employee-select-wrap .select svg {
+  position: absolute !important;
+  top: 50% !important;
+  right: 12px !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  float: none !important;
+}
+
+.employee-login-form .field-container .custom-field {
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Improved select border and hover/focus styles */
+.employee-select-wrap .select {
+  border: 1px solid #d1d5db; /* neutral light border */
+  border-radius: 8px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  background-color: #ffffff;
+}
+
+.employee-select-wrap .select:hover {
+  border-color: #2563eb; /* blue on hover */
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.06);
+}
+
+.employee-select-wrap .select:focus-within,
+.employee-select-wrap .select-active {
+  border-color: #2563eb !important;
+  box-shadow: 0 8px 26px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* keep dropdown options visible and give subtle offset */
+.employee-select-wrap .options-card {
+  transform: translateY(6px);
+  will-change: transform;
 }

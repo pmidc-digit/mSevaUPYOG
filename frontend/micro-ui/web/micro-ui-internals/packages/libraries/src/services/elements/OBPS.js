@@ -366,7 +366,22 @@ const getFormattedULBName = (ulbCode = "") => {
             { title: "BPA_CERTIFICATE_EXPIRY_DATE", value: formatDate(License?.validTo) || "NA" },
           ],
         }
-        : {
+        : License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("TOWNPLANNER") ? {
+          title: "BPA_LICENSE_DETAILS_LABEL",
+          asSectionHeader: true,
+          values: [
+            {
+              title: "BPA_QUALIFICATION_TYPE",
+              value: License?.tradeLicenseDetail?.additionalDetail?.qualificationType || "NA",
+            },
+            { title: "BPA_ASSOCIATE_OR_FELLOW_NUMBER", value: License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || "NA" },         
+            {
+              title: "BPA_LICENSE_TYPE",
+              value: `TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}` || "NA",
+            },
+            { title: "BPA_SELECTED_ULB", value:  ulbName || "NA" },
+          ],
+        } : {
           title: "BPA_LICENSE_DETAILS_LABEL",
           asSectionHeader: true,
           values: [

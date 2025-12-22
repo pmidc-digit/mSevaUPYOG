@@ -47,6 +47,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
       <FormStep
         isDisabled={false}
         onSelect={handleSubmit}
+        _defaultValues={{ mobileNumber: mobileNumber || "" }}
         config={{
           texts: {
             // header: t("CS_LOGIN_PROVIDE_DETAILS"),

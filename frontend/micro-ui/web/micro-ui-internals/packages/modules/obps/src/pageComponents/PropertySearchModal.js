@@ -307,6 +307,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                     minWidth: "1000px",
                     padding:"20px",
                 }}
+                hideSubmit={true}
             >
                 {/* <div style={{ marginBottom: "16px", marginTop: "20px" }}> */}                
                     <LabelFieldPair>

@@ -759,7 +759,7 @@ public class DemandService {
 				: GCCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD;
 
 		addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
-		Demand demand = Demand.builder().consumerCode(waterConnectionRequest.getWaterConnection().getApplicationNo()).demandDetails(demandDetails).payer(owner)
+		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)
 				.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(taxPeriodFrom)
 				.taxPeriodTo(taxPeriodTo).consumerType("garbageConnection").businessService(businessService)
 				.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDaysInmillies).build();

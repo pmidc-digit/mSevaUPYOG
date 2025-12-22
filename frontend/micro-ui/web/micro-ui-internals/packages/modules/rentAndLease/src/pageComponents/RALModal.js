@@ -1,10 +1,10 @@
-import { Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { FormComposer, Modal, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 import { ModalConfig } from "../config/ModalConfig";
 
 const Heading = (props) => {
-  return <h1 className="heading-m">{props.label}</h1>;
+  return <h1 className={`heading-m ${props.className}`}>{props.label}</h1>;
 };
 
 const Close = () => (
@@ -16,7 +16,7 @@ const Close = () => (
 
 const CloseBtn = (props) => {
   return (
-    <div className="icon-bg-secondary" onClick={props.onClick}>
+    <div className={`icon-bg-secondary ${props.className}`} onClick={props.onClick}>
       <Close />
     </div>
   );
@@ -26,21 +26,16 @@ const RALModal = ({
   t,
   action,
   tenantId,
-  state,
-  id,
   closeModal,
   submitAction,
-  actionData,
-  applicationDetails,
   applicationData,
   businessService,
   moduleCode,
-  workflowDetails,
   showToast,
   closeToast,
-  errors,
   setShowToast,
   getEmployees,
+  handleRenewal,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -48,10 +43,7 @@ const RALModal = ({
   const [selectedApprover, setSelectedApprover] = useState({});
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
-  const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
-  const [formErrors, setFormErrors] = useState({});
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
@@ -106,17 +98,17 @@ const RALModal = ({
     (async () => {
       if (file) {
         if (file.size >= 5242880) {
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+          setShowToast({ key: true, label: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") });
         } else {
           try {
             const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
-              setError(t("CS_FILE_UPLOAD_ERROR"));
+              setShowToast({ key: true, label: t("CS_FILE_UPLOAD_ERROR") });
             }
           } catch (err) {
-            setError(t("CS_FILE_UPLOAD_ERROR"));
+            setShowToast({ key: true, label: t("CS_FILE_UPLOAD_ERROR") });
           }
         }
       }
@@ -124,36 +116,57 @@ const RALModal = ({
   }, [file]);
 
   function submit(data) {
+    if (action?.action === "RENEWAL") {
+      if (!data?.tradeLicenseNumber) {
+        setShowToast({ key: true, label: t("Trade License Number is required") });
+        return;
+      }
+      handleRenewal({ ...applicationData, ...data });
+      closeModal();
+      return;
+    }
+
     let checkCommentsMandatory =
       action?.action === "APPROVE" ||
       action?.action === "VERIFY" ||
       action?.action === "REJECT" ||
       action?.action === "SENDBACKTOCITIZEN" ||
       action?.action === "FORWARD";
+    action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
+      action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
+      action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+      action?.action === "FORWARD_FOR_APPROVAL" ||
+      action?.action === "REQUEST_FOR_DISCONNECTION" ||
+      action?.action === "FORWARD_FOT_SETLEMENT";
 
     if (action?.isTerminateState) checkCommentsMandatory = true;
 
     let checkAssigneeMandatory =
-      action?.action === "SENDBACKTOVERIFIER" ||
+      action?.action === "SENDBACKTOOVERIFIER" ||
       action?.action === "VERIFY" ||
       action?.action === "FORWARD" ||
       action?.action === "FORWARDFORFIELDINSPECTION" ||
       action?.action === "PENDING_FOR_FIELDINSPECTION" ||
       action?.action === "FORWARD_FOR_APPROVAL" ||
-      action?.action === "FORWARDFORAPPROVAL";
+      action?.action === "FORWARDFORAPPROVAL" ||
+      action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
+      action?.action === "REQUEST_FOR_DISCONNECTION" ||
+      action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
+      action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+      action?.action === "FORWARD_FOT_SETLEMENT";
+
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 
     if (checkAssigneeMandatory && !selectedApprover?.uuid) {
-      setError("Assignee is required");
-      setShowToast({ key: "error" });
+      setShowToast({ key: true, label: t("Assignee is required") });
+
       return;
     }
 
     const commentsText = data?.comments;
 
     if (!commentsText) {
-      setError("Comments are required");
-      setShowToast({ key: "error" });
+      setShowToast({ key: true, label: t("Comments are required") });
 
       return;
     }
@@ -196,13 +209,13 @@ const RALModal = ({
         })
       );
     }
-  }, [action, approvers, financialYears, selectedFinancialYear, uploadedFile]);
+  }, [action, approvers, financialYears, uploadedFile]);
 
   if (!action || !config.form) return null;
   return (
     <Modal
-      headerBarMain={<Heading label={t(config.label.heading)} />}
-      headerBarEnd={<CloseBtn onClick={closeModal} />}
+      headerBarMain={<Heading label={t(config.label.heading)} className="ral-modal-header" />}
+      headerBarEnd={<CloseBtn onClick={closeModal} className="ral-modal-close" />}
       actionCancelLabel={t(config.label.cancel)}
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={t(config.label.submit)}

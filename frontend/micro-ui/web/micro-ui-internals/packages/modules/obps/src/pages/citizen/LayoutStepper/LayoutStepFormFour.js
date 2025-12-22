@@ -269,7 +269,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
       {actions && (
         <ActionBar>
-          <SubmitBar style={{ background: "white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
 
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu localeKeyPrefix={`WF_EMPLOYEE_LAYOUT`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />

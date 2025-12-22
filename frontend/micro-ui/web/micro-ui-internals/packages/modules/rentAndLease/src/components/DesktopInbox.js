@@ -217,7 +217,6 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
           defaultSearchParams={props.defaultSearchParams}
           onSearch={props.onSearch}
           type="desktop"
-          searchFields={props.searchFields}
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
         />

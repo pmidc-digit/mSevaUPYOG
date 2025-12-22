@@ -2,7 +2,6 @@ import React from "react";
 import { pdfDownloadLink, pdfDocumentName } from "./index";
 import { Loader } from "@mseva/digit-ui-react-components";
 
-
 const getRegistrationDetails = (appData, t) => {
   let values = [
     {
@@ -36,6 +35,10 @@ const getProfessionalDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalRegId || "N/A",
     },
     {
+      title: t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalRegIdValidity || "N/A",
+    },
+    {
       title: t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalMobileNumber || "N/A",
     },
@@ -52,45 +55,48 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  let values = [
-    {
-      title: t("BPA_FIRM_OWNER_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_EMAIL_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantEmailId || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantFatherHusbandName || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_MOBILE_NO_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantMobileNumber || "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_DOB_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth ? new Date(appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth)?.toLocaleDateString("en-GB") : "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_GENDER_LABEL"),
-      value:
-        appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantGender?.code ||
-        appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantGender ||
-        "N/A",
-    },
-    {
-      title: t("BPA_APPLICANT_ADDRESS_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
-    },
-  ];
+  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
 
-  return {
-    title: t("NOC_APPLICANT_DETAILS"),
-    values: values,
-  };
+  const ownerDetailsArray = owners.map((owner, index) => ({
+    title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
+    values: [
+      {
+        title: "Owner/Firm's Name",
+        value: owner?.ownerOrFirmName || "NA",
+      },
+      {
+        title: "Email",
+        value: owner?.emailId || "NA",
+      },
+      {
+        title: "Father/Husband's Name",
+        value: owner?.fatherOrHusbandName || "NA",
+      },
+      {
+        title: "Mobile No.",
+        value: owner?.mobileNumber || "NA",
+      },
+      {
+        title: "Date Of Birth",
+        value: owner?.dateOfBirth
+          ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
+          : "NA",
+      },
+      {
+        title: "Gender",
+        value: owner?.gender?.code || "NA",
+      },
+      {
+        title: "Address",
+        value: owner?.address || "NA",
+      },
+    ],
+  }));
+
+  return ownerDetailsArray;
 };
+
+
 
 const getLocationInfo = (appData, t) => {
   let values = [
@@ -108,9 +114,8 @@ const getLocationInfo = (appData, t) => {
     },
     {
       title: t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name|| "N/A",
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name || "N/A",
     },
-
   ];
 
   if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
@@ -171,7 +176,8 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("BPA_ULB_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
+      value:
+        appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
     },
     {
       title: t("BPA_ULB_TYPE_LABEL"),
@@ -231,18 +237,10 @@ const getSiteDetails = (appData, t) => {
       title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.ownershipInPct || "N/A",
     },
-    {
-      title: t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.proposedRoadWidthAfterWidening || "N/A",
-    },
 
     {
       title: t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name || "N/A",
-    },
-    {
-      title: t("BPA_PROPERTY_UID_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.propertyUid || "N/A",
     },
     {
       title: t("BPA_BUILDING_STATUS_LABEL"),
@@ -342,10 +340,9 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
   const appData = applicationDetails || {};
   //console.log("appData here in DownloadACK", appData);
 
-  let detailsArr = [],
-    imageURL = "";
-  const ownerObj = appData?.documents?.find((doc) => doc?.documentType === "OWNER.OWNERPHOTO") || null;
-  const ownerFileStoreId = ownerObj?.documentAttachment || "";
+  let detailsArr = [], imageURL = "";
+
+  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.fileStoreId || "";
 
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 
@@ -365,8 +362,8 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
     details: [
       getRegistrationDetails(appData, t),
       ...detailsArr,
-      getApplicantDetails(appData, t),
-      getLocationInfo(appData,t),
+      ...getApplicantDetails(appData, t),
+      getLocationInfo(appData, t),
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
       getCoordinateDetails(appData, t),

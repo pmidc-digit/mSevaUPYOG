@@ -52,7 +52,7 @@ const Response = (props) => {
     const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
     e.preventDefault()
     setEnable(true)
-    const data = await getPGRcknowledgementData({ ...complaintDetails }, tenantInfo, t);
+    const data = await getPGRcknowledgementData({complaintDetails , tenantInfo, t});
     Digit.Utils.pdf.generate(data);
   };
   return (
@@ -62,7 +62,7 @@ const Response = (props) => {
       <Link to="/digit-ui/employee">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
-      {appState.complaints.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) =>{handleDownloadPdf(e)}} />}
+      {appState.complaints.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />}
     </Card>
   );
 };

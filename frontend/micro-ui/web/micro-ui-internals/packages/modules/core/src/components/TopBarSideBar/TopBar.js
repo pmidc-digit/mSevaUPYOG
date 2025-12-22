@@ -122,7 +122,7 @@ const TopBar = ({
 
   if (CITIZEN) {
     return (
-      <div className="navbar" style={{padding : "1rem 0rem"}}>
+      <div className="navbar" style={{padding : "1rem 1.5rem"}}>
         <div className="center-container_navbar" style={{}}>
           <div className="left-wrapper_navbar" style={{}}>
             {isLoggedIn && <Hamburger handleClick={updateSidebar} />}
@@ -142,11 +142,11 @@ const TopBar = ({
                 <NotificationBell />
               </div>
             )}
-            <img
+            {/* <img
               src={'https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/Upyog-logo.png'}
               alt="mSeva"
               className="upyog-logo"
-            />
+            /> */}
           </div>
         </div>
       </div>

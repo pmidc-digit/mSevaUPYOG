@@ -12,7 +12,7 @@ import PTRModal from "./PTRModal";
 // import PTRWFDocument from "./PTRWFDocument";
 // ===== END OLD IMPLEMENTATION =====
 
-import ApplicationTimeline from "../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { Loader } from "../components/Loader";
 
 const PTRWFApplicationTimeline = (props) => {
@@ -302,7 +302,7 @@ const PTRWFApplicationTimeline = (props) => {
         */}
         {/* =================================================================== */}
 
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {(props.application?.status != "CITIZENACTIONREQUIRED" || props.application?.status != "INITIATED") &&
           actions &&

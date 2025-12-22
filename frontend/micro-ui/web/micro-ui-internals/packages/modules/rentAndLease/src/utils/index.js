@@ -250,7 +250,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: t("Acknowledgment letter for Rent and Lease Services"),
+    heading: t("Allotment letter for Rent and Lease Services"),
     applicationNumber: application?.applicationNumber || "NA",
     details,
     imageURL,

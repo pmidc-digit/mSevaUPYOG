@@ -117,3 +117,20 @@
     box-shadow: 0 0 0 3px rgba(13, 78, 255, 0.03);
   }
 }
+
+/* Mobile Number Input Styles */
+.mobile-number-prefix {
+  position: absolute;
+  left: 12px;
+  top: 34%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  pointer-events: none;
+  z-index: 0 !important;
+}
+
+.mobile-number-input-with-prefix {
+  padding-left: 45px !important;
+}

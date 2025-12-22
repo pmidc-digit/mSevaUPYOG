@@ -27,7 +27,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
   ];
 
-
   const {
     control,
     handleSubmit,
@@ -50,7 +49,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     name: "applicants",
   });
 
-  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null}) => {
+  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null }) => {
     const startDateEpoch = propertyDetails?.startDate ? new Date(propertyDetails?.startDate).getTime() : null;
     const endDateEpoch = propertyDetails?.endDate ? new Date(propertyDetails?.endDate).getTime() : null;
 
@@ -122,15 +121,13 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       return;
     }
 
-
     triggerLoader(true);
     try {
       // Call create API
       const response = await Digit.RentAndLeaseService.create({ allotmentDetails: payload }, tenantId);
 
-      const status = response?.responseInfo?.status;
+      const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
-
 
       if (isSuccess) {
         const appData = Array.isArray(response?.allotment) ? response.allotment[0] : response?.allotment;
@@ -218,15 +215,12 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     }
   }, [currentStepData, reset]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px", color: "red" };
-  const mandatoryStyle = { color: "red" };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("RAL_CITIZEN_DETAILS")}</CardSectionHeader>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RAL_OWNERSHIP_TYPE") || "Ownership Type"} <span style={mandatoryStyle}>*</span>
+          {t("RAL_OWNERSHIP_TYPE") || "Ownership Type"} <span>*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -246,25 +240,21 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       </LabelFieldPair>
       {watch("ownershipType") &&
         fields?.map((field, index) => (
-          <div key={field?.id} style={{ border: "1px solid #ddd", padding: "12px", marginBottom: "16px", borderRadius: "10px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+          <div key={field?.id} className="ral-applicant-container">
+            <div className="ral-applicant-header-row">
               <CardSectionHeader>
                 {t("RAL_APPLICANT")} #{index + 1}
               </CardSectionHeader>
               {/* Remove applicant */}
               {watch("ownershipType") === "MULTIPLE" && fields?.length > 2 && (
-                <SubmitBar
-                  label={<span>❌</span>}
-                  style={{ background: "transparent", width: "100%", maxWidth: "25px" }}
-                  onSubmit={() => remove(index)}
-                />
+                <SubmitBar label={<span>❌</span>} className="ral-remove-btn" onSubmit={() => remove(index)} />
               )}
             </div>
 
             {/* Mobile Number */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span style={mandatoryStyle}>*</span>
+                {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span>*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -291,12 +281,14 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 />
               </div>
             </LabelFieldPair>
-            {getErrorMessage("mobileNumber", index) && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber", index)}</CardLabelError>}
+            {getErrorMessage("mobileNumber", index) && (
+              <CardLabelError className="ral-error-label">{getErrorMessage("mobileNumber", index)}</CardLabelError>
+            )}
 
             {/* Name */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("ES_NEW_APPLICATION_APPLICANT_NAME")} <span style={mandatoryStyle}>*</span>
+                {t("ES_NEW_APPLICATION_APPLICANT_NAME")} <span>*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -317,12 +309,12 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 />
               </div>
             </LabelFieldPair>
-            {getErrorMessage("name", index) && <CardLabelError style={errorStyle}>{getErrorMessage("name", index)}</CardLabelError>}
+            {getErrorMessage("name", index) && <CardLabelError className="ral-error-label">{getErrorMessage("name", index)}</CardLabelError>}
 
             {/* Email */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("NOC_APPLICANT_EMAIL_LABEL")} <span style={mandatoryStyle}>*</span>
+                {t("NOC_APPLICANT_EMAIL_LABEL")} <span>*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -343,12 +335,12 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 />
               </div>
             </LabelFieldPair>
-            {getErrorMessage("emailId", index) && <CardLabelError style={errorStyle}>{getErrorMessage("emailId", index)}</CardLabelError>}
+            {getErrorMessage("emailId", index) && <CardLabelError className="ral-error-label">{getErrorMessage("emailId", index)}</CardLabelError>}
 
             {/* Address */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("PT_COMMON_COL_ADDRESS")} <span style={mandatoryStyle}>*</span>
+                {t("PT_COMMON_COL_ADDRESS")} <span>*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -369,12 +361,12 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 />
               </div>
             </LabelFieldPair>
-            {getErrorMessage("address", index) && <CardLabelError style={errorStyle}>{getErrorMessage("address", index)}</CardLabelError>}
+            {getErrorMessage("address", index) && <CardLabelError className="ral-error-label">{getErrorMessage("address", index)}</CardLabelError>}
 
             {/* Pincode */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("CORE_COMMON_PINCODE")} <span style={mandatoryStyle}>*</span>
+                {t("CORE_COMMON_PINCODE")} <span>*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -402,27 +394,23 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 />
               </div>
             </LabelFieldPair>
-            {getErrorMessage("pincode", index) && <CardLabelError style={errorStyle}>{getErrorMessage("pincode", index)}</CardLabelError>}
+            {getErrorMessage("pincode", index) && <CardLabelError className="ral-error-label">{getErrorMessage("pincode", index)}</CardLabelError>}
           </div>
         ))}
 
       {/* Add applicant */}
       {watch("ownershipType") === "MULTIPLE" && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+        <div className="ral-add-applicant-row">
           <SubmitBar
             label={<span>➕{t("RAL_ADD_APPLICANT")}</span>}
-            style={{ border: "1px solid #2947a3", background: "transparent", color: "#2947a3", width: "100%", maxWidth: "140px" }}
+            className="ral-add-applicant-btn"
             onSubmit={() => append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
           />
         </div>
       )}
 
       <ActionBar>
-        <SubmitBar
-          label={t("Back")}
-          style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "8px" }}
-          onSubmit={onGoBack}
-        />
+        <SubmitBar label={t("Back")} className="ral-back-btn" onSubmit={onGoBack} />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
     </form>

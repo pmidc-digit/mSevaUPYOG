@@ -6,7 +6,7 @@ import { useHistory, useLocation, useParams } from "react-router-dom";
 import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { cluStepperConfig } from "../../config/cluStepperConfig";
-import { SET_OBPS_STEP,RESET_OBPS_FORM, UPDATE_OBPS_FORM, UPDATE_OBPS_CoOrdinates} from "../../redux/actions/OBPSActions";
+import { SET_OBPS_STEP,RESET_OBPS_FORM, UPDATE_OBPS_FORM, UPDATE_OBPS_CoOrdinates, UPDATE_OBPS_OwnerPhotos, UPDATE_OBPS_OwnerIds} from "../../redux/actions/OBPSActions";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -97,6 +97,9 @@ const CLUEditApplication = () => {
   const siteDetails = cluObject?.cluDetails?.additionalDetails?.siteDetails || {};
   const documents = cluObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
   const coordinates= cluObject?.cluDetails?.additionalDetails?.coordinates || {};
+  const ownerPhotoList= cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];
+  const ownerIdList= cluObject?.cluDetails?.additionalDetails?.ownerIds || [];
+
   
   const setStep = (updatedStepNumber) => {
     dispatch(SET_OBPS_STEP(updatedStepNumber));
@@ -172,7 +175,8 @@ const CLUEditApplication = () => {
           uuid: doc?.uuid || "",
           documentUid: doc?.documentUid || "",
           documentAttachment: doc?.documentAttachment || "",
-          filestoreId: doc?.uuid || ""
+          filestoreId: doc?.uuid || "",
+          cluId : doc?.cluId || ""
         })),
        },
         };
@@ -181,10 +185,13 @@ const CLUEditApplication = () => {
         dispatch(UPDATE_OBPS_CoOrdinates(key, value));
         });
 
+        dispatch(UPDATE_OBPS_OwnerIds("ownerIdList", ownerIdList));
+        dispatch(UPDATE_OBPS_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+
         const updatedApplicantDetails=
         {
           ...applicantDetails,
-          applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
+         // applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
         const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));

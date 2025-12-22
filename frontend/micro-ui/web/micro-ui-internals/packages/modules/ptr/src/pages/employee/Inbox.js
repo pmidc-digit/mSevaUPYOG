@@ -95,6 +95,8 @@ const Inbox = ({
     setPageSize(Number(e.target.value));
   };
 
+  console.log("parentRoute", parentRoute);
+
   if (rest?.data?.length !== null) {
     if (isMobile) {
       return (
@@ -109,7 +111,7 @@ const Inbox = ({
           parentRoute={parentRoute}
           searchParams={searchParams}
           sortParams={sortParams}
-          linkPrefix={`${parentRoute}/application-details/`}
+          linkPrefix={`/digit-ui/employee/ptr/petservice/application-details/`}
           tableConfig={rest?.tableConfig ? rest?.tableConfig : TableConfig(t)["PTR"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}

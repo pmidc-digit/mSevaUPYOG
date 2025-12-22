@@ -338,14 +338,6 @@ export const FormComposer = (props) => {
       cursor: "pointer",
       marginLeft: "10px",
     },
-    back: {
-      backgroundColor: "transparent",
-      color: "#3f51b5",
-      border: "1px solid #3f51b5",
-      padding: "10px 10px",
-      margin: "10px",
-      cursor: "pointer",
-    },
   };
 
   const handleBackClick = () => {
@@ -392,7 +384,7 @@ export const FormComposer = (props) => {
         {!props.submitInForm && props.label && (
           <ActionBar>
             {props.currentStep > 1 && (
-              <button style={buttonStyle.back} onClick={handleBackClick} className="submit-bar">
+              <button onClick={handleBackClick} className="submit-bar submit-bar-back">
                 {t("COMMON_BACK")}
               </button>
             )}

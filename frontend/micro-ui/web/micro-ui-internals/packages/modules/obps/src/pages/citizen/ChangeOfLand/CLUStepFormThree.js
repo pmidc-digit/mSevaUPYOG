@@ -42,7 +42,7 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     onGoNext();
   }
 
-  const completeData=useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
+  //const completeData=useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
 
   function validation(documents) {
     if (!isLoading) {

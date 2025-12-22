@@ -156,7 +156,7 @@ const selfdeclarationform = `
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      That the drawings prepared and uploaded along with other necessary documents on this eNaksha portal are as per the provisions of Punjab Municipal Building Byelaws and this building plan has been applied under Self-Certification Scheme. I certify that:
+      That the drawings prepared and uploaded along with other necessary documents on this mSeva (OBPAS) portal are as per the provisions of Punjab Municipal Building Byelaws and this building plan has been applied under Self-Certification Scheme. I certify that:
     </p>
 
     <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
@@ -165,8 +165,9 @@ const selfdeclarationform = `
       <li style="margin-top:-5px;margin-bottom:-5px;">3. That site does not fall in any prohibited area/ government land/ encroachment or any other land restricted for building construction or in any unauthorized colony.</li>
       <li style="margin-top:-5px;margin-bottom:-5px;">4. That plan is in conformity to structural safety norms.</li>
       <li style="margin-top:-5px;margin-bottom:-5px;">5. That I have seen the originals of all the documents uploaded and nothing is concealed thereof.</li>
-      <li style="margin-top:-5px;margin-bottom:-5px;">6. That all the requisite documents/NOC required to be uploaded have been uploaded on eNaksha portal along with plan.</li>
-      <li style="margin-top:-5px;margin-bottom:-5px;">7. That above stated facts are true and all the requisite documents uploaded with this eNaksha plan have been signed by the owner/owners in my presence.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">6. That all the requisite documents/NOC required to be uploaded have been uploaded on mSeva (OBPAS)  portal along with plan.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">7. That all the requisite fees required to be deposited have been mentioned.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">8. That above stated facts are true and all the requisite documents uploaded with this OBPAS plan have been signed by the owner/owners in my presence.</li>
     </ol>
 
    
@@ -258,12 +259,14 @@ const selfdeclarationform = `
   const uploadSelfDeclaration = async (event) => {
     try {
       const timestamp = await handleVerifyOTPClick(event);
+      const addressee = currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"
       if(timestamp === ""){
         return;
       }
       setIsUploading(true);
       const paramsWithTimestamp = {
         ...currentStepData?.createdResponse,
+        addressee,
         additionalDetails: {
           ...currentStepData?.createdResponse?.additionalDetails,
           timestamp

@@ -14,7 +14,6 @@ const ADSWFApplicationTimeline = (props) => {
     moduleCode: "advandhoarding-services",
   });
 
-
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
@@ -50,10 +49,6 @@ const ADSWFApplicationTimeline = (props) => {
 
   return (
     <React.Fragment>
-      {data?.timeline?.length > 0 && (
-        <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSectionHeader>
-      )}
-
       {/* {data?.timeline && data?.timeline?.length === 1 ? (
         <CheckPoint
           isCompleted={true}

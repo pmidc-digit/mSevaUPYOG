@@ -4,16 +4,38 @@ import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import ReservationTimer from "../../../pageComponents/ADSReservationsTimer";
 
-const AdsApplication = ({ application, tenantId, buttonLabel }) => {
+const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
 
   const handleMakePayment = () => {
-    history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}`)
+    history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}`);
     // history.push(`/digit-ui/citizen/payment/collect/adv-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
+
+  const handleCancelBooking = async () => {
+    const formData = {
+      tenantId: application?.tenantId,
+      ...application,
+      workflow: {
+        businessService: "advandhoarding",
+        action: "CANCEL",
+        comments: "User cancelled booking",
+      },
+    };
+    try {
+      const response = await Digit.ADSServices.update({ bookingApplication: formData }, application?.tenantId);
+      if (response?.ResponseInfo?.status == "SUCCESSFUL" || response?.status == "SUCCESSFUL") {
+        setShowToast({ label: t(response?.resMsgId || "ADS_CANCEL_SUCCESS"), error: false });
+        refetchBookings();
+      }
+    } catch (err) {
+      setShowToast({ label: "ADS_CANCEL_FAILED", error: true });
+    }
+  };
+
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -50,6 +72,9 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
         {/* application.bookingStatus === "BOOKING_CREATED" */}
         {(application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} disabled={expired} />
+        )}
+        {application.bookingStatus === "BOOKED" && (
+          <SubmitBar label={t("ADS_CANCEL_BOOKING")} onSubmit={handleCancelBooking} style={{ margin: "20px" }} disabled={expired} />
         )}
       </div>
 

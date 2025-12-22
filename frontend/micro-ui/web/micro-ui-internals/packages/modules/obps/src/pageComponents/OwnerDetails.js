@@ -17,7 +17,8 @@ import {
   ActionBar,
   SubmitBar,
   CustomButton,
-  TextArea
+  TextArea,
+  MobileNumber
 } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
@@ -444,11 +445,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       setCanmovenext(false)
     }
   }
-  function setMobileNo(i, e) {
+  function setMobileNo(i, val) {
     const units = [...fields]
     console.log("OwnerDataOnNumberChange",units[i]);
     units[i] = {
-      mobileNumber: e.target.value,
+      mobileNumber: val,
       name: units[i].name,
       gender: units[i].gender,
       emailId: units[i].emailId,
@@ -460,7 +461,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       isPrimaryOwner: units[i].isPrimaryOwner,
       ownerId: units[i]?.ownerId || null
     } 
-    setMobileNumber(e.target.value)
+    setMobileNumber(val)
     setFeilds(units)
     if (units[i].gender && units[i].mobileNumber && units[i].name) {
       setCanmovenext(false)
@@ -965,8 +966,14 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     <CardLabel className="bpa-owner-cardlabel-negative-margin">{`${t("CORE_COMMON_MOBILE_NUMBER")} *`}</CardLabel>
                     <div className="bpa-owner-mobile-row">
                       <div className="bpa-owner-field-container">
-                          <div className="bpa-owner-country-prefix">+91</div>
-                          <TextInput className="bpa-owner-phone-input" type={"text"} t={t} isMandatory={false} optionKey="i18nKey" name="mobileNumber" value={field.mobileNumber} onChange={(e) => setMobileNo(index, e)} {...(validation = { isRequired: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"), })} />
+                          <MobileNumber 
+                            t={t} 
+                            isMandatory={false} 
+                            name="mobileNumber" 
+                            value={field.mobileNumber} 
+                            onChange={(val) => setMobileNo(index, val)}
+                            maxLength={10}
+                          />
                           <div className="bpa-owner-search-icon-container" onClick={(e) => getOwnerDetails(index, e)}>
                             <SearchIcon />
                           </div>

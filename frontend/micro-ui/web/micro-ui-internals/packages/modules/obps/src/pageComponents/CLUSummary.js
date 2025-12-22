@@ -26,14 +26,14 @@ function CLUSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs);
 
   return (
-    <div className="clu-summary-page">
-      <h2 className="clu-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
-      <div className="clu-summary-section">
+    <div className="layout-summary-page">
+      <h2 className="layout-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
+      <div className="-summary-section">
         <CLUImageView documents={formData?.documents?.documents?.documents} ownerName={formData?.applicationDetails?.applicantOwnerOrFirmName} />
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_APPLICANT_DETAILS")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="layout-summary-heading">{t("BPA_APPLICANT_DETAILS")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
         {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
         {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
@@ -45,8 +45,8 @@ function CLUSummary({ currentStepData: formData, t }) {
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-          <h2 className="clu-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
-          <div className="clu-summary-section">
+          <h2 className="layout-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
+          <div className="layout-summary-section">
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
@@ -56,8 +56,8 @@ function CLUSummary({ currentStepData: formData, t }) {
         </React.Fragment>
       )}
 
-      <h2 className="clu-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="layout-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.localityAreaType?.name)}
 
         {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
@@ -78,8 +78,8 @@ function CLUSummary({ currentStepData: formData, t }) {
 
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="layout-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
 
         {renderLabel(t("BPA_PLOT_AREA_LABEL"), formData?.siteDetails?.plotArea)}
@@ -119,11 +119,11 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
-      <div className="clu-summary-section">{renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}</div>
+      <h2 className="layout-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
+      <div className="layout-summary-section">{renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}</div>
 
-      <h2 className="clu-summary-heading">{t("BPA_SITE_COORDINATES_LABEL")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="layout-summary-heading">{t("BPA_SITE_COORDINATES_LABEL")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
         {renderLabel(t("COMMON_LONGITUDE1_LABEL"), coordinates?.Longitude1)}
 
@@ -131,13 +131,13 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="layout-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div className="layout-summary-section">
         {formData?.documents?.documents?.documents?.length > 0 && <CLUDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="layout-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div className="layout-summary-section">
         {formData && <CLUFeeEstimationDetails formData={formData}/>}
       </div>
 

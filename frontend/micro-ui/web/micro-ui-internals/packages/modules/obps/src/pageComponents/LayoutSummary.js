@@ -19,55 +19,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
     return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
   });
 
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  }
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  }
-
-  const headingStyle = {
-    fontSize: "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-  }
-
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-  }
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
-
-  // const renderLabel = (label, value) => (
-  //   <div style={labelFieldPairStyle}>
-  //     <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-  //     <div>{value || "NA"}</div>
-  //   </div>
-  // );
-
-    const renderLabel = (label, value) => {
+  const renderLabel = (label, value) => {
     if (!value || value === "NA" || value === "" || value === null || value === undefined) {
       return null;
     }
     
     return (
-      <div style={labelFieldPairStyle}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div className="layout-summary-label-field-pair">
+        <CardLabel className="layout-summary-bold-label">{label}</CardLabel>
         <div>{value}</div>
       </div>
     );
@@ -97,13 +56,13 @@ function LayoutSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs)
 
   return (
-    <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
-    <div style={sectionStyle}>
+    <div className="layout-summary-page">
+      <h2 className="layout-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
+    <div className="layout-summary-section">
       <LayoutImageView documents={formData?.documents?.documents?.documents}/>
     </div>
-      <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="layout-summary-heading">{t("BPA_APPLICANT_DETAILS")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
         {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
         {renderLabel(
@@ -118,8 +77,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-          <h2 style={headingStyle}>{t("BPA_PROFESSIONAL_DETAILS")}</h2>
-          <div style={sectionStyle}>
+          <h2 className="layout-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
+          <div className="layout-summary-section">
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
@@ -130,8 +89,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </React.Fragment>
       )}
 
-      <h2 style={headingStyle}>{t("BPA_LOCALITY_INFO_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="layout-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.layoutAreaType?.name)}
         {formData?.siteDetails?.layoutAreaType?.code === "SCHEME_AREA" &&
           renderLabel(t("BPA_SCHEME_NAME_LABEL"), formData?.siteDetails?.layoutSchemeName)}
@@ -141,8 +100,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
           renderLabel(t("BPA_NON_SCHEME_TYPE_LABEL"), formData?.siteDetails?.layoutNonSchemeType?.name)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="layout-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
         {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
         {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -224,20 +183,20 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_SPECIFICATION_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="layout-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_CLU_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="layout-summary-heading">{t("BPA_CLU_DETAILS")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("BPA_IS_CLU_APPROVED_LABEL"), formData?.siteDetails?.cluIsApproved?.code)}
         {formData?.siteDetails?.cluIsApproved?.code === "YES" &&
           renderLabel(t("BPA_CLU_APPROVED_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
       </div>
 
-       <h2 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h2>
-      <div style={sectionStyle}>
+       <h2 className="layout-summary-heading">{t("NOC_SITE_COORDINATES_LABEL")}</h2>
+      <div className="layout-summary-section">
         {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
         {renderLabel(t("COMMON_LONGITUDE1_LABEL"),coordinates?.Longitude1)}
         
@@ -245,13 +204,13 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-           <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div style={sectionStyle}>
+           <h2 className="layout-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div className="layout-summary-section">
         {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="layout-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div className="layout-summary-section">
         {formData && <LayoutFeeEstimationDetails formData={formData}/>}
       </div>
     </div>

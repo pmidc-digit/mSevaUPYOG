@@ -1384,7 +1384,7 @@ public class DemandService {
 			ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap
 					.get(GCCalculationConstant.Billing_Period_Master);
 			mstrDataService.enrichBillingPeriod(null, billingFrequencyMap, masterMap,
-					GCCalculationConstant.nonMeterdConnection);
+					GCCalculationConstant.nonMeterdConnection,null);
 
 			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
 					.get(GCCalculationConstant.BILLING_PERIOD);
@@ -1641,7 +1641,7 @@ public class DemandService {
 			ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap
 					.get(GCCalculationConstant.Billing_Period_Master);
 			mstrDataService.enrichBillingPeriod(null, billingFrequencyMap, masterMap,
-					GCCalculationConstant.nonMeterdConnection);
+					GCCalculationConstant.nonMeterdConnection,null);
 
 			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
 					.get(GCCalculationConstant.BILLING_PERIOD);

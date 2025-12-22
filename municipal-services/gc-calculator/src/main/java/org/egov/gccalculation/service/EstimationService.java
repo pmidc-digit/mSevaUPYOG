@@ -2,6 +2,7 @@ package org.egov.gccalculation.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.YearMonth;
@@ -198,7 +199,8 @@ public class EstimationService {
 	    String billingType = (String) additionalDetail.getOrDefault(GCCalculationConstant.BILLINGTYPE, null);
 
 	    // Custom billing for non-metered connection
-	    if (waterConnection.getConnectionType().equalsIgnoreCase(GCCalculationConstant.nonMeterdConnection)
+	    if (waterConnection.getConnectionType() != null 
+	            && waterConnection.getConnectionType().equalsIgnoreCase(GCCalculationConstant.nonMeterdConnection)
 	            && GCCalculationConstant.CUSTOM.equalsIgnoreCase(billingType)) {
 
 	        Object customAmountObj = additionalDetail.getOrDefault(GCCalculationConstant.CUSTOM_BILL_AMOUNT, 0);
@@ -230,7 +232,12 @@ public class EstimationService {
 	    JSONObject calculationAttributeMaster = new JSONObject();
 	    calculationAttributeMaster.put(GCCalculationConstant.CALCULATION_ATTRIBUTE_CONST,
 	            billingSlabMaster.get(GCCalculationConstant.CALCULATION_ATTRIBUTE_CONST));
-	    String calculationAttribute = getCalculationAttribute(calculationAttributeMaster, waterConnection.getConnectionType());
+	    
+	    // Default to "Non Metered" if connectionType is null
+	    String connectionType = waterConnection.getConnectionType() != null 
+	            ? waterConnection.getConnectionType() 
+	            : "Non Metered";
+	    String calculationAttribute = getCalculationAttribute(calculationAttributeMaster, connectionType);
 
 	    List<BillingSlab> billingSlabs = getSlabsFiltered(property, waterConnection, mappingBillingSlab, calculationAttribute);
 
@@ -246,6 +253,15 @@ public class EstimationService {
 	    for (BillingSlab billSlab : billingSlabs) {
 	        billingSlabIds.add(billSlab.getId()); // collect all IDs
 
+	        // For Flat rate (empty slabs), just pick first matching billing slab
+	        if (billSlab.getSlabs() == null || billSlab.getSlabs().isEmpty()) {
+	            if (applicableBillSlab == null) {
+	                applicableBillSlab = billSlab;
+	            }
+	            continue;
+	        }
+
+	        // For range-based calculation, filter slabs by UOM
 	        List<Slab> filteredSlabs = billSlab.getSlabs().stream()
 	                .filter(slab -> slab.getFrom() <= totalUOM && slab.getTo() >= totalUOM
 	                        && slab.getEffectiveFrom() <= System.currentTimeMillis()
@@ -258,9 +274,10 @@ public class EstimationService {
 	        }
 	    }
 
-	    if (applicableBillSlab != null && applicableSlab != null) {
-	        if (isRangeCalculation(calculationAttribute)) {
-	            if (GCCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
+	    if (applicableBillSlab != null) {
+	        if (isRangeCalculation(calculationAttribute) && applicableSlab != null) {
+	            if (waterConnection.getConnectionType() != null 
+	                    && GCCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                Double meterReading = totalUOM;
 	                String meterStatus = criteria.getMeterStatus().toString();
 
@@ -278,7 +295,8 @@ public class EstimationService {
 	                    waterCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
 	                }
 
-	            } else if (GCCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
+	            } else if (waterConnection.getConnectionType() != null 
+	                    && GCCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());
 	                request.setTaxPeriodTo(criteria.getTo());
 
@@ -302,7 +320,17 @@ public class EstimationService {
 	                }
 	            }
 	        } else {
+	            // Flat rate calculation
 	            waterCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+	            
+	            // Adjust charge based on billing frequency
+	            String frequency = waterConnection.getFrequency();
+	            if (frequency != null && frequency.equalsIgnoreCase("Monthly")) {
+	                // minimumCharge is quarterly rate, divide by 3 for monthly
+	                waterCharge = waterCharge.divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP);
+	                log.info("Monthly billing: Adjusted charge from " + applicableBillSlab.getMinimumCharge() 
+	                        + " to " + waterCharge);
+	            }
 	        }
 	    }
 
@@ -321,7 +349,9 @@ public class EstimationService {
 				: "";
 		log.info("propertyType: " + propertyType);
 		// final String buildingType = "Domestic";
-		final String connectionType = waterConnection.getConnectionType();
+		final String connectionType = waterConnection.getConnectionType() != null 
+				? waterConnection.getConnectionType() 
+				: "Non Metered"; // Default to Non Metered if null
 
 		HashMap<String, Object> additionalDetail = new HashMap<>();
 		additionalDetail = mapper.convertValue(waterConnection.getAdditionalDetails(), HashMap.class);
@@ -423,7 +453,8 @@ public class EstimationService {
 	private Double getUnitOfMeasurement(Property property, GarbageConnection waterConnection, String calculationAttribute,
 										CalculationCriteria criteria) {
 		Double totalUnit = 0.0;
-		if (waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
+		if (waterConnection.getConnectionType() != null 
+				&& waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
 			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
 			return totalUnit;
 		}
@@ -437,7 +468,8 @@ public class EstimationService {
 //			if (waterConnection.getPipeSize() == null && waterConnection.getPipeSize() > 0)
 //				return waterConnection.getPipeSize();
 //		}
-	else if (waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
+	else if (waterConnection.getConnectionType() != null 
+				&& waterConnection.getConnectionType().equals(GCCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(GCCalculationConstant.plotBasedConst)) {
 			if (property.getLandArea() != null && property.getLandArea() > 0)
 				return property.getLandArea();
@@ -448,7 +480,8 @@ public class EstimationService {
 	private Double getUnitOfMeasurement(GarbageConnection waterConnection, String calculationAttribute,
 										CalculationCriteria criteria) {
 		Double totalUnit = 0.0;
-		if (waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
+		if (waterConnection.getConnectionType() != null 
+				&& waterConnection.getConnectionType().equals(GCCalculationConstant.meteredConnectionType)) {
 			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
 			return totalUnit;
 		}
@@ -575,58 +608,51 @@ public class EstimationService {
 //			scrutinyFee = new BigDecimal(feeObj.getAsNumber(GCCalculationConstant.SCRUTINY_FEE_CONST).toString());
 //		}
 
-		String connection_propertyType = ((HashMap<String, String>) criteria.getWaterConnection()
-				.getAdditionalDetails()).get("waterSubUsageType");
+		// Get property type from property service (same as SW pattern)
+		// Extract main building type from property's usageCategory
+		final String propertyUsageCategory = property.getUsageCategory() != null ? property.getUsageCategory() : "";
+		final String buildingType = propertyUsageCategory.contains(".") 
+				? propertyUsageCategory.split("\\.")[propertyUsageCategory.split("\\.").length - 1]
+				: propertyUsageCategory;
+		
+		// Map property type: keep as RESIDENTIAL/COMMERCIAL/INSTITUTIONAL (no conversion to DOMESTIC)
+		String connection_propertyType = "RESIDENTIAL"; // Default
+		if (buildingType.toUpperCase().contains("RESIDENTIAL")) {
+			connection_propertyType = "RESIDENTIAL";
+		} else if (buildingType.toUpperCase().contains("COMMERCIAL")) {
+			connection_propertyType = "COMMERCIAL";
+		} else if (buildingType.toUpperCase().contains("INSTITUTIONAL")) {
+			connection_propertyType = "INSTITUTIONAL";
+		}
+		
+		// Get propertySubType from additionalDetails (like SW uses waterSubUsageType)
+		HashMap<String, Object> additionalDetail = mapper.convertValue(
+				criteria.getWaterConnection().getAdditionalDetails(), HashMap.class);
+		String propertySubType = (String) additionalDetail.getOrDefault("propertySubType", null);
+		
+		log.info("Property usageCategory: " + propertyUsageCategory + ", buildingType: " + buildingType 
+				+ ", connection_propertyType: " + connection_propertyType + ", propertySubType: " + propertySubType);
 
 		BigDecimal securityCharge = BigDecimal.ZERO;
 
 		if (feeObj.get(GCCalculationConstant.WS_SECURITY_CHARGE_CONST) != null) {
-
-			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
-
-			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
-				connection_propertyType = "DEFAULT"; // default securityCharge to be applied from mdms
-			else if (connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL"))
-				connection_propertyType = "DOMESTIC";
-			else
-				connection_propertyType = "COMMERCIAL";
+			// Security charge is 0 in your MDMS, kept for future use if needed
 			Object securityChargeObj = feeObj.get(GCCalculationConstant.WS_SECURITY_CHARGE_CONST);
 			
 			if (securityChargeObj instanceof List) {
 				ArrayList sec_fees = (ArrayList) feeObj.get(GCCalculationConstant.WS_SECURITY_CHARGE_CONST);
 
-				BigDecimal fromPlotSize = BigDecimal.ZERO;
-				BigDecimal toPlotSize = BigDecimal.ZERO;
-				BigDecimal securityChargeApplicable = BigDecimal.ZERO;
-				String propertyType = null;
-
-				HashMap<String, String> secFeesMap = null;
 				for (int i = 0; i < sec_fees.size(); i++) {
-					secFeesMap = (HashMap<String, String>) sec_fees.get(i);
-					fromPlotSize = new BigDecimal(secFeesMap.get("fromPlotSize"));
-					toPlotSize = new BigDecimal(secFeesMap.get("toPlotSize"));
-					// securityChargeApplicable=new BigDecimal(secFeesMap.get("securityCharge"));
-					propertyType = secFeesMap.get("usageType").toString();
-					if (propertyType.equals(connection_propertyType) && connection_plotSize.compareTo(fromPlotSize) > 0
-							&& connection_plotSize.compareTo(toPlotSize) <= 0) {
-						securityChargeApplicable = new BigDecimal(
-								secFeesMap.get(GCCalculationConstant.WS_SECURITY_CHARGE_CONST));
-						break; // matched the attributes and got valid connection fee
+					HashMap<String, String> secFeesMap = (HashMap<String, String>) sec_fees.get(i);
+					String usageType = secFeesMap.get("usageType");
+					
+					if (usageType.equals(connection_propertyType)) {
+						securityCharge = new BigDecimal(secFeesMap.get(GCCalculationConstant.WS_SECURITY_CHARGE_CONST));
+						log.info("Matched security charge: " + securityCharge + " for usageType: " + usageType);
+						break;
 					}
-
 				}
-
-				// securityCharge = new
-				// BigDecimal(feeObj.getAsNumber(GCCalculationConstant.WS_CONNECTION_FEE_CONST).toString());
-				securityCharge = securityChargeApplicable;
-			}
-
-			else {
+			} else {
 				securityCharge = new BigDecimal(
 						feeObj.getAsNumber(GCCalculationConstant.WS_SECURITY_CHARGE_CONST).toString());
 			}
@@ -646,56 +672,40 @@ public class EstimationService {
 			 */
 		// Connection Fee to be evaluated here from mdms depending on plotsize
 
+		// Connection Fee - Matches by usageType, optionally by plot size if specified in MDMS
 		BigDecimal connectionFee = BigDecimal.ZERO;
 		if (feeObj.get(GCCalculationConstant.WS_CONNECTION_FEE_CONST) != null) {
-
-//			BigDecimal connection_plotSize;
-//			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-//																						// landArea may not be present
-//				connection_plotSize = null;
-//			else
-//				connection_plotSize = new BigDecimal(property.getLandArea());
-//
-//			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
-//				connection_propertyType = "DEFAULT"; // default connectionFee to be applied from mdms
-//			else if (connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL"))
-//				connection_propertyType = "DOMESTIC";
-//			else
-//				connection_propertyType = "COMMERCIAL";
-
-			connection_propertyType = criteria.getWaterConnection().getPropertyType();
-
 			ArrayList conn_fees = (ArrayList) feeObj.get(GCCalculationConstant.WS_CONNECTION_FEE_CONST);
+			BigDecimal connection_plotSize = property.getLandArea() != null ? new BigDecimal(property.getLandArea()) : null;
 
-			BigDecimal fromPlotSize = BigDecimal.ZERO;
-			BigDecimal toPlotSize = BigDecimal.ZERO;
-			BigDecimal connectionFeeApplicable = BigDecimal.ZERO;
-			String propertyType = null;
-
-			HashMap<String, String> connFeeMap = null;
 			for (int i = 0; i < conn_fees.size(); i++) {
-				connFeeMap = (HashMap<String, String>) conn_fees.get(i);
-				fromPlotSize = new BigDecimal(connFeeMap.get("fromPlotSize"));
-				toPlotSize = new BigDecimal(connFeeMap.get("toPlotSize"));
-				// connectionFeeApplicable=new BigDecimal(connFeeMap.get("connectionFee"));
-				propertyType = connFeeMap.get("usageType").toString();
-				if (propertyType.equalsIgnoreCase(connection_propertyType)) {
-					connectionFeeApplicable = new BigDecimal(connFeeMap.get("connectionFee"));
-					break; // matched the attributes and got valid connection fee
+				HashMap<String, String> connFeeMap = (HashMap<String, String>) conn_fees.get(i);
+				String usageType = connFeeMap.get("usageType");
+				
+				// Check if usageType matches
+				if (usageType.equals(connection_propertyType)) {
+					// Check if plot size range is specified in MDMS
+					if (connFeeMap.containsKey("fromPlotSize") && connFeeMap.containsKey("toPlotSize") 
+							&& connection_plotSize != null) {
+						BigDecimal fromPlotSize = new BigDecimal(connFeeMap.get("fromPlotSize"));
+						BigDecimal toPlotSize = new BigDecimal(connFeeMap.get("toPlotSize"));
+						
+						// Match by plot size range if specified
+						if (connection_plotSize.compareTo(fromPlotSize) >= 0 
+								&& connection_plotSize.compareTo(toPlotSize) <= 0) {
+							connectionFee = new BigDecimal(connFeeMap.get("connectionFee"));
+							log.info("Matched connection fee: " + connectionFee + " for usageType: " + usageType 
+									+ " plotSize: " + connection_plotSize);
+							break;
+						}
+					} else {
+						// No plot size range specified, match on usageType only (current behavior)
+						connectionFee = new BigDecimal(connFeeMap.get("connectionFee"));
+						log.info("Matched connection fee: " + connectionFee + " for usageType: " + usageType);
+						break;
+					}
 				}
-
 			}
-
-			// connectionFee = new
-			// BigDecimal(feeObj.getAsNumber(GCCalculationConstant.WS_CONNECTION_FEE_CONST).toString());
-//			if(criteria.getWaterConnection().getFrequency_of_garbage_collection().equalsIgnoreCase("Quarterly")){
-//
-//				connectionFeeApplicable =
-//						(connectionFeeApplicable == null ? BigDecimal.ZERO : connectionFeeApplicable)
-//								.multiply(BigDecimal.valueOf(3));
-//
-//			}
-			connectionFee = connectionFeeApplicable;
 		}
 
 		BigDecimal otherCharges = BigDecimal.ZERO;

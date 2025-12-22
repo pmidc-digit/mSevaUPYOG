@@ -63,9 +63,9 @@ public class GCCalculatorQueryBuilder {
     private static final String connectionNoBills =  " select distinct(consumercode) from egbs_billdetail_v1 bd  ";
 
 
-	private static final String distinctTenantIdsCriteria = "SELECT distinct(tenantid) FROM eg_ws_connection ws";
+	private static final String distinctTenantIdsCriteria = "SELECT distinct(tenantid) FROM eg_gc_connection ws";
 
-	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id  ";
+	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_gc_connection conn INNER JOIN eg_gc_service ws ON conn.id = ws.connection_id  ";
 
 	private static final String BILL_SCHEDULER_STATUS_SEARCH_QUERY = "select status from eg_gc_scheduler ";
 	private static final String LAST_DEMAND_GEN_FOR_CONN = " SELECT d.taxperiodfrom FROM egbs_demand_v1 d ";
@@ -86,7 +86,7 @@ public class GCCalculatorQueryBuilder {
 			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id,"
 			+ " conn.action, conn.adhocpenalty, conn.adhocrebate, conn.adhocpenaltyreason, conn.applicationType, conn.dateEffectiveFrom,"
 			+ " conn.adhocpenaltycomment, conn.adhocrebatereason, conn.adhocrebatecomment, conn.createdBy as ws_createdBy, conn.lastModifiedBy as ws_lastModifiedBy,"
-			+ " conn.createdTime as ws_createdTime, conn.lastModifiedTime as ws_lastModifiedTime,conn.additionaldetails, "
+			+ " conn.createdTime as ws_createdTime, conn.lastModifiedTime as ws_lastModifiedTime,conn.additionaldetails, conn.frequency,"
 			+ " conn.locality, conn.isoldapplication,  document.id as doc_Id, document.documenttype, document.filestoreid, document.active as doc_active,"
 //			+ " plumber.name as plumber_name, plumber.licenseno, roadcuttingInfo.id as roadcutting_id, roadcuttingInfo.roadtype as roadcutting_roadtype, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea,"
 //			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"

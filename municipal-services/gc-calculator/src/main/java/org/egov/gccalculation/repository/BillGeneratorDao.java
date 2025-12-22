@@ -147,9 +147,9 @@ public class BillGeneratorDao {
 	        if (consumerCode == null || consumerCode.isEmpty())
 	            return;
 	        
-	        String sql = "UPDATE eg_ws_bill_scheduler_connection_status "
+	        String sql = "UPDATE eg_gc_bill_scheduler_connection_status "
 	                   + "SET status = ?, reason = ?, lastupdatedtime = ? "
-	                   + "WHERE status='Initiated' AND eg_ws_scheduler_id = ? AND tenantid = ? AND consumercode = ?";
+	                   + "WHERE status='Initiated' AND eg_gc_scheduler_id = ? AND tenantid = ? AND consumercode = ?";
 
 	        int rows = jdbcTemplate.update(sql, ps -> {
 	            ps.setString(1, status);

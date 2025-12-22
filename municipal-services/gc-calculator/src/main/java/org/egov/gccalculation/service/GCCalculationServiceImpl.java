@@ -349,10 +349,10 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 	            Map<String, List> estimationMap = estimationService.getEstimationMap(criteria, request, masterMap);
 	            ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap.get(GCCalculationConstant.Billing_Period_Master);
 	            masterDataService.enrichBillingPeriod(criteria, billingFrequencyMap, masterMap,
-	                    criteria.getWaterConnection().getConnectionType());
 
-	            Calculation calculation = null;
-
+                    criteria.getWaterConnection().getConnectionType(),
+                    criteria.getWaterConnection().getFrequency());
+                Calculation calculation = null;
 	            if (request.getIsDisconnectionRequest() != null && request.getIsDisconnectionRequest()) {
 	                if (criteria.getApplicationNo().equals(
 	                        request.getCalculationCriteria()

@@ -259,7 +259,7 @@ public class CalculatorUtil {
 				.append(GCCalculationConstant.SEPARATER).append(GCCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
 				.append(consumerCode).append(GCCalculationConstant.SEPARATER)
 				.append(GCCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-				.append(GCCalculationConstant.WATER_TAX_SERVICE_CODE);
+				.append(GCCalculationConstant.SERVICE_FIELD_VALUE_WS);
 	}
 	public StringBuilder getFetchBillURLForReconnection(String tenantId, String consumerCode) {
 
@@ -593,7 +593,7 @@ public class CalculatorUtil {
 				.append(GCCalculationConstant.SERVICE_FIELD_FOR_SEARCH_URL)
 				.append(GCCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD);
 	}
-	
+
 	
 	/*PI-19231
 	 * 

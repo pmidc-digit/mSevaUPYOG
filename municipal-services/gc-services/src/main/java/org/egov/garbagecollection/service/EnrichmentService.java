@@ -397,6 +397,8 @@ public class EnrichmentService {
 		if (GCConstants.ACTIVATE_CONNECTION
 				.equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
 			setConnectionNO(garbageConnectionRequest);
+			// Set connection execution date to current time when connection is activated
+			garbageConnectionRequest.getGarbageConnection().setConnectionExecutionDate(System.currentTimeMillis());
 		}
 	}
 

@@ -95,47 +95,6 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
-  // const handleDisConnection = async (data) => {
-  //   setLoader(true);
-  //   const payload = {
-  //     AllotmentDetails: {
-  //       ...data,
-  //       applicationType: "DISCONNECT_RENT_AND_LEASE_CONNECTION",
-  //       processInstance: {
-  //         ...data?.processInstance,
-  //         action: "INITIATE",
-  //       },
-  //     },
-  //     disconnectRequest: true,
-  //   };
-
-  //   try {
-  //     const response = await Digit.RentAndLeaseService.create(payload);
-  //     updateApplication(response?.AllotmentDetails[0]);
-  //   } catch (error) {
-  //     setLoader(false);
-  //   }
-  // };
-
-  // const updateApplication = async (response) => {
-  //   const payload = {
-  //     AllotmentDetails: {
-  //       ...response,
-  //       processInstance: {
-  //         ...response?.processInstance,
-  //         action: "SUBMIT_APPLICATION",
-  //       },
-  //     },
-  //   };
-  //   try {
-  //     await Digit.RentAndLeaseService.update(payload);
-  //     await fetchProperties();
-  //     setLoader(false);
-  //   } catch (error) {
-  //     setLoader(false);
-  //   }
-  // };
-
   return (
     <div className="ral-my-properties-container">
       <div>
@@ -148,6 +107,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
         {getPropertiesData?.map((property, index) => {
           return (
             <Card key={index}>
+              {property?.registrationNumber && <KeyNote keyValue={t("RAL_REGISTRATION_NUMBER")} note={property?.registrationNumber || t("CS_NA")} />}
               <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={property?.applicationNumber || t("CS_NA")} />
               <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={property?.additionalDetails?.allotmentType || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(property.status)} />

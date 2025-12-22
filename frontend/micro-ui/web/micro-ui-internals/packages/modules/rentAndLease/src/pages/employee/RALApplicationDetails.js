@@ -26,7 +26,6 @@ const RALApplicationDetails = () => {
   const [loader, setLoader] = useState(false);
   const state = tenantId?.split(".")[0];
   const [applicationData, setApplicationData] = useState();
-  console.log("applicationData", applicationData);
   const [showToast, setShowToast] = useState(null);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -34,6 +33,9 @@ const RALApplicationDetails = () => {
   const [getEmployees, setEmployees] = useState([]);
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
+  const menuRef = useRef();
+  Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
+
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -60,11 +62,19 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
+  const handleNavigation = () => {
+    const timer = setTimeout(() => {
+      history.push("/digit-ui/employee/rentandlease/inbox");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  };
+
   // Assuming applicationData is your API response
   const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
 
   let user = Digit.UserService.getUser();
-  const menuRef = useRef();
+
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -105,7 +115,7 @@ const RALApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
-    } else if (action?.action === "RENEWAL") {
+    } else if (action?.action === "RAL_RENEWAL") {
       setShowModal(true);
       setSelectedAction(action);
     } else {
@@ -164,9 +174,10 @@ const RALApplicationDetails = () => {
         // ✅ Show success first
         setShowToast({ key: false, label: "Successfully updated the status" });
         // ✅ Delay navigation so toast shows
-        setTimeout(() => {
-          history.push("/digit-ui/employee/rentandlease/inbox");
-        }, 2000);
+        handleNavigation();
+        // setTimeout(() => {
+        //   history.push("/digit-ui/employee/rentandlease/inbox");
+        // }, 2000);
 
         setSelectedAction(null);
         setShowModal(false);
@@ -251,7 +262,7 @@ const RALApplicationDetails = () => {
         ...response,
         Document: sanitizedDocuments,
         workflow: {
-          action: "SAVEASDRAFT",
+          action: "APPLY",
         },
       },
     };
@@ -264,6 +275,10 @@ const RALApplicationDetails = () => {
       }
       setLoader(false);
       setShowToast({ key: false, label: "Renewal application submitted successfully" });
+      // setTimeout(() => {
+      //   history.push("/digit-ui/employee/rentandlease/inbox");
+      // }, 2000);
+      handleNavigation();
     } catch (error) {
       setLoader(false);
       setShowToast({ key: true, label: "Error updating renewal application" });
@@ -307,6 +322,9 @@ const RALApplicationDetails = () => {
 
           <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
+            {applicationData?.registrationNumber && (
+              <Row label={t("RAL_REGISTRATION_NUMBER")} text={applicationData?.registrationNumber || t("CS_NA")} />
+            )}
             <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={propertyDetails?.propertyName || t("CS_NA")} />
@@ -344,17 +362,19 @@ const RALApplicationDetails = () => {
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {applicationData?.status != "INITIATED" && actions?.length > 0 && (
           <ActionBar>
-            {displayMenu ? (
-              <Menu
-                localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                options={actions}
-                optionKey={"action"}
-                t={t}
-                onSelect={onActionSelect}
-                // style={MenuStyle}
-              />
-            ) : null}
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <div ref={menuRef}>
+              {displayMenu ? (
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                  // style={MenuStyle}
+                />
+              ) : null}
+              <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            </div>
           </ActionBar>
         )}
 

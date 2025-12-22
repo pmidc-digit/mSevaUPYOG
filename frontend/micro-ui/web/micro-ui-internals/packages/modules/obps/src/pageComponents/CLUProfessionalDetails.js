@@ -260,6 +260,7 @@ const CLUProfessionalDetails = (_props) => {
                 }}
                 t={t}
                 disabled="true"
+                disable="true"
               />
             )}
           />

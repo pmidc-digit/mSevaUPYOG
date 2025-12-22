@@ -28,7 +28,7 @@ import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
 import { initSWACHComponents } from "@mseva/digit-ui-module-swach";
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
-// import { initReportsComponents } from "@mseva/digit-ui-module-reports";
+import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
 import { initRentAndLeaseComponents } from "@mseva/digit-ui-module-rentandlease";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
@@ -180,7 +180,7 @@ const initDigitUI = () => {
   initHRMSComponents();
   initTLComponents();
   initReceiptsComponents();
-  // initReportsComponents();
+  initReportsComponents();
   initOBPSComponents();
   initEngagementComponents();
   initNOCComponents();

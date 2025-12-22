@@ -30,7 +30,8 @@
     "packages/modules/challanGeneration",
     "packages/modules/garbageCollection",
     "packages/modules/rentAndLease",
-    "packages/modules/ndc"
+    "packages/modules/ndc",
+    "packages/modules/reports"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -74,6 +75,7 @@
     "dev:chb": "cd packages/modules/chb && yarn start",
     "dev:asset": "cd packages/modules/asset && yarn start",
     "dev:ndc": "cd packages/modules/ndc && yarn start",
+    "dev:reports": "cd packages/modules/reports && yarn start",
     "devD:pgrai": "cd packages/modules/pgrai && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
@@ -99,7 +101,7 @@
     "build:noc": "cd packages/modules/noc && yarn build",
     "build:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",
-    "buildR:reports": "cd packages/modules/reports && yarn build",
+    "build:reports": "cd packages/modules/reports && yarn build",
     "build:sv": "cd packages/modules/sv && yarn build",
     "build:ads": "cd packages/modules/ads && yarn build",
     "build:chb": "cd packages/modules/chb && yarn build",

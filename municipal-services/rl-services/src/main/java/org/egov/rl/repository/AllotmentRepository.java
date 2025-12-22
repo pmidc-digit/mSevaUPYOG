@@ -80,7 +80,20 @@ public class AllotmentRepository {
 //      return result;
 
 	}
-	
+	public List<AllotmentDetails> getAllotmentForReport(AllotmentCriteria criterias) {
+
+		List<Object> preparedStmtList = new ArrayList<>();
+		
+		String query = queryBuilder.getAllotmentSearchForReport(criterias, preparedStmtList);
+
+        log.info("Executing Query: {}", query);
+        log.info("With Parameters: {}", preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+//      AllotmentRequest result =  jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+//      result.setRequestInfo(null);
+//      return result;
+
+	}
 	public List<AllotmentDetails> getAllotmentByApplicationNumber(AllotmentCriteria criterias) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getAllotmentByApplicationNumber(criterias, preparedStmtList);

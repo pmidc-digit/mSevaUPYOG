@@ -54,7 +54,8 @@ public class CalculationService {
 				
 				fee = new BigDecimal(amount.getBaseRent());
 				
-				demandDetails.add(DemandDetail.builder().taxAmount(fee).collectionAmount(fee)
+				demandDetails.add(DemandDetail.builder().taxAmount(fee)
+//						.collectionAmount(fee)
 						.taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
 			}
 		}
@@ -86,7 +87,9 @@ public class CalculationService {
 					amount = new BigDecimal(t.getAmount());
 				}
 				if (!amount.equals(BigDecimal.ZERO)) {
-					demandDetails.add(DemandDetail.builder().taxAmount(amount).collectionAmount(amount).taxHeadMasterCode(t.getTaxType())
+					demandDetails.add(DemandDetail.builder().taxAmount(amount)
+//							.collectionAmount(amount)
+							.taxHeadMasterCode(t.getTaxType())
 							.tenantId(tenantId).build());
 				}
 			}

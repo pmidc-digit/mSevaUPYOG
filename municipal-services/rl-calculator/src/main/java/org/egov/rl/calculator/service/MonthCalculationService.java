@@ -185,15 +185,15 @@ public class MonthCalculationService {
 		// Convert long → LocalDate
 		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
 		int afterday=masterDataService.getPenaltySlabs(requestInfo, tenantId).get(0).getApplicableAfterDays();
-		   
+		date=date.plusDays(afterday);
 		// Same month ka 15th day
-		LocalDate fifteenthDay = date.withDayOfMonth(afterday);
+//		LocalDate fifteenthDay = date.withDayOfMonth(afterday);
 
 		// Convert back to epoch milli (start of day)
-		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		long fifteenthEpochMilli = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
 		System.out.println("Original Date: " + date);
-		System.out.println("added 15th Day of Month: " + fifteenthDay);
+		System.out.println("added 15th Day of Month: " + fifteenthEpochMilli);
 		System.out.println("Epoch Milli of 15th Day: " + fifteenthEpochMilli);
 		return fifteenthEpochMilli;
 	}

@@ -37,8 +37,8 @@ public class RLConstants {
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	
 	public static final String RL_MONTHLY_CYCLE = "MONTHLY";
-	public static final String RL_QUATERLY_CYCLE = "QUTERLY";
-	public static final String RL_BIAANNUALY_CYCLE = "BIAANUALY";
+	public static final String RL_QUATERLY_CYCLE = "QUATERLY";
+	public static final String RL_BIAANNUALY_CYCLE = "BIANNUAL";
 	public static final String RL_YEARLY_CYCLE = "YEARLY";
 	
 	

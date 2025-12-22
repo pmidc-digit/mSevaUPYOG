@@ -140,7 +140,7 @@ public class BoundaryService {
 			ResponseEntity<JsonNode> response = restTemplate.postForEntity(mdmsUrl, mdmsCriteriaReq, JsonNode.class);
 			body = response.getBody();
 			// Navigate to the array node
-			JsonNode propertyArrayNode = body.get("MdmsRes").get("rentAndLease").get("RLProperty");
+			JsonNode propertyArrayNode = body.path("MdmsRes").path("rentAndLease").get("RLProperty");
 
 			
 			propertyList = mapper.convertValue(propertyArrayNode, new TypeReference<List<RLProperty>>() {

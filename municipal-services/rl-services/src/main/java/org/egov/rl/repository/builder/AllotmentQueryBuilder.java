@@ -83,6 +83,54 @@ public class AllotmentQueryBuilder {
 		return mainQuery.toString();
 	}
 
+	public String getAllotmentSearchForReport(AllotmentCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder subQuery = new StringBuilder("");
+		List<Object> subQueryParams = new ArrayList<>();
+		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(subQuery, subQueryParams);
+			subQuery.append(" al.status = 'APPROVED' AND al.expireflag=false AND al.tenant_id = ? ");
+			subQueryParams.add(criteria.getTenantId());
+		}
+		if (!criteria.getIsReportSearch()) {
+			if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
+				addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+			}
+		}
+		if (criteria.getIsReportSearch()) {
+			if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+				addClauseIfRequired(subQuery, subQueryParams);
+                if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+					subQuery.append(" (al.start_date >= ? AND al.end_date <= ?) OR al.end_date <= ? ");
+					subQueryParams.add(criteria.getFromDate()); // long value
+					subQueryParams.add(criteria.getToDate()); // long value
+					subQueryParams.add(criteria.getToDate()); // long value
+				}
+			}
+		}
+//		
+		// Now build the main query
+		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
+		mainQuery.append(subQuery);
+//
+//		// Add WHERE clause with subquery
+////		mainQuery.append(" WHERE ptr.id IN (       al.tenant_id = ? AND ");
+//		mainQuery.append(" WHERE al.id IN (");
+//		mainQuery.append(subQuery);
+//		mainQuery.append(" ) ");
+
+		// Add all subquery parameters to the main prepared statement list
+		preparedStmtList.addAll(subQueryParams);
+
+		// Order the final result
+		mainQuery.append(GROUPBY_QUERY);
+		mainQuery.append(subQuery);
+		preparedStmtList.addAll(subQueryParams);
+
+		return mainQuery.toString();
+	}
+
 	private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
 		if (preparedStmtList.isEmpty()) {
 			query.append("WHERE");

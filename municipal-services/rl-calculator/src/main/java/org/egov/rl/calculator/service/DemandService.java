@@ -570,7 +570,7 @@ public class DemandService {
 					try {
 
 						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo);
-						System.out.println("list----" + list.size());
+						
 						list.forEach(d -> {
 							JsonNode property = d.getAdditionalDetails();
 							String status = property.path("feesPeriodCycle").asText();
@@ -578,15 +578,13 @@ public class DemandService {
 							switch (status) {
 	                            
 								case RLConstants.RL_MONTHLY_CYCLE:
-									monthlyBillGenerate(currentDate, d, requestInfo);
 									break;
 			                    
 								case RLConstants.RL_QUATERLY_CYCLE:
-									System.out.println("Waiting for payment");
 									break;
 			                    
 								case RLConstants.RL_BIAANNUALY_CYCLE:
-									System.out.println("Payment failed");
+									monthlyBillGenerate(currentDate, d, requestInfo);
 									break;
 								default:
 									System.out.println("Unknown status");
@@ -685,8 +683,7 @@ public class DemandService {
 							.findFirst().get();
 					updatePenalty(baseAmount.getTaxAmount(), d, requestInfo);
 				} else {
-					notificationService.sendNotificationSMS(
-							AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
+					notificationService.sendNotificationSMS(AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
 				}
 			});
 
@@ -710,8 +707,7 @@ public class DemandService {
 		demand.setDemandDetails(dataList);
 		demand.setBillExpiryTime(exparyDate);
 		demand.setFixedbillexpirydate(exparyDate);
-//		addRoundOffTaxHead(demand.getTenantId(), dataList);
-//		System.out.println(demand.getPayer()+"---------------"+demand);
+		addRoundOffTaxHead(demand.getTenantId(), dataList);
 		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
 	}
 

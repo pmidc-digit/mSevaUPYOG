@@ -90,7 +90,7 @@ public class SearchPropertyService {
 		id.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(propertyReportSearchRequest.getSearchProperty().getTenantId());
-		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentByIds(allotmentCriteria).stream().map(d->{
+		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentForReport(allotmentCriteria).stream().map(d->{
 			AllotmentDetails al1=d;
 			al1.setOwnerInfo(userList(d, propertyReportSearchRequest.getSearchProperty().getTenantId()));
 			return al1;

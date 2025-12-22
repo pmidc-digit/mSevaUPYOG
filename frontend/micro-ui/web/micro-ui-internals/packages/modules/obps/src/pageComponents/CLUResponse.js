@@ -1,5 +1,5 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
-import React from "react";
+import { Banner, Card, CardText, ActionBar, SubmitBar,Loader } from "@mseva/digit-ui-react-components";
+import React, {useState} from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll} from "../utils";
@@ -11,9 +11,7 @@ const CLUResponse = (props) => {
   const {pathname, state } = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const cluData = state?.data?.Clu?.[0];
-  console.log("cluData here", cluData);
-
+  const [downloading, setDownloading] = useState(false);
   let tenantId;
 
   if(window.location.pathname.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
@@ -25,6 +23,12 @@ const CLUResponse = (props) => {
   const { tenants } = storeData || {};
 
   const cluCode = pathname.split("/").pop(); // ✅ Extracts the last segment
+
+  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: cluCode }, tenantId);
+  const applicationDetails = data?.resData;
+
+  const cluData = applicationDetails?.Clu?.[0];
+  console.log("cluData here", cluData);
 
   const onSubmit = () => {
     if(window.location.pathname.includes("citizen")){
@@ -51,15 +55,29 @@ const CLUResponse = (props) => {
 
 
   const handleDownloadPdf = async () => {
-    const Property = cluData;
-    //console.log("tenants in NOC", tenants);
+    try{
+      setDownloading(true);
+      const Property = cluData;
+    // console.log("tenants in NOC", tenants);
+    const site = Property?.cluDetails?.additionalDetails?.siteDetails;
+    const ulbType = site?.ulbType;
+    const ulbName = site?.ulbName?.city?.name;
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, t);
+    const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
     //console.log("acknowledgementData in citizen NOC", acknowledgementData);
     // Digit.Utils.pdf.generate(acknowledgementData);
-    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+ 
+    } catch(err){
+      console.log('err', err)
+    } finally{
+      setDownloading(false);
+    }
   };
 
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div>
@@ -72,6 +90,7 @@ const CLUResponse = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
+        {(isLoading || downloading) && <Loader />}
         {cluData?.applicationStatus !== "REJECTED" ? (
           <div>
           <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />

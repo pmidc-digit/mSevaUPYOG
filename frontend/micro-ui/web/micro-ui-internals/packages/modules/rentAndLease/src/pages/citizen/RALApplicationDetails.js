@@ -5,8 +5,9 @@ import RALDocuments from "../../components/RALDocument";
 import { useParams } from "react-router-dom";
 // import { Loader } from "../../components/Loader";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+// import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import { getAcknowledgementData } from "../../utils/index";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
   const { acknowledgementIds, tenantId } = useParams();
@@ -105,8 +106,8 @@ const RALApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginLeft: "14px", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
+        <div className="cardHeaderWithOptions ral-app-details-header">
+          <Header className="ral-header-32">{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -117,7 +118,7 @@ const RALApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
@@ -126,7 +127,7 @@ const RALApplicationDetails = () => {
                 return (
                   <React.Fragment key={owner.ownerId || index}>
                     {multipleOwners && (
-                      <CardSectionHeader style={{ padding: "5px 24px 0px 24px", fontWeight: "600" }}>
+                      <CardSectionHeader className="ral-app-details-owner-header">
                         {t("RAL_OWNER")} {index + 1}
                       </CardSectionHeader>
                     )}
@@ -145,7 +146,7 @@ const RALApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
@@ -155,22 +156,23 @@ const RALApplicationDetails = () => {
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            {/* <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} /> */}
             <Row
-              label={t("PENALTY_TYPE")}
+              label={t("RAL_FEE_CYCLE")}
               text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
             />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+            <Card className="ral-app-details-docs-card">
               {applicationData?.Document?.length > 0 ? (
                 applicationData.Document.map((doc, index) => (
                   <div key={index}>
                     <RALDocuments value={applicationData.Document} Code={doc?.documentType} index={index} />
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    {t(doc?.documentType)}
                   </div>
                 ))
               ) : (
@@ -180,7 +182,8 @@ const RALApplicationDetails = () => {
           </StatusTable>
         </Card>
 
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>

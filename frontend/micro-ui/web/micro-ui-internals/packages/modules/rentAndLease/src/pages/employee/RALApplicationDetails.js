@@ -16,8 +16,9 @@ import RALDocuments from "../../components/RALDocument";
 import { useParams, useHistory, Link } from "react-router-dom";
 // import { Loader } from "../../components/Loader";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+// import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import RALModal from "../../pageComponents/RALModal";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ const RALApplicationDetails = () => {
   const [loader, setLoader] = useState(false);
   const state = tenantId?.split(".")[0];
   const [applicationData, setApplicationData] = useState();
+  console.log("applicationData", applicationData);
   const [showToast, setShowToast] = useState(null);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -32,7 +34,6 @@ const RALApplicationDetails = () => {
   const [getEmployees, setEmployees] = useState([]);
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
-
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -59,51 +60,8 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
-  const userType = "citizen";
-
   // Assuming applicationData is your API response
   const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
-
-  const showNextActions = (nextActions) => {
-    let nextAction = nextActions?.length > 0 && nextActions[0];
-    const next = nextActions?.map((action) => action?.action);
-    if (next?.includes("PAY") || next?.includes("EDIT")) {
-      let currentIndex = next.indexOf("EDIT") || next.indexOf("PAY");
-      currentIndex = currentIndex != -1 ? currentIndex : next.indexOf("PAY");
-      nextAction = nextActions[currentIndex];
-    }
-    switch (nextAction?.action) {
-      case "PAY":
-        return userType === "citizen" ? (
-          <div style={{ marginTop: "1em", bottom: "0px", width: "100%", marginBottom: "1.2em" }}>
-            <Link
-              to={{
-                // history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}?tenantId=${tenantId}`);
-                // pathname: `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}`,
-                // pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`,
-
-                pathname: `/digit-ui/employee/payment/collect/rentandlease/${acknowledgementIds}/${tenantId}?tenantId=${tenantId}`,
-
-                state: { tenantId: tenantId, applicationNumber: acknowledgementIds },
-              }}
-            >
-              <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
-            </Link>
-          </div>
-        ) : null;
-
-      case "SUBMIT_FEEDBACK":
-        return (
-          <div style={{ marginTop: "24px" }}>
-            <Link to={`/digit-ui/citizen/fsm/rate/${acknowledgementIds}`}>
-              <SubmitBar label={t("CS_APPLICATION_DETAILS_RATE")} />
-            </Link>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
 
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -115,6 +73,11 @@ const RALApplicationDetails = () => {
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
+
+  if (actions?.some((action) => action.action === "REQUEST_FOR_DISCONNECTION") && applicationData?.endDate > Date.now()) {
+    actions = [...(actions || []), { action: "RENEWAL" }];
+  }
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -137,11 +100,14 @@ const RALApplicationDetails = () => {
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState?.[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions || []);
 
-    if (action?.action == "APPLY" || action?.action == "REJECT") {
+    if (action?.action == "APPLY" || action?.action == "REJECT" || action?.action == "CASH_REFUND") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
-      history.push(`/digit-ui/employee/payment/collect/rentandlease/${appNo}/${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
+    } else if (action?.action === "RENEWAL") {
+      setShowModal(true);
+      setSelectedAction(action);
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -194,12 +160,9 @@ const RALApplicationDetails = () => {
         ...finalPayload,
       });
 
-      if (response?.responseInfo?.status == "successful") {
+      if (response?.ResponseInfo?.status == "successful") {
         // ✅ Show success first
         setShowToast({ key: false, label: "Successfully updated the status" });
-        // setError("Successfully updated the status");
-        // data.revalidate();
-
         // ✅ Delay navigation so toast shows
         setTimeout(() => {
           history.push("/digit-ui/employee/rentandlease/inbox");
@@ -210,7 +173,6 @@ const RALApplicationDetails = () => {
       }
     } catch (err) {
       setShowToast({ key: true, label: "Something went wrong" });
-      // setError("Something went wrong");
     }
   };
 
@@ -239,14 +201,83 @@ const RALApplicationDetails = () => {
     }
   }, [showToast]);
 
+  const handleRenewal = async (data) => {
+    setLoader(true);
+    // Calculate new dates
+    const oldStart = new Date(data?.startDate);
+    const oldEnd = new Date(data?.endDate);
+    const duration = oldEnd - oldStart;
+
+    // New start date is the old end date
+    const newStart = new Date(oldEnd);
+    // New end date is new start + duration
+    const newEnd = new Date(newStart.getTime() + duration);
+
+    // Sanitize OwnerInfo
+    const sanitizedOwners = data?.OwnerInfo?.map(({ ownerId, ...rest }) => rest);
+
+    const payload = {
+      AllotmentDetails: {
+        tenantId: data?.tenantId,
+        propertyId: data?.propertyId,
+        previousApplicationNumber: data?.applicationNumber,
+        OwnerInfo: sanitizedOwners,
+        tradeLicenseNumber: data?.tradeLicenseNumber,
+        additionalDetails: data?.additionalDetails,
+        startDate: newStart.getTime(),
+        endDate: newEnd.getTime(),
+        workflow: {
+          action: "INITIATE",
+        },
+        Document: null,
+      },
+    };
+
+    try {
+      const response = await Digit.RentAndLeaseService.create(payload);
+      updateApplication(response?.AllotmentDetails);
+    } catch (error) {
+      setLoader(false);
+      setShowToast({ key: true, label: "Error creating renewal application" });
+    }
+  };
+
+  const updateApplication = async (response) => {
+    // Sanitize Documents from original applicationData: remove docId and id to treat them as new documents
+    const sanitizedDocuments = applicationData?.Document?.map(({ docId, id, ...rest }) => rest);
+
+    const payload = {
+      AllotmentDetails: {
+        ...response,
+        Document: sanitizedDocuments,
+        workflow: {
+          action: "SAVEASDRAFT",
+        },
+      },
+    };
+    try {
+      await Digit.RentAndLeaseService.update(payload);
+      // Refresh the current application details
+      if (acknowledgementIds) {
+        const filters = { applicationNumbers: acknowledgementIds };
+        fetchApplications(filters);
+      }
+      setLoader(false);
+      setShowToast({ key: false, label: "Renewal application submitted successfully" });
+    } catch (error) {
+      setLoader(false);
+      setShowToast({ key: true, label: "Error updating renewal application" });
+    }
+  };
+
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginLeft: "14px", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
+        <div className="cardHeaderWithOptions ral-app-details-header">
+          <Header className="ral-header-32">{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
@@ -255,7 +286,7 @@ const RALApplicationDetails = () => {
                 return (
                   <React.Fragment key={owner.ownerId || index}>
                     {multipleOwners && (
-                      <CardSectionHeader style={{ padding: "5px 24px 0px 24px", fontWeight: "600" }}>
+                      <CardSectionHeader className="ral-app-details-owner-header">
                         {t("RAL_OWNER")} {index + 1}
                       </CardSectionHeader>
                     )}
@@ -274,7 +305,7 @@ const RALApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
@@ -284,22 +315,23 @@ const RALApplicationDetails = () => {
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
             <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            {/* <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} /> */}
             <Row
-              label={t("PENALTY_TYPE")}
+              label={t("RAL_FEE_CYCLE")}
               text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
             />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+            <Card className="ral-app-details-docs-card">
               {applicationData?.Document?.length > 0 ? (
                 applicationData.Document.map((doc, index) => (
                   <div key={index}>
                     <RALDocuments value={applicationData.Document} Code={doc?.documentType} index={index} />
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    {t(doc?.documentType)}
                   </div>
                 ))
               ) : (
@@ -308,8 +340,9 @@ const RALApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
-        {applicationData?.status != "INITIATED" && actions?.length > 0 && actions[0]?.action != "PAY" && (
+        {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        {applicationData?.status != "INITIATED" && actions?.length > 0 && (
           <ActionBar>
             {displayMenu ? (
               <Menu
@@ -351,14 +384,14 @@ const RALApplicationDetails = () => {
             showToast={showToast}
             closeToast={closeToast}
             getEmployees={getEmployees}
-            // errors={error}
             setShowToast={setShowToast}
+            applicationData={applicationData}
+            handleRenewal={handleRenewal}
           />
         ) : null}
-        {workflowDetails?.data && showNextActions(workflowDetails?.data?.actionState?.nextActions)}
       </div>
 
-      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} style={{ zIndex: 1000 }} />}
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );

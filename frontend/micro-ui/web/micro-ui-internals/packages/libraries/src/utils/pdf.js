@@ -787,9 +787,13 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
  * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
  */
 const generateTimelinePDF = async (data) => {
-  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps } = data;
+  console.log(data,"data i get ")
+  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps,moduleName } = data;
 
+  
+  let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
+  
   const buildTimelineEntries = () => {
     const entries = [];
     
@@ -857,12 +861,22 @@ const generateTimelinePDF = async (data) => {
                                 width: 'auto'
                               },
                               {
-                                stack: row.documents.map(doc => ({
-                                  columns: [
-                                    { image: docLogo, width: 20, margin: [0, 0, 5, 0], listType: "none" },
-                                    { text: doc.name, fontSize: 10, color: '#555', margin: [5, 5, 0, 0], decoration: 'underline', listType: "none" }
-                                  ]
-                                })),
+                                stack: row.documents.map(doc => {
+                                  return {
+                                    columns: [
+                                      { 
+                                        text: doc.name,
+                                        fontSize: 10,
+                                        color: '#555',
+                                        margin: [5, 5, 0, 0],
+                                        decoration: 'underline',
+                                        listType: "none",
+                                        link: doc.link,
+                                        linkTarget: '_blank' 
+                                      }
+                                    ]
+                                  };
+                                }),
                                 margin: [10, 0, 0, 2],
                                 width: '*'
                               }
@@ -930,7 +944,7 @@ const generateTimelinePDF = async (data) => {
         {
           columns: [
             {
-              text: `${t(businessService)} Application Timeline`  || 'Government Department',
+              text: `${t(moduleNamenew)} Application Timeline`  || 'Government Department',
               fontSize: 14,
               bold: true,
               color: '#2947A3',
@@ -1006,7 +1020,7 @@ const generateTimelinePDF = async (data) => {
       },
       // Section Title
       {
-        text: t ? `${t('CM_TIMELINE_WORKFLOW_HISTORY')}` : 'File Movement History',
+        text: t ? `${t('ES_NEW_APPLICATION_APPLICATION_TIMELINE')} History` : 'File Movement History',
         fontSize: 14,
         bold: true,
         color: '#2947A3',

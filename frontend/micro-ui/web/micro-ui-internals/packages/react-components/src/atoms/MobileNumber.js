@@ -17,17 +17,7 @@ const MobileNumber = (props) => {
       <div className="field-container">
         <div className={`text-input ${user_type === "EMPLOYEE"? "" : "text-mobile-input-width"} ${props.className}`} style={{ position: "relative" }}>
           {!props.hideSpan && (
-            <span style={{ 
-              position: "absolute", 
-              left: "12px", 
-              top: "34%", 
-              transform: "translateY(-50%)",
-              fontSize: "16px",
-              fontWeight: "500",
-              color: "#666",
-              pointerEvents: "none",
-              zIndex: 1
-            }}>
+            <span className="mobile-number-prefix">
               +91
             </span>
           )}
@@ -35,15 +25,12 @@ const MobileNumber = (props) => {
             type={"text"}
             name={props.name}
             id={props.id}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${props.errorStyle && "employee-card-input-error"}`}
+            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${props.errorStyle && "employee-card-input-error"} ${!props.hideSpan ? "mobile-number-input-with-prefix" : ""}`}
             placeholder={props.placeholder}
             onChange={onChange}
             ref={props.inputRef}
             value={props.value}
-            style={{ 
-              ...props.style,
-              paddingLeft: !props.hideSpan ? "45px" : "12px"
-            }}
+            style={props.style}
             minLength={props.minlength}
             maxLength={props.maxlength}
             max={props.max}

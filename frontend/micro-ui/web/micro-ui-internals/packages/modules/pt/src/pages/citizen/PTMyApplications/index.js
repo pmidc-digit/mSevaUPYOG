@@ -279,7 +279,7 @@ export const PTMyApplications = () => {
     <SearchField></SearchField>
   <SearchField></SearchField>
   <SearchField></SearchField>
-      <div className={`form-field`} style={{marginTop:'40px'}}>  <SubmitBar label="Reset" style={{backgroundColor:'white',color:'black',border:'1px solid red',marginLeft:'45%'}} onSubmit={handleReset} /></div>
+      <div className={`form-field`} style={{marginTop:'40px'}}>  <SubmitBar label="Reset" onSubmit={handleReset} /></div>
     
       <div className={`form-field`} style={{marginTop:'40px'}}>  <SubmitBar label="Search" submit="submit" onSubmit={onSubmit} /></div>
       </form>

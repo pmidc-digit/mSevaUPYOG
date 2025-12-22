@@ -16,11 +16,13 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const HRMSResponse = Digit?.ComponentRegistryService?.getComponent("HRMSResponse");
   const HRMSDetails = Digit?.ComponentRegistryService?.getComponent("HRMSDetails");
+  const HRMSEMPMAPDetails = Digit?.ComponentRegistryService?.getComponent("HRMSEMPMAPDetails");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("HRInbox");
   const CreateEmployee = Digit?.ComponentRegistryService?.getComponent("HRCreateEmployee");
   const CreateEmployeeStepForm = Digit?.ComponentRegistryService?.getComponent("HRCreateEmployeeStepForm");
   const EditEmpolyee = Digit?.ComponentRegistryService?.getComponent("HREditEmpolyee");
   const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
+  const EmpMaping = Digit?.ComponentRegistryService?.getComponent("EmpMaping");
 
   //console.log("Path in hrms: ", path);
   return (
@@ -50,8 +52,10 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/create`} component={() => <CreateEmployeeStepForm />} />
           <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
+          <PrivateRoute path={`${path}/Mapdetails/:tenantId/:id/:uuid`} component={() => <HRMSEMPMAPDetails />} />
           <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
           <PrivateRoute path={`${path}/report/rainmaker-hrms/HRMSEmployeewiseReport`} component={() => <HRMSEmployeewiseReport />} />
+          <PrivateRoute path={`${path}/empMaping`} component={() => <EmpMaping />} />
         </div>
       </React.Fragment>
     </Switch>

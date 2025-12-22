@@ -53,34 +53,6 @@ export const ADSMyApplications = () => {
 
   const totalPages = Math.ceil((applications?.length || 0) / itemsPerPage);
 
-  const styles = {
-    paginationControls: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "12px",
-      margin: "20px 0",
-    },
-    paginationBtn: {
-      backgroundColor: "#2947a3",
-      color: "#fff",
-      border: "none",
-      padding: "8px 12px",
-      borderRadius: "50%",
-      fontSize: "18px",
-      cursor: "pointer",
-      transition: "background-color 0.2s ease",
-    },
-    disabledBtn: {
-      backgroundColor: "#ccc",
-      cursor: "not-allowed",
-    },
-    paginationInfo: {
-      fontWeight: 500,
-      color: "#333",
-    },
-  };
-
   if (isLoading) return <Loader />;
 
   return (
@@ -91,11 +63,11 @@ export const ADSMyApplications = () => {
         {currentItems?.length > 0 &&
           currentItems.map((application, index) => (
             <div key={index}>
-              <AdsApplication application={application} tenantId={tenantId} buttonLabel={t("ADS_SUMMARY")} />
+              <AdsApplication application={application} tenantId={tenantId} buttonLabel={t("ADS_SUMMARY")} refetchBookings={refetch} />
             </div>
           ))}
 
-        {!applications?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>}
+        {!applications?.length > 0 && <p className="ads-applications-empty">{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>}
 
         {/* {applications?.length !== 0 && data?.count > t1 && (
           <div>
@@ -109,12 +81,9 @@ export const ADSMyApplications = () => {
 
         {/* Pagination controls */}
         {applications?.length > itemsPerPage && (
-          <div style={styles.paginationControls}>
+          <div className="ads-pagination-controls">
             <button
-              style={{
-                ...styles.paginationBtn,
-                ...(currentPage === 1 ? styles.disabledBtn : {}),
-              }}
+              className={`ads-pagination-btn ${currentPage === 1 ? "ads-pagination-btn--disabled" : ""}`}
               disabled={currentPage === 1}
               onClick={() => {
                 setLoadingPage(true);
@@ -127,15 +96,12 @@ export const ADSMyApplications = () => {
               &#8592;
             </button>
 
-            <span style={styles.paginationInfo}>
+            <span className="ads-pagination-info">
               {`${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, applications.length)} of ${applications.length}`}
             </span>
 
             <button
-              style={{
-                ...styles.paginationBtn,
-                ...(currentPage === totalPages ? styles.disabledBtn : {}),
-              }}
+              className={`ads-pagination-btn ${currentPage === totalPages ? "ads-pagination-btn--disabled" : ""}`}
               disabled={currentPage === totalPages}
               onClick={() => {
                 setLoadingPage(true);
@@ -151,10 +117,10 @@ export const ADSMyApplications = () => {
         )}
       </div>
 
-      <div style={{ marginLeft: "16px", marginTop: "16px" }}>
+      <div className="ads-new-booking">
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
         <Link to="/digit-ui/citizen/ads/bookad/searchads">
-          <button style={{ padding: "8px opx", fontWeight: "700", display: "block" }}>{t("ADS_NEW_BOOKING") + " +"}</button>
+          <button className="ads-new-booking-btn">{t("ADS_NEW_BOOKING") + " +"}</button>
         </Link>
       </div>
     </>

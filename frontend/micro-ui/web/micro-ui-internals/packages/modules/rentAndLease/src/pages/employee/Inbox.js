@@ -26,7 +26,6 @@ const Inbox = ({
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  // const { isLoading, data: countData } = Digit.Hooks.mcollect.useMCollectCount(tenantId);
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
   const [isLoader, setIsLoader] = useState(false);
@@ -36,14 +35,6 @@ const Inbox = ({
   const paginationParams = isMobile
     ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
     : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" };
-
-  // const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
-
-  // const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
-  //   tenantId,
-  //   filters: { ...searchParams, ...paginationParams },
-  //   isMcollectAppChanged,
-  // });
 
   const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
     ? Digit.Hooks.useNewInboxGeneral({
@@ -68,12 +59,6 @@ const Inbox = ({
         middlewareSearch,
         config: { staleTime: 0, refetchOnMount: "always" },
       });
-
-  // useEffect(() => {
-  //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
-  //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
-  // }, [hookLoading, data]);'
-
 
   useEffect(() => {
     async function fetchBills() {
@@ -148,19 +133,6 @@ const Inbox = ({
 
   const totalCount = data?.[0]?.totalCount;
 
-  //Todo : do for propert Number
-  const getSearchFields = () => [
-    { label: t("APPLICATION_NUMBER"), name: "applicationNumber" },
-    {
-      label: t("UC_MOBILE_NO_LABEL"),
-      name: "mobileNumber",
-      maxlength: 10,
-      pattern: "[6-9][0-9]{9}",
-      title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
-      componentInFront: "+91",
-    },
-  ];
-
   if (rest?.data?.length !== null) {
     if (isMobile) {
       return (
@@ -169,7 +141,6 @@ const Inbox = ({
           defaultSearchParams={initialStates.searchParams}
           isLoading={hookLoading}
           isSearch={!isInbox}
-          searchFields={getSearchFields()}
           onFilterChange={handleFilterChange}
           onSearch={handleFilterChange}
           onSort={handleSort}
@@ -198,7 +169,7 @@ const Inbox = ({
             defaultSearchParams={initialStates.searchParams}
             isSearch={!isInbox}
             onFilterChange={handleFilterChange}
-            searchFields={getSearchFields()}
+            // searchFields={getSearchFields()}
             onSearch={handleFilterChange}
             onSort={handleSort}
             onNextPage={fetchNextPage}

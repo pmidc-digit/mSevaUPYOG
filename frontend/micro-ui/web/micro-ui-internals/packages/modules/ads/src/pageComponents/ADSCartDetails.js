@@ -6,14 +6,10 @@ const ADSCartDetails = ({ cartDetails, t }) => {
   const getKey = (ad) => `${ad?.id}_${ad?.bookingStartDate}_${ad?.bookingEndDate}`;
 
   // Default expanded: all open
-  const [expanded, setExpanded] = useState(() =>
-    cartDetails?.map((item) => getKey(item?.ad))
-  );
+  const [expanded, setExpanded] = useState(() => cartDetails?.map((item) => getKey(item?.ad)));
 
   const toggleExpand = (key) => {
-    setExpanded((prev) =>
-      prev?.includes(key) ? prev?.filter((id) => id !== key) : [...prev, key]
-    );
+    setExpanded((prev) => (prev?.includes(key) ? prev?.filter((id) => id !== key) : [...prev, key]));
   };
 
   const makeColumns = () => [
@@ -31,53 +27,32 @@ const ADSCartDetails = ({ cartDetails, t }) => {
   ];
 
   return (
-    <div style={{ marginTop: "1rem" }}>
+    <div className="ads-cart-details">
       {cartDetails?.length === 0 ? (
-        <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ADVERTISMENT_DETAILS")}</p>
+        <p className="ads-cart-empty">{t("ADS_NO_ADVERTISMENT_DETAILS")}</p>
       ) : (
         cartDetails?.map((item, idx) => {
           const key = getKey(item?.ad);
           const isOpen = expanded?.includes(key);
           return (
-            <div
-              key={idx}
-              style={{
-                marginBottom: "16px",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                overflow: "hidden",
-              }}
-            >
+            <div key={idx} className="ads-cart-item">
               {/* Ad Header (clickable) */}
-              <div
-                onClick={() => toggleExpand(key)}
-                style={{
-                  background: "#f9f9f9",
-                  padding: "10px 14px",
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  borderBottom: "1px solid #ddd",
-                  cursor: "pointer",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
+              <div onClick={() => toggleExpand(key)} className="ads-cart-item-header ads-cart-item-header--clickable">
                 <span>
                   {/* {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length} */}
                   {/* {item?.ad?.amount ? ` — ₹${(item.ad.amount * 0.09 * 0.09 * item.slots?.length).toFixed(2)}` : ""} */}
                   {t(item?.ad?.name ?? item?.ad?.location)}
                   {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
                   {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
-                   {/* Apply 9% tax + 9% service (18%) once on base amount, then add base × slots */}
+                  {/* Apply 9% tax + 9% service (18%) once on base amount, then add base × slots */}
                   {/* {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * item?.slots?.length + item?.ad?.amount * 0.18).toFixed(2)}` : ""} */}
                 </span>
-                <span style={{ fontSize: "18px" }}>{isOpen ? "▾" : "▸"}</span>
+                <span className="ads-cart-item-toggle">{isOpen ? "▾" : "▸"}</span>
               </div>
 
               {/* Slots Table (collapsible) */}
               {isOpen && (
-                <div style={{ overflowX: "auto" }}>
+                <div className="ads-cart-table">
                   <Table
                     t={t}
                     data={item.slots}
@@ -85,13 +60,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
                     disableSort={true}
                     isPaginationRequired={false}
                     getCellProps={(cell) => ({
-                      style: {
-                        padding: "12px 14px",
-                        fontSize: "14px",
-                        borderBottom: "1px solid #f0f0f0",
-                        textAlign: "left",
-                        whiteSpace: "nowrap",
-                      },
+                      className: "ads-cart-table-cell",
                     })}
                   />
                 </div>

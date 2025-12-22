@@ -250,7 +250,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: formData }, tenantId);
     if (response?.AllotmentDetails && response?.AllotmentDetails.length > 0) {
       return { isSuccess: true, response: { RentAndLeaseApplications: response.AllotmentDetails } };
-    } else if (response?.responseInfo?.status === "successful") {
+    } else if (response?.ResponseInfo?.status === "successful") {
       return { isSuccess: true, response };
     } else {
       return { isSuccess: false, response };

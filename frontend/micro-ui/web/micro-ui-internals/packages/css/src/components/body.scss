@@ -108,11 +108,11 @@ body {
 
   .app-container {
     width: 100%;
+    padding: 2rem;
     form {
       .card {
         max-width: 960px;
         h2 {
-          text-align: left;
         }
         .field-container {
           max-width: 540px;
@@ -256,7 +256,7 @@ body {
 .custom-card-td {
   width: 100%;
   padding: 0;
-  display: flex;
+  display: block;
   justify-content: space-between;
   align-items: center;
 }

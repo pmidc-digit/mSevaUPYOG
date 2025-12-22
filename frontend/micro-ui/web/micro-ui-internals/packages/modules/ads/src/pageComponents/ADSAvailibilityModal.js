@@ -120,12 +120,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
           disabled={allBooked}
           // checked={selectAll}
           onChange={(e) => handleSelectAll(e.target.checked)}
-          style={{
-            cursor: allBooked ? "not-allowed" : "pointer",
-            width: "18px",
-            height: "18px",
-            accentColor: "#0b74de",
-          }}
+          className={`ads-checkbox ${allBooked ? "ads-checkbox--disabled" : "ads-checkbox--active"}`}
         />
       ),
       accessor: "select",
@@ -138,12 +133,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
             type="checkbox"
             checked={isChecked}
             disabled={true} // always disabled
-            style={{
-              cursor: "not-allowed",
-              width: "18px",
-              height: "18px",
-              accentColor: "#0b74de",
-            }}
+            className="ads-checkbox ads-checkbox--disabled"
           />
         );
       },
@@ -167,17 +157,9 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         const isAvailable = status === "AVAILABLE";
         return (
           <span
-            style={{
-              display: "inline-block",
-              padding: "5px 14px",
-              borderRadius: "20px",
-              fontSize: "12px",
-              fontWeight: 600,
-              color: isAvailable ? "#155724" : "#721c24",
-              backgroundColor: isAvailable ? "#d4edda" : "#f8d7da",
-              border: `1px solid ${isAvailable ? "#c3e6cb" : "#f5c6cb"}`,
-              textTransform: "capitalize",
-            }}
+            className={`ads-status ${
+      isAvailable ? "ads-status--available" : "ads-status--unavailable"
+    }`}
           >
             {status}
           </span>
@@ -187,75 +169,24 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   ];
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "70px",
-        left: 0,
-        width: "100vw",
-        height: "calc(100vh - 70px)",
-        background: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 2000,
-      }}
-    >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: "1100px",
-          height: "70vh",
-          background: "#fff",
-          borderRadius: "12px",
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-        }}
-      >
+    <div className="ads-cart-overlay">
+      <div className="ads-cart-modal">
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            borderBottom: "1px solid #eee",
-            paddingBottom: "8px",
-          }}
-        >
+        <div className="ads-cart-header">
           <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>
-            {t("ADS_AVAILIBILITY_FOR")} {ad?.name}{" "}
-            {allBooked && <span style={{ color: "#c62828", fontSize: "14px", marginLeft: "8px" }}>{t("ADS_ALL_SLOTS_BOOKED")}</span>}
+            {t("ADS_AVAILIBILITY_FOR")} {ad?.name} {allBooked && <span className="ads-header-note">{t("ADS_ALL_SLOTS_BOOKED")}</span>}
           </h2>
-          <button
-            onClick={onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-            }}
-          >
+          <button onClick={onClose} className="ads-cart-close">
             ✖
           </button>
         </div>
 
         {/* Table */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        >
+        <div className="ads-cart-table-wrapper">
           {isLoading ? (
-            <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_LOADING_SLOTS")}</div>
+            <div className="ads-cart-table-message ">{t("ADS_LOADING_SLOTS")}</div>
           ) : slots?.length === 0 ? (
-            <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_NO_SLOTS_AVAILABLE")}</div>
+            <div className="ads-cart-table-message ">{t("ADS_NO_SLOTS_AVAILABLE")}</div>
           ) : (
             <Table
               t={t}
@@ -263,53 +194,26 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
               columns={columns}
               disableSort={true}
               isPaginationRequired={false}
-              getCellProps={(cell) => ({
-                style: {
-                  padding: "12px 14px",
-                  fontSize: "14px",
-                  borderBottom: "1px solid #f0f0f0",
-                  textAlign: "left",
-                  backgroundColor: cell.row.index % 2 === 0 ? "#fafafa" : "#fff",
-                },
-              })}
+              getCellProps={(cell) => ({ className: "ads-cart-table-cell" })}
+              getRowProps={(row) => ({ className: row.index % 2 === 0 ? "ads-table-row--even" : "ads-table-row--odd" })}
             />
           )}
         </div>
 
         {/* Footer */}
         <div
-          style={{
-            marginTop: "12px",
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-          }}
+          className="ads-modal-footer"
         >
           <button
             onClick={onClose}
-            style={{
-              padding: "10px 18px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              background: "#f5f5f5",
-              cursor: "pointer",
-            }}
+            className="ads-btn-cancel"
           >
             {t ? t("Cancel") : "Cancel"}
           </button>
           <button
             onClick={handleAddToCart}
             disabled={!hasChanges}
-            style={{
-              padding: "10px 18px",
-              borderRadius: "6px",
-              border: "none",
-              background: hasChanges ? "#2947a3" : "#ccc",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: hasChanges ? "pointer" : "not-allowed",
-              transition: "background 0.2s",
-            }}
+            className={`ads-btn-cart ${!hasChanges ? "ads-btn-cart--disabled" : ""}`}
           >
             🛒 {existingForAd?.length > 0 ? t("COMMON_REMOVE_LABEL") : t("ADS_ADD_TO_CART")}
           </button>

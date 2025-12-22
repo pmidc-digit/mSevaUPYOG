@@ -14,18 +14,55 @@ export const ModalConfig = ({
   businessService,
 }) => {
   let checkAssigneeVisible =
-    action?.action == "SENDBACKTOVERIFIER" ||
-    action?.action == "VERIFY" ||
-    action?.action == "FORWARD" ||
+    action?.action === "SENDBACKTOOVERIFIER" ||
+    action?.action === "VERIFY" ||
+    action?.action === "FORWARD" ||
     action?.action === "FORWARDFORFIELDINSPECTION" ||
     action?.action === "PENDING_FOR_FIELDINSPECTION" ||
     action?.action === "FORWARD_FOR_APPROVAL" ||
-    action?.action === "FORWARDFORAPPROVAL";
+    action?.action === "FORWARDFORAPPROVAL" ||
+    action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
+    action?.action === "REQUEST_FOR_DISCONNECTION" ||
+    action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
+    action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+    action?.action === "FORWARD_FOT_SETLEMENT";
   if (action?.isTerminateState) checkAssigneeMandatory = false;
 
   if (action.isTerminateState) {
     checkAssigneeVisible = false;
   }
+  if (action?.action === "RENEWAL") {
+    return {
+      label: {
+        // heading: t("RAL_RENEWAL_MODAL_HEADING"),
+        submit: t("RAL_RENEWAL_SUBMIT"),
+        cancel: t("WF_EMPLOYEE_NEWTL_CANCEL"),
+      },
+      form: [
+        {
+          body: [
+            {
+              label: `${t("RAL_TRADE_LICENSE_NUMBER")} *`,
+              isMandatory: false,
+              type: "text",
+              validation: {
+                // required: true,
+                message: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                pattern: {
+                  value: /^[A-Z0-9\/-]{6,20}$/,
+                  message: t("RAL_INVALID_TRADE_LICENSE_NUMBER"),
+                },
+              },
+              populators: {
+                name: "tradeLicenseNumber",
+              },
+            },
+          ],
+        },
+      ],
+    };
+  }
+
   return {
     label: {
       // heading: t(`WF_${action?.action}_APPLICATION`),

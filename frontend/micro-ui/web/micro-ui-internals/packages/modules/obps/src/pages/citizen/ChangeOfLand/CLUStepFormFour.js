@@ -12,6 +12,8 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
   const [selectedCheckBox, setSelectedCheckBox] = useState(false);
 
+  const isEdit = window.location.pathname.includes("edit");
+
   function handleCheckBox(e) {
     setSelectedCheckBox(e.target.checked);
   }
@@ -25,6 +27,16 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
+
+  const ownerIds = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerIds;
+  });
+    
+  const ownerPhotos = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerPhotos;
+  });
+
+
 
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
@@ -60,10 +72,10 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    const finalPayload = mapToCLUPayload(data, selectedAction);
-    console.log("finalPayload here==>", finalPayload);
-
     try {
+      const finalPayload = mapToCLUPayload(data, selectedAction);
+      console.log("finalPayload here==>", finalPayload);
+
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
@@ -96,7 +108,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           } else {
             //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
             history.replace({
-              pathname: `/digit-ui/employee/obps/response/${response?.Noc?.[0]?.applicationNo}`,
+              pathname: `/digit-ui/employee/obps/response/${response?.Clu?.[0]?.applicationNo}`,
               state: { data: response },
             });
           }
@@ -114,8 +126,24 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   function mapToCLUPayload(cluFormData, selectedAction) {
     console.log("cluFormData", cluFormData);
 
+    {/**Change of Owner Feature Left and to be discussed*/}
+
+    // const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+    //   return {
+    //     mobileNumber: item?.mobileNumber || "",
+    //     name: item?.ownerOrFirmName || "",
+    //     emailId: item?.emailId || "",
+    //     userName: item?.mobileNumber || "",
+    //     additionalDetails:{
+    //      ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
+    //      ownerId: {...ownerIds?.ownerIdList?.[index]}
+    //     }
+    //   }
+    //  });
+
     const updatedApplication = {
       ...cluFormData?.apiData?.Clu?.[0],
+      // owners: ownerData,// NEED TO BE DISCUSSED
       workflow: {
         action: selectedAction?.action || "",
       },
@@ -144,19 +172,62 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             // specificationIsSiteUnderMasterPlan: cluFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
           },
           coordinates: { ...coordinates },
+          ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
+          ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] 
         },
       },
       documents: [],
     };
 
-    const docsArray = cluFormData?.documents?.documents?.documents || [];
-    docsArray.forEach((doc) => {
-      updatedApplication.documents.push({
+    const docsArrayFromRedux = cluFormData?.documents?.documents?.documents || [];
+
+    if(isEdit){
+       
+    const apiResponseDocuments = currentStepData?.apiData?.Clu?.[0]?.documents || [];
+
+    const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d)=> d.documentType));
+
+    const updatedApiResponseDocuments = apiResponseDocuments?.map((doc)=>{
+
+    const fileStoreId = docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.uuid || docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.documentAttachment;
+      return ({
+        ...doc,
+        uuid: fileStoreId,
+        documentAttachment: fileStoreId
+      })
+    });
+
+   const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
+
+   const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc)=>{
+    return {
+        uuid: doc?.documentUid,
+        documentType: doc?.documentType,
+        documentAttachment: doc?.filestoreId,
+    }
+   });
+
+   const overallDocs= [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
+   
+   console.log("overallDocs", overallDocs);
+
+
+    overallDocs.forEach((doc)=>{
+      updatedApplication?.documents?.push({
+       ...doc
+      })
+    })
+
+    }else{
+      docsArrayFromRedux.forEach((doc) => {
+        updatedApplication.documents.push({
         uuid: doc?.documentUid,
         documentType: doc?.documentType,
         documentAttachment: doc?.filestoreId,
       });
-    });
+     });
+
+    }
 
     const payload = {
       Clu: { ...updatedApplication },
@@ -177,15 +248,15 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("currentStepData in StepFour", currentStepData);
   const applicationNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo || "";
   const businessServiceCode = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
-  console.log("applicationNo here==>", applicationNo);
-  console.log("businessServiceCode here==>", businessServiceCode);
+  //console.log("applicationNo here==>", applicationNo);
+  //console.log("businessServiceCode here==>", businessServiceCode);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNo,
     moduleCode: businessServiceCode,
   });
 
-  console.log("workflow Details here==>", workflowDetails);
+ // console.log("workflow Details here==>", workflowDetails);
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -195,7 +266,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  //console.log("actions here", actions);
 
   function onActionSelect(action) {
     goNext(action);
@@ -211,7 +282,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       <CheckBox
         label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
           currentStepData?.applicationDetails?.applicantOwnerOrFirmName || "NA"
-        }). I along with with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}
         checked={selectedCheckBox}

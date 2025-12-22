@@ -204,7 +204,6 @@ function ADSSelectDocument({
     }
   };
 
-  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
 
   return (
     <div style={{ marginBottom: "24px" }}>
@@ -231,7 +230,7 @@ function ADSSelectDocument({
             error={Boolean(fieldError)}
           />
           {/* Inline file validation error */}
-          {fieldError && <div style={errorStyle}>{fieldError}</div>}
+          {fieldError && <div className="ads-error-message">{fieldError}</div>}
         </div>
       </LabelFieldPair>
     </div>

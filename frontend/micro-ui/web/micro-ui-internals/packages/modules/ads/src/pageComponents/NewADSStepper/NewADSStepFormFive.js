@@ -196,7 +196,10 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
       });
 
       // default formData (before modify)
-      let formData = buildFormData({...payloadState?.CreatedResponse, documents: payloadState?.documents?.documents?.documents || payloadState?.documents || payloadState?.Documents || []});
+      let formData = buildFormData({
+        ...payloadState?.CreatedResponse,
+        documents: payloadState?.documents?.documents?.documents || payloadState?.documents || payloadState?.Documents || [],
+      });
 
       if (!filtData?.assignee && filtData?.action === "FORWARD") {
         setError("Assignee is mandatory");
@@ -317,7 +320,7 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
       {showToast && <Toast isDleteBtn error label={error} onClose={closeToast} />}
 
       <ActionBar>
-        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={onGoBack} className="submit-bar-back" />
+        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={onGoBack} className="ads-btn-back" />
 
         {displayMenu && (
           <Menu

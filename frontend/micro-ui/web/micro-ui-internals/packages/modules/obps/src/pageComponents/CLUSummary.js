@@ -12,8 +12,48 @@ function CLUSummary({ currentStepData: formData, t }) {
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
+    
+  const ownerPhotos = useSelector(function (state) {
+        return state.obps.OBPSFormReducer.ownerPhotos;
+  });
 
-  console.log("coordinates in summary page", coordinates);
+  //console.log("coordinates in summary page", coordinates);
+  console.log("ownerPhotos(redux)", ownerPhotos);
+  console.log("ownerFileStoreId", ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId);
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e0e0e0",
+    padding: "0.5rem 0",
+    color: "#333",
+  };
+
+  const headingStyle = {
+    fontSize: "1.5rem",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "0.3rem",
+    color: "#2e4a66",
+    marginTop: "2rem",
+    marginBottom: "1rem",
+  };
+
+  const pageStyle = {
+    padding: "2rem",
+    backgroundColor: "#f9f9f9",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: "#333",
+  };
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
     <div className="clu-summary-label-field-pair">
@@ -26,6 +66,7 @@ function CLUSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs);
 
   return (
+<<<<<<< HEAD
     <div className="layout-summary-page">
       <h2 className="layout-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
       <div className="-summary-section">
@@ -42,6 +83,31 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
       </div>
+=======
+    <div className="clu-summary-page">
+      <h2 className="clu-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
+      <div className="clu-summary-section">
+        <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
+      </div>
+
+      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
+        return (
+        <div key={index} className="clu-summary-section">
+         <h2 className="clu-summary-heading">
+           {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("BPA_OWNER")} #${index + 1}`}
+         </h2>
+
+         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.ownerOrFirmName)}
+         {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+         {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+         {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+         {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dateOfBirth)}
+         {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code)}
+         {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.address)}
+        </div>
+        )
+      })}
+>>>>>>> 3466ae1f1365e0729f571d26f41008348acc109e
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
@@ -50,6 +116,7 @@ function CLUSummary({ currentStepData: formData, t }) {
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
+            {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formData?.applicationDetails?.professionalRegIdValidity)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
           </div>

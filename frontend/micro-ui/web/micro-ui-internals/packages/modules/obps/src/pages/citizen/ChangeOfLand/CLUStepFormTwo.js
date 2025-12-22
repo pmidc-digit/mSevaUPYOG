@@ -31,6 +31,17 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.obps.OBPSFormReducer.formData;
   });
 
+  const ownerIds = useSelector(function (state) {
+      return state.obps.OBPSFormReducer.ownerIds;
+  });
+  
+  const ownerPhotos = useSelector(function (state) {
+      return state.obps.OBPSFormReducer.ownerPhotos;
+  });
+
+  // console.log("ownerIds(redux)", ownerIds);
+  // console.log("ownerPhotos (redux)", ownerPhotos);
+
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
@@ -71,16 +82,27 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const callCreateAPI= async (formData)=>{ 
         
         // Prepare cluFormData
-      const cluFormData={...formData}
-
+      const cluFormData={...formData, ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [], ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] };
       //  console.log("cluFormData ==>", cluFormData)
 
-      const ownerObj = {
-       mobileNumber: cluFormData?.applicationDetails?.applicantMobileNumber || "",
-       name: cluFormData?.applicationDetails?.applicantOwnerOrFirmName || "",
-       emailId: cluFormData?.applicationDetails?.applicantEmailId || "",
-       userName: cluFormData?.applicationDetails?.applicantMobileNumber || ""
-      };
+     const ownerData= (cluFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+      return {
+        mobileNumber: item?.mobileNumber || "",
+        name: item?.ownerOrFirmName || "",
+        emailId: item?.emailId || "",
+        userName: item?.mobileNumber || "",
+        fatherOrHusbandName: item?.fatherOrHusbandName || "",
+        permanentAddress: item?.address || "",
+        gender: item?.gender?.code || "",
+        dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
+        additionalDetails:{
+         ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
+         ownerId: {...ownerIds?.ownerIdList?.[index]}
+        }
+      }
+     });
+    
+     console.log("ownerData==>", ownerData);
     
         // Final payload
         const payload = {
@@ -90,7 +112,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
               cluType : "CLU",
               status: "ACTIVE",
               tenantId,
-              owners:[ownerObj],
+              owners: ownerData,
               workflow: {action: "INITIATE"},
               cluDetails:{
                 additionalDetails: cluFormData,

@@ -165,7 +165,6 @@ const MobileInbox = ({
             onSearch={onSearch}
             onSort={onSort}
             searchParams={searchParams}
-            searchFields={searchFields}
             linkPrefix={linkPrefix}
             sortParams={sortParams}
             serviceRequestIdKey={serviceRequestIdKey}

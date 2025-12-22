@@ -177,7 +177,7 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
                   </div>
 
                   {item?.wfComment && item?.wfComment?.length > 0 && item?.wfComment?.some((c) => c?.trim()) && (
-                    <div className="custom-assignee-section">
+                    <div className="custom-comments-section">
                       <div className="custom-comment-text">
                         <h4 className="custom-comments-title">{t("Officer Comments")}</h4>
                         {item?.wfComment?.map((comment, idx) => (
@@ -186,7 +186,7 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
                       </div>
                       {item?.assignes?.length > 0 && (
                         <div>
-                          <h3 className="custom-action-title">{t("Assigned To")}</h3>
+                          <h3 className="custom-comments-title">{t("Assigned To")}</h3>
                           <div className="custom-officer-info">
                             <div className="custom-officer-name">{item.assignes[0]?.name}</div>
                           </div>
@@ -196,7 +196,7 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
                   )}
 
                   {item?.wfDocuments && item?.wfDocuments?.length > 0 && (
-                    <div className="custom-comments-section custom-comments-section-no-border">
+                    <div className="custom-comments-section-no-border">
                       <h4 className="custom-comments-title">Document Attached:</h4>
                       <div className="custom-comment-text">
                         {item?.wfDocuments?.map((doc, index) => (

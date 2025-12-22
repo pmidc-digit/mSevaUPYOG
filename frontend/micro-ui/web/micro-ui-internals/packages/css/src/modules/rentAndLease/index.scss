@@ -169,8 +169,9 @@
 }
 
 .ral-app-details-docs-card {
-  display: flex;
-  flex-wrap: wrap;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
   gap: 30px;
   margin-bottom: 26px;
 }

@@ -8,6 +8,7 @@ import org.egov.infra.indexer.service.DataTransformationService;
 import org.egov.infra.indexer.service.IndexerService;
 import org.egov.infra.indexer.util.IndexerConstants;
 import org.egov.infra.indexer.util.IndexerUtils;
+import org.egov.infra.indexer.util.DLQHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class PGRCustomIndexMessageListener implements MessageListener<String, St
 	@Autowired
 	private PGRCustomDecorator pgrCustomDecorator;
 
+	@Autowired
+	private DLQHandler dlqHandler;
+
 	@Override
 	/**
 	 * Messages listener which acts as consumer. This message listener is injected
@@ -43,13 +47,13 @@ public class PGRCustomIndexMessageListener implements MessageListener<String, St
 		log.info("Topic: " + data.topic());
 
 		if(data.topic().equals(IndexerConstants.SAVE_PGR_TOPIC) || data.topic().equals(IndexerConstants.SAVE_PGR_REQUEST_BATCH_TOPIC)){
-			String kafkaJson = pgrCustomDecorator.enrichDepartmentPlaceholderInPgrRequest(data.value());
-			String deptCode = pgrCustomDecorator.getDepartmentCodeForPgrRequest(kafkaJson);
-			kafkaJson = kafkaJson.replace(IndexerConstants.DEPT_CODE, deptCode);
 			try {
+				String kafkaJson = pgrCustomDecorator.enrichDepartmentPlaceholderInPgrRequest(data.value());
+				String deptCode = pgrCustomDecorator.getDepartmentCodeForPgrRequest(kafkaJson);
+				kafkaJson = kafkaJson.replace(IndexerConstants.DEPT_CODE, deptCode);
 				indexerService.esIndexer(data.topic(), kafkaJson);
 			}catch(Exception e){
-				log.error("Error while indexing pgr-request: " + e);
+				dlqHandler.handleError(data.value(), e, "PGRCustomIndexMessageListener", data.topic());
 			}
 		}else {
 			ObjectMapper mapper = indexerUtils.getObjectMapper();
@@ -58,7 +62,7 @@ public class PGRCustomIndexMessageListener implements MessageListener<String, St
 				PGRIndexObject indexObject = pgrCustomDecorator.dataTransformationForPGR(serviceResponse);
 				indexerService.esIndexer(data.topic(), mapper.writeValueAsString(indexObject));
 			} catch (Exception e) {
-				log.error("Couldn't parse pgrindex request: ", e);
+				dlqHandler.handleError(data.value(), e, "PGRCustomIndexMessageListener", data.topic());
 			}
 		}
 	}

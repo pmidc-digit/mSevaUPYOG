@@ -33,10 +33,10 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
   // layout application here 
 
 
-
+  const { data: reminderPeriod, isLoading: isreminderLoading} =  Digit.Hooks.useCustomMDMS(tenantId, "TradeLicense", [{ name: "ReminderPeriods" }]);
   const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
 
-
+  console.log("reminderData", reminderPeriod);
   
   const { data: dataPunjab, isLoading: isLoadingPunjab, revalidate: revalidatePunjab } = Digit.Hooks.obps.useBPAREGSearch(
   "pb.punjab", 
@@ -271,6 +271,98 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
   };
 
+  const getBPAREGFormDataForRenew = (data) => {
+    console.log("getBPAREGFormDataForRenew", data);
+    let license = data;
+    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
+    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+    const permanentAddress = address
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
+
+    let name = "";
+    let middleName = "";
+    let lastName = "";
+
+    if (nameParts.length === 1) {
+  // Single name
+      name = nameParts[0];
+    } else if (nameParts.length === 2) {
+      // Two names → first is name, second is lastName
+      name = nameParts[0];
+      lastName = nameParts[1];
+    } else if (nameParts.length > 2) {
+      // More than two names → first = name, last = lastName, middle = rest
+      name = nameParts[0];
+      lastName = nameParts[nameParts.length - 1];
+      middleName = nameParts.slice(1, -1).join(" ");
+    }
+
+    let intermediateData = {
+      Correspondenceaddress:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
+        `${license?.tradeLicenseDetail?.address?.doorNo ? `${license?.tradeLicenseDetail?.address?.doorNo}, ` : ""} ${
+          license?.tradeLicenseDetail?.address?.street ? `${license?.tradeLicenseDetail?.address?.street}, ` : ""
+        }${license?.tradeLicenseDetail?.address?.landmark ? `${license?.tradeLicenseDetail?.address?.landmark}, ` : ""}${t(
+          license?.tradeLicenseDetail?.address?.locality.code
+        )}, ${t(license?.tradeLicenseDetail?.address?.city ? license?.tradeLicenseDetail?.address?.city.code : "")},${
+          t(license?.tradeLicenseDetail?.address?.pincode) ? `${license.tradeLicenseDetail?.address?.pincode}` : " "
+        }`,
+      formData: {
+        LicneseDetails: {
+          PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
+          PermanentAddress: permanentAddress,
+
+          email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
+          gender: {
+            code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+            i18nKey: `COMMON_GENDER_${license?.tradeLicenseDetail?.owners?.[0]?.gender}`,
+            value: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+          },
+          mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+          name: name,
+          lastName: lastName,
+          middleName: middleName,
+          SelectedState: state || "",
+          SelectedDistrict: distrcit || "",
+          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
+          Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
+          dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
+          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
+          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
+        },
+        LicneseType: {
+          LicenseType: {
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
+            tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
+          },
+          ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
+          selfCertification: license?.tradeLicenseDetail?.additionalDetail?.isSelfCertificationRequired || false,
+          qualificationType: license?.tradeLicenseDetail?.additionalDetail?.qualificationType || null,
+        },
+      },
+      isAddressSame:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress === license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ? true : false,
+      result: {
+        Licenses: [{ ...data }],
+      },
+      initiationFlow: true,
+      editableFields: {
+        "provide-license-type": true,
+        "licensee-details": false,
+        "Permanent-address": true,
+        "professional-document-details": true,
+        isCreate: false,
+        applicationType: "RENEWAL"
+      }
+    };
+
+    sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
+    history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
+  };
+
   useEffect(() => {
     return () => {
       setFinalData([]);
@@ -338,7 +430,19 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     }
   }, [isLoading,isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
 
-  if (isLoading || isLoadingPunjab || isBpaSearchLoading) {
+  const isRenewalEnabled = (validToEpoch) => {
+    if (!validToEpoch || isreminderLoading) return false;
+
+    const today = new Date();
+    const validToDate = new Date(validToEpoch);
+
+    const diffInMs = validToDate.getTime() - today.getTime();
+    // const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+    return diffInMs <= reminderPeriod?.TradeLicense?.ReminderPeriods?.[0]?.reminderPeriods;
+  };
+
+  if (isLoading || isLoadingPunjab || isBpaSearchLoading || isreminderLoading) {
     return <Loader />;
   }
 
@@ -388,6 +492,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           console.log("applicationDataForBPAREG", application)
+          const isRenewButtonVisible = isRenewalEnabled(application?.validTo)
           return (
             <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
@@ -449,6 +554,19 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
                     <SubmitBar
                       label={t("BPA_PROFESSIONAL_UPGRADE")}
                       onSubmit={() => getBPAREGFormDataForUpgrade(application)}
+                    />
+                  </React.Fragment>
+                ) : null}
+
+                {((application.status === "APPROVED" && isRenewButtonVisible )|| application.status === "EXPIRED") ? (
+                  <React.Fragment>
+                    {/* <SubmitBar
+                      label={t("BPA_PROFESSIONAL_UPDATE")}
+                      onSubmit={() => getBPAREGFormDataForUpdate(application)}
+                    /> */}
+                    <SubmitBar
+                      label={t("BPA_PROFESSIONAL_RENEW")}
+                      onSubmit={() => getBPAREGFormDataForRenew(application)}
                     />
                   </React.Fragment>
                 ) : null}

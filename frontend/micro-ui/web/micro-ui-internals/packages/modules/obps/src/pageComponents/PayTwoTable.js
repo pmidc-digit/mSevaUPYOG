@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { scrutinyDetailsData } from "../utils";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 const thStyle = {
     border: "1px solid #ddd",
@@ -56,7 +57,8 @@ export const PayTwoTable = ({
     handleFileUpload,
     handleFileDelete,
     routeTo,
-    t
+    t,
+    handleRemarkChange
 }) => {
     return (<div style={{ overflowX: "auto" }}>
                     <CardSubHeader style={{ fontSize: "20px", color: "#3f4351", marginTop: "24px" }}>
@@ -78,7 +80,7 @@ export const PayTwoTable = ({
                                 <th style={thStyle}>{t("BPA_AMOUNT")}</th>
                                 <th style={thStyle}>{t("BPA_ADJUSTED_AMOUNT")}</th>
                                 {(disable || isEmployee) ? null : <th style={thStyle}>{t("BPA_FILE_UPLOAD")}</th>}
-                                <th style={thStyle}>{t("BPA_VIEW_DOCUMENT")}</th> {/* New Column */}
+                                <th style={thStyle}>{t("BPA_REMARKS")}</th> {/* New Column */}
                             </tr>
                         </thead>
                         <tbody>
@@ -116,8 +118,8 @@ export const PayTwoTable = ({
                                                 }}
                                             />}
                                     </td>
-                                    {(disable || isEmployee) ? null : <td style={tdStyle}>
-                                        {(row?.taxHeadCode === "BPA_TOTAL") ? null : <UploadFile
+                                    {<td style={tdStyle}>
+                                        {(row?.taxHeadCode === "BPA_TOTAL") ? null : <CustomUploadFile
                                             key={row.index}
                                             id={`file-${row.id}`}
                                             onUpload={(file) => handleFileUpload(row.index, file || null)}
@@ -127,7 +129,8 @@ export const PayTwoTable = ({
                                                     ? `1 ${t("FILEUPLOADED")}`
                                                     : t("ES_NO_FILE_SELECTED_LABEL")
                                             }
-                                            disabled={disable}
+                                            disabled={disable || isEmployee}
+                                            uploadedFile={sanctionFeeData[row.index]?.filestoreId}
                                         />}
                                     </td>}
                                     <td style={tdStyle}>
@@ -135,17 +138,25 @@ export const PayTwoTable = ({
                                             (row?.grandTotal !== null && row?.grandTotal !== undefined
                                                 ? `₹ ${row.grandTotal.toLocaleString()}`
                                                 : t("CS_NA"))
-                                            : <div>{sanctionFeeData[row.index]?.onDocumentLoading ?
-                                                <Loader /> : sanctionFeeData[row.index]?.documentError ? <div style={{ fontSize: "12px", color: "red" }} >{sanctionFeeData[row.index]?.documentError}</div> : <div>{sanctionFeeData[row.index]?.filestoreId ? (
-                                                    <LinkButton onClick={() => {
-                                                        routeTo(sanctionFeeData[row.index]?.filestoreId, row.index)
-                                                    }} style={{ textDecoration: "underline", padding: 0 }
-                                                    }
-                                                        label={t("BPA_VIEW_DOCUMENT")}
-                                                    />
-                                                ) : (
-                                                    t("CS_NA")
-                                                )}</div>}</div>}
+                                            : <TextInput
+                                                t={t}
+                                                type="text"
+                                                isMandatory={false}
+                                                // className="hide-number-spinner"
+                                                value={sanctionFeeData[row.index]?.remark || ""}
+                                                onChange={(e) =>
+                                                    handleRemarkChange(row.index, e.target.value, row.amount)
+                                                }
+                                                // onBlur={onAdjustedAmountBlur}
+                                                disable={disable}
+                                                // step={1}                                                
+                                                style={{
+                                                    width: "100%",
+                                                    padding: "4px",
+                                                    border: "1px solid #ccc",
+                                                    borderRadius: "4px",
+                                                }}
+                                            />}
                                     </td>
                                 </tr>
                             ))}

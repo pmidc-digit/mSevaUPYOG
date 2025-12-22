@@ -31,77 +31,18 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
       Cell: ({ row }) => {
         const status = row?.original?.slotStaus;
         const isAvailable = status === "AVAILABLE";
-        return (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "5px 14px",
-              borderRadius: "20px",
-              fontSize: "12px",
-              fontWeight: 600,
-              color: isAvailable ? "#155724" : "#721c24",
-              backgroundColor: isAvailable ? "#d4edda" : "#f8d7da",
-              border: `1px solid ${isAvailable ? "#c3e6cb" : "#f5c6cb"}`,
-              textTransform: "capitalize",
-            }}
-          >
-            {status}
-          </span>
-        );
+        return <span className={`ads-status ${isAvailable ? "ads-status--available" : "ads-status--unavailable"}`}>{status}</span>;
       },
     },
   ];
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "70px",
-        left: 0,
-        width: "100vw",
-        height: "calc(100vh - 70px)",
-        background: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 2000,
-      }}
-    >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: "1100px",
-          height: "70vh",
-          background: "#fff",
-          borderRadius: "12px",
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-        }}
-      >
+    <div className="ads-cart-overlay">
+      <div className="ads-cart-modal">
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            borderBottom: "1px solid #eee",
-            paddingBottom: "8px",
-          }}
-        >
+        <div className="ads-cart-header">
           <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>{t("ADS_YOUR_CART")}</h2>
-          <button
-            onClick={onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-            }}
-          >
+          <button onClick={onClose} className="ads-cart-close">
             ✖
           </button>
         </div>
@@ -116,28 +57,9 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
               const key = getKey(item?.ad);
               const isOpen = expanded?.includes(key);
               return (
-                <div
-                  key={key}
-                  style={{
-                    marginBottom: "16px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                  }}
-                >
+                <div key={key} className="ads-cart-item">
                   {/* Ad Header (clickable + remove button) */}
-                  <div
-                    style={{
-                      background: "#f9f9f9",
-                      padding: "10px 14px",
-                      fontWeight: 600,
-                      fontSize: "14px",
-                      borderBottom: "1px solid #ddd",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  <div className="ads-cart-item-header">
                     <div onClick={() => toggleExpand(key)} style={{ cursor: "pointer", flex: 1 }}>
                       {item?.ad?.name}
                       {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
@@ -151,16 +73,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                           endDate: item?.ad?.bookingEndDate,
                         })
                       }
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        border: "none",
-                        background: "#dc3545",
-                        color: "#fff",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        marginLeft: "10px",
-                      }}
+                      className="ads-cart-remove"
                     >
                       {t("ADS_REMOVE")}
                     </button>
@@ -168,7 +81,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
 
                   {/* Slots Table (collapsible) */}
                   {isOpen && (
-                    <div style={{ overflowX: "auto" }}>
+                    <div className="ads-cart-table">
                       <Table
                         t={t}
                         data={item?.slots}
@@ -176,13 +89,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                         disableSort={true}
                         isPaginationRequired={false}
                         getCellProps={(cell) => ({
-                          style: {
-                            padding: "12px 14px",
-                            fontSize: "14px",
-                            borderBottom: "1px solid #f0f0f0",
-                            textAlign: "left",
-                            whiteSpace: "nowrap",
-                          },
+                          className: "ads-cart-table-cell",
                         })}
                       />
                     </div>

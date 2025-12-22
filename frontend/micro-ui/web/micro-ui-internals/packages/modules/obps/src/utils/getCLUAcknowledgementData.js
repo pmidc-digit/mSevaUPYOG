@@ -57,45 +57,46 @@ const getProfessionalDetails = (appData, t) => {
 const getApplicantDetails = (appData, t) => {
   const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
 
-  const updatedOwnersList = owners?.map((owner, index) => ({
-    title: index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`,
+  const ownerDetailsArray = owners.map((owner, index) => ({
+    title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
     values: [
       {
-        title: t("BPA_FIRM_OWNER_NAME_LABEL"),
-        value: owner?.ownerOrFirmName || "N/A",
+        title: "Owner/Firm's Name",
+        value: owner?.ownerOrFirmName || "NA",
       },
       {
-        title: t("BPA_APPLICANT_EMAIL_LABEL"),
-        value: owner.emailId || "N/A",
+        title: "Email",
+        value: owner?.emailId || "NA",
       },
       {
-        title: t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-        value: owner?.fatherOrHusbandName || "N/A",
+        title: "Father/Husband's Name",
+        value: owner?.fatherOrHusbandName || "NA",
       },
       {
-        title: t("BPA_APPLICANT_MOBILE_NO_LABEL"),
-        value: owner?.mobileNumber || "N/A",
+        title: "Mobile No.",
+        value: owner?.mobileNumber || "NA",
       },
       {
-        title: t("BPA_APPLICANT_DOB_LABEL"),
-        value: owner?.dateOfBirth ? new Date(owner?.dateOfBirth).toLocaleDateString("en-GB") : "N/A",
+        title: "Date Of Birth",
+        value: owner?.dateOfBirth
+          ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
+          : "NA",
       },
       {
-        title: t("BPA_APPLICANT_GENDER_LABEL"),
-        value: owner?.gender?.code || app.applicantGender || "N/A",
+        title: "Gender",
+        value: owner?.gender?.code || "NA",
       },
       {
-        title: t("BPA_APPLICANT_ADDRESS_LABEL"),
-        value: owner?.address || "N/A",
+        title: "Address",
+        value: owner?.address || "NA",
       },
     ],
   }));
 
-  return {
-    title: t("NOC_APPLICANT_DETAILS"),
-    values: updatedOwnersList,
-  };
+  return ownerDetailsArray;
 };
+
+
 
 const getLocationInfo = (appData, t) => {
   let values = [
@@ -236,18 +237,10 @@ const getSiteDetails = (appData, t) => {
       title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.ownershipInPct || "N/A",
     },
-    {
-      title: t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.proposedRoadWidthAfterWidening || "N/A",
-    },
 
     {
       title: t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name || "N/A",
-    },
-    {
-      title: t("BPA_PROPERTY_UID_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.propertyUid || "N/A",
     },
     {
       title: t("BPA_BUILDING_STATUS_LABEL"),
@@ -369,7 +362,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
     details: [
       getRegistrationDetails(appData, t),
       ...detailsArr,
-      getApplicantDetails(appData, t),
+      ...getApplicantDetails(appData, t),
       getLocationInfo(appData, t),
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),

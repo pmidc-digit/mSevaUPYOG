@@ -91,6 +91,10 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         name: item?.ownerOrFirmName || "",
         emailId: item?.emailId || "",
         userName: item?.mobileNumber || "",
+        fatherOrHusbandName: item?.fatherOrHusbandName || "",
+        permanentAddress: item?.address || "",
+        gender: item?.gender?.code || "",
+        dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
         additionalDetails:{
          ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
          ownerId: {...ownerIds?.ownerIdList?.[index]}

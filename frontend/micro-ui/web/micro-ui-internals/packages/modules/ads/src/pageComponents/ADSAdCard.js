@@ -22,26 +22,11 @@ const AdCard = ({
 
   return (
     <div
-      style={{
-        width: 280,
-        borderRadius: 8,
-        padding: 9,
-        background: "#fff",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
+      className="ads-card"
     >
       {/* Image */}
       <div
-        style={{
-          width: "100%",
-          height: 120,
-          borderRadius: 8,
-          overflow: "hidden",
-          background: "#f5f5f5",
-        }}
+        className="ads-card-image"
       >
         {ad.imageSrc || ad.photoURL ? (
           <img
@@ -52,14 +37,7 @@ const AdCard = ({
           />
         ) : (
           <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#aaa",
-            }}
+            className="ads-card-noimage"
           >
             {t("ADS_NO_IMAGE")}
           </div>
@@ -95,13 +73,7 @@ const AdCard = ({
               min={minDate}
               value={props.value || ""}
               onChange={(e) => props.onChange(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "6px 8px",
-                fontSize: 13,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-              }}
+              className="ads-card-input"
             />
           )}
         />
@@ -113,13 +85,7 @@ const AdCard = ({
               type="time"
               value={props.value || ""}
               onChange={(e) => props.onChange(e.target.value)}
-              style={{
-                width: 110,
-                padding: "6px 8px",
-                fontSize: 13,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-              }}
+              className="ads-input-time"
             />
           )}
         />
@@ -138,13 +104,7 @@ const AdCard = ({
                min={startDateVal || minDate}
               value={props.value || ""}
               onChange={(e) => props.onChange(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "6px 8px",
-                fontSize: 13,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-              }}
+              className="ads-card-input"
             />
           )}
         />
@@ -156,13 +116,7 @@ const AdCard = ({
               type="time"
               value={props.value || ""}
               onChange={(e) => props.onChange(e.target.value)}
-              style={{
-                width: 110,
-                padding: "6px 8px",
-                fontSize: 13,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-              }}
+              className="ads-input-time"
             />
           )}
         />
@@ -180,16 +134,7 @@ const AdCard = ({
               endTime: watch(`ads.${idx}.endTime`),
             })
           }
-          style={{
-            flex: 1, // 👈 stretches like startDate input
-            padding: "6px 12px",
-            borderRadius: 6,
-            background: "#2947a3",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 14,
-          }}
+          className="ads-btn-primary"
         >
            {t("ADS_VIEW_AVAILABILITY")}👁️
         </button>
@@ -198,19 +143,7 @@ const AdCard = ({
           <button
             type="button"
             onClick={openCart}
-            style={{
-              width: 110, // 👈 fixed width like startTime input
-              padding: "6px 12px",
-              borderRadius: 6,
-              background: "#28a745",
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor:"pointer"
-            }}
+            className="ads-btn-success"
           >
             <span style={{color:"black"}}>🛒</span>{t("ADS_IN_CART")}
           </button>

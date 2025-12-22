@@ -46,11 +46,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <div className="ground-container">
             {!isRes ? (
               <div
-                style={
-                  isNewRegistration
-                    ? { marginLeft: "12px", display: "flex", alignItems: "center" }
-                    : { marginLeft: "-4px", display: "flex", alignItems: "center" }
-                }
+                className={`ads-registration-row ${ isNewRegistration ? "ads-registration-row--new" : "ads-registration-row--existing" }`}
               >
                 <BackButton location={location} />
                 {/* <CHBBreadCrumbs location={location} /> */}

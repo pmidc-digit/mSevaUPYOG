@@ -173,38 +173,38 @@ public class DemandService {
 
 	}
 
-//	public DemandResponse updateDemandsbkp(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
-//
-//		if (getBillCriteria.getAmountExpected() == null)
-//			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
-////		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-//		DemandResponse res = mapper.convertValue(
-//				serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
-//				DemandResponse.class);
-//		if (CollectionUtils.isEmpty(res.getDemands())) {
-//			Map<String, String> map = new HashMap<>();
-//			map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+	public DemandResponse updateDemandsbkp(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+		if (getBillCriteria.getAmountExpected() == null)
+			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+//		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+		DemandResponse res = mapper.convertValue(
+				serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+				DemandResponse.class);
+		if (CollectionUtils.isEmpty(res.getDemands())) {
+			Map<String, String> map = new HashMap<>();
+			map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+		}
+
+		Map<String, List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+		res.getDemands().forEach(demand -> {
+			if (consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
+			else {
+				List<Demand> demands = new LinkedList<>();
+				demands.add(demand);
+				consumerCodeToDemandMap.put(demand.getConsumerCode(), demands);
+			}
+		});
+
+//		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
+//			List<Demand> demandsToBeUpdated = new LinkedList<>();
+//			DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
+//			StringBuilder updateDemandUrl = petUtil.getUpdateDemandUrl();
+//            repository.fetchResult(updateDemandUrl, request);
 //		}
-//
-//		Map<String, List<Demand>> consumerCodeToDemandMap = new HashMap<>();
-//		res.getDemands().forEach(demand -> {
-//			if (consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
-//				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
-//			else {
-//				List<Demand> demands = new LinkedList<>();
-//				demands.add(demand);
-//				consumerCodeToDemandMap.put(demand.getConsumerCode(), demands);
-//			}
-//		});
-//
-////		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
-////			List<Demand> demandsToBeUpdated = new LinkedList<>();
-////			DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
-////			StringBuilder updateDemandUrl = petUtil.getUpdateDemandUrl();
-////            repository.fetchResult(updateDemandUrl, request);
-////		}
-//		return res;
-//	}
+		return res;
+	}
 
 	public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {
 
@@ -246,151 +246,151 @@ public class DemandService {
 
 	}
 
-//	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
-//
-//		if (getBillCriteria.getAmountExpected() == null)
-//			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
-//		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-//
-//		if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes())) {
-//			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getApplicationNumber()));
-//		}
-//
-//		DemandResponse res = mapper.convertValue(
-//				serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
-//				DemandResponse.class);
-//
-//		if (CollectionUtils.isEmpty(res.getDemands())) {
-//			Map<String, String> map = new HashMap<>();
-//			map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
-//			throw new CustomException(map);
-//		}
-//
-//		List<Demand> demands = res.getDemands().stream()
-//				.filter(d -> d.getStatus() == null
-//						|| !d.getStatus().toString().equalsIgnoreCase(RLConstants.DEMAND_CANCELLED_STATUS))
-//				.collect(Collectors.toList());
-//
-//		if (CollectionUtils.isEmpty(demands)) {
-//			return DemandResponse.builder().demands(Collections.emptyList()).build();
-//		}
-//
-//		List<Demand> demandsToBeUpdated = new LinkedList<>();
-//		String tenantId = getBillCriteria.getTenantId();
-//		List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(requestInfo, tenantId,
-//				RLConstants.RL_SERVICE_NAME);
-//		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
-//		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
-//
-//		for (Demand demand : demands) {
-//			BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
-//					.reduce(BigDecimal.ZERO, BigDecimal::add);
-//			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
-//					.reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//			if (totalTax.compareTo(totalCollection) > 0) {
-//				applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods, billingPeriods, penaltySlabs);
-//			}
-//
-//			addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
-//			demandsToBeUpdated.add(demand);
-//		}
-//
-//		demandRepository.updateDemand(requestInfo, demandsToBeUpdated);
-//		return DemandResponse.builder().demands(demandsToBeUpdated).build();
-//	}
+	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
 
-//	private void applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
-//			List<TaxPeriod> taxPeriods, List<BillingPeriod> billingPeriods, List<Penalty> penaltySlabs) {
-//		log.info("Applying time based applicables for demand: {}", demand.getId());
-//
-//		if (CollectionUtils.isEmpty(penaltySlabs)) {
-//			log.info("No penalty slabs found for tenant: {}", demand.getTenantId());
-//			return;
-//		}
-//		log.info("Found {} penalty slabs.", penaltySlabs.size());
-//
-//		Long demandCreationTime = demand.getAuditDetails() != null ? demand.getAuditDetails().getCreatedTime() : null;
-//		Long expiryDurationMillis = demand.getBillExpiryTime();
-//		log.info("Demand ID: {}. Creation Time: {}. Expiry Days: {}", demand.getId(), demandCreationTime,
-//				expiryDurationMillis);
-//
-//		if (expiryDurationMillis == null || demandCreationTime == null) {
-//			log.error("Cannot apply penalty. Demand creation time or expiry days is null for demand: {}",
-//					demand.getId());
-//			return;
-//		}
-//
-//		long expiryTimeMillis = demandCreationTime + expiryDurationMillis;
-//		log.info("Demand ID: {}. Calculated Expiry Timestamp: {}. Current Time: {}", demand.getId(), expiryTimeMillis,
-//				System.currentTimeMillis());
-//
-//		if (System.currentTimeMillis() < expiryTimeMillis) {
-//			log.info("Demand is not yet overdue. Skipping penalty calculation for demand: {}", demand.getId());
-//			return;
-//		}
-//
-//		boolean penaltyAlreadyApplied = demand.getDemandDetails().stream()
-//				.anyMatch(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE));
-//
-//		if (penaltyAlreadyApplied) {
-//			log.info("Penalty already applied for demand: {}", demand.getId());
-//			return;
-//		}
-//
-//		long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - expiryTimeMillis);
-//		log.info("Demand ID: {}. Days Past Expiry: {}", demand.getId(), daysPastExpiry);
-//
-//		BigDecimal principalAmount = demand.getDemandDetails().stream().filter(
-//				detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
-//				.map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//		log.info("Demand ID: {}. Principal amount for penalty calculation: {}", demand.getId(), principalAmount);
-//
-//		if (principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-//			log.info("Principal amount is zero or less for demand: {}. Skipping penalty.", demand.getId());
-//			return;
-//		}
-//
-//		Penalty penaltySlab = penaltySlabs.get(0);
-//		log.info("Demand ID: {}. Using Penalty Slab: Applicable After {} days.", demand.getId(),
-//				penaltySlab.getApplicableAfterDays());
-//
-//		if (penaltySlab.getApplicableAfterDays() != null && daysPastExpiry > penaltySlab.getApplicableAfterDays()) {
-//			log.info("Applying penalty for demand: {}", demand.getId());
-//
-//			BigDecimal penaltyAmount = BigDecimal.ZERO;
-//
-//			if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
-//				penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2,
-//						RoundingMode.HALF_UP);
-//			} else if (penaltySlab.getFlatAmount() != null
-//					&& penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
-//				penaltyAmount = penaltySlab.getFlatAmount();
-//			}
-//
-//			if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
-//				penaltyAmount = penaltySlab.getMinAmount();
-//			}
-//
-//			if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
-//				penaltyAmount = penaltySlab.getMaxAmount();
-//			}
-//
-//			if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
-//				DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
-//						.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
-//						.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
-//				demand.getDemandDetails().add(penaltyDetail);
-//				log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
-//			} else {
-//				log.warn("Calculated penalty amount is zero or less for demand: {}. No penalty applied.",
-//						demand.getId());
-//			}
-//		} else {
-//			log.info("Penalty grace period not over for demand: {}", demand.getId());
-//		}
-//	}
+		if (getBillCriteria.getAmountExpected() == null)
+			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+
+		if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes())) {
+			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getApplicationNumber()));
+		}
+
+		DemandResponse res = mapper.convertValue(
+				serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+				DemandResponse.class);
+
+		if (CollectionUtils.isEmpty(res.getDemands())) {
+			Map<String, String> map = new HashMap<>();
+			map.put(RLConstants.EMPTY_DEMAND_ERROR_CODE, RLConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+			throw new CustomException(map);
+		}
+
+		List<Demand> demands = res.getDemands().stream()
+				.filter(d -> d.getStatus() == null
+						|| !d.getStatus().toString().equalsIgnoreCase(RLConstants.DEMAND_CANCELLED_STATUS))
+				.collect(Collectors.toList());
+
+		if (CollectionUtils.isEmpty(demands)) {
+			return DemandResponse.builder().demands(Collections.emptyList()).build();
+		}
+
+		List<Demand> demandsToBeUpdated = new LinkedList<>();
+		String tenantId = getBillCriteria.getTenantId();
+		List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(requestInfo, tenantId,
+				RLConstants.RL_SERVICE_NAME);
+		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
+		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
+
+		for (Demand demand : demands) {
+			BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			if (totalTax.compareTo(totalCollection) > 0) {
+				applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods, billingPeriods, penaltySlabs);
+			}
+
+			addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
+			demandsToBeUpdated.add(demand);
+		}
+
+		demandRepository.updateDemand(requestInfo, demandsToBeUpdated);
+		return DemandResponse.builder().demands(demandsToBeUpdated).build();
+	}
+
+	private void applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
+			List<TaxPeriod> taxPeriods, List<BillingPeriod> billingPeriods, List<Penalty> penaltySlabs) {
+		log.info("Applying time based applicables for demand: {}", demand.getId());
+
+		if (CollectionUtils.isEmpty(penaltySlabs)) {
+			log.info("No penalty slabs found for tenant: {}", demand.getTenantId());
+			return;
+		}
+		log.info("Found {} penalty slabs.", penaltySlabs.size());
+
+		Long demandCreationTime = demand.getAuditDetails() != null ? demand.getAuditDetails().getCreatedTime() : null;
+		Long expiryDurationMillis = demand.getBillExpiryTime();
+		log.info("Demand ID: {}. Creation Time: {}. Expiry Days: {}", demand.getId(), demandCreationTime,
+				expiryDurationMillis);
+
+		if (expiryDurationMillis == null || demandCreationTime == null) {
+			log.error("Cannot apply penalty. Demand creation time or expiry days is null for demand: {}",
+					demand.getId());
+			return;
+		}
+
+		long expiryTimeMillis = demandCreationTime + expiryDurationMillis;
+		log.info("Demand ID: {}. Calculated Expiry Timestamp: {}. Current Time: {}", demand.getId(), expiryTimeMillis,
+				System.currentTimeMillis());
+
+		if (System.currentTimeMillis() < expiryTimeMillis) {
+			log.info("Demand is not yet overdue. Skipping penalty calculation for demand: {}", demand.getId());
+			return;
+		}
+
+		boolean penaltyAlreadyApplied = demand.getDemandDetails().stream()
+				.anyMatch(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE));
+
+		if (penaltyAlreadyApplied) {
+			log.info("Penalty already applied for demand: {}", demand.getId());
+			return;
+		}
+
+		long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - expiryTimeMillis);
+		log.info("Demand ID: {}. Days Past Expiry: {}", demand.getId(), daysPastExpiry);
+
+		BigDecimal principalAmount = demand.getDemandDetails().stream().filter(
+				detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
+				.map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		log.info("Demand ID: {}. Principal amount for penalty calculation: {}", demand.getId(), principalAmount);
+
+		if (principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+			log.info("Principal amount is zero or less for demand: {}. Skipping penalty.", demand.getId());
+			return;
+		}
+
+		Penalty penaltySlab = penaltySlabs.get(0);
+		log.info("Demand ID: {}. Using Penalty Slab: Applicable After {} days.", demand.getId(),
+				penaltySlab.getApplicableAfterDays());
+
+		if (penaltySlab.getApplicableAfterDays() != null && daysPastExpiry > penaltySlab.getApplicableAfterDays()) {
+			log.info("Applying penalty for demand: {}", demand.getId());
+
+			BigDecimal penaltyAmount = BigDecimal.ZERO;
+
+			if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
+				penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2,
+						RoundingMode.HALF_UP);
+			} else if (penaltySlab.getFlatAmount() != null
+					&& penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
+				penaltyAmount = penaltySlab.getFlatAmount();
+			}
+
+			if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
+				penaltyAmount = penaltySlab.getMinAmount();
+			}
+
+			if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
+				penaltyAmount = penaltySlab.getMaxAmount();
+			}
+
+			if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
+				DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
+						.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
+						.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
+				demand.getDemandDetails().add(penaltyDetail);
+				log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
+			} else {
+				log.warn("Calculated penalty amount is zero or less for demand: {}. No penalty applied.",
+						demand.getId());
+			}
+		} else {
+			log.info("Penalty grace period not over for demand: {}", demand.getId());
+		}
+	}
 
 //	private void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
 //		BigDecimal totalTax = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,

@@ -41,11 +41,11 @@ public class CalculatorController {
         return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
     }
 
-//	@PostMapping("/_updatedemand")
-//	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
-//													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
-//		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
-//	}
+	@PostMapping("/_updatedemand")
+	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
+													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
+		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
+	}
 	@PostMapping("/_estimate")
 	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
 		DemandResponse demandResponse =demandService.estimate(allotmentRequest.getCalculationCriteria().stream().findFirst().get().isSecurityDeposite(),allotmentRequest);

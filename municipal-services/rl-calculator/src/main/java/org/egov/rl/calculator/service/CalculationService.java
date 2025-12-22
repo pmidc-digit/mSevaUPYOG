@@ -46,7 +46,8 @@ public class CalculationService {
 		for (RLProperty amount : calculateAmount) {
 			if (isSecurityDeposite) {
 				fee = new BigDecimal(amount.getSecurityDeposit());
-				demandDetails.add(DemandDetail.builder().taxAmount(fee).collectionAmount(fee)
+				demandDetails.add(DemandDetail.builder().taxAmount(fee)
+//						.collectionAmount(fee)
 						.taxHeadMasterCode(RLConstants.SECURITY_DEPOSIT_FEE_RL_APPLICATION).tenantId(tenantId).build());
 			}
 			if ((applicationType.equalsIgnoreCase(RLConstants.NEW_RL_APPLICATION))

@@ -708,6 +708,118 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
           setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
         });
+    }else if(formData?.result && formData?.result?.Licenses?.[0]?.id && formData?.editableFields?.applicationType === "RENEWAL") {
+      setErrorMessage("");
+      setShowToast(null); // reset errors
+
+      const role = formData?.LicneseType?.LicenseType?.role || formData?.formData?.LicneseType?.LicenseType?.role
+      const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
+
+      const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
+
+      const actionToSend = selectedAction?.action || "NOWORKFLOW";
+
+      let validTo
+
+      if (formData?.LicneseType?.validTo) {
+        if (typeof formData?.LicneseType?.validTo === "string" && formData?.LicneseType?.validTo?.includes("/")) {
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        } else if (typeof formData?.LicneseType?.validTo === "string") {
+          validTo = convertDateToEpoch(formData?.LicneseType?.validTo)
+        } else {
+          validTo = formData?.LicneseType?.validTo
+        }
+      } else if (formData?.formData?.LicneseType?.validTo) {
+        if (typeof formData?.formData?.LicneseType?.validTo === "string" && formData?.formData?.LicneseType?.validTo?.includes("/")) {
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo?.split("/")?.reverse()?.join("-"))
+        } else if (typeof formData?.formData?.LicneseType?.validTo === "string") {
+          validTo = convertDateToEpoch(formData?.formData?.LicneseType?.validTo)
+        } else {
+          validTo = formData?.formData?.LicneseType?.validTo
+        }
+      }
+
+      const payload = {
+        Licenses: [
+          {
+            validTo,
+            tradeLicenseDetail: {
+              ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              owners: [
+                {
+                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
+                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
+                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
+                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
+                  permanentAddress: PermanentAddress,
+                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+                  pan: formData?.LicneseDetails?.PanNumber,
+                  permanentDistrict: selectedDistrict.district_name_english,
+                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
+                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+                  permanentPinCode : pinCode,
+                  permanentState: selectedState.state_name,
+                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
+                },
+              ],
+              tradeUnits: [
+                {
+                  tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
+                },
+              ],
+              additionalDetail: {                
+                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
+                qualificationType: formData?.LicneseType?.qualificationType?.name || formData?.formData?.LicneseType?.qualificationType?.name,
+                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo,
+                isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
+                isAddressSame: isAddressSame,                
+                Ulb: tenantToSend,
+              },
+              address: {
+                city: "",
+                landmark: "",
+                pincode: pinCode,
+              },
+            },
+            licenseNumber: formData?.result?.Licenses?.[0]?.licenseNumber || null,
+            licenseType: "PERMANENT",
+            businessService: "BPAREG",
+            tenantId: tenantToSend,
+            // action: "NOWORKFLOW",
+            action: "APPLY",
+            applicationType: "RENEWAL",
+            assignee: selectedAction?.assignee || null,
+            comment: selectedAction?.comment || null,
+            wfDocuments: selectedAction?.wfDocuments || null,
+          },
+        ],
+      };
+      console.log("payload", payload);
+      setLoader(true);
+      Digit.OBPSService.BPAREGCreate(payload, tenantId)
+        .then((result) => {
+          setLoader(false);
+          let data = {
+            ...formData,
+            result: result,  
+            editableFields: {
+              "provide-license-type": false,
+              "licensee-details": false,
+              "Permanent-address": true,
+              "professional-document-details": true,
+              isCreate: false,
+              // applicationType: "NEW"
+            }          
+          };          
+          onSelect("", data, "", true);
+        })
+        .catch((e) => {
+          setLoader(false);
+          setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
+          setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
+        });
     }else {
       setErrorMessage("");
       setShowToast(null); // reset errors

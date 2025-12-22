@@ -134,7 +134,7 @@ const selfdeclarationform = `
       <p style="margin-bottom:-32px;"><strong>To</strong></p>
       <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
-      <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.districtName}</p>
+      <p style="margin-bottom:-32px;">${currentStepData?.createdResponse?.additionalDetails?.UlbName}</p>
     </div>
 
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>

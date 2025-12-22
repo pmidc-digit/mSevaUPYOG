@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 
 const ReservationTimer = ({ t, createTime, onExpire }) => {
@@ -31,17 +29,7 @@ const ReservationTimer = ({ t, createTime, onExpire }) => {
 
   // 🛡️ Guard 2: expired
   if (remaining !== null && remaining <= 0) {
-    return (
-      <span
-        style={{
-          fontSize: "16px",
-          color: "red",
-          fontWeight: 800,
-        }}
-      >
-        {t("ADS_SLOTS_EXPIRED")}
-      </span>
-    );
+    return <span className="ads-timer-expired">{t("ADS_SLOTS_EXPIRED")}</span>;
   }
 
   // 🛡️ Guard 3: still counting down
@@ -57,23 +45,9 @@ const ReservationTimer = ({ t, createTime, onExpire }) => {
   const isCritical = remaining <= 60 * 1000;
 
   return (
-    <span
-      style={{
-        color: isCritical ? "red" : "#2947a3",
-        fontWeight: 600,
-        fontSize: "14px",
-        marginLeft: "8px",
-      }}
-    >
+    <span className={`ads-timer ${isCritical ? "ads-timer--critical" : ""}`}>
       {t("ADS_PAYMENT_TIMER")}
-      <span
-        style={{
-          fontSize: "16px",
-          fontWeight: 900,
-          color: "red",
-          marginLeft: "4px",
-        }}
-      >
+      <span className="ads-timer-countdown">
         {minutes}:{seconds}
       </span>
     </span>

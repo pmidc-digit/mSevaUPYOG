@@ -35,7 +35,8 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
 //			subQuery.append(" al.status != 'CLOSED' AND ");
-			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
+//			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
+			subQuery.append(" al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!criteria.getIsReportSearch()) {

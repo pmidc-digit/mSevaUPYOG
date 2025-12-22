@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 //import org.springframework.util.StringUtils;
 import org.egov.tl.repository.ServiceRequestRepository;
 
@@ -563,7 +564,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                 }
             }
             
-            //Add Signature in owner object
+            //Add Signature in 
             if(StringUtils.isEmpty(tradeLicense.getTradeLicenseDetail().getOwners().get(0).getSignature())) {
             	String signatureId = tradeLicense.getTradeLicenseDetail().getApplicationDocuments().stream()
             	.filter(documnet -> documnet.getDocumentType().equalsIgnoreCase(SIGNATURE_DOC_TYPE))

@@ -294,7 +294,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       </div>
 
       <ActionBar>
-        <SubmitBar style={{ background: " white", color: "#2947a3", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+        <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
 
         <SubmitBar label="Next" submit="submit" />
       </ActionBar>

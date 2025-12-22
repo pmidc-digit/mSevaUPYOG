@@ -196,7 +196,10 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
       });
 
       // default formData (before modify)
-      let formData = buildFormData({...payloadState?.CreatedResponse, documents: payloadState?.documents?.documents?.documents || payloadState?.documents || payloadState?.Documents || []});
+      let formData = buildFormData({
+        ...payloadState?.CreatedResponse,
+        documents: payloadState?.documents?.documents?.documents || payloadState?.documents || payloadState?.Documents || [],
+      });
 
       if (!filtData?.assignee && filtData?.action === "FORWARD") {
         setError("Assignee is mandatory");

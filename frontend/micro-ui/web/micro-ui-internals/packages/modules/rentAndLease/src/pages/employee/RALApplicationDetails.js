@@ -84,7 +84,7 @@ const RALApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  if (actions?.some((action) => action.action === "REQUEST_FOR_DISCONNECTION") && applicationData?.endDate > Date.now()) {
+  if (actions?.some((action) => action.action === "REQUEST_FOR_DISCONNECTION") && Date.now() >= applicationData?.endDate - 15 * 24 * 60 * 60 * 1000) {
     actions = [...(actions || []), { action: "RENEWAL" }];
   }
 
@@ -96,6 +96,10 @@ const RALApplicationDetails = () => {
     setSelectedAction(null);
     setShowModal(false);
     setShowToast(false);
+  };
+
+  const getDate = (epoch) => {
+    return Digit.DateUtils.ConvertEpochToDate(epoch);
   };
 
   function onActionSelect(action) {
@@ -340,6 +344,11 @@ const RALApplicationDetails = () => {
             />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
+            <Row label={t("RAL_START_DATE")} text={getDate(applicationData?.startDate) || t("CS_NA")} />
+            <Row label={t("RAL_END_DATE")} text={getDate(applicationData?.endDate) || t("CS_NA")} />
+            {applicationData?.tradeLicenseNumber && (
+              <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={applicationData?.tradeLicenseNumber || t("CS_NA")} />
+            )}
           </StatusTable>
 
           <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

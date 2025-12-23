@@ -91,11 +91,20 @@ public class PaymentNotificationService {
 		try {
 			applicationNumber = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
 			tenantId = paymentRequest.getPayment().getTenantId();
+			log.info("Processing payment for application: {}", applicationNumber);
 			
+			AllotmentCriteria criteria = AllotmentCriteria.builder()
+					.applicationNumbers(Collections.singleton(applicationNumber))
+//					.tenantId(tenantId)
+					.build();
+
+			List<AllotmentDetails> applications = allotmentRepository.getAllotmentByApplicationNumber(criteria);
+			boolean status=applications.get(0).getStatus().equalsIgnoreCase(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
 			log.info("Processing payment for application: {}", applicationNumber);
 			
 			// Transition workflow with PAY action
-			State workflowState = transitionWorkflowToApproved(paymentRequest);
+			State workflowState = transitionWorkflowToApproved(paymentRequest,status?"PAY":"PAY_SETTLEMENT_AMOUNT");
+			
 			if (workflowState == null) {
 				log.error("Workflow transition failed for application: {}", applicationNumber);
 				return;
@@ -122,12 +131,6 @@ public class PaymentNotificationService {
 				log.info("Application status is APPROVED after payment for application: {}", applicationNumber);
 			}
 			
-			AllotmentCriteria criteria = AllotmentCriteria.builder()
-					.applicationNumbers(Collections.singleton(applicationNumber))
-//					.tenantId(tenantId)
-					.build();
-
-			List<AllotmentDetails> applications = allotmentRepository.getAllotmentByApplicationNumber(criteria);
 			if (applications == null || applications.isEmpty()) {
 				log.error("No application found for application number: {}", applicationNumber);
 				return;
@@ -150,10 +153,13 @@ public class PaymentNotificationService {
 			
 			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
 					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
-			
+			if(status) {
 			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
-			statusUpdateInDatabaseByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
-			
+			    statusUpdateInDatabaseByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
+			}else {
+				applicationStatus = "CLOSED";
+				statusUpdateInDatabaseClosedByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());	
+			}
 		} catch (Exception e) {
 			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
 		}
@@ -163,9 +169,9 @@ public class PaymentNotificationService {
 	 * Transitions workflow to APPROVED state by calling workflow service with PAY action
 	 * Returns the state from workflow response
 	 */
-	private State transitionWorkflowToApproved(PaymentRequest paymentRequest) {
+	private State transitionWorkflowToApproved(PaymentRequest paymentRequest, String action) {
 		try {
-			ProcessInstance processInstance = getProcessInstanceForRL(paymentRequest);
+			ProcessInstance processInstance = getProcessInstanceForRL(paymentRequest,action);
 			if (processInstance == null) {
 				log.error("ProcessInstance is null, cannot transition workflow");
 				return null;
@@ -195,7 +201,7 @@ public class PaymentNotificationService {
 	 * Constructs a ProcessInstance object from the payment request.
 	 * Performs null checks to prevent NullPointerExceptions.
 	 */
-	private ProcessInstance getProcessInstanceForRL(PaymentRequest paymentRequest) {
+	private ProcessInstance getProcessInstanceForRL(PaymentRequest paymentRequest,String action) {
 		if (paymentRequest == null || paymentRequest.getPayment() == null ||
 				paymentRequest.getPayment().getPaymentDetails() == null ||
 				paymentRequest.getPayment().getPaymentDetails().isEmpty() ||
@@ -214,7 +220,7 @@ public class PaymentNotificationService {
 
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(consumerCode);
-		processInstance.setAction("PAY");
+		processInstance.setAction(action);
 		processInstance.setModuleName("rl-services");
 		processInstance.setTenantId(tenantId);
 		processInstance.setBusinessService("RENT_N_LEASE_NEW");
@@ -256,6 +262,15 @@ public class PaymentNotificationService {
 	 * Generates petRegistrationNumber if needed and updates database with APPROVED status
 	 */
 	private void statusUpdateInDatabaseByApplicationNumber(String applicationNumber, String status, RequestInfo requestInfo) {
+		try {
+			updateDatabaseWithStatus(applicationNumber, status, requestInfo);			
+		} catch (Exception e) {
+			log.error("Error generating applicationNumber and updating database for application: {}, Error: {}", 
+					applicationNumber, e.getMessage(), e);
+		}
+	}
+	
+	private void statusUpdateInDatabaseClosedByApplicationNumber(String applicationNumber, String status, RequestInfo requestInfo) {
 		try {
 			updateDatabaseWithStatus(applicationNumber, status, requestInfo);			
 		} catch (Exception e) {

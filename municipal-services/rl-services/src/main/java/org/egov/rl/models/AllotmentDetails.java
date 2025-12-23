@@ -120,14 +120,16 @@ public class AllotmentDetails {
 	@JsonProperty("reasonForClosure")
 	private String reasonForClosure;
 	
+	@Builder.Default
 	@JsonProperty("amountToBeDeducted")
-	private BigDecimal amountToBeDeducted;
+	private BigDecimal amountToBeDeducted = new BigDecimal(0);
 	
 	@JsonProperty("notesComments")
 	private String notesComments;
-	
+
+	@Builder.Default
 	@JsonProperty("amountToBeRefund")
-	private BigDecimal amountToBeRefund;
+	private BigDecimal amountToBeRefund = new BigDecimal(0);
 	
 	@JsonProperty("registrationNumber")
 	private String registrationNumber;

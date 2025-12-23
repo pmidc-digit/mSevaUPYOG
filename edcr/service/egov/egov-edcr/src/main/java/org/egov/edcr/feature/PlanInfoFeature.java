@@ -55,7 +55,7 @@ public class PlanInfoFeature extends FeatureProcess {
 	    		&& plan.getPlanInformation().getWidthOfPlot().compareTo(BigDecimal.ZERO) > 0){
 	        LOG.info("Plan information found in the plan. Processing site dimension.");
 	        String avgWidAndDep=  "AVERAGE WIDTH ("+ plan.getPlanInformation().getWidthOfPlot().toPlainString()+")"
-	        		+ " & DEPTH(" + plan.getPlanInformation().getWidthOfPlot().toPlainString() +")";
+	        		+ " & DEPTH(" + plan.getPlanInformation().getDepthOfPlot().toPlainString() +")";
 	        details.put(PROVIDED, avgWidAndDep);
 	        details.put(STATUS, Result.Accepted.getResultVal());	        
 	    } else {

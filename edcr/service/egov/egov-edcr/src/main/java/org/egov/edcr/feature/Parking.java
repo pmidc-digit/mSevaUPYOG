@@ -463,7 +463,7 @@ public class Parking extends FeatureProcess {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
             if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
                 // 1 ECS per 50 sqm
-                BigDecimal divisor = BigDecimal.valueOf(60);
+                BigDecimal divisor = BigDecimal.valueOf(50);
 
                 // Divide and always round UP since ECS must be whole
                 BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);

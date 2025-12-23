@@ -729,7 +729,7 @@ public class Coverage extends FeatureProcess {
 //        return totalCoverage;
 //    }
 	
-	public BigDecimal calculateGroundCoverage(BigDecimal plotArea, Plan pl) {
+	public static BigDecimal calculateGroundCoverage(BigDecimal plotArea, Plan pl) {
 
 	    LOG.info("=== Ground Coverage Calculation Started ===");
 

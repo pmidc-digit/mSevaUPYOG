@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1501,7 +1502,7 @@ public class PlanReportService {
     }
     
     public static void replaceStatusWithFulfillTerms(Map<String, Object> valuesMap) {
-        System.out.println("Replacing 'Accepted/Not Accepted' with 'Fulfilled/Not Fulfilled' terminology...");
+    	LOG.info("Replacing 'Accepted/Not Accepted' with 'Fulfilled/Not Fulfilled' terminology...");
 
         // Step 1: Update direct reportStatus if exists
         if (valuesMap.containsKey("reportStatus")) {
@@ -1512,7 +1513,7 @@ public class PlanReportService {
                         .replace("Accepted", "Fulfilled")
                         .replace("Not Accepted", "Not Fulfilled");
                 valuesMap.put("reportStatus", newStatus);
-                System.out.println("Updated reportStatus: " + oldStatus + " → " + newStatus);
+                LOG.info("Updated reportStatus: " + oldStatus + " → " + newStatus);
             }
         }
 
@@ -1538,7 +1539,7 @@ public class PlanReportService {
 
                                 // Optional: log changes for debugging
                                 if (!oldStatus.equals(newStatus)) {
-                                    System.out.println("Updated in '" + entry.getKey() + "': " + oldStatus + " → " + newStatus);
+                                	LOG.info("Updated in '" + entry.getKey() + "': " + oldStatus + " → " + newStatus);
                                 }
                             }
                         }
@@ -1547,7 +1548,7 @@ public class PlanReportService {
             }
         }
 
-        System.out.println("Status terminology update completed.\n");
+        LOG.info("Status terminology update completed.\n");
     }
     
     /**
@@ -1581,7 +1582,7 @@ public class PlanReportService {
             valuesMap.put("reportStatus", "Accepted");
             valuesMap.put("errors", new HashMap<>()); // Clear errors
             finalReportStatus = true;
-            System.out.println("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
+            LOG.info("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
         } else {
         	valuesMap.put("reportStatus", "Not Accepted");
             finalReportStatus = false;            
@@ -1595,9 +1596,9 @@ public class PlanReportService {
                 String errorMessage = getErrorMessageForFailedCheck(failedCheck); // Custom message logic
                 errors.put(errorKey, errorMessage);
             }
-            System.out.println("MANDATORY checks FAILED: " + failedMandatory);
-            System.out.println("Added mandatory failure errors to errors map.");
-            System.out.println("Report Status remains: Not Accepted");
+            LOG.info("MANDATORY checks FAILED: " + failedMandatory);
+            LOG.info("Added mandatory failure errors to errors map.");
+            LOG.info("Report Status remains: Not Accepted");
             valuesMap.put("errors", errors);
         }
         return finalReportStatus;
@@ -1649,11 +1650,11 @@ public class PlanReportService {
 //            valuesMap.put("reportStatus", "Accepted");
 //            valuesMap.put("errors", new HashMap<>()); // Clear errors
 //            finalReportStatus=true;
-//            System.out.println("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
+//            LOG.info("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
 //        } else {
 //            valuesMap.put("reportStatus", "Not Accepted");
-//            System.out.println("MANDATORY checks FAILED: " + failedMandatory);
-//            System.out.println("Report Status remains: Not Accepted");
+//            LOG.info("MANDATORY checks FAILED: " + failedMandatory);
+//            LOG.info("Report Status remains: Not Accepted");
 //        }
 //
 //        // Step 3: Print sorted summary
@@ -1701,9 +1702,9 @@ public class PlanReportService {
      * Prints full summary: Accepted → Failed/Mixed → N/A (Info only)
      */
     public void printAllKeysWithStatusSorted(Map<String, Object> valuesMap) {
-        System.out.println("\n=== FINAL COMPLIANCE CHECK SUMMARY (Sorted: Accepted → Failed → N/A) ===\n");
-        System.out.printf("%-55s %-15s %s%n", "Key / Section", "Status", "Notes");
-        System.out.println("----------------------------------------------------------------------------------------------------");
+    	LOG.info("\n=== FINAL COMPLIANCE CHECK SUMMARY (Sorted: Accepted → Failed → N/A) ===\n");
+    	LOG.info("%-55s %-15s %s%n", "Key / Section", "Status", "Notes");
+    	LOG.info("----------------------------------------------------------------------------------------------------");
 
         List<Map.Entry<String, String>> acceptedList = new ArrayList<>();
         List<Map.Entry<String, String>> failedList = new ArrayList<>();
@@ -1747,7 +1748,7 @@ public class PlanReportService {
         printList(failedList);
         printList(naList);
 
-        System.out.println("\n=== END OF SUMMARY ===");
+        LOG.info("\n=== END OF SUMMARY ===");
     }
 
     private void printList(List<Map.Entry<String, String>> list) {
@@ -1845,8 +1846,9 @@ public class PlanReportService {
                     dcrReportBlockDetail.setBuildingHeightExcludingMPt(building.getBuildingHeightExcludingMP());
                     dcrReportBlockDetail.setConstructedArea(building.getTotalConstructedArea());
                     List<Floor> floors = building.getFloors();
-                    if (building.getBuildingHeightExcludingMP() != null &&
-                    	    building.getBuildingHeightExcludingMP().compareTo(BUILDING_HEIGHT) > 0) {                    	    
+                    BigDecimal buildingHeightExMumpty = building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP);
+                    if (buildingHeightExMumpty != null &&
+                    		buildingHeightExMumpty.compareTo(BUILDING_HEIGHT) > 0) {                    	    
                     	    MANDATORY_KEYS.add("1Fire Tender Movement");
                     }
                     

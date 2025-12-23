@@ -112,16 +112,22 @@ public class PlantationGreenStrip extends FeatureProcess {
 
 						BigDecimal requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getType().getCode());
 						// Check plantation area ≥ 5% of plot area
+						String percentage =
+						        requiredPlantations
+						                .multiply(BigDecimal.valueOf(100))
+						                .stripTrailingZeros()
+						                .toPlainString() + "% of plot area";
+
 						BigDecimal requiredPlantationArea = plotArea.multiply(requiredPlantations).
 								setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 						if (plantationArea.compareTo(requiredPlantationArea) >= 0) {
 							isAreaAccepted = true;
 						} else {
-							errorMsgs.put("Plantation area Error ", "Plantation area cannot be less than 0.");
+							errorMsgs.put("Plantation area Error ", "Plantation area cannot be less than "+ requiredPlantationArea);
 							pl.addErrors(errorMsgs);
 						}
 						// Plantation Area Validation
-						buildResult(pl, scrutinyDetail, isAreaAccepted, "Plantation area","5% of plot area",
+						buildResult(pl, scrutinyDetail, isAreaAccepted, "Plantation area", percentage,
 								plantationArea.toString()+" m²",RULE_4__4_4_xi);
 					}				 
 			 }	 			 

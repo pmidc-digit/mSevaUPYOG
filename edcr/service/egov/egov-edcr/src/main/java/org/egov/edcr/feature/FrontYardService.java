@@ -480,7 +480,7 @@ private class FrontYardResult {
 	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
 
 	             requiredSetback.ifPresent(
-	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	        }	    	
@@ -840,7 +840,7 @@ private class FrontYardResult {
 			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, frontYardResult, buildingHeight);
 			subRule = RULE_37_TWO_I;
 			valid = validateMinimumAndMeanValue(min, setback.getFrontYard().getWidth(), minVal, meanVal);
-	    	if (setback.getFrontYard().getWidth().compareTo(minVal) >= 0) {		    
+	    	if (setback.getFrontYard().getArea().compareTo(minVal) >= 0) {		    
 			}else {
 				valid=false;
 			}
@@ -853,8 +853,8 @@ private class FrontYardResult {
 			minVal = getMinValueForIndustrial(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
 			subRule = RULE_37_TWO_I;
 			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
-			compareFrontYardResult(blockName, min, setback.getFrontYard().getWidth(), mostRestrictiveOccupancy,
-	    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);
+			compareFrontYardResultIndustry(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
+		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
 		}
 
 		//valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
@@ -915,7 +915,7 @@ private class FrontYardResult {
 			frontYardResult.level = level;
 			frontYardResult.expectedminimumDistance = minVal;
 			frontYardResult.expectedmeanDistance = meanVal;
-			frontYardResult.actualMinDistance = mean;
+			frontYardResult.actualMinDistance = min;
 			frontYardResult.actualMeanDistance = mean;
 			frontYardResult.status = valid;
 			frontYardResult.occupancyCode = occupanyCode;
@@ -1154,7 +1154,7 @@ private class FrontYardResult {
 	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
 	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
 	             requiredSetback.ifPresent(
-	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	             frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");

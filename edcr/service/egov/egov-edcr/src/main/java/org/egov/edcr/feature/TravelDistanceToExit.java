@@ -118,7 +118,7 @@ public class TravelDistanceToExit extends FeatureProcess {
             scrutinyDetail = new ScrutinyDetail();
             scrutinyDetail.setKey("Common_Travel Distance To Emergency Exits");
             scrutinyDetail.addColumnHeading(1, RULE_NO);
-            scrutinyDetail.addColumnHeading(2, REQUIRED);
+            scrutinyDetail.addColumnHeading(2, PERMISSIBLE);
             scrutinyDetail.addColumnHeading(3, PROVIDED);
             scrutinyDetail.addColumnHeading(4, STATUS);
             //scrutinyDetail.setSubHeading(SUBRULE_42_2_DESC);
@@ -155,7 +155,7 @@ public class TravelDistanceToExit extends FeatureProcess {
     private void setReportOutputDetails(Plan pl, String ruleNo, String expected, String actual, String status) {
         Map<String, String> details = new HashMap<>();
         details.put(RULE_NO, ruleNo);
-        details.put(REQUIRED, expected);
+        details.put(PERMISSIBLE, expected);
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);

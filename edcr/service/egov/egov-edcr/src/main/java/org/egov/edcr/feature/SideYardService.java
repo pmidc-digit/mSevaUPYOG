@@ -152,6 +152,7 @@ public class SideYardService extends GeneralRule {
  	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_104_5 = BigDecimal.valueOf(104.5);
  	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_209 = BigDecimal.valueOf(209);
  	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_418_21 = BigDecimal.valueOf(418.21);
+
  	
     private static final Logger LOG = LogManager.getLogger(SideYardService.class);
 
@@ -190,16 +191,38 @@ public class SideYardService extends GeneralRule {
         Boolean valid = false;
         if (plot != null && !pl.getBlocks().isEmpty()) {
             for (Block block : pl.getBlocks()) { // for each block
-                scrutinyDetail = new ScrutinyDetail();
-                scrutinyDetail.addColumnHeading(1, RULE_NO);
-                scrutinyDetail.addColumnHeading(2, LEVEL);
-                scrutinyDetail.addColumnHeading(3, OCCUPANCY);
-                scrutinyDetail.addColumnHeading(4, SIDENUMBER);
-//                scrutinyDetail.addColumnHeading(5, FIELDVERIFIED);
-                scrutinyDetail.addColumnHeading(6, PERMISSIBLE);
-                scrutinyDetail.addColumnHeading(7, PROVIDED);
-                scrutinyDetail.addColumnHeading(8, STATUS);
-                scrutinyDetail.setHeading(SIDE_YARD_DESC);
+//                scrutinyDetail = new ScrutinyDetail();
+//                scrutinyDetail.addColumnHeading(1, RULE_NO);
+//                scrutinyDetail.addColumnHeading(2, LEVEL);
+//                scrutinyDetail.addColumnHeading(3, OCCUPANCY);
+//                scrutinyDetail.addColumnHeading(4, SIDENUMBER);
+////                scrutinyDetail.addColumnHeading(5, FIELDVERIFIED);
+//                scrutinyDetail.addColumnHeading(6, PERMISSIBLE);
+//                scrutinyDetail.addColumnHeading(7, PROVIDED);
+//                scrutinyDetail.addColumnHeading(8, STATUS);
+//                scrutinyDetail.setHeading(SIDE_YARD_DESC);
+                
+                ScrutinyDetail scrutinyDetailSideYard1 = new ScrutinyDetail();
+                scrutinyDetailSideYard1.addColumnHeading(1, RULE_NO);
+                scrutinyDetailSideYard1.addColumnHeading(2, LEVEL);
+                scrutinyDetailSideYard1.addColumnHeading(3, OCCUPANCY);
+                scrutinyDetailSideYard1.addColumnHeading(4, SIDENUMBER);
+                scrutinyDetailSideYard1.addColumnHeading(6, PERMISSIBLE);
+                scrutinyDetailSideYard1.addColumnHeading(7, PROVIDED);
+                scrutinyDetailSideYard1.addColumnHeading(8, STATUS);
+                scrutinyDetailSideYard1.setHeading(SIDE_YARD_DESC);
+                
+                ScrutinyDetail scrutinyDetailSideYard2 = new ScrutinyDetail();
+                scrutinyDetailSideYard2.addColumnHeading(1, RULE_NO);
+                scrutinyDetailSideYard2.addColumnHeading(2, LEVEL);
+                scrutinyDetailSideYard2.addColumnHeading(3, OCCUPANCY);
+                scrutinyDetailSideYard2.addColumnHeading(4, SIDENUMBER);
+                scrutinyDetailSideYard2.addColumnHeading(6, PERMISSIBLE);
+                scrutinyDetailSideYard2.addColumnHeading(7, PROVIDED);
+                scrutinyDetailSideYard2.addColumnHeading(8, STATUS);
+                scrutinyDetailSideYard2.setHeading(SIDE_YARD_DESC);
+
+                
                 SideYardResult sideYard1Result = new SideYardResult();
                 SideYardResult sideYard2Result = new SideYardResult();
 
@@ -211,14 +234,14 @@ public class SideYardService extends GeneralRule {
                             && setback.getSideYard1().getMean().compareTo(BigDecimal.ZERO) > 0) {
                         sideYard1 = setback.getSideYard1();
                     }else {
-                    	exemptSideYardForAAndF(pl, block, sideYard1Result, sideYard2Result);
+                    	exemptSideYardForAAndF(pl, block, sideYard1Result, sideYard2Result, scrutinyDetailSideYard1, scrutinyDetailSideYard2 );
                     }
                     if (setback.getSideYard2() != null
                             && setback.getSideYard2().getMean().compareTo(BigDecimal.ZERO) > 0) {
                         sideYard2 = setback.getSideYard2();
                     }
                     	else {
-                        	exemptSideYardForAAndF(pl, block, sideYard1Result, sideYard2Result);
+                        	exemptSideYardForAAndF(pl, block, sideYard1Result, sideYard2Result, scrutinyDetailSideYard1, scrutinyDetailSideYard2);
                         }
                     
                     BigDecimal buildingHeight;
@@ -265,10 +288,13 @@ public class SideYardService extends GeneralRule {
 
                         if (buildingHeight != null && (minlength > 0 || max > 0)) {
                             for (final Occupancy occupancy : block.getBuilding().getTotalArea()) {
-                                scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
-
+                                //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
+                            	scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback");
+                            	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback");
                                 if (setback.getLevel() < 0) {
-                                    scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
+                                    //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
+                                    scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
+                                	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
 
                                     checkSideYardBasement(pl, block.getBuilding(), buildingHeight, block.getName(),
                                             setback.getLevel(), plot, minlength, max, minMeanlength, maxMeanLength,
@@ -333,7 +359,8 @@ public class SideYardService extends GeneralRule {
 
                             }
 
-                            addSideYardResult(pl, errors, sideYard1Result, sideYard2Result, scrutinyDetailList);
+                            addSideYardResult(pl, errors, sideYard1Result, sideYard2Result, scrutinyDetailList, 
+                            		scrutinyDetailSideYard1, scrutinyDetailSideYard2);
                         }
                         
                         if (pl.getPlanInformation() != null
@@ -409,7 +436,7 @@ public class SideYardService extends GeneralRule {
 	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
 
 	             requiredSetback.ifPresent(
-	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	        }	    	
@@ -594,7 +621,8 @@ public class SideYardService extends GeneralRule {
 
     
     private void addSideYardResult(final Plan pl, HashMap<String, String> errors, SideYardResult sideYard1Result,
-            SideYardResult sideYard2Result, List<ScrutinyDetail> scrutinyDetailList) {
+            SideYardResult sideYard2Result, List<ScrutinyDetail> scrutinyDetailList, 
+            ScrutinyDetail scrutinyDetailSideYard1, ScrutinyDetail scrutinyDetailSideYard2) {
         if (sideYard1Result != null) {
             Map<String, String> details = new HashMap<>();
             details.put(RULE_NO, sideYard1Result.subRule);
@@ -647,8 +675,10 @@ public class SideYardService extends GeneralRule {
                 details.put(STATUS, Result.Not_Accepted.getResultVal());
             }
 
-            scrutinyDetail.getDetail().add(details);
-            scrutinyDetailList.add(scrutinyDetail);
+//            scrutinyDetail.getDetail().add(details);
+//            scrutinyDetailList.add(scrutinyDetail);
+            scrutinyDetailSideYard1.getDetail().add(details);
+            scrutinyDetailList.add(scrutinyDetailSideYard1);
             //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
         }
 
@@ -671,21 +701,27 @@ public class SideYardService extends GeneralRule {
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-R")	||
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AIF")	||
     					sideYard2Result.occupancyCode.equalsIgnoreCase("A-AF") ||
-    					sideYard1Result.occupancyCode.equalsIgnoreCase("G-GTKS") ||
-    					sideYard1Result.occupancyCode.equalsIgnoreCase("G-IT") ||
-    					sideYard1Result.occupancyCode.equalsIgnoreCase("G-F"))) {
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-GTKS") ||
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-IT") ||
+    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-F"))) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
     			    providedValue = sideYard2Result.actualDistance.toString();
+    			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
+    			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
     			}else if (sideYard2Result.setBackPercentage != null 
     			        && sideYard2Result.setBackPercentage.contains("m")) {							    
     			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;
     			    providedValue = sideYard2Result.actualDistance.toString() + "m";
+    			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
+    			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
     			} else {								
 //    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage 
 //    			            + "% of the plot area (" 
 //    			            + sideYard2Result.expectedDistance.toPlainString() + ")";
     			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;    			            
     			    providedValue = sideYard2Result.actualDistance.toString();
+    			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
+    			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
     			}
 
 //                detailsSideYard2.put(FIELDVERIFIED, MINIMUMLABEL);
@@ -700,17 +736,22 @@ public class SideYardService extends GeneralRule {
                     detailsSideYard2.put(STATUS, Result.Not_Accepted.getResultVal());
                 }
 
-                scrutinyDetail.getDetail().add(detailsSideYard2);
-                scrutinyDetailList.add(scrutinyDetail);
+//                scrutinyDetail.getDetail().add(detailsSideYard2);
+//                scrutinyDetailList.add(scrutinyDetail);
+                
+                scrutinyDetailSideYard2.getDetail().add(detailsSideYard2);
+                scrutinyDetailList.add(scrutinyDetailSideYard2);
                 //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             }
         }
     }
 
     private void exemptSideYardForAAndF(final Plan pl, Block block, SideYardResult sideYard1Result,
-            SideYardResult sideYard2Result) {
+            SideYardResult sideYard2Result, ScrutinyDetail scrutinyDetailSideYard1, ScrutinyDetail scrutinyDetailSideYard2) {
         for (final Occupancy occupancy : block.getBuilding().getTotalArea()) {
-            scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
+            //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
+            scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback");
+        	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback");
             if (occupancy.getTypeHelper().getType() != null
                     && A.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())
                     || F.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {
@@ -1793,6 +1834,8 @@ public class SideYardService extends GeneralRule {
 	     * HIGH RISE BUILDINGS (Height > 21 m)
 	     * ====================================================== */
 	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+	    	sideYard1Result.isSetbackCombine=true;
+	    	sideYard2Result.isSetbackCombine=true;
 	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
 	        		pl.getMdmsMasterData().get("masterMdmsData"), 
 	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
@@ -1800,22 +1843,66 @@ public class SideYardService extends GeneralRule {
 	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
 	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
 	             requiredSetback.ifPresent(
-	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	             sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
 	             sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
 	        }	    	
 	    }else {
+	    	sideYard1Result.isSetbackCombine=true;
+	    	sideYard2Result.isSetbackCombine=true;
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
-	         * ====================================================== */
-	    	minVal = plotArea.multiply(COMMERCIAL_SIDE_SETBACK_PERCENT_10); // 10%
-	    	sideYard1Result.setBackPercentage = "10";	
-	    	sideYard2Result.setBackPercentage = "10";	
+	         * ====================================================== */	    	
+	    	minVal= getPermisableForCommericalBelow21m(plotArea,pl, sideYard1Result, sideYard2Result);
 	    }
 
 	    return minVal.setScale(2, RoundingMode.HALF_UP);
 	}
+    
+ // calculate permissible Rear setback value for commercial below 21 m height
+ 	private static BigDecimal getPermisableForCommericalBelow21m(BigDecimal plotArea, Plan pl, SideYardResult sideYard1Result, 
+ 			SideYardResult sideYard2Result) {
+ 		BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
+ 	    // Covered area
+ 	    BigDecimal groundCoveredArea = Coverage
+ 	            .calculateGroundCoverage(plotArea, pl)
+ 	            .setScale(2, RoundingMode.HALF_UP);
+
+ 	    // Ground coverage %
+ 	    BigDecimal groundCoveragePercent = groundCoveredArea
+ 	            .multiply(HUNDRED)
+ 	            .divide(plotArea, 2, RoundingMode.HALF_UP);
+ 	    
+ 	    // Front setback area (10%)
+ 	    BigDecimal frontSetbackArea = plotArea
+ 	            .multiply(COMMERCIAL_SIDE_SETBACK_PERCENT_10)
+ 	            .setScale(2, RoundingMode.HALF_UP);
+
+ 	    // Front setback %
+ 	    BigDecimal frontSetbackPercent = frontSetbackArea
+ 	            .multiply(HUNDRED)
+ 	            .divide(plotArea, 2, RoundingMode.HALF_UP);
+
+ 	    LOG.info("Front setback area: " + frontSetbackArea);
+ 	    LOG.info("Ground covered area: " + groundCoveredArea);
+
+ 	    // minVal = plotArea - (frontSetback + coveredArea)
+ 	    BigDecimal minVal = plotArea
+ 	            .subtract(frontSetbackArea.add(groundCoveredArea))
+ 	            .max(BigDecimal.ZERO);
+ 	    // Remaining %
+ 	    BigDecimal remainingPercent = HUNDRED
+ 	            .subtract(groundCoveragePercent.add(frontSetbackPercent))
+ 	            .max(BigDecimal.ZERO);
+
+ 	    // Update rear setback percentage here (NO hard coding)
+ 	    sideYard1Result.setBackPercentage = remainingPercent.stripTrailingZeros().toPlainString();
+ 	   sideYard2Result.setBackPercentage = remainingPercent.stripTrailingZeros().toPlainString();
+ 	    
+ 	    return minVal;
+ 	}
     
 }

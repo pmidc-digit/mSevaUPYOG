@@ -192,8 +192,7 @@ public class RearYardService extends GeneralRule {
 
 				for (SetBack setback : block.getSetBacks()) {
 					BigDecimal min;
-					BigDecimal mean;
-					
+					BigDecimal mean;					
 
 					if (setback.getRearYard() != null
 							&& setback.getRearYard().getMean().compareTo(BigDecimal.ZERO) > 0) {
@@ -218,7 +217,6 @@ public class RearYardService extends GeneralRule {
 									checkRearYardBasement(pl, block.getBuilding(), block.getName(), setback.getLevel(),
 											plot, BSMT_REAR_YARD_DESC, min, mean, occupancy.getTypeHelper(),
 											rearYardResult);
-
 								}
 								if ((occupancy.getTypeHelper().getSubtype() != null
 										&& (A_R.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
@@ -303,6 +301,7 @@ public class RearYardService extends GeneralRule {
 //							            + "% of the plot area (" 
 //							            + rearYardResult.expectedminimumDistance.toPlainString() + ")";
 							    permissableValueWithPercentage = rearYardResult.setBackPercentage;
+								//permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toPlainString();
 							    providedValue = rearYardResult.actualMinDistance.toString();
 							    details.put("OccCode", rearYardResult.occupancyCode);
 							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
@@ -333,6 +332,14 @@ public class RearYardService extends GeneralRule {
 							scrutinyDetailList.add(scrutinyDetail);
 							//pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
+						}
+					}else {
+						for (final Occupancy occupancy : block.getBuilding().getTotalArea()) {
+							if(A_AIF.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())) {
+								errors.put("rearyardNodeDefined",
+	                                    getLocaleMessage(OBJECTNOTDEFINED, " Rear Setback of  Block " + block.getNumber() + "  at level  " + setback.getLevel()));
+								pl.addErrors(errors);
+							}
 						}
 					}
 				}
@@ -400,7 +407,7 @@ public class RearYardService extends GeneralRule {
 	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
 
 	             requiredSetback.ifPresent(
-	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	        }
@@ -812,12 +819,12 @@ public class RearYardService extends GeneralRule {
 			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
 			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
 			            pl.getMdmsMasterData().get("masterMdmsData"),
-			            MdmsFilter.FRONT_SETBACK_PATH,
+			            MdmsFilter.REAR_SETBACK_PATH,
 			            BigDecimal.class
 			    );
 			    if (scOpt.isPresent()) {
 			        BigDecimal mdmsValue = scOpt.get();
-			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);
+			        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);
 			        BigDecimal oneForthHeight = buildingHeight.divide(
 			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
 			        );
@@ -833,10 +840,9 @@ public class RearYardService extends GeneralRule {
 	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
 	        
 	        if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             
-	             // Extraction 1B: Apply the tiered setback logic
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
 
 	             requiredSetback.ifPresent(
 	                 setbackRear -> LOG.info("Setback for Height " + buildingHeight + ": " + setbackRear)
@@ -1218,7 +1224,7 @@ public class RearYardService extends GeneralRule {
 			rearYardResult.blockName = blockName;
 			rearYardResult.level = level;
 			rearYardResult.expectedminimumDistance = minVal;
-			rearYardResult.actualMinDistance = min;
+			rearYardResult.actualMinDistance = min.setScale(2, RoundingMode.HALF_UP);
 			rearYardResult.status = valid;
 			rearYardResult.occupancyCode = occupanyCode;
 
@@ -1310,27 +1316,95 @@ public class RearYardService extends GeneralRule {
 	     * HIGH RISE BUILDINGS (Height > 21 m)
 	     * ====================================================== */
 	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+	    	rearYardResult.isSetbackCombine=true;
 	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
 	        		pl.getMdmsMasterData().get("masterMdmsData"), 
 	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
 	    	if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
 	             requiredSetback.ifPresent(
-	                 setback -> System.out.println("Setback for Height " + buildingHeight + ": " + setback)
+	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	             rearYardResult.setBackPercentage = minVal.toPlainString().concat("m");
 	        }	    	
 	    }else {
+	    	rearYardResult.isSetbackCombine=true;
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
-	         * ====================================================== */
-	    	minVal = plotArea.multiply(COMMERCIAL_REAR_SETBACK_PERCENT_10); // 10%
-	    	rearYardResult.setBackPercentage = "10";			
+	         * ====================================================== */	    		
+	    	minVal= getPermisableForCommericalBelow21m(plotArea,pl, rearYardResult);
 	    }
 
 	    return minVal.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	// calculate permissible Rear setback value for commercial below 21 m height
+	private static BigDecimal getPermisableForCommericalBelow21m(BigDecimal plotArea, Plan pl, RearYardResult rearYardResult) {
+		BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
+	    // Covered area
+	    BigDecimal groundCoveredArea = Coverage
+	            .calculateGroundCoverage(plotArea, pl)
+	            .setScale(2, RoundingMode.HALF_UP);
+
+	    // Ground coverage %
+	    BigDecimal groundCoveragePercent = groundCoveredArea
+	            .multiply(HUNDRED)
+	            .divide(plotArea, 2, RoundingMode.HALF_UP);
+	    
+	    // Front setback area (10%)
+	    BigDecimal frontSetbackArea = plotArea
+	            .multiply(COMMERCIAL_REAR_SETBACK_PERCENT_10)
+	            .setScale(2, RoundingMode.HALF_UP);
+
+	    // Front setback %
+	    BigDecimal frontSetbackPercent = frontSetbackArea
+	            .multiply(HUNDRED)
+	            .divide(plotArea, 2, RoundingMode.HALF_UP);
+
+	    LOG.info("Front setback area: " + frontSetbackArea);
+	    LOG.info("Ground covered area: " + groundCoveredArea);
+
+	    // minVal = plotArea - (frontSetback + coveredArea)
+	    BigDecimal minVal = plotArea
+	            .subtract(frontSetbackArea.add(groundCoveredArea))
+	            .max(BigDecimal.ZERO);
+	    // Remaining %
+	    BigDecimal remainingPercent = HUNDRED
+	            .subtract(groundCoveragePercent.add(frontSetbackPercent))
+	            .max(BigDecimal.ZERO);
+
+	    // Update rear setback percentage here (NO hard coding)
+	    rearYardResult.setBackPercentage = remainingPercent.stripTrailingZeros().toPlainString();
+	    
+	    return minVal;
+	}
+
+	
+	private BigDecimal calculateRemainingAreaPercentage(
+	        BigDecimal plotArea,
+	        BigDecimal groundCoverageArea,
+	        BigDecimal frontSetbackArea) {
+
+	    BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
+	    // Ground coverage %
+	    BigDecimal groundCoveragePercent = groundCoverageArea
+	            .multiply(HUNDRED)
+	            .divide(plotArea, 2, RoundingMode.HALF_UP);
+
+	    // Front setback %
+	    BigDecimal frontSetbackPercent = frontSetbackArea
+	            .multiply(HUNDRED)
+	            .divide(plotArea, 2, RoundingMode.HALF_UP);
+
+	    // Remaining %
+	    BigDecimal remainingPercent = HUNDRED
+	            .subtract(groundCoveragePercent.add(frontSetbackPercent));
+
+	    return remainingPercent.max(BigDecimal.ZERO);
 	}
 
 	

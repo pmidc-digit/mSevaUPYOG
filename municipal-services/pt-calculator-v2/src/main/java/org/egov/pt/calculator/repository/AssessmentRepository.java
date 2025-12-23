@@ -41,7 +41,21 @@ import org.egov.pt.calculator.web.models.property.Property;
 public class AssessmentRepository {
 	private static final String PROPERTY_SEARCH_QUERY = "select distinct prop.id,prop.propertyid,prop.acknowldgementNumber,prop.propertytype,prop.status,prop.ownershipcategory,prop.oldPropertyId,prop.createdby,prop.createdTime,prop.lastmodifiedby,prop.lastmodifiedtime,prop.tenantid from eg_pt_property prop inner join eg_pt_address addr ON prop.id = addr.propertyid and prop.tenantid=addr.tenantid left join eg_pt_unit unit ON prop.id = unit.propertyid and prop.tenantid=addr.tenantid where prop.status='ACTIVE' ";
 
-	private static final String PROPERTY_ACTIVE_SEARCH_QUERY = "select distinct prop.propertyid,prop.id,prop.acknowldgementNumber,prop.propertytype,prop.status,prop.ownershipcategory,prop.oldPropertyId,prop.createdby,prop.createdTime,prop.lastmodifiedby,prop.lastmodifiedtime,prop.tenantid from eg_pt_property prop where prop.status='ACTIVE' ";
+//	private static final String PROPERTY_ACTIVE_SEARCH_QUERY = "select distinct prop.propertyid,prop.id,prop.acknowldgementNumber,prop.propertytype,prop.status,prop.ownershipcategory,prop.oldPropertyId,prop.createdby,prop.createdTime,prop.lastmodifiedby,prop.lastmodifiedtime,prop.tenantid from eg_pt_property prop where prop.status='ACTIVE' ";
+	private static final String PROPERTY_ACTIVE_SEARCH_QUERY =
+		    "SELECT DISTINCT prop.propertyid, prop.id, prop.acknowldgementNumber, prop.propertytype, "
+		  + "prop.status, prop.ownershipcategory, prop.oldPropertyId, prop.createdby, prop.createdTime, "
+		  + "prop.lastmodifiedby, prop.lastmodifiedtime, prop.tenantid "
+		  + "FROM eg_pt_property prop "
+		  + "LEFT JOIN eg_pt_asmt_assessment asmt "
+		  + "ON prop.propertyid = asmt.propertyid "
+		  + "AND asmt.financialyear = :financialYear "
+		  + "AND asmt.status = 'ACTIVE' "
+		  + "AND asmt.tenantid = :tenantid "
+		  + "WHERE prop.status='ACTIVE' "
+		  + "AND prop.tenantid = :tenantid "
+		  + "AND asmt.propertyid IS NULL ";
+
 
 	private static final String PROPERTY_COUNT_ACTIVE = "select count(distinct prop.propertyid)	from eg_pt_property prop where prop.status='ACTIVE'";
 
@@ -159,43 +173,44 @@ public class AssessmentRepository {
 
 	public List<Property> fetchAllActivePropertieswithLimit(CreateAssessmentRequest request) {
 
-		StringBuilder query = new StringBuilder(PROPERTY_ACTIVE_SEARCH_QUERY);
-		final Map<String, Object> params = new HashMap<>();
+	    final Map<String, Object> params = new HashMap<>();
 
+	    // Base query with LEFT JOIN and IS NULL
+	    StringBuilder query = new StringBuilder(PROPERTY_ACTIVE_SEARCH_QUERY);
 
+	    // Optional locality filter
+	    if (request.getLocality() != null && !request.getLocality().isEmpty()) {
+	        query.append(" AND addr.locality IN (:locality) ");
+	        params.put("locality", request.getLocality());
+	    }
 
-		if (request.getLocality() != null) {
-			query.append(" and addr.locality in (:locality) ");
-			params.put("locality", request.getLocality());
-		}
-		// currently this filter is disabled in MDMS config
-		if (request.getPropertyType() != null) {
-			// query.append(" and SPLIT_PART(prop.usagecategory,'.',1) in (:propertytype)
-			// ");
-			query.append(" and prop.usagecategory in (:propertytype) ");
-			params.put("propertytype", request.getPropertyType());
-		}
+	    // Optional property type filter
+	    if (request.getPropertyType() != null && !request.getPropertyType().isEmpty()) {
+	        query.append(" AND prop.usagecategory IN (:propertytype) ");
+	        params.put("propertytype", request.getPropertyType());
+	    }
 
-		/*
-		 * Include or exclude rented properties based on isRented flag in MDMS config if
-		 * true then include rented properties, else exclude rented properties (If any
-		 * one of the unit of the property is Rented then total property will be
-		 * considered as Rented)
-		 */
+	    // Exclude rented properties
+	    if (!request.getIsRented()) {
+	        query.append(" AND prop.id NOT IN (SELECT propertyid FROM eg_pt_unit ")
+	             .append("WHERE tenantid = :tenantid AND occupancytype = :occupancytype) ");
+	        params.put("occupancytype", OCUUPANCY_TYPE_RENTED);
+	    }
 
-		if (!request.getIsRented()) {
-			query.append(
-					" and prop.id not in (select propertyid from eg_pt_unit where tenantid=:tenantid and occupancytype = :occupancytype)");
-			params.put("occupancytype", OCUUPANCY_TYPE_RENTED);
-		}
+	    // Add required parameters
+	    params.put("tenantid", request.getTenantId());
+	    params.put("financialYear", request.getAssessmentYear());
 
-		query.append(" and prop.tenantid=:tenantid");
-		params.put("tenantid", request.getTenantId());
-		query.append(" offset :offset_ limit :limit");
-		params.put("offset_", request.getOffset());
-		params.put("limit", request.getLimit());
-		return namedParameterJdbcTemplate.query(query.toString(), params, propertyRowMapper);
+	    // ORDER + OFFSET/LIMIT
+	    query.append(" ORDER BY prop.propertyid ")
+	         .append(" OFFSET :offset_ LIMIT :limit ");
+	    params.put("offset_", request.getOffset());
+	    params.put("limit", request.getLimit());
+
+	    // Execute query
+	    return namedParameterJdbcTemplate.query(query.toString(), params, propertyRowMapper);
 	}
+
 
 	public List<Property> fetchAllActiveProperties(CreateAssessmentRequest request) {
 		StringBuilder query = new StringBuilder(PROPERTY_SEARCH_QUERY);

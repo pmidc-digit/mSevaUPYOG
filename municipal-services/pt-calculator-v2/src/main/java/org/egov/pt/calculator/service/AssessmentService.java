@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.pt.calculator.producer.Producer;
 import org.egov.pt.calculator.repository.AssessmentRepository;
 import org.egov.pt.calculator.repository.PTCalculatorRepository;
 import org.egov.pt.calculator.repository.Repository;
@@ -38,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -66,6 +69,9 @@ public class AssessmentService {
 
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private Producer producer;
 
 	@Autowired
 	private UserService userService;
@@ -193,83 +199,116 @@ public class AssessmentService {
 
 	@SuppressWarnings("unchecked")
 	public List<Assessment> createAssessmentsForFY(CreateAssessmentRequest assessmentRequest) {
-		Map<String, Map<String, Object>> scheduledTenants = fetchScheduledTenants(assessmentRequest.getRequestInfo());
 
-		User user = userService.fetchPTAsseessmentUser();
-		RequestInfo requestInfo = assessmentRequest.getRequestInfo();
-		requestInfo.setUserInfo(user);
-		List<Assessment> assessedProperties = new ArrayList<Assessment>();
+	    Map<String, Map<String, Object>> scheduledTenants =
+	            fetchScheduledTenants(assessmentRequest.getRequestInfo());
 
-		for (Entry<String, Map<String, Object>> tenantConfig : scheduledTenants.entrySet()) {
-			Map<String, Object> configData = tenantConfig.getValue();
-			List<String> locality = (List<String>) configData.get(CalculatorConstants.LOCALITY_KEY);
-			List<String> propertyType = (List<String>) configData.get(CalculatorConstants.PROPERTYTYPE_KEY);
-			assessmentRequest.setTenantId(tenantConfig.getKey());
-			assessmentRequest.setAssessmentYear(configData.get(CalculatorConstants.FINANCIALYEAR_KEY).toString());
-			assessmentRequest.setLocality(locality);
-			assessmentRequest.setPropertyType(propertyType);
-			assessmentRequest.setIsRented(configData.get(CalculatorConstants.IS_RENTED) == null ? true
-					: (Boolean) configData.get(CalculatorConstants.IS_RENTED));
+	    User user = userService.fetchPTAsseessmentUser();
+	    RequestInfo requestInfo = assessmentRequest.getRequestInfo();
+	    requestInfo.setUserInfo(user);
 
-			int count = repository.getActivePropertyCount(assessmentRequest);
-			
-		
-			if (assessmentRequest.getLimit() != null && assessmentRequest.getLimit() > configs.getMaxSearchLimit())
-				assessmentRequest.setLimit(configs.getMaxSearchLimit());
-			
-			if (assessmentRequest.getLimit() == null)
-				assessmentRequest.setLimit(configs.getDefaultLimit());
-			
-			if (assessmentRequest.getOffset() == null)
-				assessmentRequest.setOffset(configs.getDefaultOffset());
-			
-			
-			Long limit = assessmentRequest.getLimit();
-			Long offset = assessmentRequest.getOffset();
-			while (offset < count) {
+	    final int BATCH_SIZE = configs.getMaxAssessmentBatchSize();
 
-				assessmentRequest.setOffset(offset);
-				assessmentRequest.setLimit(limit);
+	    List<Assessment> scheduledAssessments = new ArrayList<>();
 
-				List<Property> properties = repository.fetchAllActivePropertieswithLimit(assessmentRequest);
-				for (Property property : properties) {
-					boolean isExists = repository.isAssessmentExists(property.getPropertyId(),
-							assessmentRequest.getAssessmentYear(), property.getTenantId());
-					if (!isExists) {
+	    for (Map.Entry<String, Map<String, Object>> tenantConfig : scheduledTenants.entrySet()) {
 
-						Assessment assessment = Assessment.builder()
-								.financialYear(assessmentRequest.getAssessmentYear())
-								.propertyId(property.getPropertyId()).source(Source.MUNICIPAL_RECORDS)
-								.channel(Channel.CFC_COUNTER).assessmentDate(System.currentTimeMillis())
-								.tenantId(assessmentRequest.getTenantId()).build();
-						AssessmentRequest assessmentReq = AssessmentRequest.builder().assessment(assessment)
-								.requestInfo(requestInfo).build();
-						String url = new StringBuilder().append(configs.getAssessmentServiceHost())
-								.append(configs.getAssessmentCreateEndpoint()).toString();
-						AssessmentResponse response = null;
-						try {
-							response = restTemplate.postForObject(url, assessmentReq, AssessmentResponse.class);
-							Assessment createdAsessment = response.getAssessments().get(0);
-							repository.saveAssessmentGenerationDetails(createdAsessment, "SUCCESS", "Assessment", null);
-							assessedProperties.add(createdAsessment);
-						} catch (HttpClientErrorException e) {
-							repository.saveAssessmentGenerationDetails(assessment, "FAILED", "Assessment",
-									e.toString());
-						} catch (Exception e) {
-							repository.saveAssessmentGenerationDetails(assessment, "FAILED", "Assessment",
-									e.toString());
-						}
+	        List<AssessmentRequest> kafkaBatch = new ArrayList<>(BATCH_SIZE);
 
-					}
+	        Map<String, Object> configData = tenantConfig.getValue();
 
-				}
-				
-				offset = limit +offset;
-			}
-		}
-		return assessedProperties;
+	        assessmentRequest.setTenantId(tenantConfig.getKey());
+	        assessmentRequest.setAssessmentYear(
+	                configData.get(CalculatorConstants.FINANCIALYEAR_KEY).toString());
+	        assessmentRequest.setLocality(
+	                (List<String>) configData.get(CalculatorConstants.LOCALITY_KEY));
+	        assessmentRequest.setPropertyType(
+	                (List<String>) configData.get(CalculatorConstants.PROPERTYTYPE_KEY));
+	        assessmentRequest.setIsRented(
+	                configData.get(CalculatorConstants.IS_RENTED) == null
+	                        ? true
+	                        : (Boolean) configData.get(CalculatorConstants.IS_RENTED));
+
+	        int count = repository.getActivePropertyCount(assessmentRequest);
+
+	        Long limit = assessmentRequest.getLimit() == null
+	                ? configs.getDefaultLimit()
+	                : Math.min(assessmentRequest.getLimit(), configs.getMaxSearchLimit());
+
+	        Long offset = assessmentRequest.getOffset() == null
+	                ? configs.getDefaultOffset()
+	                : assessmentRequest.getOffset();
+
+	        while (offset < count) {
+
+	            assessmentRequest.setLimit(limit);
+	            assessmentRequest.setOffset(offset);
+
+	            List<Property> properties =
+	                    repository.fetchAllActivePropertieswithLimit(assessmentRequest);
+
+	            for (Property property : properties) {
+
+	                Assessment assessment = Assessment.builder()
+	                        .tenantId(assessmentRequest.getTenantId())
+	                        .propertyId(property.getPropertyId())
+	                        .financialYear(assessmentRequest.getAssessmentYear())
+	                        .source(Source.MUNICIPAL_RECORDS)
+	                        .channel(Channel.CFC_COUNTER)
+	                        .assessmentDate(System.currentTimeMillis())
+	                        .build();
+
+	                AssessmentRequest assessmentReq = AssessmentRequest.builder()
+	                        .assessment(assessment)
+	                        .requestInfo(requestInfo)
+	                        .build();
+
+	                kafkaBatch.add(assessmentReq);
+	                scheduledAssessments.add(assessment); // ✅ collect for return
+	               
+	                if (kafkaBatch.size() == BATCH_SIZE) {
+
+	                	String tenant = assessmentRequest.getTenantId();
+	                	String ulbName = tenant.substring(tenant.indexOf('.') + 1);
+	                	ulbName = ulbName.substring(0, 1).toUpperCase() + ulbName.substring(1);
+
+	                	String kafkaKey =
+	                	        count + "|" + ulbName + "|" + assessmentRequest.getAssessmentYear() +"|"+offset;
+
+
+	                    producer.push(
+	                            configs.getKafkaAssessmentSaveTopic(),
+	                            kafkaKey,
+	                            kafkaBatch
+	                    );
+	                    kafkaBatch.clear();
+	                }
+	            }
+	            offset += limit;
+	        }
+
+	        if (!kafkaBatch.isEmpty()) {
+
+	        	String tenant = assessmentRequest.getTenantId();
+	        	String ulbName = tenant.substring(tenant.indexOf('.') + 1);
+	        	ulbName = ulbName.substring(0, 1).toUpperCase() + ulbName.substring(1);
+
+	        	String kafkaKey =
+	        	        count + "|" + ulbName + "|" + assessmentRequest.getAssessmentYear();
+
+	            producer.push(
+	                    configs.getKafkaAssessmentSaveTopic(),
+	                    kafkaKey,
+	                    kafkaBatch
+	            );
+	        }
+	    }
+
+
+	    return scheduledAssessments;
 	}
 
+	  
 	@SuppressWarnings("unchecked")
 	public void createReAssessmentsForFY(CreateAssessmentRequest assessmentRequest) {
 

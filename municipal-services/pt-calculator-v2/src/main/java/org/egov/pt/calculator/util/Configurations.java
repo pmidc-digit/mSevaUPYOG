@@ -179,5 +179,11 @@ public class Configurations {
     
 	@Value("${pt.search.pagination.max.search.limit}")
 	private String kafkaWhatsappAdoptionDataTopic;
+	
+	
+	@Value("${kafka.topics.assessment.save.service}")
+	private String kafkaAssessmentSaveTopic;
 
+	@Value("${max.assessment.batch.size}")
+	private Integer maxAssessmentBatchSize;
 }

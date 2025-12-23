@@ -58,7 +58,9 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setAuditDetails(auditDetails);
 		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
 		setIdgenIds(allotmentRequest);
-		setRegistrationNumber(allotmentRequest);
+		if(allotmentRequest.getAllotment().getPreviousApplicationNumber()==null) {
+		 setRegistrationNumber(allotmentRequest);
+		}
 	}
 
 //	public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {

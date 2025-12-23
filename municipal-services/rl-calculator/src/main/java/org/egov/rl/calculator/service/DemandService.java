@@ -187,8 +187,10 @@ public class DemandService {
 
 		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
-				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
-				.taxPeriodTo(billingPeriod.getTaxPeriodTo()).billExpiryTime(billingPeriod.getDemandEndDateMillis())
+				.minimumAmountPayable(amountPayable).tenantId(tenantId)
+				.taxPeriodFrom(allotmentRequest.getAllotment().getStartDate())
+				.taxPeriodTo(allotmentRequest.getAllotment().getEndDate())
+				.billExpiryTime(billingPeriod.getDemandEndDateMillis())
 				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null)
 				.build();
 

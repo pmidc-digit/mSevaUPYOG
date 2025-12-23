@@ -268,6 +268,7 @@ public class UserService {
 
 		UserSearchRequest userSearchRequest = getBaseUserSearchRequest(owner.getTenantId(), requestInfo);
 		userSearchRequest.setMobileNumber(owner.getMobileNumber());
+		userSearchRequest.setUserName(owner.getMobileNumber());
 		// Remove all other criteria - search by mobile number only to avoid search failures
 		// userSearchRequest.setUserType(owner.getType());
 		// userSearchRequest.setName(owner.getName());

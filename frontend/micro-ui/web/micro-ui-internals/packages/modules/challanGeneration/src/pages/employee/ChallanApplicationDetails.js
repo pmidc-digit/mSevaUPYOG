@@ -15,61 +15,10 @@ import {
   Toast,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import NDCDocumentTimline from "../../components/NDCDocument";
 import { useParams, useHistory } from "react-router-dom";
-import CHBDocument from "../../pageComponents/CHBDocument";
-import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData,getLocationName } from "../../utils/index";
+import { ChallanData, getLocationName } from "../../utils/index";
 import NDCModal from "../../pageComponents/NDCModal";
-
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    name: checkpoint?.assigner?.name,
-    // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
-
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
-
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
-
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
-              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginTop: "8px" }}>
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption?.source?.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
@@ -176,8 +125,11 @@ const ChallanApplicationDetails = () => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
-      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
-      console.log('location', location)
+      const location = await getLocationName(
+        applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
+        applicationDetails?.challans?.[0]?.additionalDetail?.longitude
+      );
+      console.log("location", location);
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -185,7 +137,7 @@ const ChallanApplicationDetails = () => {
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments,location } }, "challan-notice");
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments, location } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });

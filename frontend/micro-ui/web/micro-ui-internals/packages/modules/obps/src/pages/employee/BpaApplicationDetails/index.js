@@ -433,7 +433,7 @@ const BpaApplicationDetail = () => {
         accessor: "fileUrl",
         Cell: ({ value }) =>
           value ? (
-            <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            <LinkButton style={{ float: "right", display: "inline" }}
               label={t("View")}
               onClick={() => routeTo(value)}
             />
@@ -453,7 +453,7 @@ const BpaApplicationDetail = () => {
         accessor: "fileUrl",
         Cell: ({ value }) =>
           value ? (
-            <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            <LinkButton style={{ float: "right", display: "inline"}}
               label={t("View")}
               onClick={() => routeTo(value)}
             />
@@ -473,7 +473,7 @@ const BpaApplicationDetail = () => {
         accessor: "fileUrl",
         Cell: ({ value }) =>
           value ? (
-            <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            <LinkButton style={{ float: "right", display: "inline" }}
               label={t("View")}
               onClick={() => routeTo(value)}
             />
@@ -495,7 +495,7 @@ const BpaApplicationDetail = () => {
       Cell: ({ value }) =>
         {          
           return value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -1025,7 +1025,7 @@ const BpaApplicationDetail = () => {
             Cell: ({ value }) =>
               {          
                 return value ? (
-                <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+                <LinkButton style={{ float: "right", display: "inline" }}
                   label={t("View")}
                   onClick={() => routeToImage(value)}
                 />

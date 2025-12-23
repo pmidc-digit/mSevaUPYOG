@@ -1,5 +1,5 @@
-import React from "react";
-import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
+import { Card, CardLabel, LabelFieldPair, Table, LinkButton, ImageViewer } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
@@ -8,70 +8,158 @@ import LayoutImageView from "./LayoutImageView";
 import LayoutFeeEstimationDetails from "./LayoutFeeEstimationDetails";
 import LayoutDocumentTableView from "./LayoutDocumentsView";
 
+// Component to render document link
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
+
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
+  return (
+    <LinkButton
+     
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
+  );
+};
+
 
 function LayoutSummary({ currentStepData: formData, t }) {
 
+  const stateCode = Digit.ULBService.getStateId();
+  const owners = formData?.apiData?.Layout?.[0]?.owners || [];
+  const layoutDocuments = formData?.apiData?.Layout?.[0]?.documents || [];
+
+  // Documents from fresh application flow (Redux state)
+  const photoUploadedFiles = formData?.photoUploadedFiles || {};
+  const documentUploadedFiles = formData?.documentUploadedFiles || {};
 
   console.log("formData in Summary Page", formData)
+  console.log("owners in Summary Page", owners)
+  console.log("layoutDocuments in Summary Page", layoutDocuments)
+  console.log("photoUploadedFiles in Summary Page", photoUploadedFiles)
+  console.log("documentUploadedFiles in Summary Page", documentUploadedFiles)
+
+  // Helper function to find document by type and owner index
+  // Searches in both API documents (edit mode) and Redux state (fresh application)
+  const findOwnerDocument = (ownerIndex, docType) => {
+    // First try to find from Redux state (fresh application flow)
+    // For primary owner (index 0), the key is 0, for additional owners the key matches their index in applicants array
+    if (docType === "OWNERPHOTO" && photoUploadedFiles) {
+      const photoFile = photoUploadedFiles[ownerIndex];
+      if (photoFile?.fileStoreId || photoFile?.uuid) {
+        return photoFile?.fileStoreId || photoFile?.uuid;
+      }
+    }
+    
+    if (docType === "OWNERVALIDID" && documentUploadedFiles) {
+      const docFile = documentUploadedFiles[ownerIndex];
+      if (docFile?.fileStoreId || docFile?.uuid) {
+        return docFile?.fileStoreId || docFile?.uuid;
+      }
+    }
+
+    // Then try to find from API documents (edit mode)
+    // For primary owner (index 0), look for OWNER.OWNERPHOTO or OWNER.OWNERVALIDID
+    // For additional owners, look for OWNER.OWNERPHOTO_{index} or OWNER.OWNERVALIDID_{index}
+    if (layoutDocuments && layoutDocuments.length > 0) {
+      let documentTypeKey = "";
+      if (ownerIndex === 0) {
+        documentTypeKey = `OWNER.${docType}`;
+      } else {
+        documentTypeKey = `OWNER.${docType}_${ownerIndex}`;
+      }
+      
+      const doc = layoutDocuments.find((d) => d.documentType === documentTypeKey);
+      if (doc?.uuid || doc?.fileStoreId) {
+        return doc?.uuid || doc?.fileStoreId;
+      }
+    }
+
+    // Also check owner's additionalDetails (if stored there)
+    if (owners && owners[ownerIndex]?.additionalDetails) {
+      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
+        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
+      }
+      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
+        return owners[ownerIndex]?.additionalDetails?.documentFile;
+      }
+    }
+
+    return null;
+  };
 
 
   const coordinates = useSelector(function (state) {
     return state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {};
   });
 
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  }
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  }
-
-  const headingStyle = {
-    fontSize: "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-  }
-
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-  }
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
-
-  // const renderLabel = (label, value) => (
-  //   <div style={labelFieldPairStyle}>
-  //     <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-  //     <div>{value || "NA"}</div>
-  //   </div>
-  // );
-
-    const renderLabel = (label, value) => {
+  const renderLabel = (label, value) => {
     if (!value || value === "NA" || value === "" || value === null || value === undefined) {
       return null;
     }
     
     return (
-      <div style={labelFieldPairStyle}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div className="layout-summary-label-field-pair" style={labelFieldPairStyle}>
+        <CardLabel className="layout-summary-bold-label" style={boldLabelStyle}>{label}</CardLabel>
         <div>{value}</div>
       </div>
     );
   }
+
+  // Inline styles
+  const pageStyle = {
+    padding: "16px",
+    background: "#fff",
+  };
+
+  const headingStyle = {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#0b4b66",
+    marginBottom: "12px",
+    marginTop: "20px",
+    borderBottom: "2px solid #0b4b66",
+    paddingBottom: "8px",
+  };
+
+  const sectionStyle = {
+    background: "#fafafa",
+    padding: "16px",
+    borderRadius: "4px",
+    marginBottom: "16px",
+    border: "1px solid #e0e0e0",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    flexDirection: "row",
+    marginBottom: "8px",
+    alignItems: "flex-start",
+  };
+
+  const boldLabelStyle = {
+    fontWeight: "600",
+
+    minWidth: "200px",
+    marginRight: "16px",
+  };
 
   const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -98,10 +186,69 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   return (
     <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
-    <div style={sectionStyle}>
-      <LayoutImageView documents={formData?.documents?.documents?.documents}/>
-    </div>
+      {/* OWNERS DETAILS AND DOCUMENTS */}
+      {owners && owners.length > 0 && (
+        <React.Fragment>
+          <h2 style={headingStyle}>{t("OWNERS_DETAILS_AND_DOCUMENTS") || "Owners Details & Documents"}</h2>
+          
+          {/* PRIMARY OWNER */}
+          <h3 style={{ marginBottom: "0.5rem", color: "#2e4a66", marginTop: "1rem" }}>
+            {t("PRIMARY_OWNER") || "Primary Owner"}
+          </h3>
+          <div style={sectionStyle}>
+            {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owners[0]?.name)}
+            {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
+            {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
+            {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owners[0]?.gender)}
+            {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owners[0]?.dob ? new Date(owners[0]?.dob).toLocaleDateString() : null)}
+            {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owners[0]?.fatherOrHusbandName)}
+            {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owners[0]?.permanentAddress)}
+            
+            {/* Documents Section */}
+            <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
+              <div style={labelFieldPairStyle}>
+                <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
+                <DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />
+              </div>
+              <div style={labelFieldPairStyle}>
+                <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
+                <DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />
+              </div>
+            </div>
+          </div>
+
+          {/* ADDITIONAL OWNERS */}
+          {owners.length > 1 && owners.slice(1).map((owner, index) => (
+            <React.Fragment key={index + 1}>
+              <h3 style={{ marginBottom: "0.5rem", color: "#555", marginTop: "1.5rem" }}>
+                {t("ADDITIONAL_OWNER") || "Additional Owner"} {index + 1}
+              </h3>
+              <div style={sectionStyle}>
+                {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
+                {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+                {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+                {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender)}
+                {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dob ? new Date(owner?.dob).toLocaleDateString() : null)}
+                {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+                {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress)}
+                
+                {/* Documents Section */}
+                <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
+                  <div style={labelFieldPairStyle}>
+                    <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
+                    <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERPHOTO")} stateCode={stateCode} t={t} />
+                  </div>
+                  <div style={labelFieldPairStyle}>
+                    <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
+                    <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERVALIDID")} stateCode={stateCode} t={t} />
+                  </div>
+                </div>
+              </div>
+            </React.Fragment>
+          ))}
+        </React.Fragment>
+      )}
+
       <h2 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h2>
       <div style={sectionStyle}>
         {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
@@ -118,8 +265,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-          <h2 style={headingStyle}>{t("BPA_PROFESSIONAL_DETAILS")}</h2>
-          <div style={sectionStyle}>
+          <h2 className="bpa-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
+          <div className="bpa-summary-section">
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
@@ -130,8 +277,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </React.Fragment>
       )}
 
-      <h2 style={headingStyle}>{t("BPA_LOCALITY_INFO_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.layoutAreaType?.name)}
         {formData?.siteDetails?.layoutAreaType?.code === "SCHEME_AREA" &&
           renderLabel(t("BPA_SCHEME_NAME_LABEL"), formData?.siteDetails?.layoutSchemeName)}
@@ -141,8 +288,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
           renderLabel(t("BPA_NON_SCHEME_TYPE_LABEL"), formData?.siteDetails?.layoutNonSchemeType?.name)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
         {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
         {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -224,20 +371,20 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_SPECIFICATION_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_CLU_DETAILS")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("BPA_CLU_DETAILS")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_IS_CLU_APPROVED_LABEL"), formData?.siteDetails?.cluIsApproved?.code)}
         {formData?.siteDetails?.cluIsApproved?.code === "YES" &&
           renderLabel(t("BPA_CLU_APPROVED_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
       </div>
 
-       <h2 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h2>
-      <div style={sectionStyle}>
+       <h2 className="bpa-summary-heading">{t("NOC_SITE_COORDINATES_LABEL")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
         {renderLabel(t("COMMON_LONGITUDE1_LABEL"),coordinates?.Longitude1)}
         
@@ -245,13 +392,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
+
            <h2 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
         {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
 
-      <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div className="bpa-summary-section">
         {formData && <LayoutFeeEstimationDetails formData={formData}/>}
       </div>
     </div>

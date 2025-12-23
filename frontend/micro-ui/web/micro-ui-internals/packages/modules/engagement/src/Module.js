@@ -54,6 +54,7 @@ import SurveySummary from "./components/Surveys/SurveyForms/SurveySummary";
 import FillSurveyNew from "./pages/citizen/CitizenSurvey/FillSurveyNew";
 import FillSurveyEmp from "./pages/employee/CitizenSurveys/FillSurveyEmp";
 import FillQuestions from "./components/Surveys/FillQuestions";
+import SurveyModal from "./components/Modal/SurveyModal";
 export const SurveyReducers = getRootReducer;
 
 const EventsBreadCrumb = ({ location }) => {
@@ -373,7 +374,8 @@ const componentsToRegister = {
   SurveySummary,
   FillSurveyNew,
   FillSurveyEmp,
-  FillQuestions
+  FillQuestions,
+  SurveyModal
 };
 
 export const initEngagementComponents = () => {

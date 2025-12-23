@@ -440,7 +440,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -460,7 +460,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -480,7 +480,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -501,7 +501,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "value",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />

@@ -8,6 +8,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   const isUserLoggedIn = user?.access_token;
   const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => role?.code?.includes("BPA") && role?.tenantId === tenantId);
 
+  console.log(links, "links in CitizenHomeCardWithExternalLink");
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false;
 
   // Predefined color schemes for cards
@@ -140,6 +141,16 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
     </React.Fragment>
   );
 
+  // Links that should open in new tab (_blank)
+  const linksToOpenInBlank = [
+    "BPA_CITIZEN_HOME_ARCHITECT_USER_MANUAL_LABEL",
+    "BPA_CITIZEN_HOME_ARCHITECT_FEEDBACK_LABEL",
+  ];
+
+  const shouldOpenInBlank = (linkName) => {
+    return linksToOpenInBlank.includes(linkName);
+  };
+
   return (
     <div className="chcwe-root" style={styles ? styles : undefined}>
       {header && <h2 className="chcwe-header">{header}</h2>}
@@ -175,13 +186,16 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
             );
           }
 
+          // Check if this link should open in new tab
+          const openInBlank = shouldOpenInBlank(link?.name);
+
           return (
             <a
               key={index}
               href={link.link}
               className={`chcwe-card chcwe-card-bg-${index % 6}`}
-              target={link.external ? "_blank" : "_self"}
-              rel={link.external ? "noopener noreferrer" : undefined}
+              target={openInBlank ? "_blank" : "_self"}
+              rel={openInBlank ? "noopener noreferrer" : undefined}
             >
               {renderCardContent(link, index)}
             </a>

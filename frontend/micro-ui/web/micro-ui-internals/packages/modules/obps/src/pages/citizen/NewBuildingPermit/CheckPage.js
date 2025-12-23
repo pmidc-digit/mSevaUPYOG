@@ -447,7 +447,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
     return (
       <div>
         {t("OWNER_AGREES_TO_BELOW_UNDERTAKING")}
-        <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px", background:"#fff" }}
+        <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px"}}
           label={t("OWNER_DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")}
           onClick={handleOwnerTermsLinkClick}
           disabled={!isOwnerOTPVerified}
@@ -828,7 +828,7 @@ const documentsColumns = [
     accessor: "fileUrl",
     Cell: ({ value }) =>
       value ? (
-        <LinkButton style={{ float:"right",display:"inline", background:"#fff" }}
+        <LinkButton style={{ float:"right",display:"inline" }}
           label={t("View")}
           onClick={() => routeTo(value)}
         />
@@ -951,7 +951,7 @@ const documentsColumns = [
           <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
 
-          <LinkButton style={{ float:"right",display:"inline", marginTop:"-80px", background:"#fff" }}
+          <LinkButton style={{ float:"right",display:"inline", marginTop:"-80px" }}
            label={<EditIcon color="white" style={{color:"white"}}  />}
             
             onClick={() => routeTo(`${routeLink}/plot-details`)}
@@ -1228,7 +1228,7 @@ const documentsColumns = [
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-          <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px", background:"#fff" }}
+          <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px"}}
             label={<EditIcon color="white" style={{color:"white"}}  />}
            
             onClick={() => routeTo(`${routeLink}/location`)}
@@ -1244,7 +1244,7 @@ const documentsColumns = [
         <StatusTable>
           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-          <LinkButton style={{ float:"right",  display:"inline", marginTop:"-80px", background:"#fff" }}
+          <LinkButton style={{ float:"right",  display:"inline", marginTop:"-80px" }}
             label={<EditIcon color="white" style={{color:"white"}}  />}
            
             onClick={() => routeTo(`${routeLink}/owner-details`)}
@@ -1540,7 +1540,7 @@ const documentsColumns = [
                     onChange={handleMobileNumberChange}
                     {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
                   />
-                  <LinkButton style={{ display:"inline", background:"#fff" }} label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+                  <LinkButton style={{ display:"inline" }} label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                 </React.Fragment>
               )}
               <br></br>

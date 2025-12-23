@@ -94,7 +94,7 @@ public class AllotmentQueryBuilder {
 		List<Object> subQueryParams = new ArrayList<>();
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.status = 'APPROVED' AND al.expireflag=false AND al.tenant_id = ? ");
+			subQuery.append(" (al.status = 'APPROVED' OR al.status = 'PENDING_DISCONNECTION_FIELD_INSPECTION')  AND al.expireflag=false AND al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}
 		if (!criteria.getIsReportSearch()) {

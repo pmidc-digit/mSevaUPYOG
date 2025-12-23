@@ -285,7 +285,7 @@ public class AllotmentQueryBuilder {
 //		}
 //		mainQuery.append(" OR previous_application_number is null)");
 		mainQuery.append(" AND property_id='").append(propertyId).append("'");
-		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
+//		mainQuery.append(" AND ").append(currentDate).append(" BETWEEN start_date AND end_date");
 		System.out.println("mainQuery--------"+mainQuery);
 		return mainQuery.toString();
 	}

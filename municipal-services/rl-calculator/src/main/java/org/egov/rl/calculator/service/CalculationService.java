@@ -110,16 +110,19 @@ public class CalculationService {
 			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
 		List<DemandDetail> demandDetails = new ArrayList<>();
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-		BigDecimal amountDeducted = new BigDecimal(allotmentDetails.getAmountToBeDeducted()); // BigDecimal
+		BigDecimal amountDeducted = allotmentDetails.getAmountToBeDeducted(); // BigDecimal
 		BigDecimal securityAmount = calculateAmount.stream()
 				.filter(d -> d.getPropertyId().equals(allotmentDetails.getPropertyId())).findFirst()
 				.map(d -> new BigDecimal(d.getSecurityDeposit())) // BigDecimal
 				.orElse(BigDecimal.ZERO);
 
-		BigDecimal amountToBeRefunded = securityAmount.subtract(amountDeducted);
+		BigDecimal amountToBeRefunded = securityAmount.subtract(amountDeducted).negate();
 
-		demandDetails.add(DemandDetail.builder().taxAmount(amountToBeRefunded)
-				.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION).tenantId(tenantId).build());
+		demandDetails.add(DemandDetail.builder()
+				.taxAmount(amountToBeRefunded)
+				.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION)
+				.tenantId(tenantId)
+				.build());
 		return demandDetails;
 	}
 }

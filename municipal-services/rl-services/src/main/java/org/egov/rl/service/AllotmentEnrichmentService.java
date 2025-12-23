@@ -143,6 +143,7 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
 		allotmentDbDetails.setPropertyId(allotmentDetails.getPropertyId());
 		allotmentDbDetails.setTenantId(allotmentDetails.getTenantId());
+		allotmentDbDetails.setAmountToBeDeducted(allotmentDetails.getAmountToBeDeducted());
 		allotmentRequest.setAllotment(allotmentDbDetails);
 
 		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);

@@ -166,16 +166,18 @@ public class AllotmentService {
 				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 		
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-		BigDecimal amountDeducted = new BigDecimal(allotmentDetails.getAmountToBeDeducted()); // BigDecimal
+		
+		BigDecimal amountDeducted = allotmentDetails.getAmountToBeDeducted(); // BigDecimal
+		
 		BigDecimal securityAmount = calculateAmount.stream()
 				.filter(d -> d.getPropertyId().equals(allotmentDetails.getPropertyId())).findFirst()
 				.map(d -> new BigDecimal(d.getSecurityDeposit())) // BigDecimal
 				.orElse(BigDecimal.ZERO);
 		BigDecimal amountToBeRefunded = securityAmount.subtract(amountDeducted);
+	
 		if(amountToBeRefunded.compareTo(BigDecimal.ZERO) > 0) {
-		    allotmentRequest.getAllotment().setAmountToBeRefund(tenantId);
+		    allotmentRequest.getAllotment().setAmountToBeRefund(amountToBeRefunded);
 		} else {
-//			BigDecimal amountToBePay = amountToBeRefunded.negate(); 
 			callCalculatorService(true,false,allotmentRequest);
 		}
 	}

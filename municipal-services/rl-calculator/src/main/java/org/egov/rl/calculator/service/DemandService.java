@@ -184,17 +184,29 @@ public class DemandService {
 		List<DemandDetail> demandDetails = calculationService.calculateSatelmentDemand(allotmentRequest);
 		BigDecimal amountPayable = new BigDecimal(0);
 		String applicationType = allotmentRequest.getAllotment().getApplicationType();
-
-		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
-				.minimumAmountPayable(amountPayable).tenantId(tenantId)
-				.taxPeriodFrom(allotmentRequest.getAllotment().getStartDate())
-				.taxPeriodTo(allotmentRequest.getAllotment().getEndDate())
-				.billExpiryTime(billingPeriod.getDemandEndDateMillis())
-				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null)
+        amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+//        BigDecimal amountPay = amountPayable.negate();
+//System.out.println(amountPayable+"amountPay:--------:::::::"+amountPay);
+        Demand demand = Demand.builder()
+				.consumerCode(consumerCode)
+				.demandDetails(demandDetails)
+				.payer(payerUser)
+				.minimumAmountPayable(amountPayable)
+				.tenantId(tenantId)
+//				.taxPeriodFrom(allotmentRequest.getAllotment().getStartDate())
+//				.taxPeriodTo(allotmentRequest.getAllotment().getEndDate())
+//				.billExpiryTime(expireDate)
+				.taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
+				.taxPeriodTo(billingPeriod.getTaxPeriodTo())
+				.billExpiryTime(billingPeriod.getDemandExpiryDate())
+				
+				.consumerType(applicationType)
+				.businessService(RLConstants.RL_SERVICE_NAME)
+				.additionalDetails(null)
 				.build();
 
 		demands.add(demand);
+//		System.out.println("-------demands---"+demands);
 
 		List<Demand> demands1 = demandRepository.saveDemand(
 				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);

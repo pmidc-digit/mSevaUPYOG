@@ -121,13 +121,13 @@ public class AllotmentDetails {
 	private String reasonForClosure;
 	
 	@JsonProperty("amountToBeDeducted")
-	private String amountToBeDeducted;
+	private BigDecimal amountToBeDeducted;
 	
 	@JsonProperty("notesComments")
 	private String notesComments;
 	
 	@JsonProperty("amountToBeRefund")
-	private String amountToBeRefund;
+	private BigDecimal amountToBeRefund;
 	
 	@JsonProperty("registrationNumber")
 	private String registrationNumber;

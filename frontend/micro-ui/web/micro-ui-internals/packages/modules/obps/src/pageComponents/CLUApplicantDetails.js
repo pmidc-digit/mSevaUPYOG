@@ -56,7 +56,19 @@ const CLUApplicantDetails = (_props) => {
       setLoader(false)
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setOwnerIdList((prev) => [ ...prev, { fileStoreId: fileId, fileName: file.name } ]);
+        setOwnerIdList((prev)=>{
+           const next = [...prev];
+           const newItem = { fileStoreId: fileId, fileName: file.name };
+
+           if(index <= next?.length){
+             next[index] = newItem;
+           }else{
+             next.push(newItem)
+           }
+
+           return next;
+         });
+        setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
       }
@@ -88,7 +100,18 @@ const CLUApplicantDetails = (_props) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setOwnerPhotoList((prev) => [ ...prev, { fileStoreId: fileId, fileName: file.name } ]);
+         setOwnerPhotoList((prev)=>{
+           const next = [...prev];
+           const newItem = { fileStoreId: fileId, fileName: file.name };
+           if(index <= next?.length){
+             next[index] = newItem;
+           }else{
+             next.push(newItem)
+           }
+
+           return next;
+         });
+        setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -215,14 +238,14 @@ const getOwnerDetails = async (idx) => {
  
     const filteredOwners = currentStepData?.applicationDetails?.owners?.filter((item, idx)=> idx !== index);
 
-    if(filteredOwners?.length > 0){
+    // if(filteredOwners?.length > 0){
 
-    dispatch(UPDATE_OBPS_FORM("applicationDetails",
-    {
-     ...currentStepData?.applicationDetails,
-     owners:filteredOwners
-    }));
-    }
+    // dispatch(UPDATE_OBPS_FORM("applicationDetails",
+    // {
+    //  ...currentStepData?.applicationDetails,
+    //  owners:filteredOwners
+    // }));
+    // }
      remove(index);
     
   }

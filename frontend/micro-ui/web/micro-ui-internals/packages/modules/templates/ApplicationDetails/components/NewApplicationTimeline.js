@@ -25,20 +25,14 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   if (isLoading) return <Loader />;
 
   return (
-    <div style={{ display: "inline-block", marginRight: "10px" }}>
+    <div className="custom-doc-container">
       {documents?.map((document, idx) => {
         const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
         if (!documentLink) return null;
         return (
-          <a
-            key={idx}
-            target="_blank"
-            rel="noopener noreferrer"
-            href={documentLink}
-            style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#2563eb", textDecoration: "none" }}
-          >
+          <a key={idx} target="_blank" rel="noopener noreferrer" href={documentLink} className="custom-doc-link">
             <PDFSvg />
-            <span style={{ fontSize: "14px", fontWeight: "600" }}>{document?.fileName || "Document"}</span>
+            <span>{document?.fileName || "Document"}</span>
           </a>
         );
       })}
@@ -47,43 +41,64 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
 });
 
 export default function NewApplicationTimeline({ workflowDetails, t }) {
+  const parseActionDateTime = (auditDetails) => {
+    if (!auditDetails?.created || !auditDetails?.timing) return null;
+
+    // created = "21/12/2025"
+    // timing  = "03:52 PM"
+    const [day, month, year] = auditDetails.created.split("/");
+
+    // build a safe datetime string
+    return new Date(`${year}-${month}-${day} ${auditDetails.timing}`);
+  };
+
+  const calculateSLA = (currentDate, previousDate) => {
+    if (!currentDate || !previousDate) return null;
+
+    const diffMs = currentDate - previousDate;
+
+    const totalMinutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day(s)`;
+    if (hours > 0) return `${hours} hour(s)`;
+    return `${totalMinutes} minute(s)`;
+  };
+
   const normalizeTimeline = (workflowDetails) => {
-    // Handle both formats: { data: { timeline: [...] } } and { timeline: [...] }
     const details = workflowDetails?.data || workflowDetails;
     const rawTimeline = details?.timeline;
 
-    if (!rawTimeline || !Array.isArray(rawTimeline)) return [];
+    if (!Array.isArray(rawTimeline)) return [];
 
-    return rawTimeline?.map((item) => {
-      // Use logic similar to ApplicationTimeline parseDate
-      let dateObj = null;
-      const dateStr = item?.auditDetails?.lastModified || item?.auditDetails?.created;
-      if (dateStr) {
-        if (typeof dateStr === "string" && dateStr?.includes("/")) {
-          const [day, month, year] = dateStr?.split("/");
-          dateObj = new Date(year, month - 1, day);
-        } else {
-          dateObj = new Date(dateStr);
-        }
-      }
+    // IMPORTANT: oldest → newest for SLA calculation
+    const orderedTimeline = [...rawTimeline].reverse();
 
-      const createdDate = dateObj ? dateObj?.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }) : "N/A";
-      const createdTime = dateObj ? dateObj?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }) : "";
+    const normalized = orderedTimeline.map((item, index) => {
+      const currentDate = parseActionDateTime(item.auditDetails);
+      const previousDate = index > 0 ? parseActionDateTime(orderedTimeline[index - 1]?.auditDetails) : null;
 
       return {
         ...item,
-        auditDetails: {
-          ...item?.auditDetails,
-          created: createdDate,
-          timing: createdTime,
-        },
-        status: item?.state,
-        performedAction: item?.performedAction,
-        assignes: item?.assignes ? item?.assignes : item?.assigner ? [item?.assigner] : [],
-        wfComment: item?.wfComment || (item?.comment ? [item?.comment] : []),
-        wfDocuments: item?.wfDocuments || [],
+
+        // semantic correctness
+        status: item?.state || item?.status,
+        assigner: item?.assigner || null,
+        assignes: Array.isArray(item?.assignes) ? item.assignes : [],
+
+        wfComment: Array.isArray(item?.wfComment) ? item.wfComment : item?.comment ? [item.comment] : [],
+
+        wfDocuments: Array.isArray(item?.wfDocuments) ? item.wfDocuments : [],
+
+        // SLA fields
+        actionDateTime: currentDate, // raw Date object (DO NOT SHOW IN UI)
+        sla: calculateSLA(currentDate, previousDate),
       };
     });
+
+    // return newest → oldest for UI
+    return normalized.reverse();
   };
 
   const data = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
@@ -97,11 +112,11 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
         <div className="custom-timeline-header">
           <div className="custom-tracking-status-header">
             <div className="custom-tracking-line"></div>
-            <span className="custom-tracking-status-text">TRACKING STATUS</span>
+            <span className="custom-tracking-status-text">{t("TRACKING STATUS")}</span>
             <div className="custom-tracking-line"></div>
           </div>
           <div className="custom-title-bar-row">
-            <h2 className="custom-timeline-title">Application History</h2>
+            <h2 className="custom-timeline-title">{t("Application History")}</h2>
             <div className="custom-blue-bar"></div>
           </div>
         </div>
@@ -132,38 +147,56 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
                 <div className="custom-content-card">
                   <div className="custom-card-top">
                     <div className="custom-card-left">
-                      <h3 className="custom-action-title">Action taken by</h3>
-                      {item?.assignes && item?.assignes?.length > 0 && (
+                      <h3 className="custom-action-title">{t("Action taken by")}</h3>
+
+                      {item?.assigner && (
                         <div className="custom-officer-info">
-                          <div className="custom-officer-name">{item?.assignes?.[0]?.name || t("CS_COMMON_NA")}</div>
-                          {item?.assignes?.[0]?.emailId && (
+                          <div className="custom-officer-name">{item?.assigner?.name || t("CS_COMMON_NA")}</div>
+
+                          {item?.assigner?.emailId && (
                             <div className="custom-officer-email">
-                              <span className="custom-email-label">Email:</span> {item?.assignes?.[0]?.emailId}
+                              <span className="custom-email-label">{t("Email")}</span> {item?.assigner?.emailId}
                             </div>
                           )}
                         </div>
                       )}
                     </div>
+                    {item?.sla && (
+                      <div className="custom-card-left">
+                        <h3 className="custom-action-title">{t("Time Taken")}</h3>
+                        <div className="custom-officer-email">
+                          <span className="custom-email-label">{item?.sla}</span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="custom-card-right">
-                      <div className="custom-actions-label">Action</div>
+                      <h3 className="custom-action-title">{t("Action")}</h3>
                       <div className="custom-status-text">{t(item?.performedAction || "CS_COMMON_NA")}</div>
                     </div>
                   </div>
 
                   {item?.wfComment && item?.wfComment?.length > 0 && item?.wfComment?.some((c) => c?.trim()) && (
                     <div className="custom-comments-section">
-                      <h4 className="custom-comments-title">Officer Comments</h4>
                       <div className="custom-comment-text">
+                        <h4 className="custom-comments-title">{t("Officer Comments")}</h4>
                         {item?.wfComment?.map((comment, idx) => (
                           <p key={idx}>{comment}</p>
                         ))}
                       </div>
+                      {item?.assignes?.length > 0 && (
+                        <div>
+                          <h3 className="custom-comments-title">{t("Assigned To")}</h3>
+                          <div className="custom-officer-info">
+                            <div className="custom-officer-name">{item.assignes[0]?.name}</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {item?.wfDocuments && item?.wfDocuments?.length > 0 && (
-                    <div className="custom-comments-section" style={{ borderTop: "none", paddingTop: "0" }}>
+                    <div className="custom-comments-section-no-border">
                       <h4 className="custom-comments-title">Document Attached:</h4>
                       <div className="custom-comment-text">
                         {item?.wfDocuments?.map((doc, index) => (

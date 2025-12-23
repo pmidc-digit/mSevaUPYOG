@@ -218,6 +218,7 @@ const FeeEstimation = ({
             adjustedAmount: tax?.adjustedAmount || 0,
             filestoreId: tax?.filestoreId || null,
             onDocumentLoading: false,
+            remark: tax?.remark || "",
             documentError: null,
         }));
 
@@ -261,6 +262,16 @@ const FeeEstimation = ({
             prev.map((item) =>
                 item.index === index
                     ? { ...item, adjustedAmount: Number(value) ? Number(value) : 0 } // update the adjustedAmount for the correct row
+                    : item
+            )
+        );
+    };
+    const handleRemarkChange = (index, value, ammount) => {
+        console.log("ammount", ammount, "value", value);        
+        setAdjustedAmounts((prev) =>
+            prev.map((item) =>
+                item.index === index
+                    ? { ...item, remark: value } // update the adjustedAmount for the correct row
                     : item
             )
         );
@@ -397,7 +408,7 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            {bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t}}/>}
+            {bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>}
 
             {/* <div style={{ overflowX: "auto" }}>
                 <CardSubHeader style={{ fontSize: "20px", color: "#3f4351", marginTop: "24px" }}>

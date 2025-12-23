@@ -197,7 +197,7 @@ public class DemandService {
 //				.taxPeriodTo(allotmentRequest.getAllotment().getEndDate())
 //				.billExpiryTime(expireDate)
 				.taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
-				.taxPeriodTo(billingPeriod.getTaxPeriodTo())
+				.taxPeriodTo(monthCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
 				.billExpiryTime(billingPeriod.getDemandExpiryDate())
 				
 				.consumerType(applicationType)

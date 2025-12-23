@@ -707,7 +707,8 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
 
     console.log("validity date",approvalDatePlusThree); 
 
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate}
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {

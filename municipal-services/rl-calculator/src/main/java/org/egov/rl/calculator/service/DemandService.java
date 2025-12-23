@@ -114,13 +114,17 @@ public class DemandService {
 				long exparyDate = 0;
 				switch (status) {                    
 				    case RLConstants.RL_MONTHLY_CYCLE: {
+				    	startDay = allotmentDetails.getStartDate();
+						endDay = monthCalculationService.lastDayTimeOfCycle(startDay,1);
+					    exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
+					
 						// Convert long (epoch milli) to LocalDate
-						LocalDate stateDate = Instant.ofEpochMilli(allotmentDetails.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate();
-						String startMonth = stateDate.getMonth().toString();
-						int startYear = stateDate.getYear();
-						startDay = allotmentDetails.getStartDate();
-						endDay = monthCalculationService.formatDay(monthCalculationService.lastDayOfMonth(startMonth, startYear), true);
-						exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
+//						LocalDate stateDate = Instant.ofEpochMilli(allotmentDetails.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate();
+//						String startMonth = stateDate.getMonth().toString();
+//						int startYear = stateDate.getYear();
+//						startDay = allotmentDetails.getStartDate();
+//						endDay = monthCalculationService.formatDay(monthCalculationService.lastDayOfMonth(startMonth, startYear), true);
+//						exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,allotmentDetails.getTenantId());
 						break;
 					}
 					case RLConstants.RL_QUATERLY_CYCLE: {

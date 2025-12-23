@@ -45,15 +45,19 @@ public class JobScheduler {
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
-//	// Runs every day at 09:30 IST // 24 hr time
-////	@Scheduled(cron = "0 50 8 * * *", zone = "Asia/Kolkata")
-//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
-//	public void runEvery3DaysCron() {
-//		System.out.println("scheduller call");
+	// Runs every day at 09:30 IST // 24 hr time
+//	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
+////	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+//	public void runEveryDaysCron() {
 //		demandService.generateBatchDemand(getOAuthToken());
+//	}
+	
+//	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
+////	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+//	public void runEveryDayCron() {
 //		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
 //	}
-//
+
 //	// Runs on 25th of every month at midnight IST
 //	@Scheduled(cron = "0 0 0 25 * *", zone = "Asia/Kolkata")
 //	public void runMonthlyOnFirst() {

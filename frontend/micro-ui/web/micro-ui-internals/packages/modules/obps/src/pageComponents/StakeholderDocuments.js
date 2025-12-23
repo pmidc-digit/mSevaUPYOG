@@ -311,7 +311,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
       {doc?.info ? (
         <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px", marginBottom: "10px" }}>{`${t(doc?.info)}`}</div>
       ) : null}
-      {doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" ? (
+      {(doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO"|| doc?.code === "APPL.BPAREG_SCANNED_SIGNATURE")  ? (
         <CustomUploadFile
           extraStyleName={"OBPS"}
           accept=".png, .jpeg, .jpg"
@@ -340,7 +340,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
           // iserror={error}
         />
       )}
-      {doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
+      {(doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" || doc?.code === "APPL.BPAREG_SCANNED_SIGNATURE") ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
       {loader && <LoaderNew page={true} />}
     </div>
   );

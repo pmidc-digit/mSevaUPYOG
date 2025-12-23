@@ -1284,7 +1284,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}
                             
                         />
-                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" &&
+                        {(currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" || currentStepData?.createdResponse?.additionalDetails?.approvedColony === "Colony Prior to 1995 (colony name)")  &&
                         <Row
                             className="border-none"
                             label={t(`BPA_APPROVED_COLONY_NAME`)}
@@ -1438,7 +1438,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             text={currentStepData?.createdResponse?.additionalDetails?.ecsProvided || t("CS_NA")}
                             
                         />}
-                        <Row
+                        {/* <Row
                             className="border-none"
                             label={t(`BPA_MASTER_PLAN_LABEL`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}
@@ -1449,7 +1449,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             label={t(`BPA_USE`)}
                             text={currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}
                             
-                        />}
+                        />} */}
                         <Row
                             className="border-none"
                             label={t(`BPA_GREEN_BUILDING_LABEL`)}

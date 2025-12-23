@@ -232,7 +232,7 @@ const InspectionReportForm = (_props) => {
           Cell: ({ value }) =>
             {          
               return value ? (
-              <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+              <LinkButton style={{ float: "right", display: "inline" }}
                 label={t("View Image")}
                 onClick={() => routeTo(value)}
               />
@@ -246,7 +246,7 @@ const InspectionReportForm = (_props) => {
           Cell: ({ value }) =>
             {          
               return value ? (
-              <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+              <LinkButton style={{ float: "right", display: "inline" }}
                 label={t("View Location")}
                 onClick={() => routeToGeo(value)}
               />

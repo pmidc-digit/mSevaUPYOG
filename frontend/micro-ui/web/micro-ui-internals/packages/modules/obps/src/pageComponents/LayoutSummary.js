@@ -32,7 +32,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 
   return (
     <LinkButton
-      style={{ display: "inline", background: "#fff" }}
+     
       label={t("View") || "View"}
       onClick={() => window.open(url, "_blank")}
     />
@@ -116,12 +116,50 @@ function LayoutSummary({ currentStepData: formData, t }) {
     }
     
     return (
-      <div className="layout-summary-label-field-pair">
-        <CardLabel className="layout-summary-bold-label">{label}</CardLabel>
+      <div className="layout-summary-label-field-pair" style={labelFieldPairStyle}>
+        <CardLabel className="layout-summary-bold-label" style={boldLabelStyle}>{label}</CardLabel>
         <div>{value}</div>
       </div>
     );
   }
+
+  // Inline styles
+  const pageStyle = {
+    padding: "16px",
+    background: "#fff",
+  };
+
+  const headingStyle = {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#0b4b66",
+    marginBottom: "12px",
+    marginTop: "20px",
+    borderBottom: "2px solid #0b4b66",
+    paddingBottom: "8px",
+  };
+
+  const sectionStyle = {
+    background: "#fafafa",
+    padding: "16px",
+    borderRadius: "4px",
+    marginBottom: "16px",
+    border: "1px solid #e0e0e0",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    flexDirection: "row",
+    marginBottom: "8px",
+    alignItems: "flex-start",
+  };
+
+  const boldLabelStyle = {
+    fontWeight: "600",
+
+    minWidth: "200px",
+    marginRight: "16px",
+  };
 
   const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");

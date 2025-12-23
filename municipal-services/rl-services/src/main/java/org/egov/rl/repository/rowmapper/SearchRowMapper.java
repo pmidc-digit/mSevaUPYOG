@@ -62,6 +62,7 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 					.notesComments(rs.getString("notes_comments"))
 					.amountToBeDeducted(rs.getString("amount_tobe_deducted"))
 					.amountToBeRefund(rs.getString("amount_to_be_refund"))
+					.expireFlag(rs.getBoolean("expireflag"))
 					.createdTime(rs.getLong("created_time"))
 					.createdBy(rs.getString("created_by"))
 					.auditDetails(auditDetails)

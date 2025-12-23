@@ -135,6 +135,9 @@ public class AllotmentDetails {
 	@JsonProperty("tradeLicenseNumber")
 	private String tradeLicenseNumber;
 	
+	@JsonProperty("expireFlag")
+	private boolean expireFlag;
+	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
 		if (this.ownerInfo == null) {
 			this.ownerInfo = new ArrayList<>();
@@ -185,6 +188,7 @@ public class AllotmentDetails {
 	            ", notesComments=" + notesComments +
 	            ", amountToBeRefund=" + amountToBeRefund +
 	            ", registrationNumber=" + registrationNumber +
+	            ", expireFlag=" + expireFlag +
 	            '}';
 	}
 }

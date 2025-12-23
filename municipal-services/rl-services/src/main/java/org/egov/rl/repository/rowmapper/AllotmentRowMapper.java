@@ -68,6 +68,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.notesComments(rs.getString("notes_comments"))
 					.amountToBeDeducted(rs.getString("amount_tobe_deducted"))
 					.amountToBeRefund(rs.getString("amount_to_be_refund"))
+					.expireFlag(rs.getBoolean("expireflag"))
 					.ownerInfo(userList).auditDetails(auditDetails).build();
 			if (rs.getLong("totalAllotments") < 2) {
 				currentAllotmentList.add(currentAllotment);

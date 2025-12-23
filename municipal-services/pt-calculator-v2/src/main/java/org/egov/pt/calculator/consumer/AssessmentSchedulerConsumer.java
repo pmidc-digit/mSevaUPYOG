@@ -44,73 +44,67 @@ public class AssessmentSchedulerConsumer {
      * ]
      */
     @KafkaListener(
-        topics = "${kafka.topics.assessment.save.service}",
-        groupId = "rainmaker-pt-calculator-group",
-        containerFactory = "kafkaListenerContainerFactory"
-    )
-    public void listen(List<List<HashMap<String, Object>>> records) {
+    	    topics = "${kafka.topics.assessment.save.service}",
+    	    groupId = "rainmaker-pt-calculator-group"
+    	)
+    	public void listen(
+    	        org.apache.kafka.clients.consumer.ConsumerRecord<String, List<HashMap<String, Object>>> record
+    	) {
 
-        log.info("Assessment Scheduler Consumer | outerBatchSize={}", records.size());
+    	    String key = record.key();
+    	    List<HashMap<String, Object>> batch = record.value();
 
-        for (List<HashMap<String, Object>> innerBatch : records) {
+    	    log.info("Assessment Scheduler Consumer | key={} | batchSize={}", key, batch.size());
 
-            for (HashMap<String, Object> record : innerBatch) {
+    	    for (HashMap<String, Object> payload : batch) {
 
-                Assessment assessment = null;
+    	        Assessment assessment = null;
 
-                try {
-                    AssessmentRequest assessmentReq =
-                            mapper.convertValue(record, AssessmentRequest.class);
+    	        try {
+    	            AssessmentRequest assessmentReq =
+    	                    mapper.convertValue(payload, AssessmentRequest.class);
 
-                    assessment = assessmentReq.getAssessment();
+    	            assessment = assessmentReq.getAssessment();
 
-                    String url = configs.getAssessmentServiceHost()
-                            + configs.getAssessmentCreateEndpoint();
+    	            String url = configs.getAssessmentServiceHost()
+    	                    + configs.getAssessmentCreateEndpoint();
 
-                    AssessmentResponse response = restTemplate.postForObject(
-                            url,
-                            new HttpEntity<>(assessmentReq),
-                            AssessmentResponse.class
-                    );
+    	            AssessmentResponse response = restTemplate.postForObject(
+    	                    url,
+    	                    new HttpEntity<>(assessmentReq),
+    	                    AssessmentResponse.class
+    	            );
 
-                    Assessment createdAssessment =
-                            response.getAssessments().get(0);
+    	            Assessment createdAssessment = response.getAssessments().get(0);
 
-                    repository.saveAssessmentGenerationDetails(
-                            createdAssessment,
-                            "SUCCESS",
-                            "Assessment",
-                            null
-                    );
+    	            repository.saveAssessmentGenerationDetails(
+    	                    createdAssessment,
+    	                    "SUCCESS",
+    	                    "Assessment",
+    	                    null
+    	            );
 
-                    log.info("Assessment created | propertyId={}",
-                            createdAssessment.getPropertyId());
+    	            log.info("Assessment created | propertyId={}",
+    	                    createdAssessment.getPropertyId());
 
-                } catch (HttpClientErrorException e) {
+    	        } catch (HttpClientErrorException e) {
 
-                    log.error("HTTP error | propertyId={}",
-                            assessment != null ? assessment.getPropertyId() : "NA", e);
+    	            repository.saveAssessmentGenerationDetails(
+    	                    assessment,
+    	                    "FAILED",
+    	                    "Assessment",
+    	                    e.getResponseBodyAsString()
+    	            );
 
-                    repository.saveAssessmentGenerationDetails(
-                            assessment,
-                            "FAILED",
-                            "Assessment",
-                            e.getResponseBodyAsString()
-                    );
+    	        } catch (Exception e) {
 
-                } catch (Exception e) {
-
-                    log.error("Unexpected error | propertyId={}",
-                            assessment != null ? assessment.getPropertyId() : "NA", e);
-
-                    repository.saveAssessmentGenerationDetails(
-                            assessment,
-                            "FAILED",
-                            "Assessment",
-                            e.toString()
-                    );
-                }
-            }
-        }
-    }
+    	            repository.saveAssessmentGenerationDetails(
+    	                    assessment,
+    	                    "FAILED",
+    	                    "Assessment",
+    	                    e.toString()
+    	            );
+    	        }
+    	    }
+    	}
 }

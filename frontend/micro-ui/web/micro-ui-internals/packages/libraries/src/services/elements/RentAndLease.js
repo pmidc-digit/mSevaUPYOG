@@ -23,13 +23,13 @@ export const RentAndLeaseService = {
       userService: true,
     }),
 
-  generateBill: (consumerCode, tenantId, businessService, operation) =>
+  properties: (filterData) =>
     Request({
-      url: Urls.rentAndLease.fetch_bill,
-      data: {},
+      url: Urls.rentAndLease.getReports,
+      data: { filterData },
       useCache: true,
       method: "POST",
-      params: { consumerCode, tenantId, businessService },
+      params: {},
       auth: true,
       userService: true,
     }),
@@ -44,8 +44,6 @@ export const RentAndLeaseService = {
       userService: false,
       //params: { tenantId, ...filters },
     }),
-
-    
 
   recieptSearch: (tenantId, businessService, params) => {
     console.log("🔍 [rentAndLeaseService.recieptSearch] Params:", {

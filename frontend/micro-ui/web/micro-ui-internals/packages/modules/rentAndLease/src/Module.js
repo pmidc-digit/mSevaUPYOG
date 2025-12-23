@@ -4,22 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
 import InboxFilter from "./components/inbox/NewInboxFilter";
 import RentAndLeaseCard from "./components/RentAndLeaseCard";
-import EmployeeChallan from "./EmployeeChallan";
-import AddressDetails from "./pageComponents/AddressDetails";
-import ConsumerDetails from "./pageComponents/ConsumerDetails";
-import ServiceDetails from "./pageComponents/ServiceDetails";
 import CitizenApp from "./pages/citizen";
-import MyChallanResultsComponent from "./pages/citizen/MyProperties";
-import SearchChallanComponent from "./pages/citizen/SearchChallan";
-import SearchResultsComponent from "./pages/citizen/SearchResults";
 import EmployeeApp from "./pages/employee";
-import EditChallan from "./pages/employee/EditChallan";
-import MCollectAcknowledgement from "./pages/employee/EmployeeChallanAcknowledgement";
-import NewChallan from "./pages/employee/NewChallan";
-import SearchReceipt from "./pages/employee/SearchReceipt";
-import SearchChallan from "./pages/employee/SearchChallan";
-import SearchBill from "./pages/employee/SearchBill";
-import GroupBill from "./pages/employee/GroupBills";
 import getRootReducer from "./redux/reducer";
 import NewRentAndLeaseStepperForm from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepperForm";
 import NewRentAndLeaseStepFormOne from "./pageComponents/NewRentAndLeaseStepper/NewRentAndLeaseStepFormOne";
@@ -34,7 +20,7 @@ import RentAndLeaseDocument from "./pageComponents/RentAndLeaseDocument";
 import CustomDatePicker from "./pageComponents/CustomDatePicker";
 import RALApplicationDetails from "./pages/citizen/RALApplicationDetails";
 import RALResponse from "./pageComponents/Reponse";
-import MyProperties from "./pages/citizen/MyProperties/myProperties";
+import MyProperties from "./pages/citizen/MyProperties";
 import RALEmptyResultInbox from "./components/RALEmptyResultInbox";
 
 export const RentAndLeaseReducers = getRootReducer;
@@ -50,17 +36,6 @@ export const RentAndLeaseModule = ({ stateCode, userType, tenants }) => {
   useEffect(() => {
     initRentAndLeaseComponents();
   }, []);
-
-  // useEffect(
-  //   () =>
-  //     userType === "employee" &&
-  //     Digit.LocalizationService.getLocale({
-  //       modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
-  //       locale: Digit.StoreData.getCurrentLanguage(),
-  //       tenantId: Digit.ULBService.getCurrentTenantId(),
-  //     }),
-  //   []
-  // );
 
   const stateId = Digit.ULBService.getStateId();
 
@@ -111,26 +86,11 @@ export const RentAndLeaseLinks = ({ matchPath, userType }) => {
 
 const componentsToRegister = {
   RALApplicationDetails,
-  ConsumerDetails,
-  ServiceDetails,
-  AddressDetails,
   RentAndLeaseCard,
   RentAndLeaseModule,
   RentAndLeaseLinks,
-  MCollectEmployeeChallan: EmployeeChallan,
-  MCollectAcknowledgement: MCollectAcknowledgement,
-  MCollectEditChallan: EditChallan,
-  MCollectNewChallan: NewChallan,
-  MCollectSearchChallanComponent: SearchChallanComponent,
-  MCollectSearchResultsComponent: SearchResultsComponent,
-  MCollectMyChallanResultsComponent: MyChallanResultsComponent,
   MyProperties,
-  SearchReceipt,
-  SearchChallan,
-  SearchBill,
-  GroupBill,
   RAL_INBOX_FILTER: (props) => <InboxFilter {...props} />,
-  // New stepper form components
   NewRentAndLeaseStepperForm,
   NewRentAndLeaseStepFormOne,
   NewRentAndLeaseStepFormTwo,

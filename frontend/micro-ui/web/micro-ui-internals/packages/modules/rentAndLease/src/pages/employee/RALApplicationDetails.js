@@ -26,7 +26,6 @@ const RALApplicationDetails = () => {
   const [loader, setLoader] = useState(false);
   const state = tenantId?.split(".")[0];
   const [applicationData, setApplicationData] = useState();
-  console.log("applicationData", applicationData);
   const [showToast, setShowToast] = useState(null);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -34,6 +33,9 @@ const RALApplicationDetails = () => {
   const [getEmployees, setEmployees] = useState([]);
   const history = useHistory();
   const [getWorkflowService, setWorkflowService] = useState([]);
+  const menuRef = useRef();
+  Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
+
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -60,11 +62,19 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
+  const handleNavigation = () => {
+    const timer = setTimeout(() => {
+      history.push("/digit-ui/employee/rentandlease/inbox");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  };
+
   // Assuming applicationData is your API response
   const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
 
   let user = Digit.UserService.getUser();
-  const menuRef = useRef();
+
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -74,7 +84,7 @@ const RALApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  if (actions?.some((action) => action.action === "REQUEST_FOR_DISCONNECTION") && applicationData?.endDate > Date.now()) {
+  if (actions?.some((action) => action.action === "REQUEST_FOR_DISCONNECTION") && Date.now() >= applicationData?.endDate - 15 * 24 * 60 * 60 * 1000) {
     actions = [...(actions || []), { action: "RENEWAL" }];
   }
 
@@ -86,6 +96,10 @@ const RALApplicationDetails = () => {
     setSelectedAction(null);
     setShowModal(false);
     setShowToast(false);
+  };
+
+  const getDate = (epoch) => {
+    return Digit.DateUtils.ConvertEpochToDate(epoch);
   };
 
   function onActionSelect(action) {
@@ -105,7 +119,7 @@ const RALApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
-    } else if (action?.action === "RENEWAL") {
+    } else if (action?.action === "RAL_RENEWAL") {
       setShowModal(true);
       setSelectedAction(action);
     } else {
@@ -164,9 +178,10 @@ const RALApplicationDetails = () => {
         // ✅ Show success first
         setShowToast({ key: false, label: "Successfully updated the status" });
         // ✅ Delay navigation so toast shows
-        setTimeout(() => {
-          history.push("/digit-ui/employee/rentandlease/inbox");
-        }, 2000);
+        handleNavigation();
+        // setTimeout(() => {
+        //   history.push("/digit-ui/employee/rentandlease/inbox");
+        // }, 2000);
 
         setSelectedAction(null);
         setShowModal(false);
@@ -251,7 +266,7 @@ const RALApplicationDetails = () => {
         ...response,
         Document: sanitizedDocuments,
         workflow: {
-          action: "SAVEASDRAFT",
+          action: "APPLY",
         },
       },
     };
@@ -264,6 +279,10 @@ const RALApplicationDetails = () => {
       }
       setLoader(false);
       setShowToast({ key: false, label: "Renewal application submitted successfully" });
+      // setTimeout(() => {
+      //   history.push("/digit-ui/employee/rentandlease/inbox");
+      // }, 2000);
+      handleNavigation();
     } catch (error) {
       setLoader(false);
       setShowToast({ key: true, label: "Error updating renewal application" });
@@ -273,11 +292,11 @@ const RALApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginLeft: "14px", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
+        <div className="cardHeaderWithOptions ral-app-details-header">
+          <Header className="ral-header-32">{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
@@ -286,7 +305,7 @@ const RALApplicationDetails = () => {
                 return (
                   <React.Fragment key={owner.ownerId || index}>
                     {multipleOwners && (
-                      <CardSectionHeader style={{ padding: "5px 24px 0px 24px", fontWeight: "600" }}>
+                      <CardSectionHeader className="ral-app-details-owner-header">
                         {t("RAL_OWNER")} {index + 1}
                       </CardSectionHeader>
                     )}
@@ -305,8 +324,11 @@ const RALApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
+            {applicationData?.registrationNumber && (
+              <Row label={t("RAL_REGISTRATION_NUMBER")} text={applicationData?.registrationNumber || t("CS_NA")} />
+            )}
             <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
             <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={propertyDetails?.propertyName || t("CS_NA")} />
@@ -322,16 +344,21 @@ const RALApplicationDetails = () => {
             />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
+            <Row label={t("RAL_START_DATE")} text={getDate(applicationData?.startDate) || t("CS_NA")} />
+            <Row label={t("RAL_END_DATE")} text={getDate(applicationData?.endDate) || t("CS_NA")} />
+            {applicationData?.tradeLicenseNumber && (
+              <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={applicationData?.tradeLicenseNumber || t("CS_NA")} />
+            )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+            <Card className="ral-app-details-docs-card">
               {applicationData?.Document?.length > 0 ? (
                 applicationData.Document.map((doc, index) => (
                   <div key={index}>
                     <RALDocuments value={applicationData.Document} Code={doc?.documentType} index={index} />
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    {t(doc?.documentType)}
                   </div>
                 ))
               ) : (
@@ -344,17 +371,19 @@ const RALApplicationDetails = () => {
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {applicationData?.status != "INITIATED" && actions?.length > 0 && (
           <ActionBar>
-            {displayMenu ? (
-              <Menu
-                localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                options={actions}
-                optionKey={"action"}
-                t={t}
-                onSelect={onActionSelect}
-                // style={MenuStyle}
-              />
-            ) : null}
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <div ref={menuRef}>
+              {displayMenu ? (
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                  // style={MenuStyle}
+                />
+              ) : null}
+              <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            </div>
           </ActionBar>
         )}
 

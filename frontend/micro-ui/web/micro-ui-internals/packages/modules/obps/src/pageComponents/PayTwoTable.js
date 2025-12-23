@@ -17,7 +17,8 @@ export const PayTwoTable = ({
     handleFileUpload,
     handleFileDelete,
     routeTo,
-    t
+    t,
+    handleRemarkChange
 }) => {
     return (
         <div className="bpa-table-container">

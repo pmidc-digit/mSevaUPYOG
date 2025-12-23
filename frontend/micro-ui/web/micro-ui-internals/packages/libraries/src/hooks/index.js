@@ -19,7 +19,7 @@ import {
 } from "./payment";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
 import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
-import { useRentAndLeaseRecieptSearch } from "./rentAndLease/rentAndLease";
+import { useRentAndLeaseRecieptSearch, useRentAndLeaseProperties } from "./rentAndLease/rentAndLease";
 
 import { useUserSearch } from "./userSearch";
 import { useApplicationsForBusinessServiceSearch } from "./useApplicationForBillSearch";
@@ -158,8 +158,8 @@ import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenera
 import useChallanInbox from "./challanGeneration/useInbox";
 
 import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
-import useRALPropertyMDMS from "./rentAndLease/useRentAndLeasePropertyMDMS"
-import useRALDocumentsMDMS from "./rentAndLease/useRentAndLeaseDocumetsMDMS"
+import useRALPropertyMDMS from "./rentAndLease/useRentAndLeasePropertyMDMS";
+import useRALDocumentsMDMS from "./rentAndLease/useRentAndLeaseDocumetsMDMS";
 import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
 import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
 import useRentAndLeaseTenants from "./rentAndLease/useTenants";
@@ -546,7 +546,7 @@ const pt = {
   useRatingAndFeedbackMDMS,
   useServiceSearchCF,
   useLudhianaPropertSearch,
-  useBathindaPropertySearch
+  useBathindaPropertySearch,
 };
 const dss = {
   useMDMS: useDssMdms,
@@ -657,7 +657,7 @@ const obps = {
   useCLUSearchApplicationByIdOrMobile,
   useLayoutSearchApplicationByIdOrMobile,
   useCLUInbox,
-  useLayoutBuildingCategory
+  useLayoutBuildingCategory,
 };
 
 const events = {
@@ -794,6 +794,7 @@ const challangeneration = {
 };
 const rentandlease = {
   useRentAndLeaseRecieptSearch,
+  useRentAndLeaseProperties,
   useRentAndLeaseMDMS,
   useRALPropertyMDMS,
   useRALDocumentsMDMS,

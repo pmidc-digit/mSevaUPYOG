@@ -66,7 +66,7 @@ const MCollectAcknowledgement = () => {
           ) : null}
           <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
             <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
-              <LinkButton style={{ color: "#FF8C00" }} label={t("CORE_COMMON_GO_TO_HOME")} />
+              <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
 
             <Link

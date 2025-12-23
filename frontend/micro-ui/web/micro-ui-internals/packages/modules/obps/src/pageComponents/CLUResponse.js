@@ -64,7 +64,7 @@ const CLUResponse = (props) => {
     const ulbName = site?.ulbName?.city?.name;
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-    //console.log("acknowledgementData in citizen NOC", acknowledgementData);
+    console.log("acknowledgementData in citizen NOC", acknowledgementData);
     // Digit.Utils.pdf.generate(acknowledgementData);
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
  

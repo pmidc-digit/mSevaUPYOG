@@ -440,7 +440,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -460,7 +460,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -480,7 +480,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -501,7 +501,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "value",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -707,7 +707,8 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
 
     console.log("validity date",approvalDatePlusThree); 
 
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate}
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
@@ -736,6 +737,12 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData =
         "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
+    }else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
+    }else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Stand-Alone Project."
     } else {
       requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
     }

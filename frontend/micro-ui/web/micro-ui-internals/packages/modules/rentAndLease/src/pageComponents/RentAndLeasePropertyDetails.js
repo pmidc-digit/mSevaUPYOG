@@ -23,8 +23,27 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  const { data: mdmsPropertyData } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
-  const { triggerLoader } = config?.currStepConfig[0];
+  // const { data: mdmsPropertyData } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
+
+  const filters = {
+    tenantId,
+    searchType: "1",
+  };
+  const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
+
+  const { triggerLoader, triggerToast } = config?.currStepConfig[0];
+
+  useEffect(() => {
+    if (triggerLoader) {
+      triggerLoader(isLoading);
+    }
+  }, [isLoading, triggerLoader]);
+
+  useEffect(() => {
+    if (isError && triggerToast) {
+      triggerToast("ERROR_WHILE_FETCHING_PROPERTIES", true);
+    }
+  }, [isError, triggerToast]);
 
   // 🔹 Dropdown options
   const propertyTypeOptions = [
@@ -105,9 +124,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   const [filteredProperties, setFilteredProperties] = useState([]);
 
   useEffect(() => {
-    if (mdmsPropertyData) {
+    if (data?.property) {
       // Start with all properties from MDMS
-      let properties = mdmsPropertyData;
+      let properties = data?.property;
       if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
         properties = properties.filter(
           (p) =>
@@ -119,7 +138,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
 
       setFilteredProperties(properties);
     }
-  }, [mdmsPropertyData, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
+  }, [data, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
   const todayISO = new Date().toISOString().split("T")[0];
 

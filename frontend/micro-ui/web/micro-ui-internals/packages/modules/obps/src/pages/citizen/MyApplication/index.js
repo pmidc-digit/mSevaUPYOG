@@ -16,8 +16,7 @@ const MyApplication = () => {
   const [finalData, setFinalData] = useState([]);
   const [labelMessage, setLableMessage] = useState(false);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-    const [layoutData, setLayoutData] = useState([])
-  const [isLayoutLoading, setIsLayoutLoading] = useState(true)
+    // Layout state removed: this page no longer uses layout search
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   // const userInfo = Digit.UserService.getUser();
@@ -85,7 +84,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     mobileNumber:""
   };
 
-
+// useLayoutCitizenSearchApplication removed from this page; layout data won't be fetched here
 
   const getBPAREGFormData = (data) => {
     console.log("data in getBPAREGFormData", data);
@@ -93,7 +92,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
     const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
-    const permanentAddress = address
+    const permanentAddress = address;
     const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
 
     let name = "";
@@ -101,14 +100,11 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     let lastName = "";
 
     if (nameParts.length === 1) {
-  // Single name
       name = nameParts[0];
     } else if (nameParts.length === 2) {
-      // Two names → first is name, second is lastName
       name = nameParts[0];
       lastName = nameParts[1];
     } else if (nameParts.length > 2) {
-      // More than two names → first = name, last = lastName, middle = rest
       name = nameParts[0];
       lastName = nameParts[nameParts.length - 1];
       middleName = nameParts.slice(1, -1).join(" ");
@@ -128,7 +124,6 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
         LicneseDetails: {
           PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
           PermanentAddress: permanentAddress,
-
           email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
           gender: {
             code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
@@ -418,7 +413,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
         });
       }
 
-        
+      // Layout results are intentionally excluded from aggregation on this page
 
       sortConvertedArray = [].slice.call(searchConvertedArray).sort(function (a, b) {
         return new Date(b.modifiedTime) - new Date(a.modifiedTime) || a.sortNumber - b.sortNumber;
@@ -428,7 +423,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
       const userInfoDetails = userInfos ? JSON.parse(userInfos) : {};
       if (userInfoDetails?.value?.info?.roles?.length == 1 && userInfoDetails?.value?.info?.roles?.[0]?.code == "CITIZEN") setLableMessage(true);
     }
-  }, [isLoading,isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
+  }, [isLoading, isLoadingPunjab, isBpaSearchLoading, bpaData, data]);
 
   const isRenewalEnabled = (validToEpoch) => {
     if (!validToEpoch || isreminderLoading) return false;
@@ -456,6 +451,8 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     if (typeof bpaDataLength == "number") {
       count = count + bpaDataLength;
     }
+
+    // layout counts removed as layout search isn't used on this page
 
     if (count > 0) return `(${count})`;
     else return "";

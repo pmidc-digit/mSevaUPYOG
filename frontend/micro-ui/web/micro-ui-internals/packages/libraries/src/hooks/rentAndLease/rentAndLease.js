@@ -6,3 +6,9 @@ export const useRentAndLeaseRecieptSearch = ({ tenantId, ...params }, config = {
     ...config,
   });
 };
+
+export const useRentAndLeaseProperties = (filters, config = {}) => {
+  return useQuery(["rentAndLease_Properties", filters, config], () => Digit.RentAndLeaseService.properties(filters), {
+    ...config,
+  });
+};

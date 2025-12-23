@@ -2092,7 +2092,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			tax_payable = Math.round(tax_payable * 100) / 100.0;
 			double tax_payable_roundoff = Math.round(tax_payable);
 			double round_off = Math.round((tax_payable_roundoff - tax_payable) * 100.0) / 100.0;
-
+			FireCess=Math.round(FireCess * 100) / 100.0;
 			double totalTax = tax_payable_roundoff;
 
 			taxHeadEstimates.add(buildTaxHead("PT_TAX", PT_TAX));

@@ -70,10 +70,10 @@ public class RLProperty {// extends PropertyInfo {
 	
 	@JsonProperty("cowCessApplicable")
 	private boolean cowCessApplicable;
-//	
-//	@JsonProperty("penaltyType")
-//	private String penaltyType;
-//	
+	
+	@JsonProperty("penaltyType")
+	private String penaltyType;
+	
 //	@JsonProperty("latePayment")
 //	private String latePayment;
 //	

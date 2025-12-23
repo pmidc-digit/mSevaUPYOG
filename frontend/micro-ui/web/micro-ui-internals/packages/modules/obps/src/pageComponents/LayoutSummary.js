@@ -265,8 +265,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-          <h2 className="layout-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
-          <div className="layout-summary-section">
+          <h2 className="bpa-summary-heading">{t("BPA_PROFESSIONAL_DETAILS")}</h2>
+          <div className="bpa-summary-section">
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
@@ -277,8 +277,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </React.Fragment>
       )}
 
-      <h2 className="layout-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
-      <div className="layout-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_LOCALITY_INFO_LABEL")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.layoutAreaType?.name)}
         {formData?.siteDetails?.layoutAreaType?.code === "SCHEME_AREA" &&
           renderLabel(t("BPA_SCHEME_NAME_LABEL"), formData?.siteDetails?.layoutSchemeName)}
@@ -288,8 +288,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
           renderLabel(t("BPA_NON_SCHEME_TYPE_LABEL"), formData?.siteDetails?.layoutNonSchemeType?.name)}
       </div>
 
-      <h2 className="layout-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
-      <div className="layout-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_SITE_DETAILS")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
         {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
         {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -371,20 +371,20 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
       </div>
 
-      <h2 className="layout-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
-      <div className="layout-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_SPECIFICATION_DETAILS")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
       </div>
 
-      <h2 className="layout-summary-heading">{t("BPA_CLU_DETAILS")}</h2>
-      <div className="layout-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_CLU_DETAILS")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("BPA_IS_CLU_APPROVED_LABEL"), formData?.siteDetails?.cluIsApproved?.code)}
         {formData?.siteDetails?.cluIsApproved?.code === "YES" &&
           renderLabel(t("BPA_CLU_APPROVED_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
       </div>
 
-       <h2 className="layout-summary-heading">{t("NOC_SITE_COORDINATES_LABEL")}</h2>
-      <div className="layout-summary-section">
+       <h2 className="bpa-summary-heading">{t("NOC_SITE_COORDINATES_LABEL")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
         {renderLabel(t("COMMON_LONGITUDE1_LABEL"),coordinates?.Longitude1)}
         
@@ -398,8 +398,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
         {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
 
-      <h2 className="layout-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
-      <div className="layout-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_FEE_DETAILS_LABEL")}</h2>
+      <div className="bpa-summary-section">
         {formData && <LayoutFeeEstimationDetails formData={formData}/>}
       </div>
     </div>

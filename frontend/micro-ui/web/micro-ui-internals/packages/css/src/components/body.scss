@@ -212,14 +212,14 @@ body {
 .citizen-and-architect-photo-label {
     /* Add any label styling if needed */
 }
-.clu-summary-page {
+.bpa-summary-page {
   padding: 2rem;
   background-color: #f9f9f9;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
 }
 
-.clu-summary-heading {
+.bpa-summary-heading {
   font-size: 1.5rem;
   border-bottom: 2px solid #ccc;
   padding-bottom: 0.3rem;
@@ -228,7 +228,7 @@ body {
   margin-bottom: 1rem;
 }
 
-.clu-summary-section {
+.bpa-summary-section {
   background-color: #ffffff;
   padding: 1rem 1.5rem;
   border-radius: 8px;
@@ -236,7 +236,7 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.clu-summary-label-field-pair {
+.bpa-summary-label-field-pair {
   display: flex;
   justify-content: space-between;
   border-bottom: 1px dashed #e0e0e0;
@@ -244,48 +244,12 @@ body {
   color: #333;
 }
 
-.clu-summary-bold-label {
+.bpa-summary-bold-label {
   font-weight: bold;
   color: #555;
 }
 
-/* Layout Summary Styles */
-.layout-summary-page {
-  padding: 2rem;
-  background-color: #f9f9f9;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-}
 
-.layout-summary-heading {
-  font-size: 1.5rem;
-  border-bottom: 2px solid #ccc;
-  padding-bottom: 0.3rem;
-  color: #2e4a66;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-
-.layout-summary-section {
-  background-color: #ffffff;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.layout-summary-label-field-pair {
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px dashed #e0e0e0;
-  padding: 0.5rem 0;
-  color: #333;
-}
-
-.layout-summary-bold-label {
-  font-weight: bold;
-  color: #555;
-}
 
 .custom-card-container {
   width: 100%;

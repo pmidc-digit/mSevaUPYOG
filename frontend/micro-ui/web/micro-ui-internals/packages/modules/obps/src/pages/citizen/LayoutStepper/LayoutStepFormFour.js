@@ -165,8 +165,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("[v0] isEditMode:", isEditMode)
   console.log("[v0] layoutData:", layoutData)
 
+    // For Update API: Use original owners from API response (preserve full structure)
+    // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
+    const owners = layoutData?.owners || [];
+
   const updatedApplication = {
     ...layoutData,  // <CHANGE> Use layoutData instead of hardcoded path
+   
     workflow: {
       action: selectedAction?.action || "",
     },
@@ -176,7 +181,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         ...layoutData?.layoutDetails?.additionalDetails,  // <CHANGE> Use layoutData
         applicationDetails: {
           ...layoutFormData?.applicationDetails,
-          applicantGender: layoutFormData?.applicationDetails?.applicantGender?.code || "",
+          applicantGender: layoutFormData?.applicationDetails?.applicantGender,  // Keep full object
         },
         siteDetails: {
           businessService: layoutFormData?.apiData?.Layout?.[0]?.layoutDetails.additionalDetails?.siteDetails?.businessService,
@@ -192,6 +197,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       },
     },
     documents: [],
+    owners: owners,  // ← Top-level owners array (preserved from API response)
   };
 
     const docsArray = layoutFormData?.documents?.documents?.documents || [];

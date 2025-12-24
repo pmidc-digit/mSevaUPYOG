@@ -100,6 +100,10 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
+  const getDate = (epoch) => {
+    return Digit.DateUtils.ConvertEpochToDate(epoch);
+  };
+
   // Assuming applicationData is your API response
   const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
 
@@ -163,6 +167,11 @@ const RALApplicationDetails = () => {
             />
             <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
+            <Row label={t("RAL_START_DATE")} text={getDate(applicationData?.startDate) || t("CS_NA")} />
+            <Row label={t("RAL_END_DATE")} text={getDate(applicationData?.endDate) || t("CS_NA")} />
+            {applicationData?.tradeLicenseNumber && (
+              <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={applicationData?.tradeLicenseNumber || t("CS_NA")} />
+            )}
           </StatusTable>
 
           <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

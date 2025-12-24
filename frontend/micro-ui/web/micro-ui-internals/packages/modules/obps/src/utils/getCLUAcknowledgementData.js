@@ -312,7 +312,7 @@ const getCoordinateDetails = (appData, t) => {
 const getDocuments = async (appData, t) => {
   const filesArray = appData?.documents?.map((value) => value?.uuid);
   const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
-  //console.log("res here==>", res);
+  console.log("res here==>", res);
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
@@ -324,8 +324,7 @@ const getDocuments = async (appData, t) => {
             // console.log("doc link", documentLink);
 
             return {
-              title: t(document?.documentType || t("CS_NA")),
-              value: pdfDocumentName(documentLink, index) || t("CS_NA"),
+                title: t((document?.documentType || t("CS_NA")).replace(/\./g, "_"))
             };
           })
         : {
@@ -338,7 +337,7 @@ const getDocuments = async (appData, t) => {
 export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
-  //console.log("appData here in DownloadACK", appData);
+  console.log("appData here in DownloadACK", appData);
 
   let detailsArr = [], imageURL = "";
 
@@ -351,6 +350,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
 
   if (appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalName) detailsArr.push(getProfessionalDetails(appData, t));
 
+  const documentsDetails = await getDocuments(appData, t);
   return {
     t: t,
     tenantId: tenantInfo?.code,
@@ -367,7 +367,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
       getCoordinateDetails(appData, t),
-      getDocuments(appData, t),
+      documentsDetails
     ],
     imageURL,
     ulbType,

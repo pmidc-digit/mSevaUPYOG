@@ -29,6 +29,10 @@ import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/Citize
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import DashboardFooter from "./DashboardFooter";
 import CardBasedOptions from "../CardBasedOptions";
+import SurveyModal from "../../../../../engagement/src/components/Modal/SurveyModal";
+// import SurveyModal from "../../../../../engagement"
+
+
 
 
 
@@ -37,6 +41,7 @@ const Home = () => {
   const history = useHistory()
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredServices, setFilteredServices] = useState([])
+  const [showSurveyModal, setShowSurveyModal] = useState(false)
   
   // Use sessionStorage to persist showAllCards state across navigation
   const getInitialShowAllCards = () => {
@@ -187,6 +192,14 @@ const Home = () => {
     )
     setFilteredServices(filtered)
   }
+
+  // Show survey modal on first load for citizens
+  useEffect(() => {
+    if (UserType && !sessionStorage.getItem("survey_modal_shown")) {
+      setShowSurveyModal(true)
+      sessionStorage.setItem("survey_modal_shown", "true")
+    }
+  }, [UserType])
 
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
@@ -352,6 +365,9 @@ const Home = () => {
         <div className="UpdatesSection" style={{ marginTop: "40px" }}>
           <CardBasedOptions {...allInfoAndUpdatesProps} />
         </div>
+
+        {/* Survey Modal */}
+        <SurveyModal isOpen={showSurveyModal} onClose={() => setShowSurveyModal(false)} />
 
           {/* <DashboardFooter /> */}
       </div>

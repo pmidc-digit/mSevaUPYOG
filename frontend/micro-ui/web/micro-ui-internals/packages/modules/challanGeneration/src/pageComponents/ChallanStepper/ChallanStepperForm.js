@@ -16,72 +16,8 @@ import {
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
-import Stepper from "../../../../../react-components/src/customComponents/Stepper";
-import { citizenConfig } from "../../config/Create/citizenStepperConfig";
 import { SET_ChallanApplication_STEP, RESET_ChallanAPPLICATION_FORM } from "../../../redux/action/ChallanApplicationActions";
 import SelectNDCDocuments from "../ChallanDocuments";
-
-//Config for steps
-const createEmployeeConfig = [
-  {
-    head: "OWNER DETAILS",
-    stepLabel: "CHALLAN_OFFENDER_DETAILS",
-    stepNumber: 1,
-    isStepEnabled: true,
-    type: "component",
-    component: "ChallanStepFormOne",
-    key: "offenderDetails",
-    withoutLabel: true,
-    texts: {
-      submitBarLabel: "CS_COMMON_NEXT",
-    },
-  },
-  {
-    head: "Venue Details",
-    stepLabel: "CHALLAN_OFFENCE_DETAILS",
-    stepNumber: 2,
-    isStepEnabled: true,
-    type: "component",
-    component: "ChallanStepFormTwo",
-    key: "offenceDetails",
-    withoutLabel: true,
-    texts: {
-      submitBarLabel: "CS_COMMON_NEXT",
-    },
-  },
-  {
-    head: "DOCUMENT DETAILS",
-    stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
-    stepNumber: 3,
-    isStepEnabled: true,
-    type: "component",
-    component: "ChallanStepFormThree",
-    key: "documents",
-    withoutLabel: true,
-    texts: {
-      submitBarLabel: "CS_COMMON_NEXT",
-    },
-  },
-  {
-    head: "SUMMARY DETAILS",
-    stepLabel: "ES_TITILE_SUMMARY_DETAILS",
-    stepNumber: 4,
-    isStepEnabled: true,
-    type: "component",
-    component: "ChallanStepFormFour",
-    key: "summary",
-    withoutLabel: true,
-    texts: {
-      submitBarLabel: "CS_COMMON_SUBMIT",
-    },
-  },
-
-  // NewPTRStepFormTwo
-];
-
-const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
-  return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
-});
 
 const ChallanStepperForm = () => {
   const history = useHistory();
@@ -214,6 +150,7 @@ const ChallanStepperForm = () => {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       if (userData?.user?.[0]?.name) {
         setValue("name", userData.user[0].name); // ✅ populate name
+        setValue("address", userData.user[0].permanentAddress); // ✅ populate name
         clearErrors("name"); // ✅ remove validation error if any
       }
       setLoader(false);
@@ -283,6 +220,7 @@ const ChallanStepperForm = () => {
                       console.log("eee", e);
                       props.onChange(e);
                       setValue("name", "");
+                      setValue("address", "");
                       // ✅ updates react-hook-form
                       if (e.length === 10) {
                         handleMobileChange(e); // 🔥 only then fire API
@@ -324,6 +262,36 @@ const ChallanStepperForm = () => {
                 )}
               />
               {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
+            </div>
+
+            {/* address field yes */}
+            <div style={{ marginBottom: "20px" }}>
+              <CardLabel>
+                {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
+              </CardLabel>
+              <Controller
+                control={control}
+                name="address"
+                rules={{
+                  required: "Address is required",
+                  minLength: { value: 5, message: "Address must be at least 5 characters" },
+                }}
+                render={(props) => (
+                  <TextArea
+                    style={{ marginBottom: 0 }}
+                    name="address"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
             </div>
 
             {/* Offence Category */}

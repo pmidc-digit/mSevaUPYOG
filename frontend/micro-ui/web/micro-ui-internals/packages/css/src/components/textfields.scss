@@ -37,6 +37,8 @@
   background: #eeeeee;
   border-right: 0;
   padding-right: 5px;
+  position: relative;
+  z-index: 0 !important;
 }
 .employee-card-input-error {
   @apply mb-lg pl-sm block w-full h-10 outline-none border-2 border-error border-solid bg-white leading-10 text-form-field text-text-primary;

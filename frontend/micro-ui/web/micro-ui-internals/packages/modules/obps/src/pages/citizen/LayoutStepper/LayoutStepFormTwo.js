@@ -90,16 +90,49 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
     };
 
+    // Build applicants array: Primary applicant from form fields + additional applicants
+    const applicants = [];
+    
+    // First applicant: from primary applicant form fields (top section of LayoutApplicantDetails)
+    applicants.push({
+      mobileNumber: formData?.applicationDetails?.applicantMobileNumber || userInfo?.mobileNumber || "",
+      name: formData?.applicationDetails?.applicantOwnerOrFirmName || userInfo?.name || "",
+      emailId: formData?.applicationDetails?.applicantEmailId || userInfo?.emailId || "",
+      userName: formData?.applicationDetails?.applicantMobileNumber || userInfo?.userName || userInfo?.mobileNumber || "",
+      gender: formData?.applicationDetails?.applicantGender?.code || formData?.applicationDetails?.applicantGender || null,
+      dob: formData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(formData?.applicationDetails?.applicantDateOfBirth) : null,
+      fatherOrHusbandName: formData?.applicationDetails?.applicantFatherHusbandName || "",
+      permanentAddress: formData?.applicationDetails?.applicantAddress || "",
+      additionalDetails: {
+        documentFile: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || null,
+        ownerPhoto: formData?.photoUploadedFiles?.[0]?.fileStoreId || formData?.photoUploadedFiles?.[0] || null,
+      },
+    });
+
+    // Additional applicants: from applicants array (starting from index 1, skipping the first empty one)
+    if (formData?.applicants?.length > 1) {
+      formData.applicants.slice(1).forEach((applicant, index) => {
+        applicants.push({
+          mobileNumber: applicant?.mobileNumber || "",
+          name: applicant?.name || "",
+          emailId: applicant?.emailId || "",
+          userName: applicant?.mobileNumber || userInfo?.userName || userInfo?.mobileNumber || "",
+          gender: applicant?.gender?.code || applicant?.gender || null,
+          dob: applicant?.dob ? Digit.Utils.pt.convertDateToEpoch(applicant?.dob) : null,
+          fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
+          permanentAddress: applicant?.address || "",
+          additionalDetails: {
+            documentFile: formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,
+            ownerPhoto: formData?.photoUploadedFiles?.[index + 1]?.fileStoreId || formData?.photoUploadedFiles?.[index + 1] || null,
+          },
+        });
+      });
+    }
+
+    // Build transformedApplicationDetails (owners NOT here - only at top level)
     const transformedApplicationDetails = {
       ...formData?.applicationDetails,
-      applicantGender: formData?.applicationDetails?.applicantGender?.code || "",
-    };
-
-    const ownerObj = {
-      mobileNumber: transformedApplicationDetails?.applicantMobileNumber || userInfo?.mobileNumber || "",
-      name: transformedApplicationDetails?.applicantOwnerOrFirmName || userInfo?.name || "",
-      emailId: transformedApplicationDetails?.applicantEmailId || userInfo?.emailId || "",
-      userName: transformedApplicationDetails?.applicantMobileNumber || userInfo?.userName || userInfo?.mobileNumber || "",
+      applicantGender: formData?.applicationDetails?.applicantGender,  // Keep full object
     };
 
     const payload = {
@@ -109,7 +142,6 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         layoutType: "LAYOUT",
         status: "ACTIVE",
         tenantId: tenantId,
-        owners: [ownerObj],
         workflow: {
           action: "INITIATE",
         },
@@ -120,6 +152,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           },
           tenantId: tenantId,
         },
+        owners: applicants,  // ← Top-level owners array for backend
       },
     };
 
@@ -132,10 +165,11 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
       if (response?.ResponseInfo?.status === "successful") {
         console.log("  Success: create api executed successfully!");
+        // Save API response to Redux
         dispatch(UPDATE_LayoutNewApplication_FORM("apiData", response));
         onGoNext();
       } else {
-        console.error("  Error: create api not executed properly!");
+        console.error("  Error: create api not executed properly!", response);
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {

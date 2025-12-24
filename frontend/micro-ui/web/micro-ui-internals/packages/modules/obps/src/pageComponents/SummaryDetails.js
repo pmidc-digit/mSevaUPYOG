@@ -11,8 +11,6 @@ import {
     CitizenInfoLabel,
     Header,
     LinkButton,
-    Row,
-    StatusTable,
     SubmitBar,
     Table,
     CardSectionHeader,
@@ -825,59 +823,60 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     return (
         <React.Fragment>
             <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-            <div className="summary-content-wrapper">
-                <Card className="summary-main-card"   >
-                    <StatusTable >
-                        <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={currentStepData?.createdResponse?.applicationNo} />
-                    </StatusTable>
-                </Card>
+            <div className="bpa-stepper-form-container">
+                <div className="bpa-stepper-form-section">
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t(`BPA_APPLICATION_NUMBER_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.applicationNo || t("CS_NA")}</div>
+                        </div>
+                    </div>
+                </div>
 
-                <Card className="summary-main-card"  >
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable>
-                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
-                            label={<EditIcon color="white" style={{ color: "white" }} />}
-
-                            onClick={() => { }}
-                        /> */}
-                        {currentStepData?.createdResponse?.landInfo?.owners &&
-                            currentStepData?.createdResponse?.landInfo?.owners?.length > 0 &&
-                            currentStepData?.createdResponse?.landInfo?.owners?.map((ob, index) => (
-                                <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
-                                    key={index}
-                                   
-                                >
-                                    {currentStepData?.createdResponse?.landInfo?.owners.length > 1 && (
-                                        <CardSubHeader className="summary-subheader"  >
-                                            {t("COMMON_OWNER")} {index + 1}
-                                        </CardSubHeader>
-                                    )}
-                                    <StatusTable >
-                                        <Row
-                                            className="border-none"
-                                            // textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
-                                            label={t(`CORE_COMMON_NAME`)}
-                                            text={ob?.name || "N/A"}
-
-                                        />
-                                        <Row
-                                            className="border-none"
-                                            label={t(`BPA_APPLICANT_GENDER_LABEL`)}
-                                            text={ob?.gender?.i18nKey ? t(ob.gender.i18nKey) : ob?.gender || "N/A"}
-
-                                        />
-                                        <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
-                                        <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
-                                        <Row className="border-none" label={t(`BPA_APPLICANT_ADDRESS_LABEL`)} text={ob?.permanentAddress || t("CS_NA")} />
-                                        <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "Yes" : "No"}`} />
-                                    </StatusTable>
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
+                    {currentStepData?.createdResponse?.landInfo?.owners &&
+                        currentStepData?.createdResponse?.landInfo?.owners?.length > 0 &&
+                        currentStepData?.createdResponse?.landInfo?.owners?.map((ob, index) => (
+                            <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "bpa-block-section" : ""}
+                                key={index}
+                            >
+                                {currentStepData?.createdResponse?.landInfo?.owners.length > 1 && (
+                                    <CardSubHeader className="bpa-block-header">
+                                        {t("COMMON_OWNER")} {index + 1}
+                                    </CardSubHeader>
+                                )}
+                                <div className="data-table">
+                                    <div className="row border-none">
+                                        <h2>{t(`CORE_COMMON_NAME`)}</h2>
+                                        <div className="value">{ob?.name || "N/A"}</div>
+                                    </div>
+                                    <div className="row border-none">
+                                        <h2>{t(`BPA_APPLICANT_GENDER_LABEL`)}</h2>
+                                        <div className="value">{ob?.gender?.i18nKey ? t(ob.gender.i18nKey) : ob?.gender || "N/A"}</div>
+                                    </div>
+                                    <div className="row border-none">
+                                        <h2>{t(`CORE_COMMON_MOBILE_NUMBER`)}</h2>
+                                        <div className="value">{ob?.mobileNumber || "N/A"}</div>
+                                    </div>
+                                    <div className="row border-none">
+                                        <h2>{t(`CORE_COMMON_EMAIL_ID`)}</h2>
+                                        <div className="value">{ob?.emailId || t("CS_NA")}</div>
+                                    </div>
+                                    <div className="row border-none">
+                                        <h2>{t(`BPA_APPLICANT_ADDRESS_LABEL`)}</h2>
+                                        <div className="value">{ob?.permanentAddress || t("CS_NA")}</div>
+                                    </div>
+                                    <div className="row border-none">
+                                        <h2>{t(`BPA_IS_PRIMARY_OWNER_LABEL`)}</h2>
+                                        <div className="value">{ob?.isPrimaryOwner === true ? "Yes" : "No"}</div>
+                                    </div>
                                 </div>
-                            ))}
-                    </StatusTable>
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable>
+                            </div>
+                        ))}
+                    
+                    <CardSubHeader className="bpa-section-header" style={{marginTop: "20px"}}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                    <div className="bpa-table-container">
                         {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
                             className="customTable table-border-style"
                             t={t}
@@ -889,353 +888,264 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
-                    </StatusTable>
-                </Card>
+                    </div>
+                </div>
 
-                <Card className="summary-main-card"   >
-                    <CardSubHeader className="summary-subheader"  >
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">
                         {t(`BPA_BASIC_DETAILS_TITLE`)}
                     </CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable >
-                        <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(currentStepData?.BasicDetails?.applicationDate))} />
-                        <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)} text={t(`WF_BPA_${currentStepData?.BasicDetails?.applicationType}`)} />
-                        <Row className="border-none" label={t(`BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL`)} text={t(currentStepData?.BasicDetails?.serviceType)} />
-                        <Row className="border-none" label={t(`BPA_BASIC_DETAILS_OCCUPANCY_LABEL`)} text={currentStepData?.BasicDetails?.occupancyType} />
-                        <Row className="border-none" label={t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)} text={t(`WF_BPA_${currentStepData?.BasicDetails?.riskType}`)} />
-                    </StatusTable>
-                </Card>
-
-                <Card className="summary-main-card"   >
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_PLOT_AND_SITE_DETAILS_TITLE")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable >
-                        
-
-                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
-                            label={<EditIcon color="white" style={{ color: "white" }} />}
-
-                            onClick={() => { }}
-                        /> */}
-
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
-                            text={
-                                currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotArea
-                                    ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotArea
-                                    } ${t(`BPA_SQ_MTRS_LABEL`)}`
-                                    : t("CS_NA")
-                            }
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_IS_PROPERTY_AVAILABLE_LABEL`)}
-                            text={
-                                currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable ? t("CORE_YES") : t("SCORE_NO")
-                            }                                   
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable && <Row
-                            className="border-none"
-                            label={t(`PROPERTY_ID`)}
-                            text={
-                                currentStepData?.createdResponse?.additionalDetails?.propertyuid || t("CS_NA")
-                            }                                   
-                        />}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_IS_CLUBBED_PLOT_LABEL`)}
-                            text={
-                                currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot ? t("CORE_YES") : t("SCORE_NO")
-                            }
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.isSelfCertification != null && <Row
-                            className="border-none"
-                            label={t(`BPA_IS_SELF_CERTIFICATION_REQUIRED`)}
-                            text={
-                                currentStepData?.createdResponse?.additionalDetails?.isSelfCertification ? t("CORE_YES") : t("SCORE_NO")
-                            }
-                        />}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_PLOT_NUMBER_LABEL`)}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_KHATHA_NUMBER_LABEL`)}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.registrationDetails || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_BOUNDARY_WALL_LENGTH_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.boundaryWallLength || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_KHASRA_NUMBER_LABEL`)}
-                            text={
-                                currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHASRA_NO ||
-                                currentStepData?.createdResponse?.additionalDetails?.khasraNumber ||
-                                t("CS_NA")
-                            }
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_WARD_NUMBER_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.wardnumber || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_ZONE_NUMBER_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.zonenumber?.name || currentStepData?.createdResponse?.additionalDetails?.zonenumber || t("CS_NA")}
-                            
-                        />                        
-                        {/* <Row
-                            className="border-none"
-                            label={t(`BPA_KHASRA_NUMBER_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.khasraNumber || t("CS_NA")}
-                            
-                        />                         */}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_ARCHITECT_ID`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.architectid || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NUMBER_OF_BATHS`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.bathnumber || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NUMBER_OF_KITCHENS`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.kitchenNumber || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_APPROX_INHABITANTS_FOR_ACCOMODATION`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.approxinhabitants || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_DISTANCE_FROM_SEWER`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.distancefromsewer || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_SOURCE_OF_WATER`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.sourceofwater || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NUMBER_OF_WATER_CLOSETS`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.watercloset || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_MATERIAL_TO-BE_USED_IN_WALLS`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.materialused || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_MATERIAL_TO-BE_USED_IN_FLOOR`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.materialusedinfloor || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_MATERIAL_TO-BE_USED_IN_ROOFS`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.materialusedinroofs || t("CS_NA")}
-                            
-                        />                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_ESTIMATED_COST_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.estimatedCost || t("CS_NA")}
-                            
-                        />                        
-                    {/* </StatusTable>
-                </Card>
-
-                <Card   >
-                    <CardSubHeader  >{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable >                                                 */}
-                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
-                            label={<EditIcon color="white" style={{ color: "white" }} />}
-
-                            onClick={() => { }}
-                        /> */}
-                        {currentStepData?.createdResponse?.landInfo?.address?.pincode && <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />}
-                        <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")} />
-                        <Row
-                            className="border-none"
-                            label={t("BPA_DISTRICT")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}
-                            
-                        /> 
-                        <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.locality?.name || t("CS_NA")} />
-                        <Row className="border-none" label={t(`BPA_LAT`)} text={currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.latitude ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : t("CS_NA")} />
-                        <Row className="border-none" label={t(`BPA_LONG`)} text={currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.longitude ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : t("CS_NA")} />
-                        {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
-                        {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
-                    </StatusTable>
-                </Card>
-
-                <Card className="summary-main-card">
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_EDCR_DETAILS")}</CardSubHeader>
-
-                    <div className="summary-page-table-container" >
-                        <table className="summary-page-table">
-                            <tbody>
-                                {/* EDCR Number */}
-                                <tr className="summary-page-table-row">
-                                    <td className="summary-page-table-data" >{t("BPA_EDCR_NO_LABEL")}</td>
-                                    <td className="summary-page-tabledata" >
-                                        {currentStepData?.BasicDetails?.scrutinyNumber?.edcrNumber || currentStepData?.BasicDetails?.edcrDetails?.edcrNumber || t("CS_NA")}
-                                    </td>
-                                </tr>
-
-                                {/* Uploaded Plan */}
-                                <tr>
-                                    <td className="summary-page-uploaded-tabledata" >{t("BPA_UPLOADED_PLAN_DIAGRAM")}</td>
-                                    <td className="summary-page-uploaded-table-data">
-                                        {currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile ? (
-                                            <LinkButton
-                                                label={t("View")}
-                                                onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile)}
-                                            />
-                                        ) : (
-                                            t("CS_NA")
-                                        )}
-                                    </td>
-                                </tr>
-
-                                {/* Scrutiny Report */}
-                                <tr>
-                                    <td className="summary-page-uploaded-tabledata" >{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</td>
-                                    <td className="summary-page-uploaded-table-data" >
-                                        {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
-                                            <LinkButton
-                                                label={t("View")}
-                                                onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.planReport)}
-                                            />
-                                        ) : (
-                                            t("CS_NA")
-                                        )}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)}</h2>
+                            <div className="value">{convertEpochToDateDMY(Number(currentStepData?.BasicDetails?.applicationDate)) || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)}</h2>
+                            <div className="value">{t(`WF_BPA_${currentStepData?.BasicDetails?.applicationType}`) || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL`)}</h2>
+                            <div className="value">{t(currentStepData?.BasicDetails?.serviceType) || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BASIC_DETAILS_OCCUPANCY_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.occupancyType || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)}</h2>
+                            <div className="value">{t(`WF_BPA_${currentStepData?.BasicDetails?.riskType}`) || t("CS_NA")}</div>
+                        </div>
                     </div>
-                </Card>
+                </div>
 
-                {/*  <hr className="summary-hr-divider"   /> */}
-                {/* <CardSubHeader   style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader> */}
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_PLOT_AND_SITE_DETAILS_TITLE")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotArea ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotArea} ${t(`BPA_SQ_MTRS_LABEL`)}` : t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_IS_PROPERTY_AVAILABLE_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable ? t("CORE_YES") : t("SCORE_NO")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable && <div className="row border-none">
+                            <h2>{t(`PROPERTY_ID`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.propertyuid || t("CS_NA")}</div>
+                        </div>}
+                        <div className="row border-none">
+                            <h2>{t(`BPA_IS_CLUBBED_PLOT_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot ? t("CORE_YES") : t("SCORE_NO")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.additionalDetails?.isSelfCertification != null && <div className="row border-none">
+                            <h2>{t(`BPA_IS_SELF_CERTIFICATION_REQUIRED`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.isSelfCertification ? t("CORE_YES") : t("SCORE_NO")}</div>
+                        </div>}
+                        <div className="row border-none">
+                            <h2>{t(`BPA_PLOT_NUMBER_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_KHATHA_NUMBER_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.registrationDetails || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_BOUNDARY_WALL_LENGTH_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.boundaryWallLength || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_KHASRA_NUMBER_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHASRA_NO || currentStepData?.createdResponse?.additionalDetails?.khasraNumber || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_WARD_NUMBER_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.wardnumber || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ZONE_NUMBER_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.zonenumber?.name || currentStepData?.createdResponse?.additionalDetails?.zonenumber || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ARCHITECT_ID`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.architectid || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NUMBER_OF_BATHS`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.bathnumber || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NUMBER_OF_KITCHENS`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.kitchenNumber || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_APPROX_INHABITANTS_FOR_ACCOMODATION`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.approxinhabitants || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_DISTANCE_FROM_SEWER`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.distancefromsewer || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_SOURCE_OF_WATER`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.sourceofwater || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NUMBER_OF_WATER_CLOSETS`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.watercloset || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_MATERIAL_TO-BE_USED_IN_WALLS`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.materialused || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_MATERIAL_TO-BE_USED_IN_FLOOR`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.materialusedinfloor || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_MATERIAL_TO-BE_USED_IN_ROOFS`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.materialusedinroofs || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ESTIMATED_COST_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.estimatedCost || t("CS_NA")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.landInfo?.address?.pincode && <div className="row border-none">
+                            <h2>{t(`BPA_DETAILS_PIN_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")}</div>
+                        </div>}
+                        <div className="row border-none">
+                            <h2>{t(`BPA_CITY_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_DISTRICT")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_LOC_MOHALLA_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.landInfo?.address?.locality?.name || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_LAT`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.latitude ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.latitude?.toFixed(6)?.toString() : t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_LONG`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.longitude ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation?.longitude?.toFixed(6)?.toString() : t("CS_NA")}</div>
+                        </div>
+                    </div>
+                </div>
 
-                <Card className="summary-main-card"  >
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
-                    <StatusTable >
-                        <Row
-                            className="border-none"
-                            label={t("BPA_PLOT_AREA_M2")}
-                            // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area} ${t(`BPA_SQ_MTRS_LABEL`)}` : t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t("BPA_KHATUNI_NUMBER")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATUNI_NO || t("CS_NA")}
-                            
-                        />                                   
-                        <Row
-                            className="border-none"
-                            label={t("BPA_AREA_TYPE")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AREA_TYPE || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t("BPA_LAND_USE_ZONE")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.LAND_USE_ZONE || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t("BPA_NUMBER_OF_FLOORS")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.NUMBER_OF_FLOORS || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t("BPA_ULB_TYPE")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ULB_TYPE || t("CS_NA")}
-                            
-                        />
-                        <Row className="border-none" label={t("BPA_MAUZA")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")} />
-                        </StatusTable>
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
-                    <StatusTable >
-                        <Row className="border-none" label={t("BPA_AVG_PLOT_DEPTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_DEPTH} />
-                        <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
-                    </StatusTable>
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_ROAD_DETAILS")}</CardSubHeader>
-                    <StatusTable >
-                        <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")} />
-                        <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
-                    </StatusTable>
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
-                    <StatusTable >
-                        <Row
-                            className="border-none"
-                            label={t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}
-                            
-                        />
-                    </StatusTable>
-                     <hr className="summary-hr-divider"   />
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header">{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t("BPA_EDCR_NO_LABEL")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.scrutinyNumber?.edcrNumber || currentStepData?.BasicDetails?.edcrDetails?.edcrNumber || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</h2>
+                            <div className="value">
+                                {currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile ? (
+                                    <LinkButton label={t("View")} onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile)} />
+                                ) : t("CS_NA")}
+                            </div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</h2>
+                            <div className="value">
+                                {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
+                                    <LinkButton label={t("View")} onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.planReport)} />
+                                ) : t("CS_NA")}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t("BPA_PLOT_AREA_M2")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area} ${t(`BPA_SQ_MTRS_LABEL`)}` : t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_KHATUNI_NUMBER")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATUNI_NO || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_AREA_TYPE")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AREA_TYPE || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_LAND_USE_ZONE")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.LAND_USE_ZONE || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_NUMBER_OF_FLOORS")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.NUMBER_OF_FLOORS || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_ULB_TYPE")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ULB_TYPE || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_MAUZA")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")}</div>
+                        </div>
+                    </div>
+                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t("BPA_AVG_PLOT_DEPTH")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_DEPTH || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_AVG_PLOT_WIDTH")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH || t("CS_NA")}</div>
+                        </div>
+                    </div>
+                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t("BPA_ROAD_TYPE")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_ROAD_WIDTH")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_WIDTH || t("CS_NA")}</div>
+                        </div>
+                    </div>
+                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}</div>
+                        </div>
+                    </div>
+                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
                     {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.map((block, index) => (
                         <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
                             key={index}
                           
                         >
-                            <CardSubHeader className="summary-subheader"  >
+                            <CardSubHeader className="bpa-block-header" style={{marginTop: "8px"}}>
                                 {t("BPA_BLOCK_SUBHEADER")} {index + 1}
                             </CardSubHeader>
-                            <StatusTable>
-                                <Row
-                                    className="border-none"
-                                    textStyle={{ wordBreak: "break-word" }}
-                                    label={t("BPA_SUB_OCCUPANCY_LABEL")}
-                                    text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
-                                ></Row>
-                            </StatusTable>
-                            <div className="summary-page-scroll">
+                            <div className="data-table">
+                                <div className="row border-none">
+                                    <h2>{t("BPA_SUB_OCCUPANCY_LABEL")}</h2>
+                                    <div className="value" style={{ wordBreak: "break-word" }}>{getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}</div>
+                                </div>
+                            </div>
+                            <div className="bpa-table-container">
                                 <Table
                                     className="customTable table-fixed-first-column table-border-style"
                                     t={t}
@@ -1257,225 +1167,186 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                     ))}
 
-                     <hr className="summary-hr-divider"   />
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
-                    <StatusTable >
-                        <Row
-                            className="border-none"
-                            label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
-                            text={
+                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}</h2>
+                            <div className="value">{
                                 currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.demolitionArea
                                     ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
                                     : t("CS_NA")
-                            }
+                            }</div>
+                        </div>
+                    </div>
+                </div>
                             
-                        ></Row>
-                    </StatusTable>                    
-                </Card>
-                
-
-                <Card className="summary-main-card"   >
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable>                                                
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_APPROVED_COLONY_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}
-                            
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" &&
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_APPROVED_COLONY_NAME`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}                            
-                        />
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t(`BPA_APPROVED_COLONY_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}</div>
+                        </div>
+                        {(currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" || currentStepData?.createdResponse?.additionalDetails?.approvedColony === "Colony Prior to 1995 (colony name)")  &&
+                        <div className="row border-none">
+                            <h2>{t(`BPA_APPROVED_COLONY_NAME`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}</div>
+                        </div>
                         }
                         {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NOC_NUMBER`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.NocNumber || t("CS_NA")}                            
-                        />
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NOC_NUMBER`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.NocNumber || t("CS_NA")}</div>
+                        </div>
                         }
                         {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NOC_APPLICANT_NAME`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || t("CS_NA")}                            
-                        />
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NOC_APPLICANT_NAME`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || t("CS_NA")}</div>
+                        </div>
                         }
                         {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NOC_ULB_NAME`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbName || t("CS_NA")}                            
-                        />
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NOC_ULB_NAME`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbName || t("CS_NA")}</div>
+                        </div>
                         }
                         {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NOC_ULB_TYPE`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbType || t("CS_NA")}                            
-                        />
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NOC_ULB_TYPE`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.nocObject?.ulbType || t("CS_NA")}</div>
+                        </div>
                         }
                         {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "NO" &&
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_NOC_APPROVED_ON`)}
-                            text={nocApprovedDate || t("CS_NA")}                            
-                        />
+                        <div className="row border-none">
+                            <h2>{t(`BPA_NOC_APPROVED_ON`)}</h2>
+                            <div className="value">{nocApprovedDate || t("CS_NA")}</div>
+                        </div>
                         }                        
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_ULB_TYPE_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_ULB_NAME_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.UlbName || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_MASTER_PLAN`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}
-                            
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan==="YES"&&<Row
-                            className="border-none"
-                            label={t(`BPA_USE`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}
-                            
-                        />}
-                        {/* <Row
-                            className="border-none"
-                            label={t(`BPA_DISTRICT_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.District || t("CS_NA")}
-                            
-                        /> */}
-                        {/* <Row
-                            className="border-none"
-                            label={t(`BPA_BUILDING_STATUS_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.buildingStatus || t("CS_NA")}
-                            
-                        /> */}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_CORE_AREA_LABEL`)}
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.coreArea || t("CS_NA")}
-                            
-                        />
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_PROPOSED_SITE_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.proposedSite || t("CS_NA")}
-                            
-                        />
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ULB_TYPE_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ULB_NAME_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.UlbName || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_MASTER_PLAN`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan==="YES"&&
+                        <div className="row border-none">
+                            <h2>{t(`BPA_USE`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}</div>
+                        </div>
+                        }
+                        <div className="row border-none">
+                            <h2>{t(`BPA_CORE_AREA_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.coreArea || t("CS_NA")}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_PROPOSED_SITE_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.proposedSite || t("CS_NA")}</div>
+                        </div>
                         {currentStepData?.createdResponse?.additionalDetails?.schemes === "SCHEME" && (
                             <React.Fragment>
-                                <Row
-                                    className="border-none"
-                                    label={t(`BPA_SCHEME_TYPE_LABEL`)}
-                                    text={currentStepData?.createdResponse?.additionalDetails?.schemesselection || t("CS_NA")}
-                                    
-                                />
-                                <Row
-                                    className="border-none"
-                                    label={t(`BPA_SCHEME_NAME_LABEL`)}
-                                    text={currentStepData?.createdResponse?.additionalDetails?.schemeName || t("CS_NA")}
-                                    
-                                />
-                                <Row
-                                    className="border-none"
-                                    label={t(`BPA_TRANFERRED_SCHEME_LABEL`)}
-                                    text={currentStepData?.createdResponse?.additionalDetails?.transferredscheme || t("CS_NA")}
-                                    
-                                />
+                                <div className="row border-none">
+                                    <h2>{t(`BPA_SCHEME_TYPE_LABEL`)}</h2>
+                                    <div className="value">{currentStepData?.createdResponse?.additionalDetails?.schemesselection || t("CS_NA")}</div>
+                                </div>
+                                <div className="row border-none">
+                                    <h2>{t(`BPA_SCHEME_NAME_LABEL`)}</h2>
+                                    <div className="value">{currentStepData?.createdResponse?.additionalDetails?.schemeName || t("CS_NA")}</div>
+                                </div>
+                                <div className="row border-none">
+                                    <h2>{t(`BPA_TRANFERRED_SCHEME_LABEL`)}</h2>
+                                    <div className="value">{currentStepData?.createdResponse?.additionalDetails?.transferredscheme || t("CS_NA")}</div>
+                                </div>
                             </React.Fragment>
                         )}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_PURCHASED_FAR_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.purchasedFAR ? "YES" : "NO" || t("CS_NA")}
-                            
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && <Row
-                            className="border-none"
-                            label={t(`BPA_PROVIDED_FAR`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.providedFAR || t("CS_NA")}
-                            
-                        />}
-                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && <Row
-                            className="border-none"
-                            label={t(`BPA_ALLOWED_PROVIDED_FAR`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.purchasableFAR || t("CS_NA")}
-                            
-                        />}
-                        {currentStepData?.createdResponse?.additionalDetails?.permissableFar && <Row
-                            className="border-none"
-                            label={t(`BPA_PERMISSIBLE_FAR`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.permissableFar || t("CS_NA")}
-                            
-                        />}
-                        {currentStepData?.createdResponse?.additionalDetails?.achievedFar && <Row
-                            className="border-none"
-                            label={t(`BPA_FAR_ACHIEVED`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.achievedFar || t("CS_NA")}
-                            
-                        />}
-                        {currentStepData?.createdResponse?.additionalDetails?.ecsRequired && <Row
-                            className="border-none"
-                            label={t(`BPA_ECS_REQUIRED`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.ecsRequired || t("CS_NA")}
-                            
-                        />}
-                        {currentStepData?.createdResponse?.additionalDetails?.ecsProvided && <Row
-                            className="border-none"
-                            label={t(`BPA_ECS_PROVIDED`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.ecsProvided || t("CS_NA")}
-                            
-                        />}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_MASTER_PLAN_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}
-                            
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan === "YES" && <Row
-                            className="border-none"
-                            label={t(`BPA_USE`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}
-                            
-                        />}
-                        <Row
-                            className="border-none"
-                            label={t(`BPA_GREEN_BUILDING_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.greenbuilding || t("CS_NA")}
-                            
-                        />
-                        {currentStepData?.createdResponse?.additionalDetails?.greenbuilding==="YES"&&<Row
-                            className="border-none"
-                            label={t(`BPA_SELECTED_RATINGS`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.rating || t("CS_NA")}
-                            
-                        />}
-                    </StatusTable>
+                        <div className="row border-none">
+                            <h2>{t(`BPA_PURCHASED_FAR_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.purchasedFAR ? "YES" : "NO" || t("CS_NA")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_PROVIDED_FAR`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.providedFAR || t("CS_NA")}</div>
+                        </div>
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ALLOWED_PROVIDED_FAR`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.purchasableFAR || t("CS_NA")}</div>
+                        </div>
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.permissableFar && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_PERMISSIBLE_FAR`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.permissableFar || t("CS_NA")}</div>
+                        </div>
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.achievedFar && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_FAR_ACHIEVED`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.achievedFar || t("CS_NA")}</div>
+                        </div>
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.ecsRequired && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ECS_REQUIRED`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecsRequired || t("CS_NA")}</div>
+                        </div>
+                        }
+                        {currentStepData?.createdResponse?.additionalDetails?.ecsProvided && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_ECS_PROVIDED`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecsProvided || t("CS_NA")}</div>
+                        </div>
+                        }
+                        {/* <div className="row border-none">
+                            <h2>{t(`BPA_MASTER_PLAN_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan === "YES" && 
+                        <div className="row border-none">
+                            <h2>{t(`BPA_USE`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}</div>
+                        </div>
+                        } */}
+                        <div className="row border-none">
+                            <h2>{t(`BPA_GREEN_BUILDING_LABEL`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.greenbuilding || t("CS_NA")}</div>
+                        </div>
+                        {currentStepData?.createdResponse?.additionalDetails?.greenbuilding==="YES"&&
+                        <div className="row border-none">
+                            <h2>{t(`BPA_SELECTED_RATINGS`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.rating || t("CS_NA")}</div>
+                        </div>
+                        }
+                    </div>
 
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                    <StatusTable >
-                        <Row className="border-none" label={t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad} />
-                        <Row className="border-none" label={t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad} />
-                        <Row className="border-none" label={t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned} />
-                    </StatusTable>
-                </Card>
+                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <div className="data-table">
+                        <div className="row border-none">
+                            <h2>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad}</div>
+                        </div>
+                        <div className="row border-none">
+                            <h2>{t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)}</h2>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned}</div>
+                        </div>
+                    </div>
+                </div>
 
-                {ecbcDocumentsData?.length > 0 && <Card className="summary-main-card"   >
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable>                        
+                {ecbcDocumentsData?.length > 0 && <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <div className="bpa-table-container">
                         {pdfLoading ? <Loader /> : <Table
                             className="customTable table-border-style"
                             t={t}
@@ -1487,13 +1358,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
-                    </StatusTable>
-                </Card>}
+                    </div>
+                </div>}
 
-                <Card className="summary-main-card"   >
-                    <CardSubHeader className="summary-subheader"  >{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                     <hr className="summary-hr-divider"   />
-                    <StatusTable>                        
+                <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header">{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
+                    <div className="bpa-table-container">
                         {pdfLoading ? <Loader /> : <Table
                             className="customTable table-border-style"
                             t={t}
@@ -1505,31 +1375,34 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
-                    </StatusTable>
-                </Card>
+                    </div>
+                </div>
 
-                <Card className="summary-main-card">
-                    {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation                    
-                        currentStepData={currentStepData}                        
-                        development={development}
-                        otherCharges={otherCharges}
-                        lessAdjusment={lessAdjusment}
-                        otherChargesDisc={otherChargesDisc}
-                        labourCess={labourCess}                  
-                        gaushalaFees={gaushalaFees}                 
-                        malbafees={malbafees}                    
-                        waterCharges={waterCharges}                 
-                        errorFile={errorFile}
-                        setError={setError}
-                        adjustedAmounts={adjustedAmounts}
-                        setAdjustedAmounts={setAdjustedAmounts}
-                    />}
+                <div className="bpa-stepper-form-section">
+                    {/* <CardSubHeader className="bpa-section-header">{t("BPA_FEE_ESTIMATION_DETAILS")}</CardSubHeader> */}
+                    <div className="bpa-table-container">
+                        {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation                    
+                            currentStepData={currentStepData}                        
+                            development={development}
+                            otherCharges={otherCharges}
+                            lessAdjusment={lessAdjusment}
+                            otherChargesDisc={otherChargesDisc}
+                            labourCess={labourCess}                  
+                            gaushalaFees={gaushalaFees}                 
+                            malbafees={malbafees}                    
+                            waterCharges={waterCharges}                 
+                            errorFile={errorFile}
+                            setError={setError}
+                            adjustedAmounts={adjustedAmounts}
+                            setAdjustedAmounts={setAdjustedAmounts}
+                        />}
+                    </div>
                     <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />
-                </Card>
+                </div>
 
 
-                <Card className="summary-main-card"   >
-                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader className="summary-subheader"  >{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
+                <div className="bpa-stepper-form-section">
+                    {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader className="bpa-section-header">{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
                     {/* {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && (
                         <div>
                             <br></br>
@@ -1573,9 +1446,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} currentStepData={currentStepData} formData={formData} onSelect={onSelect}/>
                         )}
                     </div>
-                     <hr className="summary-hr-divider"   />
 
-                </Card>
+                </div>
                 <ActionBar>
                     <SubmitBar className="back-submit-button"
                         label="Back"

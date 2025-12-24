@@ -41,33 +41,70 @@ const LayoutProfessionalDetails = (_props) => {
   const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(finalTenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });
 
   const [formattedDate, setFormattedDate] = useState("");
+  const [expiredDate, setExpiredDate] = useState(""); // Store expired date for display
+  const [licenseStatus, setLicenseStatus] = useState(null); // Track license status (APPROVED, EXPIRED, etc.)
 
   console.log(data, "DATAAA");
 
   useEffect(() => {
-    if (data && data.Licenses) {
-      const bpaData = data.Licenses[0]; // Get first record
-      const councilNo = bpaData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo;
-      setGetCounsilNo(councilNo);
-      if (councilNo) {
-        setValue("professionalRegId", councilNo);
-      }
-      console.log(bpaData, "BPA DATA");
+    if (data && data.Licenses && data.Licenses.length > 0) {
+      // First check for APPROVED license
+      const approvedLicense = data.Licenses.find((license) => license.status === "APPROVED");
+      
+      // If no approved license, check for EXPIRED
+      const expiredLicense = data.Licenses.find((license) => license.status === "EXPIRED");
+      
+      if (approvedLicense) {
+        setLicenseStatus("APPROVED");
+        const bpaData = approvedLicense;
+        const councilNo = bpaData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo;
+        setGetCounsilNo(councilNo);
+        if (councilNo) {
+          setValue("professionalRegId", councilNo);
+        }
+        console.log(bpaData, "BPA DATA - APPROVED");
 
-      if (bpaData.validTo) {
-        const date = new Date(bpaData.validTo);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const formattedDate = `${year}-${month}-${day}`; // Changed to YYYY-MM-DD
-        setFormattedDate(formattedDate);
-        setValue("professionalRegistrationValidity", formattedDate);
-        console.log("  Formatted date:", formattedDate); // Debug log
-      }
+        if (bpaData.validTo) {
+          const date = new Date(bpaData.validTo);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const formattedDate = `${year}-${month}-${day}`;
+          setFormattedDate(formattedDate);
+          setValue("professionalRegistrationValidity", formattedDate);
+          console.log("  Formatted date:", formattedDate);
+        }
 
-      // You can also map other fields if needed
-      if (bpaData.address) {
-        setValue("professionalAddress", bpaData.address);
+        if (bpaData.address) {
+          setValue("professionalAddress", bpaData.address);
+        }
+      } else if (expiredLicense) {
+        setLicenseStatus("EXPIRED");
+        const bpaData = expiredLicense;
+        const councilNo = bpaData?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo;
+        setGetCounsilNo(councilNo);
+        if (councilNo) {
+          setValue("professionalRegId", councilNo);
+        }
+        console.log(bpaData, "BPA DATA - EXPIRED");
+
+        if (bpaData.validTo) {
+          const date = new Date(bpaData.validTo);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const expiredDateFormatted = `${day}-${month}-${year}`; // DD-MM-YYYY for display
+          setExpiredDate(expiredDateFormatted);
+          // Do NOT set the value in the input field for expired license
+          setValue("professionalRegistrationValidity", "");
+        }
+
+        if (bpaData.address) {
+          setValue("professionalAddress", bpaData.address);
+        }
+      } else {
+        console.log("No APPROVED or EXPIRED license found");
+        setLicenseStatus(null);
       }
     }
   }, [setValue, data]);
@@ -280,6 +317,13 @@ const LayoutProfessionalDetails = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError style={errorStyle}>{errors?.professionalRegistrationValidity?.message || ""}</CardLabelError>
+      {/* TODO: Uncomment when expired license feature is needed
+      {licenseStatus === "EXPIRED" && expiredDate && (
+        <span style={{ color: "red", fontSize: "14px", fontWeight: "bold", marginTop: "8px", display: "block" }}>
+          {t("BPA_LICENSE_VALIDITY_EXPIRED")} on {expiredDate}
+        </span>
+      )}
+      */}
     </React.Fragment>
   );
 };

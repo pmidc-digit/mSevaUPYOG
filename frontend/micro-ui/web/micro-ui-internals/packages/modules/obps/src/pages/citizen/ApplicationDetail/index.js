@@ -330,7 +330,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
                 )
               )}
               {/* <DownloadCertificateButton applicationNumber={id} /> */}
-              <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+              <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
             </div>
           </div>
 

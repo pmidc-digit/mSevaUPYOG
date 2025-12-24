@@ -6,8 +6,6 @@ import { Link } from "react-router-dom";
 const MyApplications = ({ view }) => {
   const { t } = useTranslation();
 
-  console.log("view", view);
-
   const { mobileNumber, tenantId } = Digit.UserService.getUser()?.info || {};
 
   const { isLoading, isError, data, error, ...rest } =

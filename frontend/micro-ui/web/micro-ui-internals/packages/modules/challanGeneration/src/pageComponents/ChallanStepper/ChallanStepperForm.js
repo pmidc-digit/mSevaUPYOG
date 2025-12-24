@@ -77,6 +77,9 @@ const ChallanStepperForm = () => {
         tenantId: tenantId,
         active: true,
       },
+      address: {
+        addressLine1: data?.address,
+      },
       businessService: "Challan_Generation",
       offenceTypeName: data?.offenceType?.name,
       offenceCategoryName: data?.offenceCategory?.name,
@@ -93,14 +96,12 @@ const ChallanStepperForm = () => {
         latitude: documentsData?.documents?.[1]?.latitude,
         longitude: documentsData?.documents?.[1]?.longitude,
       },
-      address: {},
+      // address: {},
       documents: documentsData?.documents,
       workflow: {
         action: "SUBMIT",
       },
     };
-    // console.log("challana", Challan);
-    // return;
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       setLoader(false);
@@ -162,7 +163,7 @@ const ChallanStepperForm = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardLabel style={{ fontWeight: "bold", paddingBottom: "30px", fontSize: "25px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
           <div style={{ width: "100%" }}>
-            <div style={{ marginBottom: "20px" }}>
+            <div>
               <CardLabel>
                 {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -178,7 +179,6 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <MobileNumber
-                    style={{ marginBottom: 0 }}
                     value={props.value}
                     maxlength={10}
                     onChange={(e) => {
@@ -310,7 +310,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* offence type */}
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginTop: "20px" }}>
               <CardLabel>
                 {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -364,7 +364,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* Challan Amount */}
-            <LabelFieldPair style={{ marginTop: "20px" }}>
+            {/* <LabelFieldPair style={{ marginTop: "20px" }}>
               <CardLabel>{`${t("CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
@@ -393,7 +393,7 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-            </LabelFieldPair>
+            </LabelFieldPair> */}
           </div>
 
           <CardLabel style={{ fontWeight: "bold", paddingTop: "30px", fontSize: "25px" }}>

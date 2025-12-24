@@ -35,14 +35,11 @@
 //   );
 // };
 
-// export default MyChallans;
-
 import React, { useState, useEffect } from "react";
-import { Header, ResponseComposer, Card, KeyNote, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Header, ResponseComposer, Card, KeyNote, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
 import { useHistory, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-// import { Loader } from "../../../components/Loader";
 import { Loader } from "../../../../../challanGeneration/src/components/Loader";
 
 const MyProperties = ({ template, header, actionButtonLabel }) => {
@@ -59,6 +56,8 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     offset: 0,
     mobileNumber: userInfo?.info?.mobileNumber,
   });
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [showToast, setShowToast] = useState(null);
 
   const fetchProperties = async () => {
     setLoader(true);
@@ -84,6 +83,13 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     fetchProperties();
   }, [filters.offset]);
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   const handleLoadMore = () => {
     setFilters((prev) => ({
       ...prev,
@@ -93,6 +99,99 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
 
   const handleMakePayment = (id) => {
     history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
+  };
+
+  // handleRenewal for later use case(don't remove it)
+  // const handleRenewal = async (data) => {
+  //   setLoader(true);
+  //   const oldStart = new Date(data?.startDate);
+  //   const oldEnd = new Date(data?.endDate);
+  //   const duration = oldEnd - oldStart;
+
+  //   const newStart = new Date(oldEnd);
+  //   const newEnd = new Date(newStart.getTime() + duration);
+
+  //   const sanitizedOwners = data?.OwnerInfo?.map(({ ownerId, ...rest }) => rest);
+
+  //   const payload = {
+  //     AllotmentDetails: {
+  //       tenantId: data?.tenantId,
+  //       propertyId: data?.propertyId,
+  //       previousApplicationNumber: data?.applicationNumber,
+  //       OwnerInfo: sanitizedOwners,
+  //       tradeLicenseNumber: data?.tradeLicenseNumber,
+  //       additionalDetails: data?.additionalDetails,
+  //       startDate: newStart.getTime(),
+  //       endDate: newEnd.getTime(),
+  //       workflow: {
+  //         action: "INITIATE",
+  //       },
+  //       Document: null,
+  //     },
+  //   };
+
+  //   try {
+  //     const response = await Digit.RentAndLeaseService.create(payload);
+  //     await updateApplication(response?.AllotmentDetails, data);
+  //   } catch (error) {
+  //     setLoader(false);
+  //     setShowToast({ key: true, label: "Error creating renewal application" });
+  //   }
+  // };
+
+  // const updateApplication = async (response, originalData) => {
+  //   const sanitizedDocuments = originalData?.Document?.map(({ docId, id, ...rest }) => rest);
+
+  //   const payload = {
+  //     AllotmentDetails: {
+  //       ...response,
+  //       Document: sanitizedDocuments,
+  //       workflow: {
+  //         action: "APPLY",
+  //       },
+  //     },
+  //   };
+  //   try {
+  //     await Digit.RentAndLeaseService.update(payload);
+  //     setShowToast({ key: false, label: "Renewal application submitted successfully" });
+  //     setPropertiesData([]);
+  //     setFilters((prev) => ({ ...prev, offset: 0 }));
+  //     fetchProperties();
+  //   } catch (error) {
+  //     setShowToast({ key: true, label: "Error updating renewal application" });
+  //   } finally {
+  //     setLoader(false);
+  //   }
+  // };
+
+  const submitAction = async (action, property) => {
+    const updatedApplicant = {
+      ...property,
+      workflow: {
+        action: action,
+        assignes: [],
+        comments: "",
+        documents: null,
+      },
+    };
+
+    const finalPayload = {
+      AllotmentDetails: updatedApplicant,
+    };
+    try {
+      setLoader(true);
+      const response = await Digit.RentAndLeaseService.update(finalPayload);
+      if (response?.ResponseInfo?.status == "successful") {
+        setShowToast({ key: false, label: "Successfully updated the status" });
+        setPropertiesData([]);
+        setFilters((prev) => ({ ...prev, offset: 0 }));
+        fetchProperties();
+      }
+    } catch (err) {
+      setShowToast({ key: true, label: "Something went wrong" });
+    } finally {
+      setLoader(false);
+    }
   };
 
   return (
@@ -105,6 +204,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
         )}
 
         {getPropertiesData?.map((property, index) => {
+          console.log("property", property);
           return (
             <Card key={index}>
               {property?.registrationNumber && <KeyNote keyValue={t("RAL_REGISTRATION_NUMBER")} note={property?.registrationNumber || t("CS_NA")} />}
@@ -127,10 +227,15 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 }
                 {(property?.status == "PENDINGPAYMENT" ||
                   property?.status == "PENDING_FOR_PAYMENT" ||
-                  property?.status == "PENDING_FOT_SETLEMENT") && (
+                  (property?.status == "PENDING_FOT_SETLEMENT" && property?.amountToBeDeducted > 0)) && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
-                {/* {property?.status == "APPROVED" && <SubmitBar label={t("RAL_END_TENANCY")} onSubmit={() => handleDisConnection(property)} />} */}
+                {property?.status == "APPROVED" && (
+                  <SubmitBar label={t("REQUEST_FOR_DISCONNECTION")} onSubmit={() => submitAction("REQUEST_FOR_DISCONNECTION", property)} />
+                )}
+                {/* {property?.status == "APPROVED" && Date.now() >= property?.endDate - 15 * 24 * 60 * 60 * 1000 && (
+                  <SubmitBar label={t("RENEWAL")} onSubmit={() => handleRenewal(property)} />
+                )} */}
               </div>
             </Card>
           );
@@ -147,6 +252,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
         )}
       </div>
       {loader && <Loader page={true} />}
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={() => setShowToast(null)} />}
     </div>
   );
 };

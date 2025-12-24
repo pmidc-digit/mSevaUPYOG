@@ -114,6 +114,9 @@ public class EnrichmentService {
 	String roleCodeName=null;
 		AuditDetails auditDetails = waterServicesUtil
 				.getAuditDetails(waterConnectionRequest.getRequestInfo().getUserInfo().getUuid(), true);
+		String relatedSwConnection = waterConnectionRequest.getWaterConnection().getRelatedSwConnection();
+	    if (relatedSwConnection == null || relatedSwConnection.trim().isEmpty() ||
+	        "null".equalsIgnoreCase(relatedSwConnection.trim())) {	waterConnectionRequest.getWaterConnection().setRelatedSwConnection(null);	}
 		waterConnectionRequest.getWaterConnection().setAuditDetails(auditDetails);
 		waterConnectionRequest.getWaterConnection().setId(UUID.randomUUID().toString());
 		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.ACTIVE);

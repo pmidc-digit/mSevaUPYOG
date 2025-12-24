@@ -25,7 +25,7 @@ const CustomGeoLocationButton = ({geoLocation}) =>{
     }
 
     return (
-        <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+        <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo()}
         />

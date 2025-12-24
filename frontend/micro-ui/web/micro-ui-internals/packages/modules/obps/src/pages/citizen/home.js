@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
 import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
+import { ProfessionalSignUpdate } from "../../pageComponents/ProfessionalSignUpdate";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
   const userInfo = Digit.UserService.getUser();
@@ -22,11 +23,24 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BPA_HOME_CREATE", {});
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(state, "BPA", ["homePageUrlLinks"]);
   const [showToast, setShowToast] = useState(null);
+  const [showModal, setShowModal] = useState(false)
   const [totalCount, setTotalCount] = useState("-");
   const user = Digit.UserService?.getUser()
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const isUserLoggedIn = user?.access_token
   const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT" ) || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId));
+  const uuid = user?.info?.uuid;
+  const stateId = Digit.ULBService.getStateId();
+  const { data: userDetails, isLoading: isUserLoading, refetch } = Digit.Hooks.useUserSearch(stateId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
+  
+  useEffect(() => {
+    console.log("userDetails", userDetails, isUserRegistered)
+    if(isUserRegistered && !userDetails?.user?.[0]?.signature){
+      setShowModal(true);
+    }else{
+      setShowModal(false);
+    }
+  } ,[userDetails, isUserRegistered])
 
   const closeToast = () => {
     window.location.replace("/digit-ui/citizen/all-services");
@@ -137,9 +151,13 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
 
   if (showToast) return <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />;
 
-  if (stakeHolderDetailsLoading || !stakeHolderRoles || bpaLoading) {
+  if (stakeHolderDetailsLoading || !stakeHolderRoles || bpaLoading || isUserLoading) {
     return <Loader />;
   } // || bparegLoading
+
+  const closeModal = () => {
+    setShowModal(false);
+  }
 
   const homeDetails = [
     {
@@ -240,6 +258,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
             ) : (
               <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
             )}
+              {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
           </div>
         );
       })}

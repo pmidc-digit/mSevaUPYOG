@@ -195,7 +195,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                   (property?.status == "PENDING_FOT_SETLEMENT" && property?.amountToBeDeducted > 0)) && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
-                {property?.status == "APPROVED" && (
+                {property?.status == "APPROVED" && !property?.expireFlag && (
                   <SubmitBar label={t("REQUEST_FOR_DISCONNECTION")} onSubmit={() => submitAction("REQUEST_FOR_DISCONNECTION", property)} />
                 )}
                 {/* {property?.status == "APPROVED" && Date.now() >= property?.endDate - 15 * 24 * 60 * 60 * 1000 && (

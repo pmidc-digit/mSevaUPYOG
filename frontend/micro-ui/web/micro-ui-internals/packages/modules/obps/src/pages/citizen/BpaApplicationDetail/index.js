@@ -49,7 +49,7 @@ import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
-
+import { getBase64Img } from "../../../utils"
 
 const BpaApplicationDetail = () => {
   const { id } = useParams()
@@ -348,28 +348,24 @@ console.log(requestor);
 
   console.log('LicenseData', LicenseData)
 
-  let stakeholderAddress="";
+  let stakeholderAddress, signFilestoreId="";
 
-if (!LicenseDataLoading && requestor) {
-  const matchedLicense = LicenseData?.Licenses?.find(
-    lic => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor
-  );
+  if (!LicenseDataLoading && requestor) {
+    const matchedLicense = LicenseData?.Licenses?.find((lic) => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor);
 
-  console.log('matchedLicense', matchedLicense)
-  if (matchedLicense) {
-    const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
+    if (matchedLicense) {
+      const signDoc = matchedLicense?.tradeLicenseDetail?.applicationDocuments?.find((doc) => doc?.documentType === "APPL.BPAREG_SCANNED_SIGNATURE");
 
-stakeholderAddress = [
-  owner?.permanentAddress,
-  owner?.permanentCity,
-  owner?.permanentDistrict,
-  owner?.permanentPinCode
-]
-.filter(Boolean) 
-.join(", ");
+      signFilestoreId = signDoc?.fileStoreId
+      const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
 
-console.log(stakeholderAddress,"stakeholderAddress");  }
-}
+      stakeholderAddress = [owner?.permanentAddress, owner?.permanentCity, owner?.permanentDistrict, owner?.permanentPinCode]
+        .filter(Boolean)
+        .join(", ");
+
+    }
+  }
+
   const handleGetOTPClick = async () => {
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
@@ -694,9 +690,8 @@ useEffect(() => {
     const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
-
   async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
     console.log('nowIST', nowIST)
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
@@ -706,9 +701,13 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     const approvalDatePlusThree = newValidityDate.getTime();
 
     console.log("validity date",approvalDatePlusThree); 
-
     const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
+    let base64Image = null;
+    if (signFilestoreId?.length > 0) {
+        base64Image = await getBase64Img(signFilestoreId,state) 
+    }
+    
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation,base64Image}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {

@@ -1,4 +1,4 @@
-import React,{ useState }  from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Banner, CardText, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Link, useRouteMatch } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -43,17 +43,42 @@ const Response = (props) => {
   const appState = useSelector((state) => state)["pgr"];
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-  const [enable, setEnable] = useState(false)
-  let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
+  const [enable, setEnable] = useState(false);
+  const [shouldDownload, setShouldDownload] = useState(false);
+  let id = appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId;
   const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:tenantId, id },{ enabled: enable ? true : false});
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId: tenantId, id }, { enabled: enable });
   
-  const handleDownloadPdf = async (e) => {
-    const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
-    e.preventDefault()
-    setEnable(true)
-    const data = await getPGRcknowledgementData({complaintDetails , tenantInfo, t});
-    Digit.Utils.pdf.generate(data);
+  useEffect(() => {
+    const generatePdf = async () => {
+      if (shouldDownload && complaintDetails && !isLoading) {
+        try {
+          const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
+          const wrappedComplaintDetails = {
+            complaints: {
+              response: {
+                ServiceWrappers: [complaintDetails]
+              }
+            }
+          };
+          const data = await getPGRcknowledgementData({ complaintDetails: wrappedComplaintDetails, tenantInfo, t });
+          if (data) {
+            Digit.Utils.pdf.generate(data);
+          }
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+        } finally {
+          setShouldDownload(false);
+        }
+      }
+    };
+    generatePdf();
+  }, [complaintDetails, isLoading, shouldDownload, tenants, tenantId, t]);
+  
+  const handleDownloadPdf = (e) => {
+    e.preventDefault();
+    setEnable(true);
+    setShouldDownload(true);
   };
   return (
     <Card>
@@ -62,7 +87,13 @@ const Response = (props) => {
       <Link to="/digit-ui/employee">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
-      {appState.complaints.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />}
+      {appState.complaints.response && (
+        <SubmitBar 
+          label={isLoading && shouldDownload ? t("CS_COMMON_LOADING") || "Loading..." : t("PT_DOWNLOAD_ACK_FORM")} 
+          onSubmit={handleDownloadPdf}
+          disabled={isLoading && shouldDownload}
+        />
+      )}
     </Card>
   );
 };

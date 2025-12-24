@@ -223,6 +223,40 @@ public class GCCalculationUtil {
 	}
 
 	/**
+	 * Get specific unit from property for garbage connection billing
+	 * 
+	 * @param connection GarbageConnection with unitId
+	 * @param property Property object containing units
+	 * @return Property.Unit for billing calculation
+	 */
+	public Unit getUnitFromProperty(GarbageConnection connection, Property property) {
+		String unitId = connection.getUnitId();
+		
+		if (StringUtils.isEmpty(unitId)) {
+			throw new CustomException("UNIT_ID_REQUIRED", 
+				"Unit ID is required for garbage connection calculation");
+		}
+		
+		// Find the specific unit
+		Optional<Unit> unit = property.getUnits().stream()
+			.filter(u -> u.getId().equals(unitId))
+			.findFirst();
+		
+		if (!unit.isPresent()) {
+			throw new CustomException("UNIT_NOT_FOUND", 
+				"Unit with ID " + unitId + " not found in property " + property.getPropertyId());
+		}
+		
+		// Validate unit has usageCategory
+		if (StringUtils.isEmpty(unit.get().getUsageCategory())) {
+			throw new CustomException("UNIT_USAGE_CATEGORY_MISSING", 
+				"Unit " + unitId + " does not have a usage category defined");
+		}
+		
+		return unit.get();
+	}
+
+	/**
 	 * 
 	 * @param criteria Property Search Criteria
 	 * @return property URL

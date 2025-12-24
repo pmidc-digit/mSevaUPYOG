@@ -338,75 +338,57 @@ public class EstimationService {
 	}
 
 
-	@SuppressWarnings("unchecked")
 	private List<BillingSlab> getSlabsFiltered(Property property, GarbageConnection waterConnection,
 			List<BillingSlab> billingSlabs, String calculationAttribute) {
 
-		// get billing Slab
-		log.debug(" the slabs count : " + billingSlabs.size());
-		final String propertyType = (property.getUsageCategory() != null)
-				? property.getUsageCategory().split("\\.")[property.getUsageCategory().split("\\.").length - 1]
-				: "";
-		log.info("propertyType: " + propertyType);
-		// final String buildingType = "Domestic";
+		// Get specific unit from property using unitId
+		Unit unit = wSCalculationUtil.getUnitFromProperty(waterConnection, property);
+		
+		// Use UNIT's usageCategory (not property's)
+		final String fullUsageCategory = unit.getUsageCategory();
 		final String connectionType = waterConnection.getConnectionType() != null 
 				? waterConnection.getConnectionType() 
-				: "Non Metered"; // Default to Non Metered if null
-
-		HashMap<String, Object> additionalDetail = new HashMap<>();
-		additionalDetail = mapper.convertValue(waterConnection.getAdditionalDetails(), HashMap.class);
-		final String waterSubUsageType = (String) additionalDetail
-				.getOrDefault(GCCalculationConstant.WATER_SUBUSAGE_TYPE, null);
-
-		final String buildingType = GCCalculationConstant.PROPERTY_TYPE_MIXED.equalsIgnoreCase(propertyType)
-				? (String) additionalDetail.getOrDefault(GCCalculationConstant.UNIT_USAGE_TYPE_KEY, null)
-				: propertyType;
-
-		// For water mix building type giving null ass unit usages type is missing in
-		// additional detail of ws application
-// 				 String finalbuildingType = null;
-// 		 System.out.println((String) additionalDetail.getOrDefault(GCCalculationConstant.WATER_SUBUSAGE_TYPE, null));
-//  if(waterSubUsageType.equalsIgnoreCase( GCCalculationConstant.PROPERTY_SUB_DOMESTIC_TYPE_MIXED ) && propertyType.equalsIgnoreCase(GCCalculationConstant.PROPERTY_TYPE_MIXED))
-//  {
-// 	 finalbuildingType = propertyType;
-//  }
-//  else if(waterSubUsageType.equalsIgnoreCase( GCCalculationConstant.PROPERTY_SUB_COMMERCIAL_TYPE_MIXED ) && propertyType.equalsIgnoreCase(GCCalculationConstant.PROPERTY_TYPE_MIXED))
-//  {
-// 	 finalbuildingType = propertyType;
-// }
-//  else if(waterSubUsageType!=GCCalculationConstant.PROPERTY_SUB_DOMESTIC_TYPE_MIXED && propertyType.equalsIgnoreCase(GCCalculationConstant.PROPERTY_TYPE_MIXED))
-//  {
-// 	 finalbuildingType =null; 
-//  }
-// else if (waterSubUsageType!=GCCalculationConstant.PROPERTY_SUB_COMMERCIAL_TYPE_MIXED && propertyType.equalsIgnoreCase(GCCalculationConstant.PROPERTY_TYPE_MIXED))
-//  {
-// 	 finalbuildingType =null; 
-//  }
-//  else
-//  {
-// 	 finalbuildingType = propertyType;
-//  }
-
-//  final String buildingType=finalbuildingType;
-		return billingSlabs.stream().filter(slab -> {
-			boolean isBuildingTypeMatching = slab.getBuildingType().equalsIgnoreCase(buildingType);
-			boolean isConnectionTypeMatching = slab.getConnectionType().equalsIgnoreCase(connectionType);
-			boolean isCalculationAttributeMatching = slab.getCalculationAttribute()
-					.equalsIgnoreCase(calculationAttribute);
-			log.info("BuildingTypeMatching: " + slab.getBuildingType() + "buildingType: " + buildingType
-					+ "connectionType: " + connectionType + "calculationAttribute: " + calculationAttribute);
-
-			log.info("isBuildingTypeMatching: " + isBuildingTypeMatching + " isConnectionTypeMatching: "
-					+ isConnectionTypeMatching + " isCalculationAttributeMatching: " + isCalculationAttributeMatching
-					+ " isWaterSubUsageType: " + waterSubUsageType);
-
-// 			if (waterSubUsageType != null) {
-// 				boolean isWaterSubUsageType = slab.getWaterSubUsageType().equalsIgnoreCase(waterSubUsageType);
-// 				return isBuildingTypeMatching && isConnectionTypeMatching && isCalculationAttributeMatching
-// 						&& isWaterSubUsageType;
-// 			}
-			return isBuildingTypeMatching && isConnectionTypeMatching && isCalculationAttributeMatching;
-		}).collect(Collectors.toList());
+				: "Non Metered";
+		
+		log.info("Matching billing slab for Unit ID: {}, UsageCategory: {}", 
+			unit.getId(), fullUsageCategory);
+		
+		// Hierarchical matching from specific to general
+		// Example: NONRESIDENTIAL.COMMERCIAL.RETAIL.MALLS -> NONRESIDENTIAL.COMMERCIAL.RETAIL -> NONRESIDENTIAL.COMMERCIAL -> NONRESIDENTIAL
+		String[] parts = fullUsageCategory.split("\\.");
+		
+		// Pre-filter slabs by connectionType and calculationAttribute for better performance
+		List<BillingSlab> eligibleSlabs = billingSlabs.stream()
+			.filter(slab -> slab.getConnectionType().equalsIgnoreCase(connectionType)
+				&& slab.getCalculationAttribute().equalsIgnoreCase(calculationAttribute))
+			.collect(Collectors.toList());
+		
+		if (eligibleSlabs.isEmpty()) {
+			throw new CustomException("NO_ELIGIBLE_SLABS", 
+				"No billing slabs found for connectionType: " + connectionType 
+				+ " and calculationAttribute: " + calculationAttribute);
+		}
+		
+		// Try matching from most specific to most general level
+		for (int i = parts.length; i > 0; i--) {
+			String buildingTypeToMatch = String.join(".", Arrays.copyOfRange(parts, 0, i));
+			
+			List<BillingSlab> matchedSlabs = eligibleSlabs.stream()
+				.filter(slab -> slab.getBuildingType().equalsIgnoreCase(buildingTypeToMatch))
+				.collect(Collectors.toList());
+			
+			if (!matchedSlabs.isEmpty()) {
+				log.info("Successfully matched {} slab(s) at level {} for unit usageCategory: {} -> {}", 
+					matchedSlabs.size(), i, fullUsageCategory, buildingTypeToMatch);
+				return matchedSlabs;
+			}
+		}
+		
+		// If no match found at any level, throw exception
+		throw new CustomException("BILLING_SLAB_NOT_FOUND", 
+			"No billing slab found for unit usage category: " + fullUsageCategory
+			+ ", connectionType: " + connectionType 
+			+ ", calculationAttribute: " + calculationAttribute);
 	}
 
 	private String getCalculationAttribute(Map<String, Object> calculationAttributeMap, String connectionType) {

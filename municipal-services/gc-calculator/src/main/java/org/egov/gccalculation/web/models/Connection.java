@@ -41,6 +41,9 @@ public class Connection {
 	@JsonProperty("propertyId")
 	private String propertyId = null;
 
+	@JsonProperty("unitId")
+	private String unitId = null;
+
 	@JsonProperty("applicationNo")
 	private String applicationNo = null;
 

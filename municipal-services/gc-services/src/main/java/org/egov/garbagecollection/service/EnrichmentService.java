@@ -110,6 +110,13 @@ public class EnrichmentService {
 		garbageConnectionRequest.getGarbageConnection().setAuditDetails(auditDetails);
 		garbageConnectionRequest.getGarbageConnection().setId(UUID.randomUUID().toString());
 		garbageConnectionRequest.getGarbageConnection().setStatus(StatusEnum.ACTIVE);
+		
+		// Log unit information for tracking
+		if (!StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getUnitId())) {
+			log.info("Enriching GC connection for Property: {}, Unit: {}", 
+				garbageConnectionRequest.getGarbageConnection().getPropertyId(),
+				garbageConnectionRequest.getGarbageConnection().getUnitId());
+		}
 		/*
 		 *Changing Hard coded channel and moving hardcoded part to constant
 		 *Moreover adding 3rd party channer config here on the basis  of role if it contains particular role.

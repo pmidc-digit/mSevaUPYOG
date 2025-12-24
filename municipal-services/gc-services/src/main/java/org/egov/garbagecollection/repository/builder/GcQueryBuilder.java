@@ -42,7 +42,7 @@ public class GcQueryBuilder {
 //			+ " gc.meterId, gc.meterInstallationDate, gc.pipeSize, gc.noOfTaps, gc.proposedPipeSize, gc.proposedTaps, "
 			+ " gc.connection_id as connection_Id, gc.connectionExecutionDate, gc.appCreatedDate as gc_appCreatedDate, "
 			+ " gc.detailsprovidedby, gc.estimationfileStoreId , gc.sanctionfileStoreId , gc.estimationLetterDate,"
-			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id, conn.property_type,conn.plot_size,conn.location,conn.frequency_of_garbage_collection,conn.type_of_waste,"
+			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id, conn.unit_id, conn.property_type,conn.plot_size,conn.location,conn.frequency_of_garbage_collection,conn.type_of_waste,"
 			+ " conn.action, conn.adhocpenalty, conn.adhocrebate, conn.adhocpenaltyreason, conn.applicationType, conn.channel, conn.dateEffectiveFrom,"
 			+ " conn.adhocpenaltycomment, conn.adhocrebatereason, conn.adhocrebatecomment, conn.createdBy as gc_createdBy, conn.lastModifiedBy as gc_lastModifiedBy,"
 			+ " conn.createdTime as gc_createdTime, conn.lastModifiedTime as gc_lastModifiedTime,conn.additionaldetails,connectionholder.tenantid as holdertenantid, "
@@ -135,9 +135,9 @@ public class GcQueryBuilder {
 			addORClauseIfRequired(preparedStatement, query);
 			if(!propertyIdsPresent)
 				query.append("(");
-			query.append(" connectionholder.userid in (").append(createQuery(criteria.getUserIds())).append(" ))");
+			query.append(" connectionholder.userid in (").append(createQuery(criteria.getUserIds())).append(" )");
 			addToPreparedStatement(preparedStatement, criteria.getUserIds());
-
+			// Don't close here - will close later if needed
 		}
 		Set<String> uuids = null;
 		if(!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getOwnerName())
@@ -151,11 +151,12 @@ public class GcQueryBuilder {
 				addORClauseIfRequired(preparedStatement, query);
 				if(!propertyIdsPresent)
 					query.append("(");
-				query.append(" connectionholder.userid in (").append(createQuery(uuids)).append(" ))");
+				query.append(" connectionholder.userid in (").append(createQuery(uuids)).append(" )");
 				addToPreparedStatement(preparedStatement, uuids);
 				userIdsPresent = true;
 			}
-			if(propertyIdsPresent && !userIdsPresent){
+			// Close parenthesis if we opened it (either propertyIdsPresent or !propertyIdsPresent with userIds)
+			if(propertyIdsPresent || (!propertyIdsPresent && userIdsPresent)){
 				query.append(")");
 			}
 			if(!propertyIdsPresent && !userIdsPresent) {

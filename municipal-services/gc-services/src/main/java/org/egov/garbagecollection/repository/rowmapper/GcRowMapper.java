@@ -96,6 +96,7 @@ public class GcRowMapper implements ResultSetExtractor<List<GarbageConnection>> 
 				currentGarbageConnection
 						.processInstance(ProcessInstance.builder().action((rs.getString("action"))).build());
 				currentGarbageConnection.setPropertyId(rs.getString("property_id"));
+				currentGarbageConnection.setUnitId(rs.getString("unit_id"));
 				// Add documents id's
 				currentGarbageConnection.setConnectionExecutionDate(rs.getLong("connectionExecutionDate"));
 				currentGarbageConnection.setApplicationType(rs.getString("applicationType"));

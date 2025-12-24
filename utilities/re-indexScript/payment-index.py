@@ -739,7 +739,7 @@ def main():
             elastricsearch_chunk_size=ELASTICSEARCH_CHUNK_SIZE,
             process_batch_size=PROCESS_BATCH_SIZE,
             businessServices=BUSINESS_SERVICES,
-            trigger_dashboard=True  # Trigger dashboard ingest once after all tenants
+            trigger_dashboard=False  # Trigger dashboard ingest once after all tenants
         )
     except KeyboardInterrupt:
         logger.info("\n" + "=" * 80)

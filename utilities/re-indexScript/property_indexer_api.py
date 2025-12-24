@@ -33,7 +33,7 @@ class PropertyIndexerAPI:
         self.elasticsearch_url = config.get('elasticsearch_url', 'http://elasticsearch-data-v1.es-cluster.svc.cluster.local:9200/')
         
         # Index configuration
-        self.index_name = "property-services-temp2"
+        self.index_name = "property-services"
         self.bulk_file = "bulk_properties_api.jsonl"
         
         # Request info template
@@ -88,7 +88,7 @@ class PropertyIndexerAPI:
             
             response = self.session.post(url, json=payload, params=params, timeout=120)
             response.raise_for_status()
-            
+
             data = response.json()
             properties = data.get('Properties', [])
             logger.info(f"Plain search API returned {len(properties)} properties")
@@ -780,29 +780,15 @@ def main():
     
     # Tenant IDs to process - all tenants for full data load
     tenant_ids = [
-        'pb.abohar',
-        'pb.ahmedgarh',
-        'pb.ajnala',
-        'pb.amritsar',
-        'pb.anandpursahib',
-        'pb.baghapurana',
-        'pb.balachaur',
-        'pb.banga',
-        'pb.bariwala',
-        'pb.barnala',
-        'pb.bassipathana',
-        'pb.begowal',
-        'pb.bhadson',
-        'pb.bhawanigarh',
-        'pb.bhogpur'
+        'pb.zirakpur'
     ]
     
     # Processing options - optimized batches for stable processing
     ENABLE_ENRICHMENT = True    # Keep disabled for performance with large datasets
-    BATCH_SIZE = 5000             # 5000 records per API call
+    BATCH_SIZE = 2000             # 5000 records per API call
     TOTAL_LIMIT = None          # No limit - process all data
-    FROM_DATE = 1743465600000          # Not used in plain search API
-    TO_DATE = 1774915200000            # Not used in plain search API
+    FROM_DATE = 1585699200000          # Not used in plain search API
+    TO_DATE = 1617235199000            # Not used in plain search API
     
     # Performance tuning for stable processing
     ELASTICSEARCH_CHUNK_SIZE = 2000     # 50 documents per ES bulk request

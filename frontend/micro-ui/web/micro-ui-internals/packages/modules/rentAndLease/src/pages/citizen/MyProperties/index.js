@@ -1,39 +1,3 @@
-// import React, { useMemo } from "react";
-// import { useTranslation } from "react-i18next";
-// import { Route, Switch, useRouteMatch } from "react-router-dom";
-// import { config } from "./config";
-// import MyPropertiesResultsComponent from "./myProperties";
-
-// const MyChallans = () => {
-//   const { t } = useTranslation();
-//   const { path } = useRouteMatch();
-
-//   const params = useMemo(() =>
-//     config.map(
-//       (step) => {
-//         const texts = {};
-//         for (const key in step.texts) {
-//           texts[key] = t(step.texts[key]);
-//         }
-//         return { ...step, texts };
-//       },
-//       [config]
-//     )
-//   );
-
-//   return (
-//     <Switch>
-//       <Route path={`${path}`} exact>
-//         <MyPropertiesResultsComponent
-//           template={params[0].labels}
-//           header={params[0].texts.header}
-//           actionButtonLabel={params[0].texts.actionButtonLabel}
-//           t={t}
-//         />
-//       </Route>
-//     </Switch>
-//   );
-// };
 
 import React, { useState, useEffect } from "react";
 import { Header, ResponseComposer, Card, KeyNote, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
@@ -98,7 +62,8 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   };
 
   const handleMakePayment = (id) => {
-    history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${id}`);
+    // history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
   // handleRenewal for later use case(don't remove it)

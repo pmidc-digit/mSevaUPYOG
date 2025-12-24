@@ -12,6 +12,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import NDCDocumentTimline from "../../components/NDCDocument";
+import CHBDocument from "../../components/ChallanDocument";
 import { useParams } from "react-router-dom";
 import { Loader } from "../../components/Loader";
 import { ChallanData, getLocationName } from "../../utils/index";
@@ -239,7 +240,7 @@ const ChallanApplicationDetails = () => {
             {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
 
-          {/* <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
               {getChallanData?.documents?.length > 0 ? (
@@ -255,7 +256,7 @@ const ChallanApplicationDetails = () => {
                 <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
               )}
             </Card>
-          </StatusTable> */}
+          </StatusTable>
         </Card>
         {workflowDetails?.data?.timeline && (
           <Card style={{ marginTop: "20px" }}>

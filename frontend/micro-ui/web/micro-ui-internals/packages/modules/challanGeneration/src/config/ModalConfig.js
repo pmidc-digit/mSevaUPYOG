@@ -17,7 +17,7 @@ export const ModalConfig = ({ t, action, setAmount, getChallanData, selectFile, 
           {
             label: `${t("FEE_WAIVER_AMOUNT")} *`,
             populators: (
-              <div>
+              <div style={{ marginBottom: "20px" }}>
                 <input
                   className="employee-card-input focus-visible"
                   type="number"
@@ -40,15 +40,17 @@ export const ModalConfig = ({ t, action, setAmount, getChallanData, selectFile, 
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (
-              <UploadFile
-                id={"workflow-doc"}
-                // accept=".jpg"
-                onUpload={selectFile}
-                onDelete={() => {
-                  setUploadedFile(null);
-                }}
-                message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-              />
+              <div>
+                <UploadFile
+                  id={"workflow-doc"}
+                  // accept=".jpg"
+                  onUpload={selectFile}
+                  onDelete={() => {
+                    setUploadedFile(null);
+                  }}
+                  message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                />
+              </div>
             ),
           },
         ],

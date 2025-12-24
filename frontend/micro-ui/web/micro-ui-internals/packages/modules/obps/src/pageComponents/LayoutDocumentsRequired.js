@@ -44,7 +44,8 @@ const LayoutDocumentsRequired = ({
   const stateId = Digit.ULBService.getStateId()
   const dispatch = useDispatch()
 
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["LayoutDocuments"])
+  // Module: LAYOUT, Master: LayoutDocuments
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "LAYOUT", ["LayoutDocuments"])
 
   const coordinates = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {})
 
@@ -60,10 +61,38 @@ const LayoutDocumentsRequired = ({
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
   const applicationNo = currentStepData?.apiData?.Layout?.[0]?.applicationNo || ""
   const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false
+  
+  // Get CLU approval status from siteDetails
+  const isCluApproved = currentStepData?.siteDetails?.cluIsApproved?.code === "YES" || false
 
-  const filteredDocuments = isVacant
-    ? (data?.BPA?.LayoutDocuments || []).filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING")
-    : data?.BPA?.LayoutDocuments || []
+  console.log("CLU Approved Status:", isCluApproved, currentStepData?.siteDetails?.cluIsApproved)
+
+  // Filter documents based on building status and CLU approval
+  const filteredDocuments = useMemo(() => {
+    let docs = data?.LAYOUT?.LayoutDocuments || []
+    
+    // Filter out building drawing if vacant
+    if (isVacant) {
+      docs = docs.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING")
+    }
+    
+    // Filter CLU-related documents based on CLU approval status
+    // Documents with cluRequired: true will only show if CLU is approved
+    // Documents with cluRequired: false or undefined will always show
+    docs = docs.filter((doc) => {
+      // If document has cluRequired flag
+      if (doc.cluRequired === true) {
+        return isCluApproved // Only show if CLU is approved
+      }
+      // If document has cluNotRequired flag (show only when CLU is NOT approved)
+      if (doc.cluNotRequired === true) {
+        return !isCluApproved // Only show if CLU is NOT approved
+      }
+      return true // Show all other documents
+    })
+    
+    return docs
+  }, [data?.LAYOUT?.LayoutDocuments, isVacant, isCluApproved])
 
   const handleSubmit = () => {
     const document = formData.documents

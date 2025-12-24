@@ -128,15 +128,24 @@ export const OBPSService = {
       auth: window.location.href.includes("openlink") ? false : true,
     }),
 
-  LayoutSearch: (tenantId, details, params) =>
-    Request({
+  LayoutSearch: (tenantId, details, params, config = {}) => {
+    const { includeMobileNumber = true } = config;
+    let finalParams = { tenantId, ...params };
+    
+    // Conditionally exclude mobileNumber if caller specifies includeMobileNumber: false
+    if (!includeMobileNumber && finalParams.mobileNumber) {
+      delete finalParams.mobileNumber;
+    }
+    
+    return Request({
       url: Urls.obps.layoutSearch,
-      params: { tenantId, ...params },
+      params: finalParams,
       auth: true,
       userService: true,
       method: "POST",
       data: details,
-    }),
+    });
+  },
   LayoutUpdate: (details, tenantId) =>
     Request({
       url: Urls.obps.layoutUpdate,

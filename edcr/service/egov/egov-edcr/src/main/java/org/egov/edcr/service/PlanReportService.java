@@ -128,7 +128,7 @@ public class PlanReportService {
     private static final String LEVEL = "Level";
     private static final String COMBINED_BLOCKS_SUMMARY_DETAILS = "Overall Summary";
     private static final String BLOCK_WISE_SUMMARY = "Block Wise Summary";
-    private static final BigDecimal BUILDING_HEIGHT = BigDecimal.valueOf(21);
+    private static final BigDecimal Fire_Tender_Movement = BigDecimal.valueOf(21);
     
     private static final List<String> MANDATORY_KEYS = new ArrayList<>(Arrays.asList(
     	    "1General Stair - Mid landing",
@@ -1848,11 +1848,12 @@ public class PlanReportService {
                     List<Floor> floors = building.getFloors();
                     BigDecimal buildingHeightExMumpty = building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP);
                     if (buildingHeightExMumpty != null &&
-                    		buildingHeightExMumpty.compareTo(BUILDING_HEIGHT) > 0) {                    	    
-                    	    MANDATORY_KEYS.add("1Fire Tender Movement");
+                    		buildingHeightExMumpty.compareTo(Fire_Tender_Movement) > 0) {   
+                    	LOG.info("building height exclude mumpty : " + buildingHeightExMumpty);
+                    	    //MANDATORY_KEYS.add("1Fire Tender Movement");
                     }
                     
-                    if(building.getMostRestrictiveFarHelper().getType().equals("R")) {
+                    if(building.getMostRestrictiveFarHelper().getType().equals("A")) {
                     	MANDATORY_KEYS.add("1Number of Floors");
                     }
 

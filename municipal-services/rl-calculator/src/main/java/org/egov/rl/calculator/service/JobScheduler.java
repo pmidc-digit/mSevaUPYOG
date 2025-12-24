@@ -51,7 +51,7 @@ public class JobScheduler {
 //	public void runEveryDaysCron() {
 //		demandService.generateBatchDemand(getOAuthToken());
 //	}
-	
+//	
 //	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
 ////	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 //	public void runEveryDayCron() {

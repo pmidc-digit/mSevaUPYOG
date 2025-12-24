@@ -144,6 +144,43 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
   return fileURL;
 };
 
+
+export async function getBase64FromUrl(url) {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+export async function getBase64Img(fileStoreId, state){
+  let signUrl = null
+
+  if (fileStoreId?.length > 0) {
+        const signUrlObj = await Digit.UploadServices.Filefetch([fileStoreId], state);
+        signUrl = signUrlObj?.data[fileStoreId]
+    }
+    const baseUrl = window.location.origin;
+    console.log('baseUrl', baseUrl)
+    
+  let finalUrl;
+  if (signUrl?.includes("filestore")) {
+    const splitURL = signUrl.split("filestore")?.[1];
+    finalUrl = `${baseUrl}/filestore${splitURL}`;
+  } else {
+    // external URL, just use it directly
+    finalUrl = signUrl;
+  }
+  console.log('finalUrl', finalUrl)
+
+  const base64Image = signUrl
+    ? await getBase64FromUrl(finalUrl)
+    : baseUrl;
+
+  return base64Image;
+};
 export const convertToNocObject = (data, datafromflow) => {
   let formData = { Noc: data };
   let doc =

@@ -47,6 +47,15 @@ console.log('currentStepData', currentStepData)
   const area = currentStepData?.createdResponse?.additionalDetails?.area || "";
   const zone = currentStepData?.createdResponse?.additionalDetails?.zonenumber || "";
   const ulbgrade = currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || "";
+  const owners = currentStepData?.createdResponse?.landInfo?.owners || [];
+
+  const ownerDetails = owners
+    .map((item) => {
+      const name = item?.name || "<Owner Name>";
+      const mobile = item?.mobileNumber || "<Mobile>";
+      return `<b>${name}</b> Mobile: <b>${mobile}</b>`;
+    })
+    .join(", ");
 
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
@@ -140,7 +149,7 @@ const selfdeclarationform = `
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner(s) ${ownerDetails} for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">

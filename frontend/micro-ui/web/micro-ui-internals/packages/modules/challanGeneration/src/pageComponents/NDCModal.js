@@ -27,9 +27,25 @@ const NDCModal = ({ t, action, closeModal, submitAction, showErrorToast, errorOn
   const [config, setConfig] = useState({});
   const [getAmount, setAmount] = useState();
   const [error, setError] = useState();
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [file, setFile] = useState(null);
+  const [loader, setLoader] = useState(false);
 
   function submit(data) {
-    const payload = { amount: getAmount };
+    const payload = {
+      amount: getAmount,
+      wfDocuments: uploadedFile
+        ? [
+            {
+              documentType: action?.action + " DOC",
+              fileName: file?.name,
+              fileStoreId: uploadedFile,
+            },
+          ]
+        : null,
+
+      // file: file
+    };
     submitAction(payload);
   }
 
@@ -43,10 +59,41 @@ const NDCModal = ({ t, action, closeModal, submitAction, showErrorToast, errorOn
           getChallanData,
           error,
           setError,
+          selectFile,
+          uploadedFile,
+          setUploadedFile,
         })
       );
     }
-  }, [action]);
+  }, [action, uploadedFile]);
+
+  function selectFile(e) {
+    setFile(e.target.files[0]);
+  }
+
+  useEffect(() => {
+    (async () => {
+      if (file) {
+        if (file.size >= 5242880) {
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+        } else {
+          setLoader(true);
+          try {
+            const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+            setLoader(false);
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+            } else {
+              setError(t("CS_FILE_UPLOAD_ERROR"));
+            }
+          } catch (err) {
+            setLoader(false);
+            setError(t("CS_FILE_UPLOAD_ERROR"));
+          }
+        }
+      }
+    })();
+  }, [file]);
 
   if (!action || !config.form) return null;
 
@@ -64,6 +111,8 @@ const NDCModal = ({ t, action, closeModal, submitAction, showErrorToast, errorOn
       {/* )} */}
       {/* {showToast && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />} */}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
+
+      {loader && <Loader />}
     </Modal>
   );
 };

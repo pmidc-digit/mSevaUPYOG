@@ -139,6 +139,7 @@ const RALApplicationDetails = () => {
     } else if (action?.action == "PAY" || action?.action == "PAY_SETTLEMENT_AMOUNT") {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
+      // history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${appNo}`);
     } else if (action?.action === "RAL_RENEWAL") {
       setShowModal(true);
       setSelectedAction(action);

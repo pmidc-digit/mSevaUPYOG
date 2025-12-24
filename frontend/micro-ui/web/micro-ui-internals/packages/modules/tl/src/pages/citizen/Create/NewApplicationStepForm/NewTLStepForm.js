@@ -12,7 +12,7 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 //Config for steps
 const createEmployeeConfig = [
   {
-    head: "Trade Details",
+    head: "",
     stepLabel: "Trade Details",
     stepNumber: 1,
     isStepEnabled: true,

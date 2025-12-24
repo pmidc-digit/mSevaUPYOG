@@ -104,3 +104,14 @@ text-align: center !important;
   margin-left: 16px;
   width: calc(100% - 16px);
 }
+
+.mobile-prefix-fix {
+  display: flex !important;
+  align-items: center !important;
+
+  line-height: normal !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  height: 3.2rem !important; 
+}

@@ -73,7 +73,8 @@
 /* Login Card */
 .employee-login-card {
   padding: 20px;
-  width: 650px;
+  width: 100%;
+  max-width: 650px;
   overflow: visible;
   position: relative;
   z-index: 1;
@@ -97,7 +98,6 @@
 }
 
 .employee-login-form input {
-  
   outline: none;
   border-color: #5243e9;
   transition: all 0.2s ease;
@@ -106,7 +106,6 @@
 .employee-login-form input:focus {
   outline: none;
   border-color: #5243e9;
-
 }
 
 .employee-city-dropdown {
@@ -188,6 +187,7 @@
   .employee-login-card {
     padding: 32px 24px;
     border-radius: 8px;
+    width: 100%;
   }
 
   .employee-login-icon-circle {

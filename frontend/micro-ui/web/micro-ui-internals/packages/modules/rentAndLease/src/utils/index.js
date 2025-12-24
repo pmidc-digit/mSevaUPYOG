@@ -104,7 +104,6 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
   const data = await Digit.PaymentService.getReciept(tenantId, bussinessService, { consumerCodes: consumerCode });
   const payments = data?.Payments[0];
 
-
   let response = null;
   if (payments?.fileStoreId) {
     response = { filestoreIds: [payments?.fileStoreId] };
@@ -155,44 +154,45 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 export const getAcknowledgementData = async (application, tenantInfo, t) => {
-  console.log("application in getAcknowledgement", application);
-
   const details = [];
 
   // License Details
 
   application?.OwnerInfo?.forEach((owner, index) => {
-  details.push({
-    title: `Owner ${index + 1} Details`,
-    values: [
-      {
-        title: t("CORE_COMMON_NAME"),
-        value: owner?.name || t("CS_NA"),
-      },
-      {
-        title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
-        value: owner?.mobileNo || t("CS_NA"),
-      },
-      {
-        title: t("CORE_EMAIL_ID"),
-        value: owner?.emailId || t("CS_NA"),
-      },
-      {
-        title: t("Permanent Address"),
-        value: `${owner?.permanentAddress?.addressId || t("CS_NA")} , ${owner?.permanentAddress?.pincode || t("CS_NA")}`
-      },
-      {
-        title: t("Corresspondence Address"),
-        value: `${owner?.correspondenceAddress?.addressId || t("CS_NA")} , ${owner?.correspondenceAddress?.pincode || t("CS_NA")}`
-      },
-    ],
+    details.push({
+      title: `Owner ${index + 1} Details`,
+      values: [
+        {
+          title: t("CORE_COMMON_NAME"),
+          value: owner?.name || t("CS_NA"),
+        },
+        {
+          title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
+          value: owner?.mobileNo || t("CS_NA"),
+        },
+        {
+          title: t("CORE_EMAIL_ID"),
+          value: owner?.emailId || t("CS_NA"),
+        },
+        {
+          title: t("Permanent Address"),
+          value: `${owner?.permanentAddress?.addressId || t("CS_NA")} , ${owner?.permanentAddress?.pincode || t("CS_NA")}`,
+        },
+        {
+          title: t("Correspondence Address"),
+          value: `${owner?.correspondenceAddress?.addressId || t("CS_NA")} , ${owner?.correspondenceAddress?.pincode || t("CS_NA")}`,
+        },
+      ],
+    });
   });
-});
-
 
   details.push({
     title: t("PT_PROPERTY_DETAILS"),
     values: [
+      {
+        title: t("STATUS"),
+        value: t(application?.status) || "NA",
+      },
       {
         title: t("PROPERTY_ID"),
         value: t(application?.additionalDetails?.propertyId) || "NA",
@@ -242,8 +242,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
   });
 
-  const imageURL =
-    application?.additionalDetails?.propertyImage
+  const imageURL = application?.additionalDetails?.propertyImage;
   return {
     t: t,
     tenantId: tenantInfo?.code,

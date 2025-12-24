@@ -31,6 +31,37 @@ import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimat
 import LayoutDocumentView from "./LayoutDocumentView";
 import { amountToWords } from "../../../utils/index";
 
+// Component to render document link for owner documents
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
+
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
+  return (
+    <LinkButton
+     
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
+  );
+};
+
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
@@ -86,6 +117,7 @@ const LayoutApplicationOverview = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")
+  const stateCode = Digit.ULBService.getStateId();
 const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
   const [loading, setLoading] = useState(false);
@@ -93,9 +125,43 @@ const [viewTimeline, setViewTimeline] = useState(false);
 // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
   const applicationDetails = data?.resData
+  const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
+
+  // Helper function to find document by type and owner index
+  // Searches in both API documents (documents array) and owner's additionalDetails
+  const findOwnerDocument = (ownerIndex, docType) => {
+    // First try to find from documents array
+    if (layoutDocuments && layoutDocuments.length > 0) {
+      let documentTypeKey = "";
+      if (ownerIndex === 0) {
+        documentTypeKey = `OWNER.${docType}`;
+      } else {
+        documentTypeKey = `OWNER.${docType}_${ownerIndex}`;
+      }
+      
+      const doc = layoutDocuments.find((d) => d.documentType === documentTypeKey);
+      if (doc?.uuid || doc?.fileStoreId) {
+        return doc?.uuid || doc?.fileStoreId;
+      }
+    }
+
+    // Then check owner's additionalDetails (same keys as LayoutSummary.js)
+    const owners = applicationDetails?.Layout?.[0]?.owners || [];
+    if (owners && owners[ownerIndex]?.additionalDetails) {
+      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
+        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
+      }
+      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
+        return owners[ownerIndex]?.additionalDetails?.documentFile;
+      }
+    }
+
+    return null;
+  };
 
   console.log(applicationDetails,data, "DATALAYOUT")
-const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
+  console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
+  const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
@@ -115,7 +181,7 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
       const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, "", t);
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);
@@ -278,8 +344,11 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
     const payloadData = applicationDetails?.Layout?.[0] || {}
     console.log("payload data======> ",payloadData);
 
+
+
     const updatedApplicant = {
       ...payloadData,
+      
       workflow: {},
     }
 
@@ -409,7 +478,7 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
-         <LinkButton  label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+         <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <div>
@@ -425,6 +494,28 @@ const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?
         )}
       </div>
        
+
+    {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
+    {applicationDetails?.Layout?.[0]?.owners && applicationDetails?.Layout?.[0]?.owners?.length > 0 && (
+      <Card>
+        <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
+          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <StatusTable>
+              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
+              <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
+              <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
+              <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
+              <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+              <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
+              <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
+              <Row label={t("OWNER_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
+              <Row label={t("OWNER_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+    )}
 
  {/* -------------------- APPLICANT DETAILS -------------------- */}
     <Card>

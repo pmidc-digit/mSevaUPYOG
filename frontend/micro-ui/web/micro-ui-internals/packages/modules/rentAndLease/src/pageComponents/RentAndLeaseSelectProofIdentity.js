@@ -191,23 +191,20 @@ function RentAndLeaseSelectDocument({
     }
   };
 
-  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
-  const mandatoryStyle = { color: "red" };
-
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ral-doc-container">
       {loading && <Loader />}
 
       <LabelFieldPair>
         {/* <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required && <span style={mandatoryStyle}>  *</span>)}</CardLabel> */}
-        <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+        <CardLabel className="card-label-smaller ral-doc-label">
           {t(doc?.code?.replaceAll(".", "_"))}
-          {doc?.required && <span style={mandatoryStyle}> *</span>}
+          {doc?.required && <span> *</span>}
         </CardLabel>
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <div className="field" style={{ width: "100%", maxWidth: !isCitizen && "500px" }}>
+        <div className={`field ral-doc-field ${!isCitizen ? "ral-doc-field-employee" : ""}`}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -223,7 +220,7 @@ function RentAndLeaseSelectDocument({
             error={Boolean(fieldError)}
           />
           {/* Inline file validation error */}
-          {fieldError && <div style={errorStyle}>{fieldError}</div>}
+          {fieldError && <div className="ral-doc-error">{fieldError}</div>}
         </div>
       </LabelFieldPair>
     </div>

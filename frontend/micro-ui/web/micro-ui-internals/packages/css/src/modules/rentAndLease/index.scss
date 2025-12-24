@@ -1,0 +1,227 @@
+.ral-banner {
+  padding: 10px;
+}
+
+.ral-banner-header {
+  font-size: 32px;
+  word-break: break-word;
+}
+
+.ral-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+.ral-error-label {
+  width: 70%;
+  margin-left: 30%;
+  margin-top: -18px;
+}
+
+.ral-applicant-container {
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+}
+
+.ral-applicant-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ral-remove-btn {
+  background: transparent;
+  width: 100%;
+  max-width: 25px;
+}
+
+.ral-add-applicant-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.ral-add-applicant-btn {
+  border: 1px solid #2947a3;
+  background: transparent;
+  color: #2947a3;
+  width: 100%;
+  max-width: 140px;
+}
+
+.ral-back-btn {
+  border: 1px solid;
+  background: transparent;
+  color: #2947a3;
+  margin-right: 8px;
+}
+
+.ral-summary-card {
+  padding: 2px;
+}
+
+.ral-summary-section {
+  background-color: #ffffff;
+  padding: 1rem 0;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(18, 38, 63, 0.04);
+}
+
+.ral-summary-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ral-summary-heading {
+  font-size: 1.25rem;
+  color: #0d43a7;
+  font-weight: 500;
+  margin: 0;
+}
+
+.ral-summary-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  border-bottom: 1px dashed #e9eef2;
+  padding: 10px 4px;
+  align-items: center;
+}
+
+.ral-summary-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.ral-summary-docs-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.ral-summary-doc-card {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 260px;
+  background-color: #fbfcfe;
+  padding: 0.6rem;
+  border: 1px solid #eef3f7;
+  border-radius: 6px;
+}
+
+.ral-summary-applicant-subheading {
+  padding: 6px 26px;
+  background: oldlace;
+  font-weight: 900;
+}
+
+.ral-summary-applicant-wrapper {
+  margin-bottom: 1rem;
+}
+
+.ral-doc-container {
+  margin-bottom: 24px;
+}
+
+.ral-doc-label {
+  width: 100%;
+}
+
+.ral-doc-field {
+  width: 100%;
+}
+
+.ral-doc-field-employee {
+  max-width: 500px;
+}
+
+.ral-doc-upload-msg {
+  width: 100%;
+}
+
+.ral-doc-upload-input {
+  width: 280px;
+}
+
+.ral-doc-error {
+  color: #d4351c;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.ral-app-details-header {
+  margin-left: 14px;
+  max-width: 960px;
+}
+
+.ral-app-details-owner-header {
+  padding: 5px 24px 0px 24px;
+  font-weight: 600;
+}
+
+.ral-app-details-docs-card {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 30px;
+  margin-bottom: 26px;
+}
+
+.ral-my-properties-container {
+  margin-top: 16px;
+}
+
+.ral-my-properties-header {
+  margin-left: 8px;
+}
+
+.ral-my-properties-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.ral-my-properties-no-result {
+  margin-left: 16px;
+  margin-top: 16px;
+}
+
+.ral-my-properties-load-more {
+  margin-left: 16px;
+  margin-top: 16px;
+}
+
+.ral-my-properties-load-more-link {
+  cursor: pointer;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.ral-modal-header {
+  margin-left: 20px;
+}
+
+.ral-modal-close {
+  margin-right: 20px;
+}
+
+.ral-header-32 {
+  font-size: 32px;
+}
+
+.ral-card-subheader-24 {
+  font-size: 24px;
+}
+
+.ral-card-subheader-24-margin {
+  font-size: 24px;
+  margin-top: 30px;
+}

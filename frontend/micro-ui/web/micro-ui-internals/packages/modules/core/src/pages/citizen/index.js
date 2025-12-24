@@ -143,17 +143,8 @@ const Home = ({
             >
               {/* Back Button - Outside purple card */}
               <BackButton
-                className="moduleLinkHomePageBackButton"
-                style={{
-                  color: "#7C3AED",
-                  cursor: "pointer",
-                  fontSize: isMobile ? "14px" : "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontWeight: "500",
-                  marginBottom: "16px",
-                }}
+                className="back-btn2"
+               
               />
 
               {/* Breadcrumb - Outside purple card */}
@@ -303,7 +294,7 @@ const Home = ({
         />
       )}
 
-      <div style={{justifyContent:"center"}} className={`main center-container citizen-home-container mb-25`}>
+      <div className={`main center-container citizen-home-container mb-25`}>
         {/* {hideSidebar ? null : (
           <div className="SideBarStatic">
             <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />

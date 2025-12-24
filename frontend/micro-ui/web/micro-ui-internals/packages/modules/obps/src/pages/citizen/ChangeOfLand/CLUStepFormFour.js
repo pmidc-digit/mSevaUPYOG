@@ -12,6 +12,8 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
   const [selectedCheckBox, setSelectedCheckBox] = useState(false);
 
+  const isEdit = window.location.pathname.includes("edit");
+
   function handleCheckBox(e) {
     setSelectedCheckBox(e.target.checked);
   }
@@ -177,14 +179,55 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       documents: [],
     };
 
-    const docsArray = cluFormData?.documents?.documents?.documents || [];
-    docsArray.forEach((doc) => {
-      updatedApplication.documents.push({
+    const docsArrayFromRedux = cluFormData?.documents?.documents?.documents || [];
+
+    if(isEdit){
+       
+    const apiResponseDocuments = currentStepData?.apiData?.Clu?.[0]?.documents || [];
+
+    const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d)=> d.documentType));
+
+    const updatedApiResponseDocuments = apiResponseDocuments?.map((doc)=>{
+
+    const fileStoreId = docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.uuid || docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.documentAttachment;
+      return ({
+        ...doc,
+        uuid: fileStoreId,
+        documentAttachment: fileStoreId
+      })
+    });
+
+   const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
+
+   const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc)=>{
+    return {
+        uuid: doc?.documentUid,
+        documentType: doc?.documentType,
+        documentAttachment: doc?.filestoreId,
+    }
+   });
+
+   const overallDocs= [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
+   
+   console.log("overallDocs", overallDocs);
+
+
+    overallDocs.forEach((doc)=>{
+      updatedApplication?.documents?.push({
+       ...doc
+      })
+    })
+
+    }else{
+      docsArrayFromRedux.forEach((doc) => {
+        updatedApplication.documents.push({
         uuid: doc?.documentUid,
         documentType: doc?.documentType,
         documentAttachment: doc?.filestoreId,
       });
-    });
+     });
+
+    }
 
     const payload = {
       Clu: { ...updatedApplication },
@@ -205,15 +248,15 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("currentStepData in StepFour", currentStepData);
   const applicationNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo || "";
   const businessServiceCode = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
-  console.log("applicationNo here==>", applicationNo);
-  console.log("businessServiceCode here==>", businessServiceCode);
+  //console.log("applicationNo here==>", applicationNo);
+  //console.log("businessServiceCode here==>", businessServiceCode);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNo,
     moduleCode: businessServiceCode,
   });
 
-  console.log("workflow Details here==>", workflowDetails);
+ // console.log("workflow Details here==>", workflowDetails);
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -223,7 +266,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  //console.log("actions here", actions);
 
   function onActionSelect(action) {
     goNext(action);

@@ -24,7 +24,7 @@
 .employee-select-wrap .select {
   background-color: white;
   border-radius: 5px;
-  border-color:1px solid blue;
+  border-color: 1px solid blue;
   height: 50px;
 }
 .employee-select-wrap {
@@ -36,12 +36,11 @@
     border-color: rgb(46, 46, 236);
     height: 50px;
 
-
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-     
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -70,8 +69,8 @@
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-     
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -97,12 +96,13 @@
   }
 
   .options-card {
-    width: 100% !important;
+    right: 0px;
+    width: 144px;
     box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
     max-height: 250px !important;
     overflow: auto;
     z-index: 1000 !important;
-    @apply absolute z-20 mt-xs bg-white max-w-full;
+    @apply absolute z-20 mt-xs bg-white;
 
     p {
       padding-top: 14px;
@@ -156,7 +156,7 @@
       width: calc(100% - 32px);
       background-color: transparent;
 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {
@@ -194,8 +194,8 @@
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-    
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+
+      @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }
 
     p {

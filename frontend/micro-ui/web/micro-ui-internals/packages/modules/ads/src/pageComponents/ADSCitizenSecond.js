@@ -227,18 +227,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     <React.Fragment>
       {cartSlots?.length > 0 && (
         <div style={{ display: "flex", justifyContent: "end" }}>
-          <button
-            style={{
-              marginLeft: "12px",
-              padding: "8px 16px",
-              background: "#2947a3",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-            onClick={() => setShowCart(true)}
-          >
+          <button className="ads-view-cart" onClick={() => setShowCart(true)}>
             <span style={{ marginRight: 6 }}>🛒</span>
             {t("ADS_VIEW_CART")} ({cartSlots?.length})
           </button>
@@ -249,36 +238,14 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         <CardLabel>
           {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
-        <div style={{width:"100%"}}>
-          {isCitizen && (
-            <style>
-              {`
-      .form-field {
-        width: 100% !important;
-      }
-      .select-wrap {
-        width: 100% !important;
-      }
-      .select {
-        border: 1px solid #b4b4b4 !important;
-        border-radius: 8px !important;
-        height: 2.9rem !important;
-      }
-      .select-active {
-        border: 1px solid #2947a3 !important;
-        border-radius: 8px !important;
-      }
-    `}
-            </style>
-          )}
-
+        <div className="ads-form-field">
           <Controller
             control={control}
             name="siteId"
-            rules={{ required: t("ADS_SITE_NAME_REQUIRED") }} // ✅ validation rule
+            rules={{ required: t("ADS_SITE_NAME_REQUIRED") }}
             render={(props) => (
               <Dropdown
-                className="form-field"
+                className="ads-form-field"
                 option={locationOptions}
                 optionKey="name"
                 selected={props.value}
@@ -290,26 +257,11 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
         </div>
+
         {/* </LabelFieldPair> */}
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
-        {guidance && adsForLocation?.length > 0 && (
-          <div
-            style={{
-              background: "#fff3cd",
-              border: "1px solid #ffeeba",
-              color: "#856404",
-              padding: "6px 10px",
-              borderRadius: "6px",
-              fontSize: "14px",
-              marginBottom: "8px",
-              width: "100%",
-              maxWidth: "545px",
-            }}
-          >
-            ⚠️ {guidance}
-          </div>
-        )}
+        {guidance && adsForLocation?.length > 0 && <div className="ads-guidance-box">⚠️ {guidance}</div>}
         {/* Cards grid with see more */}
         {adsForLocation?.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -333,19 +285,11 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         {adsForLocation?.length > 6 && (
           <div style={{ textAlign: "center", marginTop: "1rem" }}>
             {visibleCount < adsForLocation.length ? (
-              <button
-                type="button"
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
-                onClick={() => setVisibleCount((v) => v + 6)}
-              >
+              <button type="button" className="ads-btn" onClick={() => setVisibleCount((v) => v + 6)}>
                 {t("ADS_SHOW_MORE")}
               </button>
             ) : (
-              <button
-                type="button"
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
-                onClick={() => setVisibleCount(6)}
-              >
+              <button type="button" className="ads-btn" onClick={() => setVisibleCount(6)}>
                 {t("SHOW_LESS")}
               </button>
             )}
@@ -377,7 +321,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             cartSlots={cartSlots}
             t={t}
             dateRange={dateRange}
-            onRemoveSlot={handleRemoveFromCart} 
+            onRemoveSlot={handleRemoveFromCart}
           />
         )}
 

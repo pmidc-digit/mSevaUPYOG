@@ -29,11 +29,11 @@ const RALResponse = (props) => {
           applicationNumber={RALCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`RAL_ALLOTMENT_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="ral-banner"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
 
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="ral-action-bar">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_RAL")} onSubmit={onGoToPTR} />
         </ActionBar>

@@ -7,6 +7,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [inactiveJurisdictions, setInactiveJurisdictions] = useState([]);
   const { data: data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
+
   const [jurisdictions, setjurisdictions] = useState(
     formData?.Jurisdictions || [
       {
@@ -102,7 +103,9 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   }
 
   function getroledata() {
-    return data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles.map(role => { return { code: role.code, name: role?.name ? role?.name : " " , labelKey: 'ACCESSCONTROL_ROLES_ROLES_' + role.code } });
+    return data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles.map((role) => {
+      return { code: role.code, name: role?.name ? role?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + role.code };
+    });
   }
 
   if (isLoading) {
@@ -137,6 +140,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
     </div>
   );
 };
+
 function Jurisdiction({
   t,
   data,
@@ -150,20 +154,38 @@ function Jurisdiction({
   roleoption,
   index,
 }) {
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+
   const [BoundaryType, selectBoundaryType] = useState([]);
   const [Boundary, selectboundary] = useState([]);
+  const [getRoles, setRoles] = useState([]);
   useEffect(() => {
     selectBoundaryType(
       data?.MdmsRes?.["egov-location"]["TenantBoundary"]
         .filter((ele) => {
           return ele?.hierarchyType?.code == jurisdiction?.hierarchy?.code;
         })
-        .map((item) => { return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, 'EGOV_LOCATION_BOUNDARYTYPE') } })
+        .map((item) => {
+          return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, "EGOV_LOCATION_BOUNDARYTYPE") };
+        })
     );
   }, [jurisdiction?.hierarchy, data?.MdmsRes]);
   const tenant = Digit.ULBService.getCurrentTenantId();
+
+  const { data: roleGroups = [], isLoading: roleGroupsLoading } = Digit.Hooks.useCustomMDMS(tenantId, "ACCESSCONTROL-ROLES", [
+    { name: "roleGroups" },
+  ]);
+
+  console.log("roleGroups", roleGroups);
+
   useEffect(() => {
-    selectboundary(data?.MdmsRes?.tenant?.tenants.filter(city => city.code != Digit.ULBService.getStateId()).map(city => { return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) } }));
+    selectboundary(
+      data?.MdmsRes?.tenant?.tenants
+        .filter((city) => city.code != Digit.ULBService.getStateId())
+        .map((city) => {
+          return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) };
+        })
+    );
   }, [jurisdiction?.boundaryType, data?.MdmsRes]);
 
   useEffect(() => {
@@ -184,6 +206,31 @@ function Jurisdiction({
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, boundary: value } : item)));
   };
 
+  const handleService = (value) => {
+    console.log("value", value);
+
+    const groupId = value?.groupId;
+
+    const rolesData = data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles;
+
+    console.log("rolesData==", rolesData);
+
+    const filterData = rolesData?.filter((item) => item?.groupId == groupId);
+    console.log("filterData==", filterData);
+
+    const mapRoles = filterData?.map((roles) => {
+      return { code: roles.code, name: roles?.name ? roles?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + roles.code };
+    });
+
+    console.log("mapRoles", mapRoles);
+
+    setRoles(mapRoles);
+
+    // return data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles.map((role) => {
+    //   return { code: role.code, name: role?.name ? role?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + role.code };
+    // });
+  };
+
   const selectrole = (e, data) => {
     // const index = jurisdiction?.roles.filter((ele) => ele.code == data.code);
     // let res = null;
@@ -194,22 +241,25 @@ function Jurisdiction({
     //   res = [{ ...data }, ...jurisdiction?.roles];
     // }
     let res = [];
-    e && e?.map((ob) => {
-      res.push(ob?.[1]);
+    e &&
+      e?.map((ob) => {
+        res.push(ob?.[1]);
+      });
+
+    res?.forEach((resData) => {
+      resData.labelKey = "ACCESSCONTROL_ROLES_ROLES_" + resData.code;
     });
 
-    res?.forEach(resData => {resData.labelKey = 'ACCESSCONTROL_ROLES_ROLES_' + resData.code})
+    console.log("res====", res);
 
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, roles: res } : item)));
   };
-
 
   const onRemove = (index, key) => {
     let afterRemove = jurisdiction?.roles.filter((value, i) => {
       return i !== index;
     });
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, roles: afterRemove } : item)));
-
   };
   return (
     <div key={jurisdiction?.keys} style={{ marginBottom: "16px" }}>
@@ -270,6 +320,20 @@ function Jurisdiction({
         </LabelFieldPair>
 
         <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("SELECT_SERVICE")} * `}</CardLabel>
+          <Dropdown
+            className="form-field"
+            isMandatory={true}
+            selected={jurisdiction?.boundary}
+            // disable={Boundary?.length === 0}
+            option={roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups}
+            select={handleService}
+            optionKey="groupName"
+            t={t}
+          />
+        </LabelFieldPair>
+
+        <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("HR_COMMON_TABLE_COL_ROLE")} *</CardLabel>
           <div className="form-field">
             <MultiSelectDropdown
@@ -277,9 +341,10 @@ function Jurisdiction({
               isMandatory={true}
               defaultUnit="Selected"
               selected={jurisdiction?.roles}
-              options={getroledata(roleoption)}
+              // options={getroledata(roleoption)}
+              options={getRoles}
               onSelect={selectrole}
-              optionsKey="labelKey"
+              optionsKey="name"
               t={t}
             />
             <div className="tag-container">

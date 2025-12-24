@@ -56,7 +56,19 @@ const CLUApplicantDetails = (_props) => {
       setLoader(false)
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setOwnerIdList((prev) => [ ...prev, { fileStoreId: fileId, fileName: file.name } ]);
+        setOwnerIdList((prev)=>{
+           const next = [...prev];
+           const newItem = { fileStoreId: fileId, fileName: file.name };
+
+           if(index <= next?.length){
+             next[index] = newItem;
+           }else{
+             next.push(newItem)
+           }
+
+           return next;
+         });
+        setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
       }
@@ -88,7 +100,18 @@ const CLUApplicantDetails = (_props) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setOwnerPhotoList((prev) => [ ...prev, { fileStoreId: fileId, fileName: file.name } ]);
+         setOwnerPhotoList((prev)=>{
+           const next = [...prev];
+           const newItem = { fileStoreId: fileId, fileName: file.name };
+           if(index <= next?.length){
+             next[index] = newItem;
+           }else{
+             next.push(newItem)
+           }
+
+           return next;
+         });
+        setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -213,19 +236,22 @@ const getOwnerDetails = async (idx) => {
     deleteOwnerId(index);
     deleteOwnerPhoto(index);
  
-    const filteredOwners= currentStepData?.applicationDetails?.owners?.filter((item, idx)=> idx !== index);
+    const filteredOwners = currentStepData?.applicationDetails?.owners?.filter((item, idx)=> idx !== index);
 
-    dispatch(UPDATE_OBPS_FORM("applicationDetails",
-    {
-     ...currentStepData?.applicationDetails,
-     owners:filteredOwners
-    }));
+    // if(filteredOwners?.length > 0){
 
-    remove(index);
+    // dispatch(UPDATE_OBPS_FORM("applicationDetails",
+    // {
+    //  ...currentStepData?.applicationDetails,
+    //  owners:filteredOwners
+    // }));
+    // }
+     remove(index);
+    
   }
 
-  // console.log("ownerIdList (local)==>", ownerIdList);
-  // console.log("ownerPhotoList (local)==>", ownerPhotoList);
+  console.log("ownerIdList (local)==>", ownerIdList);
+  console.log("ownerPhotoList (local)==>", ownerPhotoList);
 
   return (
     <React.Fragment>
@@ -241,7 +267,7 @@ const getOwnerDetails = async (idx) => {
         {fields.map((field, index) => (
           <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
             <CardSectionSubText >
-             {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("BPA_OWNER")} ${index + 1}`}
+             {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}
             </CardSectionSubText>
 
             <div

@@ -475,7 +475,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   return (
     <React.Fragment>
       {/* {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
-      <div>
+      <div className="bpa-stepper-form-container">
         <FormStep
           t={t}
           config={{
@@ -490,164 +490,163 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
           onSelect={goNext}
           onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */
         >
-          <CardSubHeader>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row
-              className="border-none"
-             
-              label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
-              text={data?.edcrNumber}
-              
-            
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
-              text={
-                <SubmitBar
-                  label={t("Uploaded Plan.pdf")}
-                  // jumpTo={data?.updatedDxfFile}
-                  onSubmit={() => {
-                    routeTo(data?.updatedDxfFile);
-                  }}
-                />
-              }
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
-              text={
-                <SubmitBar
-                  label={t("BPA_SCRUTINY_REPORT_PDF")}
-                  // jumpTo={data?.planReport}
-                  onSubmit={() => {
-                    routeTo(data?.planReport);
-                  }}
-                />
-              }
-            ></Row>
-          </StatusTable>
-          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
-          <CardSubHeader >
-            {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
-          </CardSubHeader>
-          <StatusTable >
-            <Row
-              className="border-none"
-              label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
-              text={
-                data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
-                  ? `${Number(data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
-                  : t("NA")
-              }
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}
-              text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_HEIGHT_FROM_GROUND_BUILDING")}
-              text={
-                data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
-                  ? `${Number(data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight).toFixed(2)} ${t("BPA_MTRS_LABEL")}`
-                  : t("NA")
-              }
-            ></Row>
-          </StatusTable>
+          <div className="bpa-stepper-form-section">
+            <CardSubHeader className="bpa-section-header">{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+            <StatusTable>
+              <Row
+                className="border-none"
+                label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
+                text={data?.edcrNumber}
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
+                text={
+                  <SubmitBar
+                    label={t("Uploaded Plan.pdf")}
+                    onSubmit={() => {
+                      routeTo(data?.updatedDxfFile);
+                    }}
+                  />
+                }
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
+                text={
+                  <SubmitBar
+                    label={t("BPA_SCRUTINY_REPORT_PDF")}
+                    onSubmit={() => {
+                      routeTo(data?.planReport);
+                    }}
+                  />
+                }
+              ></Row>
+            </StatusTable>
+          </div>
 
-          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
-          <CardSubHeader >
-            {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
-          </CardSubHeader>
-          <StatusTable>
-            <Row
-              className="border-none"
-              label={t("BPA_PERMISSIBLE_FAR")}
-              text={data?.planDetail?.farDetails?.permissableFar !== null ? data?.planDetail?.farDetails?.permissableFar : "N/A"}
+          <div className="bpa-stepper-form-section">
+            <CardSubHeader className="bpa-section-header">
+              {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
+            </CardSubHeader>
+            <StatusTable>
+              <Row
+                className="border-none"
+                label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
+                text={
+                  data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
+                    ? `${Number(data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+                    : t("NA")
+                }
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}
+                text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_HEIGHT_FROM_GROUND_BUILDING")}
+                text={
+                  data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
+                    ? `${Number(data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight).toFixed(2)} ${t("BPA_MTRS_LABEL")}`
+                    : t("NA")
+                }
+              ></Row>
+            </StatusTable>
+          </div>
 
-              // text={t("N/A")}
-            ></Row>
-            {/* <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row> */}
-            <Row
-              className="border-none"
-              label={t("BPA_FAR_ACHIEVED")}
-              text={data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"}
-            ></Row>
-            {data?.planDetail?.plot?.area >= 100 && (
-              <React.Fragment>
-                <Row
-                  className="border-none"
-                  label={t("BPA_ECS_REQUIRED")}
-                  text={
-                    data?.planDetail?.reportOutput?.scrutinyDetails
-                      ?.find((item) => item?.key === "Common_Parking")
-                      ?.detail?.find((item) => item?.Description === "Parking")?.Required || "NA"
-                  }
-                ></Row>
-                <Row
-                  className="border-none"
-                  label={t("BPA_ECS_PROVIDED")}
-                  text={
-                    data?.planDetail?.reportOutput?.scrutinyDetails
-                      ?.find((item) => item?.key === "Common_Parking")
-                      ?.detail?.find((item) => item?.Description === "Parking")?.Provided || "NA"
-                  }
-                ></Row>
-              </React.Fragment>
-            )}
-          </StatusTable>
+          <div className="bpa-stepper-form-section">
+            <CardSubHeader className="bpa-section-header">
+              {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
+            </CardSubHeader>
+            <StatusTable>
+              <Row
+                className="border-none"
+                label={t("BPA_PERMISSIBLE_FAR")}
+                text={data?.planDetail?.farDetails?.permissableFar !== null ? data?.planDetail?.farDetails?.permissableFar : "N/A"}
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_FAR_ACHIEVED")}
+                text={data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"}
+              ></Row>
+              {data?.planDetail?.plot?.area >= 100 && (
+                <React.Fragment>
+                  <Row
+                    className="border-none"
+                    label={t("BPA_ECS_REQUIRED")}
+                    text={
+                      data?.planDetail?.reportOutput?.scrutinyDetails
+                        ?.find((item) => item?.key === "Common_Parking")
+                        ?.detail?.find((item) => item?.Description === "Parking")?.Required || "NA"
+                    }
+                  ></Row>
+                  <Row
+                    className="border-none"
+                    label={t("BPA_ECS_PROVIDED")}
+                    text={
+                      data?.planDetail?.reportOutput?.scrutinyDetails
+                        ?.find((item) => item?.key === "Common_Parking")
+                        ?.detail?.find((item) => item?.Description === "Parking")?.Provided || "NA"
+                    }
+                  ></Row>
+                </React.Fragment>
+              )}
+            </StatusTable>
+          </div>
 
-          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
-          <CardSubHeader>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
-          {data?.planDetail?.blocks?.map((block, index) => (
-            <div key={index} >
-              <CardSubHeader >
-                {t("BPA_BLOCK_SUBHEADER")} {index + 1}
-              </CardSubHeader>
-              <StatusTable>
-                <Row
-                  className="border-none"
-                 
-                  label={t("BPA_SUB_OCCUPANCY_LABEL")}
-                  text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
-                />
-              </StatusTable>
+          <div className="bpa-stepper-form-section">
+            <CardSubHeader className="bpa-section-header">{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+            {data?.planDetail?.blocks?.map((block, index) => (
+              <div key={index} className="bpa-block-section">
+                <CardSubHeader className="bpa-block-header">
+                  {t("BPA_BLOCK_SUBHEADER")} {index + 1}
+                </CardSubHeader>
+                <StatusTable>
+                  <Row
+                    className="border-none"
+                    label={t("BPA_SUB_OCCUPANCY_LABEL")}
+                    text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+                  />
+                </StatusTable>
 
-              <div >
-                <Table
-                  className="customTable table-fixed-first-column table-border-style"
-                  t={t}
-                  disableSort={true}
-                  autoSort={false}
-                  manualPagination={false}
-                  isPaginationRequired={false}
-                  initSortId="S N "
-                  data={getFloorData(block)}
-                  columns={tableColumns}
-                  showFooter={true}
-                  getCellProps={(cellInfo) => {
-                    return {
-                      style: {},
-                    };
-                  }}
-                />
+                <div className="bpa-table-container">
+                  <Table
+                    className="customTable table-fixed-first-column table-border-style"
+                    t={t}
+                    disableSort={true}
+                    autoSort={false}
+                    manualPagination={false}
+                    isPaginationRequired={false}
+                    initSortId="S N "
+                    data={getFloorData(block)}
+                    columns={tableColumns}
+                    showFooter={true}
+                    getCellProps={(cellInfo) => {
+                      return {
+                        style: {},
+                      };
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-          {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
-          <CardSubHeader>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
-          <StatusTable>
-            <Row
-              label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
-              text={
-                data?.planDetail?.planInformation?.demolitionArea
-                  ? `${data?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
-                  : t("CS_NA")
-              }
-            ></Row>
-          </StatusTable>
+            ))}
+          </div>
+
+          <div className="bpa-stepper-form-section">
+            <CardSubHeader className="bpa-section-header">{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+            <StatusTable>
+              <Row
+                label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
+                text={
+                  data?.planDetail?.planInformation?.demolitionArea
+                    ? `${data?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
+                    : t("CS_NA")
+                }
+              ></Row>
+            </StatusTable>
+          </div>
         </FormStep>
         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
       </div>

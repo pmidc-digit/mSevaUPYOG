@@ -28,7 +28,7 @@ export const TableConfig = (t) => ({
             </div>
           );
         },
-        mobileCell: (original) => GetMobCell(original?.searchData?.["applicationNumber"]),
+        mobileCell: (original) => GetMobCell(original?.searchData?.applicationNumber),
       },
 
       {
@@ -77,6 +77,6 @@ export const TableConfig = (t) => ({
         },
       },
     ],
-    serviceRequestIdKey: (original) => original?.[t("PTR_INBOX_UNIQUE_APPLICATION_NUMBER")]?.props?.children,
+    serviceRequestIdKey: (original) => original?.[t("Application Number")]?.props?.children,
   },
 });

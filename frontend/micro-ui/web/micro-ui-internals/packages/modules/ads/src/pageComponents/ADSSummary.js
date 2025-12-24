@@ -22,78 +22,14 @@ function ADSSummary({ t }) {
     : Array.isArray(formData.documents)
     ? formData.documents
     : [];
-
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 0",
-    borderRadius: "8px",
-    marginBottom: "1.5rem",
-    boxShadow: "0 2px 6px rgba(18,38,63,0.04)",
-  };
-
-  const headerRow = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "0.75rem",
-    padding: "0 1.5rem",
-  };
-  const headerRow1 = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "0.75rem",
-  };
-
-  const headingStyle = {
-    fontSize: "1.25rem",
-    color: "#0d43a7",
-    fontWeight: "600",
-    margin: 0,
-  };
-
-  const editLabelStyle = {
-    cursor: "pointer",
-    color: "#2e86de",
-    fontWeight: 600,
-    fontSize: "0.9rem",
-  };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e9eef2",
-    padding: "0.6rem 1.5rem",
-    alignItems: "center",
-  };
-
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-    marginTop: "0.5rem",
-  };
-
-  const documentCardStyle = {
-    flex: "1 1 220px",
-    minWidth: "180px",
-    maxWidth: "260px",
-    backgroundColor: "#fbfcfe",
-    padding: "0.6rem",
-    border: "1px solid #eef3f7",
-    borderRadius: "6px",
-  };
-
-  const boldLabelStyle = { fontWeight: "500", color: "#333" };
-
   const cartDetails = formData?.ads;
 
   const renderRow = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+    <div className="ads-summary-row">
+      <div className="ads-summary-row-label">
+        <CardLabel className="ads-summary-bold">{label}</CardLabel>
       </div>
-      <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
+      <div className="ads-summary-row-value">{value || "NA"}</div>
     </div>
   );
 
@@ -102,10 +38,10 @@ function ADSSummary({ t }) {
   return (
     <div className="application-summary">
       <Card className="summary-section">
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{TT("ADS_APPLICANT_DETAILS")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+        <div className="ads-summary-section">
+          <div className="ads-summary-header">
+            <h3 className="ads-summary-heading">{TT("ADS_APPLICANT_DETAILS")}</h3>
+            <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
               {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
@@ -118,10 +54,10 @@ function ADSSummary({ t }) {
       </Card>
 
       <Card className="summary-section">
-        <div style={sectionStyle}>
-          <div style={headerRow1}>
-            <h3 style={headingStyle}>{TT("ADS_DETAILS")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
+        <div className="ads-summary-section">
+          <div className="ads-summary-header--compact">
+            <h3 className="ads-summary-heading">{TT("ADS_DETAILS")}</h3>
+            <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
               {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
@@ -131,24 +67,24 @@ function ADSSummary({ t }) {
       </Card>
 
       <Card className="summary-section">
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{TT("ADS_DOCUMENTS_DETAILS")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
+        <div className="ads-summary-section">
+          <div className="ads-summary-header">
+            <h3 className="ads-summary-heading">{TT("ADS_DOCUMENTS_DETAILS")}</h3>
+            <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
               {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
           {docs?.length > 0 ? (
-            <div style={documentsContainerStyle}>
+            <div className="ads-summary-docs">
               {docs.map((doc, idx) => (
-                <div key={idx} style={documentCardStyle}>
+                <div key={idx} className="ads-summary-doc-card">
                   <ADSDocument value={docs} Code={doc?.documentType} index={idx} />
                   {TT(doc?.documentType)}
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+            <div className="ads-summary-no-docs">{t("TL_NO_DOCUMENTS_MSG")}</div>
           )}
         </div>
       </Card>

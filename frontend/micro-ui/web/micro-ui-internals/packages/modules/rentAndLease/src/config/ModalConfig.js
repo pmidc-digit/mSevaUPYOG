@@ -14,13 +14,13 @@ export const ModalConfig = ({
   businessService,
 }) => {
   let checkAssigneeVisible =
-    action?.action === "SENDBACKTOOVERIFIER" ||
-    action?.action === "VERIFY" ||
-    action?.action === "FORWARD" ||
-    action?.action === "FORWARDFORFIELDINSPECTION" ||
+    // action?.action === "SENDBACKTOOVERIFIER" ||
+    // action?.action === "VERIFY" ||
+    // action?.action === "FORWARD" ||
+    // action?.action === "FORWARDFORFIELDINSPECTION" ||
+    // action?.action === "FORWARDFORAPPROVAL" ||
     action?.action === "PENDING_FOR_FIELDINSPECTION" ||
     action?.action === "FORWARD_FOR_APPROVAL" ||
-    action?.action === "FORWARDFORAPPROVAL" ||
     action?.action === "PENDING_FOR_DOCUMENT_VERIFY" ||
     action?.action === "REQUEST_FOR_DISCONNECTION" ||
     action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
@@ -107,10 +107,21 @@ export const ModalConfig = ({
                 onDelete={() => {
                   setUploadedFile(null);
                 }}
-                message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                message={uploadedFile ? `1 ${t("ES_PT_ACTION_FILEUPLOADED")}` : t("CS_ACTION_NO_FILEUPLOADED")}
               />
             ),
           },
+          ...(action?.action === "FORWARD_FOT_SETLEMENT"
+            ? [
+                {
+                  label: `${t("RAL_PROPERTY_DAMAGE_PENALTY")}`,
+                  type: "number",
+                  populators: {
+                    name: "amountToBeDeducted",
+                  },
+                },
+              ]
+            : []),
         ],
       },
     ],

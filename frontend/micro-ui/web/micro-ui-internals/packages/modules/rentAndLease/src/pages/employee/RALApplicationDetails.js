@@ -84,9 +84,29 @@ const RALApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  if (actions?.some((action) => action.action === "REQUEST_FOR_DISCONNECTION") && Date.now() >= applicationData?.endDate - 15 * 24 * 60 * 60 * 1000) {
+  if (
+    actions?.some((action) => action?.action === "REQUEST_FOR_DISCONNECTION") &&
+    !applicationData?.expireFlag &&
+    Date.now() >= applicationData?.endDate - 15 * 24 * 60 * 60 * 1000
+  ) {
     actions = [...(actions || []), { action: "RENEWAL" }];
   }
+
+  actions = actions?.filter((action) => {
+    if (action.action === "PAY_SETTLEMENT_AMOUNT") {
+      return (
+        applicationData?.amountToBeDeducted > 0 &&
+        applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 &&
+        applicationData?.amountToBeRefund == 0
+      );
+    }
+    if (action.action === "CLOSE") {
+      return applicationData?.amountToBeRefund > 0;
+    }
+    return true;
+  });
+
+  console.log("actions", actions);
 
   const closeToast = () => {
     setShowToast(null);
@@ -114,9 +134,9 @@ const RALApplicationDetails = () => {
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState?.[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions || []);
 
-    if (action?.action == "APPLY" || action?.action == "REJECT" || action?.action == "CASH_REFUND") {
+    if (action?.action == "APPLY" || action?.action == "REJECT" || action?.action == "CLOSED" || action?.action == "CLOSE") {
       submitAction(payload);
-    } else if (action?.action == "PAY") {
+    } else if (action?.action == "PAY" || action?.action == "PAY_SETTLEMENT_AMOUNT") {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
     } else if (action?.action === "RAL_RENEWAL") {
@@ -159,6 +179,11 @@ const RALApplicationDetails = () => {
       comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
+
+    if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
+      updatedApplicant.amountToBeDeducted = filtData.amountToBeDeducted;
+    }
+
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
     //   setShowToast({ key: "error", message: "Assignee is mandatory" });
@@ -238,6 +263,7 @@ const RALApplicationDetails = () => {
         previousApplicationNumber: data?.applicationNumber,
         OwnerInfo: sanitizedOwners,
         tradeLicenseNumber: data?.tradeLicenseNumber,
+        registrationNumber: data?.registrationNumber,
         additionalDetails: data?.additionalDetails,
         startDate: newStart.getTime(),
         endDate: newEnd.getTime(),
@@ -309,9 +335,14 @@ const RALApplicationDetails = () => {
                         {t("RAL_OWNER")} {index + 1}
                       </CardSectionHeader>
                     )}
+
                     <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={owner?.name || t("CS_NA")} />
                     <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                     <Row label={t("CORE_MOBILE_NUMBER")} text={owner?.mobileNo || t("CS_NA")} />
+                    <Row
+                      label={t("PT_COMMON_COL_ADDRESS")}
+                      text={owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || t("CS_NA")}
+                    />
                     <Row
                       label={t("CORE_COMMON_PINCODE")}
                       text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
@@ -336,8 +367,7 @@ const RALApplicationDetails = () => {
             <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={propertyDetails?.propertyType || t("CS_NA")} />
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
-            <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
-            {/* <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} /> */}
+            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} />
             <Row
               label={t("RAL_FEE_CYCLE")}
               text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
@@ -346,6 +376,12 @@ const RALApplicationDetails = () => {
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
             <Row label={t("RAL_START_DATE")} text={getDate(applicationData?.startDate) || t("CS_NA")} />
             <Row label={t("RAL_END_DATE")} text={getDate(applicationData?.endDate) || t("CS_NA")} />
+            {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={applicationData?.amountToBeDeducted} />}
+            <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 && (
+              <Row label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")} text={applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit} />
+            )}
+            {applicationData?.amountToBeRefund > 0 && <Row label={t("RAL_AMOUNT_TO_REFUND")} text={applicationData?.amountToBeRefund} />}
             {applicationData?.tradeLicenseNumber && (
               <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={applicationData?.tradeLicenseNumber || t("CS_NA")} />
             )}
@@ -369,7 +405,7 @@ const RALApplicationDetails = () => {
         </Card>
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-        {applicationData?.status != "INITIATED" && actions?.length > 0 && (
+        {applicationData?.status != "INITIATED" && actions?.length > 0 && !applicationData?.expireFlag && (
           <ActionBar>
             <div ref={menuRef}>
               {displayMenu ? (

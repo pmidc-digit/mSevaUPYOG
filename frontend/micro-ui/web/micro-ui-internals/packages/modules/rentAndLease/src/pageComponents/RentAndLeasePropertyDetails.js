@@ -97,7 +97,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "",
       securityDeposit: "",
       refundApplicableOnDiscontinuation: null,
-      // penaltyType: "",
+      penaltyType: "",
       // latePayment: "",
       startDate: "",
       endDate: "",
@@ -157,7 +157,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       "baseRent",
       "securityDeposit",
       "refundApplicableOnDiscontinuation",
-      // "penaltyType",
+      "penaltyType",
       // "latePayment",
       // "cowCessApplicable",
       // "taxApplicable"
@@ -464,9 +464,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {errors.baseRent && <CardLabelError className="ral-error-label">{getErrorMessage("baseRent")}</CardLabelError>}
 
       {/* Penalty Type */}
-      {/* <LabelFieldPair>
+      <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("PENALTY_TYPE")} <span style={mandatoryStyle}>*</span>
+          {t("PENALTY_TYPE")} <span>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -479,7 +479,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.penaltyType && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>} */}
+      {errors.penaltyType && <CardLabelError>{getErrorMessage("penaltyType")}</CardLabelError>}
 
       {/* Security Amount */}
       <LabelFieldPair>

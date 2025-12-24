@@ -190,6 +190,10 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     title: t("PT_PROPERTY_DETAILS"),
     values: [
       {
+        title: t("STATUS"),
+        value: t(application?.status) || "NA",
+      },
+      {
         title: t("PROPERTY_ID"),
         value: t(application?.additionalDetails?.propertyId) || "NA",
       },

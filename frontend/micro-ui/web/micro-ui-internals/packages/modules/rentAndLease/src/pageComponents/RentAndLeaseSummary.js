@@ -34,7 +34,7 @@ function RentAndLeaseSummary({ t }) {
     securityDeposit: t("SECURITY_DEPOSIT"),
     tax_applicable: t("GST_APPLICABLE"),
     refundApplicableOnDiscontinuation: t("REFUND_APPLICABLE"),
-    // penaltyType: t("PENALTY_TYPE"),
+    penaltyType: t("PENALTY_TYPE"),
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
 

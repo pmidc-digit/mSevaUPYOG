@@ -5,11 +5,7 @@ import { Switch, useLocation, Link } from "react-router-dom";
 import { PrivateRoute } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import ChallanApplicationDetails from "./ChallanApplicationDetails";
-// import EmployeeChallan from "../../EmployeeChallan";
-// import CreateChallen from "../employee/CreateChallan";
-// import MCollectAcknowledgement from "../employee/EmployeeChallanAcknowledgement";
-// import EditChallan from "../employee/EditChallan/index";
-// import NewChallan from "./NewChallan";
+
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -53,8 +49,6 @@ const EmployeeApp = ({ path, url, userType }) => {
   const NewChallan = Digit?.ComponentRegistryService?.getComponent("MCollectNewChallan");
   const SearchReceiptPage = Digit?.ComponentRegistryService?.getComponent("SearchReceipt");
   const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("SearchChallan");
-  const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
-  const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
   const ChallanSearch = Digit?.ComponentRegistryService?.getComponent("ChallanStepperForm");
   const ChallanResponseCitizen = Digit?.ComponentRegistryService?.getComponent("ChallanResponseCitizen");
 
@@ -93,9 +87,9 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}
           <PrivateRoute path={`${path}/search-receipt`} component={() => <SearchReceiptPage />} />{" "}
           <PrivateRoute path={`${path}/search-challan`} component={() => <SearchChallanPage parentRoute={path} />} />{" "}
-          <PrivateRoute path={`${path}/search-bill`} component={() => <SearchBillPage />} />{" "}
-          <PrivateRoute path={`${path}/group-bill`} component={() => <GroupBillPage />} />{" "}
-          <PrivateRoute path={`${path}/generate-challan`} component={ChallanSearch} />
+          {/* <PrivateRoute path={`${path}/search-bill`} component={() => <SearchBillPage />} />{" "}
+          <PrivateRoute path={`${path}/group-bill`} component={() => <GroupBillPage />} />{" "} */}
+          <PrivateRoute path={`${path}/generate-challan`} component={() => <ChallanSearch />} />
           <PrivateRoute path={`${path}/response/:id`} component={ChallanResponseCitizen} />
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ChallanApplicationDetails} />
         </div>

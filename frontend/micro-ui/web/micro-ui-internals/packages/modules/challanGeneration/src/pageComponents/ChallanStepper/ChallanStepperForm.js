@@ -16,7 +16,7 @@ import {
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
-import { SET_ChallanApplication_STEP, RESET_ChallanAPPLICATION_FORM } from "../../../redux/action/ChallanApplicationActions";
+import { SET_ChallanApplication_STEP } from "../../../redux/action/ChallanApplicationActions";
 import SelectNDCDocuments from "../ChallanDocuments";
 
 const ChallanStepperForm = () => {
@@ -24,9 +24,6 @@ const ChallanStepperForm = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.challan.ChallanApplicationFormReducer);
-  const formData = formState.formData;
-  const step = formState.step;
   const [loader, setLoader] = useState(false);
   const [error, setError] = useState(null);
   const [documentsData, setDocumentsData] = useState({});
@@ -57,25 +54,6 @@ const ChallanStepperForm = () => {
       shouldUnregister: false,
     },
   });
-
-  const setStep = (updatedStepNumber) => {
-    dispatch(SET_ChallanApplication_STEP(updatedStepNumber));
-  };
-
-  useEffect(() => {
-    dispatch(RESET_ChallanAPPLICATION_FORM());
-  }, []);
-
-  // const handleSubmit = (dataGet) => {
-  //   //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
-  //   // let data = {};
-  //   // createEmployeeConfig.forEach((config) => {
-  //   //   if (config.isStepEnabled) {
-  //   //     data = { ...data, ...formData[config.key] };
-  //   //   }
-  //   // });
-  //   // onSubmit(data, tenantId, setShowToast, history);
-  // };
 
   const onSubmit = async (data) => {
     let missingDocs = [];
@@ -136,14 +114,6 @@ const ChallanStepperForm = () => {
     }
   };
 
-  const debounce = (func, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  };
-
   const handleMobileChange = async (value) => {
     setLoader(true);
     try {
@@ -158,11 +128,6 @@ const ChallanStepperForm = () => {
       setLoader(false);
     }
   };
-
-  const debouncedHandleMobileChange = React.useMemo(
-    () => debounce(handleMobileChange, 500), // 500ms delay after user stops typing
-    []
-  );
 
   const handleRates = (val) => {
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
@@ -217,15 +182,13 @@ const ChallanStepperForm = () => {
                     value={props.value}
                     maxlength={10}
                     onChange={(e) => {
-                      console.log("eee", e);
                       props.onChange(e);
                       setValue("name", "");
                       setValue("address", "");
                       // ✅ updates react-hook-form
-                      if (e.length === 10) {
+                      if (e.length == 10) {
                         handleMobileChange(e); // 🔥 only then fire API
                       }
-                      // debouncedHandleMobileChange(e);
                     }}
                     onBlur={props.onBlur}
                     t={t}

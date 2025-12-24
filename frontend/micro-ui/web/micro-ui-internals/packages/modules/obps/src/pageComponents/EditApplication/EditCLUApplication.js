@@ -139,19 +139,38 @@ const CLUEditApplication = () => {
 
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-  selectedDistrict?.code,
-  "revenue",
-  { enabled: !!selectedDistrict },
-  t
- );
+//   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+//   selectedDistrict?.code,
+//   "revenue",
+//   { enabled: !!selectedDistrict },
+//   t
+//  );
 
  //console.log("fetchedLocalities", fetchedLocalities);
 
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
+
+//   useEffect(() => {
+//   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+//     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
+//     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
+
+//     if (matchedZone) {
+//       dispatch(
+//         UPDATE_OBPS_FORM("siteDetails", {
+//           ...formData.siteDetails,
+//           zone: matchedZone,
+//         })
+//       );
+//     }
+//   }
+// }, [fetchedLocalities, siteDetails?.zone]);
+
   useEffect(() => {
-  if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+  if (zoneOptions?.length > 0 && siteDetails?.zone) {
     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-    const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
+    const matchedZone = zoneOptions?.find((loc) => loc.name === zoneName);
 
     if (matchedZone) {
       dispatch(
@@ -162,7 +181,7 @@ const CLUEditApplication = () => {
       );
     }
   }
-}, [fetchedLocalities, siteDetails?.zone]);
+}, [zoneOptions, siteDetails?.zone]);
 
 
   useEffect(() => {

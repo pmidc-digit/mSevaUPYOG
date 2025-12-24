@@ -342,7 +342,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
 
   let detailsArr = [], imageURL = "";
 
-  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.fileStoreId || "";
+  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
 
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 

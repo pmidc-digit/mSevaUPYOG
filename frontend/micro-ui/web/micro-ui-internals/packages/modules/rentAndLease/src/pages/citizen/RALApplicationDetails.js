@@ -139,6 +139,10 @@ const RALApplicationDetails = () => {
                     <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                     <Row label={t("CORE_MOBILE_NUMBER")} text={owner?.mobileNo || t("CS_NA")} />
                     <Row
+                      label={t("PT_COMMON_COL_ADDRESS")}
+                      text={owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || t("CS_NA")}
+                    />
+                    <Row
                       label={t("CORE_COMMON_PINCODE")}
                       text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
                     />
@@ -159,8 +163,7 @@ const RALApplicationDetails = () => {
             <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={propertyDetails?.propertyType || t("CS_NA")} />
             <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
-            <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
-            {/* <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} /> */}
+            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} />
             <Row
               label={t("RAL_FEE_CYCLE")}
               text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
@@ -169,6 +172,13 @@ const RALApplicationDetails = () => {
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
             <Row label={t("RAL_START_DATE")} text={getDate(applicationData?.startDate) || t("CS_NA")} />
             <Row label={t("RAL_END_DATE")} text={getDate(applicationData?.endDate) || t("CS_NA")} />
+            {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={applicationData?.amountToBeDeducted} />}
+            <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 && (
+              <Row label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")} text={applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit} />
+            )}
+
+            {applicationData?.amountToBeRefund > 0 && <Row label={t("RAL_AMOUNT_TO_REFUND")} text={applicationData?.amountToBeRefund} />}
             {applicationData?.tradeLicenseNumber && (
               <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={applicationData?.tradeLicenseNumber || t("CS_NA")} />
             )}

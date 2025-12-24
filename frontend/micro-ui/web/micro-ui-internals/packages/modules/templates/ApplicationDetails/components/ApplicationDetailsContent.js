@@ -86,7 +86,7 @@ function ApplicationDetailsContent({
       accessor: "url",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />

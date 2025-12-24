@@ -25,10 +25,10 @@ export const LayoutModalConfig = ({
   if (action.isTerminateState) checkCondtions = false
 
   return {
-    label: {
-      heading: `WF_EMPLOYEE_LAYOUT_${action?.action}`,
-      submit: `WF_EMPLOYEE_LAYOUT_${action?.action}`,
-      cancel: "WF_EMPLOYEE_LAYOUT_CANCEL",
+  label: {
+      heading: action?.action === "APPROVE" ? `WF_EMPLOYEE_APPROVE_APPLICATION` : `WF_EMPLOYEE_FORWARD_APPLICATION`,
+      submit: `WF_EMPLOYEE_BPA_${action?.action}`,
+      cancel: "WF_EMPLOYEE_BPA_CANCEL",
     },
     form: [
       {

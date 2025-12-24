@@ -132,6 +132,7 @@ const EditLayoutApplication = () => {
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(selectedDistrict?.code, "revenue", { enabled: !!selectedDistrict }, t);
 
   const isDataInitialized = useRef(false);
+  const hasResetForm = useRef(false);
 
   useEffect(() => {
     console.log("[v0] Loading states:", {
@@ -180,7 +181,7 @@ const EditLayoutApplication = () => {
     displayName: t(city.i18nKey),
   }));
 
-  const { data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+  const { data: genderTypeData, isLoading: isGenderLoading } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
   const menu = [];
   genderTypeData &&
     genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active)?.map((genderDetails) => {
@@ -328,8 +329,18 @@ const EditLayoutApplication = () => {
 
   // <CHANGE> Simplify useEffect - remove the ref and complex initialization
   useEffect(() => {
-    dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
-    if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading) {
+    // Reset form only once when component mounts
+    if (!hasResetForm.current) {
+      dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
+      hasResetForm.current = true;
+    }
+    
+    // Wait for all required data to be loaded including gender data
+    // Also prevent re-initialization
+    if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
+      isDataInitialized.current = true;
+      console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
+      
       const formattedDocuments = {
         documents: {
           documents: documents?.map((doc) => ({
@@ -384,9 +395,60 @@ const EditLayoutApplication = () => {
         })
       );
 
+      // Map owners array to applicants format for the form (skip first owner as it's the primary applicant)
+      const ownersFromApi = layoutObject?.owners || [];
+      console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
+      
+      if (ownersFromApi.length > 1) {
+        // Map additional owners (skip index 0 as it's the primary owner already in applicationDetails)
+        const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
+          // Convert timestamp to YYYY-MM-DD format for date input
+          let formattedDob = "";
+          if (owner?.dob) {
+            const dobDate = new Date(owner.dob);
+            const year = dobDate.getFullYear();
+            const month = String(dobDate.getMonth() + 1).padStart(2, "0");
+            const day = String(dobDate.getDate()).padStart(2, "0");
+            formattedDob = `${year}-${month}-${day}`;
+          }
+
+          // Map gender to the dropdown format
+          const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
+
+          return {
+            name: owner?.name || "",
+            fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+            mobileNumber: owner?.mobileNumber || "",
+            emailId: owner?.emailId || "",
+            address: owner?.permanentAddress || "",
+            dob: formattedDob,
+            gender: genderObj,
+            // Store original owner data for reference
+            uuid: owner?.uuid || "",
+            id: owner?.id || "",
+          };
+        });
+
+        // Keep the first empty placeholder at index 0, then add additional applicants
+        // This is because the render logic in LayoutApplicantDetails skips index 0 (index > 0)
+        const emptyPlaceholder = {
+          name: "",
+          fatherOrHusbandName: "",
+          mobileNumber: "",
+          emailId: "",
+          address: "",
+          dob: "",
+          gender: "",
+        };
+
+        console.log("[EditLayoutApplication] additionalApplicants mapped:", additionalApplicants);
+        // Dispatch additional applicants to Redux with empty placeholder at index 0
+        dispatch(UPDATE_LayoutNewApplication_FORM("applicants", [emptyPlaceholder, ...additionalApplicants]));
+      }
+
       // dispatch(UPDATE_LayoutNewApplication_FORM("apiData", {...applicationDetails, apiData: editApi?.Layout?.[0] || editApi})); // Store full response like CLU
     }
-  }, [isLoading, applicationDetails, isMdmsLoading]); // Simplified dependency array
+  }, [isLoading, isUlbListLoading, isGenderLoading, layoutObject, menu.length]); // Wait for all data to load
 
   const handleSubmit = (dataGet) => {};
 

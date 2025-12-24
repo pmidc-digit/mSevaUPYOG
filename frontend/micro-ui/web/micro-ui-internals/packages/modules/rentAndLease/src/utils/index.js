@@ -229,6 +229,18 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
         title: t("Base Rent"),
         value: `Rs. ${application?.additionalDetails?.baseRent || "NA"}`,
       },
+      ...(application?.amountToBeDeducted
+        ? [
+            {
+              title: t("Penalty Amount"),
+              value: `Rs. ${application?.amountToBeDeducted}`,
+            },
+            {
+              title: t("Penalty Amount (After Security Deposit)"),
+              value: `Rs. ${application?.amountToBeDeducted - (application?.additionalDetails?.securityDeposit || 0)}`,
+            },
+          ]
+        : []),
     ],
   });
   const docDetails = application?.Document?.map((doc, index) => ({

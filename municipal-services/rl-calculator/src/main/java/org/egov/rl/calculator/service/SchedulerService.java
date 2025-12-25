@@ -55,95 +55,67 @@ public class SchedulerService {
 	@Autowired
 	DemandRepository demandRepository;
 
-
-//	public void monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-//		System.out.println("----------Monthly create demand------");
-//		boolean isBetween = !currentDate
-//				.isBefore(Instant.ofEpochMilli(d.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate())
-//				&& !currentDate
-//					 	.isAfter(Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate());
-//		if (isBetween) {
-//			LocalDate enDate = Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate();
-//			String endDateMonth = enDate.getMonth().toString();
-//			String currentMonth = currentDate.getMonth().toString();
-//			if (endDateMonth.equals(currentMonth) && enDate.getYear() == currentDate.getYear()) {
-//				long startDay = monthCalculationService
-//					 	.formatDay(monthCalculationService.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
-//				long endDay = d.getEndDate();
-//				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-//				System.out.println(startDay + "----" + endDay);
-//				d.setStartDate(startDay);
-//				d.setEndDate(endDay);
-//				demandService.createSingleDemand(exparyDate, d, requestInfo);
-//                      
-//			} else {
-//				long startDay = monthCalculationService
-//					 	.formatDay(monthCalculationService.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
-//				long endDay = monthCalculationService
-//					 	.formatDay(monthCalculationService.lastDayOfMonth(currentMonth, currentDate.getYear()), true);
-//				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-//				d.setStartDate(startDay);
-//				d.setEndDate(endDay);
-//				demandService.createSingleDemand(exparyDate, d, requestInfo);
-//			}
-//		}
-//	}
 	
-	public void monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-		System.out.println("----------Monthly create demand------");
+	public Demand monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
+		log.info("----------Monthly  Demand Creation------");
 		Demand demands=demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream().findFirst().get();
 		long diff=monthCalculationService.diffDay(demands.getTaxPeriodTo());
-		if(diff==2) {
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,3);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
+		long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,3);
+		long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		if(diff==2&&(demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(),startDay,endDay)==null)) {
 			d.setStartDate(startDay);
 			d.setEndDate(endDay);
-			demandService.createSingleDemand(expiryDate, d, requestInfo);
+			demands=demandService.createSingleDemand(expiryDate, d, requestInfo);		
 		}
-	 }
+		return demands;
+	}
 
 	
-	public void quterlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-		System.out.println("----------Quaterly create demand------");
-		Demand demands=demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream().findFirst().get();
+	public Demand quterlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
+        
+		log.info("----------Quterly  Demand Creation------");
+        Demand demands=demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream().findFirst().get();
 		long diff=monthCalculationService.diffDay(demands.getTaxPeriodTo());
-		if(diff==2) {
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,3);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
+		long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,3);
+		long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		if(diff==2&&(demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(),startDay,endDay)==null)) {
 			d.setStartDate(startDay);
 			d.setEndDate(endDay);
-			demandService.createSingleDemand(expiryDate, d, requestInfo);
+			demands=demandService.createSingleDemand(expiryDate, d, requestInfo);
 		}
+		return demands;
 	 }
 
-	public void biannualBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-		System.out.println("----------Quaterly create demand------");
+	public Demand biannualBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
+		
+		log.info("----------Quaterly create demand------");
 		Demand demands=demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream().findFirst().get();
 		long diff=monthCalculationService.diffDay(demands.getTaxPeriodTo());
-		if(diff==2) {
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,6);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
+		long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,6);
+		long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		if(diff==2&&(demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(),startDay,endDay)==null)) {
 			d.setStartDate(startDay);
 			d.setEndDate(endDay);
-			demandService.createSingleDemand(expiryDate, d, requestInfo);
+			demands=demandService.createSingleDemand(expiryDate, d, requestInfo);
 		}
+		return demands;
 	 }
     
-	public void yearlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-		System.out.println("----------Quaterly create demand------");
+	public Demand yearlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
+		log.info("----------Quaterly create demand------");
 		Demand demands=demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream().findFirst().get();
 		long diff=monthCalculationService.diffDay(demands.getTaxPeriodTo());
-		if(diff==2) {
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,12);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
+		long endDay = monthCalculationService.lastDayTimeOfCycle(startDay,12);
+		long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay,requestInfo,d.getTenantId());
+		if(diff==2&&(demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(),startDay,endDay)==null)) {
 			d.setStartDate(startDay);
 			d.setEndDate(endDay);
-			demandService.createSingleDemand(expiryDate, d, requestInfo);
+			demands=demandService.createSingleDemand(expiryDate, d, requestInfo);
 		}
+		return demands;
 	 }
-
 }

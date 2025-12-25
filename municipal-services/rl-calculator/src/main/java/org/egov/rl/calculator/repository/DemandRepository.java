@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -149,6 +150,28 @@ public class DemandRepository {
 
 		try {
 			return namedParameterJdbcTemplate.query(sql, params, demandRowMapper);
+		} catch (Exception e) {
+			log.error("Error while fetching demands for rentable IDs and period", e);
+			throw new CustomException("DEMAND_FETCH_ERROR",
+					"Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
+	
+	public Demand getDemandsByConsumerCodeAndPerioud(String rentableIds,long startDate,long endDate) {
+		
+		if (rentableIds == null) {
+			return null; // avoid "IN ()" SQL
+		}
+
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom=:startDate and taxperiodto=:endDate";
+
+		MapSqlParameterSource params = new MapSqlParameterSource()
+				.addValue("rentableIds", Arrays.asList(rentableIds))
+				.addValue("startDate", startDate)
+				.addValue("endDate", endDate);;
+
+		try {
+			return namedParameterJdbcTemplate.query(sql, params, demandRowMapper).stream().findFirst().orElse(null);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",

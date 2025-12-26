@@ -19,6 +19,14 @@ function NOCSummary({ currentStepData:formData, t }) {
       return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
 
+  const ownerPhotos = useSelector(function (state) {
+      return state?.noc?.NOCNewApplicationFormReducer?.ownerPhotos || [];
+  });
+
+  const ownerIds = useSelector(function (state) {
+      return state?.noc?.NOCNewApplicationFormReducer?.ownerIds || [];
+  });
+
   console.log("coordinates in summary page", coordinates);
 
   const sectionStyle = {
@@ -91,20 +99,27 @@ const getFloorLabel = (index) => {
 
           <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
           <div style={sectionStyle}>
-           <NOCImageView documents={formData?.documents?.documents?.documents}/>
+           <NOCImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
           </div>
       
-          <h2 style={headingStyle}>{t("NOC_APPLICANT_DETAILS")}</h2>
-          <div style={sectionStyle}>
-            {renderLabel(t("NOC_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
-            {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
-            {renderLabel(t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
-            {renderLabel(t("NOC_APPLICANT_PROPERTY_ID_LABEL"), formData?.applicationDetails?.applicantPropertyId)}
-            {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.applicationDetails?.applicantMobileNumber)}
-            {renderLabel(t("NOC_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
-            {renderLabel(t("NOC_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
-            {renderLabel(t("NOC_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
-          </div>
+      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
+        return (
+        <div key={index} className="clu-summary-section">
+         <h2 className="clu-summary-heading">
+           {index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}
+         </h2>
+
+         {renderLabel(t("NOC_FIRM_OWNER_NAME_LABEL"), owner?.ownerOrFirmName)}
+         {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+         {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+         {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+         {renderLabel(t("NOC_APPLICANT_PROPERTY_ID_LABEL"), owner?.propertyId)}
+         {renderLabel(t("NOC_APPLICANT_DOB_LABEL"), owner?.dateOfBirth)}
+         {renderLabel(t("NOC_APPLICANT_GENDER_LABEL"), owner?.gender?.code)}
+         {renderLabel(t("NOC_APPLICANT_ADDRESS_LABEL"), owner?.address)}
+        </div>
+        )
+      })}
         
       
       {formData?.applicationDetails?.professionalName && 
@@ -115,6 +130,7 @@ const getFloorLabel = (index) => {
             {renderLabel(t("NOC_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("NOC_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
+            {renderLabel(t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formData?.applicationDetails?.professionalRegIdValidity)}
             {renderLabel(t("NOC_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("NOC_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
           </div>
@@ -184,6 +200,10 @@ const getFloorLabel = (index) => {
           <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
         )}
       </div> */}
+      <h2 className="clu-summary-heading">{t("NOC_UPLOADED_OWNER_ID")}</h2>
+      <div className="clu-summary-section">
+        {ownerIds?.ownerIdList?.length > 0 && <NOCDocumentTableView documents={ownerIds?.ownerIdList} />}
+      </div>
 
       <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>

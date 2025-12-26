@@ -37,13 +37,13 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.formData;
   });
 
-//   useEffect(() => {
-//   const formattedData = currentStepData?.siteDetails;
-//   if (formattedData?.floorArea) {
-//     setValue("floorArea", formattedData.floorArea);
-//   }
-// }, [currentStepData, setValue]);
+  const ownerIds = useSelector(function (state) {
+    return state.noc.NOCNewApplicationFormReducer.ownerIds;
+  });
 
+  const ownerPhotos = useSelector(function (state) {
+    return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
+  });
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
@@ -89,7 +89,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       {
         applicationDetails:{
           ...formData?.applicationDetails,
-          applicantGender : formData?.applicationDetails?.applicantGender?.code || "",
+          // applicantGender : formData?.applicationDetails?.applicantGender?.code || "",
         },
         siteDetails:{
          ...formData?.siteDetails,
@@ -104,17 +104,29 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
          specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
          specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
          specificationIsSiteUnderMasterPlan:formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
-        }
+        },
+        ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
+        ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] 
       };
 
        // console.log("nocFormData ==>", nocFormData)
 
-      const ownerObj = {
-       mobileNumber: nocFormData?.applicationDetails?.applicantMobileNumber || "",
-       name: nocFormData?.applicationDetails?.applicantOwnerOrFirmName || "",
-       emailId: nocFormData?.applicationDetails?.applicantEmailId || "",
-       userName: nocFormData?.applicationDetails?.applicantMobileNumber || ""
-      };
+    const ownerData = (nocFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+      return {
+        mobileNumber: item?.mobileNumber || "",
+        name: item?.ownerOrFirmName || "",
+        emailId: item?.emailId || "",
+        userName: item?.mobileNumber || "",
+        fatherOrHusbandName: item?.fatherOrHusbandName || "",
+        permanentAddress: item?.address || "",
+        gender: item?.gender?.code || "",
+        dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
+        additionalDetails:{
+         ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
+         ownerId: {...ownerIds?.ownerIdList?.[index]}
+        }
+      }
+     });
 
     
         // Final payload
@@ -125,7 +137,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
               nocType: "NOC",
               status: "ACTIVE",
               tenantId,
-              owners:[ownerObj],
+              owners:ownerData,
               workflow: {action: "INITIATE"},
               nocDetails:{
                 additionalDetails: nocFormData,

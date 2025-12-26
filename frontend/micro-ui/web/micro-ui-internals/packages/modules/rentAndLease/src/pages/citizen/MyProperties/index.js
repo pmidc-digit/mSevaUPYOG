@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Header, ResponseComposer, Card, KeyNote, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
@@ -62,7 +61,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   };
 
   const handleMakePayment = (id) => {
-    history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${id}`);
+    history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
     // history.push(`/digit-ui/citizen/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
   };
 
@@ -175,7 +174,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
               {property?.registrationNumber && <KeyNote keyValue={t("RAL_REGISTRATION_NUMBER")} note={property?.registrationNumber || t("CS_NA")} />}
               <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={property?.applicationNumber || t("CS_NA")} />
               <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={property?.additionalDetails?.allotmentType || t("CS_NA")} />
-              <KeyNote keyValue={t("STATUS")} note={t(property.status)} />
+              <KeyNote keyValue={t("STATUS")} note={t(property?.expireFlag ? "Renewed" : property.status)} />
               {/* <KeyNote
                 keyValue={t("UC_OWNER_NAME_LABEL")}
                 note={
@@ -192,7 +191,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 }
                 {(property?.status == "PENDINGPAYMENT" ||
                   property?.status == "PENDING_FOR_PAYMENT" ||
-                  (property?.status == "PENDING_FOT_SETLEMENT" && property?.amountToBeDeducted > 0)) && (
+                  (property?.status == "PENDING_FOT_SETLEMENT" && property?.amountToBeDeducted > 0 && property?.amountToBeRefund == 0)) && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
                 {property?.status == "APPROVED" && !property?.expireFlag && (

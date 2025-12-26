@@ -213,7 +213,7 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <MobileNumber
-                    style={{ marginBottom: 0 }}
+                   
                     value={props.value}
                     maxlength={10}
                     onChange={(e) => {

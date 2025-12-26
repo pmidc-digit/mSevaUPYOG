@@ -58,7 +58,12 @@ const CLUApplicantDetails = (_props) => {
         const fileId = response.data.files[0].fileStoreId;
         setOwnerIdList((prev)=>{
            const next = [...prev];
-           const newItem = { fileStoreId: fileId, fileName: file.name };
+           const newItem = { 
+            filestoreId: fileId,
+            fileName: file.name,
+            documentType: index === 0 ? "Primary Owner Id": `Owner${index+1} Id`,
+            documentUid: fileId
+          };
 
            if(index <= next?.length){
              next[index] = newItem;
@@ -102,7 +107,12 @@ const CLUApplicantDetails = (_props) => {
         const fileId = response.data.files[0].fileStoreId;
          setOwnerPhotoList((prev)=>{
            const next = [...prev];
-           const newItem = { fileStoreId: fileId, fileName: file.name };
+           const newItem = { 
+            filestoreId: fileId,
+            fileName: file.name,
+            documentType: index === 0 ? "Primary Owner Photo": `Owner${index+1} Photo`,
+            documentUid: fileId
+          };
            if(index <= next?.length){
              next[index] = newItem;
            }else{
@@ -505,11 +515,12 @@ const getOwnerDetails = async (idx) => {
                   onDelete={() => {
                     deleteOwnerPhoto(index);
                   }}
-                  uploadedFile={ownerPhotoList?.[index]?.fileStoreId}
-                  message={ownerPhotoList?.[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  uploadedFile={ownerPhotoList?.[index]?.filestoreId}
+                  message={ownerPhotoList?.[index]?.filestoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
 
                   uploadMessage=""
                   accept="image/*"
+                  disabled={isEdit}
                 />
               </div>
             </LabelFieldPair>
@@ -523,10 +534,11 @@ const getOwnerDetails = async (idx) => {
                   onDelete={() => {
                     deleteOwnerId(index);
                   }}
-                  uploadedFile={ownerIdList?.[index]?.fileStoreId}
-                  message={ownerIdList?.[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  uploadedFile={ownerIdList?.[index]?.filestoreId}
+                  message={ownerIdList?.[index]?.filestoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   uploadMessage=""
                   accept=".pdf"
+                  disabled={isEdit}
                 />
               </div>
             </LabelFieldPair>
@@ -536,7 +548,7 @@ const getOwnerDetails = async (idx) => {
 
       <div>
         <button type="button" onClick={() => append(defaultOwner()) } style={{cursor: "pointer"}}>
-          ➕ Add Owner
+          {!isEdit && `➕ Add Owner`}
         </button>
       </div>
 

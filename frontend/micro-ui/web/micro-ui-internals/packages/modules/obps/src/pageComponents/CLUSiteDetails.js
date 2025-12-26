@@ -107,28 +107,34 @@ const CLUSiteDetails = (_props) => {
 
   const allCities = Digit.Hooks.obps.useTenants();
   const [cities, setcitiesopetions] = useState(allCities);
+
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
+
   const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
   const [localities, setLocalities] = useState([]);
 
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-    selectedCity?.code,
-    "revenue",
-    {
-      enabled: !!selectedCity,
-    },
-    t
-  );
-
-  useEffect(() => {
-    if (fetchedLocalities?.length > 0) {
-      setLocalities(fetchedLocalities);
-    }
-  }, [fetchedLocalities]);
+  // const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+  //   selectedCity?.code,
+  //   "revenue",
+  //   {
+  //     enabled: !!selectedCity,
+  //   },
+  //   t
+  // );
 
   // useEffect(() => {
-  //   setLocalities([]);
-  //   setValue("zone", null);
-  // }, [selectedCity]);
+  //   if (fetchedLocalities?.length > 0) {
+  //     setLocalities(fetchedLocalities);
+  //   }
+  // }, [fetchedLocalities]);
+
+  useEffect(() => {
+    if (!isZoneListLoading && zoneOptions.length > 0) {
+      console.log("ZoneOptions ==>", zoneOptions);
+      setLocalities(zoneOptions);
+    }
+  }, [zoneOptions]);
 
   //logic for default selection of district
    useEffect(() => {
@@ -669,7 +675,7 @@ const CLUSiteDetails = (_props) => {
                 required: t("REQUIRED_FIELD"),
               }}
               render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="i18nkey" t={t}/>
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="code" t={t}/>
               )}
             />
           </LabelFieldPair>

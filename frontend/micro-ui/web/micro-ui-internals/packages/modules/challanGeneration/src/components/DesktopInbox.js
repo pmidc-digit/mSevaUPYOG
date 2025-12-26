@@ -74,15 +74,6 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
       },
       mobileCell: (original) => GetMobCell(original?.["offenceName"]),
     },
-
-    // {
-    //   Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
-    //   Cell: ({ row }) => {
-    //     const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
-    //     return GetCell(t(`${dueDate}`));
-    //   },
-    //   mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
-    // },
     {
       Header: t("UC_COMMON_TOTAL_AMT"),
       Cell: ({ row }) => {

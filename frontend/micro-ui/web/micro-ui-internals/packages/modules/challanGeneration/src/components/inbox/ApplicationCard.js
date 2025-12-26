@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Card, DetailsCard, Loader, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
+import { Card, Loader, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
 import { FilterAction } from "@mseva/digit-ui-react-components";
 import SearchApplication from "./search";
+import DetailsCard from "../DetailsCard";
 import SortBy from "./SortBy";
 
 export const ApplicationCard = ({
@@ -62,13 +63,7 @@ export const ApplicationCard = ({
       </Card>
     );
   } else if (data && data?.length > 0) {
-    result = (
-      <DetailsCard
-        data={data}
-        serviceRequestIdKey={serviceRequestIdKey}
-        linkPrefix={linkPrefix ? linkPrefix : "/digit-ui/employee/mcollect/challansearch/"}
-      />
-    );
+    result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/challangeneration/application/"} />;
   }
 
   return (

@@ -11,7 +11,7 @@ const useInboxMobileCardsData = ({ parentRoute, table }) => {
     return {
       [t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")]: value?.applicationId,
       [t("TL_COMMON_TABLE_COL_APP_DATE")]: format(new Date(value?.date), "dd/MM/yyyy"),
-      [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: value?.status,
+      [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(value?.status),
     };
   });
 

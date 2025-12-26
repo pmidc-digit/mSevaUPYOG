@@ -28,7 +28,6 @@ import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AdditionalFeeRate;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.BreedType;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.ProcessInstance;
 import org.egov.rl.models.RLProperty;
@@ -292,44 +291,6 @@ public class PropertyUtil extends CommonUtils {
 			mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);			
 			return mdmsCriteriaReq;
 			
-		}
-
-		public StringBuilder getDemandSearchUrl(GetBillCriteria getBillCriteria) {
-			StringBuilder builder = new StringBuilder();
-			if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes())) {
-				builder = builder.append(config.getBillingHost())
-						.append(config.getDemandSearchEndpoint()).append(RLConstants.URL_PARAMS_SEPARATER)
-						.append(RLConstants.TENANT_ID_FIELD_FOR_SEARCH_URL).append(getBillCriteria.getTenantId())
-						.append(RLConstants.SEPARATER)
-						.append(RLConstants.CONSUMER_CODE_SEARCH_FIELD_NAME).append(getBillCriteria.getApplicationNumber())
-						.append(RLConstants.SEPARATER)
-						.append(RLConstants.DEMAND_STATUS_PARAM).append(RLConstants.DEMAND_STATUS_ACTIVE);
-			}
-			else {
-
-				builder = builder.append(config.getBillingHost())
-						.append(config.getDemandSearchEndpoint()).append(RLConstants.URL_PARAMS_SEPARATER)
-						.append(RLConstants.TENANT_ID_FIELD_FOR_SEARCH_URL).append(getBillCriteria.getTenantId())
-						.append(RLConstants.SEPARATER)
-						.append(RLConstants.CONSUMER_CODE_SEARCH_FIELD_NAME).append(StringUtils.join(getBillCriteria.getConsumerCodes(), ","))
-						.append(RLConstants.SEPARATER)
-						.append(RLConstants.PAYMENT_COMPLETED)
-						.append(RLConstants.SEPARATER)
-						.append(RLConstants.DEMAND_STATUS_PARAM).append(RLConstants.DEMAND_STATUS_ACTIVE);
-
-			}
-			if (getBillCriteria.getFromDate() != null && getBillCriteria.getToDate() != null)
-				builder = builder.append(RLConstants.DEMAND_START_DATE_PARAM).append(getBillCriteria.getFromDate())
-						.append(RLConstants.SEPARATER)
-						.append(RLConstants.DEMAND_END_DATE_PARAM).append(getBillCriteria.getToDate())
-						.append(RLConstants.SEPARATER);
-
-			return builder;
-		}
-
-
-		public StringBuilder getUpdateDemandUrl() {
-			return new StringBuilder().append(config.getBillingHost()).append(config.getDemandUpdateEndpoint());
 		}
 
 	}

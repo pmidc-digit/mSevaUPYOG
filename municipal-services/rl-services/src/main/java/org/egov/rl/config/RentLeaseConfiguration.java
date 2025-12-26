@@ -42,28 +42,7 @@ public class RentLeaseConfiguration {
     }
 
 
-    //PERSISTER
-    @Value("${persister.save.property.topic}")
-    private String savePropertyTopic;
-
-    @Value("${persister.save.property.fuzzy.topic}")
-    private String savePropertyFuzzyTopic;
-    
-    @Value("${persister.update.property.topic}")
-    private String updatePropertyTopic;
-
-    @Value("${persister.cancel.property.topic}")
-    private String cancelPropertyTopic;
-
-    @Value("${persister.cancel.property.assessment.topic}")
-    private String cancelPropertyAssessmentTopic;
-
-    @Value("${persister.update.document.topic}")
-    private String updateDocumentTopic;
-
-    @Value("${persister.migration.batch.count.topic}")
-    private String migartionBatchCountTopic;
-    
+      
     //trade license
     @Value("${egov.tl.host}")
     private String tradeLicenseHost;
@@ -217,6 +196,7 @@ public class RentLeaseConfiguration {
 
     @Value("${egov.localization.fallback.locale}")
     private String fallBackLocale;
+
     //USER EVENTS
 	@Value("${egov.ui.app.host}")
 	private String uiAppHost;
@@ -236,16 +216,7 @@ public class RentLeaseConfiguration {
     @Value("${egov.msg.download.receipt.link}")
     private String receiptDownloadLink;
 	
-	//Assessments V2
-	@Value("${egov.pt.assessment.create.topic}")
-	private String createAssessmentTopic;
-	
-	@Value("${egov.pt.assessment.update.topic}")
-	private String updateAssessmentTopic;
-
-    @Value("${egov.msg.pay.link}")
-    private String payLinkSMS;
-	
+		
 
     // Workflow
 	
@@ -267,118 +238,24 @@ public class RentLeaseConfiguration {
     @Value("${is.workflow.enabled}")
     private Boolean isWorkflowEnabled;
     
-    @Value("${property.create.workflow.name}")
-    private String createPTWfName;
-    
-    @Value("${property.legacy.entry.workflow.name}")
-    private String LegacyPTWfName;
-    
-    @Value("${property.update.workflow.name}")
-    private String updatePTWfName;
-    
     @Value("${is.mutation.workflow.enabled}")
     private Boolean isMutationWorkflowEnabled;
     
-    @Value("${mutation.workflow.name}")
-    private String mutationWfName;
-    
-    @Value("${mutation.workflow.open.state}")
-    private String mutationOpenState;
-    
-    @Value("${workflow.status.active}")
-    private String wfStatusActive;
-    
-    // ##### mdms 
-    
+    // ##### mdms     
     @Value("${egov.mdms.host}")
     private String mdmsHost;
 
     @Value("${egov.mdms.search.endpoint}")
     private String mdmsEndpoint;
     
-    // Billing-Service
-    
-    
-    @Value("${egbs.host}")
-    private String egbsHost;
-
-    @Value("${egbs.fetchbill.endpoint}")
-    private String egbsFetchBill;
-        
-	@Value("${egov.demand.update.endpoint}")
-	private String demandUpdateEndpoint;
-
-	@Value("${egov.demand.search.endpoint}")
-	private String demandSearchEndpoint;
-
-	@Value("${egov.bill.gen.endpoint}")
-	private String billGenerateEndpoint;
-	
-    	
-    // Registry 
-    
-    @Value("${property.min.landarea}")
-	private Double minumumLandArea;
-    
-    @Value("${property.unit.landarea}")
-	private String landAreaUnit;
-    
-    @Value("${property.min.unit.builtuparea}")
-	private BigDecimal minUnitArea;
-    
-    @Value("${property.module.name}")
-	private String propertyModuleName;    
-
-
-
-    // Assessment Workflow
-
-    @Value("${assessment.workflow.enabled}")
-    private Boolean isAssessmentWorkflowEnabled;
-
-
-    @Value("${assessment.workflow.trigger.param}")
-    private String assessmentWorkflowTriggerParams;
-
-    @Value("${assessment.workflow.trigger.object}")
-    private String assessmentWorkflowObjectTriggers;
-
-    @Value("${assessment.workflow.demand.trigger}")
-    private String demandTriggerState;
-
-
+   	
 
     // Calculation
-
-    @Value("${egov.calculation.host}")
-    private String calculationHost;
-
-    @Value("${egov.calculation.context.path}")
-    private String calculationContextPath;
-
-    @Value("${egov.billingservice.host}")
-	private String billingHost;
-
-	@Value("${egov.demand.create.endpoint}")
-	private String demandCreateEndpoint;
-
-
-    @Value("${egov.calculation.endpoint}")
-    private String calculationEndpoint;
-
-    @Value("${egov.updation.endpoint}")
-    private String updateDemandEndpoint;
-   
-    @Value("${egov.calculation.mutation.endpoint}")
-    private String mutationCalculationEndpoint;
-
-
     @Value("${egov.localization.statelevel}")
     private Boolean isLocalizationStateLevel;
 
 
     // url shortner
-
     @Value("${egov.url.shortner.host}")
     private String urlShortnerHost;
 
@@ -388,45 +265,7 @@ public class RentLeaseConfiguration {
     @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
 
-
-    // ES Config
-
-    @Value("${elasticsearch.host}")
-    private String esHost;
-
-    @Value("${property.es.index}")
-    private String esPTIndex;
-
-    @Value("${elasticsearch.search.endpoint}")
-    private String esSearchEndpoint;
-
-    @Value("${pt.search.name.fuziness}")
-    private String nameFuziness;
-
-    @Value("${pt.search.doorno.fuziness}")
-    private String doorNoFuziness;
-
-    @Value("${pt.search.oldpropertyid.fuziness}")
-    private String oldPropertyIdFuziness;
-
-    @Value("${pt.fuzzy.searh.is.wildcard}")
-    private Boolean isSearchWildcardBased;
-
-    // Inbox service Config
-
-    @Value("${inbox.property.search.allowed}")
-    private Boolean isInboxSearchAllowed;
-
-    //encryptOldDataStatus topic
-    @Value("${property.oldDataEncryptionStatus.topic}")
-    private String encryptionStatusTopic;
-
-    @Value("${persister.update.property.oldData.topic}")
-    private String updatePropertyEncTopic;
-
-    @Value("${persister.update.property.audit.oldData.topic}")
-    private String updatePropertyAuditEncTopic;
-
+    // claculation
     @Value("${egov.rlcalculator.host}")
     private String rlCalculatorHost;
 

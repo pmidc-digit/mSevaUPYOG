@@ -1,21 +1,10 @@
 package org.egov.rl.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
-import org.egov.common.contract.request.Role;
-import org.egov.rl.models.enums.Relationship;
-import org.egov.rl.models.enums.Status;
 import org.egov.rl.models.oldProperty.Address;
-import org.egov.rl.models.user.User;
 import org.hibernate.validator.constraints.SafeHtml;
-import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -77,25 +66,6 @@ public class OwnerInfo { // extends User {
 	@JsonProperty("ownerType")
 	private String ownerType;
 	
-//	@NotNull
-//    @SafeHtml
-//    @Size(max=100)
-//    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-//    @JsonProperty("firstName")
-//	private String firstName;
-//
-//	@Size(max=100)
-//    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-//    @JsonProperty("middleName")
-//	private String middleName;
-//
-//	@NotNull
-//    @SafeHtml
-//    @Size(max=100)
-//    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
-//    @JsonProperty("lastName")
-//	private String lastName;
-
 	@NotNull
     @JsonProperty("name")
 	private String name;
@@ -130,7 +100,7 @@ public class OwnerInfo { // extends User {
 	private String panCard;
 
 	@JsonProperty("relationship")
-	private Relationship relationship;
+	private String relationship;
 
 	@JsonProperty("active")
     private Boolean active;
@@ -168,17 +138,4 @@ public class OwnerInfo { // extends User {
                 '}';
     }
     
-//    @JsonProperty("roles")
-//    @Valid
-//    private List<Role> roles;
-//
-//    @Size(max=32)
-//    @SafeHtml
-//    @JsonProperty("blood_group")
-//    private String bloodGroup;
-    
-//	@SafeHtml
-//	@JsonProperty("correspondenceAddress")
-//	private String correspondenceAddress;
-
 }

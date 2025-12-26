@@ -3,23 +3,14 @@ package org.egov.rl.service;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.egov.mdms.model.MasterDetail;
-import org.egov.mdms.model.MdmsCriteria;
-import org.egov.mdms.model.MdmsCriteriaReq;
-import org.egov.mdms.model.ModuleDetail;
-import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
-import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.PropertyReport;
 import org.egov.rl.models.PropertyReportSearchRequest;
@@ -27,20 +18,10 @@ import org.egov.rl.models.RLProperty;
 import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.models.user.User;
 import org.egov.rl.repository.AllotmentRepository;
-import org.egov.rl.repository.ServiceRequestRepository;
-import org.egov.rl.util.EncryptionDecryptionUtil;
-import org.egov.rl.validator.AllotmentValidator;
-import org.egov.rl.workflow.AllotmentWorkflowService;
-import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SearchPropertyService {
@@ -58,13 +39,7 @@ public class SearchPropertyService {
 	private AllotmentRepository allotmentRepository;
 
 	@Autowired
-	private RentLeaseConfiguration configs;
-
-	@Autowired
-	RestTemplate restTemplate;// = new RestTemplate();
-
-	@Autowired
-	private AllotmentEnrichmentService allotmentEnrichmentService;
+	RestTemplate restTemplate;
 
 	@Autowired
 	BoundaryService boundaryService;
@@ -75,8 +50,6 @@ public class SearchPropertyService {
 	@Autowired
 	UserService userService;
 
-	@Autowired
-	private ObjectMapper mapper;
 
 	public Object propertyListSearch(PropertyReportSearchRequest propertyReportSearchRequest) {
 		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();

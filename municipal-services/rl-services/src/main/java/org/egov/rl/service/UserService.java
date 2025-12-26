@@ -8,11 +8,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -26,7 +24,6 @@ import org.egov.rl.models.user.UserDetailResponse;
 import org.egov.rl.models.user.UserSearchRequest;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.tracer.model.CustomException;
-import org.javers.common.collections.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,8 +31,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
+
+
 @Slf4j
 @Service
 public class UserService {

@@ -41,7 +41,7 @@ public class AllotmentValidator {
 	private RentLeaseConfiguration configs;
 
 	@Autowired
-	RestTemplate restTemplate;// = new RestTemplate();
+	RestTemplate restTemplate;
 
 	@Autowired
 	EncryptionDecryptionUtil encryptionDecryptionUtil;

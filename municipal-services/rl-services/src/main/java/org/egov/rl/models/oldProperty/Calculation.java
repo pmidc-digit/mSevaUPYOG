@@ -1,3 +1,4 @@
+
 package org.egov.rl.models.oldProperty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

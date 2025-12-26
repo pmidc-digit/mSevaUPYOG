@@ -1,18 +1,14 @@
 package org.egov.rl.web.controllers;
 
-import java.util.List;
-
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.rl.models.PropertyReportSearchRequest;
 import org.egov.rl.models.PropertyReportSearchResponse;
-import org.egov.rl.models.RLProperty;
 import org.egov.rl.service.SearchPropertyService;
 import org.egov.rl.util.ResponseInfoFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

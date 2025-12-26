@@ -1,26 +1,17 @@
 package org.egov.rl.models;
 
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import org.egov.rl.models.enums.CreationReason;
 import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.workflow.Workflow;
-import org.hibernate.validator.constraints.SafeHtml;
 //@Getter
 //@Setter
 //@Data

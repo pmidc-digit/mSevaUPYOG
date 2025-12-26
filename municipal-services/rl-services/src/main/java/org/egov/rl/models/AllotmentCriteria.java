@@ -1,6 +1,5 @@
 package org.egov.rl.models;
 
-import java.util.List;
 import java.util.Set;
 
 import org.egov.rl.models.enums.Status;

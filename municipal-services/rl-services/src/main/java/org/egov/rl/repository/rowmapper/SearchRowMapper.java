@@ -4,27 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.egov.rl.models.*;
-import org.egov.rl.models.enums.Relationship;
-import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.oldProperty.Address;
-import org.egov.rl.models.user.User;
-import org.egov.rl.repository.AllotmentRepository;
-import org.egov.rl.service.BoundaryService;
 import org.egov.rl.service.UserService;
-import org.egov.tracer.model.CustomException;
-import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
-
 @Component
 public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
 

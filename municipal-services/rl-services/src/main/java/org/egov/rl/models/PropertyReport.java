@@ -2,11 +2,7 @@ package org.egov.rl.models;
 
 import java.util.List;
 
-import org.egov.rl.models.enums.Relationship;
-import org.egov.rl.models.oldProperty.Address;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

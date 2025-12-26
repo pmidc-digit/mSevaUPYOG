@@ -47,11 +47,6 @@ public class PaymentNotificationService {
 	@Autowired
 	private AllotmentRepository allotmentRepository;
 
-	@Autowired
-	private org.egov.rl.util.PropertyUtil pUtil;
-
-
-
 	/**
 	 * Process the incoming record and topic from the payment notification consumer.
 	 * Performs defensive null checks and validates the payment request before proceeding.

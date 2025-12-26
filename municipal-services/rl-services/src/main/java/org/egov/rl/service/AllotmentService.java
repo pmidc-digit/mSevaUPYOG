@@ -25,7 +25,6 @@ import org.egov.rl.util.EncryptionDecryptionUtil;
 import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.util.RLConstants;
 import org.egov.rl.validator.AllotmentValidator;
-import org.egov.rl.workflow.AllotmentWorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,9 +69,6 @@ public class AllotmentService {
 
 	@Autowired
 	AllotmentRepository allotmentRepository;
-
-	@Autowired
-	private DemandService demandService;
 
 	@Autowired
 	private NotificationService notificationService;

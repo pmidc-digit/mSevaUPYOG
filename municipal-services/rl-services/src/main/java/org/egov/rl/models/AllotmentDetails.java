@@ -1,28 +1,16 @@
 package org.egov.rl.models;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.egov.rl.models.enums.Channel;
-import org.egov.rl.models.enums.CreationReason;
-import org.egov.rl.models.enums.Source;
-import org.egov.rl.models.enums.Status;
 import org.egov.rl.models.workflow.Workflow;
-import org.javers.core.metamodel.annotation.DiffIgnore;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -47,14 +35,6 @@ public class AllotmentDetails {
 
 	@JsonProperty("demandId")
 	private String demandId;
-
-	
-//	@JsonProperty("isAutoRenewal")
-//	private boolean isAutoRenewal; // default false
-//
-//	@JsonProperty("applicationStatus")
-//	private int applicationStatus; // 0-draft,1-Saved,2-Submitted,3-Active and runing
-	/// after final approval,4-InActive
 	
 	@JsonProperty("status")
 	private String status;

@@ -3,6 +3,8 @@
   .card {
     .employee-card-input--front {
       background-color: white;
+      position: relative;
+      z-index: 0 !important;
     }
     input[name="mobileNumber"] {
       max-width: 490px;

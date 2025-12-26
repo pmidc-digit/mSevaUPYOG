@@ -49,7 +49,7 @@ import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
-
+import { getBase64Img } from "../../../utils"
 
 const BpaApplicationDetail = () => {
   const { id } = useParams()
@@ -272,7 +272,12 @@ console.log("building category here: & fileNo", usage,fileno);
   })
   const userInfo = Digit.UserService.getUser();
 console.log('userInfo', userInfo)
-  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.info?.mobileNumber;
+  const architecttype =
+  data?.applicationData?.additionalDetails?.typeOfArchitect ||
+  user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name ||
+  "";
+console.log('architecttype', architecttype)
+  const isArchitect = architecttype?.toUpperCase() === "ARCHITECT";
 
   console.log("datata=====", workflowDetails, data, isArchitect)
 
@@ -340,8 +345,8 @@ console.log('userInfo', userInfo)
   const handleMobileNumberChange = (e) => {
     setMobileNumber(e.target.value)
   }
-  const requestor = userInfo?.info?.mobileNumber;
-console.log(requestor); 
+  const requestor = data?.applicationData?.additionalDetails?.architectMobileNumber;
+ console.log("requeestor",requestor); 
 
     const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
 
@@ -349,27 +354,24 @@ console.log(requestor);
   console.log('LicenseData', LicenseData)
 
   let stakeholderAddress="";
+  let signFilestoreId =null
+  if (!LicenseDataLoading && requestor) {
+    const matchedLicense = LicenseData?.Licenses?.find((lic) => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor);
 
-if (!LicenseDataLoading && requestor) {
-  const matchedLicense = LicenseData?.Licenses?.find(
-    lic => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor
-  );
+    if (matchedLicense) {
+      const signDoc = matchedLicense?.tradeLicenseDetail?.applicationDocuments?.find((doc) => doc?.documentType === "APPL.BPAREG_SCANNED_SIGNATURE");
 
-  console.log('matchedLicense', matchedLicense)
-  if (matchedLicense) {
-    const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
+      signFilestoreId = signDoc?.fileStoreId
+      const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
 
-stakeholderAddress = [
-  owner?.permanentAddress,
-  owner?.permanentCity,
-  owner?.permanentDistrict,
-  owner?.permanentPinCode
-]
-.filter(Boolean) 
-.join(", ");
+      stakeholderAddress = [owner?.permanentAddress, owner?.permanentCity, owner?.permanentDistrict, owner?.permanentPinCode]
+        .filter(Boolean)
+        .join(", ");
 
-console.log(stakeholderAddress,"stakeholderAddress");  }
-}
+    }
+  }
+  console.log('signFilestoreId', signFilestoreId)
+
   const handleGetOTPClick = async () => {
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
@@ -440,7 +442,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -460,7 +462,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -480,7 +482,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -501,7 +503,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
       accessor: "value",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+          <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -694,9 +696,8 @@ useEffect(() => {
     const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
-
   async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
     console.log('nowIST', nowIST)
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
@@ -706,8 +707,19 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     const approvalDatePlusThree = newValidityDate.getTime();
 
     console.log("validity date",approvalDatePlusThree); 
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    let base64Image = null;
 
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate}
+      if (signFilestoreId && signFilestoreId.length > 0) {
+        const fetchedBase64 = await getBase64Img(signFilestoreId, state);
+        if (fetchedBase64) {
+          base64Image = fetchedBase64;
+        } else {
+          console.warn("Signature image not found, skipping.");
+        }
+      }
+    
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation,...(base64Image ? { base64Image } : {})}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {

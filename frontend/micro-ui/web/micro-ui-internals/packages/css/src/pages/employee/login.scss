@@ -73,7 +73,8 @@
 /* Login Card */
 .employee-login-card {
   padding: 20px;
-  width: 650px;
+  width: 100%;
+  max-width: 650px;
   overflow: visible;
   position: relative;
   z-index: 1;

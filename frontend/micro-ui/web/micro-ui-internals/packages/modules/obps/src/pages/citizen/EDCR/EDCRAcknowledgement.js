@@ -110,7 +110,7 @@ const EDCRAcknowledgement = (props) => {
             </svg>
             {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
           </div>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap", paddingLeft: "8px" }}>
+          <div style={{ display: "flex", gap: "8px", marginTop:"15px", flexWrap: "nowrap", paddingLeft: "8px",paddingBottom: "15px" }}>
             <Link
               to={{
                 pathname: `/digit-ui/citizen/obps/${bpaLinks?.linkData?.flow?.toLowerCase()}/${edcrData?.appliactionType?.toLowerCase()}/${edcrData?.applicationSubType?.toLowerCase()}/docs-required`,
@@ -136,7 +136,7 @@ const EDCRAcknowledgement = (props) => {
             </Link>
             <div style={{ paddingBottom: "15px" }}>
               <Link to={`/digit-ui/citizen`}>
-                <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+                <LinkButton className="submit-bar" label={t("CORE_COMMON_GO_TO_HOME")} />
               </Link>
             </div>
           </div>

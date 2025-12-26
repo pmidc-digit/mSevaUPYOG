@@ -15,13 +15,12 @@ import {
   Toast,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import NDCDocumentTimline from "../../components/NDCDocument";
 import { useParams, useHistory } from "react-router-dom";
-import CHBDocument from "../../pageComponents/CHBDocument";
-import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData,getLocationName } from "../../utils/index";
+import { ChallanData, getLocationName } from "../../utils/index";
 import NDCModal from "../../pageComponents/NDCModal";
+import CHBDocument from "../../components/ChallanDocument";
+import NDCDocumentTimline from "../../components/NDCDocument";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -41,7 +40,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      {thumbnailsToShow?.thumbs?.length > 0 && (
+      {/* {thumbnailsToShow?.thumbs?.length > 0 && (
         <DisplayPhotos
           srcs={thumbnailsToShow.thumbs}
           onClick={(src, idx) => {
@@ -49,7 +48,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
             Digit.Utils.zoomImage(fullImage);
           }}
         />
-      )}
+      )} */}
 
       {wfDocuments?.length > 0 && (
         <div>
@@ -176,8 +175,11 @@ const ChallanApplicationDetails = () => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
-      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
-      console.log('location', location)
+      const location = await getLocationName(
+        applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
+        applicationDetails?.challans?.[0]?.additionalDetail?.longitude
+      );
+      console.log("location", location);
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -185,7 +187,7 @@ const ChallanApplicationDetails = () => {
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments,location } }, "challan-notice");
+        let response = await Digit.PaymentService.generatePdf(tenantId, { challan: { ...application, ...payments, location } }, "challan-notice");
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -284,6 +286,8 @@ const ChallanApplicationDetails = () => {
   };
 
   const submitAction = async (modalData) => {
+    console.log("modalData", modalData);
+    // return;
     if (!modalData?.amount) {
       setErrorOne(`Please Enter Amount`);
       setShowErrorToastt(true);
@@ -303,6 +307,7 @@ const ChallanApplicationDetails = () => {
             ...getChallanData,
             workflow: {
               action: "SETTLED",
+              documents: modalData?.wfDocuments,
             },
             feeWaiver: modalData?.amount,
           },
@@ -367,6 +372,24 @@ const ChallanApplicationDetails = () => {
               text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
             />
             {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <StatusTable>
+            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+              {getChallanData?.documents?.length > 0 ? (
+                getChallanData?.documents?.map((doc, index) => (
+                  <React.Fragment key={index}>
+                    <div>
+                      <CHBDocument value={getChallanData?.documents} Code={doc?.documentType} index={index} />
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    </div>
+                  </React.Fragment>
+                ))
+              ) : (
+                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              )}
+            </Card>
           </StatusTable>
         </Card>
         {workflowDetails?.data?.timeline && (

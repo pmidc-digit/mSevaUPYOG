@@ -1,4 +1,4 @@
-package org.egov.rl.models.collection;
+package org.egov.rl.models.demand;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -445,7 +445,7 @@ public class BPAService {
                 	Boolean isPropertyAvailable = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isPropertyAvailable");
                 	if(!isPropertyAvailable)
                 		bpaPropertyService.createProperty(bpaRequest);
-                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
+//                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
                 }
                 
                 /*

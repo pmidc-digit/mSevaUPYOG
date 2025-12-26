@@ -1,4 +1,4 @@
-package org.egov.rl.models;
+package org.egov.rl.models.collection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+
+import org.egov.rl.models.AuditDetails;
 
 /**
  * A object holds a demand and collection values for a tax head and period.

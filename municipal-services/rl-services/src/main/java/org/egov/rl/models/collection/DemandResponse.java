@@ -37,17 +37,15 @@
  *
  *   In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
  */
-package org.egov.rl.models;
+package org.egov.rl.models.collection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.response.ResponseInfo;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,14 +53,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DemandRequest {
+public class DemandResponse {
 
-	@NotNull
-	@JsonProperty("RequestInfo")
-	private RequestInfo requestInfo;
+	@JsonProperty("ResponseInfo")
+	private ResponseInfo responseInfo;
 
-	@Valid
-	@NotNull
 	@JsonProperty("Demands")
-	private List<Demand> demands = new ArrayList<>();
+	private List<Demand> demands;
+
 }

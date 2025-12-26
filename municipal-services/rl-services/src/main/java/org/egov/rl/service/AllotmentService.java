@@ -13,6 +13,7 @@ import org.apache.catalina.mapper.Mapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.*;
+import org.egov.rl.models.collection.DemandResponse;
 import org.egov.rl.models.demand.CalculationCriteria;
 import org.egov.rl.models.demand.CalculationReq;
 import org.egov.rl.models.oldProperty.Address;

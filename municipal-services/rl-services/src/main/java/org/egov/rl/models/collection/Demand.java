@@ -1,4 +1,4 @@
-package org.egov.rl.models;
+package org.egov.rl.models.collection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import org.egov.common.contract.request.User;
+import org.egov.rl.models.AuditDetails;
+import org.egov.rl.models.Owner;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;

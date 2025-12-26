@@ -1187,7 +1187,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t(`BPA_APPROVED_COLONY_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}</div>
                         </div>
-                        {currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" &&
+                        {(currentStepData?.createdResponse?.additionalDetails?.approvedColony === "YES" || currentStepData?.createdResponse?.additionalDetails?.approvedColony === "Colony Prior to 1995 (colony name)")  &&
                         <div className="row border-none">
                             <h2>{t(`BPA_APPROVED_COLONY_NAME`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || t("CS_NA")}</div>
@@ -1305,7 +1305,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecsProvided || t("CS_NA")}</div>
                         </div>
                         }
-                        <div className="row border-none">
+                        {/* <div className="row border-none">
                             <h2>{t(`BPA_MASTER_PLAN_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}</div>
                         </div>
@@ -1314,7 +1314,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t(`BPA_USE`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}</div>
                         </div>
-                        }
+                        } */}
                         <div className="row border-none">
                             <h2>{t(`BPA_GREEN_BUILDING_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.greenbuilding || t("CS_NA")}</div>

@@ -16,7 +16,7 @@ import {
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
-import { SET_ChallanApplication_STEP, RESET_ChallanAPPLICATION_FORM } from "../../../redux/action/ChallanApplicationActions";
+import { SET_ChallanApplication_STEP } from "../../../redux/action/ChallanApplicationActions";
 import SelectNDCDocuments from "../ChallanDocuments";
 
 const ChallanStepperForm = () => {
@@ -24,9 +24,6 @@ const ChallanStepperForm = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.challan.ChallanApplicationFormReducer);
-  const formData = formState.formData;
-  const step = formState.step;
   const [loader, setLoader] = useState(false);
   const [error, setError] = useState(null);
   const [documentsData, setDocumentsData] = useState({});
@@ -58,25 +55,6 @@ const ChallanStepperForm = () => {
     },
   });
 
-  const setStep = (updatedStepNumber) => {
-    dispatch(SET_ChallanApplication_STEP(updatedStepNumber));
-  };
-
-  useEffect(() => {
-    dispatch(RESET_ChallanAPPLICATION_FORM());
-  }, []);
-
-  // const handleSubmit = (dataGet) => {
-  //   //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
-  //   // let data = {};
-  //   // createEmployeeConfig.forEach((config) => {
-  //   //   if (config.isStepEnabled) {
-  //   //     data = { ...data, ...formData[config.key] };
-  //   //   }
-  //   // });
-  //   // onSubmit(data, tenantId, setShowToast, history);
-  // };
-
   const onSubmit = async (data) => {
     let missingDocs = [];
 
@@ -99,6 +77,9 @@ const ChallanStepperForm = () => {
         tenantId: tenantId,
         active: true,
       },
+      address: {
+        addressLine1: data?.address,
+      },
       businessService: "Challan_Generation",
       offenceTypeName: data?.offenceType?.name,
       offenceCategoryName: data?.offenceCategory?.name,
@@ -115,14 +96,12 @@ const ChallanStepperForm = () => {
         latitude: documentsData?.documents?.[1]?.latitude,
         longitude: documentsData?.documents?.[1]?.longitude,
       },
-      address: {},
+      // address: {},
       documents: documentsData?.documents,
       workflow: {
         action: "SUBMIT",
       },
     };
-    // console.log("challana", Challan);
-    // return;
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
       setLoader(false);
@@ -134,14 +113,6 @@ const ChallanStepperForm = () => {
     } catch (error) {
       setLoader(false);
     }
-  };
-
-  const debounce = (func, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
   };
 
   const handleMobileChange = async (value) => {
@@ -158,11 +129,6 @@ const ChallanStepperForm = () => {
       setLoader(false);
     }
   };
-
-  const debouncedHandleMobileChange = React.useMemo(
-    () => debounce(handleMobileChange, 500), // 500ms delay after user stops typing
-    []
-  );
 
   const handleRates = (val) => {
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
@@ -197,7 +163,7 @@ const ChallanStepperForm = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardLabel style={{ fontWeight: "bold", paddingBottom: "30px", fontSize: "25px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
           <div style={{ width: "100%" }}>
-            <div style={{ marginBottom: "20px" }}>
+            <div>
               <CardLabel>
                 {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -213,19 +179,16 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <MobileNumber
-                   
                     value={props.value}
                     maxlength={10}
                     onChange={(e) => {
-                      console.log("eee", e);
                       props.onChange(e);
                       setValue("name", "");
                       setValue("address", "");
                       // ✅ updates react-hook-form
-                      if (e.length === 10) {
+                      if (e.length == 10) {
                         handleMobileChange(e); // 🔥 only then fire API
                       }
-                      // debouncedHandleMobileChange(e);
                     }}
                     onBlur={props.onBlur}
                     t={t}
@@ -347,7 +310,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* offence type */}
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginTop: "20px" }}>
               <CardLabel>
                 {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -401,7 +364,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* Challan Amount */}
-            <LabelFieldPair style={{ marginTop: "20px" }}>
+            {/* <LabelFieldPair style={{ marginTop: "20px" }}>
               <CardLabel>{`${t("CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
@@ -430,7 +393,7 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-            </LabelFieldPair>
+            </LabelFieldPair> */}
           </div>
 
           <CardLabel style={{ fontWeight: "bold", paddingTop: "30px", fontSize: "25px" }}>

@@ -18,8 +18,6 @@ import MCollectAcknowledgement from "./pages/employee/EmployeeChallanAcknowledge
 import NewChallan from "./pages/employee/NewChallan";
 import SearchReceipt from "./pages/employee/SearchReceipt";
 import SearchChallan from "./pages/employee/SearchChallan";
-import SearchBill from "./pages/employee/SearchBill";
-import GroupBill from "./pages/employee/GroupBills";
 import ChallanStepperForm from "./pageComponents/ChallanStepper/ChallanStepperForm";
 import ChallanStepFormOne from "./pageComponents/ChallanStepper/ChallanStepFormOne";
 import ChallanStepFormTwo from "./pageComponents/ChallanStepper/ChallanStepFormTwo";
@@ -88,8 +86,6 @@ const componentsToRegister = {
   MCollectMyChallanResultsComponent: MyChallanResultsComponent,
   SearchReceipt,
   SearchChallan,
-  SearchBill,
-  GroupBill,
   MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
   ChallanStepperForm,
   ChallanStepFormOne,

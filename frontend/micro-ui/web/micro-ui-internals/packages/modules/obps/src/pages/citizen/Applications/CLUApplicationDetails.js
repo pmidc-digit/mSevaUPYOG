@@ -511,6 +511,10 @@ const CLUApplicationDetails = () => {
         ))}
       </Card>
 
+      <Card>
+        <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
+        <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
+      </Card>
 
       <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>

@@ -160,6 +160,11 @@ public class ChallanRowMapper  implements ResultSetExtractor<List<Challan>> {
                     .pincode(rs.getString("pincode"))
                     .doorNo(rs.getString("doorno"))
                     .street(rs.getString("street"))
+                    .addressId(rs.getString("addressid"))
+                    .addressNumber(rs.getString("addressnumber"))
+                    .type(rs.getString("type"))
+                    .addressLine1(rs.getString("addressline1"))
+                    .addressLine2(rs.getString("addressline2"))
                     .tenantId(tenantId)
                     .build();
 

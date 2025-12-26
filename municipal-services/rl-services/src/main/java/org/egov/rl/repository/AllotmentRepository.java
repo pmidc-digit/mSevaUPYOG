@@ -23,7 +23,7 @@ import org.egov.rl.repository.builder.CommonQueryBuilder;
 import org.egov.rl.repository.rowmapper.AllotmentRowMapper;
 import org.egov.rl.repository.rowmapper.DocumentRowMapper;
 import org.egov.rl.repository.rowmapper.OwnerInfoRowMapper;
-import org.egov.rl.repository.rowmapper.SearchRowMapper;
+import org.egov.rl.repository.rowmapper.GlobleRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -55,23 +55,23 @@ public class AllotmentRepository {
 	private AllotmentRowMapper rowMapper;
 	
 	@Autowired
-	private SearchRowMapper searchRowMapper;
+	private GlobleRowMapper globleRowMapper;
 	
 	public JdbcTemplate getJdbcTemplate() {
 		return jdbcTemplate;
 	}
 	    
 	
-//	public List<AllotmentDetails> getAllotmentByIds(AllotmentCriteria criterias) {
-//
-//		List<Object> preparedStmtList = new ArrayList<>();
-//		
-//		String query = queryBuilder.getAllotmentSearchById(criterias, preparedStmtList);
-//		
-//        log.info("Executing Query: {}", query);
-//        log.info("With Parameters: {}", preparedStmtList);
-//        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-//	}
+	public List<AllotmentDetails> getAllotmentByIds(AllotmentCriteria criterias) {
+
+		List<Object> preparedStmtList = new ArrayList<>();
+		
+		String query = queryBuilder.getAllotmentSearchById(criterias, preparedStmtList);
+		
+        log.info("Executing Query: {}", query);
+        log.info("With Parameters: {}", preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+	}
 
 	public List<AllotmentDetails> getAllotmentForReport(AllotmentCriteria criterias) {
 
@@ -93,20 +93,20 @@ public class AllotmentRepository {
 	public List<AllotmentDetails> getAllotedByTanentIds(AllotmentCriteria criterias) {
 		
 		String query = queryBuilder.createdAllotedQuery(criterias.getTenantId());
-        return jdbcTemplate.query(query, searchRowMapper);
+        return jdbcTemplate.query(query, globleRowMapper);
 	}
 	
    public List<AllotmentDetails> getAllotedByPropertyIdsAndStatusActive(String propertyId,String tenantId) {
 		
 		String query = queryBuilder.getAllotedByPropertyIdsAndStatusActive(propertyId, tenantId);
-		return jdbcTemplate.query(query, searchRowMapper);
+		return jdbcTemplate.query(query, globleRowMapper);
 	}
    
 	public List<AllotmentDetails> getAllotedApplications(AllotmentCriteria searchCriteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = searchQueryBuilder2.getAllotmentSearch(searchCriteria, preparedStmtList);
 		log.info("Final query: " + query);
-		return jdbcTemplate.query(query, preparedStmtList.toArray(), searchRowMapper);
+		return jdbcTemplate.query(query, preparedStmtList.toArray(), globleRowMapper);
 	}
 
 	 public List<OwnerInfo> getOwnerInfoListByAllotmentId(String propertyId) {

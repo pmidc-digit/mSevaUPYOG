@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 @Component
-public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
+public class GlobleRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
 
 	@Autowired
 	private ObjectMapper mapper;
@@ -77,12 +77,12 @@ public class SearchRowMapper implements ResultSetExtractor<List<AllotmentDetails
 
 
 	private JsonNode getAdditionalDetails(Object additionalDetails) {
-//		Map<String,Object> node = mapper.valueToTree(additionalDetails);
+		Map<String,Object> node = mapper.valueToTree(additionalDetails);
+
+//        // Access a field named "value"
+//		JsonNode valueNode = node.get("additional_details").get(0).get("value");
 //
-////        // Access a field named "value"
-////		JsonNode valueNode = node.get("additional_details").get(0).get("value");
-////
-////		// Convert Object to List<RLProperty>
+//		// Convert Object to List<RLProperty>
 //		List<RLProperty> rlList = mapper.convertValue(node.get("value"),
 //				mapper.getTypeFactory().constructCollectionType(List.class, RLProperty.class));
 

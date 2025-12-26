@@ -49,47 +49,47 @@ public class CommonQueryBuilder {
 			+ "    SELECT COUNT(*) AS totalAllotments FROM eg_rl_allotment al \r\n";
 	String GROUPBY_QUERY = ") total_count\r\n";
 
-//	public String getAllotmentSearchById(AllotmentCriteria criteria, List<Object> preparedStmtList) {
-//		StringBuilder subQuery = new StringBuilder("");
-//		List<Object> subQueryParams = new ArrayList<>();
-//		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
-//			addClauseIfRequired(subQuery, subQueryParams);
-//			subQuery.append(" al.status != 'CLOSED' AND al.expireflag=false AND al.tenant_id = ? ");
-//			subQueryParams.add(criteria.getTenantId());
-//		}
-//		if (!criteria.getIsReportSearch()) {
-//			if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
-//				addClauseIfRequired(subQuery, subQueryParams);
-//				subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
-//				addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
-//			}
-//		}
-//		if (criteria.getIsReportSearch()) {
-//			if (criteria.getFromDate() != null && criteria.getToDate() != null) {
-//				addClauseIfRequired(subQuery, subQueryParams);
-//                if (criteria.getFromDate() != null && criteria.getToDate() != null) {
-//					subQuery.append(" (al.start_date >= ? AND al.end_date <= ?) OR al.end_date <= ? ");
-//					subQueryParams.add(criteria.getFromDate()); // long value
-//					subQueryParams.add(criteria.getToDate()); // long value
-//					subQueryParams.add(criteria.getToDate()); // long value
-//				}
-//			}
-//		}
-//
-//		// Now build the main query
-//		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
-//		mainQuery.append(subQuery);
-//
-//		// Add all subquery parameters to the main prepared statement list
-//		preparedStmtList.addAll(subQueryParams);
-//
-//		// Order the final result
-//		mainQuery.append(GROUPBY_QUERY);
-//		mainQuery.append(subQuery);
-//		preparedStmtList.addAll(subQueryParams);
-//
-//		return mainQuery.toString();
-//	}
+	public String getAllotmentSearchById(AllotmentCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder subQuery = new StringBuilder("");
+		List<Object> subQueryParams = new ArrayList<>();
+		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(subQuery, subQueryParams);
+			subQuery.append(" al.status != 'CLOSED' AND al.expireflag=false AND al.tenant_id = ? ");
+			subQueryParams.add(criteria.getTenantId());
+		}
+		if (!criteria.getIsReportSearch()) {
+			if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
+				addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+			}
+		}
+		if (criteria.getIsReportSearch()) {
+			if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+				addClauseIfRequired(subQuery, subQueryParams);
+                if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+					subQuery.append(" (al.start_date >= ? AND al.end_date <= ?) OR al.end_date <= ? ");
+					subQueryParams.add(criteria.getFromDate()); // long value
+					subQueryParams.add(criteria.getToDate()); // long value
+					subQueryParams.add(criteria.getToDate()); // long value
+				}
+			}
+		}
+
+		// Now build the main query
+		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
+		mainQuery.append(subQuery);
+
+		// Add all subquery parameters to the main prepared statement list
+		preparedStmtList.addAll(subQueryParams);
+
+		// Order the final result
+		mainQuery.append(GROUPBY_QUERY);
+		mainQuery.append(subQuery);
+		preparedStmtList.addAll(subQueryParams);
+
+		return mainQuery.toString();
+	}
 
 	public String getAllotmentSearchForReport(AllotmentCriteria criteria, List<Object> preparedStmtList) {
 
@@ -257,5 +257,4 @@ public class CommonQueryBuilder {
 		ZonedDateTime parsed = ZonedDateTime.parse(zdt.format(fmt), fmt);
 		return parsed.toInstant().toEpochMilli();
 	}
-
 }

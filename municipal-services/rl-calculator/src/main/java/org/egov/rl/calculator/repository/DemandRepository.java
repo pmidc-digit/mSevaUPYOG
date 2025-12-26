@@ -84,7 +84,6 @@ public class DemandRepository {
 		url.append(config.getDemandUpdateEndPoint());
 		DemandRequest request = DemandRequest.builder().demands(demands).requestInfo(requestInfo).build();
 
-		System.out.println("request--------------" + request);
 		Object result = serviceRequestRepository.fetchResult(url, request);
 		DemandResponse response = null;
 		try {

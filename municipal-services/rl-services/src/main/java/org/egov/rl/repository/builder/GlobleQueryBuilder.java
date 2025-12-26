@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class AllotmentApplicationSearchQueryBuilder2 {
+public class GlobleQueryBuilder {
 	
 	@Autowired
 	private RentLeaseConfiguration config;
@@ -34,8 +34,6 @@ public class AllotmentApplicationSearchQueryBuilder2 {
 		List<Object> subQueryParams = new ArrayList<>();
 		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-//			subQuery.append(" al.status != 'CLOSED' AND ");
-//			subQuery.append(" al.expireflag=false AND al.tenant_id = ? ");
 			subQuery.append(" al.tenant_id = ? ");
 			subQueryParams.add(criteria.getTenantId());
 		}

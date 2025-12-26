@@ -61,17 +61,6 @@ public class AllotmentController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);	
     }
-//    
-//    @PostMapping("/_search")
-//    public ResponseEntity<AllotmentResponse> search(@RequestBody AllotmentRequest allotmentRequest) {
-//    	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
-//         allotmentService.allotmentSearch(allotmentRequest);
-//        AllotmentResponse response = AllotmentResponse.builder()
-//                .allotment(allotmentRequest.getAllotment())
-//                .responseInfo(resInfo)
-//                .build();
-//        return new ResponseEntity<>(response, HttpStatus.OK);	
-//    } 
     
     @RequestMapping(value = "/v1/_search", method = RequestMethod.POST)
 	public ResponseEntity<org.egov.rl.models.user.AllotmentResponse> rlSearch(

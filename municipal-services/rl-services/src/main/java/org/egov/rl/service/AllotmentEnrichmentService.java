@@ -39,6 +39,9 @@ public class AllotmentEnrichmentService {
 	@Autowired
 	private UserService userService;
 
+
+	@Autowired
+	private AllotmentService allotmentService;
 	/**
 	 * Assigns UUIDs to all id fields and also assigns acknowledgement-number and
 	 * assessment-number generated from id-gen
@@ -115,9 +118,8 @@ public class AllotmentEnrichmentService {
 		id.add(allotmentRequest.getAllotment().getId());
 		allotmentCriteria.setAllotmentIds(id);
 		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
-		AllotmentDetails allotmentDbDetails = searchAllotment(allotmentRequest.getRequestInfo(), allotmentCriteria)
-				.stream().findFirst().orElse(null);
-
+		
+		AllotmentDetails allotmentDbDetails = allotmentService.searchAllotedApplications(allotmentRequest.getRequestInfo(), allotmentCriteria).stream().findFirst().orElse(null);		
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
 		auditDetails.setCreatedBy(allotmentDbDetails.getCreatedBy());
 		auditDetails.setCreatedTime(allotmentDbDetails.getCreatedTime());
@@ -147,19 +149,19 @@ public class AllotmentEnrichmentService {
 
 	}
 
-	public List<AllotmentDetails> searchAllotment(RequestInfo requestInfo, AllotmentCriteria allotmentCriteria) {
-		try {
-			// Handle mobile number search by converting to owner UUIDs
-			if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
-				System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
-			}
-			return allotmentRepository.getAllotmentByIds(allotmentCriteria);
-		} catch (Exception e) {
-			e.printStackTrace();
-			// TODO: handle exception
-		}
-		return null;
-	}
+//	public List<AllotmentDetails> searchAllotment(RequestInfo requestInfo, AllotmentCriteria allotmentCriteria) {
+//		try {
+//			// Handle mobile number search by converting to owner UUIDs
+//			if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
+//				System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
+//			}
+//			return allotmentRepository.getAllotmentByIds(allotmentCriteria);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			// TODO: handle exception
+//		}
+//		return null;
+//	}
 
 	private void enrichUuidsForOwnerCreate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();

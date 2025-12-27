@@ -5,10 +5,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentCriteria;
+import org.egov.rl.models.enums.Status;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -18,6 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class CommonQueryBuilder {
+	
+	
+	@Autowired
+	private RentLeaseConfiguration config;
 
 	private static final String SEARCH_BASE_QUERY = "SELECT * FROM eg_rl_allotment ";
 
@@ -49,6 +57,13 @@ public class CommonQueryBuilder {
 			+ "    SELECT COUNT(*) AS totalAllotments FROM eg_rl_allotment al \r\n";
 	String GROUPBY_QUERY = ") total_count\r\n";
 
+	private static final String ALLOT_OWNER_QUERY = "SELECT al.* "
+	        + "FROM eg_rl_allotment al\r\n"
+			+ "INNER JOIN eg_rl_owner_info ap ON al.id = ap.allotment_id\r\n";
+	
+	String ALLOT_OWNER_GROUPBY_QUERY = " GROUP BY al.id ORDER BY al.created_time DESC";
+
+	
 	public String getAllotmentSearchById(AllotmentCriteria criteria, List<Object> preparedStmtList) {
 		StringBuilder subQuery = new StringBuilder("");
 		List<Object> subQueryParams = new ArrayList<>();
@@ -87,7 +102,6 @@ public class CommonQueryBuilder {
 		mainQuery.append(GROUPBY_QUERY);
 		mainQuery.append(subQuery);
 		preparedStmtList.addAll(subQueryParams);
-
 		return mainQuery.toString();
 	}
 
@@ -130,10 +144,76 @@ public class CommonQueryBuilder {
 		mainQuery.append(GROUPBY_QUERY);
 		mainQuery.append(subQuery);
 		preparedStmtList.addAll(subQueryParams);
+		System.out.println("mainQuery.toString()----------"+mainQuery.toString());
 
 		return mainQuery.toString();
 	}
 
+	public String getAllotmentSearch(AllotmentCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder subQuery = new StringBuilder("");
+		List<Object> subQueryParams = new ArrayList<>();
+		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(subQuery, subQueryParams);
+			subQuery.append(" al.tenant_id = ? ");
+			subQueryParams.add(criteria.getTenantId());
+		}
+		if (!criteria.getIsReportSearch()) {
+			if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
+				addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+			}
+			
+			if (!ObjectUtils.isEmpty(criteria.getStatus())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				String inSql = String.join(",", Collections.nCopies(criteria.getStatus().size(), "?"));
+				subQuery.append(" al.status IN (").append(inSql).append(" ) ");
+				addToPreparedStatementStatuses(subQueryParams, criteria.getStatus());
+			}
+
+			if (!CollectionUtils.isEmpty(criteria.getApplicationNumbers())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.application_number IN ( ").append(createQuery(criteria.getApplicationNumbers()))
+						.append(" ) ");
+				addToPreparedStatement(subQueryParams, criteria.getApplicationNumbers());
+			}
+
+			if (!CollectionUtils.isEmpty(criteria.getOwnerIds())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" ap.user_uuid IN ( ").append(createQuery(criteria.getOwnerIds())).append(" ) ");
+				addToPreparedStatement(subQueryParams, criteria.getOwnerIds());
+			}
+			
+			if (!ObjectUtils.isEmpty(criteria.getFromDate())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.created_time >= CAST(? AS bigint) ");
+				subQueryParams.add(criteria.getFromDate());
+			}
+			if (!ObjectUtils.isEmpty(criteria.getToDate())) {
+				addClauseIfRequired(subQuery, subQueryParams);
+				subQuery.append(" al.created_time <= CAST(? AS bigint) ");
+				subQueryParams.add(criteria.getToDate());
+			}
+//			 GROUP BY al.id ORDER BY al.created_time DESC
+			long limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), config.getMaxSearchLimit()) : config.getDefaultLimit();
+			long offset = criteria.getOffset() != null ? criteria.getOffset() : config.getDefaultOffset();
+			subQuery.append(GROUPBY_QUERY);
+			subQuery.append(" LIMIT ? OFFSET ? ");
+			subQueryParams.add(limit);
+			subQueryParams.add(offset);
+
+
+		}
+		// Now build the main query
+		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
+		mainQuery.append(subQuery);
+
+		// Add all subquery parameters to the main prepared statement list
+		preparedStmtList.addAll(subQueryParams);
+
+		return mainQuery.toString();
+	}
+	
 	private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
 		if (preparedStmtList.isEmpty()) {
 			query.append("WHERE");
@@ -256,5 +336,9 @@ public class CommonQueryBuilder {
 		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss z");
 		ZonedDateTime parsed = ZonedDateTime.parse(zdt.format(fmt), fmt);
 		return parsed.toInstant().toEpochMilli();
+	}
+	
+	private void addToPreparedStatementStatuses(List<Object> preparedStmtList, Set<Status> statuses) {
+		statuses.forEach(status -> preparedStmtList.add(status.name()));
 	}
 }

@@ -26,7 +26,6 @@ public class PropertyController {
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 	   
-	
 	@PostMapping("/_report")
     public ResponseEntity<PropertyReportSearchResponse> vacantProperty(@RequestBody PropertyReportSearchRequest propertyReportSearchRequest) {
     	ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(propertyReportSearchRequest.getRequestInfo(), true);

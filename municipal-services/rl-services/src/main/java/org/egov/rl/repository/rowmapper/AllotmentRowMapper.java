@@ -2,11 +2,9 @@ package org.egov.rl.repository.rowmapper;
 
 import org.egov.rl.models.*;
 import org.egov.tracer.model.CustomException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,9 +13,7 @@ import java.util.*;
 @Component
 public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
 
-	@Autowired
-	RestTemplate restTemplate;
-
+	
 	@Override
 	public List<AllotmentDetails> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		AuditDetails auditDetails = null;

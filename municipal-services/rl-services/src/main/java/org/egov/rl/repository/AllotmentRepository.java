@@ -1,24 +1,13 @@
-
 package org.egov.rl.repository;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
-
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
-import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
-//import org.egov.rl.repository.builder.AllotmentApplicationSearchQueryBuilder;
-import org.egov.rl.repository.builder.GlobleQueryBuilder;
 import org.egov.rl.repository.builder.CommonQueryBuilder;
 import org.egov.rl.repository.rowmapper.AllotmentRowMapper;
 import org.egov.rl.repository.rowmapper.DocumentRowMapper;
@@ -26,11 +15,7 @@ import org.egov.rl.repository.rowmapper.OwnerInfoRowMapper;
 import org.egov.rl.repository.rowmapper.GlobleRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Repository
@@ -47,9 +32,6 @@ public class AllotmentRepository {
 	
 	@Autowired
 	DocumentRowMapper documentRowMapper;
-
-	@Autowired
-	private GlobleQueryBuilder searchQueryBuilder2;
 	
 	@Autowired
 	private AllotmentRowMapper rowMapper;
@@ -104,7 +86,7 @@ public class AllotmentRepository {
    
 	public List<AllotmentDetails> getAllotedApplications(AllotmentCriteria searchCriteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = searchQueryBuilder2.getAllotmentSearch(searchCriteria, preparedStmtList);
+		String query = queryBuilder.getAllotmentSearch(searchCriteria, preparedStmtList);
 		log.info("Final query: " + query);
 		return jdbcTemplate.query(query, preparedStmtList.toArray(), globleRowMapper);
 	}

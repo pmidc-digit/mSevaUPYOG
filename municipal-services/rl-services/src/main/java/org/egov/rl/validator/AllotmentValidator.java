@@ -111,6 +111,7 @@ public class AllotmentValidator {
 					.propertyId(propertyIds)
 					.isExpaireFlag(false)
 					.tenantId(tenantId)
+					.currentDate(RLConstants.CURRENT_DATE)
 					.build();
 			
 			AllotmentDetails allotmentDetails = allotmentRepository

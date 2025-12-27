@@ -18,6 +18,7 @@ public class RLConstants {
   
     public static final String PENDING_FOR_PAYMENT_RL_APPLICATION = "PENDING_FOR_PAYMENT";
     
+    public static final String CURRENT_DATE = "CURRENT_DATE";
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
 	

@@ -90,7 +90,8 @@ public class PaymentNotificationService {
 			
 			AllotmentCriteria criteria = AllotmentCriteria.builder()
 					.applicationNumbers(Collections.singleton(applicationNumber))
-//					.tenantId(tenantId)
+					.isReportSearch(false)
+					.tenantId(tenantId)
 					.build();
 
 			List<AllotmentDetails> applications = allotmentRepository.getAllotmentByApplicationNumber(criteria);

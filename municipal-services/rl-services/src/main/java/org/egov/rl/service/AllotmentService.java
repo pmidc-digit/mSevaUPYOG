@@ -227,8 +227,6 @@ public class AllotmentService {
 		applications = applications.stream().map(d -> {
 			JsonNode additionalDetails = mapper.valueToTree(
 					rlList.stream().filter(a -> a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
-			d.setDocuments(allotmentRepository.getDocumentListByAllotmentId(d.getId()));
-			d.setOwnerInfo(allotmentRepository.getOwnerInfoListByAllotmentId(d.getId()));
 			d.setAdditionalDetails(additionalDetails);
 
 			return d;

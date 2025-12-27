@@ -18,6 +18,7 @@ import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.OwnerInfo;
+import org.egov.rl.models.enums.Status;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
 import org.egov.rl.util.RLConstants;
@@ -59,8 +60,6 @@ public class AllotmentValidator {
 	 */
 	public void validateAllotementRequest(AllotmentRequest allotementRequest) {
 
-//		AllotmentRequest allotementRequest = new AllotmentRequest();
-
 		Map<String, String> errorMap = new HashMap<>();
 		if (allotementRequest.getAllotment() == null)
 			throw new CustomException("ALLOTMENT INFO ERROR",
@@ -101,8 +100,21 @@ public class AllotmentValidator {
 		
 		String id = allotementRequest.getAllotment().getId();
 		if (id == null) {
+			Set<String> propertyIds=new HashSet<>();
+			propertyIds.add(propertyId);
+			Set<Status> status=new HashSet<>();
+			status.add(Status.APPROVED);
+			status.add(Status.REQUEST_FOR_DISCONNECTION);
+			AllotmentCriteria allotmentCriteria=AllotmentCriteria
+					.builder()
+					.status(status)
+					.propertyId(propertyIds)
+					.isExpaireFlag(false)
+					.tenantId(tenantId)
+					.build();
+			
 			AllotmentDetails allotmentDetails = allotmentRepository
-					.getAllotedByPropertyIdsAndStatusActive(propertyId, tenantId)
+					.getAllotedApplications(allotmentCriteria)
 					.stream().findFirst().orElse(null);
 			if ((allotmentDetails != null)) {
 				throw new CustomException("PROPERTY ID INFO ERROR",
@@ -132,9 +144,7 @@ public class AllotmentValidator {
 
 		validateOwnersData(allotementRequest, errorMap);
 		validateAndLoadPropertyData(allotementRequest, errorMap);
-//		validateFields(request, errorMap);
-//
-//V
+
 		try {
 			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().getStartDate()).orElse(null);
 			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().getEndDate()).orElse(null);
@@ -148,14 +158,6 @@ public class AllotmentValidator {
 			// Date endDate2 = new Date(endDate1);
 			Timestamp endDate = new Timestamp(endDate1);
 			Timestamp startDate = new Timestamp(startDate1); // 1 second later//Timestamp
-//			System.out.println("---------------"+startDate);
-//			System.out.println("---------------"+endDate);
-//			
-//			if (startDate.after(endDate)) {
-//				throw new CustomException("STARTDATE AND ENDDATE INFO ERROR", "startDate should not be after endDate");
-//			} else {
-//				throw new CustomException("STARTDATE AND ENDDATE INFO ERROR","startDate should not be equals to endDate");
-//			}
 
 			if (startDate.after(endDate)) {
 				throw new CustomException("STARTDATE AND ENDDATE INFO ERROR", "startDate should not be after endDate");
@@ -195,7 +197,7 @@ public class AllotmentValidator {
 			throw new CustomException("PROPERTY ID INFO ERROR",
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
-//		String previousApplicationNumber = allotementRequest.getAllotment().getPreviousApplicationNumber();
+
 		String id = allotementRequest.getAllotment().getId();
 		if ((id == null) || (id != null && id.isEmpty())) {
 			throw new CustomException("ALLOTMENT ID INFO ERROR",
@@ -209,7 +211,6 @@ public class AllotmentValidator {
 		allotmentCriteria.setTenantId(tenantId.trim());
 		
 		AllotmentDetails allotmentDetails= allotmentRepository.getAllotmentByIds(allotmentCriteria).stream().findFirst().orElse(null);
-		System.out.println("allotmentDetails-------"+allotmentRepository.getAllotmentByIds(allotmentCriteria).isEmpty());
 		if ((allotmentDetails == null)) {
 			throw new CustomException("ALLOTMENT ID INFO ERROR",
 					"Wrong allotment id is passing , please provide another corroct allotment Id information");
@@ -245,9 +246,6 @@ public class AllotmentValidator {
 
 		validateOwnersData(allotementRequest, errorMap);
 		validateAndLoadPropertyData(allotementRequest, errorMap);
-//		validateFields(request, errorMap);
-//
-//V
 		try {
 			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().getStartDate()).orElse(null);
 			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().getEndDate()).orElse(null);
@@ -261,14 +259,6 @@ public class AllotmentValidator {
 			// Date endDate2 = new Date(endDate1);
 			Timestamp endDate = new Timestamp(endDate1);
 			Timestamp startDate = new Timestamp(startDate1); // 1 second later//Timestamp
-//			System.out.println("---------------"+startDate);
-//			System.out.println("---------------"+endDate);
-//			
-//			if (startDate.after(endDate)) {
-//				throw new CustomException("STARTDATE AND ENDDATE INFO ERROR", "startDate should not be after endDate");
-//			} else {
-//				throw new CustomException("STARTDATE AND ENDDATE INFO ERROR","startDate should not be equals to endDate");
-//			}
 
 			if (startDate.after(endDate)) {
 				throw new CustomException("STARTDATE AND ENDDATE INFO ERROR", "startDate should not be after endDate");
@@ -354,15 +344,12 @@ public class AllotmentValidator {
 			mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
 
 			String mdmsUrl = configs.getMdmsHost() + configs.getMdmsEndpoint();// "http://<mdms-host>/egov-mdms-service/v1/_search";
-//		System.out.println("---------------"+mdmsUrl);
-//		System.out.println("---------------"+mdmsCriteriaReq);
 			ResponseEntity<Map> response = restTemplate.postForEntity(mdmsUrl, mdmsCriteriaReq, Map.class);
 			Map<String, Object> body = response.getBody();
 
 			Map<String, Object> mdms = (Map<String, Object>) body.get("MdmsRes");
 			Map<String, Object> rentLease = (Map<String, Object>) mdms.get("rentAndLease");
 			List<Map<String, Object>> rlProps = (List<Map<String, Object>>) rentLease.get("RLProperty");
-//       System.out.println(propertyId+"------rlProps----------"+rlProps.size());
 			if (rlProps.isEmpty()) {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"propertyId and tenantId cannot be wrong, please provide the valid propertyId and tenentId information");

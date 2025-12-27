@@ -27,6 +27,8 @@ public class AllotmentCriteria {
 	
 	private Set<String> applicationNumbers;
 	
+	private Set<String> propertyId;
+	
 	private Set<String> uuids;
 
 	private Set<String> oldAllotmentIds;
@@ -49,12 +51,17 @@ public class AllotmentCriteria {
 
 	private Long toDate;
 
+	private String currentDate;
+
 	private Set<String> creationReason;
 	
 	private Set<String> documentNumbers;
 	
 	@Builder.Default
 	private Boolean isSearchInternal = false;
+	
+	@Builder.Default
+	private Boolean isExpaireFlag = true;
 
 	@Builder.Default
 	private Boolean isInboxSearch = false;

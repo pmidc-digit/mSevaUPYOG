@@ -1,8 +1,12 @@
 package org.egov.rl.models;
 
+import java.util.List;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import org.egov.common.contract.request.Role;
 import org.egov.rl.models.oldProperty.Address;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -79,6 +83,19 @@ public class OwnerInfo { // extends User {
 
 	@JsonProperty("mobileNo")
 	private String mobileNo;
+	
+//    @JsonProperty("userName")
+//    private String userName;
+
+	
+    @JsonProperty("roles")
+    private List<Role> roles;
+    
+    @JsonProperty("locale")
+    private String locale;
+
+    @JsonProperty("type")
+    private String type;
 
 	@JsonProperty("permanentAddress")
 	private Address permanentAddress;

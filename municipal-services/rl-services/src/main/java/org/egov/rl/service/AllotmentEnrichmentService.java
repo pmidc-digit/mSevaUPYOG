@@ -34,14 +34,11 @@ public class AllotmentEnrichmentService {
 	private RentLeaseConfiguration config;
 
 	@Autowired
-	private AllotmentRepository allotmentRepository;
-
-	@Autowired
 	private UserService userService;
-
 
 	@Autowired
 	private AllotmentService allotmentService;
+
 	/**
 	 * Assigns UUIDs to all id fields and also assigns acknowledgement-number and
 	 * assessment-number generated from id-gen
@@ -62,45 +59,6 @@ public class AllotmentEnrichmentService {
 		}
 	}
 
-//	public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {
-//		AllotmentDetails allotmentDetails=allotmentRequest.getAllotment();
-//		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
-//	
-//		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-//		allotmentDetails.setAuditDetails(auditDetails);
-//		allotmentDetails.setAdditionalDetails(boundaryService.loadPropertyData(allotmentRequest));
-//		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
-////		setIdgenIds(allotmentRequest);
-//	}
-
-//    public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String userType, Boolean active) {
-//	    
-//		
-//		List<MasterDetail> masterDetails = new ArrayList<>();
-//		String filter = String.format("[?(@.category=='%s' && @.active==%b)]", userType, active);
-//	    
-//	    // Add master detail with the dynamic filter
-//	    masterDetails.add(MasterDetail.builder()
-//	            .name(PTConstants.MDMS_WC_ROLE_MASTERNAME)
-//	            .filter(filter)
-//	            .build());
-//
-//     
-//        List<ModuleDetail> wfModuleDtls = Collections.singletonList(ModuleDetail.builder().masterDetails(masterDetails)
-//                .moduleName(PTConstants.MDMS_WC_ROLE_MODLENAME).build());
-//
-//        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(wfModuleDtls)
-//                .tenantId(config.getStateLevelTenantId())
-//                .build();
-//
-//        MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria)
-//                .requestInfo(requestInfo).build();
-//        String uRi=config.getMdmsHost()+config.getMdmsEndpoint();
-//        Object result = serviceRequestRepository.fetchmdmsResult(uRi, mdmsCriteriaReq);
-//
-//
-//	    return result;
-//	}
 
 	/**
 	 * Assigns UUID for new fields that are added and sets propertyDetail and
@@ -149,37 +107,9 @@ public class AllotmentEnrichmentService {
 
 	}
 
-//	public List<AllotmentDetails> searchAllotment(RequestInfo requestInfo, AllotmentCriteria allotmentCriteria) {
-//		try {
-//			// Handle mobile number search by converting to owner UUIDs
-//			if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
-//				System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
-//			}
-//			return allotmentRepository.getAllotmentByIds(allotmentCriteria);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			// TODO: handle exception
-//		}
-//		return null;
-//	}
-
 	private void enrichUuidsForOwnerCreate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
 		String allotmentId = UUID.randomUUID().toString();
-
-//		if (!CollectionUtils.isEmpty(allotmentDetails.getDocuments())) {
-//		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-//		if (allotmentDetails.getDocuments() != null && allotmentDetails.getDocuments().size() > 0) {
-//			List<Document> docList = allotmentDetails.getDocuments().stream().map(doc -> {
-//				Document document = doc;
-//				document.setDocumentUid(allotmentId);
-//				document.setId(UUID.randomUUID().toString());
-//				document.setStatus(Status.ACTIVE);
-//				document.setAuditDetails(auditDetails);
-//				return document;
-//			}).collect(Collectors.toList());
-//			allotmentDetails.setDocuments(docList);
-//		}
 
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(UUID.randomUUID().toString());
@@ -203,7 +133,6 @@ public class AllotmentEnrichmentService {
 		auditDetails.setCreatedBy(auditDbDetails.getCreatedBy());
 		auditDetails.setCreatedTime(auditDbDetails.getCreatedTime());
 
-//		if (allotmentDetails.getWorkflow().getStatus().equals("INITIATED")) {
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
 			m.setAllotmentId(allotmentId);
@@ -214,9 +143,6 @@ public class AllotmentEnrichmentService {
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		updateDocument(allotmentDetails, allotmentId, auditDetails);
-//		} else {
-//			updateDocument(allotmentDetails, allotmentId, auditDetails);
-//		}
 
 		allotmentRequest.setAllotment(allotmentDetails);
 	}
@@ -281,10 +207,6 @@ public class AllotmentEnrichmentService {
 		if (config.getIsWorkflowEnabled()) {
 			allotmentDetails.setStatus(allotmentRequest.getAllotment().getWorkflow().getStatus());
 		}
-//		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId,
-//				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
-//				.get(0);
-//		allotmentDetails.setApplicationNumber(applicationNumber);
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(allotmentDetails);
@@ -304,51 +226,26 @@ public class AllotmentEnrichmentService {
 
 					if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
 						org.egov.rl.models.user.User user = userDetailResponse.getUser().get(0);
-//System.out.println("============="+user.getName());
-						// Populate owner with complete user details
-//						owner.setId(user.getId());
 						ownerInfo.setUserUuid(user.getUuid());
 //						ownerInfo.setUserName(user.getUserName());
-//						owner.setPassword(user.getPassword());
-//						owner.setSalutation(user.getSalutation());
 						ownerInfo.setName(user.getName());
-//						ownerInfo.setGender(user.getGender());
+						ownerInfo.setGender(user.getGender());
 						ownerInfo.setMobileNo(user.getMobileNumber());
 						ownerInfo.setEmailId(user.getEmailId());
-//						owner.setAltContactNumber(user.getAltContactNumber());
-//						ownerInfo.setPanCard(user.getPan());
-//						ownerInfo.setAadharCard(user.getAadhaarNumber());
-
+						
 						ownerInfo.setPermanentAddress(Address.builder().addressId(user.getPermanentAddress())
 								.pincode(user.getPermanentPincode()).addressLine1(null).city(user.getPermanentCity())
 								.build());
-//						owner.setPermanentCity(user.getPermanentCity());
-//						owner.setPermanentPincode(user.getPermanentPincode());
 						ownerInfo.setCorrespondenceAddress(Address.builder().addressId(user.getCorrespondenceAddress())
 								.pincode(user.getCorrespondencePincode()).addressLine1(null)
 								.city(user.getCorrespondenceCity()).build());
-//						owner.setCorrespondencePincode(user.getCorrespondencePincode());
-//						owner.setCorrespondenceAddress(user.getCorrespondenceAddress());
 						ownerInfo.setActive(user.getActive());
 						ownerInfo.setDob(user.getDob());
-//						ownerInfo.setPwdExpiryDate(user.getPwdExpiryDate());
-//						owner.setLocale(user.getLocale());
-//						ownerInfo.setType(user.getType());
-//						owner.setSignature(user.getSignature());
-//						owner.setAccountLocked(user.getAccountLocked());
-//						ownerInfo.setRoles(user.getRoles());
-//						ownerInfo.setFatherOrHusbandName(user.getFatherOrHusbandName());
-//						owner.setBloodGroup(user.getBloodGroup());
-//						owner.setIdentificationMark(user.getIdentificationMark());
-//						owner.setPhoto(user.getPhoto());
-//						owner.setCreatedBy(user.getCreatedBy());
-//						owner.setCreatedDate(user.getCreatedDate());
-//						owner.setLastModifiedBy(user.getLastModifiedBy());
-//						owner.setLastModifiedDate(user.getLastModifiedDate());
+						ownerInfo.setLocale(user.getLocale());
+						ownerInfo.setType(user.getType());
+						ownerInfo.setRoles(user.getRoles());
+						ownerInfo.setFatherOrHusbandName(user.getFatherOrHusbandName());
 						ownerInfo.setTenantId(user.getTenantId());
-
-						// Populate father name in the application from user service
-//						application.setFatherName(user.getFatherOrHusbandName());
 					}
 				} catch (Exception e) {
 					// Log error but don't fail the search

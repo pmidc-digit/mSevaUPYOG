@@ -1,10 +1,17 @@
 package org.egov.rl.repository.rowmapper;
 
 import org.egov.rl.models.*;
+import org.egov.rl.models.enums.Status;
+import org.egov.rl.service.UserService;
 import org.egov.tracer.model.CustomException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,6 +19,9 @@ import java.util.*;
 
 @Component
 public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDetails>> {
+	
+	@Autowired
+	private ObjectMapper mapper;
 
 	
 	@Override
@@ -75,11 +85,15 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 	private OwnerInfo getOwnerInfo(ResultSet rs) {
 		OwnerInfo owner = null;
 		try {
-			owner = OwnerInfo.builder().ownerId(rs.getString("id")).allotmentId(rs.getString("allotment_id"))
+			owner = OwnerInfo.builder()
+					.ownerId(rs.getString("id"))
+					.allotmentId(rs.getString("allotment_id"))
 					.userUuid(rs.getString("user_uuid"))
 					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
+					.ownerShipPercentage(rs.getDouble("ownership_percentage"))
 					.ownerType(rs.getString("owner_type"))
-					.build();
+					.status(Integer.valueOf(rs.getString("status")))
+					.build();					
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CustomException("PARSING_ERROR", "Error parsing OwnerInfo from JSON");
@@ -101,8 +115,26 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 
 	private Document getDocuments(ResultSet rs) throws SQLException {
 
-		return Document.builder().id(rs.getString("id")).documentUid(rs.getString("allotment_id"))
-				.documentType(rs.getString("documenttype")).fileStoreId(rs.getString("fileStoreId"))
+		return Document.builder()
+				.id(rs.getString("id"))
+				.documentUid(rs.getString("allotment_id"))
+				.documentType(rs.getString("documenttype"))
+				.fileStoreId(rs.getString("fileStoreId"))
+				.status(Status.valueOf(rs.getString("status").toUpperCase()))
 				.build();
+	}
+		
+	private JsonNode getAdditionalDetails(Object additionalDetails) {
+		Map<String,Object> node = mapper.valueToTree(additionalDetails);
+
+//        // Access a field named "value"
+//		JsonNode valueNode = node.get("additional_details").get(0).get("value");
+//
+//		// Convert Object to List<RLProperty>
+//		List<RLProperty> rlList = mapper.convertValue(node.get("value"),
+//				mapper.getTypeFactory().constructCollectionType(List.class, RLProperty.class));
+
+		// Convert List<RLProperty> back to JsonNode
+		return mapper.valueToTree(additionalDetails);
 	}
 }

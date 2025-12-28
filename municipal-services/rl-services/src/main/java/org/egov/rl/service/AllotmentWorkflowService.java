@@ -40,7 +40,7 @@ public class AllotmentWorkflowService {
 	org.egov.rl.repository.ServiceRequestRepository serviceRequestRepository;
 
 	public void updateWorkflowStatus(AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 			ProcessInstance processInstance = getProcessInstanceForAllotment(allotmentDetails,
 					allotmentRequest.getRequestInfo());
 			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(allotmentRequest.getRequestInfo(),

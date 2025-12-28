@@ -19,7 +19,7 @@ import org.egov.rl.models.enums.CreationReason;
 import org.egov.rl.models.event.*;
 import org.egov.rl.models.user.UserDetailResponse;
 import org.egov.rl.models.user.UserSearchRequest;
-import org.egov.rl.producer.Producer;
+import org.egov.rl.producer.AllotmentProducer;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.service.UserService;
 import org.egov.rl.web.contracts.Email;
@@ -51,7 +51,7 @@ public class NotificationUtil {
 
     private RentLeaseConfiguration config;
 
-    private Producer producer;
+    private AllotmentProducer allotmentProducer;
 
     private RestTemplate restTemplate;
 
@@ -75,10 +75,10 @@ public class NotificationUtil {
 
     @Autowired
     public NotificationUtil(ServiceRequestRepository serviceRequestRepository, RentLeaseConfiguration config,
-                            Producer producer, RestTemplate restTemplate,UserService userService) {
+                            AllotmentProducer allotmentProducer, RestTemplate restTemplate,UserService userService) {
         this.serviceRequestRepository = serviceRequestRepository;
         this.config = config;
-        this.producer = producer;
+        this.allotmentProducer = allotmentProducer;
         this.restTemplate = restTemplate;
         this.userService = userService;
     }
@@ -204,7 +204,7 @@ public class NotificationUtil {
             if (CollectionUtils.isEmpty(smsRequestList))
                 log.info("Messages from localization couldn't be fetched!");
             for (SMSRequest smsRequest : smsRequestList) {
-                producer.push(config.getSmsNotifTopic(), smsRequest);
+                allotmentProducer.push(config.getSmsNotifTopic(), smsRequest);
                 log.info("Sending SMS notification: ");
                 if(log.isDebugEnabled())
                 	log.debug("MobileNumber: " + smsRequest.getMobileNumber() + " Messages: " + smsRequest.getMessage());
@@ -256,7 +256,7 @@ public class NotificationUtil {
      */
     public void sendEventNotification(EventRequest request) {
         log.info("EVENT notification sent!");
-        producer.push(config.getSaveUserEventsTopic(), request);
+        allotmentProducer.push(config.getSaveUserEventsTopic(), request);
     }
 
 
@@ -345,7 +345,7 @@ public class NotificationUtil {
                 log.info("Messages from localization couldn't be fetched!");
             for (EmailRequest emailRequest: emailRequestList) {
                 if (!StringUtils.isEmpty(emailRequest.getEmail().getBody())) {
-                    producer.push(config.getEmailNotifTopic(), emailRequest);
+                    allotmentProducer.push(config.getEmailNotifTopic(), emailRequest);
                     log.info("Sending EMAIL notification! ");
                     log.info("Email Id: " + emailRequest.getEmail().toString());
                 } else {

@@ -64,8 +64,8 @@ public class BoundaryService {
 	RestTemplate restTemplate;// = new RestTemplate();
 
 	public JsonNode loadPropertyData(AllotmentRequest allotementRequest) {
-		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
-		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
+		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
+		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
 		JsonNode body = null;
 		System.out.println("propertyId---"+propertyId+"-------------"+tenantId);
 		try {
@@ -236,8 +236,8 @@ public class BoundaryService {
 		return amount;
 	}
 	public List<RLProperty> allPropertyList(AllotmentRequest allotementRequest) {
-		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
-		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
+		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
+		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
 		JsonNode body = null;
 		List<RLProperty> propertyList =null;
 //		System.out.println("propertyId---"+propertyId+"-------------"+tenantId);

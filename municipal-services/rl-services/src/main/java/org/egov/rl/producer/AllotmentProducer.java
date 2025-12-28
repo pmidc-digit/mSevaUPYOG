@@ -1,6 +1,8 @@
 
 package org.egov.rl.producer;
 
+import java.util.Arrays;
+
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.util.EncryptionDecryptionUtil;
@@ -13,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class Producer {
+public class AllotmentProducer {
 
 	@Autowired
 	private CustomKafkaTemplate<String, Object> kafkaTemplate;
@@ -26,7 +28,7 @@ public class Producer {
 	}
 
 	public void pushAfterEncrytpion(String topic, AllotmentRequest request) {
-		request.setAllotment(encryptionDecryptionUtil.encryptObject(request.getAllotment(), RLConstants.PROPERTY_MODEL, AllotmentDetails.class));
+		request.setAllotment(Arrays.asList(encryptionDecryptionUtil.encryptObject(request.getAllotment().get(0), RLConstants.PROPERTY_MODEL, AllotmentDetails.class)));
 		push(topic, request);
 	}
 }

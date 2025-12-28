@@ -95,7 +95,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
 					.ownerShipPercentage(rs.getDouble("ownership_percentage"))
 					.ownerType(rs.getString("owner_type"))
-					.status(rs.getString("onr_status"))
+					.status(Status.valueOf(rs.getString("onr_status").toUpperCase()))
 					.build();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -65,12 +65,12 @@ public class AllotmentValidator {
 			throw new CustomException("ALLOTMENT INFO ERROR",
 					"Allotment cannot be empty, please provide the Allotment information");
 //		if (allotementRequest.getAllotment() != null) {
-//			if (allotementRequest.getAllotment().getWitnessDetails() == null) {
+//			if (allotementRequest.getAllotment().get(0).getWitnessDetails() == null) {
 //				throw new CustomException("WITNESS INFO ERROR",
 //						"Witness cannot be empty, please provide at least two witness information");
 //			}
 //		}
-		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().getOwnerInfo()).orElse(null);
+		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().get(0).getOwnerInfo()).orElse(null);
 		if (owners == null || CollectionUtils.isEmpty(owners))
 			throw new CustomException("OWNER INFO ERROR",
 					"Owners cannot be empty, please provide at least one owner information");
@@ -78,19 +78,19 @@ public class AllotmentValidator {
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 
-		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
+		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
 		if ((tenantId == null) || (tenantId != null && tenantId.isEmpty())) {
 			throw new CustomException("TENANT ID INFO ERROR",
 					"TenantId cannot be empty, please provide tenantId information");
 		}
 
-		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
+		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
 		if ((propertyId == null) || (propertyId != null && propertyId.isEmpty())) {
 			throw new CustomException("PROPERTY ID INFO ERROR",
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
-		String previousApplicationNumber = allotementRequest.getAllotment().getPreviousApplicationNumber();
-		String tradeLicenseNumber = allotementRequest.getAllotment().getTradeLicenseNumber();		
+		String previousApplicationNumber = allotementRequest.getAllotment().get(0).getPreviousApplicationNumber();
+		String tradeLicenseNumber = allotementRequest.getAllotment().get(0).getTradeLicenseNumber();		
 		if ((previousApplicationNumber != null) || (previousApplicationNumber != null && !previousApplicationNumber.isEmpty())) {
 			if ((tradeLicenseNumber == null) || (tradeLicenseNumber != null && tradeLicenseNumber.isEmpty())) {
  			    throw new CustomException("TRADELICENSENUMBER INFO ERROR",
@@ -98,7 +98,7 @@ public class AllotmentValidator {
 			}
 		}
 		
-		String id = allotementRequest.getAllotment().getId();
+		String id = allotementRequest.getAllotment().get(0).getId();
 		if (id == null) {
 			Set<String> propertyIds=new HashSet<>();
 			propertyIds.add(propertyId);
@@ -147,8 +147,8 @@ public class AllotmentValidator {
 		validateAndLoadPropertyData(allotementRequest, errorMap);
 
 		try {
-			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().getStartDate()).orElse(null);
-			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().getEndDate()).orElse(null);
+			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getStartDate()).orElse(null);
+			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getEndDate()).orElse(null);
 			if (startDate1 == 0l || String.valueOf(startDate1).isEmpty())
 				throw new CustomException("STARTDATE INFO ERROR",
 						"startDate cannot be empty, please provide the startDate information");
@@ -179,7 +179,7 @@ public class AllotmentValidator {
 		if (allotementRequest.getAllotment() == null)
 			throw new CustomException("ALLOTMENT INFO ERROR",
 					"Allotment cannot be empty, please provide the Allotment information");
-		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().getOwnerInfo()).orElse(null);
+		List<OwnerInfo> owners = Optional.ofNullable(allotementRequest.getAllotment().get(0).getOwnerInfo()).orElse(null);
 		if (owners == null || CollectionUtils.isEmpty(owners))
 			throw new CustomException("OWNER INFO ERROR",
 					"Owners cannot be empty, please provide at least one owner information");
@@ -187,19 +187,19 @@ public class AllotmentValidator {
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 
-		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
+		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
 		if ((tenantId == null) || (tenantId != null && tenantId.isEmpty())) {
 			throw new CustomException("TENANT ID INFO ERROR",
 					"TenantId cannot be empty, please provide tenantId information");
 		}
 
-		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
+		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
 		if ((propertyId == null) || (propertyId != null && propertyId.isEmpty())) {
 			throw new CustomException("PROPERTY ID INFO ERROR",
 					"PropertyID cannot be empty, please provide tenantId information");
 		}
 
-		String id = allotementRequest.getAllotment().getId();
+		String id = allotementRequest.getAllotment().get(0).getId();
 		if ((id == null) || (id != null && id.isEmpty())) {
 			throw new CustomException("ALLOTMENT ID INFO ERROR",
 					"Allotment Id cannot be empty, please provide allotment id information");
@@ -219,8 +219,8 @@ public class AllotmentValidator {
 		}
 
 
-		if(allotementRequest.getAllotment().getWorkflow().getAction().equals(RLConstants.APPLY_RL_APPLICATION)) {
-			if(allotementRequest.getAllotment().getDocuments()==null||allotementRequest.getAllotment().getDocuments().isEmpty()) {
+		if(allotementRequest.getAllotment().get(0).getWorkflow().getAction().equals(RLConstants.APPLY_RL_APPLICATION)) {
+			if(allotementRequest.getAllotment().get(0).getDocuments()==null||allotementRequest.getAllotment().get(0).getDocuments().isEmpty()) {
 					throw new CustomException("EG_RL_DOCUMENT INFO ERROR", "Document can't be empty in the request");
 			}
 		}
@@ -249,8 +249,8 @@ public class AllotmentValidator {
 		validateOwnersData(allotementRequest, errorMap);
 		validateAndLoadPropertyData(allotementRequest, errorMap);
 		try {
-			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().getStartDate()).orElse(null);
-			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().getEndDate()).orElse(null);
+			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getStartDate()).orElse(null);
+			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getEndDate()).orElse(null);
 			if (startDate1 == 0l || String.valueOf(startDate1).isEmpty())
 				throw new CustomException("STARTDATE INFO ERROR",
 						"startDate cannot be empty, please provide the startDate information");
@@ -303,9 +303,9 @@ public class AllotmentValidator {
 	 *
 	 */
 	private void validateOwnersData(AllotmentRequest allotementRequest, Map<String, String> errorMap) {
-//		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
-//		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
-		List<OwnerInfo> owners = allotementRequest.getAllotment().getOwnerInfo();
+//		String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
+//		String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
+		List<OwnerInfo> owners = allotementRequest.getAllotment().get(0).getOwnerInfo();
 		owners.stream().forEach(u -> {
 //			if(!isValidAadhaar( u.getAadharCardNumber())){
 //				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid Aadhar Card number");
@@ -328,8 +328,8 @@ public class AllotmentValidator {
 
 	private void validateAndLoadPropertyData(AllotmentRequest allotementRequest, Map<String, String> errorMap) {
 		try {
-			String propertyId = Optional.ofNullable(allotementRequest.getAllotment().getPropertyId()).orElse(null);
-			String tenantId = Optional.ofNullable(allotementRequest.getAllotment().getTenantId()).orElse(null);
+			String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
+			String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
 
 			MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
 			mdmsCriteriaReq.setRequestInfo(allotementRequest.getRequestInfo()); // from your context
@@ -356,7 +356,7 @@ public class AllotmentValidator {
 						"propertyId and tenantId cannot be wrong, please provide the valid propertyId and tenentId information");
 			} else {
 				JsonNode node = mapper.valueToTree(rlProps);
-				allotementRequest.getAllotment().setAdditionalDetails(node);
+				allotementRequest.getAllotment().get(0).setAdditionalDetails(node);
 			}
 			if (!errorMap.isEmpty())
 				throw new CustomException(errorMap);

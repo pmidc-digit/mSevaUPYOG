@@ -48,10 +48,10 @@ public class AllotmentNotificationService {
 	private EventRequest getEventsForAllotment(AllotmentRequest request) {
 
 		List<Event> events = new ArrayList<>();
-		String tenantId = request.getAllotment().getTenantId();
+		String tenantId = request.getAllotment().get(0).getTenantId();
 		String localizationMessages = "action ";// util.getLocalizationMessages(tenantId, request.getRequestInfo());
 		List<String> toUsers = new ArrayList<>();
-		String mobileNumber = request.getAllotment().getOwnerInfo().get(0).getMobileNo();
+		String mobileNumber = request.getAllotment().get(0).getOwnerInfo().get(0).getMobileNo();
 
 		Map<String, String> mapOfPhoneNoAndUUIDs = fetchUserUUIDs(mobileNumber, request.getRequestInfo(), tenantId);
 
@@ -61,7 +61,7 @@ public class AllotmentNotificationService {
 
 		toUsers.add(mapOfPhoneNoAndUUIDs.get(mobileNumber));
 		String message = null;
-		message = util.getCustomizedMsg(request.getRequestInfo(), request.getAllotment(),localizationMessages);
+		message = util.getCustomizedMsg(request.getRequestInfo(), request.getAllotment().get(0),localizationMessages);
 		log.info("Message for event in Allotment :" + message);
 		Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
 		log.info("Recipient object in RL:" + recepient.toString());

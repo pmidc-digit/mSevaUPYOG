@@ -60,10 +60,10 @@ public class NotificationService {
 
 		String msg = null;
 		String state = null;
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-		ProcessInstance wf = getProcessInstanceForAllotment(allotmentRequest.getAllotment(),
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		ProcessInstance wf = getProcessInstanceForAllotment(allotmentRequest.getAllotment().get(0),
 				allotmentRequest.getRequestInfo());
-		String completeMsgs = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().getTenantId(),
+		String completeMsgs = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().get(0).getTenantId(),
 				allotmentRequest.getRequestInfo());
 		state = getStateFromWf(wf, configs.getIsMutationWorkflowEnabled());
 		String localisedState = getLocalisedState(wf, completeMsgs);
@@ -281,7 +281,7 @@ public class NotificationService {
 	 */
 	private void prepareMsgAndSend(AllotmentRequest request, String msg, String state) {
 
-		AllotmentDetails allotmentDetails = request.getAllotment();
+		AllotmentDetails allotmentDetails = request.getAllotment().get(0);
 		RequestInfo requestInfo = request.getRequestInfo();
 		Map<String, String> mobileNumberToOwner = new HashMap<>();
 		String tenantId = allotmentDetails.getTenantId();

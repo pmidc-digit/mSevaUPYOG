@@ -67,7 +67,7 @@ public class UserService {
 	 */
 	public void createUser(AllotmentRequest allotmentRequest) {
 
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
 		List<Role> roles = getCitizenRole();
 		List<OwnerInfo> ownerInfos = allotmentDetails.getOwnerInfo();
@@ -137,7 +137,7 @@ public class UserService {
 			u.setTenantId(existingUsers.getTenantId());
 			return u;
 		}).collect(Collectors.toList());
-		allotmentRequest.getAllotment().setOwnerInfo(ownerInfos);
+		allotmentRequest.getAllotment().get(0).setOwnerInfo(ownerInfos);
 	}
 
 	/**

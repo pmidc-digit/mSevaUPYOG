@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import org.egov.common.contract.request.Role;
+import org.egov.rl.models.enums.Status;
 import org.egov.rl.models.oldProperty.Address;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -57,7 +58,7 @@ public class OwnerInfo { // extends User {
 
 	@SafeHtml
 	@JsonProperty("status")
-	private String status;
+	private Status status;
 
 	@JsonProperty("isPrimaryOwner")
 	private Boolean isPrimaryOwner;

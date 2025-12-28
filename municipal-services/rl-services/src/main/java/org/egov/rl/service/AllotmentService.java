@@ -2,6 +2,7 @@ package org.egov.rl.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,7 @@ import org.egov.rl.models.*;
 import org.egov.rl.models.demand.CalculationCriteria;
 import org.egov.rl.models.demand.CalculationReq;
 import org.egov.rl.models.demand.DemandResponse;
-import org.egov.rl.producer.Producer;
+import org.egov.rl.producer.AllotmentProducer;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
@@ -36,7 +37,7 @@ public class AllotmentService {
 	ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired
-	private Producer producer;
+	private AllotmentProducer allotmentProducer;
 
 	@Autowired
 	private RentLeaseConfiguration config;
@@ -87,35 +88,37 @@ public class AllotmentService {
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
-			allotmentRequest.getAllotment().setStatus("APPROVED");
+			allotmentRequest.getAllotment().get(0).setStatus("APPROVED");
 		}
-		String previousApplicationNumber = allotmentRequest.getAllotment().getPreviousApplicationNumber();
+		String previousApplicationNumber = allotmentRequest.getAllotment().get(0).getPreviousApplicationNumber();
 		if (previousApplicationNumber != null && previousApplicationNumber.trim().length() > 0) {
-			AllotmentDetails allotment = allotmentRequest.getAllotment();
+			AllotmentDetails allotment = allotmentRequest.getAllotment().get(0);
 			allotment.setApplicationType("RENEWAL");
-			allotmentRequest.setAllotment(allotment);
+			allotmentRequest.setAllotment(Arrays.asList(allotment));
 		} else {
-			AllotmentDetails allotment = allotmentRequest.getAllotment();
+			AllotmentDetails allotment = allotmentRequest.getAllotment().get(0);
 			allotment.setApplicationType("NEW");
-			allotmentRequest.setAllotment(allotment);
+			allotmentRequest.setAllotment(Arrays.asList(allotment));
 		}
-		producer.push(config.getSaveRLAllotmentTopic(), allotmentRequest);
-		allotmentRequest.getAllotment().setWorkflow(null);
-		return allotmentRequest.getAllotment();
+		allotmentProducer.push(config.getSaveRLAllotmentTopic(), allotmentRequest);
+	    AllotmentDetails allotment =	allotmentRequest.getAllotment().get(0);
+	    allotment.setWorkflow(null);
+		allotmentRequest.setAllotment(Arrays.asList(allotment));
+		return allotmentRequest.getAllotment().get(0);
 	}
 
 	public AllotmentDetails allotmentUpdate(AllotmentRequest allotmentRequest) {
-        String action=allotmentRequest.getAllotment().getWorkflow().getAction();
-        String applicationType=allotmentRequest.getAllotment().getApplicationType();
+        String action=allotmentRequest.getAllotment().get(0).getWorkflow().getAction();
+        String applicationType=allotmentRequest.getAllotment().get(0).getApplicationType();
 		allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
 		userService.createUser(allotmentRequest);
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-		allotmentRequest.setAllotment(allotmentDetails);
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
-			allotmentRequest.getAllotment().setStatus("APPROVED");
+			allotmentRequest.getAllotment().get(0).setStatus("APPROVED");
 		}
 		String demandId = null;
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
@@ -145,18 +148,17 @@ public class AllotmentService {
 			satelmentAllotment(allotmentRequest);
 		}
 		
-		allotmentRequest.getAllotment().setDemandId(demandId);
-		producer.push(config.getUpdateRLAllotmentTopic(), allotmentRequest);
-		allotmentRequest.getAllotment().setWorkflow(null);
-		return allotmentRequest.getAllotment();
+		allotmentProducer.push(config.getUpdateRLAllotmentTopic(), allotmentRequest);
+		allotmentRequest.getAllotment().get(0).setWorkflow(null);
+		return allotmentRequest.getAllotment().get(0);
 	}
 	
 	private void satelmentAllotment(AllotmentRequest allotmentRequest) {
-		String tenantId = allotmentRequest.getAllotment().getTenantId();
-		List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
+		String tenantId = allotmentRequest.getAllotment().get(0).getTenantId();
+		List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().get(0).getPropertyId(),
 				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 		
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		
 		BigDecimal amountDeducted = allotmentDetails.getAmountToBeDeducted(); // BigDecimal
 		
@@ -167,7 +169,7 @@ public class AllotmentService {
 		BigDecimal amountToBeRefunded = securityAmount.subtract(amountDeducted);
 	
 		if(amountToBeRefunded.compareTo(BigDecimal.ZERO) > 0) {
-		    allotmentRequest.getAllotment().setAmountToBeRefund(amountToBeRefunded);
+		    allotmentRequest.getAllotment().get(0).setAmountToBeRefund(amountToBeRefunded);
 		} else {
 			callCalculatorService(true,false,allotmentRequest);
 		}

@@ -1,6 +1,7 @@
 package org.egov.rl.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,14 +48,14 @@ public class AllotmentEnrichmentService {
 	 */
 
 	public void enrichCreateRequest(AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
 
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 		allotmentDetails.setAuditDetails(auditDetails);
 		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
 		setIdgenIds(allotmentRequest);
-		if(allotmentRequest.getAllotment().getPreviousApplicationNumber()==null) {
+		if(allotmentRequest.getAllotment().get(0).getPreviousApplicationNumber()==null) {
 		 setRegistrationNumber(allotmentRequest);
 		}
 	}
@@ -68,14 +69,14 @@ public class AllotmentEnrichmentService {
 	 * @param propertyFromDb Properties returned from DB
 	 */
 	public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
 
 		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
 		Set<String> id = new HashSet<>();
-		id.add(allotmentRequest.getAllotment().getId());
+		id.add(allotmentRequest.getAllotment().get(0).getId());
 		allotmentCriteria.setAllotmentIds(id);
-		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().getTenantId());
+		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().get(0).getTenantId());
 		
 		AllotmentDetails allotmentDbDetails = allotmentService.searchAllotedApplications(allotmentRequest.getRequestInfo(), allotmentCriteria).stream().findFirst().orElse(null);		
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
@@ -100,7 +101,7 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setPropertyId(allotmentDetails.getPropertyId());
 		allotmentDbDetails.setTenantId(allotmentDetails.getTenantId());
 		allotmentDbDetails.setAmountToBeDeducted(allotmentDetails.getAmountToBeDeducted());
-		allotmentRequest.setAllotment(allotmentDbDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDbDetails));
 
 		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
 		updateIdgenIds(allotmentRequest);
@@ -108,11 +109,12 @@ public class AllotmentEnrichmentService {
 	}
 
 	private void enrichUuidsForOwnerCreate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		String allotmentId = UUID.randomUUID().toString();
 
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(UUID.randomUUID().toString());
+			m.setStatus(Status.ACTIVE);
 			m.setAllotmentId(allotmentId);
 			return m;
 		}).collect(Collectors.toList());
@@ -120,13 +122,13 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setId(allotmentId);
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
-		allotmentRequest.setAllotment(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 
 	}
 
 	private void enrichUuidsForOwnerUpdate(RequestInfo requestInfo, AllotmentRequest allotmentRequest,
 			AllotmentDetails allotmentDbDetails) {
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		AuditDetails auditDbDetails = allotmentDbDetails.getAuditDetails();
 		String allotmentId = allotmentDetails.getId();
 		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
@@ -135,6 +137,7 @@ public class AllotmentEnrichmentService {
 
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
+			m.setStatus(Status.ACTIVE);
 			m.setAllotmentId(allotmentId);
 			return m;
 		}).collect(Collectors.toList());
@@ -143,8 +146,8 @@ public class AllotmentEnrichmentService {
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
 		updateDocument(allotmentDetails, allotmentId, auditDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 
-		allotmentRequest.setAllotment(allotmentDetails);
 	}
 
 	private void updateDocument(AllotmentDetails allotmentDetails, String allotmentId, AuditDetails auditDetails) {
@@ -168,12 +171,12 @@ public class AllotmentEnrichmentService {
 	 */
 	private void setIdgenIds(AllotmentRequest allotmentRequest) {
 
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		String tenantId = allotmentDetails.getTenantId();
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
 
 		if (config.getIsWorkflowEnabled()) {
-			allotmentDetails.setStatus(allotmentRequest.getAllotment().getWorkflow().getStatus());
+			allotmentDetails.setStatus(allotmentRequest.getAllotment().get(0).getWorkflow().getStatus());
 		}
 		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId,
 				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
@@ -181,12 +184,13 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setApplicationNumber(applicationNumber);
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
-		allotmentRequest.setAllotment(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
+
 	}
 
 	private void setRegistrationNumber(AllotmentRequest allotmentRequest) {
 
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		String tenantId = allotmentDetails.getTenantId();
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
 		String registrationNumber = propertyutil.getIdList(requestInfo, tenantId,
@@ -195,21 +199,22 @@ public class AllotmentEnrichmentService {
 		allotmentDetails.setRegistrationNumber(registrationNumber);
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
-		allotmentRequest.setAllotment(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
+
 	}
 
 	private void updateIdgenIds(AllotmentRequest allotmentRequest) {
 
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		String tenantId = allotmentDetails.getTenantId();
 		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
 
 		if (config.getIsWorkflowEnabled()) {
-			allotmentDetails.setStatus(allotmentRequest.getAllotment().getWorkflow().getStatus());
+			allotmentDetails.setStatus(allotmentRequest.getAllotment().get(0).getWorkflow().getStatus());
 		}
 		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
 		allotmentDetails2.add(allotmentDetails);
-		allotmentRequest.setAllotment(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 	}
 
 	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> allotmentDetails, RequestInfo requestInfo) {

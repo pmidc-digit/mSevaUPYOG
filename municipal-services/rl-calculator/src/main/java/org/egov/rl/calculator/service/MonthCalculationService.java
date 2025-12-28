@@ -2,21 +2,15 @@ package org.egov.rl.calculator.service;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.rl.calculator.web.models.DemandPerioud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +23,7 @@ public class MonthCalculationService {
 	// --------------------------------quterly
 	// scheduler-----------------------------------------------------
 
-	public static long lastDayTimeOfCycle(long startDate, int cycle) {
+	public long lastDayTimeOfCycle(long startDate, int cycle) {
 		ZoneId zone = ZoneId.of("Asia/Kolkata");
 
 		// Start ko IST zone me laao
@@ -44,7 +38,7 @@ public class MonthCalculationService {
 		return lastMillis;
 	}
 
-	public static long firstDay(long startDate) {
+	public long firstDay(long startDate) {
 		ZoneId zone = ZoneId.of("Asia/Kolkata");
 
 		// Start ko IST zone me laao
@@ -72,19 +66,19 @@ public class MonthCalculationService {
 	// --------------------------------monthly
 	// scheduler-----------------------------------------------------
 
-	public static LocalDate firstDayOfMonth(String monthName, int currentYear) {
+	public LocalDate firstDayOfMonth(String monthName, int currentYear) {
 		Month month = parseFullMonthName(monthName);
 		return LocalDate.of(currentYear, month, 1);
 	}
 
 	// Month name (FULL) ko parse karke last day
-	public static LocalDate lastDayOfMonth(String monthName, int currentYear) {
+	public LocalDate lastDayOfMonth(String monthName, int currentYear) {
 		LocalDate first = firstDayOfMonth(monthName, currentYear);
 		return first.withDayOfMonth(first.lengthOfMonth());
 	}
 
 	// "MMMM" (FULL month name) ke liye parser: Locale.ENGLISH
-	public static Month parseFullMonthName(String monthName) {
+	public Month parseFullMonthName(String monthName) {
 		try {
 			DateTimeFormatter fullFmt = DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH);
 			return Month.from(fullFmt.parse(monthName));
@@ -94,7 +88,7 @@ public class MonthCalculationService {
 		}
 	}
 
-	public static long formatDay(LocalDate date, boolean endOfDay) {
+	public long formatDay(LocalDate date, boolean endOfDay) {
 		ZoneId zone = ZoneId.of("Asia/Kolkata");
 		ZonedDateTime zdt = endOfDay ? date.atTime(java.time.LocalTime.MAX).atZone(zone) : date.atStartOfDay(zone);
 		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss z");

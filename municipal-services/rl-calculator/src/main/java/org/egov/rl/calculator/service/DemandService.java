@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.rl.calculator.repository.DemandRepository;
 import org.egov.rl.calculator.repository.Repository;
 import org.egov.rl.calculator.util.Configurations;
@@ -12,7 +11,6 @@ import org.egov.rl.calculator.util.NotificationUtil;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.*;
-import org.egov.rl.calculator.web.models.Status;
 import org.egov.rl.calculator.web.models.demand.*;
 import org.egov.rl.calculator.web.models.property.AuditDetails;
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
@@ -22,12 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -389,19 +383,19 @@ public class DemandService {
 		}
 	}
 
-	private List<AllotmentDetails> filterActiveApplicationsForPeriod(List<AllotmentDetails> applications,
-			TaxPeriod taxPeriod) {
-		long periodStart = taxPeriod.getFromDate();
-		long periodEnd = taxPeriod.getToDate();
-
-		return applications.stream().filter(app -> {
-			Long allotmentStartDate = app.getStartDate();
-			Long allotmentEndDate = app.getEndDate();
-
-			return allotmentStartDate != null && allotmentStartDate <= periodEnd
-					&& (allotmentEndDate == null || allotmentEndDate >= periodStart);
-		}).collect(Collectors.toList());
-	}
+//	private List<AllotmentDetails> filterActiveApplicationsForPeriod(List<AllotmentDetails> applications,
+//			TaxPeriod taxPeriod) {
+//		long periodStart = taxPeriod.getFromDate();
+//		long periodEnd = taxPeriod.getToDate();
+//
+//		return applications.stream().filter(app -> {
+//			Long allotmentStartDate = app.getStartDate();
+//			Long allotmentEndDate = app.getEndDate();
+//
+//			return allotmentStartDate != null && allotmentStartDate <= periodEnd
+//					&& (allotmentEndDate == null || allotmentEndDate >= periodStart);
+//		}).collect(Collectors.toList());
+//	}
 
 	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo) {
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
@@ -638,7 +632,6 @@ public class DemandService {
 	public Demand createSingleDemand(long expireDate, AllotmentDetails allotmentDetails, RequestInfo requestInfo) {
 		List<Demand> demands = new ArrayList<>();
 
-//            String tenantId = allotmentRequest.getAllotment().getTenantId();
 		String consumerCode = allotmentDetails.getApplicationNumber();
 
 		OwnerInfo ownerInfo = allotmentDetails.getOwnerInfo().get(0);
@@ -647,14 +640,8 @@ public class DemandService {
 				.build();
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(false,
 				AllotmentRequest.builder().allotment(allotmentDetails).requestInfo(requestInfo).build());
-		System.out.println("---------------d--------------ddddd-" + demandDetails);
 		BigDecimal amountPayable = new BigDecimal(0);
 		String applicationType = allotmentDetails.getApplicationType();
-
-		// Convert long (epoch milli) to LocalDate
-		LocalDate stateDate = Instant.ofEpochMilli(allotmentDetails.getStartDate()).atZone(ZoneId.systemDefault())
-				.toLocalDate();
-		String startMonth = stateDate.getMonth().toString();
 
 		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -664,11 +651,6 @@ public class DemandService {
 				.billExpiryTime(expireDate).fixedbillexpirydate(expireDate).consumerType(applicationType)
 				.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 		demands.add(demand);
-//		List<Demand> demandsdata=demandRepository.getDemandsForRentableIdsAndPeriod(Arrays.asList(demand.getConsumerCode()),demand.getTaxPeriodFrom(), demand.getTaxPeriodTo());
-//		if(demandsdata==null||(demandsdata!=null&&demandsdata.isEmpty())) {
-//		
-		
-//		}
     return demand;
 	}
 

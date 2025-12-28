@@ -15,6 +15,7 @@ import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.PropertyReport;
 import org.egov.rl.models.PropertyReportSearchRequest;
 import org.egov.rl.models.RLProperty;
+import org.egov.rl.models.enums.Status;
 import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.models.user.User;
 import org.egov.rl.repository.AllotmentRepository;
@@ -61,7 +62,9 @@ public class SearchPropertyService {
 		Set<String> allotmentId = new HashSet<>();
 		allotmentId.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
 		allotmentCriteria.setAllotmentIds(allotmentId);
-		
+		Set<Status> status = new HashSet<>();
+		status.add(Status.APPROVED);
+		status.add(Status.REQUEST_FOR_DISCONNECTION);
 		allotmentCriteria.setTenantId(propertyReportSearchRequest.getSearchProperty().getTenantId());
 		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentSearch(allotmentCriteria).stream().map(d->{
 			AllotmentDetails al1=d;

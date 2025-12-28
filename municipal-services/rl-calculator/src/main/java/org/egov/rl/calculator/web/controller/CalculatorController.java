@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.calculator.service.DemandService;
 import org.egov.rl.calculator.util.ResponseInfoFactory;
-import org.egov.rl.calculator.web.models.AllotmentRequest;
 import org.egov.rl.calculator.web.models.CalculationReq;
 import org.egov.rl.calculator.web.models.GetBillCriteria;
-import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
-import java.util.List;
+
 @Slf4j
 @Controller
 @RequestMapping("/v1")

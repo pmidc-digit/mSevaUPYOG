@@ -160,26 +160,10 @@ const EditApplication = () => {
 //   }
 // }, [fetchedLocalities, siteDetails?.zone]);
 
-  useEffect(() => {
-  if (zoneOptions?.length > 0 && siteDetails?.zone) {
-    const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-    const matchedZone = zoneOptions?.find((loc) => loc.name === zoneName);
-
-    if (matchedZone) {
-      dispatch(
-        UPDATE_NOCNewApplication_FORM("siteDetails", {
-          ...formData.siteDetails,
-          zone: matchedZone,
-        })
-      );
-    }
-  }
-}, [zoneOptions, siteDetails?.zone]);
-
 
   useEffect(() => {
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    if(!isLoading && !isBuildingTypeLoading && nocObject?.nocDetails  && !isUlbListLoading ){
+    if(!isLoading && !isBuildingTypeLoading && nocObject?.nocDetails  && !isUlbListLoading &&  !isZoneListLoading && !isNocTypeLoading){
         const formattedDocuments = {
        documents: {
         documents: documents?.map((doc) => ({
@@ -218,6 +202,8 @@ const EditApplication = () => {
         
           district: districtObj,
 
+          zone: zoneOptions?.find((obj)=> (obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone)),
+
           specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
           specificationNocType: nocType?.find((obj) => (obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType)),
           specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
@@ -230,7 +216,7 @@ const EditApplication = () => {
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
         
     }
-  }, [isLoading, applicationDetails, isBuildingTypeLoading]);
+  }, [isLoading, applicationDetails, isBuildingTypeLoading, isZoneListLoading, isNocTypeLoading]);
 
 
   const handleSubmit = (dataGet) => {

@@ -58,6 +58,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       ownerOrFirmName: "",
       emailId: "",
       fatherOrHusbandName: "",
+      propertyId:"",
       gender: null,
       dateOfBirth: "",
       address: "",

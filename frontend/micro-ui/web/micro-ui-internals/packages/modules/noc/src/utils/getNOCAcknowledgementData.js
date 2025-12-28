@@ -314,8 +314,8 @@ const getDocuments = async (appData, t) => {
            // console.log("doc link", documentLink);
 
             return {
-              title: t(document?.documentType || t("CS_NA")),
-              value: pdfDocumentName(documentLink, index) || t("CS_NA"),
+              title: t(document?.documentType || t("CS_NA").replace(/\./g, "_")),
+          
             };
           })
         : {
@@ -326,7 +326,7 @@ const getDocuments = async (appData, t) => {
 };
 
 
-export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData=applicationDetails || {};
   //console.log("appData here in DownloadACK", appData);
@@ -354,14 +354,14 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
     details: [
         getRegistrationDetails(appData,t),
         ...detailsArr,
-        getApplicantDetails(appData, t),
+        ...getApplicantDetails(appData, t),
         getSiteDetails(appData, t), 
         getSpecificationDetails(appData, t),
         getCoordinateDetails(appData,t),
-        getDocuments(appData,t)
+        await getDocuments(appData,t)
     ],
-    imageURL
-
-    
+    imageURL,
+    ulbType,
+    ulbName
   };
 };

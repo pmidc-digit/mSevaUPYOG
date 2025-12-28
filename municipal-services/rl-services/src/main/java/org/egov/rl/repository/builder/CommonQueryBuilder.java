@@ -28,43 +28,27 @@ public class CommonQueryBuilder {
 	private RentLeaseConfiguration config;
 
 	private static final String BASE_QUERY = "),"
-			+ "doc_count AS (SELECT allotment_id, COUNT(DISTINCT id) AS documentCount FROM eg_rl_document GROUP BY allotment_id),"
-			+ "ap_count AS (SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount FROM eg_rl_owner_info GROUP BY allotment_id),"
-			+ "total_count AS (SELECT COUNT(DISTINCT allotment_id) AS totalAllotments FROM filtered_page)\r\n"
-			+ "SELECT "
-			+ "    fp.*,"
-			+ "    onr.*,"
-			+ "    doc.*,"
-			+ "    doc_count.documentCount,"
-			+ "    ap_count.applicantCount,"
-			+ "    total_count.totalAllotments"
-			+ "FROM filtered_page AS fp"
-			+ "LEFT JOIN eg_rl_document AS doc ON fp.allotment_id = doc.allotment_id "
-			+ "LEFT JOIN doc_count ON doc_count.allotment_id = fp.allotment_id "
-			+ "LEFT JOIN eg_rl_owner_info AS onr ON fp.allotment_id = onr.allotment_id "
-			+ "LEFT JOIN ap_count ON ap_count.allotment_id = fp.allotment_id "
-			+ "CROSS JOIN total_count ORDER BY fp.created_time DESC NULLS LAST, fp.allotment_id ";
-//			"SELECT"
-//			+ " al.*, ap.*, doc.*,doc_count.documentCount,ap_count.applicantCount,total_count.totalAllotments "
-//			+ " FROM filtered_page AS al "
-//			+ " INNER JOIN eg_rl_owner_info AS ap ON al.id = ap.allotment_id "
-//			+ " LEFT JOIN eg_rl_document AS doc ON al.id = doc.allotment_id "
-//			+ " LEFT JOIN ( SELECT allotment_id, COUNT(DISTINCT id) AS documentCount FROM eg_rl_document GROUP BY allotment_id) AS doc_count ON doc_count.allotment_id = al.id "
-//			+ " LEFT JOIN ( SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount FROM eg_rl_owner_info GROUP BY allotment_id ) AS ap_count ON ap_count.allotment_id = al.id "
-//			+ " CROSS JOIN ( SELECT COUNT(*) AS totalAllotments FROM filtered_page) AS total_count "
-//			+ " ORDER BY al.created_time DESC NULLS LAST, al.id ";
+			+ " doc_count AS (SELECT allotment_id,COUNT(DISTINCT id) AS documentCount FROM eg_rl_document GROUP BY allotment_id),"
+			+ " ap_count AS (SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount FROM eg_rl_owner_info GROUP BY allotment_id),"
+			+ " total_count AS (SELECT COUNT(DISTINCT allotment_id) AS totalAllotments FROM filtered_page)"
+			+ " SELECT"
+			+ " fp.*,"
+			+ " onr.*,"
+			+ " doc.*,"
+			+ " doc_count.documentCount,"
+			+ " ap_count.applicantCount,"
+			+ " total_count.totalAllotments"
+			+ " FROM filtered_page AS fp"
+			+ " LEFT JOIN eg_rl_document AS doc ON fp.allotment_id = doc.allotment_id"
+			+ " LEFT JOIN doc_count ON doc_count.allotment_id = fp.allotment_id"
+			+ " LEFT JOIN eg_rl_owner_info AS onr ON fp.allotment_id = onr.allotment_id"
+			+ " LEFT JOIN ap_count ON ap_count.allotment_id = fp.allotment_id"
+			+ " CROSS JOIN total_count"
+			+ " ORDER BY fp.created_time DESC NULLS LAST, fp.allotment_id;";
 
-	String FILTER_BASE_QUERY = 
-			"WITH filtered_page AS (\r\n"
-			+ "    SELECT\r\n"
-			+ "        al.id              AS allotment_id,\r\n"
-			+ "        al.*,\r\n"
-			+ "        ap.user_uuid\r\n"
-			+ "    FROM eg_rl_allotment AS al\r\n"
-			+ "    INNER JOIN eg_rl_owner_info AS ap ON al.id = ap.allotment_id\r\n"
-			+ "";
-//			"WITH filtered_page AS (SELECT * FROM eg_rl_allotment AS al "
-//			+ " INNER JOIN eg_rl_owner_info AS ap ON al.id = ap.allotment_id ";
+	String FILTER_BASE_QUERY = "WITH filtered_page AS (SELECT al.id AS allotment_id,al.*,ap.user_uuid"
+			+ " FROM eg_rl_allotment AS al"
+			+ " INNER JOIN eg_rl_owner_info AS ap ON al.id = ap.allotment_id ";
 			
 	public String getAllotmentSearch(AllotmentCriteria criteria, List<Object> preparedStmtList) {
 		StringBuilder subQuery = new StringBuilder("");

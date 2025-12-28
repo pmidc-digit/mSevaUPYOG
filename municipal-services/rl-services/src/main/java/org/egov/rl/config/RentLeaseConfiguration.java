@@ -129,51 +129,14 @@ public class RentLeaseConfiguration {
     @Value("${notif.email.enabled}")
     private Boolean isEmailNotificationEnabled;
     
-    // Notif variables 
-    
-    @Value("${egov.notif.commonpay}")
-    private String commonPayLink;
-    
-    @Value("${egov.notif.view.property}")
-    private String viewPropertyLink;
-    
-    @Value("${egov.notif.view.mutation}")
-    private String viewMutationLink;
-
-    @Value("${egov.notif.citizen.feedback}")
-    private String citizenFeedbackLink;
-
-    @Value("${egov.usr.events.view.history.link}")
-    private String userEventViewPropertyLink;
-    
-    @Value("${egov.usr.events.view.mutation.history.link}")
-    private String userEventViewMutationLink;
-
-    @Value("${egov.usr.events.download.receipt.link}")
-    private String userEventReceiptDownloadLink;
-    
-    //Property Search Params // allotment
+  
+    //rent and lease allotment
     
     @Value("${save.rl.allotment}")
     private String saveRLAllotmentTopic;
     
     @Value("${update.rl.allotment}")
     private String updateRLAllotmentTopic;
-
-    @Value("${save.rl.clsure}")
-    private String saveRLClsureTopic;
-    
-    @Value("${update.rl.clsure}")
-    private String updateRLClsureTopic;
-
-    @Value("${citizen.allowed.search.params}")
-    private String citizenSearchParams;
-
-    @Value("${employee.allowed.search.params}")
-    private String employeeSearchParams;
-
-    @Value("${notification.url}")
-    private String notificationURL;
     
     @Value("${rl.search.pagination.default.limit}")
     private Long defaultLimit;
@@ -266,10 +229,10 @@ public class RentLeaseConfiguration {
     private String stateLevelTenantId;
 
     // claculation
-    @Value("${egov.rlcalculator.host}")
+    @Value("${egov.rl.calculator.host}")
     private String rlCalculatorHost;
 
-    @Value("${egov.rlcalculator.endpoint}")
+    @Value("${egov.rl.calculator.endpoint}")
     private String rlCalculatorEndpoint;
 
 }

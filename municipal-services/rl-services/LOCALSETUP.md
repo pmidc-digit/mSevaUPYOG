@@ -1,6 +1,6 @@
 # Local Setup
 
-To setup the Property Service (property-services) in your local system, clone the [UPYOG Repository](https://github.com/upyog/UPYOG) and navigate to the municipal-services.
+To setup the Rent And Lease Service (rl-services) in your local system, clone the [UPYOG Repository](https://github.com/upyog/UPYOG) and navigate to the municipal-services.
 
 ## Dependencies
 

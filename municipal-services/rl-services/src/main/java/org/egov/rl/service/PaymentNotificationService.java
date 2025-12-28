@@ -27,8 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class PaymentNotificationService {
 
-	private static final String RL_SERVICES = "rl-services";
-
+	
 	@Autowired
 	private ObjectMapper mapper;
 
@@ -62,10 +61,10 @@ public class PaymentNotificationService {
 
 			String businessService = paymentRequest.getPayment().getPaymentDetails().get(0).getBusinessService();
 
-			if (RL_SERVICES.equals(businessService)) {
+			if (RLConstants.RL_SERVICE_NAME.equals(businessService)) {
 				processPaymentAndUpdateApplication(paymentRequest);
 			} else {
-				log.debug("Ignoring payment with business service: {} (expected: {})", businessService, RL_SERVICES);
+				log.debug("Ignoring payment with business service: {} (expected: {})", businessService, RLConstants.RL_SERVICE_NAME);
 			}
 		} catch (Exception e) {
 			log.error("Error processing payment notification: {}", e.getMessage(), e);
@@ -182,12 +181,11 @@ public class PaymentNotificationService {
 			State state = callWorkFlow(workflowRequest);
 			if (state == null) {
 				log.error("Workflow transition returned null state");
-			}
-			
+			}			
 			return state;
 			
 		} catch (Exception e) {
-			log.error("Error transitioning workflow to APPROVED: {}", e.getMessage(), e);
+			    log.error("Error transitioning workflow to APPROVED: {}", e.getMessage(), e);
 			return null;
 		}
 	}
@@ -216,9 +214,9 @@ public class PaymentNotificationService {
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(consumerCode);
 		processInstance.setAction(action);
-		processInstance.setModuleName("rl-services");
+		processInstance.setModuleName(RLConstants.RL_SERVICE_NAME);
 		processInstance.setTenantId(tenantId);
-		processInstance.setBusinessService("RENT_N_LEASE_NEW");
+		processInstance.setBusinessService(RLConstants.RL_WORKFLOW_NAME);
 		processInstance.setDocuments(null);
 		processInstance.setComment(null);
 		processInstance.setAssignes(null);
@@ -345,7 +343,7 @@ public class PaymentNotificationService {
 				};
 			}
 			
-			log.info("Executing database update for application: {} with status: {}, RL: {}", 
+			    log.info("Executing database update for application: {} with status: {}, RL: {}", 
 					status, applicationNumber != null ? applicationNumber : "null");
 			
 			int rowsUpdated = allotmentRepository.getJdbcTemplate().update(updateQuery, params);
@@ -353,17 +351,13 @@ public class PaymentNotificationService {
 			if (rowsUpdated > 0) {
 				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
-//				application.setStatus(status);
-//				if (applicationNumber != null && !applicationNumber.isEmpty()) {
-//					application.setApplicationNumber(applicationNumber);
-//				}
 			} else {
 				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
 						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);
 			}
 			
 		} catch (Exception e) {
-			log.error("Failed to update database for application: {}, Error: {}", 
+			    log.error("Failed to update database for application: {}, Error: {}", 
 					applicationNumber, e.getMessage(), e);
 		}
 	}

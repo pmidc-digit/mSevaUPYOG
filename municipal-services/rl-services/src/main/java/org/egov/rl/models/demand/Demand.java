@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.egov.common.contract.request.User;
 import org.egov.rl.models.AuditDetails;
 import org.egov.rl.models.Owner;
 

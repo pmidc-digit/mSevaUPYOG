@@ -4,10 +4,7 @@ import static java.util.Objects.isNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -17,8 +14,6 @@ import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AuditDetails;
-import org.egov.rl.models.OwnerInfo;
-import org.egov.rl.models.user.User;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.web.contracts.IdGenerationRequest;
 import org.egov.rl.web.contracts.IdGenerationResponse;
@@ -31,8 +26,6 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jayway.jsonpath.JsonPath;
-
 import lombok.Getter;
 
 @Getter

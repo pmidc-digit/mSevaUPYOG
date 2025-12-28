@@ -19,11 +19,9 @@ import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.enums.Status;
 import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.util.PropertyUtil;
-import org.egov.rl.repository.AllotmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 @Service
 public class AllotmentEnrichmentService {
@@ -90,21 +88,21 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setCowCessApplicable(allotmentDetails.isCowCessApplicable());
 		allotmentDbDetails.setRefundApplicableOnDiscontinuation(allotmentDetails.isRefundApplicableOnDiscontinuation());
 		allotmentDbDetails.setWitnessDetails(allotmentDetails.getWitnessDetails());
-		allotmentDbDetails.setStatus(allotmentDetails.getStatus());
 		allotmentDbDetails.setTermAndCondition(allotmentDetails.getTermAndCondition());
 		allotmentDbDetails.setPenaltyType(allotmentDetails.getPenaltyType());
 		allotmentDbDetails.setOwnerInfo(allotmentDetails.getOwnerInfo());
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
+		
+		allotmentDbDetails.setStatus(allotmentDetails.getWorkflow().getStatus());
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
+		
 		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
 		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
 		allotmentDbDetails.setPropertyId(allotmentDetails.getPropertyId());
 		allotmentDbDetails.setTenantId(allotmentDetails.getTenantId());
 		allotmentDbDetails.setAmountToBeDeducted(allotmentDetails.getAmountToBeDeducted());
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDbDetails));
-
 		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
-		updateIdgenIds(allotmentRequest);
 
 	}
 
@@ -201,20 +199,6 @@ public class AllotmentEnrichmentService {
 		allotmentDetails2.add(allotmentDetails);
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 
-	}
-
-	private void updateIdgenIds(AllotmentRequest allotmentRequest) {
-
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
-		String tenantId = allotmentDetails.getTenantId();
-		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
-
-		if (config.getIsWorkflowEnabled()) {
-			allotmentDetails.setStatus(allotmentRequest.getAllotment().get(0).getWorkflow().getStatus());
-		}
-		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
-		allotmentDetails2.add(allotmentDetails);
-		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 	}
 
 	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> allotmentDetails, RequestInfo requestInfo) {

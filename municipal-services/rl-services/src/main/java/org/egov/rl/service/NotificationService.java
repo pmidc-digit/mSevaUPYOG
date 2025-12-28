@@ -1,29 +1,17 @@
 package org.egov.rl.service;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.jayway.jsonpath.Filter;
-import com.jayway.jsonpath.JsonPath;
-
-import io.swagger.models.properties.Property;
-
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.mdms.model.MasterDetail;
-import org.egov.mdms.model.MdmsCriteria;
-import org.egov.mdms.model.MdmsCriteriaReq;
-import org.egov.mdms.model.ModuleDetail;
+
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.ProcessInstance;
 import org.egov.rl.models.User;
-import org.egov.rl.models.enums.CreationReason;
 import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.event.Event;
-import org.egov.rl.models.event.EventRequest;
 import org.egov.rl.models.workflow.Action;
 import org.egov.rl.models.workflow.Workflow;
 import org.egov.rl.util.NotificationUtil;
@@ -36,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
+
 import com.jayway.jsonpath.JsonPath;
 
 import static org.egov.rl.util.RLConstants.*;

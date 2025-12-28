@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.config.RentLeaseConfiguration;
@@ -18,7 +17,6 @@ import org.egov.rl.producer.AllotmentProducer;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
-import org.egov.rl.util.PropertyUtil;
 import org.egov.rl.util.RLConstants;
 import org.egov.rl.validator.AllotmentValidator;
 import org.egov.tracer.model.CustomException;
@@ -26,10 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class AllotmentService {
 
@@ -69,8 +68,8 @@ public class AllotmentService {
 	@Autowired
 	private NotificationService notificationService;
 	
-	@Autowired
-	private PropertyUtil mdmsUtil;
+//	@Autowired
+//	private PropertyUtil mdmsUtil;
 
 	/**
 	 * Enriches the Request and pushes to the Queue
@@ -120,11 +119,10 @@ public class AllotmentService {
 		} else {
 			allotmentRequest.getAllotment().get(0).setStatus("APPROVED");
 		}
-		String demandId = null;
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
-				demandId=callCalculatorService(false,true,allotmentRequest);
+				callCalculatorService(false,true,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
@@ -136,7 +134,7 @@ public class AllotmentService {
 			}
 		} else if (isApprove) {
 			try {
-				demandId=callCalculatorService(false,false,allotmentRequest);
+				callCalculatorService(false,false,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
@@ -154,9 +152,7 @@ public class AllotmentService {
 	}
 	
 	private void satelmentAllotment(AllotmentRequest allotmentRequest) {
-		String tenantId = allotmentRequest.getAllotment().get(0).getTenantId();
-		List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().get(0).getPropertyId(),
-				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+		List<RLProperty> calculateAmount = boundaryService.allPropertyList(allotmentRequest);
 		
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		
@@ -205,16 +201,16 @@ public class AllotmentService {
 
 // Handle mobile number search by converting to owner UUIDs
 		if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
-			System.out.println("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
+			log.info("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
 
 			List<String> userUuids1 = userService.getUserUuidsByMobileNumber(allotmentCriteria.getMobileNumber(),
 					allotmentCriteria.getTenantId(), requestInfo);
 			Set<String> userUuidSet = new HashSet<>(userUuids1);
-			System.out.println("DEBUG: Found user UUIDs: " + userUuidSet);
+			log.info("DEBUG: Found user UUIDs: " + userUuidSet);
 
 			if (CollectionUtils.isEmpty(userUuidSet)) {
-// No users found for this mobile number, return empty list
-				System.out.println("DEBUG: No users found for mobile number, returning empty list");
+           // No users found for this mobile number, return empty list
+				log.info("DEBUG: No users found for mobile number, returning empty list");
 				return new ArrayList<>();
 			}
 
@@ -222,18 +218,8 @@ public class AllotmentService {
 			allotmentCriteria.setOwnerIds(userUuidSet);
 			allotmentCriteria.setMobileNumber(null);
 		}
-//		final List<RLProperty> rlList = boundaryService.allPropertyList(AllotmentRequest.builder()
-//				.requestInfo(requestInfo)
-//				.allotment(AllotmentDetails.builder().tenantId(allotmentCriteria.getTenantId()).build()).build());
 		
 		List<AllotmentDetails> applications = allotmentRepository.getAllotmentSearch(allotmentCriteria);
-//		applications = applications.stream().map(d -> {
-//			JsonNode additionalDetails = mapper.valueToTree(
-//					rlList.stream().filter(a -> a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
-//			d.setAdditionalDetails(additionalDetails);
-//
-//			return d;
-//		}).collect(Collectors.toList());
 		if (CollectionUtils.isEmpty(applications))
 			return new ArrayList<>();
 		allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, requestInfo);

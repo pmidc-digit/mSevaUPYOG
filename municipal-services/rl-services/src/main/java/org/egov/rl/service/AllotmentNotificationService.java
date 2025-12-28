@@ -9,7 +9,6 @@ import java.util.Optional;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.enums.Source;
 import org.egov.rl.models.event.Event;
 import org.egov.rl.models.event.EventRequest;
 import org.egov.rl.models.event.Recepient;

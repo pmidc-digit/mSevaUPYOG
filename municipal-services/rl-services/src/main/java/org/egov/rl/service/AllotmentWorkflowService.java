@@ -16,6 +16,7 @@ import org.egov.rl.models.workflow.ProcessInstanceRequest;
 import org.egov.rl.models.workflow.ProcessInstanceResponse;
 import org.egov.rl.models.workflow.State;
 import org.egov.rl.models.workflow.Workflow;
+import org.egov.rl.util.RLConstants;
 import org.egov.rl.web.contracts.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,48 +46,18 @@ public class AllotmentWorkflowService {
 					allotmentRequest.getRequestInfo());
 			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(allotmentRequest.getRequestInfo(),
 					Collections.singletonList(processInstance));
-			System.out.println("--workflow---"+workflowRequest);
 			State state = callWorkFlow(workflowRequest);
 			allotmentDetails.setStatus(state.getApplicationStatus());			
 	}
 
-//	private ProcessInstance getProcessInstanceForAllotment(AllotmentDetails allotmentDetails, RequestInfo requestInfo) {
-//		Workflow workflow = allotmentDetails.getWorkflow();		
-//		System.out.println("----UUUUUUUU----"+workflow);
-//		String applicationNumber=allotmentDetails.getApplicationNumber();
-//		
-//		ProcessInstance processInstance = new ProcessInstance();
-//		processInstance.setBusinessId(applicationNumber);
-//		processInstance.setAction(workflow.getAction());
-////		processInstance.setState(workflow.getStatus());
-//		processInstance.setModuleName("rl-service");
-//		processInstance.setTenantId(allotmentDetails.getTenantId());
-//		processInstance.setBusinessService("RENT-N-LEASE");
-//		processInstance.setDocuments(workflow.getDocuments());
-//		processInstance.setComment(workflow.getComments());
-//
-//		if (!CollectionUtils.isEmpty(workflow.getAssignes())) {
-//			List<User> users = new ArrayList<>();
-//              workflow.getAssignes().forEach(uuid -> {
-//				User user = new User();
-//				user.setUuid(uuid);
-//				users.add(user);
-//			});
-//			processInstance.setAssignes(users);
-//		}
-//		return processInstance;
-//
-//	}
-	
 	private ProcessInstance getProcessInstanceForAllotment(AllotmentDetails application, RequestInfo requestInfo) {
 		Workflow workflow = application.getWorkflow();		
 		ProcessInstance processInstance = new ProcessInstance();
-		System.out.println("-------application.getApplicationNumber()--------"+application.getApplicationNumber());
 		processInstance.setBusinessId(application.getApplicationNumber());
 		processInstance.setAction(workflow.getAction());
-		processInstance.setModuleName("rl-services");
+		processInstance.setModuleName(RLConstants.RL_SERVICE_NAME);
 		processInstance.setTenantId(application.getTenantId());
-		processInstance.setBusinessService("RENT_N_LEASE_NEW");
+		processInstance.setBusinessService(RLConstants.RL_WORKFLOW_NAME);
 		processInstance.setDocuments(workflow.getDocuments());
 		processInstance.setComment(workflow.getComments());
 
@@ -119,7 +90,6 @@ public class AllotmentWorkflowService {
 	       
 		ProcessInstanceResponse response = null;
 		StringBuilder url = new StringBuilder(configs.getWfHost().concat(configs.getWfTransitionPath()));
-		System.out.println("workflowReq---"+workflowReq);
 		Object object = serviceRequestRepository.fetchResult(url, workflowReq).get();
 		
 		response = mapper.convertValue(object, ProcessInstanceResponse.class);

@@ -98,10 +98,7 @@ public class SearchPropertyService {
 		List<OwnerInfo> ownerList=allotmentDetails.getOwnerInfo().stream().map(u->{
 			String[] tenantId=tenantIds.split("\\.");
 			User userDetails=userService.searchByUuid(u.getUserUuid(),tenantId.length>1?tenantId[0]:tenantIds).getUser().get(0);
-			String names=userDetails.getName();//.split("\\s+");
-//			u.setFirstName(names.length>0?names[0]:"");
-//			u.setMiddleName(names.length>1?names[1]:"");
-//			u.setLastName(names.length>2?names[2]:"");
+			String names=userDetails.getName();
 			u.setName(names);
 			org.egov.rl.models.oldProperty.Address permemantAddress=Address.builder()
 					.addressLine1(userDetails.getPermanentAddress())

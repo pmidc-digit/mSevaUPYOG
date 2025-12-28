@@ -14,8 +14,6 @@ import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentDetails;
-import org.egov.rl.models.OwnerInfo;
-import org.egov.rl.models.enums.CreationReason;
 import org.egov.rl.models.event.*;
 import org.egov.rl.models.user.UserDetailResponse;
 import org.egov.rl.models.user.UserSearchRequest;

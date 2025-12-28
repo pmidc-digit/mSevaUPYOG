@@ -1,8 +1,8 @@
-drop table eg_rl_allotment_scheduler;
-drop table eg_rl_allotment_clsure;
-drop table eg_rl_document;
-drop table eg_rl_owner_info;
-drop table eg_rl_allotment;-- Table: public.eg_rl_allotment
+-- drop table eg_rl_allotment_scheduler;
+-- drop table eg_rl_allotment_clsure;
+-- drop table eg_rl_document;
+-- drop table eg_rl_owner_info;
+-- drop table eg_rl_allotment;-- Table: public.eg_rl_allotment
 
 -- DROP TABLE IF EXISTS public.eg_rl_allotment;
 

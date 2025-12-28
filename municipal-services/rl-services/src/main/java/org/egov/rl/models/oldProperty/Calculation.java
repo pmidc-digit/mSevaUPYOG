@@ -28,12 +28,6 @@ public class Calculation {
     @JsonProperty("penalty")
     private BigDecimal penalty;
 
-    @JsonProperty("exemption")
-    private BigDecimal exemption;
-
-    @JsonProperty("rebate")
-    private BigDecimal rebate;
-
     @JsonProperty("fromDate")
     private Long fromDate;
 
@@ -42,9 +36,4 @@ public class Calculation {
 
     @JsonProperty("tenantId")
     private String tenantId;
-
-    List<TaxHeadEstimate> taxHeadEstimates;
-
-    @JsonProperty("billingSlabIds")
-    private List<String> billingSlabIds;
 }

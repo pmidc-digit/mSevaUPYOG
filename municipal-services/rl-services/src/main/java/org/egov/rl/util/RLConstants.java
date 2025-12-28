@@ -26,9 +26,14 @@ public class RLConstants {
 	
 
 	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
+	
+	public static final String RL_PROPERTY_NAME = "RLProperty";
+	
 
 	public static final String RL_SERVICE_NAME = "rl-services";
 
+	public static final String RL_WORKFLOW_NAME = "RENT_N_LEASE_NEW";
+	
 	public static final String SECURITY_DEPOSIT_FEE_RL_APPLICATION = "RL_SECURITY_DEPOSIT_FEE";
 
 	public static final String RENT_LEASE_FEE_RL_APPLICATION = "RENT_LEASE_FEE";
@@ -483,40 +488,40 @@ public class RLConstants {
 
     public static final String FEEDBACK_URL = "{FeedbackURL}";
 
-    public static final String PT_NOTIF_CF_CREATED = "PT_NOTIF_CF_CREATED";
-
-    public static final String PT_NOTIF_CF_UPDATED = "PT_NOTIF_CF_UPDATED";
-
-    public static final String PT_NOTIF_CF_MUTATED = "PT_NOTIF_CF_MUTATED";
-
-    public static final String PT_NOTIF_CF_PAYMENT_ONLINE = "PT_NOTIF_CF_PAYMENT_ONLINE";
-
-    public static final String CF_REDIRECT_REPLACE_CREATE = "pt/property/new-application/acknowledgement";
-    public static final String CF_REDIRECT_REPLACE_UPDATE = "pt/property/edit-application/acknowledgement";
-    public static final String CF_REDIRECT_REPLACE_MUTATE = "pt/property/property-mutation/acknowledgement";
-    public static final String CF_REDIRECT_REPLACE_PAYMENT = "digit-ui/citizen/payment/success";
-
-    public static final String TENANTID_REPLACE = "$tenantId";
-
-    public static final String PROPERTYID_REPLACE = "$propertyId";
-
-    public static final String ACKNOWLEDGEMENT_REPLACE = "$acknowldgementNumber";
-
-    public static final String REDIRECTLINK_REPLACE = "$redirectedFrom";
-
-    public static final String CREATIONREASON_REPLACE = "$creationReason";
-
-    public static final String TRANSACTIONID_REPLACE = "{TRANSACTION_ID}";
+//    public static final String PT_NOTIF_CF_CREATED = "PT_NOTIF_CF_CREATED";
+//
+//    public static final String PT_NOTIF_CF_UPDATED = "PT_NOTIF_CF_UPDATED";
+//
+//    public static final String PT_NOTIF_CF_MUTATED = "PT_NOTIF_CF_MUTATED";
+//
+//    public static final String PT_NOTIF_CF_PAYMENT_ONLINE = "PT_NOTIF_CF_PAYMENT_ONLINE";
+//
+//    public static final String CF_REDIRECT_REPLACE_CREATE = "pt/property/new-application/acknowledgement";
+//    public static final String CF_REDIRECT_REPLACE_UPDATE = "pt/property/edit-application/acknowledgement";
+//    public static final String CF_REDIRECT_REPLACE_MUTATE = "pt/property/property-mutation/acknowledgement";
+//    public static final String CF_REDIRECT_REPLACE_PAYMENT = "digit-ui/citizen/payment/success";
+//
+//    public static final String TENANTID_REPLACE = "$tenantId";
+//
+//    public static final String PROPERTYID_REPLACE = "$propertyId";
+//
+//    public static final String ACKNOWLEDGEMENT_REPLACE = "$acknowldgementNumber";
+//
+//    public static final String REDIRECTLINK_REPLACE = "$redirectedFrom";
+//
+//    public static final String CREATIONREASON_REPLACE = "$creationReason";
+//
+//    public static final String TRANSACTIONID_REPLACE = "{TRANSACTION_ID}";
     
-	public static final String CALCULATION_TYPE = "CalculationType";
-	public static final String CONSUMER_CODE_SEARCH_FIELD_NAME = "consumerCode=";
-	public static final String DEMAND_STATUS_PARAM = "status=";
-	public static final String DEMAND_STATUS_ACTIVE = "ACTIVE";
-	public static final String PAYMENT_COMPLETED = "isPaymentCompleted=false";
-	public static final String DEMAND_START_DATE_PARAM = "periodFrom=";
-	public static final String DEMAND_END_DATE_PARAM = "periodTo=";
-	public static final String EMPTY_DEMAND_ERROR_CODE = "EMPTY_DEMANDS";
-	public static final String EMPTY_DEMAND_ERROR_MESSAGE = "No demand found for the given bill generate criteria";
+//	public static final String CALCULATION_TYPE = "CalculationType";
+//	public static final String CONSUMER_CODE_SEARCH_FIELD_NAME = "consumerCode=";
+//	public static final String DEMAND_STATUS_PARAM = "status=";
+//	public static final String DEMAND_STATUS_ACTIVE = "ACTIVE";
+//	public static final String PAYMENT_COMPLETED = "isPaymentCompleted=false";
+//	public static final String DEMAND_START_DATE_PARAM = "periodFrom=";
+//	public static final String DEMAND_END_DATE_PARAM = "periodTo=";
+//	public static final String EMPTY_DEMAND_ERROR_CODE = "EMPTY_DEMANDS";
+//	public static final String EMPTY_DEMAND_ERROR_MESSAGE = "No demand found for the given bill generate criteria";
 
 
 }

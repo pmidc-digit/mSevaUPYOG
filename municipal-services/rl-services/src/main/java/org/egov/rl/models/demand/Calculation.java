@@ -3,10 +3,8 @@ package org.egov.rl.models.demand;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
-import org.egov.rl.models.oldProperty.TaxHeadEstimate;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Calculation
@@ -16,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@JsonPropertyOrder({"tenantId","totalAmount","taxAmount","exemption","rebate","exemption","penalty"})
+@JsonPropertyOrder({"tenantId","totalAmount","taxAmount","penalty"})
 public class Calculation   {
 	
         @JsonProperty("serviceNumber")
@@ -43,15 +41,5 @@ public class Calculation   {
         @JsonProperty("cowCass")
         private BigDecimal cowCass;
 
-        @JsonProperty("exemption")
-        private BigDecimal exemption;
-
-        @JsonProperty("rebate")
-        private BigDecimal rebate;
-
-        List<TaxHeadEstimate> taxHeadEstimates;
-
-//        @JsonProperty("billingSlabIds")
-//        private List<String> billingSlabIds;
-}
+   }
 

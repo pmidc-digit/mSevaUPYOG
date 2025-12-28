@@ -1,6 +1,7 @@
 
 package org.egov.rl.web.controllers;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -30,48 +31,42 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AllotmentController {
 
-   
-    @Autowired
-    private ResponseInfoFactory responseInfoFactory;
-    
-    @Autowired
-    private AllotmentService allotmentService;
-    
+	@Autowired
+	private ResponseInfoFactory responseInfoFactory;
 
-    @PostMapping("/_create")
-    public ResponseEntity<AllotmentResponse> create(@Valid @RequestBody AllotmentRequest allotmentRequest) {
+	@Autowired
+	private AllotmentService allotmentService;
 
-        AllotmentDetails allotmentDetails =allotmentService.allotmentCreate(allotmentRequest);
-        ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
-        AllotmentResponse response = AllotmentResponse.builder()
-                .allotment(allotmentDetails)
-                .responseInfo(resInfo)
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+	@PostMapping("/_create")
+	public ResponseEntity<AllotmentResponse> create(@Valid @RequestBody AllotmentRequest allotmentRequest) {
 
+		AllotmentDetails allotmentDetails = allotmentService.allotmentCreate(allotmentRequest);
+		ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(),
+				true);
+		AllotmentResponse response = AllotmentResponse.builder().allotment(Arrays.asList(allotmentDetails))
+				.responseInfo(resInfo).build();
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
 
-    @PostMapping("/_update")
-    public ResponseEntity<AllotmentResponse> update(@Valid @RequestBody AllotmentRequest allotmentRequest) {
-    	AllotmentDetails allotmentDetails =allotmentService.allotmentUpdate(allotmentRequest);
-        ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true);
-        AllotmentResponse response = AllotmentResponse.builder()
-                .allotment(allotmentDetails)
-                .responseInfo(resInfo)
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.OK);	
-    }
-    
-    @RequestMapping(value = "/v1/_search", method = RequestMethod.POST)
-	public ResponseEntity<org.egov.rl.models.user.AllotmentResponse> rlSearch(
-			@RequestBody RequestInfoWrapper requestInfoWrapper,
+	@PostMapping("/_update")
+	public ResponseEntity<AllotmentResponse> update(@Valid @RequestBody AllotmentRequest allotmentRequest) {
+		AllotmentDetails allotmentDetails = allotmentService.allotmentUpdate(allotmentRequest);
+		ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(),
+				true);
+		AllotmentResponse response = AllotmentResponse.builder().allotment(Arrays.asList(allotmentDetails))
+				.responseInfo(resInfo).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/v1/_search", method = RequestMethod.POST)
+	public ResponseEntity<AllotmentResponse> rlSearch(@RequestBody RequestInfoWrapper requestInfoWrapper,
 			@Valid @ModelAttribute AllotmentCriteria allotmentCriteria) {
 		List<AllotmentDetails> applications = allotmentService
 				.searchAllotedApplications(requestInfoWrapper.getRequestInfo(), allotmentCriteria);
 		ResponseInfo responseInfo = responseInfoFactory
 				.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
-		org.egov.rl.models.user.AllotmentResponse response = org.egov.rl.models.user.AllotmentResponse.builder().allotment(applications)
-				.responseInfo(responseInfo).build();
+		AllotmentResponse response = AllotmentResponse.builder().allotment(applications).responseInfo(responseInfo)
+				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

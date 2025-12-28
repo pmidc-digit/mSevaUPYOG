@@ -488,35 +488,6 @@ public class UserService {
 		return userCall(userSearchRequest, uri);
 	}
 
-//	/**
-//	 * Populates owner info from pet application data
-//	 * 
-//	 * @param owner Owner object to populate
-//	 * @param petApplication PetRegistrationApplication object
-//	 */
-//	private void populateOwnerFromApplication(Owner owner, AllotmentDetails allotmentDetails) {
-//		// Set basic information from application
-//		owner.setName(petApplication.getOwner().getName());
-//		owner.setMobileNumber(petApplication.getOwner().getMobileNumber());
-//		owner.setEmailId(petApplication.getOwner().getEmailId());
-//		
-//		// Set owner-specific fields
-//		owner.setOwnerType("INDIVIDUAL"); // Default to individual owner
-//		owner.setIsPrimaryOwner(true); // Default to primary owner
-//		owner.setOwnershipPercentage("100"); // Default to 100% ownership
-//		
-//		// Set audit fields
-//		owner.setCreatedBy(petApplication.getAuditDetails() != null ? 
-//			petApplication.getAuditDetails().getCreatedBy() : null);
-//		owner.setCreatedDate(petApplication.getAuditDetails() != null ? 
-//			petApplication.getAuditDetails().getCreatedTime() : System.currentTimeMillis());
-//		owner.setLastModifiedBy(petApplication.getAuditDetails() != null ? 
-//			petApplication.getAuditDetails().getLastModifiedBy() : null);
-//		owner.setLastModifiedDate(petApplication.getAuditDetails() != null ? 
-//			petApplication.getAuditDetails().getLastModifiedTime() : System.currentTimeMillis());
-//	}
-
-	// OwnerInfo reads happen via user search APIs; no direct owner table access here.
 
 	/**
 	 * Converts Owner to User for user service calls

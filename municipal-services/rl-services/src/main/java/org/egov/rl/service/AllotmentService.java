@@ -13,7 +13,7 @@ import org.egov.rl.models.*;
 import org.egov.rl.models.demand.CalculationCriteria;
 import org.egov.rl.models.demand.CalculationReq;
 import org.egov.rl.models.demand.DemandResponse;
-import org.egov.rl.producer.PropertyProducer;
+import org.egov.rl.producer.Producer;
 import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.EncryptionDecryptionUtil;
@@ -36,7 +36,7 @@ public class AllotmentService {
 	ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired
-	private PropertyProducer producer;
+	private Producer producer;
 
 	@Autowired
 	private RentLeaseConfiguration config;

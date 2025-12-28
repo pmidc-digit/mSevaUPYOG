@@ -1,6 +1,7 @@
 package org.egov.rl.repository.rowmapper;
 
 import org.egov.rl.models.*;
+import org.egov.rl.models.enums.Status;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -47,22 +48,35 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 				docList.add(getDocuments(rs));
 			}
 			auditDetails = getAuditDetail(rs, "allotment");
-			currentAllotment = AllotmentDetails.builder().id(rs.getString("id")).propertyId(rs.getString("property_id"))
-					.tenantId(rs.getString("tenant_id")).applicationNumber(rs.getString("application_number"))
+			currentAllotment = AllotmentDetails.builder()
+					.id(rs.getString("id"))
+					.propertyId(rs.getString("property_id"))
+					.tenantId(rs.getString("tenant_id"))
+					.applicationNumber(rs.getString("application_number"))
 					.registrationNumber(rs.getString("registration_number"))
 					.tradeLicenseNumber(rs.getString("trade_license_number"))
 					.previousApplicationNumber(rs.getString("previous_application_number"))
-					.applicationType(rs.getString("application_type")).startDate(rs.getLong("start_date"))
-					.endDate(rs.getLong("end_date")).isGSTApplicable(rs.getBoolean("is_gst_applicable"))
+					.applicationType(rs.getString("application_type"))
+					.startDate(rs.getLong("start_date"))
+					.endDate(rs.getLong("end_date"))
+					.isGSTApplicable(rs.getBoolean("is_gst_applicable"))
 					.isCowCessApplicable(rs.getBoolean("is_cow_cess_applicable"))
 					.isRefundApplicableOnDiscontinuation(rs.getBoolean("is_refund_applicable_on_discontinuation"))
-					.termAndCondition(rs.getString("term_and_condition")).penaltyType(rs.getString("penalty_type"))
-					.createdTime(rs.getLong("created_time")).createdBy(rs.getString("created_by")).documents(docList)
-					.reasonForClosure(rs.getString("reason_for_closure")).notesComments(rs.getString("notes_comments"))
+					.termAndCondition(rs.getString("term_and_condition"))
+					.penaltyType(rs.getString("penalty_type"))
+					.createdTime(rs.getLong("created_time"))
+					.createdBy(rs.getString("created_by"))
+					.documents(docList)
+					.reasonForClosure(rs.getString("reason_for_closure"))
+					.notesComments(rs.getString("notes_comments"))
 					.amountToBeDeducted(rs.getBigDecimal("amount_tobe_deducted"))
-					.amountToBeRefund(rs.getBigDecimal("amount_to_be_refund")).expireFlag(rs.getBoolean("expireflag"))
-					.status(rs.getString("status")).ownerInfo(userList).auditDetails(auditDetails)
-					.additionalDetails(getAdditionalDetails(rs.getObject("additional_details"))).build();
+					.amountToBeRefund(rs.getBigDecimal("amount_to_be_refund"))
+					.expireFlag(rs.getBoolean("expireflag"))
+					.status(rs.getString("status"))
+					.ownerInfo(userList)
+					.auditDetails(auditDetails)
+					.additionalDetails(getAdditionalDetails(rs.getObject("additional_details")))
+					.build();
 			if (currentAllotmentList.isEmpty()) {
 				currentAllotmentList.add(currentAllotment);
 			}
@@ -74,10 +88,14 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 	private OwnerInfo getOwnerInfo(ResultSet rs) {
 		OwnerInfo owner = null;
 		try {
-			owner = OwnerInfo.builder().ownerId(rs.getString("id")).allotmentId(rs.getString("allotment_id"))
-					.userUuid(rs.getString("user_uuid")).isPrimaryOwner(rs.getBoolean("is_primary_owner"))
-					.ownerShipPercentage(rs.getDouble("ownership_percentage")).ownerType(rs.getString("owner_type"))
-//					.status(Integer.valueOf(rs.getString("status")))
+			owner = OwnerInfo.builder()
+					.ownerId(rs.getString("id"))
+					.allotmentId(rs.getString("allotment_id"))
+					.userUuid(rs.getString("user_uuid"))
+					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
+					.ownerShipPercentage(rs.getDouble("ownership_percentage"))
+					.ownerType(rs.getString("owner_type"))
+					.status(rs.getString("onr_status"))
 					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -92,17 +110,24 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			if (rs.wasNull())
 				lastModifiedTime = null;
 
-			return AuditDetails.builder().createdBy(rs.getString("created_by")).createdTime(rs.getLong("created_time"))
-					.lastModifiedBy(rs.getString("lastmodified_time")).lastModifiedTime(lastModifiedTime).build();
+			return AuditDetails.builder()
+					.createdBy(rs.getString("created_by"))
+					.createdTime(rs.getLong("created_time"))
+					.lastModifiedBy(rs.getString("lastmodified_time"))
+					.lastModifiedTime(lastModifiedTime)
+					.build();
 		}
 		return null;
 	}
 
 	private Document getDocuments(ResultSet rs) throws SQLException {
 
-		return Document.builder().id(rs.getString("id")).documentUid(rs.getString("allotment_id"))
-				.documentType(rs.getString("documenttype")).fileStoreId(rs.getString("fileStoreId"))
-//				.status(Status.valueOf(rs.getString("status").toUpperCase()))
+		return Document.builder()
+				.id(rs.getString("id"))
+				.documentUid(rs.getString("allotment_id"))
+				.documentType(rs.getString("documenttype"))
+				.fileStoreId(rs.getString("fileStoreId"))
+				.status(Status.valueOf(rs.getString("doc_status").toUpperCase()))
 				.build();
 	}
 

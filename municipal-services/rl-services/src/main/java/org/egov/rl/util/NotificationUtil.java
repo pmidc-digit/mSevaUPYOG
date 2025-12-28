@@ -19,7 +19,7 @@ import org.egov.rl.models.enums.CreationReason;
 import org.egov.rl.models.event.*;
 import org.egov.rl.models.user.UserDetailResponse;
 import org.egov.rl.models.user.UserSearchRequest;
-import org.egov.rl.producer.PropertyProducer;
+import org.egov.rl.producer.Producer;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.service.UserService;
 import org.egov.rl.web.contracts.Email;
@@ -51,7 +51,7 @@ public class NotificationUtil {
 
     private RentLeaseConfiguration config;
 
-    private PropertyProducer producer;
+    private Producer producer;
 
     private RestTemplate restTemplate;
 
@@ -75,7 +75,7 @@ public class NotificationUtil {
 
     @Autowired
     public NotificationUtil(ServiceRequestRepository serviceRequestRepository, RentLeaseConfiguration config,
-                            PropertyProducer producer, RestTemplate restTemplate,UserService userService) {
+                            Producer producer, RestTemplate restTemplate,UserService userService) {
         this.serviceRequestRepository = serviceRequestRepository;
         this.config = config;
         this.producer = producer;

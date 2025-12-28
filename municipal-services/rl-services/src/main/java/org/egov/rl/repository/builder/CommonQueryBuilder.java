@@ -1,4 +1,4 @@
-package org.egov.rl.repository.builder;
+	package org.egov.rl.repository.builder;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -32,9 +32,9 @@ public class CommonQueryBuilder {
 			+ " ap_count AS (SELECT allotment_id, COUNT(DISTINCT id) AS applicantCount FROM eg_rl_owner_info GROUP BY allotment_id),"
 			+ " total_count AS (SELECT COUNT(DISTINCT allotment_id) AS totalAllotments FROM filtered_page)"
 			+ " SELECT"
-			+ " fp.*,"
-			+ " onr.*,"
-			+ " doc.*,"
+			+ " fp.id, fp.property_id, fp.tenant_id, fp.status, fp.application_type, fp.application_number, fp.previous_application_number, fp.start_date, fp.end_date, fp.expireflag, fp.is_gst_applicable, fp.is_cow_cess_applicable, fp.is_refund_applicable_on_discontinuation, fp.penalty_type, fp.created_time, fp.created_by, fp.lastmodified_time, fp.lastmodified_by, fp.additional_details, fp.term_and_condition, fp.reason_for_closure, fp.notes_comments, fp.trade_license_number, fp.registration_number, fp.amount_tobe_deducted, fp.amount_to_be_refund, "
+			+ " onr.id, onr.allotment_id, onr.user_uuid, onr.is_primary_owner, onr.owner_type, onr.ownership_percentage, onr.relationship, onr.status as onr_status, "
+			+ " doc.id, doc.allotment_id, doc.documenttype, doc.filestoreid, doc.status as doc_status, doc.createdby, doc.lastmodifiedby, doc.createdtime, doc.lastmodifiedtime,"
 			+ " doc_count.documentCount,"
 			+ " ap_count.applicantCount,"
 			+ " total_count.totalAllotments"

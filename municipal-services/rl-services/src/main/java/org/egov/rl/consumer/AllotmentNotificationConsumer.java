@@ -22,9 +22,6 @@ public class AllotmentNotificationConsumer {
 	@Autowired
 	private AllotmentNotificationService notificationService;
 
-//	@Autowired
-//	private AllotmentEnrichmentService enrichmentService;
-
 	@Autowired
 	private ObjectMapper mapper;
 

@@ -89,7 +89,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 		OwnerInfo owner = null;
 		try {
 			owner = OwnerInfo.builder()
-					.ownerId(rs.getString("id"))
+					.ownerId(rs.getString("owner_id"))
 					.allotmentId(rs.getString("allotment_id"))
 					.userUuid(rs.getString("user_uuid"))
 					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
@@ -123,7 +123,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 	private Document getDocuments(ResultSet rs) throws SQLException {
 
 		return Document.builder()
-				.id(rs.getString("id"))
+				.id(rs.getString("doc_id"))
 				.documentUid(rs.getString("allotment_id"))
 				.documentType(rs.getString("documenttype"))
 				.fileStoreId(rs.getString("fileStoreId"))

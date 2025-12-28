@@ -18,7 +18,7 @@ import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.enums.Status;
 import org.egov.rl.models.oldProperty.Address;
-import org.egov.rl.util.PropertyUtil;
+import org.egov.rl.util.RentLeaseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -27,7 +27,7 @@ import org.springframework.util.CollectionUtils;
 public class AllotmentEnrichmentService {
 
 	@Autowired
-	private PropertyUtil propertyutil;
+	private RentLeaseUtil propertyutil;
 
 	@Autowired
 	private RentLeaseConfiguration config;

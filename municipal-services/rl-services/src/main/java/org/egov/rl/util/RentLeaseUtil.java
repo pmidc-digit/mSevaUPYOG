@@ -8,5 +8,5 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class PropertyUtil extends CommonUtils {
+public class RentLeaseUtil extends CommonUtils {
 }

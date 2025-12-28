@@ -90,11 +90,10 @@ public class PaymentNotificationService {
 			
 			AllotmentCriteria criteria = AllotmentCriteria.builder()
 					.applicationNumbers(Collections.singleton(applicationNumber))
-					.isReportSearch(false)
 					.tenantId(tenantId)
 					.build();
 
-			List<AllotmentDetails> applications = allotmentRepository.getAllotmentByApplicationNumber(criteria);
+			List<AllotmentDetails> applications = allotmentRepository.getAllotmentSearch(criteria);
 			boolean status=applications.get(0).getStatus().equalsIgnoreCase(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
 			log.info("Processing payment for application: {}", applicationNumber);
 			

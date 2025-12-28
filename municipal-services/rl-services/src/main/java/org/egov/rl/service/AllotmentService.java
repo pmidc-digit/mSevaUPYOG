@@ -220,17 +220,18 @@ public class AllotmentService {
 			allotmentCriteria.setOwnerIds(userUuidSet);
 			allotmentCriteria.setMobileNumber(null);
 		}
-		final List<RLProperty> rlList = boundaryService.allPropertyList(AllotmentRequest.builder()
-				.requestInfo(requestInfo)
-				.allotment(AllotmentDetails.builder().tenantId(allotmentCriteria.getTenantId()).build()).build());
-		List<AllotmentDetails> applications = allotmentRepository.getAllotedApplications(allotmentCriteria);
-		applications = applications.stream().map(d -> {
-			JsonNode additionalDetails = mapper.valueToTree(
-					rlList.stream().filter(a -> a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
-			d.setAdditionalDetails(additionalDetails);
-
-			return d;
-		}).collect(Collectors.toList());
+//		final List<RLProperty> rlList = boundaryService.allPropertyList(AllotmentRequest.builder()
+//				.requestInfo(requestInfo)
+//				.allotment(AllotmentDetails.builder().tenantId(allotmentCriteria.getTenantId()).build()).build());
+		
+		List<AllotmentDetails> applications = allotmentRepository.getAllotmentSearch(allotmentCriteria);
+//		applications = applications.stream().map(d -> {
+//			JsonNode additionalDetails = mapper.valueToTree(
+//					rlList.stream().filter(a -> a.getPropertyId().equals(d.getPropertyId())).findFirst().get());
+//			d.setAdditionalDetails(additionalDetails);
+//
+//			return d;
+//		}).collect(Collectors.toList());
 		if (CollectionUtils.isEmpty(applications))
 			return new ArrayList<>();
 		allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, requestInfo);

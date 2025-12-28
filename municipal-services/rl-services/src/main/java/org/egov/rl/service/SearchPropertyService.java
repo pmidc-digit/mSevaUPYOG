@@ -53,17 +53,17 @@ public class SearchPropertyService {
 
 	public Object propertyListSearch(PropertyReportSearchRequest propertyReportSearchRequest) {
 		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
-		allotmentCriteria.setIsReportSearch(true);
 		allotmentCriteria.setFromDate(propertyReportSearchRequest.getSearchProperty().getFromDate());
 		allotmentCriteria.setToDate(propertyReportSearchRequest.getSearchProperty().getToDate());
 //		allotmentCriteria.setFromDate(1764547200000l);
 //		allotmentCriteria.setToDate(1825094400000l);
 
-		Set<String> id = new HashSet<>();
-		id.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
-		allotmentCriteria.setAllotmentIds(id);
+		Set<String> allotmentId = new HashSet<>();
+		allotmentId.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
+		allotmentCriteria.setAllotmentIds(allotmentId);
+		
 		allotmentCriteria.setTenantId(propertyReportSearchRequest.getSearchProperty().getTenantId());
-		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentForReport(allotmentCriteria).stream().map(d->{
+		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentSearch(allotmentCriteria).stream().map(d->{
 			AllotmentDetails al1=d;
 			al1.setOwnerInfo(userList(d, propertyReportSearchRequest.getSearchProperty().getTenantId()));
 			return al1;

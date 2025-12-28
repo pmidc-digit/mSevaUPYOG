@@ -70,9 +70,6 @@ public class AllotmentCriteria {
 	private Boolean isDefaulterNoticeSearch = false;
 	
 	@Builder.Default
-	private Boolean isReportSearch = false;
-	
-	@Builder.Default
 	private Boolean isRequestForDuplicateAllotmentValidation = false;
 	
 	private Boolean isCitizen;

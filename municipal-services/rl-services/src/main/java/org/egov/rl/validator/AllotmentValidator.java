@@ -115,7 +115,7 @@ public class AllotmentValidator {
 					.build();
 			
 			AllotmentDetails allotmentDetails = allotmentRepository
-					.getAllotedApplications(allotmentCriteria)
+					.getAllotmentSearch(allotmentCriteria)
 					.stream().findFirst().orElse(null);
 			if ((allotmentDetails != null)) {
 				throw new CustomException("PROPERTY ID INFO ERROR",
@@ -209,9 +209,10 @@ public class AllotmentValidator {
 		Set<String> ids=new HashSet<>();
 		ids.add(id.trim());
 		allotmentCriteria.setAllotmentIds(ids);
-		allotmentCriteria.setTenantId(tenantId.trim());
+		allotmentCriteria.setTenantId(tenantId);
+		allotmentCriteria.setIsExpaireFlag(false);
 		
-		AllotmentDetails allotmentDetails= allotmentRepository.getAllotmentByIds(allotmentCriteria).stream().findFirst().orElse(null);
+		AllotmentDetails allotmentDetails= allotmentRepository.getAllotmentSearch(allotmentCriteria).stream().findFirst().orElse(null);
 		if ((allotmentDetails == null)) {
 			throw new CustomException("ALLOTMENT ID INFO ERROR",
 					"Wrong allotment id is passing , please provide another corroct allotment Id information");
@@ -280,7 +281,6 @@ public class AllotmentValidator {
 	}
 
 	public boolean isValidAadhaar(String aadhaar) {
-		System.out.println("---------------------------" + aadhaar);
 		String regex = "^[2-9]{1}[0-9]{11}$";
 		return aadhaar != null && aadhaar.matches(regex);
 	}
@@ -366,41 +366,4 @@ public class AllotmentValidator {
 
 		}
 	}
-
-	/**
-	 * Validates if MasterData is properly fetched for the given MasterData names
-	 * 
-	 * @param masterNames
-	 * @param codes
-	 */
-	private void validateMDMSData(List<String> masterNames, Map<String, List<String>> codes) {
-
-		Map<String, String> errorMap = new HashMap<>();
-		for (String masterName : masterNames) {
-			if (CollectionUtils.isEmpty(codes.get(masterName))) {
-				errorMap.put("MDMS DATA ERROR ", "Unable to fetch " + masterName + " codes from MDMS");
-			}
-		}
-		if (!errorMap.isEmpty())
-			throw new CustomException(errorMap);
-	}
-
-	/**
-	 * Validates if the mobileNumber is 10 digit and starts with 5 or greater
-	 * 
-	 * @param mobileNumber The mobileNumber to be validated
-	 * @return True if valid mobileNumber else false
-	 */
-	private Boolean isMobileNumberValid(String mobileNumber) {
-
-		if (mobileNumber == null)
-			return false;
-		else if (mobileNumber.length() != 10)
-			return false;
-		else if (Character.getNumericValue(mobileNumber.charAt(0)) < 5)
-			return false;
-		else
-			return true;
-	}
-
 }

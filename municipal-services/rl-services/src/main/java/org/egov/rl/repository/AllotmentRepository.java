@@ -27,39 +27,9 @@ public class AllotmentRepository {
 	
 	public JdbcTemplate getJdbcTemplate() {
 		return jdbcTemplate;
-	}
-	    
-	
-	public List<AllotmentDetails> getAllotmentByIds(AllotmentCriteria criterias) {
-
-		List<Object> preparedStmtList = new ArrayList<>();
-		
-		String query = queryBuilder.getAllotmentSearchById(criterias, preparedStmtList);
-		
-        log.info("Executing Query: {}", query);
-        log.info("With Parameters: {}", preparedStmtList);
-        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-	}
-
-	public List<AllotmentDetails> getAllotmentForReport(AllotmentCriteria criterias) {
-
-		List<Object> preparedStmtList = new ArrayList<>();
-		
-		String query = queryBuilder.getAllotmentSearchForReport(criterias, preparedStmtList);
-
-        log.info("Executing Query: {}", query);
-        log.info("With Parameters: {}", preparedStmtList);
-        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-	}
-
-	public List<AllotmentDetails> getAllotmentByApplicationNumber(AllotmentCriteria criterias) {
-		List<Object> preparedStmtList = new ArrayList<>();
-		String query = queryBuilder.getAllotmentSearch(criterias, preparedStmtList);
-        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-	}
-	
+	}	    
    
-	public List<AllotmentDetails> getAllotedApplications(AllotmentCriteria searchCriteria) {
+	public List<AllotmentDetails> getAllotmentSearch(AllotmentCriteria searchCriteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getAllotmentSearch(searchCriteria, preparedStmtList);
 		log.info("Final query: " + query);

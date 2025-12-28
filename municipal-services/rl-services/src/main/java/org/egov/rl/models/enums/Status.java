@@ -19,7 +19,8 @@ public enum Status {
 	
 	CANCELLED ("CANCELLED"),
 	
-	REJECTED ("REJECTED");
+	REJECTED ("REJECTED"),
+	CLOSED ("CLOSED");
 
 	private String value;
 

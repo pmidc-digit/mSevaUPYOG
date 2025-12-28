@@ -198,7 +198,7 @@ public class UserService {
 		try {
 			UserSearchRequest userSearchRequest = getBaseUserSearchRequest(tenantId, requestInfo);
 			userSearchRequest.setMobileNumber(mobileNumber);
-
+			userSearchRequest.setUserName(mobileNumber);
 			System.out.println("DEBUG: UserService - UserSearchRequest: " + userSearchRequest);
 
 			UserDetailResponse response = getUser(userSearchRequest);

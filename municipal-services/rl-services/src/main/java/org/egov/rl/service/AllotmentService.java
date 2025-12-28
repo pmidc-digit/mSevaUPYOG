@@ -51,7 +51,7 @@ public class AllotmentService {
 	private AllotmentValidator allotmentValidator;
 
 	@Autowired
-	private AllotmentWorkflowService wfService;
+	private workflowService wfService;
 
 	@Autowired
 	EncryptionDecryptionUtil encryptionDecryptionUtil;

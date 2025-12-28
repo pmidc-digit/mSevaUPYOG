@@ -26,7 +26,7 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class AllotmentWorkflowService {
+public class workflowService {
 
 	@Autowired
 	private RentLeaseConfiguration configs;

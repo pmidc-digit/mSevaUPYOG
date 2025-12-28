@@ -41,19 +41,18 @@ public class AllotmentNotificationService {
 		log.info("Event Request in Rl process method" + eventRequest.toString());
 		if (null != eventRequest)
 			util.sendEventNotification(eventRequest);
-
 	}
 
 	private EventRequest getEventsForAllotment(AllotmentRequest request) {
 
 		List<Event> events = new ArrayList<>();
 		String tenantId = request.getAllotment().get(0).getTenantId();
-		String localizationMessages = "action ";// util.getLocalizationMessages(tenantId, request.getRequestInfo());
+		String localizationMessages = util.getLocalizationMessages(tenantId, request.getRequestInfo());
 		List<String> toUsers = new ArrayList<>();
 		String mobileNumber = request.getAllotment().get(0).getOwnerInfo().get(0).getMobileNo();
-
+		
 		Map<String, String> mapOfPhoneNoAndUUIDs = fetchUserUUIDs(mobileNumber, request.getRequestInfo(), tenantId);
-
+		
 		if (CollectionUtils.isEmpty(mapOfPhoneNoAndUUIDs.keySet())) {
 			log.info("UUID search failed!");
 		}
@@ -61,16 +60,27 @@ public class AllotmentNotificationService {
 		toUsers.add(mapOfPhoneNoAndUUIDs.get(mobileNumber));
 		String message = null;
 		message = util.getCustomizedMsg(request.getRequestInfo(), request.getAllotment().get(0),localizationMessages);
+		
 		log.info("Message for event in Allotment :" + message);
 		Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
 		log.info("Recipient object in RL:" + recepient.toString());
-		events.add(Event.builder().tenantId(tenantId).description(message).eventType(RLConstants.USREVENTS_EVENT_TYPE)
-				.name(RLConstants.USREVENTS_EVENT_NAME).postedBy(RLConstants.USREVENTS_EVENT_POSTEDBY)
+		events.add(
+				Event.builder()
+				.tenantId(tenantId)
+				.description(message)
+				.eventType(RLConstants.USREVENTS_EVENT_TYPE)
+				.name(RLConstants.USREVENTS_EVENT_NAME)
+				.postedBy(RLConstants.USREVENTS_EVENT_POSTEDBY)
 				.source(org.egov.rl.models.event.Source.WEBAPP)
-				.recepient(recepient).eventDetails(null).actions(null).build());
-
+				.recepient(recepient)
+				.eventDetails(null)
+				.actions(null).build());
 		if (!CollectionUtils.isEmpty(events)) {
-			return EventRequest.builder().requestInfo(request.getRequestInfo()).events(events).build();
+			return EventRequest
+					.builder()
+					.requestInfo(request.getRequestInfo())
+					.events(events)
+					.build();
 		} else {
 			return null;
 		}
@@ -98,8 +108,6 @@ public class AllotmentNotificationService {
 
 			Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
 			log.info("User fetched in fetUserUUID method of pet notfication consumer" + user.toString());
-//			if (null != user) {
-//				String uuid = JsonPath.read(user, "$.user[0].uuid");
 			if (user instanceof Optional) {
 				Optional<Object> optionalUser = (Optional<Object>) user;
 				if (optionalUser.isPresent()) {

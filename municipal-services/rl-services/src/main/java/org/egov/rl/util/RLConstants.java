@@ -47,52 +47,60 @@ public class RLConstants {
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	
 	
-	public static final String NOTIFICATION_VERIFY = "rl.en.counter.verify";
+	public static final String NOTIFICATION_DOCVERIFY = "rl.en.counter.doc.verify";
 
-	public static final String NOTIFICATION_APPLY = "rl.en.counter.submit";
+	public static final String NOTIFICATION_APPLY = "rl.en.counter.apply";
 
 	public static final String NOTIFICATION_APPROVE = "rl.en.counter.approve";
 
 	public static final String NOTIFICATION_REJECT = "rl.en.counter.reject";
 
+	public static final String NOTIFICATION_FIELDINSPECTION = "rl.en.counter.field.inspection";
+
+	public static final String NOTIFICATION_DISCONNECTION_REQUEST = "rl.en.counter.disconnection.request";
+
+	public static final String NOTIFICATION_DISCONNECTION_FIELD_INSPECTION = "rl.en.counter.disconnection.field.inspection";
+
+	public static final String NOTIFICATION_CLOSED = "rl.en.counter.closed";
+
 	
-    public static final String MDMS_RL_MOD_NAME = "rentAndLease";
-
-    public static final String PT_TYPE_VACANT = "VACANT";
-    
-    public static final String PT_TYPE_SHAREDPROPERTY = "SHAREDPROPERTY";
-    
-    public static final String PT_TYPE_BUILTUP = "BUILTUP";
-    
-    public static final String JSONPATH_CODES = "$.MdmsRes.PropertyTax";
-
-    public static final String MDMS_PT_MOD_NAME = "PropertyTax";
-
-    public static final String MDMS_PT_PROPERTYTYPE = "PropertyType";
-    
-    public static final String MDMS_PT_MUTATIONREASON = "MutationReason";
-    
-    public static final String MDMS_PT_USAGECATEGORY = "UsageCategory";
-
-    public static final String MDMS_PT_PROPERTYSUBTYPE = "PropertySubType";
-
-    public static final String MDMS_PT_OCCUPANCYTYPE = "OccupancyType";
-
-    public static final String MDMS_PT_CONSTRUCTIONTYPE = "ConstructionType";
-
-    public static final String MDMS_PT_CONSTRUCTIONSUBTYPE = "ConstructionSubType";
-
-    public static final String MDMS_PT_OWNERSHIPCATEGORY = "OwnerShipCategory";
-
-    public static final String MDMS_PT_SUBOWNERSHIP = "SubOwnerShipCategory";
-
-    public static final String MDMS_PT_USAGEMAJOR = "UsageCategoryMajor";
-
-    public static final String MDMS_PT_USAGEMINOR = "UsageCategoryMinor";
-
-    public static final String MDMS_PT_USAGEDETAIL = "UsageCategoryDetail";
-
-    public static final String MDMS_PT_USAGESUBMINOR = "UsageCategorySubMinor";
+//    public static final String MDMS_RL_MOD_NAME = "rentAndLease";
+//
+//    public static final String PT_TYPE_VACANT = "VACANT";
+//    
+//    public static final String PT_TYPE_SHAREDPROPERTY = "SHAREDPROPERTY";
+//    
+//    public static final String PT_TYPE_BUILTUP = "BUILTUP";
+//    
+//    public static final String JSONPATH_CODES = "$.MdmsRes.PropertyTax";
+//
+//    public static final String MDMS_PT_MOD_NAME = "PropertyTax";
+//
+//    public static final String MDMS_PT_PROPERTYTYPE = "PropertyType";
+//    
+//    public static final String MDMS_PT_MUTATIONREASON = "MutationReason";
+//    
+//    public static final String MDMS_PT_USAGECATEGORY = "UsageCategory";
+//
+//    public static final String MDMS_PT_PROPERTYSUBTYPE = "PropertySubType";
+//
+//    public static final String MDMS_PT_OCCUPANCYTYPE = "OccupancyType";
+//
+//    public static final String MDMS_PT_CONSTRUCTIONTYPE = "ConstructionType";
+//
+//    public static final String MDMS_PT_CONSTRUCTIONSUBTYPE = "ConstructionSubType";
+//
+//    public static final String MDMS_PT_OWNERSHIPCATEGORY = "OwnerShipCategory";
+//
+//    public static final String MDMS_PT_SUBOWNERSHIP = "SubOwnerShipCategory";
+//
+//    public static final String MDMS_PT_USAGEMAJOR = "UsageCategoryMajor";
+//
+//    public static final String MDMS_PT_USAGEMINOR = "UsageCategoryMinor";
+//
+//    public static final String MDMS_PT_USAGEDETAIL = "UsageCategoryDetail";
+//
+//    public static final String MDMS_PT_USAGESUBMINOR = "UsageCategorySubMinor";
 
     public static final String MDMS_PT_OWNERTYPE = "OwnerType";
 
@@ -135,8 +143,8 @@ public class RLConstants {
     public static final String ACTION_PAID = "PAID";
 
     public static final String  USREVENTS_EVENT_TYPE = "SYSTEMGENERATED";
-	public static final String  USREVENTS_EVENT_NAME = "Property Tax";
-	public static final String  USREVENTS_EVENT_POSTEDBY = "SYSTEM-PT";
+	public static final String  USREVENTS_EVENT_NAME = "Rent And Lease Tax";
+	public static final String  USREVENTS_EVENT_POSTEDBY = "SYSTEM-RL";
 
 
 
@@ -236,7 +244,7 @@ public class RLConstants {
     
     public static final String WF_STATUS_PAID_LOCALE = "PT_NOTIF_WF_STATE_LOCALE_PAID";
 
-	public static final String NOTIFICATION_MODULENAME = "rainmaker-pt";
+	public static final String NOTIFICATION_MODULENAME = "rl-services";
 	
 	/* PT notif loc codes */
 	

@@ -55,13 +55,22 @@ public class NotificationUtil {
 
     private UserService userService;
     
-	public static final String ACTION_STATUS_APPLY = "APPLY";
+	public static final String RL_WF_APPLY = "APPLY";
 
-	public static final String ACTION_STATUS_VERIFY = "VERIFY";
+	public static final String RL_WF_DOC_VERIFY = "FORWARD_FOR_FIELDINSPECTION";
 
-	public static final String ACTION_STATUS_APPROVE = "APPROVE";
+	public static final String RL_WF_FIELDINSPECTION = "FORWARD_FOR_APPROVAL";
+	
+	public static final String RL_WF_APPROVE = "APPROVE";
 
-	public static final String ACTION_STATUS_REJECT = "REJECT";
+	public static final String RL_WF_REJECT = "REJECT";
+
+	public static final String RL_WF_DISCONNECTION_REQUEST = "FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION";
+	
+	public static final String RL_WF_DISCONNECTION_FIELD_INSPECTION = "FORWARD_FOT_SETLEMENT";
+
+	public static final String RL_WF_CLOSED = "CLOSED";
+
 
 
 
@@ -657,13 +666,14 @@ public class NotificationUtil {
      * @param property
      * @return
      */
+    
     public String getPayUrl(AllotmentDetails allotmentDetails) {
         return getShortenedUrl(
                 config.getUiAppHost().concat(config.getPayLink().replace(EVENT_PAY_BUSINESSSERVICE,MUTATION_BUSINESSSERVICE)
                         .replace(EVENT_PAY_PROPERTYID, allotmentDetails.getApplicationNumber())
                         .replace(EVENT_PAY_TENANTID, allotmentDetails.getTenantId())));
     }
-
+    
     /**
      * Fetches User Object based on the UUID.
      *
@@ -757,36 +767,51 @@ public class NotificationUtil {
     public String getCustomizedMsg(RequestInfo requestInfo, AllotmentDetails allotmentDetails,
 			String localizationMessage) {
 		String message = null, messageTemplate;
-//		String ACTION_STATUS = allotmentDetails.getWorkflow().getAction();
-//		switch (ACTION_STATUS) {
-//
-//		case ACTION_STATUS_APPLY:
-//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPLY, localizationMessage);
-//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-//			break;
-//
-//		case ACTION_STATUS_VERIFY:
-//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_VERIFY, localizationMessage);
-//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-//			break;
-//
-//		case ACTION_STATUS_APPROVE:
-//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPROVE, localizationMessage);
-//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-//			break;
-//
-//		case ACTION_STATUS_REJECT:
-//			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_REJECT, localizationMessage);
-//			message = getMessageWithNumberAndPetDetails(allotmentDetails, messageTemplate);
-//			break;
-//
-//		}
-//
-//		return message;
-		return "Action Successfully for RL";
+		String ACTION_STATUS = allotmentDetails.getWorkflow().getAction();
+		switch (ACTION_STATUS) {
+
+		case RL_WF_APPLY:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPLY, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+
+		case RL_WF_DOC_VERIFY:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_DOCVERIFY, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+
+		case RL_WF_FIELDINSPECTION:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_FIELDINSPECTION, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+
+		case RL_WF_REJECT:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_REJECT, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+
+		case RL_WF_APPROVE:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_APPROVE, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+		case RL_WF_DISCONNECTION_REQUEST:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_DISCONNECTION_REQUEST, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+		case RL_WF_DISCONNECTION_FIELD_INSPECTION:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_DISCONNECTION_FIELD_INSPECTION, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+
+		case RL_WF_CLOSED:
+			messageTemplate = getMessageTemplate(RLConstants.NOTIFICATION_CLOSED, localizationMessage);
+			message = getMessageWithApplicationNumber(allotmentDetails, messageTemplate);
+			break;
+       }
+	  return message;
 	}
     
-	private String getMessageWithNumberAndPetDetails(AllotmentDetails allotmentDetails, String message) {
+	private String getMessageWithApplicationNumber(AllotmentDetails allotmentDetails, String message) {
 		message = message.replace("{1}", allotmentDetails.getOwnerInfo().get(0).getName());
 		message = message.replace("{2}", allotmentDetails.getApplicationType());
 		message = message.replace("{3}", allotmentDetails.getApplicationNumber());

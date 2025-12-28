@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class AllotmentNotificationConsumer {
+public class NotificationConsumer {
 
 	@Autowired
 	private AllotmentNotificationService notificationService;
@@ -38,8 +38,7 @@ public class AllotmentNotificationConsumer {
 			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
 		}
 
-		log.info("RL Application Received: "
-				+ allotmentRequest.getAllotment().get(0).getApplicationNumber());
+		log.info("RL Application Received: " + allotmentRequest.getAllotment().get(0).getApplicationNumber());
 
 //		// Save owner metadata after registration is persisted
 //		enrichmentService.saveOwnerMetadata(allotmentRequest);

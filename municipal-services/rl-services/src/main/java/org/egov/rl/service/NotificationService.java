@@ -52,8 +52,7 @@ public class NotificationService {
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		ProcessInstance wf = getProcessInstanceForAllotment(allotmentRequest.getAllotment().get(0),
 				allotmentRequest.getRequestInfo());
-		String completeMsgs = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().get(0).getTenantId(),
-				allotmentRequest.getRequestInfo());
+		String completeMsgs = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().get(0).getTenantId(),allotmentRequest.getRequestInfo());
 		state = getStateFromWf(wf, configs.getIsMutationWorkflowEnabled());
 		String localisedState = getLocalisedState(wf, completeMsgs);
 

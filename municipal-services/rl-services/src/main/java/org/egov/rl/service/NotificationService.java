@@ -59,7 +59,7 @@ public class NotificationService {
 
 		toUsers.add(mapOfPhoneNoAndUUIDs.get(mobileNumber));
 		String message = null;
-		message = util.getCustomizedMsg(request.getRequestInfo(), request.getAllotment().get(0),localizationMessages);
+		message = util.getCustomizedMsg(request.getAllotment().get(0),localizationMessages);
 		
 		log.info("Message for event in Allotment :" + message);
 		Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();

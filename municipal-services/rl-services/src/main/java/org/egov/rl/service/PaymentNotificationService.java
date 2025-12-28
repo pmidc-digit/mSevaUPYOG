@@ -1,5 +1,6 @@
 package org.egov.rl.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,6 +39,9 @@ public class PaymentNotificationService {
 
 	@Autowired
 	private AllotmentRepository allotmentRepository;
+	
+	@Autowired
+	private NotificationService notificationService;
 
 	/**
 	 * Process the incoming record and topic from the payment notification consumer.
@@ -141,11 +145,13 @@ public class PaymentNotificationService {
 			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
 					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
 			if(status) {
+				application.setStatus(RLConstants.PAY);
 			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
-			    statusUpdateInDatabaseByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
+				updateDatabaseWithStatus(application,applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
 			}else {
 				applicationStatus = "CLOSED";
-				statusUpdateInDatabaseClosedByApplicationNumber(applicationNumber, applicationStatus, paymentRequest.getRequestInfo());	
+				application.setStatus(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
+				updateDatabaseWithStatus(application,applicationNumber, applicationStatus, paymentRequest.getRequestInfo());	
 			}
 		} catch (Exception e) {
 			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
@@ -243,27 +249,6 @@ public class PaymentNotificationService {
 		}
 		return state;
 	}
-
-	/**
-	 * Generates petRegistrationNumber if needed and updates database with APPROVED status
-	 */
-	private void statusUpdateInDatabaseByApplicationNumber(String applicationNumber, String status, RequestInfo requestInfo) {
-		try {
-			updateDatabaseWithStatus(applicationNumber, status, requestInfo);			
-		} catch (Exception e) {
-			log.error("Error generating applicationNumber and updating database for application: {}, Error: {}", 
-					applicationNumber, e.getMessage(), e);
-		}
-	}
-	
-	private void statusUpdateInDatabaseClosedByApplicationNumber(String applicationNumber, String status, RequestInfo requestInfo) {
-		try {
-			updateDatabaseWithStatus(applicationNumber, status, requestInfo);			
-		} catch (Exception e) {
-			log.error("Error generating applicationNumber and updating database for application: {}, Error: {}", 
-					applicationNumber, e.getMessage(), e);
-		}
-	}
 	
 	/**
 	 * Fetches the current process instance from workflow service
@@ -312,7 +297,7 @@ public class PaymentNotificationService {
 	/**
 	 * Updates database with status and petRegistrationNumber
 	 */
-	private void updateDatabaseWithStatus(String applicationNumber, String status, RequestInfo requestInfo) {
+	private void updateDatabaseWithStatus(AllotmentDetails allotmentDetails,String applicationNumber, String status, RequestInfo requestInfo) {
 		try {
 			String updateQuery;
 			Object[] params;
@@ -344,6 +329,10 @@ public class PaymentNotificationService {
 			if (rowsUpdated > 0) {
 				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
+				List<AllotmentDetails> allotmentlist=new ArrayList<>();
+				allotmentlist.add(allotmentDetails);
+				log.info("Sending Notification"); 
+				notificationService.process(AllotmentRequest.builder().allotment(allotmentlist).requestInfo(requestInfo).build());
 			} else {
 				log.error("FAILED to update database - No rows updated for application: {}. Query: {}, Params: status={}, lastModifiedBy={}, lastModifiedTime={}, applicationNumber={}", 
 						applicationNumber, updateQuery, status, requestInfo.getUserInfo().getUuid(), currentTime, applicationNumber);

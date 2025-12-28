@@ -28,7 +28,7 @@ public class AllotmentProducer {
 	}
 
 	public void pushAfterEncrytpion(String topic, AllotmentRequest request) {
-		request.setAllotment(Arrays.asList(encryptionDecryptionUtil.encryptObject(request.getAllotment().get(0), RLConstants.PROPERTY_MODEL, AllotmentDetails.class)));
+		request.setAllotment(Arrays.asList(encryptionDecryptionUtil.encryptObject(request.getAllotment().get(0), RLConstants.RL_ALLOTMENT_MODEL, AllotmentDetails.class)));
 		push(topic, request);
 	}
 }

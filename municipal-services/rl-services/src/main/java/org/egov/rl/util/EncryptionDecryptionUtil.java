@@ -79,7 +79,7 @@ public class EncryptionDecryptionUtil {
             Map<String, String> keyPurposeMap = getKeyToDecrypt(objectToDecrypt);
             String purpose = keyPurposeMap.get("PropertyEncDisabledSearch");
 
-            if(key.equalsIgnoreCase(RLConstants.PROPERTY_MODEL))
+            if(key.equalsIgnoreCase(RLConstants.RL_ALLOTMENT_MODEL))
                 key = keyPurposeMap.get("key");
 
             P decryptedObject = (P) encryptionService.decryptJson(requestInfo, objectToDecrypt, key, purpose, classType);

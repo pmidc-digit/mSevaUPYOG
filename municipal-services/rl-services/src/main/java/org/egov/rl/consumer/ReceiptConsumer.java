@@ -48,6 +48,7 @@ public class ReceiptConsumer {
 			
 			paymentNotificationService.process(record, topic);
 			
+			
 		} catch (JsonProcessingException e) {
 			log.error("JSON deserialization error in payment notification: {}", e.getMessage(), e);
 		} catch (Exception e) {

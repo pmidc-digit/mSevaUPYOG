@@ -1,9 +1,5 @@
 package org.egov.rl.util;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class RLConstants {
 
     private RLConstants() {}
@@ -18,18 +14,18 @@ public class RLConstants {
   
     public static final String PENDING_FOR_PAYMENT_RL_APPLICATION = "PENDING_FOR_PAYMENT";
     
+    public static final String PAY = "PAY";
+    
     public static final String CURRENT_DATE = "CURRENT_DATE";
 
 	public static final String RL_ALLOTMENT_FEE = "RL_ALLOTMENT_FEE";
 	
 	public static final String APPLY_RL_APPLICATION = "APPLY";
 	
-
 	public static final String RL_MASTER_MODULE_NAME = "rentAndLease";
 	
 	public static final String RL_PROPERTY_NAME = "RLProperty";
 	
-
 	public static final String RL_SERVICE_NAME = "rl-services";
 
 	public static final String RL_WORKFLOW_NAME = "RENT_N_LEASE_NEW";
@@ -46,7 +42,7 @@ public class RLConstants {
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	
-	
+	//notification message code
 	public static final String NOTIFICATION_DOCVERIFY = "rl.en.counter.doc.verify";
 
 	public static final String NOTIFICATION_APPLY = "rl.en.counter.apply";
@@ -61,47 +57,34 @@ public class RLConstants {
 
 	public static final String NOTIFICATION_DISCONNECTION_FIELD_INSPECTION = "rl.en.counter.disconnection.field.inspection";
 
+	public static final String NOTIFICATION_PAY = "rl.en.counter.pay";
+	
+	public static final String NOTIFICATION_PAY_SETTLEMENT_AMOUNT = "rl.en.counter.pay.satelment.amount";
+	
 	public static final String NOTIFICATION_CLOSED = "rl.en.counter.closed";
 
-	
-//    public static final String MDMS_RL_MOD_NAME = "rentAndLease";
-//
-//    public static final String PT_TYPE_VACANT = "VACANT";
-//    
-//    public static final String PT_TYPE_SHAREDPROPERTY = "SHAREDPROPERTY";
-//    
-//    public static final String PT_TYPE_BUILTUP = "BUILTUP";
-//    
-//    public static final String JSONPATH_CODES = "$.MdmsRes.PropertyTax";
-//
-//    public static final String MDMS_PT_MOD_NAME = "PropertyTax";
-//
-//    public static final String MDMS_PT_PROPERTYTYPE = "PropertyType";
-//    
-//    public static final String MDMS_PT_MUTATIONREASON = "MutationReason";
-//    
-//    public static final String MDMS_PT_USAGECATEGORY = "UsageCategory";
-//
-//    public static final String MDMS_PT_PROPERTYSUBTYPE = "PropertySubType";
-//
-//    public static final String MDMS_PT_OCCUPANCYTYPE = "OccupancyType";
-//
-//    public static final String MDMS_PT_CONSTRUCTIONTYPE = "ConstructionType";
-//
-//    public static final String MDMS_PT_CONSTRUCTIONSUBTYPE = "ConstructionSubType";
-//
-//    public static final String MDMS_PT_OWNERSHIPCATEGORY = "OwnerShipCategory";
-//
-//    public static final String MDMS_PT_SUBOWNERSHIP = "SubOwnerShipCategory";
-//
-//    public static final String MDMS_PT_USAGEMAJOR = "UsageCategoryMajor";
-//
-//    public static final String MDMS_PT_USAGEMINOR = "UsageCategoryMinor";
-//
-//    public static final String MDMS_PT_USAGEDETAIL = "UsageCategoryDetail";
-//
-//    public static final String MDMS_PT_USAGESUBMINOR = "UsageCategorySubMinor";
+	// workflow status for notification 
 
+    public static final String RL_WF_APPLY = "APPLY";
+
+	public static final String RL_WF_DOC_VERIFY = "FORWARD_FOR_FIELDINSPECTION";
+
+	public static final String RL_WF_FIELDINSPECTION = "FORWARD_FOR_APPROVAL";
+	
+	public static final String RL_WF_APPROVE = "APPROVE";
+
+	public static final String RL_WF_REJECT = "REJECT";
+
+	public static final String RL_WF_DISCONNECTION_REQUEST = "FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION";
+	
+	public static final String RL_WF_DISCONNECTION_FIELD_INSPECTION = "FORWARD_FOT_SETLEMENT";
+
+	public static final String RL_WF_CLOSED = "CLOSED";
+	
+	public static final String RL_WF_PAY = "PAY";
+
+	public static final String RL_WF_PAY_SETTLEMENT_AMOUNT = "PAY_SETTLEMENT_AMOUNT";
+//MDMS	
     public static final String MDMS_PT_OWNERTYPE = "OwnerType";
 
     public static final String MDMS_PT_EGF_MASTER = "egf-master";
@@ -200,27 +183,9 @@ public class RLConstants {
     public static final String NOTIFICATION_EMAIL = "{EMAIL_ID}";
 
     public static final String NOTIFICATION_STATUS = "{STATUS}";
-    
-    public static final String NOTIFICATION_UPDATED_CREATED_REPLACE = "{updated/created}";
-    
-    public static final String CREATE_STRING = "Create";
-    
-    public static final String UPDATE_STRING = "Update";
-    
-    public static final String CREATED_STRING = "Created";
-    
-    public static final String UPDATED_STRING = "Updated";
-
-    public static final String MUTATED_STRING = "MUTATED";
-
-    public static final String PAYMENT_STRING = "PAYMENT";
-
-
-
+   
     public static final String NOTIFICATION_APPLICATIONNUMBER = "{applicationNumber}";
-    
-
-
+   
     public static final String ONLINE_PAYMENT_MODE = "ONLINE";
 
     public static final String URL_PARAMS_SEPARATER = "?";
@@ -232,16 +197,6 @@ public class RLConstants {
     public static final String OFFSET_FIELD_FOR_SEARCH_URL = "offset=";
 
     public static final String SEPARATER = "&";
-
-
-
-    public static final String ADHOC_PENALTY = "adhocPenalty";
-
-    public static final String ADHOC_PENALTY_REASON = "adhocPenaltyReason";
-
-    public static final String ADHOC_REBATE = "adhocExemption";
-
-    public static final String ADHOC_REBATE_REASON = "adhocExemptionReason";
 
 
     //Notification Enhancement
@@ -263,68 +218,11 @@ public class RLConstants {
   
     public static final String LOCALIZATION_MSGS_JSONPATH = "$.messages.*.message";
 
-  //EVENT PAY
-    public static final String EVENT_PAY_TENANTID = "$tenantId";
-
-    public static final String EVENT_PAY_BUSINESSSERVICE = "$businessService";
-
-    public static final String EVENT_PAY_PROPERTYID = "$propertyId";
-
-    //Notification Strings for In App
-
-    public static final String TRACK_APPLICATION_STRING = "You can track your application on the link given below - {PTURL} Thank you";
-
-    public static final String VIEW_PROPERTY_STRING = "You can view your property on the link given below - {PTURL} Thank you";
-
-    public static final String PAY_ONLINE_STRING = "Click on the URL to view the details and pay online {PAYMENT_LINK}";
-
-    public static final String PT_ONLINE_STRING = "You can pay your Property Tax online here - {PAYMENT_LINK}";
-
-    public static final String MT_TRACK_APPLICATION_STRING ="You can track your application on the link given below - {MTURL} Thank you";
-
-    public static final String MT_PAYLINK_STRING = "You can pay your mutation fee on the below link - {PAYLINK} or visit your ULB to pay your dues. Thank you";
-
-    public static final String MT_CERTIFICATE_STRING = "You can download your mutation certificate on the below link - {MTURL} Thank you";
-
-    public static final String MT_RECEIPT_STRING = "You can download your receipt on the below link - {MTURL} Thank you";
-
-    public static final String PT_TAX_FAIL = "Please try again. Ignore this message if you have completed your payment. You can pay your Property Tax online here - {payLink}";
-
-    public static final String PT_TAX_FULL = "Click on the link to download payment receipt {receipt download link}";
-
-    public static final String PT_TAX_PARTIAL = "You can pay your Property Tax online here - {payLink} Click on the link to download payment receipt {receipt download link}";
-
-    public static final String TENANT_MASTER_MODULE = "tenant";
-
-    public static final String TENANTS_MASTER_ROOT = "tenants";
-
-    public static final String TENANTS_JSONPATH_ROOT = "$.MdmsRes.tenant.tenants";
-
-    public static final String PROPERTY_MODEL = "Property";
+    public static final String RL_ALLOTMENT_MODEL = "RentAndLeaseAllotment";
 
     public static final String PROPERTY_DECRYPT_MODEL = "PropertyDecrypDisabled";
 
-    //Citizen Feedback Notifications
-
-    public static final String FEEDBACK_URL = "{FeedbackURL}";
-
-    //// workflow send notification
-
-    public static final String RL_WF_APPLY = "APPLY";
-
-	public static final String RL_WF_DOC_VERIFY = "FORWARD_FOR_FIELDINSPECTION";
-
-	public static final String RL_WF_FIELDINSPECTION = "FORWARD_FOR_APPROVAL";
-	
-	public static final String RL_WF_APPROVE = "APPROVE";
-
-	public static final String RL_WF_REJECT = "REJECT";
-
-	public static final String RL_WF_DISCONNECTION_REQUEST = "FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION";
-	
-	public static final String RL_WF_DISCONNECTION_FIELD_INSPECTION = "FORWARD_FOT_SETLEMENT";
-
-	public static final String RL_WF_CLOSED = "CLOSED";
+    
 
 }
 

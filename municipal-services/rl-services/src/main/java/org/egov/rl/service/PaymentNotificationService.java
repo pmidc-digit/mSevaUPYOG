@@ -15,7 +15,6 @@ import org.egov.rl.repository.AllotmentRepository;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.RLConstants;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,12 +32,6 @@ public class PaymentNotificationService {
 
 	@Autowired
 	private RentLeaseConfiguration configs;
-
-	@Value("${egov.mdms.host}")
-	private String mdmsHost;
-
-	@Value("${egov.mdms.search.endpoint}")
-	private String mdmsUrl;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;

@@ -54,24 +54,6 @@ public class NotificationUtil {
     private RestTemplate restTemplate;
 
     private UserService userService;
-    
-	public static final String RL_WF_APPLY = "APPLY";
-
-	public static final String RL_WF_DOC_VERIFY = "FORWARD_FOR_FIELDINSPECTION";
-
-	public static final String RL_WF_FIELDINSPECTION = "FORWARD_FOR_APPROVAL";
-	
-	public static final String RL_WF_APPROVE = "APPROVE";
-
-	public static final String RL_WF_REJECT = "REJECT";
-
-	public static final String RL_WF_DISCONNECTION_REQUEST = "FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION";
-	
-	public static final String RL_WF_DISCONNECTION_FIELD_INSPECTION = "FORWARD_FOT_SETLEMENT";
-
-	public static final String RL_WF_CLOSED = "CLOSED";
-
-
 
 
     @Value("${egov.mdms.host}")
@@ -298,48 +280,6 @@ public class NotificationUtil {
     }
 
     /**
-     * Creates email request for the each owners from SMS requests
-     *
-     * @param requestInfo
-     * @param smsRequests
-     *            List of SMS Requests
-     * @param tenantId
-     * @return List of EmailRequests
-     */
-
-    public List<EmailRequest> createEmailRequestFromSMSRequests(RequestInfo requestInfo,List<SMSRequest> smsRequests,String tenantId) {
-        Set<String> mobileNumbers = smsRequests.stream().map(SMSRequest :: getMobileNumber).collect(Collectors.toSet());
-        Map<String, String> mobileNumberToEmailId = fetchUserEmailIds(mobileNumbers, requestInfo, tenantId);
-        if (CollectionUtils.isEmpty(mobileNumberToEmailId.keySet())) {
-            log.error("Email Ids Not found for Mobilenumbers");
-        }
-
-        Map<String,String > mobileNumberToMsg = smsRequests.stream().collect(Collectors.toMap(SMSRequest::getMobileNumber, SMSRequest::getMessage));
-        List<EmailRequest> emailRequest = new LinkedList<>();
-        for (Map.Entry<String, String> entryset : mobileNumberToEmailId.entrySet()) {
-            String message = mobileNumberToMsg.get(entryset.getKey());
-            String customizedMsg = message;
-
-            if(message.contains(NOTIFICATION_EMAIL))
-                customizedMsg = customizedMsg.replace(NOTIFICATION_EMAIL, entryset.getValue());
-
-            //removing lines to match Email Templates
-            if(message.contains(PT_TAX_PARTIAL))
-                customizedMsg = customizedMsg.replace(PT_TAX_PARTIAL,"");
-
-            if(message.contains(PT_TAX_FULL))
-                customizedMsg = customizedMsg.replace(PT_TAX_FULL,"");
-
-            String subject = "";
-            String body = customizedMsg;
-            Email emailobj = Email.builder().emailTo(Collections.singleton(entryset.getValue())).isHTML(false).body(body).subject(subject).build();
-            EmailRequest email = new EmailRequest(requestInfo,emailobj);
-            emailRequest.add(email);
-        }
-        return emailRequest;
-    }
-
-    /**
      * Send the EmailRequest on the EmailNotification kafka topic
      *
      * @param emailRequestList
@@ -420,187 +360,6 @@ public class NotificationUtil {
         else return res;
     }
 
-//    /**
-//    *
-//    * @param requestInfo
-//    * @param smsRequests
-//    */
-//   public List<Event> enrichEvent(List<SMSRequest> smsRequests, RequestInfo requestInfo, String tenantId, Property property, Boolean isActionReq){
-//
-//		List<Event> events = new ArrayList<>();
-//       Set<String> mobileNumbers = smsRequests.stream().map(SMSRequest :: getMobileNumber).collect(Collectors.toSet());
-//       Map<String, String> mapOfPhnoAndUUIDs = new HashMap<>();
-//
-//       for(String mobileNumber:mobileNumbers) {
-//           UserDetailResponse userDetailResponse = fetchUserByUUID(mobileNumber, requestInfo, property.getTenantId());
-//           try
-//           {
-//               OwnerInfo user= (OwnerInfo) userDetailResponse.getUser().get(0);
-////               mapOfPhnoAndUUIDs.put(user.getMobileNumber(),user.getUuid());
-//           }
-//           catch(Exception e) {
-//               log.error("Exception while fetching user object: ",e);
-//           }
-//       }
-//
-//       if (CollectionUtils.isEmpty(mapOfPhnoAndUUIDs.keySet())) {
-//           log.error("UUIDs Not found for Mobilenumbers");
-//       }
-//
-//       Map<String,String > mobileNumberToMsg = smsRequests.stream().collect(Collectors.toMap(SMSRequest::getMobileNumber, SMSRequest::getMessage));
-//       mobileNumbers.forEach(mobileNumber -> {
-//       	
-//           List<String> toUsers = new ArrayList<>();
-//           toUsers.add(mapOfPhnoAndUUIDs.get(mobileNumber));
-//           Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
-//
-//           Action action = null;
-//           if(isActionReq){
-//               List<ActionItem> items = new ArrayList<>();
-//               String msg = smsRequests.get(0).getMessage();
-//               log.info("Message is for Event" + msg);
-//               String actionLink = "";
-//               if(msg.contains(PT_CORRECTION_PENDING)){
-//            	   
-//					String url = config.getUserEventViewPropertyLink();
-//					if (property.getCreationReason().equals(CreationReason.MUTATION)) {
-//						url = config.getUserEventViewMutationLink();
-//					}
-//					
-//                   actionLink = url.replace("$mobileNo", mobileNumber)
-//                           .replace("$tenantId", tenantId)
-//                           .replace("$propertyId" , property.getPropertyId())
-//                           .replace("$applicationNumber" , property.getAcknowldgementNumber());
-//                   actionLink = config.getUiAppHost() + actionLink;
-//                   log.info("actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(VIEW_APPLICATION_CODE).build();
-//                   items.add(item);
-//               }
-//
-//               if(msg.contains(ASMT_USER_EVENT_PAY)){
-//                   actionLink = config.getPayLink().replace("$mobile", mobileNumber)
-//                           .replace("$propertyId", property.getPropertyId())
-//                           .replace("$tenantId", property.getTenantId())
-//                           .replace("$businessService" , PT_BUSINESSSERVICE);
-//                   
-//                   log.info("3 pay link "+config.getPayLink());
-//                   log.info(" 2 actionLink is" + actionLink);
-//
-//                   actionLink = config.getUiAppHost() + actionLink;
-//                   log.info(" 1 actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(config.getPayCode()).build();
-//                   items.add(item);
-//               }
-//               if(msg.contains(PT_ALTERNATE_NUMBER) || msg.contains(PT_OLD_MOBILENUMBER) || msg.contains(VIEW_PROPERTY)){
-//                   actionLink = config.getViewPropertyLink()
-//                           .replace(NOTIFICATION_PROPERTYID, property.getPropertyId())
-//                           .replace(NOTIFICATION_TENANTID, property.getTenantId());
-//
-//                   actionLink = config.getUiAppHost() + actionLink;
-//                   log.info("actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(VIEW_PROPERTY_CODE).build();
-//                   items.add(item);
-//               }
-//
-//               if(msg.contains(TRACK_APPLICATION)){
-//                   actionLink = config.getViewPropertyLink()
-//                           .replace(NOTIFICATION_PROPERTYID, property.getPropertyId())
-//                           .replace(NOTIFICATION_TENANTID, property.getTenantId());
-//
-//                   actionLink = config.getUiAppHost() + actionLink;
-//                   log.info("actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(VIEW_PROPERTY_CODE).build();
-//                   items.add(item);
-//               }
-//
-//               if(msg.contains(TRACK_APPLICATION) && msg.contains("{MTURL}")){
-//                   actionLink = getMutationUrl(property);
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(TRACK_APPLICATION_CODE).build();
-//                   items.add(item);
-//               }
-//
-//               if(msg.contains(NOTIFICATION_PAY_LINK)){
-//                   actionLink = getPayUrl(property);
-//                   log.info("actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(NOTIFICATION_PAY_LINK).build();
-//                   items.add(item);
-//               }
-//
-//               if(msg.contains(MT_RECEIPT_STRING))
-//               {
-//                   actionLink = getMutationUrl(property);
-//                   log.info("actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(DOWNLOAD_MUTATION_RECEIPT_CODE).build();
-//                   items.add(item);
-//               }
-//
-//               if(msg.contains(MT_CERTIFICATE_STRING))
-//               {
-//                   actionLink = getMutationUrl(property);
-//                   log.info("actionLink is" + actionLink);
-//
-//                   ActionItem item = ActionItem.builder().actionUrl(actionLink).code(DOWNLOAD_MUTATION_CERTIFICATE_CODE).build();
-//                   items.add(item);
-//               }
-//
-//                       action = Action.builder().actionUrls(items).build();
-//           }
-//
-//           String description = removeForInAppMessage(mobileNumberToMsg.get(mobileNumber));
-//           events.add(Event.builder().tenantId(tenantId).description(description)
-//                   .eventType(USREVENTS_EVENT_TYPE).name(USREVENTS_EVENT_NAME)
-//                   .postedBy(USREVENTS_EVENT_POSTEDBY).source(Source.WEBAPP).recepient(recepient)
-//                   .eventDetails(null).actions(action).build());
-//
-//		});
-//		return events;
-//	}
-
-//    /**
-//     * Method to remove certain lines from SMS templates
-//     * so that we can reuse the templates for in app notifications
-//     * returns the message minus some lines to match In App Templates
-//     * @param message
-//     */
-//    private String removeForInAppMessage(String message)
-//    {
-//        if(message.contains(TRACK_APPLICATION_STRING))
-//            message = message.replace(TRACK_APPLICATION_STRING,"");
-//        if(message.contains(VIEW_PROPERTY_STRING))
-//            message = message.replace(VIEW_PROPERTY_STRING,"");
-//        if(message.contains(PAY_ONLINE_STRING))
-//            message = message.replace(PAY_ONLINE_STRING,"");
-//        if(message.contains(PT_ONLINE_STRING))
-//            message = message.replace(PT_ONLINE_STRING,"");
-//
-//        //mutation notification
-//        if(message.contains(MT_TRACK_APPLICATION_STRING))
-//            message = message.replace(MT_TRACK_APPLICATION_STRING,"");
-//        if(message.contains(MT_PAYLINK_STRING))
-//            message = message.replace(MT_PAYLINK_STRING,"");
-//        if(message.contains(MT_CERTIFICATE_STRING))
-//            message = message.replace(MT_CERTIFICATE_STRING,"");
-//        if(message.contains(MT_RECEIPT_STRING))
-//            message = message.replace(MT_RECEIPT_STRING,"");
-//
-//        return message;
-//    }
-
-//    /**
-//     * Method to fetch the list of channels for a particular action from mdms configd
-//     * from mdms configs
-//     * returns the message minus some lines to match In App Templates
-//     * @param requestInfo
-//     * @param tenantId
-//     * @param moduleName
-//     * @param action
-//     */
     public List<String> fetchChannelList(RequestInfo requestInfo, String tenantId, String moduleName, String action){
         List<String> masterData = new ArrayList<>();
         StringBuilder uri = new StringBuilder();
@@ -609,17 +368,13 @@ public class NotificationUtil {
             return masterData;
         MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestForChannelList(requestInfo, tenantId.split("\\.")[0]);
 
-        Filter masterDataFilter = filter(
-                where(MODULE).is(moduleName).and(ACTION).is(action)
-                
-        		);
+        Filter masterDataFilter = filter(where(MODULE).is(moduleName).and(ACTION).is(action));
         try {
             Object response = restTemplate.postForObject(uri.toString(), mdmsCriteriaReq, Map.class);
             masterData = JsonPath.parse(response).read("$.MdmsRes.Channel.channelList[?].channelNames[*]", masterDataFilter);
         }catch(Exception e) {
             log.error("Exception while fetching workflow states to ignore: ",e);
         }
-
         return masterData;
     }
 
@@ -642,38 +397,8 @@ public class NotificationUtil {
         MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
         mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
         mdmsCriteriaReq.setRequestInfo(requestInfo);
-
         return mdmsCriteriaReq;
-    }
-
-    /**
-     * Prepares and return url for mutation view screen
-     *
-     * @param property
-     * @return
-     */
-    public String getMutationUrl(AllotmentDetails allotmentDetails) {
-
-        return getShortenedUrl(
-                config.getUiAppHost().concat(config.getViewMutationLink()
-                        .replace(NOTIFICATION_APPID, allotmentDetails.getApplicationNumber())
-                        .replace(NOTIFICATION_TENANTID, allotmentDetails.getTenantId())));
-    }
-
-    /**
-     * Prepares and return url for property view screen
-     *
-     * @param property
-     * @return
-     */
-    
-    public String getPayUrl(AllotmentDetails allotmentDetails) {
-        return getShortenedUrl(
-                config.getUiAppHost().concat(config.getPayLink().replace(EVENT_PAY_BUSINESSSERVICE,MUTATION_BUSINESSSERVICE)
-                        .replace(EVENT_PAY_PROPERTYID, allotmentDetails.getApplicationNumber())
-                        .replace(EVENT_PAY_TENANTID, allotmentDetails.getTenantId())));
-    }
-    
+    }
     /**
      * Fetches User Object based on the UUID.
      *
@@ -716,54 +441,7 @@ public class NotificationUtil {
 
         return userInfo;
     }
-    
-//    public String getMsgForCitizenFeedbackNotification(Property property, String completeMsgs, String serviceType) {
-//
-//        String msgCode = null, redirectLink = null, creationreason=null;
-//        String feedbackUrl = config.getUiAppHost()+config.getCitizenFeedbackLink();
-//
-//        switch (serviceType)
-//        {
-//            case CREATED_STRING: {
-//                msgCode = PT_NOTIF_CF_CREATED;
-//                redirectLink = CF_REDIRECT_REPLACE_CREATE;
-//                if (property.getCreationReason().equals(CreationReason.CREATE))
-//                    creationreason = "CREATE";
-//                break;
-//
-//            }
-//
-//            case UPDATED_STRING: {
-//                msgCode = PT_NOTIF_CF_UPDATED;
-//                redirectLink = CF_REDIRECT_REPLACE_UPDATE;
-//                if (property.getCreationReason().equals(CreationReason.UPDATE))
-//                    creationreason = "UPDATE";
-//                break;
-//            }
-//
-//            case MUTATED_STRING: {
-//                msgCode = PT_NOTIF_CF_MUTATED;
-//                redirectLink = CF_REDIRECT_REPLACE_MUTATE;
-//                if (property.getCreationReason().equals(CreationReason.MUTATION))
-//                    creationreason = "MUTATION";
-//                break;
-//            }
-//
-//        }
-//
-//        feedbackUrl = feedbackUrl
-//                .replace(PROPERTYID_REPLACE,property.getPropertyId())
-//                .replace(ACKNOWLEDGEMENT_REPLACE,property.getAcknowldgementNumber())
-//                .replace(TENANTID_REPLACE,property.getTenantId())
-//                .replace(REDIRECTLINK_REPLACE,redirectLink)
-//                .replace(CREATIONREASON_REPLACE,creationreason);
-//
-//        return getMessageTemplate(msgCode, completeMsgs)
-//                .replace(NOTIFICATION_PROPERTYID, property.getPropertyId()).replace(NOTIFICATION_APPID,
-//                        property.getAcknowldgementNumber()).replace(FEEDBACK_URL, getShortenedUrl(feedbackUrl));
-//
-//    }
-    
+        
     public String getCustomizedMsg(RequestInfo requestInfo, AllotmentDetails allotmentDetails,
 			String localizationMessage) {
 		String message = null, messageTemplate;

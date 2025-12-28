@@ -65,12 +65,6 @@ public class AllotmentService {
 	@Autowired
 	AllotmentRepository allotmentRepository;
 
-	@Autowired
-	private NotificationService notificationService;
-	
-//	@Autowired
-//	private PropertyUtil mdmsUtil;
-
 	/**
 	 * Enriches the Request and pushes to the Queue
 	 *
@@ -127,10 +121,6 @@ public class AllotmentService {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",
 						"Error occured while demand generation.");
-			}
-			try {
-				notificationService.sendNotificationForAllotment(allotmentRequest);
-			} catch (Exception e) {
 			}
 		} else if (isApprove) {
 			try {

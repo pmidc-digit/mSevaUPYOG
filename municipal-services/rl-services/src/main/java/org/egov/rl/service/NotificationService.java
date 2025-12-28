@@ -1,536 +1,132 @@
 package org.egov.rl.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-
 import org.egov.rl.config.RentLeaseConfiguration;
-import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.models.ProcessInstance;
-import org.egov.rl.models.User;
-import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.workflow.Action;
-import org.egov.rl.models.workflow.Workflow;
+import org.egov.rl.models.event.Event;
+import org.egov.rl.models.event.EventRequest;
+import org.egov.rl.models.event.Recepient;
+import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.rl.util.NotificationUtil;
-import org.egov.rl.web.contracts.SMSRequest;
-import org.egov.tracer.model.CustomException;
+import org.egov.rl.util.RLConstants;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.RestTemplate;
-
 import com.jayway.jsonpath.JsonPath;
 
-import static org.egov.rl.util.RLConstants.*;
+import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
+@Slf4j
 public class NotificationService {
-
+	
 	@Autowired
-	private NotificationUtil notifUtil;
-
+	private RentLeaseConfiguration config;
+	
 	@Autowired
-	private RentLeaseConfiguration configs;
-
+	private NotificationUtil util;
+	
 	@Autowired
-	private RestTemplate restTemplate;
+	private ServiceRequestRepository serviceRequestRepository;
 
-	@Value("${notification.url}")
-	private String notificationURL;
+	public void process(AllotmentRequest request) {
+		EventRequest eventRequest = getEventsForAllotment(request);
+		log.info("Event Request in Rl process method" + eventRequest.toString());
+		if (null != eventRequest)
+			util.sendEventNotification(eventRequest);
+	}
 
-	public void sendNotificationForAllotment(AllotmentRequest allotmentRequest) {
+	private EventRequest getEventsForAllotment(AllotmentRequest request) {
 
-		String msg = null;
-		String state = null;
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
-		ProcessInstance wf = getProcessInstanceForAllotment(allotmentRequest.getAllotment().get(0),
-				allotmentRequest.getRequestInfo());
-		String completeMsgs = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().get(0).getTenantId(),allotmentRequest.getRequestInfo());
-		state = getStateFromWf(wf, configs.getIsMutationWorkflowEnabled());
-		String localisedState = getLocalisedState(wf, completeMsgs);
-
-		switch (state) {
-
-		case WF_NO_WORKFLOW:
-			msg = getMsgForMutation(allotmentDetails, completeMsgs, MT_NO_WORKFLOW, NOTIFICATION_MUTATION_LINK);
-			break;
-
-//		case WF_STATUS_OPEN:
-//			msg = getMsgForMutation(property, completeMsgs, WF_MT_STATUS_OPEN_CODE, NOTIFICATION_MUTATION_LINK);
-//			break;
-
-		case WF_STATUS_APPROVED:
-			msg = "Hi,\nYour Application ("+allotmentDetails.getApplicationNumber()+") has been approved for allotment of the property.\nThanks";// getMsgForMutation(allotmentDetails, completeMsgs, WF_MT_STATUS_APPROVED_CODE,
-//					NOTIFICATION_MUTATION_LINK);
-//			sendNotificationForCitizenFeedback(allotmentDetails,completeMsgs,MUTATED_STRING);
-			break;
-
-		case WF_STATUS_PAYMENT_PENDING:
-			msg = getMsgForMutation(allotmentDetails, completeMsgs, WF_MT_STATUS_PAYMENT_PENDING_CODE,
-					NOTIFICATION_PAY_LINK);
-			break;
-
-		default:
-			msg = getMsgForMutation(allotmentDetails, completeMsgs, WF_MT_STATUS_CHANGE_CODE,
-					NOTIFICATION_MUTATION_LINK);
-
-			break;
-
-		case WF_STATUS_PAID:
-			break;
+		List<Event> events = new ArrayList<>();
+		String tenantId = request.getAllotment().get(0).getTenantId();
+		String localizationMessages = util.getLocalizationMessages(tenantId, request.getRequestInfo());
+		List<String> toUsers = new ArrayList<>();
+		String mobileNumber = request.getAllotment().get(0).getOwnerInfo().get(0).getMobileNo();
+		
+		Map<String, String> mapOfPhoneNoAndUUIDs = fetchUserUUIDs(mobileNumber, request.getRequestInfo(), tenantId);
+		
+		if (CollectionUtils.isEmpty(mapOfPhoneNoAndUUIDs.keySet())) {
+			log.info("UUID search failed!");
 		}
 
-		// Ignoring paid status, since it's wired from payment consumer directly
-		if (!StringUtils.isEmpty(msg)) {
-//			msg = replaceCommonValues(property, msg, localisedState);
-			prepareMsgAndSend(allotmentRequest, msg, state);
-		}
-	}
-
-//	public void sendNotificationForMtPayment(PropertyRequest propertyRequest, BigDecimal Amount) {
-//
-//		Property property = propertyRequest.getProperty();
-//		String CompleteMsgs = notifUtil.getLocalizationMessages(property.getTenantId(), propertyRequest.getRequestInfo());
-//		
-//			String msg = getMsgForMutation(property, CompleteMsgs, WF_MT_STATUS_PAID_CODE, NOTIFICATION_MUTATION_LINK)
-//						.replace(NOTIFICATION_AMOUNT, Amount.toPlainString());
-//			msg = replaceCommonValues(property, msg, "");		
-//			prepareMsgAndSend(propertyRequest, msg,"");
-//	}
-
-//	public void sendNotificationForUpdate(AllotmentRequest allotmentRequest) {
-//
-//		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
-//		ProcessInstance wf = getProcessInstanceForAllotment(allotmentDetails, allotmentRequest.getRequestInfo());
-//		String createOrUpdate = null;
-//		String msg = null;
-//		
-//		Boolean isCreate =  CreationReason.CREATE.equals(property.getCreationReason());
-//		String state = getStateFromWf(wf, configs.getIsWorkflowEnabled());
-//		String completeMsgs = notifUtil.getLocalizationMessages(property.getTenantId(), propertyRequest.getRequestInfo());
-//		String localisedState = getLocalisedState(wf, completeMsgs);
-//		switch (state) {
-//
-//		case WF_NO_WORKFLOW:
-//			createOrUpdate = isCreate ? CREATED_STRING : UPDATED_STRING;
-//			msg = getMsgForUpdate(allotmentDetails, UPDATE_NO_WORKFLOW, completeMsgs, createOrUpdate);
-//			break;
-//
-//		case WF_STATUS_OPEN:
-//			createOrUpdate = isCreate ? CREATE_STRING : UPDATE_STRING;
-//			msg = getMsgForUpdate(property, WF_UPDATE_STATUS_OPEN_CODE, completeMsgs, createOrUpdate);
-//			break;
-//
-//		case WF_STATUS_APPROVED:
-//			createOrUpdate = isCreate ? CREATED_STRING : UPDATED_STRING;
-//			msg = getMsgForUpdate(property, WF_UPDATE_STATUS_APPROVED_CODE, completeMsgs, createOrUpdate);
-////			sendNotificationForCitizenFeedback(property,completeMsgs,createOrUpdate);
-//			break;
-//
-//		default:
-//			createOrUpdate = isCreate ? CREATE_STRING : UPDATE_STRING;
-//			msg = getMsgForUpdate(property, WF_UPDATE_STATUS_CHANGE_CODE, completeMsgs, createOrUpdate);
-//			break;
-//		}
-//
-//		msg = replaceCommonValues(AllotmentDetails, msg, localisedState);
-//		prepareMsgAndSend(propertyRequest, msg,state);
-//	}
-
-	/**
-	 * Method to prepare msg for create/update process
-	 * 
-	 * @param property
-	 * @param msgCode
-	 * @param completeMsgs
-	 * @param createUpdateReplaceString
-	 * @return
-	 */
-	private String getMsgForUpdate(AllotmentDetails allotmentDetails, String msgCode, String completeMsgs,
-			String createUpdateReplaceString) {
-
-		String url = notifUtil.getShortenedUrl(configs.getUiAppHost()
-				.concat(configs.getViewPropertyLink()
-						.replace(NOTIFICATION_APPLICATIONNUMBER, allotmentDetails.getApplicationNumber())
-						.replace(NOTIFICATION_TENANTID, allotmentDetails.getTenantId())));
-
-		return notifUtil.getMessageTemplate(msgCode, completeMsgs).replace(NOTIFICATION_PROPERTY_LINK, url)
-				.replace(NOTIFICATION_UPDATED_CREATED_REPLACE, createUpdateReplaceString);
-	}
-
-	/**
-	 * private method to prepare mutation msg for localization
-	 * 
-	 * @param property
-	 * @param CompleteMsgs
-	 * @param statusCode
-	 * @param urlCode
-	 * @return
-	 */
-	private String getMsgForMutation(AllotmentDetails allotmentDetails, String CompleteMsgs, String statusCode,
-			String urlCode) {
-
-		String url = statusCode.equalsIgnoreCase(WF_STATUS_PAYMENT_PENDING) ? notifUtil.getPayUrl(allotmentDetails)
-				: notifUtil.getMutationUrl(allotmentDetails);
-		return notifUtil.getMessageTemplate(statusCode, CompleteMsgs).replace(urlCode, url);
-	}
-
-	/**
-	 * replaces common variable for all messages
-	 * 
-	 * @param property
-	 * @param msg
-	 * @return
-	 */
-	private String replaceCommonValues(AllotmentDetails allotmentDetails, String msg, String localisedState) {
-
-		msg = msg.replace(NOTIFICATION_APPLICATIONNUMBER, allotmentDetails.getPropertyId()).replace(NOTIFICATION_APPID,
-				allotmentDetails.getApplicationNumber());
-
-		if (configs.getIsWorkflowEnabled())
-			msg = msg.replace(NOTIFICATION_STATUS, localisedState);
-		return msg;
-	}
-
-	private String getLocalisedState(ProcessInstance workflow, String completeMsgs) {
-
-		String state = "";
-		if (configs.getIsWorkflowEnabled()) {
-			state = workflow.getState().getState();
-		}
-
-		switch (state) {
-
-		case WF_STATUS_REJECTED:
-			return notifUtil.getMessageTemplate(WF_STATUS_REJECTED_LOCALE, completeMsgs);
-
-		case WF_STATUS_DOCVERIFIED:
-			return notifUtil.getMessageTemplate(WF_STATUS_DOCVERIFIED_LOCALE, completeMsgs);
-
-		case WF_STATUS_FIELDVERIFIED:
-			return notifUtil.getMessageTemplate(WF_STATUS_FIELDVERIFIED_LOCALE, completeMsgs);
-
-		case WF_STATUS_OPEN:
-			return notifUtil.getMessageTemplate(WF_STATUS_OPEN_LOCALE, completeMsgs);
-
-		case PT_UPDATE_OWNER_NUMBER:
-			return notifUtil.getMessageTemplate(PT_UPDATE_OWNER_NUMBER, completeMsgs);
-
-		}
-		return state;
-	}
-
-	/**
-	 * Method to extract state from the workflow object
-	 * 
-	 * @param wf
-	 * @return
-	 */
-	private String getStateFromWf(ProcessInstance wf, Boolean isWorkflowEnabled) {
-
-		String state;
-		if (isWorkflowEnabled) {
-
-			Boolean isPropertyActive = wf.getState().getApplicationStatus().equalsIgnoreCase(Status.ACTIVE.toString());
-			Boolean isTerminateState = wf.getState().getIsTerminateState();
-			Set<String> actions = null != wf.getState().getActions()
-					? actions = wf.getState().getActions().stream().map(Action::getAction).collect(Collectors.toSet())
-					: Collections.emptySet();
-
-			if (isTerminateState && CollectionUtils.isEmpty(actions)) {
-
-				state = isPropertyActive ? WF_STATUS_APPROVED : WF_STATUS_REJECTED;
-			} else if (actions.contains(ACTION_PAY)) {
-
-				state = WF_STATUS_PAYMENT_PENDING;
-			} else {
-
-				state = wf.getState().getState();
-			}
-
-		} else {
-			state = WF_NO_WORKFLOW;
-		}
-		return state;
-	}
-
-	/**
-	 * Prepares msg for each owner and send
-	 *
-	 * @param request
-	 * @param msg
-	 */
-	private void prepareMsgAndSend(AllotmentRequest request, String msg, String state) {
-
-		AllotmentDetails allotmentDetails = request.getAllotment().get(0);
-		RequestInfo requestInfo = request.getRequestInfo();
-		Map<String, String> mobileNumberToOwner = new HashMap<>();
-		String tenantId = allotmentDetails.getTenantId();
-		ProcessInstance ps = getProcessInstanceForAllotment(allotmentDetails, requestInfo);
-		String moduleName = ps.getModuleName();
-
-		String action;
-		if (ps != null)
-			action = ps.getAction();
-		else
-			action = WF_NO_WORKFLOW;
-
-		List<String> configuredChannelNames = notifUtil.fetchChannelList(new RequestInfo(), tenantId, moduleName,
-				action);
-		Set<String> mobileNumbers = new HashSet<>();
-
-//		property.getOwners().forEach(owner -> {
-//			if (owner.getMobileNumber() != null)
-//				mobileNumberToOwner.put(owner.getMobileNumber(), owner.getName());
-//			    mobileNumbers.add(owner.getMobileNumber());
-//		});
-
-		log.info("mobileNumbers sms: " + mobileNumbers);
-//log.info("property.getOwners() sms: "+property.getOwners().toString());
-		log.info("mobileNumberToOwner sms: " + mobileNumberToOwner);
-		log.info("CHANNEL_NAME_SMS sms: " + configuredChannelNames);
-		List<SMSRequest> smsRequests = notifUtil.createSMSRequest(msg, mobileNumberToOwner);
-
-		if (configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
-			log.info("Inside  sms: " + smsRequests);
-			notifUtil.sendSMS(smsRequests);
-//temp disabling
-			/*
-			 * Boolean isActionReq = false;
-			 * if(state.equalsIgnoreCase(PT_CORRECTION_PENDING)) isActionReq = true;
-			 * 
-			 * List<Event> events = notifUtil.enrichEvent(smsRequests, requestInfo,
-			 * property.getTenantId(), property, isActionReq);
-			 * notifUtil.sendEventNotification(new EventRequest(requestInfo, events));
-			 */
-		}
-		/*
-		 * if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)){ List<EmailRequest>
-		 * emailRequests =
-		 * notifUtil.createEmailRequestFromSMSRequests(requestInfo,smsRequests,
-		 * tenantId); notifUtil.sendEmail(emailRequests); }
-		 */
-	}
-
-	private String fetchContentFromLocalization(RequestInfo requestInfo, String tenantId, String module, String code) {
+		toUsers.add(mapOfPhoneNoAndUUIDs.get(mobileNumber));
 		String message = null;
-		List<String> codes = new ArrayList<>();
-		List<String> messages = new ArrayList<>();
-		Object result = null;
-		String locale = "";
-		if (!StringUtils.isEmpty(requestInfo.getMsgId()) && requestInfo.getMsgId().split("|").length >= 2)
-			locale = requestInfo.getMsgId().split("\\|")[1];
+		message = util.getCustomizedMsg(request.getRequestInfo(), request.getAllotment().get(0),localizationMessages);
+		
+		log.info("Message for event in Allotment :" + message);
+		Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
+		log.info("Recipient object in RL:" + recepient.toString());
+		events.add(
+				Event.builder()
+				.tenantId(tenantId)
+				.description(message)
+				.eventType(RLConstants.USREVENTS_EVENT_TYPE)
+				.name(RLConstants.USREVENTS_EVENT_NAME)
+				.postedBy(RLConstants.USREVENTS_EVENT_POSTEDBY)
+				.source(org.egov.rl.models.event.Source.WEBAPP)
+				.recepient(recepient)
+				.eventDetails(null)
+				.actions(null).build());
+		if (!CollectionUtils.isEmpty(events)) {
+			return EventRequest
+					.builder()
+					.requestInfo(request.getRequestInfo())
+					.events(events)
+					.build();
+		} else {
+			return null;
+		}
 
-		if (StringUtils.isEmpty(locale))
-			locale = configs.getFallBackLocale();
-		StringBuilder uri = new StringBuilder();
-		uri.append(configs.getLocalizationHost()).append(configs.getLocalizationContextPath())
-				.append(configs.getLocalizationSearchEndpoint());
-		uri.append("?tenantId=").append(tenantId.split("\\.")[0]).append("&locale=").append(locale).append("&module=")
-				.append(module);
-		Map<String, Object> request = new HashMap<>();
-		request.put("RequestInfo", requestInfo);
-		try {
-			result = restTemplate.postForObject(uri.toString(), request, Map.class);
-			codes = JsonPath.read(result, LOCALIZATION_CODES_JSONPATH);
-			messages = JsonPath.read(result, LOCALIZATION_MSGS_JSONPATH);
-		} catch (Exception e) {
-			log.error("Exception while fetching from localization: " + e);
-		}
-		if (CollectionUtils.isEmpty(messages)) {
-			throw new CustomException("LOCALIZATION_NOT_FOUND", "Localization not found for the code: " + code);
-		}
-		for (int index = 0; index < codes.size(); index++) {
-			if (codes.get(index).equals(code)) {
-				message = messages.get(index);
-			}
-		}
-		return message;
 	}
-
-	/*
-	 * Method to send notification while updating owner mobile number
-	 */
-
-//	public void sendNotificationForMobileNumberUpdate(PropertyRequest propertyRequest, Property propertyFromSearch,
-//			Map<String, String> uuidToMobileNumber) {
-//
-//		Property property = propertyRequest.getProperty();
-//		String msg = null;
-//
-//		String completeMsgs = notifUtil.getLocalizationMessages(property.getTenantId(),
-//				propertyRequest.getRequestInfo());
-//		msg = getMsgForMobileNumberUpdate(PT_UPDATE_OWNER_NUMBER, completeMsgs);
-//		prepareMsgAndSendToBothNumbers(propertyRequest, propertyFromSearch, msg, uuidToMobileNumber);
-//
-//	}
-
-	/*
-	 * Method to get the message template for owner mobile number update
-	 * notification
-	 */
-
-	private String getMsgForMobileNumberUpdate(String msgCode, String completeMsgs) {
-
-		return notifUtil.getMessageTemplate(msgCode, completeMsgs);
-	}
-
-	/*
-	 * Method to send notifications to both (old and new) owner mobile number while
-	 * updation.
-	 */
-
-//	private void prepareMsgAndSendToBothNumbers(PropertyRequest request, Property propertyFromSearch, String msg,
-//			Map<String, String> uuidToMobileNumber) {
-//
-//		Property property = request.getProperty();
-//		RequestInfo requestInfo = request.getRequestInfo();
-//		List<String> configuredChannelNames = notifUtil.fetchChannelList(requestInfo,
-//				request.getProperty().getTenantId(), PTConstants.PT_BUSINESSSERVICE, ACTION_UPDATE_MOBILE);
-//		Set<String> mobileNumbers = new HashSet<>();
-//
-////		property.getOwners().forEach(owner -> {
-////
-////			if(uuidToMobileNumber.containsKey(owner.getUuid()) && uuidToMobileNumber.get(owner.getUuid())!=owner.getMobileNumber()) {
-////				
-////				String customizedMsg = msg.replace(PT_OWNER_NAME,owner.getName()).replace(PT_OLD_MOBILENUMBER, uuidToMobileNumber.get(owner.getUuid())).replace(PT_NEW_MOBILENUMBER, owner.getMobileNumber());
-////				Map<String, String> mobileNumberToOwner = new HashMap<>();
-////				
-////				mobileNumberToOwner.put(uuidToMobileNumber.get(owner.getUuid()), owner.getName());
-////				mobileNumberToOwner.put(owner.getMobileNumber(),owner.getName());
-////				mobileNumbers.add(uuidToMobileNumber.get(owner.getUuid()));
-////				mobileNumbers.add(owner.getMobileNumber());
-////
-////				if(configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
-////					List<SMSRequest> smsRequests = notifUtil.createSMSRequest(customizedMsg, mobileNumberToOwner);
-////					notifUtil.sendSMS(smsRequests);
-////				}
-////
-////				if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)) {
-////					Boolean isActionReq = true;
-////					List<SMSRequest> smsRequests = notifUtil.createSMSRequest(customizedMsg, mobileNumberToOwner);
-////					List<Event> events = notifUtil.enrichEvent(smsRequests, requestInfo, property.getTenantId(), property, isActionReq);
-////					notifUtil.sendEventNotification(new EventRequest(requestInfo, events));
-////				}
-////
-////				if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
-////					Map<String, String> mapOfPhnoAndEmail = notifUtil.fetchUserEmailIds(mobileNumbers, requestInfo, request.getProperty().getTenantId());
-////					List<EmailRequest> emailRequests = notifUtil.createEmailRequest(requestInfo, customizedMsg, mapOfPhnoAndEmail);
-////					notifUtil.sendEmail(emailRequests);
-////				}
-////				}
-////		});
-//
-//	}
-//
-//	public void sendNotificationForAlternateNumberUpdate(PropertyRequest request, Property propertyFromSearch,
-//			Map<String, String> uuidToAlternateMobileNumber) {
-//
-//		Property property = request.getProperty();
-//		String msg = null;
-//
-//		String completeMsgs = notifUtil.getLocalizationMessages(property.getTenantId(), request.getRequestInfo());
-//		msg = getMsgForMobileNumberUpdate(PT_UPDATE_ALTERNATE_NUMBER, completeMsgs);
-//		prepareMsgAndSendToAlternateNumber(request, propertyFromSearch, msg, uuidToAlternateMobileNumber);
-//
-//	}
-//
-//	private void prepareMsgAndSendToAlternateNumber(PropertyRequest request, Property propertyFromSearch, String msg,
-//			Map<String, String> uuidToAlternateMobileNumber) {
-//
-//		Property property = request.getProperty();
-//		RequestInfo requestInfo = request.getRequestInfo();
-//		List<String> configuredChannelNames = notifUtil.fetchChannelList(request.getRequestInfo(),
-//				request.getProperty().getTenantId(), PTConstants.PT_BUSINESSSERVICE,
-//				PTConstants.ACTION_ALTERNATE_MOBILE);
-//		Set<String> mobileNumbers = new HashSet<>();
-//
-////		property.getOwners().forEach(owner -> {
-////
-////			if(owner.getAlternatemobilenumber()!=null && !uuidToAlternateMobileNumber.get(owner.getUuid()).equalsIgnoreCase(owner.getAlternatemobilenumber()) ) {	
-////				String customizedMsgForApp = msg.replace(PT_OWNER_NAME,owner.getName()).replace(PT_ALTERNATE_NUMBER, owner.getAlternatemobilenumber());
-////				String customizedMsg =  customizedMsgForApp.replace(VIEW_PROPERTY_CODE,"");
-////				Map<String, String> mobileNumberToOwner = new HashMap<>();
-////				mobileNumberToOwner.put(owner.getMobileNumber(), owner.getName());
-////				mobileNumbers.add(owner.getMobileNumber());
-////
-////				if(configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
-////					List<SMSRequest> smsRequests = notifUtil.createSMSRequest(customizedMsg, mobileNumberToOwner);
-////					notifUtil.sendSMS(smsRequests);
-////				}
-////
-////				if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)) {
-////					Boolean isActionReq = true;
-////					List<SMSRequest> smsRequests = notifUtil.createSMSRequest(customizedMsgForApp, mobileNumberToOwner);
-////					List<Event> events = notifUtil.enrichEvent(smsRequests, requestInfo, property.getTenantId(), property, isActionReq);
-////					notifUtil.sendEventNotification(new EventRequest(requestInfo, events));
-////				}
-////
-////				if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
-////					Map<String, String> mapOfPhnoAndEmail = notifUtil.fetchUserEmailIds(mobileNumbers, requestInfo, request.getProperty().getTenantId());
-////					List<EmailRequest> emailRequests = notifUtil.createEmailRequest(requestInfo, customizedMsg, mapOfPhnoAndEmail);
-////				 	notifUtil.sendEmail(emailRequests);
-////				}
-////			}
-////		});
-//
-//	}
 
 	/**
-	 * Method to send notifications for citizen feedback
+	 * Fetches UUIDs of CITIZEN based on the phone number.
 	 *
-	 * @param property
-	 * @param localizationMsgs
-	 * @param serviceType
-	 * @return
+	 * @param mobileNumber - Mobile Numbers
+	 * @param requestInfo  - Request Information
+	 * @param tenantId     - Tenant Id
+	 * @return Returns List of MobileNumbers and UUIDs
 	 */
-//	private void sendNotificationForCitizenFeedback(AllotmentDetails allotmentDetails, String localizationMsgs, String serviceType) {
-//
-//		String citizenFeedackMessage = notifUtil.getMsgForCitizenFeedbackNotification(property, localizationMsgs, serviceType);
-//		Map<String, String> mobileNumberToOwner = new HashMap<>();
-//
-////		property.getOwners().forEach(owner -> {
-////			if (owner.getMobileNumber() != null)
-////				mobileNumberToOwner.put(owner.getMobileNumber(), owner.getName());
-////		});
-//
-//		List<SMSRequest> smsRequests = notifUtil.createSMSRequest(citizenFeedackMessage, mobileNumberToOwner);
-//		notifUtil.sendSMS(smsRequests);
-//
-//	}
+	public Map<String, String> fetchUserUUIDs(String mobileNumber, RequestInfo requestInfo, String tenantId) {
+		Map<String, String> mapOfPhoneNoAndUUIDs = new HashMap<>();
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getUserHost()).append(config.getUserSearchEndpoint());
+		Map<String, Object> userSearchRequest = new HashMap<>();
+		userSearchRequest.put("RequestInfo", requestInfo);
+		userSearchRequest.put("tenantId", tenantId);
+		userSearchRequest.put("userType", "CITIZEN");
+		userSearchRequest.put("userName", mobileNumber);
+		try {
 
-	private ProcessInstance getProcessInstanceForAllotment(AllotmentDetails application, RequestInfo requestInfo) {
-		Workflow workflow = application.getWorkflow();
-		ProcessInstance processInstance = new ProcessInstance();
-		processInstance.setBusinessId(application.getApplicationNumber());
-		processInstance.setAction(workflow.getAction());
-		processInstance.setModuleName("rl-service");
-		processInstance.setTenantId(application.getTenantId());
-		processInstance.setBusinessService("RENT_N_LEASE_NEW");
-		processInstance.setDocuments(workflow.getDocuments());
-		processInstance.setComment(workflow.getComments());
-
-		if (!CollectionUtils.isEmpty(workflow.getAssignes())) {
-			List<User> users = new ArrayList<>();
-
-			workflow.getAssignes().forEach(uuid -> {
-				User user = new User();
-				user.setUuid(uuid);
-				users.add(user);
-			});
-
-			processInstance.setAssignes(users);
+			Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+			log.info("User fetched in fetUserUUID method of pet notfication consumer" + user.toString());
+			if (user instanceof Optional) {
+				Optional<Object> optionalUser = (Optional<Object>) user;
+				if (optionalUser.isPresent()) {
+					List<String> uuids = JsonPath.read(optionalUser.get(), "$.user[*].uuid");
+					if (!uuids.isEmpty()) {
+						mapOfPhoneNoAndUUIDs.put(mobileNumber, uuids.get(0));
+					} else {
+						log.warn("No user found for mobile number: " + mobileNumber);
+					}
+				} else {
+					log.error("Service returned empty Optional while fetching user for username - " + mobileNumber);
+				}
+			} else {
+				log.error("Service returned null while fetching user for username - " + mobileNumber);
+			}
+		} catch (Exception e) {
+			log.error("Exception while fetching user for username - " + mobileNumber);
+			log.error("Exception trace: ", e);
 		}
-
-		return processInstance;
-
+		return mapOfPhoneNoAndUUIDs;
 	}
-
 }

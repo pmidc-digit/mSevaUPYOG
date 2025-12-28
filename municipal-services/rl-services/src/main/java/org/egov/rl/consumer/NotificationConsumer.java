@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.service.AllotmentEnrichmentService;
-import org.egov.rl.service.AllotmentNotificationService;
+import org.egov.rl.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NotificationConsumer {
 
 	@Autowired
-	private AllotmentNotificationService notificationService;
+	private NotificationService notificationService;
 
 	@Autowired
 	private ObjectMapper mapper;

@@ -1,4 +1,4 @@
-package org.egov.rl.models.oldProperty;
+package org.egov.rl.models;
 
 import org.springframework.validation.annotation.Validated;
 

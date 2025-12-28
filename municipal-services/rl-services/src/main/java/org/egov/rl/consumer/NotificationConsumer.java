@@ -3,7 +3,6 @@ package org.egov.rl.consumer;
 import java.util.HashMap;
 
 import org.egov.rl.models.AllotmentRequest;
-import org.egov.rl.service.AllotmentEnrichmentService;
 import org.egov.rl.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;

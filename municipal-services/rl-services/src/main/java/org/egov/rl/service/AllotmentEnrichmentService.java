@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.config.RentLeaseConfiguration;
+import org.egov.rl.models.Address;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
@@ -17,7 +18,6 @@ import org.egov.rl.models.AuditDetails;
 import org.egov.rl.models.Document;
 import org.egov.rl.models.OwnerInfo;
 import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.util.RentLeaseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

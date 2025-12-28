@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.egov.rl.models.Address;
 import org.egov.rl.models.AllotmentCriteria;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.OwnerInfo;
@@ -16,7 +17,6 @@ import org.egov.rl.models.PropertyReport;
 import org.egov.rl.models.PropertyReportSearchRequest;
 import org.egov.rl.models.RLProperty;
 import org.egov.rl.models.enums.Status;
-import org.egov.rl.models.oldProperty.Address;
 import org.egov.rl.models.user.User;
 import org.egov.rl.repository.AllotmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,13 +100,13 @@ public class SearchPropertyService {
 			User userDetails=userService.searchByUuid(u.getUserUuid(),tenantId.length>1?tenantId[0]:tenantIds).getUser().get(0);
 			String names=userDetails.getName();
 			u.setName(names);
-			org.egov.rl.models.oldProperty.Address permemantAddress=Address.builder()
+			Address permemantAddress=Address.builder()
 					.addressLine1(userDetails.getPermanentAddress())
 					.city(userDetails.getPermanentCity())
 					.pincode(userDetails.getPermanentPincode())
 					.build();
 			u.setPermanentAddress(permemantAddress);
-			org.egov.rl.models.oldProperty.Address crosAddress=Address.builder()
+			Address crosAddress=Address.builder()
 					.addressLine1(userDetails.getCorrespondenceAddress())
 					.city(userDetails.getCorrespondenceCity())
 					.pincode(userDetails.getCorrespondencePincode())

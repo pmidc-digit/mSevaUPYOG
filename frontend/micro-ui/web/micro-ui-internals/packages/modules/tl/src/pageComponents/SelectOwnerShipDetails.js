@@ -21,6 +21,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   //let isEditProperty = formData?.isEditProperty || false;
   let isEdit = window.location.href.includes("edit-application") || window.location.href.includes("renew-trade");
   const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
+  // const [getSubOwnerShip, setSubOwnerShip] = useState();
   const [isSameAsPropertyOwner, setisSameAsPropertyOwner] = useState(
     (formData?.ownershipCategory?.isSameAsPropertyOwner === "false" ? false : formData?.ownershipCategory?.isSameAsPropertyOwner) || null
   );
@@ -74,6 +75,9 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   const editScreen = url.includes("/modify-application/");
 
   function selectedValue(value) {
+    console.log("value===???", value);
+    // setSubOwnerShip(value);
+    sessionStorage.setItem("SubownershipCategory", value?.code);
     setOwnershipCategory(value);
   }
 
@@ -152,9 +156,12 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       if (sessionStorage.getItem("ownersFromProperty")) sessionStorage.removeItem("ownersFromProperty");
     }
   }, [formData?.ownershipCategory?.isSameAsPropertyOwner, isSameAsPropertyOwner, formData?.cpt?.details?.propertyId, formData?.cptId?.id]);
+
   const onSkip = () => onSelect();
+
   function goNext() {
     sessionStorage.setItem("ownershipCategory", ownershipCategory?.value);
+
     sessionStorage.setItem("isSameAsPropertyOwner", isSameAsPropertyOwner);
     onSelect(config.key, { ...ownershipCategory, isSameAsPropertyOwner: isSameAsPropertyOwner });
   }

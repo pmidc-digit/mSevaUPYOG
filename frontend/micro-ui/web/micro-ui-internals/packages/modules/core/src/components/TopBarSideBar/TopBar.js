@@ -133,7 +133,7 @@ const TopBar = ({
           </div>
 
           <div className="right-wrapper_navbar" style={{}}>
-            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <ChangeLanguage dropdown={true} />}
+            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}><ChangeLanguage dropdown={true} /></div>}
             {!urlsToDisableNotificationIcon(pathname) && (
               <div className="notification-wrapper" onClick={onNotificationIconClick}>
                 {notificationCountLoaded && unreadNotificationCount ? (

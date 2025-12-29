@@ -50,7 +50,8 @@ const CHBResponseCitizen = (props) => {
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHB_APPROVAL_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
-          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
+          headerStyles={{ fontSize: "clamp(20px, 4vw, 32px)", wordBreak: "break-word" }}
+
         />
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
           <CardText>

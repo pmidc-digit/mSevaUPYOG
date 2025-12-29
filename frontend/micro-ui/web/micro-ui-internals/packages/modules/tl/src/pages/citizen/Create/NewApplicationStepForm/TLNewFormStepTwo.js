@@ -278,6 +278,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
     }
 
+    const subOwner = sessionStorage.getItem("SubownershipCategory");
+
+    console.log("subOwner", subOwner);
+
+    formData.tradeLicenseDetail.subOwnerShipCategory = subOwner;
+
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
     console.log("formData in step 2: ", formData);

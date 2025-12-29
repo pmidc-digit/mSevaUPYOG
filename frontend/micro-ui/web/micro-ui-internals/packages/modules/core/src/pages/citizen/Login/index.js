@@ -249,8 +249,55 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     }
   };
 
+  const isMobile = window.Digit?.Utils?.browser?.isMobile();
+
+  const mobileWrapperStyle = isMobile ? {
+    width: "100%",
+    padding: "0",
+    margin: "0",
+  } : {};
+
   return (
-    <div className="citizen-form-wrapper">
+    <div className="citizen-form-wrapper" style={mobileWrapperStyle}>
+      <style>
+        {isMobile ? `
+          .citizen-form-wrapper .AppContainer {
+            width: 100% !important;
+            padding: 12px !important;
+            margin: 0 !important;
+          }
+          .citizen-form-wrapper .card {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 16px !important;
+            border-radius: 8px !important;
+          }
+          .citizen-form-wrapper .card-header {
+            font-size: 20px !important;
+          }
+          .citizen-form-wrapper .field-container {
+            width: 100% !important;
+          }
+          .citizen-form-wrapper .citizen-card-input {
+            width: 100% !important;
+            font-size: 16px !important;
+            min-height: 44px !important;
+          }
+          .citizen-form-wrapper .citizen-card-input--front {
+            min-height: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+          }
+          .citizen-form-wrapper .submit-bar {
+            width: 100% !important;
+          }
+          .citizen-form-wrapper .submit-bar button {
+            width: 100% !important;
+            min-height: 48px !important;
+          }
+        ` : ""}
+      </style>
       <Switch>
         <AppContainer>
           <BackButton />

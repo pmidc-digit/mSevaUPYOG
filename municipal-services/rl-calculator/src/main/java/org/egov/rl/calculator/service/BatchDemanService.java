@@ -49,7 +49,7 @@ public class BatchDemanService {
 			int batch=noofBatch.incrementAndGet();
 			LocalDate currentDate = LocalDate.now();
 			try {
-//				demandRepository.saveDemand(requestInfo, demands);
+				demandRepository.saveDemand(requestInfo, demands);
 				demands.forEach(d -> {
 					
 //					log.info("{} , Batch No :{} ,Success Bulk demands generation for consumerCode: {} , from: {} , to: {} and for amount: {}",

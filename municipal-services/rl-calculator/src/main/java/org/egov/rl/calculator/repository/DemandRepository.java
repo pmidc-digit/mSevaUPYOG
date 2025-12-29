@@ -114,6 +114,31 @@ public class DemandRepository {
 					"Failed to fetch demands for the given rentable IDs and period");
 		}
 	}
+	
+	public List<Demand> getDemandsNotiByConsumerCode(List<String> rentableIds) {
+		if (rentableIds == null || rentableIds.isEmpty()) {
+			return Collections.emptyList(); // avoid "IN ()" SQL
+		}
+		List<Object> preparedStmtList = new ArrayList<>();
+		List<Object> subQueryParams = new ArrayList<>();
+
+		String consumerCode = rentableIds.stream().map(id ->id).collect(Collectors.joining(", "));
+
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) AND ispaymentcompleted=false ORDER BY createdtime DESC LIMIT 1";
+		log.info("consumerCode :: " + consumerCode);
+		subQueryParams.add(consumerCode);
+		try {
+			preparedStmtList.addAll(subQueryParams);
+			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
+		} catch (NoSuchElementException e) {
+			return Collections.emptyList();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("Error while fetching demands for rentable IDs and period", e);
+			throw new CustomException("DEMAND_FETCH_ERROR",
+					"Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
 
 	public List<String> getDistinctTenantIds() {
 		String sql = "SELECT tenant_id FROM eg_rl_allotment GROUP BY tenant_id";
@@ -148,38 +173,41 @@ public class DemandRepository {
 		}
 	}
 
-	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> consumercode) {
-		if (consumercode == null || consumercode.isEmpty()) {
+	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> applicationNumber) {
+		if (applicationNumber == null || applicationNumber.isEmpty()) {
 			return Collections.emptyList(); // avoid "IN ()" SQL
 		}
 		List<Object> preparedStmtList = new ArrayList<>();
 		List<Object> subQueryParams = new ArrayList<>();
+		String consumerCode = applicationNumber.stream().map(id ->id).collect(Collectors.joining(", "));
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC";
-		subQueryParams.add(consumercode);
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC limit 1";
+		subQueryParams.add(consumerCode);
 		try {
 
 			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
-		} catch (Exception e) {
+		} catch (NoSuchElementException e) {
+			return Collections.emptyList();
+		}  catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
 		}
 	}
 
-	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> demandid) {
-		if (demandid == null || demandid.isEmpty()) {
+	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> dId) {
+		if (dId == null || dId.isEmpty()) {
 			return Collections.emptyList();
 		}
 		List<Object> preparedStmtList = new ArrayList<>();
 		List<Object> subQueryParams = new ArrayList<>();
+		String demandId = dId.stream().map(id ->id).collect(Collectors.joining(", "));
 
 		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (?)";
 
-		subQueryParams.add(demandid);
+		subQueryParams.add(demandId);
 		try {
-
 			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(query, preparedStmtList.toArray(), demandDetailRowMapper);
 		} catch (NoSuchElementException e) {

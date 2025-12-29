@@ -1,5 +1,7 @@
 package org.egov.rl.calculator.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +21,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class JobScheduler {
 
@@ -28,17 +34,22 @@ public class JobScheduler {
 	@Autowired
 	DemandService demandService;
 
-	// Runs every day at 09:30 IST // 24 hr time
-//	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
-	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+ // Runs every day at 03:30 IST // 24 hr time
+	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEveryDaysCron() {
+		log.info("Morning Scheduler Start Date Time :{}",LocalDateTime.now());
 		demandService.generateBatchDemand(getOAuthToken(),null,null);
+		log.info("Morning Scheduler End Date Time :{}",LocalDateTime.now());
 	}
 	
-//	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
-	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEveryDayCron() {
-//		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
+		log.info("Afternoon Scheduler Start Date Time :{}",LocalDateTime.now());
+		  demandService.sendNotificationAndUpdateDemand(getOAuthToken(),null,null);
+		log.info("Afternoon Scheduler End Date Time :{}",LocalDateTime.now());
+		
 	}
 
 

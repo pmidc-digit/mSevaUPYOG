@@ -25,8 +25,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -489,21 +491,24 @@ public class DemandService {
 
 	}
 
-	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo) {
-		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo,
-																// requestInfo.getUserInfo().getTenantId());
-		log.info("Starting demand generation job for tenants: {}", tenantIds);
+	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo,String tenantCode,String consumerCode) {
+
+		List<String> tenantIds = (tenantCode == null) ? demandRepository.getDistinctTenantIds()
+				: Arrays.asList(tenantCode);
+		log.info("Starting Notification job for tenants: {}", tenantIds);
+															// requestInfo.getUserInfo().getTenantId());
+		log.info("Starting Notification job for tenants: {}", tenantIds);
 
 		for (String tenantId : tenantIds) {
-			log.info("Generating demands for tenant: {}", tenantId);
+			log.info("Notification for tenant: {}", tenantId);
 			Runnable task = new Runnable() {
 
 				@Override
 				public void run() {
 					try {
-						sendNotificationUpdateDemand(tenantId, requestInfo);
+						sendNotificationUpdateDemand(tenantId, requestInfo,consumerCode);
 					} catch (Exception e) {
-						log.error("Error while generating demands for tenant: " + tenantId, e);
+						log.error("Error while Notification for tenant: " + tenantId, e);
 					}
 				}
 			};
@@ -512,21 +517,28 @@ public class DemandService {
 			t.start();
 
 		}
-		log.info("Finished demand generation job.");
+		log.info("Finished Notification job.");
 
 	}
 
-	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo) {
-		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo, null);
+	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo,String consumerCode) {
+		
+		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo, consumerCode);
+		
 		allotmentDetails.stream().forEach(alt -> {
-			long now = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-			List<Demand> dmdlist = demandRepository.getDemandsByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
+			List<Demand> dmdlist = demandRepository.getDemandsNotiByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
 			dmdlist = dmdlist.stream().map(d -> {
 				d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
 				return d;
 			}).collect(Collectors.toList());
-			dmdlist.stream().filter(d -> !d.isIspaymentcompleted()).forEach(d -> {
-				if (now > d.getBillExpiryTime()) {
+			
+			dmdlist.stream().forEach(d -> {
+				
+				ZoneId zone = ZoneId.of("Asia/Kolkata");
+				LocalDate expireDate = Instant.ofEpochMilli(d.getBillExpiryTime()).atZone(zone).toLocalDate();
+				LocalDate today = LocalDate.now(zone);
+				if (ChronoUnit.DAYS.between(expireDate,today)==1) {
+					System.out.println("dmdlist:--------"+d);
 					DemandDetail baseAmount = d.getDemandDetails().stream()
 							.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
 							.findFirst().get();

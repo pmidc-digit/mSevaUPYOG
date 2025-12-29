@@ -116,7 +116,7 @@ public class MasterDataService {
             
             Object result = repository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
             MdmsResponse mdmsResponse = mapper.convertValue(result, MdmsResponse.class);
-            System.out.println("--mdmsResponse-----"+mdmsResponse.getMdmsRes().get("rl-services-masters"));
+//            System.out.println("--mdmsResponse-----"+mdmsResponse.getMdmsRes().get("rl-services-masters"));
             List<Penalty> penaltySlabs = mapper.convertValue(
                     mdmsResponse.getMdmsRes()
                             .get(RLConstants.RL_SERVICES_MASTER_MODULE)

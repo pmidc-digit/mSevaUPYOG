@@ -56,7 +56,6 @@ public class NotificationService {
 		String msg = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().getTenantId(),
 				allotmentRequest.getRequestInfo());
 
-
 		// Ignoring paid status, since it's wired from payment consumer directly
 		if (!StringUtils.isEmpty(msg)) {
 //			msg = replaceCommonValues(property, msg, localisedState);
@@ -111,16 +110,17 @@ public class NotificationService {
 		String tenantId = allotmentDetails.getTenantId();
 		String moduleName="rl-services";
 		
-		String action = "RLREMENDER";
-
+		String action = "RL_PAYMENT_REMINDER";
+		msg=notifUtil.getMessageTemplate(action, msg);
+		
 		List<String> configuredChannelNames = notifUtil.fetchChannelList(requestInfo, tenantId, moduleName,action);
 		Set<String> mobileNumbers = new HashSet<>();
 
 		log.info("mobileNumbers sms: " + mobileNumbers);
 		log.info("mobileNumberToOwner sms: " + mobileNumberToOwner);
 		log.info("CHANNEL_NAME_SMS sms: " + configuredChannelNames);
+		
 		List<SMSRequest> smsRequests = notifUtil.createSMSRequest(msg, mobileNumberToOwner);
-
 		if (configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
 			log.info("Inside  sms: " + smsRequests);
 			notifUtil.sendSMS(smsRequests);

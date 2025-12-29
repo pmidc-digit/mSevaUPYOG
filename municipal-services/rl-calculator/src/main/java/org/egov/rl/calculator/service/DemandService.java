@@ -383,24 +383,11 @@ public class DemandService {
 		}
 	}
 
-//	private List<AllotmentDetails> filterActiveApplicationsForPeriod(List<AllotmentDetails> applications,
-//			TaxPeriod taxPeriod) {
-//		long periodStart = taxPeriod.getFromDate();
-//		long periodEnd = taxPeriod.getToDate();
-//
-//		return applications.stream().filter(app -> {
-//			Long allotmentStartDate = app.getStartDate();
-//			Long allotmentEndDate = app.getEndDate();
-//
-//			return allotmentStartDate != null && allotmentStartDate <= periodEnd
-//					&& (allotmentEndDate == null || allotmentEndDate >= periodStart);
-//		}).collect(Collectors.toList());
-//	}
-
-	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo) {
+	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo,String consumerCode) {
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		String url = config.getRlServiceHost() + config.getRlSearchEndpoint() + "?tenantId=" + tenantId
-				+ "&status=APPROVED";
+				+ "&status = APPROVED,REQUEST_FOR_DISCONNECTION,FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION,FORWARD_FOT_SETLEMENT,CLOSE"
+				+ consumerCode!=null?("&applicationNumber ="+consumerCode+""):"";
 //		RequestInfoWrapper wrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		try {
 			Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
@@ -412,65 +399,11 @@ public class DemandService {
 		}
 	}
 
-//	private List<AllotmentDetails> filterApplicationsWithoutDemand(List<AllotmentDetails> applications,
-//			TaxPeriod taxPeriod) {
-//		List<String> allotmentNumbers = applications.stream().map(AllotmentDetails::getApplicationNumber)
-//				.collect(Collectors.toList());
-//
-//		List<Demand> existingDemands = demandRepository.getDemandsForRentableIdsAndPeriod(allotmentNumbers,
-//				taxPeriod.getFromDate(), taxPeriod.getToDate());
-//
-//		if (CollectionUtils.isEmpty(existingDemands)) {
-//			return applications;
-//		}
-//
-//		Map<String, List<Demand>> demandsByConsumerCode = existingDemands.stream()
-//				.collect(Collectors.groupingBy(Demand::getConsumerCode));
-//
-//		return applications.stream().filter(app -> !demandsByConsumerCode.containsKey(app.getApplicationNumber()))
-//				.collect(Collectors.toList());
-//	}
-//
-//	private void generateDemandInBatches(List<AllotmentDetails> applications, RequestInfo requestInfo,
-//			TaxPeriod taxPeriod) {
-//		int batchSize = config.getDemandGenerationBatchSize();
-//		for (int i = 0; i < applications.size(); i += batchSize) {
-//			List<AllotmentDetails> batch = applications.subList(i, Math.min(i + batchSize, applications.size()));
-//
-//			// Prepare CalculationReq for the batch
-//			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
-//			for (AllotmentDetails application : batch) {
-//				long effectiveFromDate = Math.max(application.getStartDate(), taxPeriod.getFromDate());
-//				long effectiveToDate = (application.getEndDate() != null)
-//						? Math.min(application.getEndDate(), taxPeriod.getToDate())
-//						: taxPeriod.getToDate();
-//
-//				// AllotmentRequest
-//				AllotmentRequest allotmentRequest = AllotmentRequest.builder().allotment(application)
-//						.requestInfo(requestInfo).build();
-//
-//				// Add AllotmentRequest to CalculationCriteria
-//				CalculationCriteria criteria = CalculationCriteria.builder().allotmentRequest(allotmentRequest)
-//						.fromDate(effectiveFromDate).toDate(effectiveToDate).build();
-//				calculationCriteriaList.add(criteria);
-//			}
-//
-//			CalculationReq calculationReq = CalculationReq.builder().requestInfo(requestInfo)
-//					.calculationCriteria(calculationCriteriaList).build();
-//
-//			// createDemand generate demands for the batch
-//			try {
-//				createDemand(calculationReq);
-//			} catch (Exception e) {
-//				log.error("Error while creating demands for batch: {}", e.getMessage());
-//			}
-//		}
-//	}
-//	
-	public void generateBatchDemand(RequestInfo requestInfo) {
+
+	public void generateBatchDemand(RequestInfo requestInfo,String tenantCode,String consumerCode) {
 		LocalDate currentDate = LocalDate.now(); // today
-		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo,
-																// requestInfo.getUserInfo().getTenantId());
+		
+		List<String> tenantIds =(tenantCode==null)?demandRepository.getDistinctTenantIds():Arrays.asList(tenantCode);
 		log.info("Starting demand generation job for tenants: {}", tenantIds);
 
 		for (String tenantId : tenantIds) {
@@ -481,7 +414,7 @@ public class DemandService {
 				public void run() {
 					try {
 
-						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo);
+						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo,consumerCode);
 						
 						List<Demand> demandList=new ArrayList<>();
 						int batchSize=10;
@@ -521,41 +454,6 @@ public class DemandService {
 		log.info("Finished demand generation job.");
 
 	}
-//
-//	public void monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-//		System.out.println("----------Monthly create demand------");
-//		boolean isBetween = !currentDate
-//				.isBefore(Instant.ofEpochMilli(d.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate())
-//				&& !currentDate
-//						.isAfter(Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate());
-//		if (isBetween) {
-//			LocalDate enDate = Instant.ofEpochMilli(d.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate();
-//			String endDateMonth = enDate.getMonth().toString();
-//			String currentMonth = currentDate.getMonth().toString();
-//			if (endDateMonth.equals(currentMonth) && enDate.getYear() == currentDate.getYear()) {
-//				long startDay = monthCalculationService
-//						.formatDay(monthCalculationService.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
-//				long endDay = d.getEndDate();
-//				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-//				System.out.println(startDay + "----" + endDay);
-//				d.setStartDate(startDay);
-//				d.setEndDate(endDay);
-//				createSingleDemand(exparyDate, d, requestInfo);
-//
-//			} else {
-//				long startDay = monthCalculationService
-//						.formatDay(monthCalculationService.firstDayOfMonth(currentMonth, currentDate.getYear()), true);
-//				long endDay = monthCalculationService
-//						.formatDay(monthCalculationService.lastDayOfMonth(currentMonth, currentDate.getYear()), true);
-//				long exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-//				d.setStartDate(startDay);
-//				d.setEndDate(endDay);
-//				createSingleDemand(exparyDate, d, requestInfo);
-//
-//			}
-//
-//		}
-//	}
 
 	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo) {
 		List<String> tenantIds = Arrays.asList("pb.testing");// masterDataService.getTenantIds(requestInfo,
@@ -585,7 +483,7 @@ public class DemandService {
 	}
 
 	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo) {
-		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo);
+		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo,null);
 		allotmentDetails.stream().forEach(alt -> {
 			long now = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 			List<Demand> dmdlist = demandRepository.getDemandsByConsumerCode(Arrays.asList(alt.getApplicationNumber()));

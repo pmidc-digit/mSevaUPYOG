@@ -1,14 +1,5 @@
 package org.egov.rl.calculator.service;
 
-import lombok.extern.slf4j.Slf4j;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,16 +13,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class JobScheduler {
@@ -49,7 +36,7 @@ public class JobScheduler {
 	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
 //	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEveryDaysCron() {
-		demandService.generateBatchDemand(getOAuthToken());
+		demandService.generateBatchDemand(getOAuthToken(),null,null);
 	}
 	
 	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
@@ -58,23 +45,10 @@ public class JobScheduler {
 		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
 	}
 
-//	// Runs on 25th of every month at midnight IST
-//	@Scheduled(cron = "0 0 0 25 * *", zone = "Asia/Kolkata")
-//	public void runMonthlyOnFirst() {
-//		demandService.generateBatchDemand(getOAuthToken());
-//	}
 
 	public RequestInfo getOAuthToken() {
 
 		String url = "https://mseva-dev.lgpunjab.gov.in/user/oauth/token";
-
-		// -------- BASIC AUTH (from Postman Authorization tab) --------
-//       String clientId = "egov-user";       // ✅ replace if different
-//       String clientSecret = "egov-secret";
-		//
-//       String auth = clientId + ":" + clientSecret;
-//       String base64Auth = Base64.getEncoder()
-//               .encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
 		// -------- Headers --------
 		HttpHeaders headers = new HttpHeaders();

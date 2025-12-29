@@ -12,11 +12,9 @@ import org.egov.rl.calculator.web.models.demand.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,9 +36,9 @@ public class DemandRepository {
 
 	@Autowired
 	private DemandDetailRowMapper demandDetailRowMapper;
-
-	@Autowired
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+	
+	@Autowired 
+	private JdbcTemplate jdbcTemplate;
 
 	/**
 	 * Creates demand
@@ -88,57 +86,67 @@ public class DemandRepository {
 		return response.getDemands();
 
 	}
+
 	public List<Demand> getDemandsByConsumerCode(List<String> rentableIds) {
 		if (rentableIds == null || rentableIds.isEmpty()) {
 			return Collections.emptyList(); // avoid "IN ()" SQL
 		}
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds)";
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?)";
 
-		MapSqlParameterSource params = new MapSqlParameterSource().addValue("rentableIds", rentableIds);
-
+		Object[] params;	
+		params = new Object[]{
+				rentableIds
+				};
 		try {
-			return namedParameterJdbcTemplate.query(sql, params, demandRowMapper);
+			return jdbcTemplate.query(sql, params, demandRowMapper);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
 		}
 	}
-	
-	public Demand getDemandsByConsumerCodeAndPerioud(String rentableIds,long startDate,long endDate) {
-		
+
+	public List<String> getDistinctTenantIds() {
+		String sql = "SELECT tenant_id FROM eg_rl_allotment GROUP BY tenant_id";
+		return jdbcTemplate.queryForList(sql, String.class);
+	}
+
+	public Demand getDemandsByConsumerCodeAndPerioud(String rentableIds, long startDate, long endDate) {
+
 		if (rentableIds == null) {
 			return null; // avoid "IN ()" SQL
 		}
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) AND taxperiodfrom=:startDate and taxperiodto=:endDate";
-
-		MapSqlParameterSource params = new MapSqlParameterSource()
-				.addValue("rentableIds", Arrays.asList(rentableIds))
-				.addValue("startDate", startDate)
-				.addValue("endDate", endDate);;
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) AND taxperiodfrom=? and taxperiodto=?";
+		
+		Object[] params;	
+		params = new Object[]{
+				rentableIds,
+				startDate,
+				endDate
+				};
 
 		try {
-			return namedParameterJdbcTemplate.query(sql, params, demandRowMapper).stream().findFirst().orElse(null);
+			return jdbcTemplate.query(sql, params, demandRowMapper).stream().findFirst().orElse(null);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
 		}
 	}
-	
+
 	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> rentableIds) {
 		if (rentableIds == null || rentableIds.isEmpty()) {
 			return Collections.emptyList(); // avoid "IN ()" SQL
 		}
-
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (:rentableIds) ORDER BY textperiodto DESC";
-
-		MapSqlParameterSource params = new MapSqlParameterSource().addValue("rentableIds", rentableIds);
-
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC";
+		Object[] params;	
+		params = new Object[]{
+				rentableIds
+				};
 		try {
-			return namedParameterJdbcTemplate.query(sql, params, demandRowMapper);
+			return jdbcTemplate.query(sql, params, demandRowMapper);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
@@ -148,15 +156,17 @@ public class DemandRepository {
 
 	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> rentableIds) {
 		if (rentableIds == null || rentableIds.isEmpty()) {
-			return Collections.emptyList(); 
+			return Collections.emptyList();
 		}
 
-		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (:rentableIds)";
+		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (?)";
 
-		MapSqlParameterSource params = new MapSqlParameterSource().addValue("rentableIds", rentableIds);
-
+		Object[] params;	
+		params = new Object[]{
+				rentableIds
+				};
 		try {
-			return namedParameterJdbcTemplate.query(query, params, demandDetailRowMapper);
+			return jdbcTemplate.query(query, params, demandDetailRowMapper);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",

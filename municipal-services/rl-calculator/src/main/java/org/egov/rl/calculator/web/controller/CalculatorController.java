@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 
 @Slf4j
@@ -43,25 +45,18 @@ public class CalculatorController {
 													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
 		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
 	}
-	@PostMapping("/_estimate")
-	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
-		DemandResponse demandResponse =demandService.estimate(allotmentRequest.getCalculationCriteria().stream().findFirst().get().isSecurityDeposite(),allotmentRequest);
-		demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
-		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
-	}
-
-//	@PostMapping("/_jobscheduler")
-//	public ResponseEntity<Void> jobScheduler(@Valid @RequestBody RequestInfo requestInfo) {
-//		log.info("Starting job scheduler for rent demands.");
-//		demandService.generateDemands(requestInfo);
-//		log.info("Finished job scheduler for rent demands.");
-//		return new ResponseEntity<>(HttpStatus.OK);
+//	@PostMapping("/_estimate")
+//	public ResponseEntity<DemandResponse> estimate(@Valid @RequestBody CalculationReq allotmentRequest) {
+//		DemandResponse demandResponse =demandService.estimate(allotmentRequest.getCalculationCriteria().stream().findFirst().get().isSecurityDeposite(),allotmentRequest);
+//		demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
+//		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 //	}
 
     @PostMapping("/_batchDemandGenerate")
-	public ResponseEntity<Void> batchDemandGenerate(@Valid @RequestBody RequestInfo requestInfo) {
+	public ResponseEntity<Void> batchDemandGenerate(@Valid @RequestBody RequestInfo requestInfo,
+			@ModelAttribute @Valid GetBillCriteria getBillCriteria) {
 		log.info("Starting job scheduler for rent demands.");
-		demandService.generateBatchDemand(requestInfo);
+		demandService.generateBatchDemand(requestInfo,getBillCriteria.getTenantId(),getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining()));
 		log.info("Finished job scheduler for rent demands.");
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

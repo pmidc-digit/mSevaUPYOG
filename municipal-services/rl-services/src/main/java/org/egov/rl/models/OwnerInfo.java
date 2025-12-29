@@ -64,7 +64,7 @@ public class OwnerInfo { // extends User {
 
 	@SafeHtml
 	@JsonProperty("status")
-	private int status;
+	private Status status;
 
 	@JsonProperty("isPrimaryOwner")
 	private Boolean isPrimaryOwner;

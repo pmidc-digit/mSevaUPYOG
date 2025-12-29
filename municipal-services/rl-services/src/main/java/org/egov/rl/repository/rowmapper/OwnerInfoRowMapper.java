@@ -1,6 +1,7 @@
 package org.egov.rl.repository.rowmapper;
 
 import org.egov.rl.models.OwnerInfo;
+import org.egov.rl.models.enums.Status;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -23,8 +24,7 @@ public class OwnerInfoRowMapper implements ResultSetExtractor<List<OwnerInfo>> {
 			o.setAllotmentId(rs.getString("allotment_id"));
 			o.setUserUuid(rs.getString("user_uuid"));
 			o.setOwnerType(rs.getString("owner_type"));
-			Integer statusObj = Integer.valueOf(rs.getString("status"));
-			o.setStatus(statusObj != null ? statusObj : 0); // default if null
+			o.setStatus(Status.valueOf(rs.getString("status"))); // default if null
 			Object primaryObj = rs.getObject("is_primary_owner");
 			if (primaryObj instanceof Boolean) {
 				o.setIsPrimaryOwner((Boolean) primaryObj);

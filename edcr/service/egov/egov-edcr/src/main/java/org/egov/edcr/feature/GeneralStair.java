@@ -221,23 +221,39 @@ public class GeneralStair extends FeatureProcess {
 
                     currentFloor = floor;
 
+                    boolean isTypicalRepititiveFloor = false;
+
+                    // Get typical floor details
+                    Map<String, Object> typicalFloorValues = Util.getTypicalFloorValues(block, floor,
+                            isTypicalRepititiveFloor);
+
+                    // Detect if this is a repeated typical floor
+                    boolean isTypicalRepeat = false;
+
+                    if (typicalFloorValues != null && typicalFloorValues.containsKey("isTypicalRepititiveFloor")) {
+                        Object flagObj = typicalFloorValues.get("isTypicalRepititiveFloor");
+                        if (flagObj instanceof Boolean) {
+                            isTypicalRepeat = (Boolean) flagObj;
+                        }
+                    }
+                    
                     if (!floor.getTerrace()) {
 
-                        boolean isTypicalRepititiveFloor = false;
-
-                        // Get typical floor details
-                        Map<String, Object> typicalFloorValues = Util.getTypicalFloorValues(block, floor,
-                                isTypicalRepititiveFloor);
-
-                        // Detect if this is a repeated typical floor
-                        boolean isTypicalRepeat = false;
-
-                        if (typicalFloorValues != null && typicalFloorValues.containsKey("isTypicalRepititiveFloor")) {
-                            Object flagObj = typicalFloorValues.get("isTypicalRepititiveFloor");
-                            if (flagObj instanceof Boolean) {
-                                isTypicalRepeat = (Boolean) flagObj;
-                            }
-                        }
+//                        boolean isTypicalRepititiveFloor = false;
+//
+//                        // Get typical floor details
+//                        Map<String, Object> typicalFloorValues = Util.getTypicalFloorValues(block, floor,
+//                                isTypicalRepititiveFloor);
+//
+//                        // Detect if this is a repeated typical floor
+//                        boolean isTypicalRepeat = false;
+//
+//                        if (typicalFloorValues != null && typicalFloorValues.containsKey("isTypicalRepititiveFloor")) {
+//                            Object flagObj = typicalFloorValues.get("isTypicalRepititiveFloor");
+//                            if (flagObj instanceof Boolean) {
+//                                isTypicalRepeat = (Boolean) flagObj;
+//                            }
+//                        }
 
                         List<org.egov.common.entity.edcr.GeneralStair> generalStairs = floor.getGeneralStairs();
                         int size = generalStairs.size();

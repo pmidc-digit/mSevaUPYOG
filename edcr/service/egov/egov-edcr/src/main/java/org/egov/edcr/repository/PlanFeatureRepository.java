@@ -124,6 +124,7 @@ import org.egov.edcr.feature.StairCover;
 import org.egov.edcr.feature.StoreRoom;
 import org.egov.edcr.feature.SupplyLineUtility;
 import org.egov.edcr.feature.SurrenderRoad;
+import org.egov.edcr.feature.TerraceToilet;
 import org.egov.edcr.feature.TerraceUtilityService;
 import org.egov.edcr.feature.ToiletDetails;
 import org.egov.edcr.feature.TravelDistanceToExit;
@@ -394,6 +395,8 @@ public class PlanFeatureRepository {
         pf = new PlanFeature(DxfToPdfConverter.class);
         features.add(pf);
         
+        pf = new PlanFeature(TerraceToilet.class);
+        features.add(pf);
 
         
         return features;

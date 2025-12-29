@@ -432,14 +432,15 @@ public class AdditionalFeature extends FeatureProcess {
 				BigDecimal floorHeight = floor.getFloorHeights() != null && !floor.getFloorHeights().isEmpty() ? floor.getFloorHeights().get(0).setScale(2, RoundingMode.HALF_UP)
 						: BigDecimal.ZERO;
 				
-				int floorNumber = floor.getNumber();
+				//int floorNumber = floor.getNumber();
+				
 				
 //				String status;
-				String minRequiredFloorHeight = StringUtils.EMPTY;
-				String maxPermissibleFloorHeight = StringUtils.EMPTY;
+				//String minRequiredFloorHeight = StringUtils.EMPTY;
+				//String maxPermissibleFloorHeight = StringUtils.EMPTY;
 				
-				minRequiredFloorHeight = "2.75" + DcrConstants.IN_METER;
-				maxPermissibleFloorHeight = "4.40" + DcrConstants.IN_METER;
+				//minRequiredFloorHeight = "2.75" + DcrConstants.IN_M;
+				//maxPermissibleFloorHeight = "4.40" + DcrConstants.IN_M;
 //				floor.setIsStiltFloor(false);
 //				
 //				if(floor.getIsStiltFloor() == false) {
@@ -463,6 +464,14 @@ public class AdditionalFeature extends FeatureProcess {
 //				}
 				
 				boolean isStilt = Boolean.TRUE.equals(floor.getIsStiltFloor());
+				//int floorNumber = floor.getNumber();
+				String floorNumber = "";
+				if(isStilt) {
+					floorNumber = floor.getNumber() + "(Stilt)";
+				}else {
+					floorNumber = floor.getNumber().toString();
+				}
+				
 				BigDecimal minHeight = isStilt ? BigDecimal.valueOf(2.50) : BigDecimal.valueOf(2.75);
 
 				if (floorHeight != null && floorHeight.compareTo(minHeight) >= 0) {
@@ -521,14 +530,15 @@ public class AdditionalFeature extends FeatureProcess {
 //				addFloorHeightDetails(pl, scrutinyDetail, String.valueOf(floorNumber), RULE_38,
 //						minRequiredFloorHeight + DcrConstants.IN_METER, maxPermissibleFloorHeight,
 //						floorHeight.toString() + DcrConstants.IN_METER, status);
-				if (errors.isEmpty() && StringUtils.isNotBlank(minRequiredFloorHeight)
-						&& StringUtils.isNotBlank(maxPermissibleFloorHeight)) {
+//				if (errors.isEmpty() && StringUtils.isNotBlank(minRequiredFloorHeight)
+//						&& StringUtils.isNotBlank(maxPermissibleFloorHeight)) {
+				if (errors.isEmpty() && StringUtils.isNotBlank(minHeight.toPlainString())) {
 					Map<String, String> details = new HashMap<>();
-					details.put(FLOOR_NO, String.valueOf(floorNumber));
+					details.put(FLOOR_NO, floorNumber);
 					details.put(RULE_NO, RULE_38);
-					details.put(MIN_REQUIRED, minRequiredFloorHeight);
+					details.put(MIN_REQUIRED, minHeight.toPlainString() + DcrConstants.IN_M);
 					//details.put(MAX_PERMISSIBLE, maxPermissibleFloorHeight);
-					details.put(PROVIDED, floorHeight.toString() + DcrConstants.IN_METER);
+					details.put(PROVIDED, floorHeight.toString() + DcrConstants.IN_M);
 					details.put(STATUS,
 							isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);

@@ -82,6 +82,7 @@ public class DcrConstants {
     public static final String VERTICAL_ELECTRICLINE_DISTANCE = " Minimum Vertical line distance from electric line ";
     public static final String MAXIMUM_NUMBEROF_FLOOR = "Maximum Number of floor ";
     public static final String IN_METER = "(MTR)";
+    public static final String IN_M = " m";
     public static final String IN_KV = "(KV)";
     public static final String FILESTORE_MODULECODE = "Digit DCR";
     public static final String SEQ_ECDR_APPLICATIONNO = "SEQ_ECDR_APPLICATIONNO";

@@ -952,7 +952,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		
         return query.toString();
 	}
-	
+
 	
 	public String getBillDemand(List<BillSearch> BillSearch, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoListQuerybill);	
@@ -1017,6 +1017,12 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 			query.append(" egws.tenantid= ? ");
 			preparedStatement.add(criteria.getTenantId());
 		}
+
+        if (criteria.getLocality() != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" egws.locality = ? ");
+            preparedStatement.add(criteria.getLocality());
+        }
 		
 		if (criteria.getStatus() != null) {
 			addClauseIfRequired(preparedStatement, query);

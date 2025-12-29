@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.rl.calculator.util.RLConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class DaysCycleCalculationService {
 	// scheduler-----------------------------------------------------
 
 	public long lastDayTimeOfCycle(long startDate, int cycle) {
-		ZoneId zone = ZoneId.of("Asia/Kolkata");
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 
 		// Start ko IST zone me laao
 		ZonedDateTime start = Instant.ofEpochMilli(startDate).atZone(zone);
@@ -43,7 +44,7 @@ public class DaysCycleCalculationService {
 	}
 
 	public long firstDay(long startDate) {
-		ZoneId zone = ZoneId.of("Asia/Kolkata");
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 
 		// Start ko IST zone me laao
 		ZonedDateTime start = Instant.ofEpochMilli(startDate).atZone(zone);
@@ -58,7 +59,7 @@ public class DaysCycleCalculationService {
 	}
 
 	public long diffDay(long day) {
-		ZoneId zone = ZoneId.of("Asia/Kolkata");
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 		LocalDate startDate = Instant.ofEpochMilli(day).atZone(zone).toLocalDate();
 		LocalDate today = LocalDate.now(zone);
 		
@@ -93,7 +94,7 @@ public class DaysCycleCalculationService {
 	}
 
 	public long formatDay(LocalDate date, boolean endOfDay) {
-		ZoneId zone = ZoneId.of("Asia/Kolkata");
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 		ZonedDateTime zdt = endOfDay ? date.atTime(java.time.LocalTime.MAX).atZone(zone) : date.atStartOfDay(zone);
 		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss z");
 		ZonedDateTime parsed = ZonedDateTime.parse(zdt.format(fmt), fmt);
@@ -102,14 +103,16 @@ public class DaysCycleCalculationService {
 	}
 
 	public long add15Days(long sdate) {
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+		
 		// Convert long → LocalDate
-		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate date = Instant.ofEpochMilli(sdate).atZone(zone).toLocalDate();
 
 		// Same month ka 15th day
 		LocalDate fifteenthDay = date.withDayOfMonth(15);
 
 		// Convert back to epoch milli (start of day)
-		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(zone).toInstant().toEpochMilli();
 
 		log.info("Original Date: {} " , date);
 		log.info("15th Day of Month: {} " , fifteenthDay);
@@ -117,14 +120,16 @@ public class DaysCycleCalculationService {
 		return fifteenthEpochMilli;
 	}
 	public long minus5Days(long sdate) {
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+		
 		// Convert long → LocalDate
-		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate date = Instant.ofEpochMilli(sdate).atZone(zone).toLocalDate();
 
 		// Same month ka 15th day
 		LocalDate fifteenthDay = date.minusDays(5);
 
 		// Convert back to epoch milli (start of day)
-		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		long fifteenthEpochMilli = fifteenthDay.atStartOfDay(zone).toInstant().toEpochMilli();
 
 		log.info("Original Date: " + date);
 		log.info("15th Day of Month: " + fifteenthDay);
@@ -133,15 +138,17 @@ public class DaysCycleCalculationService {
 	}
 	
 	public long addAfterPenaltyDays(long sdate, RequestInfo requestInfo, String tenantId) {
+		ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+		
 		// Convert long → LocalDate
-		LocalDate date = Instant.ofEpochMilli(sdate).atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate date = Instant.ofEpochMilli(sdate).atZone(zone).toLocalDate();
 		int afterday = masterDataService.getPenaltySlabs(requestInfo, tenantId).get(0).getApplicableAfterDays();
 		date = date.plusDays(afterday);
 		// Same month ka 15th day
 //		LocalDate fifteenthDay = date.withDayOfMonth(afterday);
 
 		// Convert back to epoch milli (start of day)
-		long fifteenthEpochMilli = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		long fifteenthEpochMilli = date.atStartOfDay(zone).toInstant().toEpochMilli();
 
 		log.info("Original Date : {} " , date);
 		log.info("added 15th Day of Month : {} ", fifteenthEpochMilli);

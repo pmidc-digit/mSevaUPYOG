@@ -8,6 +8,8 @@ public class RLConstants {
 
     private RLConstants() {}
     
+    public static final String TIME_ZONE = "Asia/Kolkata";
+
     public static final String NEW_RL_APPLICATION = "NEW";
 
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";

@@ -534,7 +534,7 @@ public class DemandService {
 			
 			dmdlist.stream().forEach(d -> {
 				
-				ZoneId zone = ZoneId.of("Asia/Kolkata");
+				ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 				LocalDate expireDate = Instant.ofEpochMilli(d.getBillExpiryTime()).atZone(zone).toLocalDate();
 				LocalDate today = LocalDate.now(zone);
 				if (ChronoUnit.DAYS.between(expireDate,today)==1) {

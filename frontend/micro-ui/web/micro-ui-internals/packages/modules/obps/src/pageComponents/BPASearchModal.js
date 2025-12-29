@@ -63,7 +63,8 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
             setIsLoading(true);
             const response = await Digit.OBPSService.BPASearch(tenantId, { 
                 ...(mobileNumber?.length>0? {mobileNumber: mobileNumber} : {}),
-                ...(applicationNumber?.length>0?{ applicationNo: applicationNumber} : {}) 
+                ...(applicationNumber?.length>0?{ applicationNo: applicationNumber} : {}),
+                status: "BLOCKED",                
             });
             setIsLoading(false);
             if(response?.BPA?.length>0){
@@ -101,12 +102,12 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
                 Cell: ({ value }) => value || t("CS_NA"),
             },
             {
-                Header: t("Mobile Number"),
+                Header: t("Status"),
                 accessor: "status",
                 Cell: ({ value }) => t(value) || t("CS_NA"),
             },            
             {
-                Header: t("Status"),
+                Header: t("Mobile Number"),
                 accessor: "landInfo",
                 Cell: ({ value }) => {
                     let ownerObject;

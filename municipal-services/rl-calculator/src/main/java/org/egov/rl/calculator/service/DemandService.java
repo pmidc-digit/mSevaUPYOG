@@ -538,7 +538,6 @@ public class DemandService {
 				LocalDate expireDate = Instant.ofEpochMilli(d.getBillExpiryTime()).atZone(zone).toLocalDate();
 				LocalDate today = LocalDate.now(zone);
 				if (ChronoUnit.DAYS.between(expireDate,today)==1) {
-					System.out.println("dmdlist:--------"+d);
 					DemandDetail baseAmount = d.getDemandDetails().stream()
 							.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
 							.findFirst().get();

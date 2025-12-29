@@ -109,14 +109,12 @@ public class MasterDataService {
     }
 
     public List<Penalty> getPenaltySlabs(RequestInfo requestInfo, String tenantId) {
-        // Using RL_SERVICES_MASTER_MODULE to fetch service-specific penalty
         try {
         	  MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
                       RLConstants.RL_SERVICES_MASTER_MODULE, RLConstants.PENALTY_MASTER, null);
             
             Object result = repository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
             MdmsResponse mdmsResponse = mapper.convertValue(result, MdmsResponse.class);
-//            System.out.println("--mdmsResponse-----"+mdmsResponse.getMdmsRes().get("rl-services-masters"));
             List<Penalty> penaltySlabs = mapper.convertValue(
                     mdmsResponse.getMdmsRes()
                             .get(RLConstants.RL_SERVICES_MASTER_MODULE)

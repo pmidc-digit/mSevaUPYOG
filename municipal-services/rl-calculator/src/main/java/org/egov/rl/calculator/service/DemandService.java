@@ -441,23 +441,35 @@ public class DemandService {
 							switch (status) {
 
 							case RLConstants.RL_MONTHLY_CYCLE:
-								demandList.add(schedulerService.monthlyBillGenerate(currentDate, d, requestInfo));
+								Demand demandM=schedulerService.monthlyBillGenerate(currentDate, d, requestInfo);
+								if(demandM!=null) 
+									demandList.add(demandM);
 								break;
 
 							case RLConstants.RL_QUATERLY_CYCLE:
-								demandList.add(schedulerService.quterlyBillGenerate(currentDate, d, requestInfo));
+								Demand demandQ=schedulerService.quterlyBillGenerate(currentDate, d, requestInfo);
+								if(demandQ!=null) {
+									demandList.add(demandQ);
+								}
 								break;
 
 							case RLConstants.RL_BIAANNUALY_CYCLE:
-								demandList.add(schedulerService.biannualBillGenerate(currentDate, d, requestInfo));
+								Demand demandB=schedulerService.biannualBillGenerate(currentDate, d, requestInfo);
+								if(demandB!=null) {
+								    demandList.add(demandB);
+								}
 								break;
 							default:
-								demandList.add(schedulerService.yearlyBillGenerate(currentDate, d, requestInfo));
+								Demand demandY=schedulerService.yearlyBillGenerate(currentDate, d, requestInfo);
+								if(demandY!=null)
+								demandList.add(demandY);
 							}
 						});
-						
+//						log.info
+						System.out.println("------::List of consummercode which have to generate demand::-----");
 						demandList.stream().forEach(d->{
-							log.info("List of demand have to denerate demand for consummercode : "+d.getConsumerCode());
+//							log.info("{} Demand consummerCode :{} ",currentDate,d.getConsumerCode());
+							System.out.println(currentDate+" Demand consummerCode : "+d.getConsumerCode());
 								
 						});
 						

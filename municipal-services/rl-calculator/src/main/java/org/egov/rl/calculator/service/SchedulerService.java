@@ -35,7 +35,7 @@ public class SchedulerService {
 	DemandRepository demandRepository;
 
 	public Demand monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-//		log.info("----------Monthly  Demand Creation----for Application Number--"+d.getApplicationNumber());
+		log.info("----------Monthly  Demand Creation----for Application Number--"+d.getApplicationNumber());
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
@@ -48,14 +48,16 @@ public class SchedulerService {
 				d.setStartDate(startDay);
 				d.setEndDate(endDay);
 				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
+				return demands;
 			}
 		}
-		return demands;
+		return null;
+		
 	}
 
 	public Demand quterlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
 
-//		log.info("----------Quterly  Demand Creation----for Application Number--"+d.getApplicationNumber());
+		log.info("----------Quterly  Demand Creation----for Application Number--"+d.getApplicationNumber());
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
@@ -68,14 +70,15 @@ public class SchedulerService {
 				d.setStartDate(startDay);
 				d.setEndDate(endDay);
 				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
+				return demands;
 			}
 		}
-		return demands;
+		return null;
 	}
 
 	public Demand biannualBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
 
-//		log.info("----------Quaterly create demand------for Application Number--"+d.getApplicationNumber());
+		log.info("----------Biaaual create demand------for Application Number--"+d.getApplicationNumber());
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
@@ -88,13 +91,14 @@ public class SchedulerService {
 				d.setStartDate(startDay);
 				d.setEndDate(endDay);
 				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
+				return demands;
 			}
 		}
-		return demands;
+		return null;
 	}
 
 	public Demand yearlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-//		log.info("----------Quaterly create demand-----for Application Number--"+d.getApplicationNumber());
+		log.info("----------Yearly create demand-----for Application Number--"+d.getApplicationNumber());
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
@@ -107,8 +111,9 @@ public class SchedulerService {
 				d.setStartDate(startDay);
 				d.setEndDate(endDay);
 				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
+				return demands;
 			}
 		}
-		return demands;
+		return null;
 	}
 }

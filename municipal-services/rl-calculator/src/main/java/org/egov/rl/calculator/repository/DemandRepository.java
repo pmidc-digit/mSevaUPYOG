@@ -99,7 +99,7 @@ public class DemandRepository {
 
 		String consumerCode = rentableIds.stream().map(id ->id).collect(Collectors.joining(", "));
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?)";
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY createdtime DESC LIMIT 1";
 		log.info("consumerCode :: " + consumerCode);
 		subQueryParams.add(consumerCode);
 		try {

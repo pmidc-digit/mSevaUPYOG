@@ -18,7 +18,7 @@ import EXIF from "exif-js";
 import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
 import { UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates} from "../redux/action/NOCNewApplicationActions";
-
+import NOCCustomUploadFile from "./NOCCustomUploadFile";
 
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
@@ -366,91 +366,43 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   return (
     <div style={{ marginBottom: "24px" }}>
       {getLoading && <Loader />}
-      {doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null}
-      {!doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} 
-            <span>{doc?.required ? " *" : ""}</span>
-          </CardLabel>
-        </LabelFieldPair>
-      ) : null}
-      <LabelFieldPair>
 
+        <LabelFieldPair>
+          <CardLabel className="clu-doc-required-label">{t(doc?.code.replaceAll(".", "_"))} 
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"} 
+          </CardLabel>
+
+      <div className="clu-doc-required-field">
         {(doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") ? (
-          <UploadFile
+         <NOCCustomUploadFile
+            id={"noc-doc"}
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
             }}
-            id={id}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
             accept=".jpg, .jpeg, .png"
-            buttonType="button"
-            error={!uploadedFile}
           />
-        ) : (
-          <UploadFile
+        ):(
+          <NOCCustomUploadFile
+            id={"noc-doc"}
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
             }}
-            id={id}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
-            buttonType="button"
-            error={!uploadedFile}
+            accept=".pdf, .jpeg, .jpg, .png"
           />
         )}
-
-      {previewLink && (
-        <div
-            style={{ cursor: "pointer", padding:"10px", marginLeft:"25px"}}
-            onClick={(e) => {
-             e.preventDefault(); // Prevent any default behavior
-             window.open(previewLink, "_blank"); // Open in new tab
-            }}
-        >
-         <ViewsIcon/>
-        </div> 
-       )}
-      
+      </div>
      
-       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
-        (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
-            <CardLabel>
-              <div style={{paddingLeft:"30px"}}>
-               <p>Latitude: {geocoordinates.Latitude1}</p>
-               <p>Longitude: {geocoordinates.Longitude1}</p>
-               </div>
-            </CardLabel>
-        }
-
-       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  &&
-        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
-           <CardLabel>
-              <div style={{paddingLeft:"30px"}}>
-               <p>Latitude: {geocoordinates.Latitude2}</p>
-               <p>Longitude: {geocoordinates.Longitude2}</p>
-               </div>
-           </CardLabel>  
-        }
+      {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
+      {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="clu-doc-required-coordinates">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
+      {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="clu-doc-required-coordinates">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
      
 
       </LabelFieldPair>

@@ -356,23 +356,25 @@ const CitizenApplicationOverview = () => {
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("NOC_APPLICANT_DETAILS")}</CardSubHeader>
-        {displayData?.applicantDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
-              <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
-              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
-              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card>
+      {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
+      <React.Fragment>
+        <Card>
+          <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+              <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.dateOfBirth || "N/A"} />
+              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
+              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
+              </StatusTable>
+            </div>
+        </Card>
+        </React.Fragment>
+      ))}
 
       {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
@@ -384,6 +386,7 @@ const CitizenApplicationOverview = () => {
                   <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
                   <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} text={detail?.professionalRegIdValidity || "N/A"} />
                   <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
                   <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
@@ -473,6 +476,11 @@ const CitizenApplicationOverview = () => {
             </StatusTable>
           </div>
         ))}
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
+        <StatusTable>{applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && <NOCDocumentTableView documents={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds} />}</StatusTable>
       </Card>
 
       {/* <Card>

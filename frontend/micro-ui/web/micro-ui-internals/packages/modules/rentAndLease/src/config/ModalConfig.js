@@ -31,7 +31,7 @@ export const ModalConfig = ({
   if (action.isTerminateState) {
     checkAssigneeVisible = false;
   }
-  if (action?.action === "RENEWAL") {
+  if (action?.action === "RENEWAL" || action?.action === "RAL_RENEWAL") {
     return {
       label: {
         // heading: t("RAL_RENEWAL_MODAL_HEADING"),

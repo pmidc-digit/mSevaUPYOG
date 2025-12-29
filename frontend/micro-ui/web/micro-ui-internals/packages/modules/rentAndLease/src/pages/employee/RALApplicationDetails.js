@@ -140,9 +140,13 @@ const RALApplicationDetails = () => {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
       // history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${appNo}`);
-    } else if (action?.action === "RAL_RENEWAL") {
-      setShowModal(true);
-      setSelectedAction(action);
+    } else if (action?.action === "RAL_RENEWAL" || action?.action === "RENEWAL") {
+      if (propertyDetails?.propertyType?.toLowerCase() === "residential") {
+        handleRenewal(applicationData);
+      } else {
+        setShowModal(true);
+        setSelectedAction(action);
+      }
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -263,7 +267,7 @@ const RALApplicationDetails = () => {
         propertyId: data?.propertyId,
         previousApplicationNumber: data?.applicationNumber,
         OwnerInfo: sanitizedOwners,
-        tradeLicenseNumber: data?.tradeLicenseNumber,
+        tradeLicenseNumber: data?.tradeLicenseNumber ? data?.tradeLicenseNumber : null,
         registrationNumber: data?.registrationNumber,
         additionalDetails: data?.additionalDetails,
         startDate: newStart.getTime(),

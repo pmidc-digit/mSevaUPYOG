@@ -33,13 +33,18 @@ const Response = (props) => {
   };
 
   const handleDownloadPdf = async () => {
+    try{
     const Property = nocData;
     //console.log("tenants in NOC", tenants);
+    const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+    const ulbType = site?.ulbType;
+    const ulbName = site?.ulbName?.city?.name || site?.ulbName;
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
-    // console.log("acknowledgementData in NOC", acknowledgementData);
-    // Digit.Utils.pdf.generate(acknowledgementData);
-    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    }catch(error){
+      console.log("Eroor Occurred !!!", error);
+    }
   };
 
   return (

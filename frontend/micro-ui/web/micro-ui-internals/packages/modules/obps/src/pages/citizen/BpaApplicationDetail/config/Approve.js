@@ -4,7 +4,7 @@ import React from 'react';
 export const configAcceptApplication = ({ t, action, selectFile, uploadedFile, error, isCommentRequired = true, setUploadedFile, file }) => {
   return {
     label: {
-      heading: `BPA_FORWARD_APPLICATION_HEADER`,
+      heading: `BPA_${action}_HEADER`,
       submit: `BPA_${action}_BUTTON`,
       cancel: "CS_COMMON_CANCEL",
     },

@@ -66,7 +66,7 @@ export const ApplicationCard = ({
       <DetailsCard
         data={data}
         serviceRequestIdKey={serviceRequestIdKey}
-        linkPrefix={linkPrefix ? linkPrefix : "/digit-ui/employee/mcollect/challansearch/"}
+        linkPrefix={linkPrefix ? linkPrefix : "/digit-ui/employee/rent-and-lease/property/"}
       />
     );
   }
@@ -79,10 +79,7 @@ export const ApplicationCard = ({
             text="SEARCH"
             handleActionClick={() => {
               setType("SEARCH");
-              setSearchFilterParams({
-                businessService: [],
-                status: [],
-              });
+              setSearchFilterParams(searchParams);
               setPopup(true);
             }}
           />
@@ -92,10 +89,7 @@ export const ApplicationCard = ({
             text="FILTER"
             handleActionClick={() => {
               setType("FILTER");
-              setSearchFilterParams({
-                businessService: [],
-                status: [],
-              });
+              setSearchFilterParams(searchParams);
               setPopup(true);
             }}
           />

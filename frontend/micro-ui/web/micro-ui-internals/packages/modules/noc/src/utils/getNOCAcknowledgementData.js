@@ -55,6 +55,10 @@ const getProfessionalDetails = (appData, t) => {
       value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalRegId || "N/A",
     },
     {
+      title: t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalRegIdValidity || "N/A",
+    },
+    {
       title: t("NOC_PROFESSIONAL_MOBILE_NO_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalMobileNumber || "N/A",
     },
@@ -71,46 +75,49 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  let values = [
-    {
-      title: t("NOC_FIRM_OWNER_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_EMAIL_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantEmailId || "N/A", 
-    },
-    {
-      title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantFatherHusbandName || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantMobileNumber || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_DOB_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_GENDER_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender?.code || 
-      appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_ADDRESS_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
-    },
-    {
-      title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantPropertyId || "N/A",
-    },
-  ];
+  const owners = appData?.nocDetails?.additionalDetails?.applicationDetails?.owners ?? [];
 
-  return {
-    title: t("NOC_APPLICANT_DETAILS"),
-    values: values,
-  };
+  const ownerDetailsArray = owners.map((owner, index) => ({
+    title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
+    values: [
+      {
+        title: t("NOC_FIRM_OWNER_NAME_LABEL"),
+        value: owner?.ownerOrFirmName || "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_EMAIL_LABEL"),
+        value: owner?.emailId || "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
+        value: owner?.fatherOrHusbandName || "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
+        value: owner?.mobileNumber || "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_DOB_LABEL"),
+        value: owner?.dateOfBirth
+          ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
+          : "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_GENDER_LABEL"),
+        value: owner?.gender?.code || "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_ADDRESS_LABEL"),
+        value: owner?.address || "NA",
+      },
+      {
+        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
+        value: owner?.propertyId || "NA",
+      },
+    ],
+  }));
+
+  return ownerDetailsArray;
 };
 
 const getSiteDetails = (appData, t) => {
@@ -307,8 +314,8 @@ const getDocuments = async (appData, t) => {
            // console.log("doc link", documentLink);
 
             return {
-              title: t(document?.documentType || t("CS_NA")),
-              value: pdfDocumentName(documentLink, index) || t("CS_NA"),
+              title: t(document?.documentType || t("CS_NA").replace(/\./g, "_")),
+          
             };
           })
         : {
@@ -319,14 +326,13 @@ const getDocuments = async (appData, t) => {
 };
 
 
-export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData=applicationDetails || {};
   //console.log("appData here in DownloadACK", appData);
 
   let detailsArr=[], imageURL="";
-  const ownerObj=appData?.documents?.find((doc)=> doc?.documentType === "OWNER.OWNERPHOTO") || null;
-  const ownerFileStoreId= ownerObj?.documentAttachment || "";
+  const ownerFileStoreId= appData?.nocDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
 
    const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 
@@ -348,14 +354,14 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
     details: [
         getRegistrationDetails(appData,t),
         ...detailsArr,
-        getApplicantDetails(appData, t),
+        ...getApplicantDetails(appData, t),
         getSiteDetails(appData, t), 
         getSpecificationDetails(appData, t),
         getCoordinateDetails(appData,t),
-        getDocuments(appData,t)
+        await getDocuments(appData,t)
     ],
-    imageURL
-
-    
+    imageURL,
+    ulbType,
+    ulbName
   };
 };

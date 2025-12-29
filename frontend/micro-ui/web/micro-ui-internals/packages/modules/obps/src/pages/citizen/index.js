@@ -32,7 +32,7 @@ const App = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
   let isCommonPTPropertyScreen = window.location.href.includes("/ws/create-application/property-details");
-  let isAcknowledgement = window.location.href.includes("/acknowledgement") || window.location.href.includes("/disconnect-acknowledge");
+  let isAcknowledgement = window.location.href.includes("/acknowledgement") || window.location.href.includes("/disconnect-acknowledge") || window.location.href.includes('/building_plan_scrutiny/new_construction/stepper');
   const BPACitizenHomeScreen = Digit?.ComponentRegistryService?.getComponent("BPACitizenHomeScreen");
   const CreateEDCR = Digit?.ComponentRegistryService?.getComponent("ObpsCreateEDCR");
   const CreateOCEDCR = Digit?.ComponentRegistryService?.getComponent("ObpsCreateOCEDCR");

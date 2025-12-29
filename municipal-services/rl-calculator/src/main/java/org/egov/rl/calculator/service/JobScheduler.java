@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
+import org.egov.rl.calculator.util.RLConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,18 +35,21 @@ public class JobScheduler {
 	@Autowired
 	DemandService demandService;
 
- // Runs every day at 03:30 IST // 24 hr time
-	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
-//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
-	public void runEveryDaysCron() {
+	
+
+	@Scheduled(cron = "0 30 3 * * *", zone = RLConstants.TIME_ZONE)
+	public void bulkDemandGenerationCronJob() {
+		log.info("Scheduler Start Every day at 03:30 AM");
+		
 		log.info("Morning Scheduler Start Date Time :{}",LocalDateTime.now());
-		demandService.generateBatchDemand(getOAuthToken(),null,null);
+		  demandService.generateBatchDemand(getOAuthToken(),null,null);
 		log.info("Morning Scheduler End Date Time :{}",LocalDateTime.now());
 	}
 	
-	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
-//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
-	public void runEveryDayCron() {
+	@Scheduled(cron = "0 30 12 * * *", zone = RLConstants.TIME_ZONE)
+	public void sendNotificationAndUpdateDemandCronJob() {
+		log.info("Scheduler Start Every day at 12:30 PM");
+		
 		log.info("Afternoon Scheduler Start Date Time :{}",LocalDateTime.now());
 		  demandService.sendNotificationAndUpdateDemand(getOAuthToken(),null,null);
 		log.info("Afternoon Scheduler End Date Time :{}",LocalDateTime.now());

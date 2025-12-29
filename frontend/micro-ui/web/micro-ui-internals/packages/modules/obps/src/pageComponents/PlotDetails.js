@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions";
 import { PropertySearchLudhiana } from "./PropertySearchLudhiana";
 import { PropertySearchBathinda } from "./PropertySearchBathinda";
+import { oldscrutinyDetailsData } from "../utils";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -48,6 +49,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [materialusedinfloor, setMaterialUsedInFloor] = useState("");
   const [materialusedinroofs, setMaterialUsedInRoofs] = useState("");
   const [estimatedCost, setEstimatedCost] = useState("");
+  const [oldEDCR, setOldEDCR] = useState([]);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
@@ -63,6 +65,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isUserArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
   const [approvedLicense, setApprovedLicense] = useState(null);
   const [ptLoading, setPtLoading] = useState(false);
+  const [edcrLoading, setedcrLoading] = useState(false);
   const [showModal, setShowModal] = useState(false)
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egov-location", [{ name: "TenantBoundary" }]);
   const { data: menuList2, isLoading: isLoading2 } = Digit.Hooks.useCustomMDMS(state, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
@@ -84,12 +87,13 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
     },
   ]
   const { data: buildingHeightData, isLoading: isBuildingHeightLoading} =  Digit.Hooks.useCustomMDMS(tenantId, "BPA", [{ name: "BuildingHeight" }]);
+  const inProgressEDCR = React.useRef(new Set());
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
   console.log("menuList2",menuList2,zonesOptions, buildingHeightData?.BPA?.BuildingHeight?.[0]?.value)
 
-console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]);
+console.log("sessionStorageData",currentStepData);
 
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
     
@@ -112,8 +116,14 @@ console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?
   useEffect(() => {
     if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid && tenantId !== LUDHIANA_TENANT){
       fetchPropertyDetails(currentStepData?.createdResponse?.additionalDetails?.propertyuid);
-    }
+    }    
   }, [currentStepData]);
+
+  useEffect(()=>{
+    if(currentStepData?.BasicDetails && currentStepData?.createdResponse?.edcrNumber && currentStepData?.BasicDetails?.scrutinyNumber?.edcrNumber != currentStepData?.createdResponse?.edcrNumber && ((!currentStepData?.createdResponse?.additionalDetails?.oldEDCR) || (JSON.stringify(oldEDCR) === JSON.stringify(currentStepData?.createdResponse?.additionalDetails?.oldEDCR)))){
+      addInPreviousEDCR(currentStepData?.createdResponse?.edcrNumber);
+    }
+  },[oldEDCR])
 
   async function fetchPropertyDetails(propertyId){
     try {
@@ -135,6 +145,96 @@ console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?
             console.error("Error fetching property details:", err);
             return;
         }
+  }
+
+  // 
+
+  // async function addInPreviousEDCR(oldEdcrNumber){
+  //   const isEDCRPresent = oldEDCR?.find((val) => val?.edcrNumber === oldEdcrNumber);
+  //   console.log("oldEDCR", oldEDCR, isEDCRPresent)
+  //   if(isEDCRPresent?.edcrNumber){
+  //     console.log("oldEDCR 1", oldEDCR, isEDCRPresent)
+  //     return;
+  //   }else{
+  //     console.log("oldEDCR 2", oldEDCR, isEDCRPresent)
+  //     try{
+  //     setedcrLoading(true);
+  //     const details = await oldscrutinyDetailsData(oldEdcrNumber, state);
+  //     if (details?.type == "ERROR") {
+  //       setedcrLoading(false);
+  //     }
+  //     if (details?.edcrNumber) {
+  //       console.log("PREVIOUS_EDCR_DATA",details)
+  //       const newEDCRObject = {
+  //         appliactionType: details?.appliactionType,
+  //         applicationDate: details?.applicationDate,
+  //         edcrNumber: details?.edcrNumber,
+  //         planReport: details?.planReport,
+  //         status: details?.status
+  //       }
+  //       setOldEDCR((prev) => ([...prev, newEDCRObject]))
+  //       setedcrLoading(false);
+  //     }
+  //   }catch(e){
+  //     console.error(e);
+  //     setedcrLoading(false);
+  //   }
+  //   }
+  // }
+
+  console.log("oldEDCR", oldEDCR)
+
+  async function addInPreviousEDCR(oldEdcrNumber) {
+
+    // 🔒 Prevent duplicate async calls
+    if (inProgressEDCR.current.has(oldEdcrNumber)) {
+      return;
+    }
+
+    // Mark as in-progress
+    inProgressEDCR.current.add(oldEdcrNumber);
+
+    const isEDCRPresent = oldEDCR?.find(
+      (val) => val?.edcrNumber === oldEdcrNumber
+    );
+
+    if (isEDCRPresent?.edcrNumber) {
+      inProgressEDCR.current.delete(oldEdcrNumber);
+      return;
+    }
+
+    try {
+      setedcrLoading(true);
+
+      const details = await oldscrutinyDetailsData(oldEdcrNumber, state);
+
+      if (details?.type === "ERROR") {
+        return;
+      }
+
+      if (details?.edcrNumber) {
+        const newEDCRObject = {
+          appliactionType: details?.appliactionType,
+          applicationDate: details?.applicationDate,
+          edcrNumber: details?.edcrNumber,
+          planReport: details?.planReport,
+          status: details?.status
+        };
+
+        setOldEDCR(prev => {
+          // Extra safety: avoid duplicate insert
+          if (prev.some(e => e.edcrNumber === oldEdcrNumber)) return prev;
+          return [...prev, newEDCRObject];
+        });
+      }
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setedcrLoading(false);
+      // Remove lock after completion
+      inProgressEDCR.current.delete(oldEdcrNumber);
+    }
   }
 
   
@@ -262,6 +362,9 @@ console.log("sessionStorageData",currentStepData, currentStepData?.BasicDetails?
     setMaterialUsedInFloor(details?.materialusedinfloor || "");
     setMaterialUsedInRoofs(details?.materialusedinroofs || "");
     setEstimatedCost(details?.estimatedCost || "");
+    if(oldEDCR?.length===0){
+      setOldEDCR(details?.oldEDCR || []);
+    }
     // setPropertyUid(details?.propertyuid || "");
   }
 }, [currentStepData?.createdResponse]);
@@ -494,6 +597,7 @@ useEffect(() => {
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
       subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
+      oldEDCR
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -537,6 +641,7 @@ useEffect(() => {
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
       subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
+      oldEDCR
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -566,6 +671,10 @@ useEffect(() => {
         setApiLoading(true);
         const result = await Digit.OBPSService.update({ BPA: {
           ...currentStepData?.createdResponse,
+          edcrNumber,
+          riskType,
+          applicationType,
+          serviceType,
           additionalDetails,
           workflow: {
             action: workflowAction,
@@ -641,7 +750,7 @@ useEffect(() => {
 
   const onSkip = () => onSelect();
 
-  if (apiLoading || LicenseDataLoading || isLoading2) {
+  if (apiLoading || LicenseDataLoading || isLoading2 || edcrLoading) {
     return <Loader />;
   }
 
@@ -797,7 +906,7 @@ useEffect(() => {
                      
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading || isBuildingHeightLoading} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading || isBuildingHeightLoading || edcrLoading} />}
           </ActionBar>
         </FormStep>
       </div>

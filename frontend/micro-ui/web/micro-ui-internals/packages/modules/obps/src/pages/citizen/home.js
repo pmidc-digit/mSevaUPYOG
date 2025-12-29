@@ -62,7 +62,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { isLoading: bpaLoading, data: bpaInboxData } = Digit.Hooks.obps.useArchitectInbox({
     tenantId: stateCode,
     moduleName: "bpa-services",
-    businessService: ["BPA_LOW", "BPA", "BPA_OC"],
+    businessService: ["BPA_LOW", "BPA"],
     filters: {
       searchForm: {
         ...searchParams,

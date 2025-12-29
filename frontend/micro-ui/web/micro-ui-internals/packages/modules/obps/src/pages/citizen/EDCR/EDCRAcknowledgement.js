@@ -176,7 +176,7 @@ const EDCRAcknowledgement = (props) => {
           </div>
         </Card>
       )}
-      {showModal && <BPASearchModal closeModal={closeModal} />}
+      {showModal && <BPASearchModal closeModal={closeModal} edcrData={edcrData} />}
     </div>
   );
 };

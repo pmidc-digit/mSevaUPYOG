@@ -462,6 +462,26 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 ),
         },
     ];
+    const oldEDCRDocumentsColumns = [
+        {
+            Header: t("BPA_EDCR_NO_LABEL"),
+            accessor: "edcrNumber",
+            Cell: ({ value }) => value || t("CS_NA"),
+        },
+        {
+            Header: t(""),
+            accessor: "planReport",
+            Cell: ({ value }) =>
+                value ? (
+                    <LinkButton className="view-link-button"
+                        label={t("View")}
+                        onClick={() => routeTo(value)}
+                    />
+                ) : (
+                    t("CS_NA")
+                ),
+        },
+    ];
 
     const handleMobileNumberChange = (e) => {
         setMobileNumber(e.target.value);
@@ -1066,6 +1086,22 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 ) : t("CS_NA")}
                             </div>
                         </div>
+                    </div>
+
+                    <CardSubHeader className="bpa-block-header">{t("OLD_BPA_EDCR_DETAILS")}</CardSubHeader>
+
+                    <div className="bpa-table-container">
+                        <Table
+                            className="customTable table-border-style"
+                            t={t}
+                            data={currentStepData?.createdResponse?.additionalDetails?.oldEDCR}
+                            columns={oldEDCRDocumentsColumns}
+                            getCellProps={() => ({ style: {} })}
+                            disableSort={false}
+                            autoSort={true}
+                            manualPagination={false}
+                            isPaginationRequired={false}
+                        />
                     </div>
                 </div>
 

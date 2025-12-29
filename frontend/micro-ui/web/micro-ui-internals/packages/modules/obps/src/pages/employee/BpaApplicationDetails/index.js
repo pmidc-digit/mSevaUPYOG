@@ -504,6 +504,27 @@ const BpaApplicationDetail = () => {
         )},
     },
   ];
+
+  const oldEDCRDocumentsColumns = [
+          {
+              Header: t("BPA_EDCR_NO_LABEL"),
+              accessor: "edcrNumber",
+              Cell: ({ value }) => value || t("CS_NA"),
+          },
+          {
+              Header: t(""),
+              accessor: "planReport",
+              Cell: ({ value }) =>
+                  value ? (
+                      <LinkButton className="view-link-button"
+                          label={t("View")}
+                          onClick={() => routeTo(value)}
+                      />
+                  ) : (
+                      t("CS_NA")
+                  ),
+          },
+  ];
   // const ecbcDocumentsData = useMemo(() => {
   //   return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
   //     id: index,
@@ -1398,6 +1419,19 @@ const BpaApplicationDetail = () => {
                               isPaginationRequired={false}
                             />
                           : null}
+
+                          {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length>0 && 
+                          <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={data?.applicationData?.additionalDetails?.oldEDCR}
+                              columns={oldEDCRDocumentsColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                          />}
                           
 
                         {/* to get Owner values */}

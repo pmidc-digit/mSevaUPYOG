@@ -62,7 +62,7 @@ public class DemandService {
 	private CalculationService calculationService;
 
 	@Autowired
-	MonthCalculationService monthCalculationService;
+	DaysCycleCalculationService daysCycleCalculationService;
 
 	@Autowired
 	NotificationUtil notificationUtil;
@@ -113,29 +113,29 @@ public class DemandService {
 				switch (status) {
 				case RLConstants.RL_MONTHLY_CYCLE: {
 					startDay = allotmentDetails.getStartDate();
-					endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 1);
-					exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 1);
+					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
 							allotmentDetails.getTenantId());
 					break;
 				}
 				case RLConstants.RL_QUATERLY_CYCLE: {
 					startDay = allotmentDetails.getStartDate();
-					endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 3);
-					exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 3);
+					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
 							allotmentDetails.getTenantId());
 					break;
 				}
 				case RLConstants.RL_BIAANNUALY_CYCLE: {
 					startDay = allotmentDetails.getStartDate();
-					endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 6);
-					exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 6);
+					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
 							allotmentDetails.getTenantId());
 					break;
 				}
 				default: {
 					startDay = allotmentDetails.getStartDate();
-					endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 12);
-					exparyDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo,
+					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 12);
+					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
 							allotmentDetails.getTenantId());
 					break;
 				}
@@ -182,7 +182,7 @@ public class DemandService {
 		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
-				.taxPeriodTo(monthCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
+				.taxPeriodTo(daysCycleCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
 				.billExpiryTime(billingPeriod.getDemandExpiryDate())
 
 				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null)
@@ -557,7 +557,7 @@ public class DemandService {
 		List<Penalty> panelty = masterDataService.getPenaltySlabs(requestInfo, demand.getTenantId());
 		BigDecimal paneltyAmount = basicAmount.multiply(panelty.get(0).getRate()).divide(new BigDecimal(100));
 		long now = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		long exparyDate = monthCalculationService.addAfterPenaltyDays(now, requestInfo, demand.getTenantId());
+		long exparyDate = daysCycleCalculationService.addAfterPenaltyDays(now, requestInfo, demand.getTenantId());
 		List<DemandDetail> dataList = demand.getDemandDetails();
 		DemandDetail demandDetail = DemandDetail.builder().demandId(demand.getId()).tenantId(demand.getTenantId())
 				.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION).auditDetails(auditDetails)

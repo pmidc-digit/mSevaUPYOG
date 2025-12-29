@@ -23,7 +23,7 @@ public class SchedulerService {
 	private DemandService demandService;
 
 	@Autowired
-	MonthCalculationService monthCalculationService;
+	DaysCycleCalculationService daysCycleCalculationService;
 
 	@Autowired
 	NotificationUtil notificationUtil;
@@ -39,10 +39,10 @@ public class SchedulerService {
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
-			long diff = monthCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 3);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
+			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
+			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
+			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 3);
+			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
 			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
 					endDay) == null)) {
 				d.setStartDate(startDay);
@@ -61,10 +61,10 @@ public class SchedulerService {
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
-			long diff = monthCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 3);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
+			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
+			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
+			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 3);
+			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
 			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
 					endDay) == null)) {
 				d.setStartDate(startDay);
@@ -82,10 +82,10 @@ public class SchedulerService {
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
-			long diff = monthCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 6);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
+			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
+			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
+			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 6);
+			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
 			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
 					endDay) == null)) {
 				d.setStartDate(startDay);
@@ -102,10 +102,10 @@ public class SchedulerService {
 		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
 				.findFirst().orElse(null);
 		if (demands != null) {
-			long diff = monthCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = monthCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = monthCalculationService.lastDayTimeOfCycle(startDay, 12);
-			long expiryDate = monthCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
+			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
+			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
+			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 12);
+			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
 			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
 					endDay) == null)) {
 				d.setStartDate(startDay);

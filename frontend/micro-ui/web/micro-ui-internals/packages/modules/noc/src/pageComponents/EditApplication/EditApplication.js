@@ -6,7 +6,7 @@ import { useHistory, useLocation, useParams } from "react-router-dom";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper"
 import { stepperConfig } from "../../config/Create/stepperConfig";
 import { SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM, 
-  UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates } from "../../redux/action/NOCNewApplicationActions";
+  UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos } from "../../redux/action/NOCNewApplicationActions";
 import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
 
 //Config for steps
@@ -98,6 +98,8 @@ const EditApplication = () => {
   const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
   const documents = nocObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
   const coordinates= nocObject?.nocDetails?.additionalDetails?.coordinates || {};
+  const ownerPhotoList= nocObject?.nocDetails?.additionalDetails?.ownerPhotos || [];
+  const ownerIdList= nocObject?.nocDetails?.additionalDetails?.ownerIds || [];
   
   const setStep = (updatedStepNumber) => {
     dispatch(SET_NOCNewApplication_STEP(updatedStepNumber));
@@ -130,35 +132,38 @@ const EditApplication = () => {
 
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-  selectedDistrict?.code,
-  "revenue",
-  { enabled: !!selectedDistrict },
-  t
- );
+//   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+//   selectedDistrict?.code,
+//   "revenue",
+//   { enabled: !!selectedDistrict },
+//   t
+//  );
 
  //console.log("fetchedLocalities", fetchedLocalities);
 
-  useEffect(() => {
-  if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-    const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-    const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
+ const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+ const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
+ console.log("zoneOptions==>", zoneOptions);
+//   useEffect(() => {
+//   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+//     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
+//     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
 
-    if (matchedZone) {
-      dispatch(
-        UPDATE_NOCNewApplication_FORM("siteDetails", {
-          ...formData.siteDetails,
-          zone: matchedZone,
-        })
-      );
-    }
-  }
-}, [fetchedLocalities, siteDetails?.zone]);
+//     if (matchedZone) {
+//       dispatch(
+//         UPDATE_NOCNewApplication_FORM("siteDetails", {
+//           ...formData.siteDetails,
+//           zone: matchedZone,
+//         })
+//       );
+//     }
+//   }
+// }, [fetchedLocalities, siteDetails?.zone]);
 
 
   useEffect(() => {
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    if(!isLoading && !isBuildingTypeLoading && nocObject?.nocDetails  && !isUlbListLoading ){
+    if(!isLoading && !isBuildingTypeLoading && nocObject?.nocDetails  && !isUlbListLoading &&  !isZoneListLoading && !isNocTypeLoading){
         const formattedDocuments = {
        documents: {
         documents: documents?.map((doc) => ({
@@ -175,10 +180,13 @@ const EditApplication = () => {
         dispatch(UPDATE_NOCNewApplication_CoOrdinates(key, value));
         });
 
+        dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
+        dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+
         const updatedApplicantDetails=
         {
           ...applicantDetails,
-          applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
+          //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
         const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
@@ -194,6 +202,8 @@ const EditApplication = () => {
         
           district: districtObj,
 
+          zone: zoneOptions?.find((obj)=> (obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone)),
+
           specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
           specificationNocType: nocType?.find((obj) => (obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType)),
           specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
@@ -206,7 +216,7 @@ const EditApplication = () => {
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
         
     }
-  }, [isLoading, applicationDetails, isBuildingTypeLoading]);
+  }, [isLoading, applicationDetails, isBuildingTypeLoading, isZoneListLoading, isNocTypeLoading]);
 
 
   const handleSubmit = (dataGet) => {

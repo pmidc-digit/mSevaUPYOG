@@ -116,7 +116,7 @@ const RALModal = ({
   }, [file]);
 
   function submit(data) {
-    if (action?.action === "RENEWAL") {
+    if (action?.action === "RENEWAL" || action?.action === "RAL_RENEWAL") {
       if (!data?.tradeLicenseNumber) {
         setShowToast({ key: true, label: t("Trade License Number is required") });
         return;

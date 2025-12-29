@@ -39,7 +39,15 @@ const MyApplications = ({ view }) => {
                   <KeyNote keyValue={t(item)} note={t(application[item])} />
                 ))}
               <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
-                <SubmitBar label={t(application?.raw?.status != "PENDINGPAYMENT" ? application?.raw?.status === "APPROVED" ? "TL_VIEW_DETAILS_RENEW_NOW": "TL_VIEW_DETAILS" : "TL_VIEW_DETAILS_PAY")} />
+                <SubmitBar
+                  label={t(
+                    application?.raw?.status != "PENDINGPAYMENT"
+                      ? application?.raw?.status === "APPROVED"
+                        ? "TL_VIEW_DETAILS_RENEW_NOW"
+                        : "TL_VIEW_DETAILS"
+                      : "TL_VIEW_DETAILS_PAY"
+                  )}
+                />
               </Link>{" "}
               {/* {application?.raw?.status === "PENDINGPAYMENT" ? (
                   <Link

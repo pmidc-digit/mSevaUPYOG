@@ -87,7 +87,7 @@ export const config = [
             type: "text",
             name: "street",
             disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
-            placeholder: "TL_NEW_TRADE_DETAILS_SRT_NAME_PLACEHOLDER"
+            placeholder: "TL_NEW_TRADE_DETAILS_SRT_NAME_PLACEHOLDER",
             // "validation": {
             //     "maxlength": 256,
             //     "title": "CORE_COMMON_STREET_INVALID"
@@ -98,7 +98,7 @@ export const config = [
             type: "text",
             name: "buildingName",
             disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
-            placeholder: "TL_NEW_TRADE_DETAILS_BLDG_NAME_PLACEHOLDER"
+            placeholder: "TL_NEW_TRADE_DETAILS_BLDG_NAME_PLACEHOLDER",
             // "validation": {
             //     "maxlength": 256,
             //     "title": "CORE_COMMON_DOOR_INVALID"
@@ -108,7 +108,7 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_DOOR_NO_LABEL",
             type: "text",
             name: "doorNo",
-            placeholder: "TL_NEW_TRADE_DETAILS_DOOR_NO_PLACEHOLDER"
+            placeholder: "TL_NEW_TRADE_DETAILS_DOOR_NO_PLACEHOLDER",
             //disable: false,
             // "validation": {
             //     "maxlength": 256,
@@ -119,7 +119,7 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_LABEL",
             type: "text",
             name: "electricityNo",
-            placeholder: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_PLACEHOLDER"
+            placeholder: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_PLACEHOLDER",
             //disable:false,
             // "validation": {
             //     "maxlength": 256,

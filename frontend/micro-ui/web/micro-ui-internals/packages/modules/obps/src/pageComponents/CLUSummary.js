@@ -17,13 +17,17 @@ function CLUSummary({ currentStepData: formData, t }) {
         return state.obps.OBPSFormReducer.ownerPhotos;
   });
 
+  const ownerIds = useSelector(function (state) {
+      return state.obps.OBPSFormReducer.ownerIds;
+  });
+
   //console.log("coordinates in summary page", coordinates);
   console.log("ownerPhotos(redux)", ownerPhotos);
   console.log("ownerFileStoreId", ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId);
 
   const renderLabel = (label, value) => (
-    <div className="clu-summary-label-field-pair">
-      <CardLabel className="clu-summary-bold-label">{label}</CardLabel>
+    <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -35,14 +39,14 @@ function CLUSummary({ currentStepData: formData, t }) {
     <div className="bpa-summary-page">
       <h2 className="bpa-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
       <div className="bpa-summary-section">
-        <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
+        <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
       </div>
 
       {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
         return (
         <div key={index} className="bpa-summary-section">
          <h2 className="bpa-summary-heading">
-           {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("BPA_OWNER")} #${index + 1}`}
+           {index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`}
          </h2>
 
          {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.ownerOrFirmName)}
@@ -143,6 +147,11 @@ function CLUSummary({ currentStepData: formData, t }) {
 
         {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
+      </div>
+
+      <h2 className="bpa-summary-heading">{t("BPA_UPLOADED_OWNER_ID")}</h2>
+      <div className="bpa-summary-section">
+        {ownerIds?.ownerIdList?.length > 0 && <CLUDocumentTableView documents={ownerIds?.ownerIdList} />}
       </div>
 
       <h2 className="bpa-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>

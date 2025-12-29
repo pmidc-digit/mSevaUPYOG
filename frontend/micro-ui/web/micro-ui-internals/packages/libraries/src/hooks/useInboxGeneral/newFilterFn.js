@@ -103,13 +103,15 @@ export const filterFunctions = {
 
     if (filtersArg?.applicationNumber) {
       searchFilters.applicationNumber = filtersArg?.applicationNumber;
+      searchFilters.applicationNumbers = filtersArg?.applicationNumber;
     }
     if (filtersArg?.applicationNumbers) {
-      searchFilters.applicationNumber = applicationNumbers;
+      searchFilters.applicationNumber = filtersArg?.applicationNumbers;
+      searchFilters.applicationNumbers = filtersArg?.applicationNumbers;
     }
 
-    if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
-      workflowFilters.status = applicationStatus.map((status) => status.code || status.state);
+    if (applicationStatus && applicationStatus?.[0]) {
+      workflowFilters.status = applicationStatus.map((status) => status.code || status.state || status.applicationStatus || status.uuid || status);
       if (applicationStatus?.some((e) => e.nonActionableRole)) {
         searchFilters.fetchNonActionableRecords = true;
       }

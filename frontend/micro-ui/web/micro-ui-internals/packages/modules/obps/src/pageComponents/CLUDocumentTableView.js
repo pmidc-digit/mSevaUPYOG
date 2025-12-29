@@ -61,7 +61,7 @@ const CLUDocumentTableView = ({documents}) => {
   const documentsData = useMemo(() => {
      return (mappedDocuments)?.map((doc, index) => ({
       id: index,
-      title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
+      title: t(doc?.documentType?.replaceAll(".", "_")) ||  t(doc?.documentType) || t("CS_NA"),
       fileUrl: doc.url,
      }));
     }, [mappedDocuments]);

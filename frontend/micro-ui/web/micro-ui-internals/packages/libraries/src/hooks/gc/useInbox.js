@@ -1,12 +1,18 @@
 import useInbox from "../useInbox";
 
 const useGCInbox = ({ tenantId, filters, config = {} }) => {
-  const { businessService, status } = filters;
+  const { businessService } = filters;
   const { applicationNumber, mobileNumber } = filters?.searchForm;
+
+  console.log("filters", filters);
+
+  // const appStatus = filters?.filterForm?.applicationStatus;
+
+  // console.log("appStatus", appStatus);
 
   const { limit, offset, sortOrder, sortBy } = filters?.tableForm;
   const user = Digit.UserService.getUser();
-  // const status = filters?.filterForm?.applicationStatus;
+  const status = filters?.filterForm?.applicationStatus;
   // const selectedStatuses = getFilter?.applicationStatus?.map((s) => s?.code) || [];
 
   const _filters = {
@@ -22,7 +28,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
     moduleSearchCriteria:
       status?.length > 0
         ? {
-            // ...(status && status.length > 0 ? { challanStatus: status } : {}),
+            ...(status && status.length > 0 ? { challanStatus: status } : {}),
             sortOrder: sortOrder,
             ...(applicationNumber ? { applicationNumber } : {}),
             ...(businessService && businessService.length > 0 ? { offenceTypeName: businessService.join(",") } : {}),
@@ -30,7 +36,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
             ...(mobileNumber ? { mobileNumber } : {}),
           }
         : {
-            // ...(status && status.length > 0 ? { challanStatus: status.join } : {}),
+            ...(status && status.length > 0 ? { challanStatus: status.join } : {}),
             sortOrder: sortOrder,
             ...(applicationNumber ? { applicationNumber } : {}),
             ...(businessService && businessService.length > 0 ? { offenceTypeName: businessService.join(",") } : {}),

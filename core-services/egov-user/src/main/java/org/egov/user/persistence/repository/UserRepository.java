@@ -389,7 +389,7 @@ public class UserRepository {
         else
             updateuserInputs.put("Password", oldUser.getPassword());
 
-        if (oldUser != null && user.getPhoto() != null && user.getPhoto().contains("http"))
+        if (oldUser != null && ((user.getPhoto() != null && user.getPhoto().contains("http")) || StringUtils.isEmpty(user.getPhoto())))
             updateuserInputs.put("Photo", oldUser.getPhoto());
         else
             updateuserInputs.put("Photo", user.getPhoto());
@@ -404,11 +404,6 @@ public class UserRepository {
         else
         	updateuserInputs.put("Signature", oldUser.getSignature());
         updateuserInputs.put("Title", user.getTitle());
-
-        if(!StringUtils.isEmpty(user.getPhoto()))
-        	updateuserInputs.put("Photo", user.getPhoto());
-        else
-        	updateuserInputs.put("Photo", oldUser.getPhoto());
 
         List<Enum> userTypeEnumValues = Arrays.asList(UserType.values());
         if (user.getType() != null) {

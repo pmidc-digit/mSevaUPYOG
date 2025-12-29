@@ -397,8 +397,11 @@ public class DemandService {
                  diffInTaxAmount = demandDetail.getTaxAmount().subtract(total);
                  if(diffInTaxAmount.compareTo(BigDecimal.ZERO)!=-1) {
                 	 demandDetail.setTaxAmount(diffInTaxAmount);
-                     newDemandDetails.add(demandDetail);
+                 }else {
+                	 demandDetail.setTaxAmount(BigDecimal.ZERO);
                  }
+                 newDemandDetails.add(demandDetail);
+
             }
         }
         addRoundOffTaxHead(tenantId,newDemandDetails);

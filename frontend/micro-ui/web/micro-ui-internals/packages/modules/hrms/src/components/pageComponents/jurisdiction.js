@@ -34,7 +34,6 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
       res = cleanup(res);
       if (jurisdiction?.roles) {
         res["roles"] = jurisdiction?.roles.map((ele) => {
-          delete ele.description;
           return ele;
         });
       }
@@ -219,7 +218,7 @@ function Jurisdiction({
     console.log("filterData==", filterData);
 
     const mapRoles = filterData?.map((roles) => {
-      return { code: roles.code, name: roles?.name ? roles?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + roles.code };
+      return { code: roles.code, name: roles?.name ? roles?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + roles.code, description: value?.groupName || roles?.description || "" };
     });
 
     console.log("mapRoles", mapRoles);
@@ -248,6 +247,7 @@ function Jurisdiction({
 
     res?.forEach((resData) => {
       resData.labelKey = "ACCESSCONTROL_ROLES_ROLES_" + resData.code;
+      resData.description = resData?.description || data?.groupName || ""
     });
 
     console.log("res====", res);

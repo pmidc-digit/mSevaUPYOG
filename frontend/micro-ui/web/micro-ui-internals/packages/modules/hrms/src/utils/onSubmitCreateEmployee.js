@@ -43,6 +43,7 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
         mobileNumber: data?.SelectEmployeePhoneNumber?.mobileNumber,
         name: data?.SelectEmployeeName?.employeeName,
         correspondenceAddress: data?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress,
+        fatherOrHusbandName:data?.SelectEmployeeGuardianName?.employeeGuardianName,
         emailId: data?.SelectEmployeeEmailId?.emailId ? data?.SelectEmployeeEmailId?.emailId : undefined,
         gender: data?.SelectEmployeeGender?.gender.code,
         dob: new Date(data?.SelectDateofBirthEmployment?.dob).getTime(),
@@ -52,6 +53,7 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
       serviceHistory: [],
       education: [],
       tests: [],
+      categories: [data?.SelectEmployeeGuardianRelationship?.code || "Unknown"]  ,
     },
   ];
   /* use customiseCreateFormData hook to make some chnages to the Employee object */

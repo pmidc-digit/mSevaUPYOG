@@ -6,6 +6,7 @@ import { newConfig } from "../../components/config/config";
 import { convertEpochToDate } from "../../components/Utils";
 
 const EditForm = ({ tenantId, data }) => {
+  console.log('data in edit form', data)
   const { t } = useTranslation();
   const history = useHistory();
   const [canSubmit, setSubmitValve] = useState(false);
@@ -69,7 +70,7 @@ const EditForm = ({ tenantId, data }) => {
         name: `COMMON_GENDER_${data?.user?.gender}`,
       },
     },
-
+    SelectEmployeeGuardianName : {employeeGuardianName : data?.user?.fatherOrHusbandName},
     SelectDateofBirthEmployment: { dob: convertEpochToDate(data?.user?.dob) },
     Jurisdictions: data?.jurisdictions.map((ele, index) => {
       return Object.assign({}, ele, {

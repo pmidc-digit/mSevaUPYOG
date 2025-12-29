@@ -272,7 +272,12 @@ console.log("building category here: & fileNo", usage,fileno);
   })
   const userInfo = Digit.UserService.getUser();
 console.log('userInfo', userInfo)
-  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.info?.mobileNumber;
+  const architecttype =
+  data?.applicationData?.additionalDetails?.typeOfArchitect ||
+  user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name ||
+  "";
+console.log('architecttype', architecttype)
+  const isArchitect = architecttype?.toUpperCase() === "ARCHITECT";
 
   console.log("datata=====", workflowDetails, data, isArchitect)
 
@@ -340,16 +345,16 @@ console.log('userInfo', userInfo)
   const handleMobileNumberChange = (e) => {
     setMobileNumber(e.target.value)
   }
-  const requestor = userInfo?.info?.mobileNumber;
-console.log(requestor); 
+  const requestor = data?.applicationData?.additionalDetails?.architectMobileNumber;
+ console.log("requeestor",requestor); 
 
     const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
 
 
   console.log('LicenseData', LicenseData)
 
-  let stakeholderAddress, signFilestoreId="";
-
+  let stakeholderAddress="";
+  let signFilestoreId =null
   if (!LicenseDataLoading && requestor) {
     const matchedLicense = LicenseData?.Licenses?.find((lic) => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor);
 
@@ -365,6 +370,7 @@ console.log(requestor);
 
     }
   }
+  console.log('signFilestoreId', signFilestoreId)
 
   const handleGetOTPClick = async () => {
     // Call the Digit.UserService.sendOtp API to send the OTP
@@ -703,11 +709,17 @@ useEffect(() => {
     console.log("validity date",approvalDatePlusThree); 
     const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
     let base64Image = null;
-    if (signFilestoreId?.length > 0) {
-        base64Image = await getBase64Img(signFilestoreId,state) 
-    }
+
+      if (signFilestoreId && signFilestoreId.length > 0) {
+        const fetchedBase64 = await getBase64Img(signFilestoreId, state);
+        if (fetchedBase64) {
+          base64Image = fetchedBase64;
+        } else {
+          console.warn("Signature image not found, skipping.");
+        }
+      }
     
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation,base64Image}
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation,...(base64Image ? { base64Image } : {})}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {

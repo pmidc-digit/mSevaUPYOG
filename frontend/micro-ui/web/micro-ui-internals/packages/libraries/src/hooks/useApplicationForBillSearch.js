@@ -12,7 +12,6 @@ const fsmApplications = async (tenantId, filters) => {
 };
 
 const ptApplications = async (tenantId, filters) => {
-  console.log("filstettetetrtr", filters);
   return (await PTService.search({ tenantId, filters })).Properties;
 };
 
@@ -39,8 +38,11 @@ const chbApplications = async (tenantId, filters) => {
   return (await CHBServices.search({ tenantId, filters })).hallsBookingApplication;
 };
 
+const ralApplications = async (tenantId, filters) => {
+  return (await RentAndLeaseService.search({ tenantId, filters })).AllotmentDetails;
+};
+
 const refObj = (tenantId, filters) => {
-  console.log("filterssssssss", filters);
   let consumerCodes = filters?.consumerCodes;
   // delete filters.consumerCodes;
 
@@ -106,11 +108,15 @@ const refObj = (tenantId, filters) => {
       key: "bookingNo",
       label: "CHB_BOOKING_NO",
     },
+    "rl-services": {
+      searchFn: () => ralApplications(tenantId, filters),
+      key: "applicationNumber",
+      label: "RAL_APPLICATION_NUMBER",
+    },
   };
 };
 
 export const useApplicationsForBusinessServiceSearch = ({ tenantId, businessService, filters }, config = {}) => {
-  console.log("busyysysysys", businessService);
   let _key = businessService?.toLowerCase().split(".")[0];
   if (window.location.href.includes("mcollect")) {
     _key = "mcollect";

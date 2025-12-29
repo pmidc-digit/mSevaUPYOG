@@ -8,13 +8,12 @@ import { convertDateToEpoch } from "../../../../utils";
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
-
+  const dispatch = useDispatch();
   let tenantId;
-  if(currentUserType === "CITIZEN"){
-      tenantId = window.localStorage.getItem("CITIZEN.CITY");
-
-  }else{
-    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  if (currentUserType === "CITIZEN") {
+    tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  } else {
+    tenantId = Digit.ULBService.getCurrentPermanentCity();
   }
   const tenants = Digit.Hooks.tl.useTenants();
   const [canSubmit, setSubmitValve] = useState(false);
@@ -95,9 +94,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   // };
 
   const validateOwnerDetails = (data) => {
-    const { ownershipCategory, owners } = data;
-    if (!ownershipCategory?.code || !owners?.length) return false;
-    return owners.every(
+    console.log("data==???", data);
+    const { owners } = data;
+    // console.log("owners==???", owners);
+    // if (!ownershipCategory?.code || !owners?.length) return false;
+    // console.log("owners?.length==???", owners?.length);
+    return owners?.every(
       (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
     );
   };
@@ -219,7 +221,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let applicationDocuments = TraidDetails?.documents?.documents || [];
     let commencementDate = convertDateToEpoch(TraidDetails?.tradedetils?.[0]?.commencementDate);
     let financialYear = TraidDetails?.tradedetils?.[0]?.financialYear?.code;
-    let gstNo = TraidDetails?.tradedetils?.[0]?.gstNo || "";//
+    let gstNo = TraidDetails?.tradedetils?.[0]?.gstNo || ""; //
     let noOfEmployees = Number(TraidDetails?.tradedetils?.[0]?.noOfEmployees) || "";
     let operationalArea = Number(TraidDetails?.tradedetils?.[0]?.operationalArea) || "";
     let structureType = TraidDetails?.tradedetils?.[0]?.structureSubType?.code || "";
@@ -297,8 +299,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
   };
-
-  const dispatch = useDispatch();
 
   console.log("currentStepData in  Administrative details: ", currentStepData);
 

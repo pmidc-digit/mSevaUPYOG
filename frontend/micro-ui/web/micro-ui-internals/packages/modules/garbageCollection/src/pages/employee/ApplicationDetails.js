@@ -271,6 +271,9 @@ const ChallanApplicationDetails = () => {
               text={getChallanData?.connectionHolders?.[0]?.mobileNumber || t("CS_NA")}
             />
             <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.connectionHolders?.[0]?.emailId || t("CS_NA")} />
+            {getChallanData?.connectionHolders?.[0]?.permanentAddress && (
+              <Row className="border-none" label={t("PTR_ADDRESS")} text={getChallanData?.connectionHolders?.[0]?.permanentAddress || t("CS_NA")} />
+            )}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
@@ -331,7 +334,7 @@ const ChallanApplicationDetails = () => {
             )}
           </Card>
         )} */}
-         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {getChallanData?.applicationStatus != "INITIATED" && actions && (
           <ActionBar>

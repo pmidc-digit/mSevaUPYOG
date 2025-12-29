@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
-import org.egov.rl.calculator.repository.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,9 +27,6 @@ public class JobScheduler {
 
 	@Autowired
 	DemandService demandService;
-
-	@Autowired
-	private ServiceRequestRepository serviceRequestRepository;
 
 	// Runs every day at 09:30 IST // 24 hr time
 	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")

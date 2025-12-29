@@ -38,9 +38,6 @@ public class NotificationConsumer {
 		}
 
 		log.info("RL Application Received: " + allotmentRequest.getAllotment().get(0).getApplicationNumber());
-
-//		// Save owner metadata after registration is persisted
-//		enrichmentService.saveOwnerMetadata(allotmentRequest);
 		
 		notificationService.process(allotmentRequest);
 	}

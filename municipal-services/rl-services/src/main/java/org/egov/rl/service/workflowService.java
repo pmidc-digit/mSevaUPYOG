@@ -9,7 +9,7 @@ import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.ProcessInstance;
-import org.egov.rl.models.User;
+import org.egov.rl.models.user.User;
 import org.egov.rl.models.workflow.BusinessService;
 import org.egov.rl.models.workflow.BusinessServiceResponse;
 import org.egov.rl.models.workflow.ProcessInstanceRequest;

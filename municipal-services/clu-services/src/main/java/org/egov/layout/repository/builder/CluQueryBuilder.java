@@ -36,16 +36,16 @@ public class CluQueryBuilder {
 
 	private static final String QUERY =
 			"SELECT clu.*, " +
-					"json_build_object(" +
+					"jsonb_build_object(" +
 					"'id', details.id, " +
 					"'cluid', details.cluid, " +
 					"'additionalDetails', details.additionalDetails" +
 					") AS nocDetails, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', cludoc.uuid, " +
 					"'documentType', cludoc.documenttype, " +
 					"'documentAttachment', cludoc.documentAttachment)) AS documents, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', cluowner.additionalDetails, " +
 					"'uuid', cluowner.uuid " +
 					")) AS owners " +

@@ -36,16 +36,16 @@ public class LayoutQueryBuilder {
 
 	private static final String QUERY =
 			"SELECT layout.*, " +
-					"json_build_object(" +
+					"jsonb_build_object(" +
 					"'id', details.id, " +
 					"'layoutid', details.layoutid, " +
 					"'additionalDetails', details.additionalDetails" +
 					") AS nocDetails, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', layoutdoc.uuid, " +
 					"'documentType', layoutdoc.documenttype, " +
 					"'documentAttachment', layoutdoc.documentAttachment)) AS documents, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', layoutowner.additionalDetails, " +
 					"'uuid', layoutowner.uuid " +
 					")) AS owners " +

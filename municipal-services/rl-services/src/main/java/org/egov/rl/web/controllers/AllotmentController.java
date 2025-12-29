@@ -57,7 +57,7 @@ public class AllotmentController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/_search")
+	@PostMapping("/v1/_search")
 	public ResponseEntity<AllotmentResponse> rlSearch(@RequestBody RequestInfoWrapper requestInfoWrapper,
 			@Valid @ModelAttribute AllotmentCriteria allotmentCriteria) {
 		List<AllotmentDetails> applications = allotmentService

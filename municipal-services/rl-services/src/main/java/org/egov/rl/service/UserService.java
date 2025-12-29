@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.rl.config.RentLeaseConfiguration;
 import org.egov.rl.models.AllotmentDetails;
 import org.egov.rl.models.AllotmentRequest;
 import org.egov.rl.models.Owner;
@@ -25,7 +26,6 @@ import org.egov.rl.models.user.UserSearchRequest;
 import org.egov.rl.repository.ServiceRequestRepository;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -43,22 +43,9 @@ public class UserService {
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
-
-
-	@Value("${egov.user.host}")
-	private String userHost;
-
-	@Value("${egov.user.context.path}")
-	private String userContextPath;
-
-	@Value("${egov.user.create.path}")
-	private String userCreateEndpoint;
-
-	@Value("${egov.user.search.path}")
-	private String userSearchEndpoint;
-
-	@Value("${egov.user.update.path}")
-	private String userUpdateEndpoint;
+	
+	@Autowired
+	private RentLeaseConfiguration config;
 
 	/**
 	 * Creates user of the owners of pet if it is not created already
@@ -155,7 +142,7 @@ public class UserService {
 
 		// Convert Owner to User for user service call
 		org.egov.rl.models.user.User user = convertOwnerToUser(ownerFromRequest);
-		StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userUpdateEndpoint);
+		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
 		userDetailResponse = userCall(new CreateUserRequest(requestInfo, user), uri);
 		if (userDetailResponse.getUser().get(0).getUuid() == null) {
 			throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");
@@ -165,12 +152,11 @@ public class UserService {
 
 	private UserDetailResponse createUser(RequestInfo requestInfo, Owner owner) {
 		UserDetailResponse userDetailResponse;
-		StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
+		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserContextPath()).append(config.getUserCreateEndpoint());
 
 		// Convert Owner to User for user service call
 		org.egov.rl.models.user.User user = convertOwnerToUser(owner);
 		CreateUserRequest userRequest = CreateUserRequest.builder().requestInfo(requestInfo).user(user).build();
-		System.out.println("userRequest.getUser().getRoles()----------"+userRequest.getUser().getRoles().get(0).getCode());
 		userDetailResponse = userCall(userRequest, uri);
 
 		if (ObjectUtils.isEmpty(userDetailResponse)) {
@@ -193,28 +179,28 @@ public class UserService {
 	public List<String> getUserUuidsByMobileNumber(String mobileNumber, String tenantId, RequestInfo requestInfo) {
 		List<String> userUuids = new ArrayList<>();
 
-		System.out.println("DEBUG: UserService - Searching for mobile number: " + mobileNumber + " in tenant: " + tenantId);
+		log.info("DEBUG: UserService - Searching for mobile number: " + mobileNumber + " in tenant: " + tenantId);
 
 		try {
 			UserSearchRequest userSearchRequest = getBaseUserSearchRequest(tenantId, requestInfo);
 			userSearchRequest.setMobileNumber(mobileNumber);
 			userSearchRequest.setUserName(mobileNumber);
-			System.out.println("DEBUG: UserService - UserSearchRequest: " + userSearchRequest);
+			log.info("DEBUG: UserService - UserSearchRequest: " + userSearchRequest);
 
 			UserDetailResponse response = getUser(userSearchRequest);
 
-			System.out.println("DEBUG: UserService - Response: " + response);
+			log.info("DEBUG: UserService - Response: " + response);
 
 			if (response != null && !CollectionUtils.isEmpty(response.getUser())) {
 				userUuids = response.getUser().stream()
 						.map(org.egov.rl.models.user.User::getUuid)
 						.collect(java.util.stream.Collectors.toList());
-				System.out.println("DEBUG: UserService - Found UUIDs: " + userUuids);
+				log.info("DEBUG: UserService - Found UUIDs: " + userUuids);
 			} else {
-				System.out.println("DEBUG: UserService - No users found or null response");
+				log.info("DEBUG: UserService - No users found or null response");
 			}
 		} catch (Exception e) {
-			System.out.println("DEBUG: UserService - Exception: " + e.getMessage());
+			log.info("DEBUG: UserService - Exception: " + e.getMessage());
 			log.error("Error fetching user UUIDs for mobile number: " + mobileNumber, e);
 		}
 
@@ -266,19 +252,19 @@ public class UserService {
 
 		UserSearchRequest userSearchRequest = getBaseUserSearchRequest(owner.getTenantId(), requestInfo);
 		userSearchRequest.setMobileNumber(owner.getMobileNumber());
-		userSearchRequest.setUserName(owner.getMobileNumber());
+//		userSearchRequest.setUserName(owner.getMobileNumber());
 		// Remove all other criteria - search by mobile number only to avoid search failures
 		// userSearchRequest.setUserType(owner.getType());
 		// userSearchRequest.setName(owner.getName());
 
-		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
+		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		UserDetailResponse response = userCall(userSearchRequest, uri);
 		
 		// Debug: Log search results to understand what's happening
 		if (response != null && response.getUser() != null) {
-			System.out.println("Search found " + response.getUser().size() + " users for mobile: " + owner.getMobileNumber());
+			log.info("Search found " + response.getUser().size() + " users for mobile: " + owner.getMobileNumber());
 		} else {
-			System.out.println("Search found no users for mobile: " + owner.getMobileNumber());
+			log.info("Search found no users for mobile: " + owner.getMobileNumber());
 		}
 		
 		return response;
@@ -310,7 +296,7 @@ public class UserService {
 	 */
 	public UserDetailResponse getUser(UserSearchRequest userSearchRequest) {
 
-		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
+		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		UserDetailResponse userDetailResponse = userCall(userSearchRequest, uri);
 		return userDetailResponse;
 	}
@@ -326,9 +312,9 @@ public class UserService {
 	private UserDetailResponse userCall(Object userRequest, StringBuilder url) {
 
 		String dobFormat = null;
-		if (url.indexOf(userSearchEndpoint) != -1 || url.indexOf(userUpdateEndpoint) != -1)
+		if (url.indexOf(config.getUserSearchEndpoint()) != -1 || url.indexOf(config.getUserUpdateEndpoint()) != -1)
 			dobFormat = "yyyy-MM-dd";
-		else if (url.indexOf(userCreateEndpoint) != -1)
+		else if (url.indexOf(config.getUserCreateEndpoint()) != -1)
 			dobFormat = "dd/MM/yyyy";
 		try {
 			Object response = serviceRequestRepository.fetchResult(url, userRequest).get();
@@ -446,9 +432,9 @@ public class UserService {
 		
 		// Debug: Log alternative search results
 		if (response != null && response.getUser() != null) {
-			System.out.println("Alternative search found " + response.getUser().size() + " users for userName: " + userName);
+			log.info("Alternative search found " + response.getUser().size() + " users for userName: " + userName);
 		} else {
-			System.out.println("Alternative search found no users for userName: " + userName);
+			log.info("Alternative search found no users for userName: " + userName);
 		}
 		
 		return response;
@@ -464,9 +450,9 @@ public class UserService {
 		
 		// Debug: Log UUID search results
 		if (response != null && response.getUser() != null) {
-			System.out.println("UUID search found " + response.getUser().size() + " users for UUID: " + uuid);
+			log.info("UUID search found " + response.getUser().size() + " users for UUID: " + uuid);
 		} else {
-			System.out.println("UUID search found no users for UUID: " + uuid);
+			log.info("UUID search found no users for UUID: " + uuid);
 		}
 		
 		return response;
@@ -484,7 +470,7 @@ public class UserService {
 		uuids.add(owner.getUuid());
 		userSearchRequest.setUuid(uuids);
 
-		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
+		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		return userCall(userSearchRequest, uri);
 	}
 

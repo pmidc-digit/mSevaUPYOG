@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,8 +23,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-//@Data
-public class OwnerInfo { // extends User {
+public class OwnerInfo { 
 
 
 	@SafeHtml
@@ -83,10 +81,6 @@ public class OwnerInfo { // extends User {
 	@JsonProperty("mobileNo")
 	private String mobileNo;
 	
-//    @JsonProperty("userName")
-//    private String userName;
-
-	
     @JsonProperty("roles")
     private List<Role> roles;
     
@@ -139,8 +133,6 @@ public class OwnerInfo { // extends User {
                 ", ownerShipPercentage=" + ownerShipPercentage +
                 ", ownerType='" + ownerType + '\'' +
                 ", name='" + name + '\'' +
-//                ", middleName='" + middleName + '\'' +
-//                ", lastName='" + lastName + '\'' +
                 ", emailId='" + emailId + '\'' +
                 ", mobileNo='" + mobileNo + '\'' +
                 ", permanentAddress='" + permanentAddress + '\'' +

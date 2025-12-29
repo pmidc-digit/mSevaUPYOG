@@ -240,7 +240,7 @@ public class UserService {
 	private void setOwnerFields(OwnerInfo owner, UserResponse userResponse,RequestInfo requestInfo){
 		owner.setUuid(userResponse.getUser().get(0).getUuid());
 		owner.setId(userResponse.getUser().get(0).getId());
-		owner.setUserName((userResponse.getUser().get(0).getUserName()));
+		owner.setUserName((userResponse.getUser().get(0).getMobileNumber()));
 		owner.setCreatedDate(System.currentTimeMillis());
 		owner.setLastModifiedDate(System.currentTimeMillis());
 		owner.setActive(userResponse.getUser().get(0).getActive());
@@ -255,7 +255,7 @@ public class UserService {
 		if(StringUtils.isNotBlank(owner.getMobileNumber())) {
 			userSearchRequest.setMobileNumber(owner.getMobileNumber());
 			if (StringUtils.isNotBlank(owner.getUserName()))
-				userSearchRequest.setUserName(owner.getUserName());
+				userSearchRequest.setUserName(owner.getMobileNumber());
 			else
 				userSearchRequest.setUserName(owner.getMobileNumber());
 

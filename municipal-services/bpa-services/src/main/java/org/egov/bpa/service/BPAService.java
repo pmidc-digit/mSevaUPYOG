@@ -445,7 +445,7 @@ public class BPAService {
                 	Boolean isPropertyAvailable = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isPropertyAvailable");
                 	if(!isPropertyAvailable)
                 		bpaPropertyService.createProperty(bpaRequest);
-                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
+//                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
                 }
                 
                 /*
@@ -453,12 +453,12 @@ public class BPAService {
                  * or not for that purpose on PENDING_APPROVAL_STATE the demand is generating.
                  */
                 // Generate the sanction Demand
-                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_LOW_MODULE_CODE))
-                        && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_VERIFY)) {
-                    calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-                }
+//                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
+//                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE)
+//                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_LOW_MODULE_CODE))
+//                        && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_VERIFY)) {
+//                    calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+//                }
                 
                 
                 /*

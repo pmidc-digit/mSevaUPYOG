@@ -450,6 +450,7 @@ public class CalculationService {
 			estimate.setTaxHeadCode(taxhead);
 			estimate.setAdjustedAmount(new BigDecimal(adjustedAmount.getOrDefault("adjustedAmount", "0").toString()));
 			estimate.setFilestoreId((String)adjustedAmount.getOrDefault("filestoreId", null));
+			estimate.setRemark((String)adjustedAmount.getOrDefault("remark", null));
 			estimates.add(estimate);
 			
 		});

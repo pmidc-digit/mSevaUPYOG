@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -47,6 +48,7 @@ public class PaymentUpdateService {
 	private WorkflowService workflowService;
 	
 	private UserService userService;
+	
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
@@ -131,6 +133,12 @@ public class PaymentUpdateService {
 							});
 							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
 							bpa.getWorkflow().setAssignes(assignee);
+							
+							if(BPAConstants.BPA_LOW_MODULE_CODE.equalsIgnoreCase(bpa.getBusinessService())) {
+								Map<String, Object> additionalDetails = (Map<String, Object>)bpa.getAdditionalDetails();
+								additionalDetails.put("isSanctionLetterGenerated", Boolean.TRUE);
+								bpa.setAdditionalDetails(additionalDetails);
+							}
 						}
 					});
 					
@@ -145,7 +153,7 @@ public class PaymentUpdateService {
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */
 					enrichmentService.postStatusEnrichment(updateRequest);
-
+					
 					repository.update(updateRequest, true);
 
 				}

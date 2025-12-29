@@ -680,8 +680,13 @@ public class PropertyService {
 
 	public List<Property> searchPropertyPlainSearch(PropertyCriteria criteria, RequestInfo requestInfo) {
 		List<Property> properties = getPropertiesPlainSearch(criteria, requestInfo);
-		for (Property property : properties)
-			enrichmentService.enrichBoundary(property, requestInfo);
+		for (Property property : properties) {
+			try {
+				enrichmentService.enrichBoundary(property, requestInfo);
+			} catch (Exception e) {
+				log.error("Error occurred while enriching boundary for Property: " + property.getPropertyId(), e);
+			}
+		}
 		return properties;
 	}
 

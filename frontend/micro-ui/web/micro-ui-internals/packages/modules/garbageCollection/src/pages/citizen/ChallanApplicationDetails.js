@@ -124,21 +124,20 @@ const ChallanApplicationDetails = () => {
   // sessionStorage.setItem("chb", JSON.stringify(application));
 
   const getAcknowledgement = async () => {
-  setLoader(true);
-  try {
-    const applications = getChallanData;
-    const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-    const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-    setTimeout(() => {
-      Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    setLoader(true);
+    try {
+      const applications = getChallanData;
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+        setLoader(false);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
       setLoader(false);
-    }, 0);
-  } catch (error) {
-    console.error("Error generating acknowledgement:", error);
-    setLoader(false);
-  }
-};
-
+    }
+  };
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -189,9 +188,8 @@ const ChallanApplicationDetails = () => {
     } catch (error) {
       console.error(error);
       setLoader(false);
-    } 
+    }
   }
-
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -224,6 +222,9 @@ const ChallanApplicationDetails = () => {
               text={getChallanData?.connectionHolders?.[0]?.mobileNumber || t("CS_NA")}
             />
             <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.connectionHolders?.[0]?.emailId || t("CS_NA")} />
+            {getChallanData?.connectionHolders?.[0]?.permanentAddress && (
+              <Row className="border-none" label={t("PTR_ADDRESS")} text={getChallanData?.connectionHolders?.[0]?.permanentAddress || t("CS_NA")} />
+            )}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>

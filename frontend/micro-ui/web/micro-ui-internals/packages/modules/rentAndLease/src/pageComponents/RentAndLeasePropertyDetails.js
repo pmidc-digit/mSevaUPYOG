@@ -20,9 +20,7 @@ import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../redux/action/RentAn
 const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, validateStep, config }) => {
   const dispatch = useDispatch();
   // const apiDataCheck = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData?.responseData);
-  const tenantId = window.location.href.includes("citizen")
-    ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
   // const { data: mdmsPropertyData } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
 
   const filters = {
@@ -32,18 +30,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
 
   const { triggerLoader, triggerToast } = config?.currStepConfig[0];
-
-  useEffect(() => {
-    if (triggerLoader) {
-      triggerLoader(isLoading);
-    }
-  }, [isLoading, triggerLoader]);
-
-  useEffect(() => {
-    if (isError && triggerToast) {
-      triggerToast("ERROR_WHILE_FETCHING_PROPERTIES", true);
-    }
-  }, [isError, triggerToast]);
 
   // 🔹 Dropdown options
   const propertyTypeOptions = [
@@ -97,7 +83,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       baseRent: "",
       securityDeposit: "",
       refundApplicableOnDiscontinuation: null,
-      // penaltyType: "",
+      penaltyType: "",
       // latePayment: "",
       startDate: "",
       endDate: "",
@@ -157,7 +143,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       "baseRent",
       "securityDeposit",
       "refundApplicableOnDiscontinuation",
-      // "penaltyType",
+      "penaltyType",
       // "latePayment",
       // "cowCessApplicable",
       // "taxApplicable"
@@ -241,9 +227,17 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     }
   }, [watch("startDate"), watch("endDate")]);
 
-  // const checkStyles = { marginBottom: "15px" };
-  // const radioStyles = { width: "18px", height: "18px", cursor: "pointer" };
-  // const wrapper = { display: "flex", alignItems: "center", gap: "10px", margin: "10px 0px 20px 0px" };
+  useEffect(() => {
+    if (triggerLoader) {
+      triggerLoader(isLoading);
+    }
+  }, [isLoading, triggerLoader]);
+
+  useEffect(() => {
+    if (isError && triggerToast) {
+      triggerToast("ERROR_WHILE_FETCHING_PROPERTIES", true);
+    }
+  }, [isError, triggerToast]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -464,9 +458,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {errors.baseRent && <CardLabelError className="ral-error-label">{getErrorMessage("baseRent")}</CardLabelError>}
 
       {/* Penalty Type */}
-      {/* <LabelFieldPair>
+      <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("PENALTY_TYPE")} <span style={mandatoryStyle}>*</span>
+          {t("PENALTY_TYPE")} <span>*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -479,7 +473,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
           />
         </div>
       </LabelFieldPair>
-      {errors.penaltyType && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>} */}
+      {errors.penaltyType && <CardLabelError>{getErrorMessage("penaltyType")}</CardLabelError>}
 
       {/* Security Amount */}
       <LabelFieldPair>

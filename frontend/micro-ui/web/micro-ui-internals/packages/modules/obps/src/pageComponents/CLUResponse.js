@@ -13,6 +13,7 @@ const CLUResponse = (props) => {
   const history = useHistory();
   const [downloading, setDownloading] = useState(false);
   let tenantId;
+  const cluData = state?.data?.Clu?.[0];
 
   if(window.location.pathname.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
   else{
@@ -24,10 +25,6 @@ const CLUResponse = (props) => {
 
   const cluCode = pathname.split("/").pop(); // ✅ Extracts the last segment
 
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: cluCode }, tenantId);
-  const applicationDetails = data?.resData;
-
-  const cluData = applicationDetails?.Clu?.[0];
   console.log("cluData here", cluData);
 
   const onSubmit = () => {
@@ -64,8 +61,6 @@ const CLUResponse = (props) => {
     const ulbName = site?.ulbName?.city?.name;
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-    console.log("acknowledgementData in citizen NOC", acknowledgementData);
-    // Digit.Utils.pdf.generate(acknowledgementData);
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
  
     } catch(err){
@@ -74,10 +69,6 @@ const CLUResponse = (props) => {
       setDownloading(false);
     }
   };
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   return (
     <div>
@@ -90,7 +81,7 @@ const CLUResponse = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        {(isLoading || downloading) && <Loader />}
+        {downloading && <Loader />}
         {cluData?.applicationStatus !== "REJECTED" ? (
           <div>
           <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />

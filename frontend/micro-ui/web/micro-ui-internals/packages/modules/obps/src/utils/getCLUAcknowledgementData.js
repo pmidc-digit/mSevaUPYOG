@@ -58,36 +58,36 @@ const getApplicantDetails = (appData, t) => {
   const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
 
   const ownerDetailsArray = owners.map((owner, index) => ({
-    title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
+    title: index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`,
     values: [
       {
-        title: "Owner/Firm's Name",
+        title: t("BPA_FIRM_OWNER_NAME_LABEL"),
         value: owner?.ownerOrFirmName || "NA",
       },
       {
-        title: "Email",
+        title: t("BPA_APPLICANT_EMAIL_LABEL"),
         value: owner?.emailId || "NA",
       },
       {
-        title: "Father/Husband's Name",
+        title: t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
         value: owner?.fatherOrHusbandName || "NA",
       },
       {
-        title: "Mobile No.",
+        title: t("BPA_APPLICANT_MOBILE_NO_LABEL"),
         value: owner?.mobileNumber || "NA",
       },
       {
-        title: "Date Of Birth",
+        title: t("BPA_APPLICANT_DOB_LABEL"),
         value: owner?.dateOfBirth
           ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
           : "NA",
       },
       {
-        title: "Gender",
+        title: t("BPA_APPLICANT_GENDER_LABEL"),
         value: owner?.gender?.code || "NA",
       },
       {
-        title: "Address",
+        title: t("BPA_APPLICANT_ADDRESS_LABEL"),
         value: owner?.address || "NA",
       },
     ],
@@ -341,7 +341,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
 
   let detailsArr = [], imageURL = "";
 
-  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.fileStoreId || "";
+  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
 
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 
@@ -350,7 +350,6 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
 
   if (appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalName) detailsArr.push(getProfessionalDetails(appData, t));
 
-  const documentsDetails = await getDocuments(appData, t);
   return {
     t: t,
     tenantId: tenantInfo?.code,
@@ -367,7 +366,7 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
       getCoordinateDetails(appData, t),
-      documentsDetails
+      await getDocuments(appData, t)
     ],
     imageURL,
     ulbType,

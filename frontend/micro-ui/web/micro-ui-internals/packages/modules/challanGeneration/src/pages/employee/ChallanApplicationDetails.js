@@ -19,6 +19,56 @@ import { useParams, useHistory } from "react-router-dom";
 import { Loader } from "../../components/Loader";
 import { ChallanData, getLocationName } from "../../utils/index";
 import NDCModal from "../../pageComponents/NDCModal";
+import CHBDocument from "../../components/ChallanDocument";
+import NDCDocumentTimline from "../../components/NDCDocument";
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    name: checkpoint?.assigner?.name,
+    // mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  };
+
+  return (
+    <div>
+      {comment?.length > 0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {/* {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )} */}
+
+      {wfDocuments?.length > 0 && (
+        <div>
+          {wfDocuments?.map((doc, index) => (
+            <div key={index}>
+              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption?.source?.toUpperCase())}</p>}
+      </div>
+    </div>
+  );
+};
 
 const ChallanApplicationDetails = () => {
   const { t } = useTranslation();
@@ -236,6 +286,8 @@ const ChallanApplicationDetails = () => {
   };
 
   const submitAction = async (modalData) => {
+    console.log("modalData", modalData);
+    // return;
     if (!modalData?.amount) {
       setErrorOne(`Please Enter Amount`);
       setShowErrorToastt(true);
@@ -255,6 +307,7 @@ const ChallanApplicationDetails = () => {
             ...getChallanData,
             workflow: {
               action: "SETTLED",
+              documents: modalData?.wfDocuments,
             },
             feeWaiver: modalData?.amount,
           },
@@ -319,6 +372,24 @@ const ChallanApplicationDetails = () => {
               text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
             />
             {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <StatusTable>
+            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+              {getChallanData?.documents?.length > 0 ? (
+                getChallanData?.documents?.map((doc, index) => (
+                  <React.Fragment key={index}>
+                    <div>
+                      <CHBDocument value={getChallanData?.documents} Code={doc?.documentType} index={index} />
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    </div>
+                  </React.Fragment>
+                ))
+              ) : (
+                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              )}
+            </Card>
           </StatusTable>
         </Card>
         {workflowDetails?.data?.timeline && (

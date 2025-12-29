@@ -232,6 +232,33 @@ export const convertToNocObject = (data, datafromflow) => {
   return formData;
 };
 
+export const getBPAFormDataNewEDCR = async (data, edcrNumber, history, t) => {
+  console.log(data, "PPPP");
+  const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: edcrNumber });
+  const APIScrutinyDetails = edcrResponse?.edcrDetail[0];
+
+
+  data.data = {
+    scrutinyNumber: { edcrNumber: APIScrutinyDetails?.edcrNumber },
+    applicationNo: data?.applicationNo,
+  };
+  data.uiFlow = {
+    flow: data?.businessService.includes("OC") ? "OCBPA" : data?.businessService?.split(".")[0],
+    applicationType: data?.additionalDetails?.applicationType || APIScrutinyDetails?.appliactionType,
+    serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
+  };
+
+  if (data?.businessService.includes("OC")) {
+    sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
+    history.push(
+      `/digit-ui/citizen/obps/ocbpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`
+    );
+  } else {
+    sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
+    history.push(`/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`);
+  }
+};
+
 export const getBPAFormData = async (data, mdmsData, history, t) => {
   console.log(data, "PPPP");
   const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: data?.edcrNumber });
@@ -1144,6 +1171,11 @@ export const scrutinyDetailsData = async (edcrNumber, tenantId) => {
   } else {
     return { type: "ERROR", message: "APPLICATION_NUMBER_ALREADY_EXISTS" };
   }
+};
+
+export const oldscrutinyDetailsData = async (edcrNumber, tenantId) => {
+  const scrutinyDetails = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: edcrNumber });  
+  return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
 };
 
 export const getOCEDCRDetails = async (edcrNumber, tenantId) => {

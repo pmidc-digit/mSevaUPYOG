@@ -1,8 +1,8 @@
 import { Banner, Card, CardText, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import React, {useEffect , useState} from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
-import { stringReplaceAll } from "../../../utils";
+import { useHistory, useLocation } from "react-router-dom";
+import { getBusinessServices, stringReplaceAll } from "../../../utils";
 
 const SelfCertificationResponse = (props) => {
 //   const { state } = props.location;
@@ -14,6 +14,9 @@ const SelfCertificationResponse = (props) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const [bpaData , setBpaData] = useState({})
+  const location = useLocation();
+  const { workflowAction } = location.state || {};
+  console.log("workflowAction",workflowAction);
 
 
   const pathname = history?.location?.pathname || "";
@@ -62,10 +65,12 @@ const SelfCertificationResponse = (props) => {
 //     history.push(`/digit-ui/citizen/ndc-home`);
 //   };
 
-//   const handlePayment = () => {
-//     history.push(`/digit-ui/citizen/payment/collect/NDC/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
-//     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
-//   };
+  const handlePayment = () => {
+    window.location.assign(
+      `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(bpaData?.businessService, bpaData?.applicationStatus)}/${bpaData?.applicationNo}/${bpaData?.tenantId}?tenantId=${bpaData?.tenantId}`}`,
+    )
+    // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
+  };
 
   //  /digit-ui/employee/payment/collect/TL/PB-TL-2025-07-07-227598/pb.testing
   if(isLoading) return (<Loader />)
@@ -78,7 +83,7 @@ const SelfCertificationResponse = (props) => {
       <Card>
         <Banner
           // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          message={bpaData?.status == "REJECTED" ? t("BPA_Application_Rejected") : bpaData?.status == "INITIATED" ? t("Application_Saved_As_Draft_Successfully") :t("Application Sent To Citizen Successfully")}
+          message={bpaData?.status == "REJECTED" ? t("BPA_Application_Rejected") : bpaData?.status == "INITIATED" ? t("Application_Saved_As_Draft_Successfully") :t(`WF_BPA_LOW_${workflowAction||""}_BY_ARCHITECT_DONE`)}
           applicationNumber={selfCertificationCode}
           info={bpaData?.status == "REJECTED" ? "" : t(`BPA_APPROVAL_NUMBER`)}
           successful={bpaData?.status == "REJECTED" ? false : true}
@@ -92,8 +97,9 @@ const SelfCertificationResponse = (props) => {
         ) : null} */}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          {/* <SubmitBar label={t("CORE_COMMON_GO_TO_NDC")} onSubmit={onGoToNDC} />
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
+          {/* <SubmitBar label={t("WF_BPA_PAY")} style={{ marginRight: "10px" }} /> */}
+          {/* <SubmitBar label={t("CORE_COMMON_GO_TO_NDC")} onSubmit={onGoToNDC} /> */}
+          {((bpaData?.status === "PENDING_APPL_FEE") || (bpaData?.status === "PENDING_SANC_FEE_PAYMENT")) &&<SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />}
         </ActionBar>
       </Card>
     </div>

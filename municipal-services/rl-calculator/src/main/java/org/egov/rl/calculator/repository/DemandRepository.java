@@ -15,8 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -36,8 +39,8 @@ public class DemandRepository {
 
 	@Autowired
 	private DemandDetailRowMapper demandDetailRowMapper;
-	
-	@Autowired 
+
+	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
 	/**
@@ -91,16 +94,21 @@ public class DemandRepository {
 		if (rentableIds == null || rentableIds.isEmpty()) {
 			return Collections.emptyList(); // avoid "IN ()" SQL
 		}
+		List<Object> preparedStmtList = new ArrayList<>();
+		List<Object> subQueryParams = new ArrayList<>();
+
+		String consumerCode = rentableIds.stream().map(id ->id).collect(Collectors.joining(", "));
 
 		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?)";
-
-		Object[] params;	
-		params = new Object[]{
-				rentableIds
-				};
+		log.info("consumerCode :: " + consumerCode);
+		subQueryParams.add(consumerCode);
 		try {
-			return jdbcTemplate.query(sql, params, demandRowMapper);
+			preparedStmtList.addAll(subQueryParams);
+			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
+		} catch (NoSuchElementException e) {
+			return Collections.emptyList();
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
@@ -112,23 +120,27 @@ public class DemandRepository {
 		return jdbcTemplate.queryForList(sql, String.class);
 	}
 
-	public Demand getDemandsByConsumerCodeAndPerioud(String rentableIds, long startDate, long endDate) {
+	public Demand getDemandsByConsumerCodeAndPerioud(String consumercode, long startDate, long endDate) {
 
-		if (rentableIds == null) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		List<Object> subQueryParams = new ArrayList<>();
+
+		if (consumercode == null) {
 			return null; // avoid "IN ()" SQL
 		}
 
 		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) AND taxperiodfrom=? and taxperiodto=?";
-		
-		Object[] params;	
-		params = new Object[]{
-				rentableIds,
-				startDate,
-				endDate
-				};
 
+		subQueryParams.add(consumercode);
+		subQueryParams.add(startDate);
+		subQueryParams.add(endDate);
 		try {
-			return jdbcTemplate.query(sql, params, demandRowMapper).stream().findFirst().orElse(null);
+
+			preparedStmtList.addAll(subQueryParams);
+			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper).stream().findFirst()
+					.orElse(null);
+		} catch (NoSuchElementException e) {
+			return null;
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
@@ -136,17 +148,19 @@ public class DemandRepository {
 		}
 	}
 
-	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> rentableIds) {
-		if (rentableIds == null || rentableIds.isEmpty()) {
+	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> consumercode) {
+		if (consumercode == null || consumercode.isEmpty()) {
 			return Collections.emptyList(); // avoid "IN ()" SQL
 		}
+		List<Object> preparedStmtList = new ArrayList<>();
+		List<Object> subQueryParams = new ArrayList<>();
+
 		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC";
-		Object[] params;	
-		params = new Object[]{
-				rentableIds
-				};
+		subQueryParams.add(consumercode);
 		try {
-			return jdbcTemplate.query(sql, params, demandRowMapper);
+
+			preparedStmtList.addAll(subQueryParams);
+			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
@@ -154,19 +168,22 @@ public class DemandRepository {
 		}
 	}
 
-	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> rentableIds) {
-		if (rentableIds == null || rentableIds.isEmpty()) {
+	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> demandid) {
+		if (demandid == null || demandid.isEmpty()) {
 			return Collections.emptyList();
 		}
+		List<Object> preparedStmtList = new ArrayList<>();
+		List<Object> subQueryParams = new ArrayList<>();
 
 		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (?)";
 
-		Object[] params;	
-		params = new Object[]{
-				rentableIds
-				};
+		subQueryParams.add(demandid);
 		try {
-			return jdbcTemplate.query(query, params, demandDetailRowMapper);
+
+			preparedStmtList.addAll(subQueryParams);
+			return jdbcTemplate.query(query, preparedStmtList.toArray(), demandDetailRowMapper);
+		} catch (NoSuchElementException e) {
+			return Collections.emptyList();
 		} catch (Exception e) {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",

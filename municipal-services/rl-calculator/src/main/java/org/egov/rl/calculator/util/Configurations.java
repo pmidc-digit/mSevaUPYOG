@@ -108,6 +108,10 @@ public class Configurations {
 
     @Value("${egov.localization.statelevel}")
     private Boolean isLocalizationStateLevel;
+    
+    @Value("${rl.batch.demand.size}")
+    private int demandBatchSize;
+
 
 
 

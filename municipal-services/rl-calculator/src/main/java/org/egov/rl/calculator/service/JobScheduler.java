@@ -29,16 +29,16 @@ public class JobScheduler {
 	DemandService demandService;
 
 	// Runs every day at 09:30 IST // 24 hr time
-	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
-//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
+	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEveryDaysCron() {
 		demandService.generateBatchDemand(getOAuthToken(),null,null);
 	}
 	
-	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
-//	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 30 12 * * *", zone = "Asia/Kolkata")
+	@Scheduled(cron = "0 * * * * *", zone = "Asia/Kolkata")
 	public void runEveryDayCron() {
-		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
+//		demandService.sendNotificationAndUpdateDemand(getOAuthToken());
 	}
 
 

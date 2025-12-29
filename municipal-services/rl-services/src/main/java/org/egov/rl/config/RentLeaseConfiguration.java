@@ -91,31 +91,7 @@ public class RentLeaseConfiguration {
     private String rlRegistrationNumberFormat;
 
     
-    @Value("${egov.idgen.ack.name}")
-    private String ackIdGenName;
-
-    @Value("${egov.idgen.ack.format}")
-    private String ackIdGenFormat;
-    
-    @Value("${egov.idgen.mutation.name}")
-    private String mutationIdGenName;
-
-    @Value("${egov.idgen.mutation.format}")
-    private String mutationIdGenFormat;
-
-    @Value("${egov.idgen.assm.name}")
-    private String assessmentIdGenName;
-
-    @Value("${egov.idgen.assm.format}")
-    private String assessmentIdGenFormat;
-
-    @Value("${egov.idgen.ptid.name}")
-    private String propertyIdGenName;
-
-    @Value("${egov.idgen.ptid.format}")
-    private String propertyIdGenFormat;
-
-
+  
     //NOTIFICATION TOPICS
     @Value("${kafka.topics.notification.sms}")
     private String smsNotifTopic;
@@ -175,25 +151,22 @@ public class RentLeaseConfiguration {
     
 	@Value("${egov.usr.events.create.topic}")
 	private String saveUserEventsTopic;
-		
-	@Value("${egov.usr.events.pay.link}")
-	private String payLink;
-	
-	@Value("${egov.usr.events.pay.code}")
-	private String payCode;
-	
-	@Value("${egov.user.event.notification.enabled}")
-	private Boolean isUserEventsNotificationEnabled;
-
-    @Value("${egov.msg.download.receipt.link}")
-    private String receiptDownloadLink;
-	
+//		
+//	@Value("${egov.usr.events.pay.link}")
+//	private String payLink;
+//	
+//	@Value("${egov.usr.events.pay.code}")
+//	private String payCode;
+//	
+//	@Value("${egov.user.event.notification.enabled}")
+//	private Boolean isUserEventsNotificationEnabled;
+//
+//    @Value("${egov.msg.download.receipt.link}")
+//    private String receiptDownloadLink;
+//	
 		
 
     // Workflow
-	
-    @Value("${pt.business.codes}")
-    private List<String> businessServiceList;
 
     @Value("${workflow.host}")
     private String wfHost;
@@ -209,10 +182,7 @@ public class RentLeaseConfiguration {
 
     @Value("${is.workflow.enabled}")
     private Boolean isWorkflowEnabled;
-    
-    @Value("${is.mutation.workflow.enabled}")
-    private Boolean isMutationWorkflowEnabled;
-    
+     
     // ##### mdms     
     @Value("${egov.mdms.host}")
     private String mdmsHost;

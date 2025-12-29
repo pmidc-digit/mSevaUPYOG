@@ -110,6 +110,7 @@ body {
   cursor: pointer;
   width: fit-content;
   color: black;
+  margin-top: 3rem;
   @apply flex border-solid border-b border-text-primary font-rc text-text-primary text-text-btn ml-sm mb-md;
 
   img {
@@ -132,7 +133,7 @@ body {
 
   .app-container {
     width: 100%;
-    padding: 2rem;
+    padding: 3rem;
     form {
       .card {
         max-width: 960px;

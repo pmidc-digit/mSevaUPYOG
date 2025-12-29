@@ -18,6 +18,7 @@ import ApplicationTable from "../components/inbox/ApplicationTable";
 import { useTranslation } from "react-i18next";
 import CHBDocument from "../pageComponents/CHBDocument";
 
+
 function CHBSummary({ formData, goNext, onGoBack }) {
   const { pathname: url } = useLocation();
   const { t } = useTranslation();
@@ -36,39 +37,25 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   ];
 
   const bookingId = formData?.venueDetails?.[0]?.bookingId;
-
-  console.log("docs===??", formData?.documents?.documents?.documents);
-
-  // let docs = formData?.documents?.documents?.documents;
-
   let docs = (formData?.documents?.documents?.documents || []).map((doc) => ({
     ...doc,
     bookingId,
   }));
 
   const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.[0]?.bookingNo;
-
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-
   const isCitizen = window.location.href.includes("citizen");
-
   const [getData, setData] = useState();
   const [displayMenu, setDisplayMenu] = useState(false);
-
-  const closeMenu = () => {
-    setDisplayMenu(false);
-  };
-
+  const closeMenu = () => setDisplayMenu(false);
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
-
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: appId,
     moduleCode: "chb-services",
   });
-
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -78,71 +65,68 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  function onActionSelect(action) {
-    goNext(action);
-    // setShowModal(true);
-    // setSelectedAction(action);
-  }
-
-  // ---------------- UI Styles ----------------
+  // Responsive styles
   const pageStyle = {
-    padding: "2rem",
+    padding: "2vw 2vw 5vw 2vw",
     backgroundColor: "#f9f9f9",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#333",
+    minHeight: "100vh",
+    maxWidth: 900,
+    margin: "0 auto"
   };
-
   const sectionStyle = {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     padding: "1rem 1.5rem",
-    borderRadius: "8px",
+    borderRadius: 8,
     marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+    width: "100%",
+    boxSizing: "border-box"
   };
-
   const headingStyle = {
-    fontSize: "1.5rem",
+    fontSize: "clamp(1.2rem, 4vw, 2rem)",
     borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
+    paddingBottom: ".3rem",
     color: "#2e4a66",
     marginTop: "2rem",
     marginBottom: "1rem",
+    textAlign: "center"
   };
-
   const labelFieldPairStyle = {
     display: "flex",
+    flexDirection: "row",
     justifyContent: "space-between",
     borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
+    padding: ".5rem 0",
     color: "#333",
+    flexWrap: "wrap"
   };
-
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
     gap: "1rem",
+    width: "100%",
+    overflowX: "auto"
   };
-
   const documentCardStyle = {
-    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
-    minWidth: "200px", // keeps it from shrinking too small
-    maxWidth: "250px", // prevents oversized stretching on big screens
+    flex: "1 1 220px",
+    minWidth: 180,
+    maxWidth: 260,
     backgroundColor: "#fdfdfd",
-    padding: "0.75rem",
+    padding: ".75rem",
     border: "1px solid #e0e0e0",
-    borderRadius: "6px",
+    borderRadius: 6,
     boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    marginBottom: "1rem"
   };
-
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div>{t(value) || "NA"}</div>
+      <div style={{ wordBreak: "break-word", maxWidth: "60vw" }}>{t(value) || "NA"}</div>
     </div>
   );
-
   const slotlistRows =
     formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
@@ -152,53 +136,101 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
 
+  function onActionSelect(action) {
+    goNext(action);
+    // setShowModal(true);
+    // setSelectedAction(action);
+  }
+
+  // ---------------- UI Styles ----------------
+  // const pageStyle = {
+  //   padding: "2rem",
+  //   backgroundColor: "#f9f9f9",
+  //   fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  //   color: "#333",
+  // };
+
+  // const sectionStyle = {
+  //   backgroundColor: "#ffffff",
+  //   padding: "1rem 1.5rem",
+  //   borderRadius: "8px",
+  //   marginBottom: "2rem",
+  //   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  // };
+
+  // const headingStyle = {
+  //   fontSize: "1.5rem",
+  //   borderBottom: "2px solid #ccc",
+  //   paddingBottom: "0.3rem",
+  //   color: "#2e4a66",
+  //   marginTop: "2rem",
+  //   marginBottom: "1rem",
+  // };
+
+  // const labelFieldPairStyle = {
+  //   display: "flex",
+  //   justifyContent: "space-between",
+  //   borderBottom: "1px dashed #e0e0e0",
+  //   padding: "0.5rem 0",
+  //   color: "#333",
+  // };
+
+  // const documentsContainerStyle = {
+  //   display: "flex",
+  //   flexWrap: "wrap",
+  //   gap: "1rem",
+  // };
+
+  // const documentCardStyle = {
+  //   flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+  //   minWidth: "200px", // keeps it from shrinking too small
+  //   maxWidth: "250px", // prevents oversized stretching on big screens
+  //   backgroundColor: "#fdfdfd",
+  //   padding: "0.75rem",
+  //   border: "1px solid #e0e0e0",
+  //   borderRadius: "6px",
+  //   boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  // };
+
+  // const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+
+  // const renderLabel = (label, value) => (
+  //   <div style={labelFieldPairStyle}>
+  //     <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+  //     <div>{t(value) || "NA"}</div>
+  //   </div>
+  // );
+
+  // const slotlistRows =
+  //   formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
+  //     communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
+  //     hallName: formData?.venueDetails?.[0]?.communityHallName,
+  //     hallCode: slot.hallCode + " - " + slot.capacity,
+  //     bookingDate: slot.bookingDate,
+  //     bookingStatus: t(`WF_CHB_${slot?.status}`),
+  //   })) || [];
+
   console.log("docs===", docs);
 
   return (
-    <div style={pageStyle}>
+    <div className="chb-summary-responsive" style={pageStyle}>
       <h2 style={headingStyle}>{t("Application Summary")}</h2>
 
       {/* Property Details Section */}
       <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
-
+        <CardSubHeader style={{ fontSize: "clamp(1.1rem, 3vw, 1.5rem)" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
         {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
         {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
         {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
         {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.venueDetails?.[0]?.address?.addressLine1)}
       </div>
 
-      {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
-      <StatusTable>
-        <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={formData?.venueDetails?.[0]?.specialCategory?.category || t("CS_NA")} />
-        <Row className="border-none" label={t("CHB_PURPOSE")} text={formData?.venueDetails?.[0]?.purpose?.purpose || t("CS_NA")} />
-        <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={formData?.venueDetails?.[0]?.purposeDescription || t("CS_NA")} />
-      </StatusTable> */}
-
       <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
-
+        <CardSubHeader style={{ fontSize: "clamp(1.1rem, 3vw, 1.5rem)" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
         {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.ownerDetails?.hallsBookingApplication?.specialCategory?.category)}
         {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose?.name)}
         {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.ownerDetails?.hallsBookingApplication?.purposeDescription)}
       </div>
-
-      {/* Documents Section */}
-      {/* Documents Section */}
-      {/* <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
-      <div style={sectionStyle}>
-        {docs?.length > 0 ? (
-          <div style={documentsContainerStyle}>
-            {docs?.map((doc, index) => (
-              <div key={index} style={documentCardStyle}>
-                <CHBDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-        )}
-      </div> */}
 
       <ApplicationTable
         t={t}
@@ -206,32 +238,31 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         columns={columns}
         getCellProps={(cellInfo) => ({
           style: {
-            minWidth: "150px",
-            padding: "10px",
-            fontSize: "16px",
-            paddingLeft: "20px",
+            minWidth: "100px",
+            padding: "8px",
+            fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+            paddingLeft: "10px",
+            wordBreak: "break-word"
           },
         })}
         isPaginationRequired={false}
         totalRecords={slotlistRows.length}
       />
 
-      <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+      <CardSubHeader style={{ fontSize: "clamp(1.1rem, 3vw, 1.5rem)", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
-        <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+        <div style={documentsContainerStyle}>
           {docs?.length > 0 ? (
             docs?.map((doc, index) => (
-              <React.Fragment key={index}>
-                <div>
-                  <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                  <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
-                </div>
-              </React.Fragment>
+              <div key={index} style={documentCardStyle}>
+                <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+              </div>
             ))
           ) : (
             <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
           )}
-        </Card>
+        </div>
       </StatusTable>
 
       {/* Action Section */}

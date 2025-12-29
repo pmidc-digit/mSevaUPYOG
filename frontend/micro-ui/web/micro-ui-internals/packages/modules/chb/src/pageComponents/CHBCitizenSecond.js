@@ -234,7 +234,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             <CardLabel>
               {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div style={{ width: "50%" }} className="field">
+            <div style={{ width: "100%" }} className="field">
               <Controller
                 control={control}
                 name={"startDate"}
@@ -266,7 +266,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             <CardLabel>
               {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div style={{ width: "50%" }} className="field">
+            <div style={{ width: "100%" }} className="field">
               <Controller
                 control={control}
                 name={"endDate"}
@@ -366,7 +366,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
                       gap: "16px",
                       marginTop: "20px",
-                      width: "50%",
+                      width: "100%",
                     }}
                   >
                     {getSlots?.map((slot, idx) => {
@@ -547,7 +547,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               <CardLabel className="card-label-smaller">
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="field" style={{ width: "50%" }}>
+              <div className="field" style={{ width: "100%" }}>
                 <Controller
                   control={control}
                   name={"purposeDescription"}
@@ -577,7 +577,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {!isCitizen && (
               <React.Fragment>
                 {/* Discount Amount */}
-                <div style={{ marginBottom: "20px", width: "50%" }}>
+                <div style={{ marginBottom: "20px", width: "100%" }}>
                   <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
                   <Controller
                     control={control}
@@ -601,7 +601,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
 
                 {/* Discount Reason */}
-                <div style={{ marginBottom: "20px", width: "50%" }}>
+                <div style={{ marginBottom: "20px", width: "100%" }}>
                   <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
                     control={control}

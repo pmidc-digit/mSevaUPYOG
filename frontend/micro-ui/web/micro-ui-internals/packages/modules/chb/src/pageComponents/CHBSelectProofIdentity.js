@@ -42,8 +42,9 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   }, [documents, checkRequiredFields]);
 
   return (
-    <div>
-      {/* <Timeline currentStep={4} /> */}
+    <React.Fragment>
+     
+     
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.CHB?.Documents?.map((document, index) => {
@@ -66,7 +67,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
       ) : (
         <Loader />
       )}
-    </div>
+    </React.Fragment>
   );
 };
 
@@ -193,7 +194,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
 
   return (
-    <div style={{ marginBottom: "24px", width: "50%" }}>
+    <React.Fragment>
+     
       {doc?.hasDropdown ? (
         <LabelFieldPair style={{ display: "inline" }}>
           <CardLabel style={{ width: "auto" }}>
@@ -219,7 +221,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       ) : null}
       <LabelFieldPair style={{ display: "inline" }}>
         <CardLabel className="card-label-smaller"></CardLabel>
-        <div className="field" style={{ width: "100%" }}>
+
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -233,10 +235,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             buttonType="button"
             error={!uploadedFile}
           />
-        </div>
+        
       </LabelFieldPair>
       {getLoading && <Loader page={true} />}
-    </div>
+    </React.Fragment>
   );
 }
 

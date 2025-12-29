@@ -186,6 +186,7 @@ public class AllotmentEnrichmentService {
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(UUID.randomUUID().toString());
 			m.setAllotmentId(allotmentId);
+			m.setStatus(Status.ACTIVE);
 			return m;
 		}).collect(Collectors.toList());
 		allotmentDetails.setOwnerInfo(lst);
@@ -209,6 +210,7 @@ public class AllotmentEnrichmentService {
 		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
 			m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
 			m.setAllotmentId(allotmentId);
+			m.setStatus(Status.ACTIVE);
 			return m;
 		}).collect(Collectors.toList());
 		allotmentDetails.setOwnerInfo(lst);

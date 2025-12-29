@@ -54,7 +54,7 @@ public class CalculatorController {
 
     @PostMapping("/_batchDemandGenerate")
 	public ResponseEntity<Void> batchDemandGenerate(@Valid @RequestBody RequestInfo requestInfo,
-			@ModelAttribute @Valid GetBillCriteria getBillCriteria) {
+			@ModelAttribute GetBillCriteria getBillCriteria) {
 		log.info("Starting job scheduler for rent demands.");
 		demandService.generateBatchDemand(requestInfo,getBillCriteria.getTenantId(),getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining()));
 		log.info("Finished job scheduler for rent demands.");

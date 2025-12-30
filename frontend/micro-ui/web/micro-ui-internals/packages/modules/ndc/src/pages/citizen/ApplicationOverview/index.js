@@ -136,6 +136,12 @@ const CitizenApplicationOverview = () => {
 
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
+    const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+    const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+
+    Property.propertyOwnerNames = propertyOwnerNames;
+
+    console.log("propertyOwnerNames", propertyOwnerNames);
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
     console.log("tenantInfo", tenantInfo);
     const ulbType = tenantInfo?.city?.ulbType;

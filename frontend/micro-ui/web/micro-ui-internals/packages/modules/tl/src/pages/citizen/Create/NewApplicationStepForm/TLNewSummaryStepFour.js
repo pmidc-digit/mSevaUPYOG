@@ -48,15 +48,14 @@ import { useHistory, useLocation } from "react-router-dom";
 
 const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   //let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
-  
+
   const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
 
   let tenantId;
-  if(currentUserType === "CITIZEN"){
-      tenantId = window.localStorage.getItem("CITIZEN.CITY");
-
-  }else{
-    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  if (currentUserType === "CITIZEN") {
+    tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  } else {
+    tenantId = Digit.ULBService.getCurrentPermanentCity();
   }
 
   const history = useHistory();
@@ -81,7 +80,8 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
     if (res) {
       console.log("Submission successful, moving to next step.");
-      history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
+      // history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
+      history.replace(`/digit-ui/citizen/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {
       console.error("Submission failed, not moving to next step.");
     }

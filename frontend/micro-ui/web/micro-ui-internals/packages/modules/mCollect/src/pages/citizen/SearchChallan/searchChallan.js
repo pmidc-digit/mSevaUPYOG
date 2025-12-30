@@ -12,9 +12,13 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   const { t } = useTranslation();
   let validation = {};
   const history = useHistory();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  console.log("tenantId==", tenantId);
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+
+  console.log("tenantId", tenantId);
 
   const [mobileNumber, setMobileNumber] = useState(formData?.mobileNumber || "");
   const [challanNo, setchallanNumber] = useState(formData?.challanNo || "");
@@ -28,6 +32,7 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   if (isLoading) {
     return <Loader />;
   }
+
   const onChallanSearch = async (data) => {
     //history.push(`/digit-ui/citizen/mcollect/search-results`);
     if (!mobileNumber && !challanNo && !Servicecateogry && !city) {

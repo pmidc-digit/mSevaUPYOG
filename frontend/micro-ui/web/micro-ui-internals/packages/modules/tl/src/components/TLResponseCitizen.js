@@ -3,6 +3,7 @@ import React, { useState, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { ChallanData, getLocationName } from "../utils";
+import getPDFData from "../utils/getTLAcknowledgementData";
 // import { Loader } from "./Loader";
 
 const TLResponseCitizen = (props) => {
@@ -90,10 +91,21 @@ const TLResponseCitizen = (props) => {
   //   }
   // };
 
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+
+  const { tenants } = storeData || {};
+
   const downloadTLcertificate = async () => {
     const TLcertificatefile = await Digit.PaymentService.generatePdf(tenantId, { Licenses: application }, "tlcertificate");
     const receiptFile = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: TLcertificatefile.filestoreIds[0] });
     window.open(receiptFile[TLcertificatefile.filestoreIds[0]], "_blank");
+  };
+
+  const handleDownloadPdf = async () => {
+    const tenantInfo = tenants.find((tenant) => tenant.code === application[0]?.tenantId);
+    let res = application[0];
+    const data = getPDFData({ ...res }, tenantInfo, t);
+    data.then((ress) => Digit.Utils.pdf.generate(ress));
   };
 
   return (
@@ -107,7 +119,7 @@ const TLResponseCitizen = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        <div className="primary-label-btn d-grid" onClick={chbPermissionLoading ? undefined : downloadTLcertificate}>
+        <div className="primary-label-btn d-grid" onClick={chbPermissionLoading ? undefined : handleDownloadPdf}>
           {chbPermissionLoading ? (
             <Loader />
           ) : (

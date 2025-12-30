@@ -13,16 +13,22 @@ export const TLList = () => {
   if (licenseno) filter1.licenseNumbers = licenseno;
   if (licenseno) filter1.tenantId = tenantID;
   if (!licenseno) filter1.mobileNumber = userInfo?.info?.mobileNumber;
-  filter1 = { ...filter1, RenewalPending:true, tenantId: tenantId || tenantID, status: "APPROVED,CANCELLED,EXPIRED,MANUALEXPIRED" };
+  filter1 = { ...filter1, RenewalPending: true, tenantId: tenantId || tenantID, status: "APPROVED,CANCELLED,EXPIRED,MANUALEXPIRED" };
   const { isLoading, isError, error, data } = Digit.Hooks.tl.useTradeLicenseSearch({ filters: {} }, {});
+
   useEffect(() => {
     localStorage.setItem("TLAppSubmitEnabled", "true");
   }, []);
+
   if (isLoading) {
     return <Loader />;
   }
+
   let { Licenses: applicationsList } = data || {};
+
   let newapplicationlist = applicationsList;
+
+  console.log("newapplicationlist==", newapplicationlist, newapplicationlist?.length);
 
   return (
     <React.Fragment>
@@ -32,10 +38,8 @@ export const TLList = () => {
       </Card> */}
       <div>
         {newapplicationlist?.length > 0 &&
-          newapplicationlist.map((application, index) => (
-            <div key={index}>
-              {application?.licenseNumber && <TradeLicenseList application={application} />}
-            </div>
+          newapplicationlist?.map((application, index) => (
+            <div key={index}>{application?.applicationNumber && <TradeLicenseList application={application} />}</div>
           ))}
         {!newapplicationlist?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}
       </div>

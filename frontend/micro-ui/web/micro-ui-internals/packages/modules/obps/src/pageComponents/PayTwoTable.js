@@ -6,6 +6,7 @@ import {
     CardSubHeader,
     UploadFile,
 } from "@mseva/digit-ui-react-components";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 export const PayTwoTable = ({
     sanctionFeeDataWithTotal,
@@ -32,8 +33,8 @@ export const PayTwoTable = ({
                         <th>{t("BPA_TAXHEAD_CODE")}</th>
                         <th>{t("BPA_AMOUNT")}</th>
                         <th>{t("BPA_ADJUSTED_AMOUNT")}</th>
-                        {(disable || isEmployee) ? null : <th>{t("BPA_FILE_UPLOAD")}</th>}
-                        <th>{t("BPA_VIEW_DOCUMENT")}</th>
+                        <th>{t("BPA_FILE_UPLOAD")}</th>
+                        <th>{t("BPA_REMARKS")}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,10 +66,10 @@ export const PayTwoTable = ({
                                     />
                                 )}
                             </td>
-                            {(disable || isEmployee) ? null : (
+                            { (
                                 <td>
                                     {row?.taxHeadCode === "BPA_TOTAL" ? null : (
-                                        <UploadFile
+                                        <CustomUploadFile
                                             key={row.index}
                                             id={`file-${row.id}`}
                                             onUpload={(file) => handleFileUpload(row.index, file || null)}
@@ -88,31 +89,25 @@ export const PayTwoTable = ({
                                     row?.grandTotal !== null && row?.grandTotal !== undefined
                                         ? `₹ ${row.grandTotal.toLocaleString()}`
                                         : t("CS_NA")
-                                ) : (
-                                    <div>
-                                        {sanctionFeeData[row.index]?.onDocumentLoading ? (
-                                            <Loader />
-                                        ) : sanctionFeeData[row.index]?.documentError ? (
-                                            <div style={{ fontSize: "12px", color: "red" }}>
-                                                {sanctionFeeData[row.index]?.documentError}
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                {sanctionFeeData[row.index]?.filestoreId ? (
-                                                    <LinkButton
-                                                        onClick={() => {
-                                                            routeTo(sanctionFeeData[row.index]?.filestoreId, row.index);
-                                                        }}
-                                                        label={t("BPA_VIEW_DOCUMENT")}
-                                                        className="view-link-button"
-                                                    />
-                                                ) : (
-                                                    t("CS_NA")
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                ) : <TextInput
+                                    t={t}
+                                    type="text"
+                                    isMandatory={false}
+                                    // className="hide-number-spinner"
+                                    value={sanctionFeeData[row.index]?.remark || ""}
+                                    onChange={(e) =>
+                                        handleRemarkChange(row.index, e.target.value, row.amount)
+                                    }
+                                    // onBlur={onAdjustedAmountBlur}
+                                    disable={disable}
+                                    // step={1}                                                
+                                    style={{
+                                        width: "100%",
+                                        padding: "4px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "4px",
+                                    }}
+                                />}
                             </td>
                         </tr>
                     ))}

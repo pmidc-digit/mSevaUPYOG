@@ -169,13 +169,6 @@ public class EDCRService {
 		
 		Boolean isSelfCertification = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isSelfCertification");
 		
-		if (isSelfCertification && OccupancyTypes.get(0).equalsIgnoreCase(BPAConstants.RESIDENTIAL_OCCUPANCY)) {
-			String subOccupancyType = subOccupancyTypes.get(0);
-			if(BPAConstants.RESIDENTIAL_GH_SUBOCCUPANCY.equalsIgnoreCase(subOccupancyTypes.get(0)))
-				isSelfCertification = false;
-		}else
-			isSelfCertification = false;
-		
 		if(buildingHeights != null && !buildingHeights.isEmpty() && buildingHeights.get(0) <  maxBuildingHight && isSelfCertification) {
 			request.getBPA().setBusinessService(BPAConstants.BPA_LOW_MODULE_CODE);
 		}else {
@@ -183,13 +176,12 @@ public class EDCRService {
 			String ulbType = CollectionUtils.isEmpty(ulbTypeList) ? "" : ulbTypeList.get(0);
 			String plotArea = plotAreas.get(0).toString();
 			String ocType = OccupancyTypes.get(0);
-			if(BPAConstants.RESIDENTIAL_GH_SUBOCCUPANCY.equalsIgnoreCase(subOccupancyTypes.get(0)))
-				ocType = subOccupancyTypes.get(0);
-			String filter = "$.MdmsRes.BPA.WorkflowConfig.[?(@.ulbType contains '" + ulbType + "' && @.occupancyTypes contains '" + ocType + "' && @.minArea < " + plotArea + " && @.maxArea >= " + plotArea + " )].businessService";
+			String subOccupancyType = subOccupancyTypes.get(0);
+			String filter = "$.MdmsRes.BPA.WorkflowConfig.[?(@.ulbType contains '" + ulbType + "' && @.occupancyTypes contains '" + ocType +  "' && @.subOccupancyTypes contains '" + subOccupancyType +"' && @.minArea < " + plotArea + " && @.maxArea >= " + plotArea + " )].businessService";
 			List<String> businessServices = JsonPath.read(mdmsData, filter);
 			
 			if(CollectionUtils.isEmpty(businessServices))
-				throw new CustomException(BPAErrorConstants.INVALID_CREATE, "Business Services not found for the Occupancy Types: " + OccupancyTypes.get(0));
+				throw new CustomException(BPAErrorConstants.INVALID_CREATE, "Business Services not found for the Occupancy Types: " + OccupancyTypes.get(0) + "and Sub-Occupancy Types: " + subOccupancyTypes.get(0));
 			
 			request.getBPA().setBusinessService(businessServices.get(0));
 		}

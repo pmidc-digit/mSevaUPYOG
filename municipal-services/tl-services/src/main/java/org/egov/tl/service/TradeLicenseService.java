@@ -229,19 +229,23 @@ public class TradeLicenseService {
          if(criteria.getOnlyLatestApplication() && !CollectionUtils.isEmpty(licenses))
         	 licenses = Arrays.asList(licenses.get(0));
          
-         licenses.forEach(license -> {
-        	 String signatureId = license.getTradeLicenseDetail().getApplicationDocuments().stream()
-                 	.filter(documnet -> documnet.getDocumentType().equalsIgnoreCase(SIGNATURE_DOC_TYPE))
-                 	.map(Document::getFileStoreId).findAny().orElse(null);
-        	 if(StringUtils.isEmpty(signatureId) && !StringUtils.isEmpty(license.getTradeLicenseDetail().getOwners().get(0).getSignature())) {
-        		 license.getTradeLicenseDetail().getApplicationDocuments()
-        		 .add(Document.builder()
-        				 .active(true)
-        				 .tenantId(license.getTenantId())
-        				 .fileStoreId(license.getTradeLicenseDetail().getOwners().get(0).getSignature())
-        				 .documentType(SIGNATURE_DOC_TYPE).build());
-        	 }
-         });
+         if(businessService_BPA.equalsIgnoreCase(criteria.getBusinessService())) {
+        	 licenses.forEach(license -> {
+            	 if(license.getTradeLicenseDetail().getApplicationDocuments() != null) {
+            		 String signatureId = license.getTradeLicenseDetail().getApplicationDocuments().stream()
+                          	.filter(documnet -> documnet.getDocumentType().equalsIgnoreCase(SIGNATURE_DOC_TYPE))
+                          	.map(Document::getFileStoreId).findAny().orElse(null);
+                 	 if(StringUtils.isEmpty(signatureId) && !StringUtils.isEmpty(license.getTradeLicenseDetail().getOwners().get(0).getSignature())) {
+                 		 license.getTradeLicenseDetail().getApplicationDocuments()
+                 		 .add(Document.builder()
+                 				 .active(true)
+                 				 .tenantId(license.getTenantId())
+                 				 .fileStoreId(license.getTradeLicenseDetail().getOwners().get(0).getSignature())
+                 				 .documentType(SIGNATURE_DOC_TYPE).build());
+                 	 }
+            	 }
+             }); 
+         }
          
          return licenses;       
     }

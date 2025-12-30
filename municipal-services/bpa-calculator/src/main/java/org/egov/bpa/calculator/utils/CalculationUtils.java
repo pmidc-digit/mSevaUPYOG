@@ -46,6 +46,9 @@ public class CalculationUtils {
         url.append("&");
         url.append("consumerCode=");
         url.append("{3}");
+        url.append("&");
+        url.append("isPaymentCompleted=");
+        url.append("{4}");
         return url.toString();
     }
 

@@ -23,6 +23,7 @@ const NOCApplicantDetails = (_props) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
@@ -112,7 +113,7 @@ const NOCApplicantDetails = (_props) => {
           </CardSectionSubText>
         )}
         
-        <LabelFieldPair>
+        <LabelFieldPair style={isMobile ? { position: "relative" } : {}}>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
@@ -142,6 +143,7 @@ const NOCApplicantDetails = (_props) => {
             />
           </div>
           <div className="search-icon"
+              style={isMobile ? { position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", left: "auto", marginTop: "16px" } : {}}
               onClick={isEdit ? null : getOwnerDetails}>
                 {" "}<SearchIcon />{" "}
           </div>

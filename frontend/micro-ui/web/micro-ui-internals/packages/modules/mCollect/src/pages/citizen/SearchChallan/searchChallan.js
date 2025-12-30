@@ -12,7 +12,13 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   const { t } = useTranslation();
   let validation = {};
   const history = useHistory();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+
+  console.log("tenantId", tenantId);
 
   const [mobileNumber, setMobileNumber] = useState(formData?.mobileNumber || "");
   const [challanNo, setchallanNumber] = useState(formData?.challanNo || "");
@@ -26,20 +32,19 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   if (isLoading) {
     return <Loader />;
   }
+
   const onChallanSearch = async (data) => {
     //history.push(`/digit-ui/citizen/mcollect/search-results`);
     if (!mobileNumber && !challanNo && !Servicecateogry && !city) {
       return alert("Provide at least one parameter");
     } else if (!Servicecateogry) {
       return alert("Please Provide Service Category");
-    } else if (!city.code)
-    {
+    } else if (!city.code) {
       return alert("Please Provide City");
-    }
-     else {
+    } else {
       history.push(
         `/digit-ui/citizen/mcollect/search-results?mobileNumber=${mobileNumber}&challanNo=${challanNo}&Servicecategory=${
-          Servicecateogry ? Servicecateogry.code.replace("BILLINGSERVICE_BUSINESSSERVICE_","") : ""
+          Servicecateogry ? Servicecateogry.code.replace("BILLINGSERVICE_BUSINESSSERVICE_", "") : ""
         }&tenantId=${city.code}`
       );
     }
@@ -53,10 +58,9 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
     });
 
   function setMobileNo(e) {
-    setmobileNumberError(null)
+    setmobileNumberError(null);
     let validation = "^\\d{10}$";
-    if(!e.target.value.match(validation))
-    {
+    if (!e.target.value.match(validation)) {
       setmobileNumberError("CORE_COMMON_PHONENO_INVALIDMSG");
     }
     setMobileNumber(e.target.value);
@@ -93,7 +97,7 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
         label={propsConfig.texts.submitButtonLabel}
         heading={propsConfig.texts.header}
         text={propsConfig.texts.text}
-        cardStyle={{ margin: "auto",maxWidth:"960px" }}
+        cardStyle={{ margin: "auto", maxWidth: "960px" }}
         headingStyle={{ fontSize: "32px", marginBottom: "16px" }}
         onSelect={onChallanSearch}
         componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
@@ -104,20 +108,20 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
       >
         <CardLabel>{`${t("UC_CITY_LABEL")}*`}</CardLabel>
         <RadioOrSelect
-             className="form-field"
-             isMandatory={true}
-              t={t}
-              optionKey="code"
-              name="City"
-              options={allCities}
-              value={city}
-              selectedOption={city}
-              onSelect={selectCity}
-              {...(validation = {
-                isRequired: true,
-                title: t("UC_CITY_MANDATORY"),
-              })}
-          />
+          className="form-field"
+          isMandatory={true}
+          t={t}
+          optionKey="code"
+          name="City"
+          options={allCities}
+          value={city}
+          selectedOption={city}
+          onSelect={selectCity}
+          {...(validation = {
+            isRequired: true,
+            title: t("UC_CITY_MANDATORY"),
+          })}
+        />
         <CardLabel>{`${t("UC_SERVICE_CATEGORY_LABEL")}*`}</CardLabel>
         {Menu && (
           <RadioOrSelect
@@ -144,7 +148,7 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
             type={"mobileNumber"}
             t={t}
             isMandatory={false}
-            style={{maxWidth:"500px"}}
+            style={{ maxWidth: "500px" }}
             optionKey="i18nKey"
             name="mobileNumber"
             value={mobileNumber}

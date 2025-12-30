@@ -3,12 +3,11 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 function PropertyOwners({ owners }) {
-  let ownerSequences={};
+  let ownerSequences = {};
   if (window.location.href.includes("/employee/pt/")) {
-   ownerSequences=owners.slice().reverse()
-  } 
-  else{
-    ownerSequences=owners;
+    ownerSequences = owners.slice().reverse();
+  } else {
+    ownerSequences = owners;
   }
   const { t } = useTranslation();
 
@@ -25,11 +24,17 @@ function PropertyOwners({ owners }) {
       borderRadius: "4px",
       padding: "8px",
       lineHeight: "19px",
-      maxWidth: "600px",
+      // maxWidth: "600px",
       minWidth: "280px",
     };
   } else if (checkLocation && !(Number(checkOwnerLength) > 1)) {
-    cardStyles = { marginTop: "19px", lineHeight: "19px", maxWidth: "600px", minWidth: "280px" };
+    cardStyles = {
+      marginTop: "19px",
+      lineHeight: "19px",
+      // maxWidth: "600px",
+      minWidth: "280px",
+      width: "100%",
+    };
     statusTableStyles = { position: "relative", marginTop: "19px" };
   }
 
@@ -38,64 +43,66 @@ function PropertyOwners({ owners }) {
     cardStyles = { ...cardStyles, maxWidth: "950px" };
     rowContainerStyle = {};
   }
-  let owners1 = owners.sort((item,item2)=>{return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence})
+  let owners1 = owners.sort((item, item2) => {
+    return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence;
+  });
 
   return (
     <React.Fragment>
       <div className="owner-details">
-      {ownerSequences.map((owner, index) => (
-        <div key={t(owner?.title)} style={cardStyles} className="owner-details-child">
-          {/* TODO, Later will move to classes */}
-          <CardSubHeader
-            style={
-              checkLocation && Number(checkOwnerLength) > 1
-                ? { marginBottom: "8px", paddingBottom: "9px", color: "#0B0C0C", fontSize: "16px", lineHeight: "19px" }
-                : { marginBottom: "8px", color: "#505A5F", fontSize: "24px" }
-            }
-          >
-            {checkLocation && Number(checkOwnerLength) > 1 ? `${t(owner?.title)} ${index + 1}` : t(owner?.title)}
-          </CardSubHeader>
-          <React.Fragment key={index}>
-            <StatusTable style={statusTableStyles}>
-              <div
-                style={{
-                  maxWidth: "640px",
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  right: 0,
-                  width: "auto",
-                }}
-              ></div>
-              {owner?.values?.map((value, index) => {
-                if (value.map === true && value.value !== "N/A") {
-                  return <Row key={t(value.title)} label={t(value.title)} text={<img src={t(value.value)} alt="" privacy={value?.privacy} />} />;
-                }
-                return (
-                  <span>
-                    <Row
-                      key={t(value.title)}
-                      label={!checkLocation ? t(value.title) : `${t(value.title)}`}
-                      text={t(value.value) || "N/A"}
-                      last={index === value?.values?.length - 1}
-                      caption={value.caption}
-                      className="border-none"
-                      textStyle={value.textStyle}
-                      /*
+        {ownerSequences.map((owner, index) => (
+          <div key={t(owner?.title)} style={cardStyles} className="owner-details-child">
+            {/* TODO, Later will move to classes */}
+            <CardSubHeader
+              style={
+                checkLocation && Number(checkOwnerLength) > 1
+                  ? { marginBottom: "8px", paddingBottom: "9px", color: "#0B0C0C", fontSize: "16px", lineHeight: "19px" }
+                  : { marginBottom: "8px", color: "#505A5F", fontSize: "24px" }
+              }
+            >
+              {checkLocation && Number(checkOwnerLength) > 1 ? `${t(owner?.title)} ${index + 1}` : t(owner?.title)}
+            </CardSubHeader>
+            <React.Fragment key={index}>
+              <StatusTable style={statusTableStyles}>
+                <div
+                  style={{
+                    maxWidth: "640px",
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    width: "auto",
+                  }}
+                ></div>
+                {owner?.values?.map((value, index) => {
+                  if (value.map === true && value.value !== "N/A") {
+                    return <Row key={t(value.title)} label={t(value.title)} text={<img src={t(value.value)} alt="" privacy={value?.privacy} />} />;
+                  }
+                  return (
+                    <span>
+                      <Row
+                        key={t(value.title)}
+                        label={!checkLocation ? t(value.title) : `${t(value.title)}`}
+                        text={t(value.value) || "N/A"}
+                        last={index === value?.values?.length - 1}
+                        caption={value.caption}
+                        className="border-none"
+                        textStyle={value.textStyle}
+                        /*
                         Feature :: Privacy
                         privacy object set to the Row Component
                        */
-                      privacy={value?.privacy}
-                      // TODO, Later will move to classes
-                      rowContainerStyle={rowContainerStyle}
-                    />
-                  </span>
-                );
-              })}
-            </StatusTable>
-          </React.Fragment>
-        </div>
-      ))}
+                        privacy={value?.privacy}
+                        // TODO, Later will move to classes
+                        rowContainerStyle={rowContainerStyle}
+                      />
+                    </span>
+                  );
+                })}
+              </StatusTable>
+            </React.Fragment>
+          </div>
+        ))}
       </div>
     </React.Fragment>
   );

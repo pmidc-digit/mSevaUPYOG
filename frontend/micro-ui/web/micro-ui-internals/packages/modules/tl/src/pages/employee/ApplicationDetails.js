@@ -18,13 +18,13 @@ const ApplicationDetails = () => {
   // const [callUpdateService, setCallUpdateValve] = useState(false);
   const [businessService, setBusinessService] = useState("NewTL"); //DIRECTRENEWAL
   const [numberOfApplications, setNumberOfApplications] = useState([]);
-  
+
   // eSign Custom Hook
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
-  
+
   // Cache certificate data to avoid duplicate API calls
   const [certificateData, setCertificateData] = useState(null);
-  
+
   const [allowedToNextYear, setAllowedToNextYear] = useState(false);
   const [oldRenewalAppNo, setoldRenewalAppNo] = useState("");
   const [viewTimeline, setViewTimeline] = useState(false);
@@ -308,25 +308,21 @@ const ApplicationDetails = () => {
       // Generate PDF certificate with enhanced error handling
       let TLcertificatefile;
       try {
-        TLcertificatefile = await Digit.PaymentService.generatePdf(
-          tenantId, 
-          { Licenses: res?.Licenses }, 
-          "tlcertificate"
-        );
+        TLcertificatefile = await Digit.PaymentService.generatePdf(tenantId, { Licenses: res?.Licenses }, "tlcertificate");
       } catch (pdfError) {
         console.error("❌ PDF Generation failed:", pdfError);
-        
-        if (pdfError.message?.includes('Lexical error')) {
+
+        if (pdfError.message?.includes("Lexical error")) {
           throw new Error("PDF template error. Please contact system administrator to fix the certificate template.");
-        } else if (pdfError.message?.includes('ProcessInstanc')) {
+        } else if (pdfError.message?.includes("ProcessInstanc")) {
           throw new Error("Certificate template has configuration issues. Please contact technical support.");
         } else {
-          throw new Error(`Certificate generation failed: ${pdfError.message || 'Unknown error'}`);
+          throw new Error(`Certificate generation failed: ${pdfError.message || "Unknown error"}`);
         }
       }
 
       const fileStoreId = TLcertificatefile?.filestoreIds?.[0];
-      
+
       if (!fileStoreId) {
         throw new Error("Failed to generate certificate file");
       }
@@ -335,7 +331,6 @@ const ApplicationDetails = () => {
       const data = { fileStoreId, certificateFile: TLcertificatefile };
       setCertificateData(data);
       return data;
-
     } catch (error) {
       console.error("❌ Certificate generation failed:", error);
       throw error;
@@ -345,11 +340,11 @@ const ApplicationDetails = () => {
   const printCertificate = async () => {
     try {
       const { fileStoreId } = await generateCertificateData();
-      
+
       const receiptFile = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      
+
       const certificateUrl = receiptFile[fileStoreId];
-      
+
       if (certificateUrl) {
         window.open(certificateUrl, "_blank");
       } else {
@@ -359,7 +354,7 @@ const ApplicationDetails = () => {
           label: "Certificate URL not found. Please try again.",
         });
       }
-      
+
       setIsDisplayDownloadMenu(false);
     } catch (error) {
       console.error("❌ Certificate download failed:", error);
@@ -374,29 +369,31 @@ const ApplicationDetails = () => {
   // eSign Certificate - reuses cached PDF data
   const printCertificateWithESign = async () => {
     try {
-      console.log('🎯 Starting certificate eSign process with custom hook...');
-      
+      console.log("🎯 Starting certificate eSign process with custom hook...");
+
       // Reuse existing certificate data or generate if not available
       const { fileStoreId } = await generateCertificateData();
 
       // Use custom hook for eSign
-      eSignCertificate({ fileStoreId, tenantId }, {
-        onSuccess: () => {
-          console.log('✅ eSign process initiated successfully');
-          setIsDisplayDownloadMenu(false);
-        },
-        onError: (error) => {
-          console.error('❌ Certificate eSign failed:', error);
-          setShowToast({
-            key: "error",
-            error: true,
-            label: error.message || "Failed to initiate digital signing process",
-          });
+      eSignCertificate(
+        { fileStoreId, tenantId },
+        {
+          onSuccess: () => {
+            console.log("✅ eSign process initiated successfully");
+            setIsDisplayDownloadMenu(false);
+          },
+          onError: (error) => {
+            console.error("❌ Certificate eSign failed:", error);
+            setShowToast({
+              key: "error",
+              error: true,
+              label: error.message || "Failed to initiate digital signing process",
+            });
+          },
         }
-      });
-
+      );
     } catch (error) {
-      console.error('❌ Certificate preparation failed:', error);
+      console.error("❌ Certificate preparation failed:", error);
       setShowToast({
         key: "error",
         error: true,
@@ -425,7 +422,7 @@ const ApplicationDetails = () => {
           {
             label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
             onClick: printCertificateWithESign,
-            disabled: eSignLoading
+            disabled: eSignLoading,
           },
         ]
       : [
@@ -455,9 +452,9 @@ const ApplicationDetails = () => {
               optionStyle={{ padding: "10px" }}
             />
           </div>
-          <div>
+          {/* <div>
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
-          </div>
+          </div> */}
         </div>
       </div>
       <ApplicationDetailsTemplate

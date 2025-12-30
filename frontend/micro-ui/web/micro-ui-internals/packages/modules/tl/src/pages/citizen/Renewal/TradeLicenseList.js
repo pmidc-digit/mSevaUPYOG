@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { convertEpochToDateCitizen, getvalidfromdate } from "../../../utils/index";
-import {TLSearch} from "../../../../../../libraries/src/services/molecules/TL/Search";
+import { TLSearch } from "../../../../../../libraries/src/services/molecules/TL/Search";
 import cloneDeep from "lodash/cloneDeep";
 
 const TradeLicenseList = ({ application }) => {
+  console.log("application", application);
+
   sessionStorage.setItem("isDirectRenewal", true);
   const history = useHistory();
   const owners = application?.tradeLicenseDetail?.owners;
@@ -21,7 +23,7 @@ const TradeLicenseList = ({ application }) => {
   const { isLoading, data: fydata = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", "FinancialYear");
   let mdmsFinancialYear = fydata["egf-master"] ? fydata["egf-master"].FinancialYear.filter((y) => y.module === "TL") : [];
   //let isrenewalspresent = false;
-  const [isrenewalspresent,setIsrenewalspresent] =useState(false)
+  const [isrenewalspresent, setIsrenewalspresent] = useState(false);
   async function apicall(application) {
     let res = await Digit.TLService.TLsearch({ tenantId: application.tenantId, filters: { licenseNumbers: application.licenseNumber } });
     let Licenses = res.Licenses;
@@ -29,7 +31,7 @@ const TradeLicenseList = ({ application }) => {
     Licenses &&
       Licenses.map((ob) => {
         if (ob.financialYear === FY) {
-          setIsrenewalspresent(true)
+          setIsrenewalspresent(true);
           //isrenewalspresent = true;
         }
       });
@@ -41,114 +43,125 @@ const TradeLicenseList = ({ application }) => {
   }
 
   const getToastMessages = () => {
-    if(isrenewalspresent){
+    if (isrenewalspresent) {
       setShowToast({ error: true, label: `${t("TL_RENEWAL_PRESENT_ERROR")}` });
-    }
-    else if(allowedToNextYear == false && oldRenewalAppNo && application?.status !== "MANUALEXPIRED")
-    {
+    } else if (allowedToNextYear == false && oldRenewalAppNo && application?.status !== "MANUALEXPIRED") {
       setShowToast({ error: true, label: `${t("TL_ERROR_TOAST_RENEWAL_1")} ${oldRenewalAppNo} ${t("TL_ERROR_TOAST_RENEWAL_2")}` });
-    }
-    else if(application?.status === "CANCELLED")
-    {
+    } else if (application?.status === "CANCELLED") {
       setShowToast({ error: true, label: `${t("TL_ERROR_TOAST_RENEWAL_CANCEL")}` });
-    }
-    else if(/* latestRenewalYearofAPP &&  */application?.status === "MANUALEXPIRED")
-    {
+    } else if (/* latestRenewalYearofAPP &&  */ application?.status === "MANUALEXPIRED") {
       setShowToast({ error: true, label: `${t("TL_ERROR_TOAST_MUTUALLY_EXPIRED")}` });
     }
-  }
-useEffect(async ()=>{
-
-  const licenseNumbers = application?.licenseNumber;
-    const filters = { licenseNumbers, offset: 0 };
-    let numOfApplications = await TLSearch.numberOfApplications(application?.tenantId, filters);
-    let allowedToNextYear= false;
-    //isrenewalspresent = false;
-    setIsrenewalspresent(false)
-    let latestRenewalYearofAPP = "";
-    let financialYear = cloneDeep(application?.financialYear);
-      const financialYearDate = financialYear?.split('-')[1];
-      const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate)+1}`
-      const latestFinancialYear = Math.max.apply(Math, numOfApplications?.filter(ob => ob.licenseNumber === application?.licenseNumber)?.map(function(o){return parseInt(o.financialYear.split("-")[0])}))
-      const isAllowedToNextYear = numOfApplications?.filter(data => (data.financialYear == finalFinancialYear && data?.status !== "REJECTED"));
-
-      if(Object.keys(fydata).length >0)
-      {
-        let FY = getvalidfromdate("", mdmsFinancialYear).finYearRange;
-        numOfApplications &&
-        numOfApplications.map((ob) => {
-            if (ob.financialYear === FY) {
-              setIsrenewalspresent(true)
-              //isrenewalspresent = true;
-            }
-          });
-          if (isAllowedToNextYear?.length > 0){
-             setAllowedToNextYear(false);
-             setoldRenewalAppNo(isAllowedToNextYear?.[0]?.applicationNumber);
-          }
-          if(!(application?.financialYear.includes(`${latestFinancialYear}`))) {
-            latestRenewalYearofAPP = application?.financialYear;
-            setlatestRenewalYearofAPP(application?.financialYear);
-          }
-          if (!isAllowedToNextYear || isAllowedToNextYear?.length == 0){
-            allowedToNextYear = true;
-            setAllowedToNextYear(true);
-          }
-        setNumberOfApplications(numOfApplications)
-      }
-},[fydata])
-  const onsubmit = async() => {
+  };
+  useEffect(async () => {
     const licenseNumbers = application?.licenseNumber;
     const filters = { licenseNumbers, offset: 0 };
     let numOfApplications = await TLSearch.numberOfApplications(application?.tenantId, filters);
-    let allowedToNextYear= false;
-    setIsrenewalspresent(false)
+    let allowedToNextYear = false;
     //isrenewalspresent = false;
+    setIsrenewalspresent(false);
     let latestRenewalYearofAPP = "";
     let financialYear = cloneDeep(application?.financialYear);
-      const financialYearDate = financialYear?.split('-')[1];
-      const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate)+1}`
-      const latestFinancialYear = Math.max.apply(Math, numOfApplications?.filter(ob => ob.licenseNumber === application?.licenseNumber)?.map(function(o){return parseInt(o.financialYear.split("-")[0])}))
-      const isAllowedToNextYear = numOfApplications?.filter(data => (data.financialYear == finalFinancialYear && data?.status !== "REJECTED"));
-    let FY = getvalidfromdate("", mdmsFinancialYear).finYearRange;
-    numOfApplications &&
-    numOfApplications.map((ob) => {
-        if (ob.financialYear === FY) {
-          setIsrenewalspresent(true)
-          //isrenewalspresent = true;
-        }
-      });
-      if (isAllowedToNextYear?.length > 0){
-         setAllowedToNextYear(false);
-         setoldRenewalAppNo(isAllowedToNextYear?.[0]?.applicationNumber);
+    const financialYearDate = financialYear?.split("-")[1];
+    const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate) + 1}`;
+    const latestFinancialYear = Math.max.apply(
+      Math,
+      numOfApplications
+        ?.filter((ob) => ob.licenseNumber === application?.licenseNumber)
+        ?.map(function (o) {
+          return parseInt(o.financialYear.split("-")[0]);
+        })
+    );
+    const isAllowedToNextYear = numOfApplications?.filter((data) => data.financialYear == finalFinancialYear && data?.status !== "REJECTED");
+
+    if (Object.keys(fydata).length > 0) {
+      let FY = getvalidfromdate("", mdmsFinancialYear).finYearRange;
+      numOfApplications &&
+        numOfApplications.map((ob) => {
+          if (ob.financialYear === FY) {
+            setIsrenewalspresent(true);
+            //isrenewalspresent = true;
+          }
+        });
+      if (isAllowedToNextYear?.length > 0) {
+        setAllowedToNextYear(false);
+        setoldRenewalAppNo(isAllowedToNextYear?.[0]?.applicationNumber);
       }
-      if(!(application?.financialYear.includes(`${latestFinancialYear}`))) {
+      if (!application?.financialYear.includes(`${latestFinancialYear}`)) {
         latestRenewalYearofAPP = application?.financialYear;
         setlatestRenewalYearofAPP(application?.financialYear);
       }
-      if (!isAllowedToNextYear || isAllowedToNextYear?.length == 0){
+      if (!isAllowedToNextYear || isAllowedToNextYear?.length == 0) {
         allowedToNextYear = true;
         setAllowedToNextYear(true);
       }
-    setNumberOfApplications(numOfApplications)
-    if(isrenewalspresent || allowedToNextYear == false || application?.status === "CANCELLED" || (application?.status === "MANUALEXPIRED" /* && latestRenewalYearofAPP */))
-    getToastMessages();
-    else
-    history.push(`/digit-ui/citizen/tl/tradelicence/renew-trade/${application.licenseNumber}/${application.tenantId}`);
+      setNumberOfApplications(numOfApplications);
+    }
+  }, [fydata]);
+  const onsubmit = async () => {
+    const licenseNumbers = application?.licenseNumber;
+    const filters = { licenseNumbers, offset: 0 };
+    let numOfApplications = await TLSearch.numberOfApplications(application?.tenantId, filters);
+    let allowedToNextYear = false;
+    setIsrenewalspresent(false);
+    //isrenewalspresent = false;
+    let latestRenewalYearofAPP = "";
+    let financialYear = cloneDeep(application?.financialYear);
+    const financialYearDate = financialYear?.split("-")[1];
+    const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate) + 1}`;
+    const latestFinancialYear = Math.max.apply(
+      Math,
+      numOfApplications
+        ?.filter((ob) => ob.licenseNumber === application?.licenseNumber)
+        ?.map(function (o) {
+          return parseInt(o.financialYear.split("-")[0]);
+        })
+    );
+    const isAllowedToNextYear = numOfApplications?.filter((data) => data.financialYear == finalFinancialYear && data?.status !== "REJECTED");
+    let FY = getvalidfromdate("", mdmsFinancialYear).finYearRange;
+    numOfApplications &&
+      numOfApplications.map((ob) => {
+        if (ob.financialYear === FY) {
+          setIsrenewalspresent(true);
+          //isrenewalspresent = true;
+        }
+      });
+    if (isAllowedToNextYear?.length > 0) {
+      setAllowedToNextYear(false);
+      setoldRenewalAppNo(isAllowedToNextYear?.[0]?.applicationNumber);
+    }
+    if (!application?.financialYear.includes(`${latestFinancialYear}`)) {
+      latestRenewalYearofAPP = application?.financialYear;
+      setlatestRenewalYearofAPP(application?.financialYear);
+    }
+    if (!isAllowedToNextYear || isAllowedToNextYear?.length == 0) {
+      allowedToNextYear = true;
+      setAllowedToNextYear(true);
+    }
+    setNumberOfApplications(numOfApplications);
+    if (
+      isrenewalspresent ||
+      allowedToNextYear == false ||
+      application?.status === "CANCELLED" ||
+      application?.status === "MANUALEXPIRED" /* && latestRenewalYearofAPP */
+    )
+      getToastMessages();
+    else history.push(`/digit-ui/citizen/tl/tradelicence/renew-trade/${application.licenseNumber}/${application.tenantId}`);
   };
-  const ownersSequences=owners?.additionalDetails!==null ? owners.sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence): owners
+  const ownersSequences =
+    owners?.additionalDetails !== null ? owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence) : owners;
   return (
     <React.Fragment>
-    <Card>
-      <KeyNote keyValue={t("TL_LOCALIZATION_TRADE_NAME")} note={application.tradeName} />
-      <KeyNote keyValue={t("TL_HOME_SEARCH_RESULTS_TL_NO_LABEL")} note={application.licenseNumber} />
-      <KeyNote
-        keyValue={t("TL_LOCALIZATION_OWNER_NAME")}
-        note={ownersSequences.map((owners, index) => (
-          <div key="index">{index == owners.length - 1 ? owners?.name + "," : owners.name}</div>
-        ))}
-      />
-      {/* <KeyNote
+      <Card>
+        <KeyNote keyValue={t("TL_LOCALIZATION_TRADE_NAME")} note={application.tradeName} />
+        <KeyNote keyValue={t("TL_HOME_SEARCH_RESULTS_TL_NO_LABEL")} note={application.licenseNumber} />
+        <KeyNote
+          keyValue={t("TL_LOCALIZATION_OWNER_NAME")}
+          note={ownersSequences.map((owners, index) => (
+            <div key="index">{index == owners.length - 1 ? owners?.name + "," : owners.name}</div>
+          ))}
+        />
+        {/* <KeyNote
         keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
         note={
           application.status === "APPROVED"
@@ -156,9 +169,13 @@ useEffect(async ()=>{
             : t("TL_EXPIRED_STATUS_MSG") + convertEpochToDateCitizen(application.validTo) + " " + t("TL_EXPIRED_STATUS_MSG_1")
         }
       /> */}
-      {isrenewalspresent ?<KeyNote keyValue={`${t("TL_RENEWAL_PRESENT_ERROR")}`} />:<SubmitBar label={t("TL_VIEW_DETAILS_RENEWAL")} onSubmit={onsubmit} />}
-    </Card>
-    {showToast && (
+        {isrenewalspresent ? (
+          <KeyNote keyValue={`${t("TL_RENEWAL_PRESENT_ERROR")}`} />
+        ) : (
+          <SubmitBar label={t("TL_VIEW_DETAILS_RENEWAL")} onSubmit={onsubmit} />
+        )}
+      </Card>
+      {showToast && (
         <Toast
           isDleteBtn={true}
           error={showToast.error}

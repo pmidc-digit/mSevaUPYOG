@@ -1,7 +1,8 @@
-import { Card, Header, KeyNote, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Card, Header, KeyNote, SubmitBar } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { Loader } from "../../../components/Loader";
 
 const MyApplications = ({ view }) => {
   const { t } = useTranslation();
@@ -22,47 +23,52 @@ const MyApplications = ({ view }) => {
           t
         );
 
-  if (isLoading) {
-    return <Loader />;
-  }
   return (
     <React.Fragment>
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
       {data?.map((application) => {
-        // console.log("applicationWithIndex", index, application);
+        console.log("applicationWithIndex", application);
         return (
           <div>
             <Card>
-              {Object.keys(application)
+              {/* {Object.keys(application)
                 .filter((e) => e !== "raw" && application[e] !== null)
                 .map((item) => (
                   <KeyNote keyValue={t(item)} note={t(application[item])} />
-                ))}
-              <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
-                <SubmitBar
-                  label={t(
-                    application?.raw?.status != "PENDINGPAYMENT"
-                      ? application?.raw?.status === "APPROVED"
-                        ? "TL_VIEW_DETAILS_RENEW_NOW"
-                        : "TL_VIEW_DETAILS"
-                      : "TL_VIEW_DETAILS_PAY"
-                  )}
-                />
-              </Link>{" "}
-              {/* {application?.raw?.status === "PENDINGPAYMENT" ? (
+                ))} */}
+              <KeyNote keyValue={t("PTR_UNIQUE_APPLICATION_NUMBER")} note={application?.raw?.applicationNumber} />
+              <KeyNote keyValue={t("TL_COMMON_TABLE_COL_OWN_NAME")} note={application?.TL_COMMON_TABLE_COL_OWN_NAME || t("CS_NA")} />
+              <KeyNote keyValue={t("STATUS")} note={t(application?.raw?.status)} />
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "20px",
+                }}
+              >
+                <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
+                  <SubmitBar label={t("CS_VIEW_DETAILS")} />
+                </Link>
+                {application?.raw?.status === "PENDINGPAYMENT" && (
                   <Link
-                  to={{
-                    pathname : `/digit-ui/citizen/payment/collect/${data?.[0]?.raw?.businessService}/${application?.raw?.applicationNumber}`,
-                  }}>
-                    <div style={{marginTop:"10px"}}>
-                    <SubmitBar label ={t("COMMON_MAKE_PAYMENT")}/>
+                    to={{
+                      pathname: `/digit-ui/citizen/payment/collect/${data?.[0]?.raw?.businessService}/${application?.raw?.applicationNumber}`,
+                      state: { application, tenantId: tenantId },
+                    }}
+                  >
+                    <div>
+                      <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
                     </div>
                   </Link>
-              ):null} */}
+                )}
+              </div>
+              {/* http://localhost:3000/digit-ui/citizen/payment/collect/TL/PB-TL-2025-12-29-310016 */}
+              {/* http://localhost:3000/digit-ui/citizen/payment/collect/TL/PB-TL-2025-12-29-310016 */}
             </Card>
           </div>
         );
       })}
+      {isLoading && <Loader />}
     </React.Fragment>
   );
 };

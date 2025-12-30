@@ -217,7 +217,7 @@ export const EmployeeModuleCard = ({
     <div style={cardContainerStyle} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div style={headerStyle}>
         <h1 style={titleStyle}>{moduleName}</h1>
-        <p style={subtitleStyle}>{moduleName.toUpperCase()}_SUBTITLE</p>
+        {/* <p style={subtitleStyle}>{moduleName.toUpperCase()}_SUBTITLE</p> */}
       </div>
 
       {/* Body */}

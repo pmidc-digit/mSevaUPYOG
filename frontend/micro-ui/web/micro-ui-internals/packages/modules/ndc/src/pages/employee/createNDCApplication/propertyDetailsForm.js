@@ -45,7 +45,7 @@ const PropertyDetailsForm = ({ onGoNext }) => {
   };
 
   return (
-    <div className="pageCard">
+    <div className="card">
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="surveydetailsform-wrapper">

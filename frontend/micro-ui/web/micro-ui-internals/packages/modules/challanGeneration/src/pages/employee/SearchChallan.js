@@ -187,7 +187,7 @@ const SearchChallan = (props) => {
         <Header>Search Challan</Header>
       </div>
 
-      <div className="pageCard">
+      <div className="card">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="ndcFormCard">

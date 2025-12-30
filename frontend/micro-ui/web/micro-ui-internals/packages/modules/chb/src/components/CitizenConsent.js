@@ -44,7 +44,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const formattedUlbName = formatUlbName(getModalData?.ulbName);
 
   const selfdeclarationform = `
-    <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.8; padding:24px 30px;">
+    <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.8;">
       
       <h1 style="text-align:center; font-weight:bold; font-size:22px; margin-bottom:40px; letter-spacing:0.5px; color:#1a1a1a;">
         SELF-DECLARATION FOR COMMUNITY HALL BOOKING
@@ -119,8 +119,8 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       <div style="margin-top:60px;">
         <table style="width:100%; border-collapse:collapse;">
           <tr>
-            <td style="width:50%; vertical-align:top;"></td>
-            <td style="width:50%; vertical-align:top; padding-left:40px; float:right;">
+            <td style="vertical-align:top;"></td>
+            <td style="vertical-align:top; padding-left:40px; float:right;">
               <div style="line-height:2.2;">
                 
                 <p style="margin:0 0 28px 0; font-weight:bold; font-size:17px; color:#000;">${getModalData?.name || ownername}</p>

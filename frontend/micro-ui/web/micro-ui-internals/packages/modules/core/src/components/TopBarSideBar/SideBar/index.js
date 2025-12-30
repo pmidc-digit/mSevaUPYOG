@@ -17,8 +17,11 @@ const SideBar = ({ t, CITIZEN, isSidebarOpen, toggleSidebar, handleLogout, mobil
       />
     );
   else {
-    if (!mobileView && userDetails?.access_token) return <EmployeeSideBar {...{ mobileView, userDetails, modules }} />;
-    else return <CitizenSideBar isOpen={isSidebarOpen} isMobile={true} toggleSidebar={toggleSidebar} onLogout={handleLogout} isEmployee={true} />;
+    // Employee sidebar - show EmployeeSideBar for both desktop and mobile
+    if (userDetails?.access_token) {
+      return <EmployeeSideBar {...{ mobileView, userDetails, modules, isSidebarOpen, toggleSidebar, handleLogout }} />;
+    }
+    return null;
   }
 };
 

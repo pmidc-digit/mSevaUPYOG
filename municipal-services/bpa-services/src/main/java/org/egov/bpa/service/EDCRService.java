@@ -1,5 +1,6 @@
 package org.egov.bpa.service;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,8 +35,6 @@ import com.jayway.jsonpath.TypeRef;
 @Service
 public class EDCRService {
 
-    private final BPAConstants BPAConstants;
-
 	private ServiceRequestRepository serviceRequestRepository;
 
 	private BPAConfiguration config;
@@ -50,7 +49,6 @@ public class EDCRService {
 	public EDCRService(ServiceRequestRepository serviceRequestRepository, BPAConfiguration config, BPAConstants BPAConstants) {
 		this.serviceRequestRepository = serviceRequestRepository;
 		this.config = config;
-		this.BPAConstants = BPAConstants;
 	}
 
 	/**
@@ -107,6 +105,8 @@ public class EDCRService {
 		List<String> edcrStatus = context.read("edcrDetail.*.status");
 		List<String> OccupancyTypes = context
 				.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.type.code");
+		List<String> subOccupancyTypes = context
+				.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.subtype.code");
 		TypeRef<List<Double>> typeRef = new TypeRef<List<Double>>(){};
 		Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map)bpa.getAdditionalDetails()
 				: new HashMap<String, String>();
@@ -167,10 +167,23 @@ public class EDCRService {
 		}
 		this.validateOCEdcr(OccupancyTypes, plotAreas, buildingHeights, applicationType, masterData, riskType);
 		
-		if(buildingHeights != null && !buildingHeights.isEmpty() && buildingHeights.get(0) <  maxBuildingHight ) {
+		Boolean isSelfCertification = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isSelfCertification");
+		
+		if(buildingHeights != null && !buildingHeights.isEmpty() && buildingHeights.get(0) <  maxBuildingHight && isSelfCertification) {
 			request.getBPA().setBusinessService(BPAConstants.BPA_LOW_MODULE_CODE);
 		}else {
-			request.getBPA().setBusinessService(null);
+			List<String> ulbTypeList = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.[?(@.code == '" + bpa.getTenantId() + "')].city.ulbType");
+			String ulbType = CollectionUtils.isEmpty(ulbTypeList) ? "" : ulbTypeList.get(0);
+			String plotArea = plotAreas.get(0).toString();
+			String ocType = OccupancyTypes.get(0);
+			String subOccupancyType = subOccupancyTypes.get(0);
+			String filter = "$.MdmsRes.BPA.WorkflowConfig.[?(@.ulbType contains '" + ulbType + "' && @.occupancyTypes contains '" + ocType +  "' && @.subOccupancyTypes contains '" + subOccupancyType +"' && @.minArea < " + plotArea + " && @.maxArea >= " + plotArea + " )].businessService";
+			List<String> businessServices = JsonPath.read(mdmsData, filter);
+			
+			if(CollectionUtils.isEmpty(businessServices))
+				throw new CustomException(BPAErrorConstants.INVALID_CREATE, "Business Services not found for the Occupancy Types: " + OccupancyTypes.get(0) + "and Sub-Occupancy Types: " + subOccupancyTypes.get(0));
+			
+			request.getBPA().setBusinessService(businessServices.get(0));
 		}
 		
 		return additionalDetails;
@@ -197,12 +210,12 @@ public class EDCRService {
 			Double plotArea = plotAreas.get(0);
 			List jsonOutput = JsonPath.read(masterData, BPAConstants.RISKTYPE_COMPUTATION);
 			String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-					+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
+					+ ") && ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
 					+ buildingHeight + "  ))].riskType";
 
 			List<String> riskTypes = JsonPath.read(jsonOutput, filterExp);
 
-			if (!CollectionUtils.isEmpty(riskTypes) && OccupancyType.equals(BPAConstants.RESIDENTIAL_OCCUPANCY)) {
+			if (!CollectionUtils.isEmpty(riskTypes)) {
 				String expectedRiskType  = riskTypes.get(0);
 
 				if (expectedRiskType == null || !expectedRiskType.equals(riskType)) {

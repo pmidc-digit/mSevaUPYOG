@@ -3,6 +3,9 @@ package org.egov.bpa.util;
 import static org.egov.bpa.util.BPAConstants.BILL_AMOUNT;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -104,6 +107,7 @@ public class BPAUtil {
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.CHECKLIST_NAME).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE_MAPPING).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.BUILDING_HEIGHT).build());
+		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.WORKFLOW_CONFIG).build());
 		ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDtls)
 				.moduleName(BPAConstants.BPA_MODULE).build();
 
@@ -122,8 +126,15 @@ public class BPAUtil {
 				.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE).build());
 		ModuleDetail nocMDtl = ModuleDetail.builder().masterDetails(nocMasterDetails)
 				.moduleName(BPAConstants.NOC_MODULE).build();
+		
+		//Tenant module for Ulb type 
+		List<MasterDetail> tenantMasterDetails = new ArrayList<>();
+		tenantMasterDetails
+				.add(MasterDetail.builder().name(BPAConstants.TENANTS).build());
+		ModuleDetail tenantMDtl = ModuleDetail.builder().masterDetails(tenantMasterDetails)
+				.moduleName(BPAConstants.TENANT_MODULE).build();
 
-		return Arrays.asList(bpaModuleDtls, commonMasterMDtl, nocMDtl);
+		return Arrays.asList(bpaModuleDtls, commonMasterMDtl, nocMDtl, tenantMDtl);
 
 	}
 
@@ -283,7 +294,13 @@ public class BPAUtil {
 	 *
 	 * @return URL for MDMS search end point
 	 */
-	public StringBuilder getAutoEscalationApplicationsURL(Map<String, Object> autoEscalationMdmsData) {
+	public StringBuilder getAutoEscalationApplicationsURL(Map<String, Object> autoEscalationMdmsData, Set<LocalDate> holidayList) {
+		
+		Long stateSla = Long.valueOf(autoEscalationMdmsData.get("stateSLA").toString());
+		Long slaDays = stateSla / BPAConstants.DAY_TO_MILLISECOND;
+		LocalDate slaStartWorkingDate = getPastNthWorkingDay(slaDays, holidayList);
+		Long sla = ChronoUnit.DAYS.between(slaStartWorkingDate, LocalDate.now()) * BPAConstants.DAY_TO_MILLISECOND;
+		
 		StringBuilder uri = new StringBuilder(config.getWfHost());
 		uri.append(config.getWfAutoEscalationPath());
 		uri.append("?businessService=");
@@ -291,7 +308,7 @@ public class BPAUtil {
 		uri.append("&moduleName=");
 		uri.append(autoEscalationMdmsData.get("module"));
 		uri.append("&sla=");
-		uri.append(autoEscalationMdmsData.get("stateSLA").toString());
+		uri.append(sla);
 		uri.append("&startSlaState=");
 		uri.append(autoEscalationMdmsData.get("startSlaState"));
 		uri.append("&currentStates=");
@@ -308,21 +325,64 @@ public class BPAUtil {
 	 * @return
 	 */
 	public MdmsCriteriaReq getMDMSRequestForAutoEscalationData(RequestInfo requestInfo, String tenantId) {
-		final String filterCode = "$.[?(@.active=='true' && @.module=='bpa-service' && @.businessService == 'BPA_LOW' )]";
+		final String filterCode = "$.[?(@.active=='true' && @.module=='bpa-service' )]";
+		
+		String holidayListFilter = "";
+		int month = LocalDate.now().getMonth().getValue();
+		int year = LocalDate.now().getYear();
+		
+		if(month == 1)
+			holidayListFilter = "$.[?(@.year == " + year + " || @.year == " + (year - 1) + ")]";
+		else
+			holidayListFilter = "$.[?(@.year == " + year + ")]";
 
 		ModuleDetail bpaModuleDtls = ModuleDetail.builder()
 				.masterDetails(Arrays.asList(MasterDetail.builder().name("AutoEscalation").filter(filterCode).build()))
 				.moduleName("Workflow").build();
-		List<ModuleDetail> moduleRequest = Arrays.asList(bpaModuleDtls);
+		ModuleDetail holidayListDtls = ModuleDetail.builder()
+				.masterDetails(Arrays.asList(MasterDetail.builder().name("Holidays").filter(holidayListFilter).build()))
+				.moduleName("common-masters").build();
+		List<ModuleDetail> moduleRequest = Arrays.asList(bpaModuleDtls, holidayListDtls);
 
 		List<ModuleDetail> moduleDetails = new LinkedList<>();
 		moduleDetails.addAll(moduleRequest);
 
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(moduleDetails).tenantId(tenantId).build();
 
-		MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo)
+		return MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo)
 				.build();
-		return mdmsCriteriaReq;
+	}
+	
+	/**
+	 * Find the past working day for the provided date
+	 * 
+	 * @param Number Of Days
+	 * @param holidays
+	 * @return
+	 */
+	public LocalDate getPastNthWorkingDay(long days, Set<LocalDate> holidays) {
+		if (days < 0) throw new IllegalArgumentException("n must be >= 0");
+
+		LocalDate date = LocalDate.now();
+
+		// If starting on weekend, move to previous Friday
+		DayOfWeek dow = date.getDayOfWeek();
+		if (dow == DayOfWeek.SATURDAY) date = date.minusDays(1);
+		else if (dow == DayOfWeek.SUNDAY) date = date.minusDays(2);
+
+		long remaining = days;
+		while (remaining > 0) {
+			date = date.minusDays(1);
+			DayOfWeek d = date.getDayOfWeek();
+
+			boolean isWeekend = (d == DayOfWeek.SATURDAY || d == DayOfWeek.SUNDAY);
+			boolean isHoliday = holidays.contains(date);
+
+			if (!isWeekend && !isHoliday) {
+				remaining--;
+			}
+		}
+		return date;
 	}
 
 }

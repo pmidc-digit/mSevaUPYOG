@@ -193,7 +193,7 @@ public class CalculationService {
 					break;
 				}
 				
-				appFeeEstimate.setEstimateAmount(amount.setScale(0, RoundingMode.HALF_UP));
+				appFeeEstimate.setEstimateAmount(amount.setScale(0, RoundingMode.CEILING));
 				appFeeEstimate.setCategory(Category.FEE);
 				appFeeEstimate.setTaxHeadCode(taxHeadCode);
 				estimates.add(appFeeEstimate);
@@ -360,7 +360,7 @@ public class CalculationService {
 		String category = (String)node.get("usage");
 		String approvedColony = (String)node.getOrDefault("approvedColony", "NO");
 //		String buildingStatus  = (String)node.getOrDefault("buildingStatus", "");
-		Map<String, Double> farDetails  = (Map<String, Double>)node.getOrDefault("farDetails", new HashMap<>());
+		Map<String, Object> farDetails  = (Map<String, Object>)node.getOrDefault("farDetails", new HashMap<>());
 		String roadType  = (String)node.getOrDefault("roadType", "OTHER ROAD");
 		String NocNumber  = (String)node.getOrDefault("NocNumber", "");
 		boolean isClubbedPlot  = (boolean)node.getOrDefault("isClubbedPlot", false);
@@ -382,14 +382,14 @@ public class CalculationService {
 			case BPACalculatorConstants.BPA_PROCESSING_FEES:
 			case BPACalculatorConstants.BPA_EXTERNAL_DEVELOPMENT_CHARGES:
 				if(approvedColony.equalsIgnoreCase("LAL_LAKEER") || (approvedColony.equalsIgnoreCase("NO") && StringUtils.isEmpty(NocNumber)))
-					amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
+					amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
 				break;
 			case BPACalculatorConstants.BPA_CLU_CHARGES:
 				if(approvedColony.equalsIgnoreCase("LAL_LAKEER") || (approvedColony.equalsIgnoreCase("NO") && StringUtils.isEmpty(NocNumber))) {
 					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
 							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
 					Double CLUSlabAmount = slabAmountMap.containsKey(roadType) ? slabAmountMap.get(roadType) : slabAmountMap.get("OTHER ROAD");
-					amount = new BigDecimal(CLUSlabAmount).multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
+					amount = new BigDecimal(CLUSlabAmount).multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
 				}
 				break;
 			case BPACalculatorConstants.BPA_MALBA_CHARGES:
@@ -402,15 +402,15 @@ public class CalculationService {
 					List<Object> slabs = (List<Object>)chargesType.get("slabs");
 					Map<String, Object> maxSlab = (Map<String, Object>)slabs.get(slabs.size() -1 );
 					amount = sqFeetArea.subtract(new BigDecimal((Double)maxSlab.get("toPlotArea")))
-							.multiply(rate).add(new BigDecimal((Double)maxSlab.get("rate"))).setScale(0, RoundingMode.HALF_UP);
+							.multiply(rate).add(new BigDecimal((Double)maxSlab.get("rate"))).setScale(0, RoundingMode.CEILING);
 				}else
-					amount = new BigDecimal(slabAmount).setScale(0, RoundingMode.HALF_UP);
+					amount = new BigDecimal(slabAmount).setScale(0, RoundingMode.CEILING);
 				break;
 			case BPACalculatorConstants.BPA_MINING_CHARGES:
-				amount=rate.multiply(basementArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
+				amount=rate.multiply(basementArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.CEILING);
 				break;
 			case BPACalculatorConstants.BPA_LABOUR_CESS:
-				amount=rate.multiply(builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.HALF_UP);
+				amount=rate.multiply(builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.CEILING);
 				break;
 			case BPACalculatorConstants.BPA_CLUBBING_CHARGES:
 				if(isClubbedPlot) {
@@ -419,9 +419,9 @@ public class CalculationService {
 						        && plotArea.doubleValue() <= (Double)slab.get("toPlotArea");
 					}).map(slab -> slab.get("rate")).findFirst().orElse(0.0);
 					if(clubbingSlabAmount == 0.0)
-						amount=rate.multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
+						amount=rate.multiply(plotArea).setScale(0, RoundingMode.CEILING);
 					else
-						amount=BigDecimal.valueOf(clubbingSlabAmount).multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
+						amount=BigDecimal.valueOf(clubbingSlabAmount).multiply(plotArea).setScale(0, RoundingMode.CEILING);
 				}
 				break;
 			case BPACalculatorConstants.BPA_WATER_CHARGES:
@@ -429,18 +429,18 @@ public class CalculationService {
 			case BPACalculatorConstants.BPA_GAUSHALA_CHARGES_CESS:
 			case BPACalculatorConstants.BPA_RAIN_WATER_HARVESTING_CHARGES:
 			case BPACalculatorConstants.BPA_SUB_DIVISION_CHARGES:
-				amount = rate.setScale(0, RoundingMode.HALF_UP);
+				amount = rate.setScale(0, RoundingMode.CEILING);
 				break;	
 			case BPACalculatorConstants.BPA_PURCHASABLE_FAR_CHARGES:
-				if(farDetails != null && farDetails.containsKey("purchasableFar") && purchasedFAR)
-					amount = BigDecimal.valueOf(farDetails.get("purchasableFar") != null ? farDetails.get("purchasableFar") : 0.0).multiply(rate).setScale(0, RoundingMode.HALF_UP);
+				if(farDetails != null && farDetails.containsKey("purchasableFar") && farDetails.get("purchasableFar") != null && purchasedFAR) 
+					amount = new BigDecimal(farDetails.get("purchasableFar").toString()).multiply(rate).setScale(0, RoundingMode.CEILING);
 				else
 					amount = BigDecimal.ZERO;
 				break;
 			}
 			
 			if(!discount.equals(BigDecimal.ZERO))
-				amount = amount.subtract(amount.divide(new BigDecimal(100)).multiply(discount)).setScale(0, RoundingMode.HALF_UP);
+				amount = amount.subtract(amount.divide(new BigDecimal(100)).multiply(discount)).setScale(0, RoundingMode.CEILING);
 			
 			Map<String, Object> adjustedAmount = adjustedAmounts.containsKey(taxhead) ? 
 					(Map<String, Object>)adjustedAmounts.get(taxhead) : new LinkedHashMap<String, Object>();
@@ -450,6 +450,7 @@ public class CalculationService {
 			estimate.setTaxHeadCode(taxhead);
 			estimate.setAdjustedAmount(new BigDecimal(adjustedAmount.getOrDefault("adjustedAmount", "0").toString()));
 			estimate.setFilestoreId((String)adjustedAmount.getOrDefault("filestoreId", null));
+			estimate.setRemark((String)adjustedAmount.getOrDefault("remark", null));
 			estimates.add(estimate);
 			
 		});
@@ -460,14 +461,14 @@ public class CalculationService {
 					est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_CLU_CHARGES) || 
 					est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_EXTERNAL_DEVELOPMENT_CHARGES))
 			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.HALF_UP));
+			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING));
 		});
 		
 		//Updating Water Charges based on Malba Charges
 		estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_WATER_CHARGES)).forEach(estimate -> {
 			BigDecimal amount = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_MALBA_CHARGES))
 					.map(est -> est.getEstimateAmount()).findFirst().orElse(BigDecimal.ZERO)
-					.multiply(estimate.getEstimateAmount()).divide(new BigDecimal(100.0)).setScale(0, RoundingMode.HALF_UP);
+					.multiply(estimate.getEstimateAmount()).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING);
 			estimate.setEstimateAmount(amount);
 		});
 		

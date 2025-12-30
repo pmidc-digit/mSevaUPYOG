@@ -179,7 +179,7 @@ public class PaymentRepository {
     }
 
     private Map<String, Bill> getBills(Set<String> ids, String tenantId){
-    	Map<String, Bill> mapOfIdAndBills = new HashMap<>();
+        Map<String, Bill> mapOfIdAndBills = new HashMap<>();
         Map<String, Object> preparedStatementValues = new HashMap<>();
         preparedStatementValues.put("id", ids);
         StringBuilder query = new StringBuilder(paymentQueryBuilder.getBillQuery());
@@ -189,13 +189,12 @@ public class PaymentRepository {
         }
         List<Bill> bills = namedParameterJdbcTemplate.query(query.toString(), preparedStatementValues, billRowMapper);
         bills.forEach(bill -> {
-        	mapOfIdAndBills.put(bill.getId(), bill);
+            mapOfIdAndBills.put(bill.getId(), bill);
         });
-        
+
         return mapOfIdAndBills;
 
     }
-    
     private Map<String, Bill> getBills(Set<String> ids){
     	Map<String, Bill> mapOfIdAndBills = new HashMap<>();
         Map<String, Object> preparedStatementValues = new HashMap<>();

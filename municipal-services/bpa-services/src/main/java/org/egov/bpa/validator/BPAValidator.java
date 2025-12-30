@@ -56,8 +56,8 @@ public class BPAValidator {
 	public void validateCreate(BPARequest bpaRequest, Object mdmsData, Map<String, String> values) {
 		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
 		validateApplicationDocuments(bpaRequest, mdmsData, null, values);
-		if(!bpaRequest.getBPA().getApplicationType().equalsIgnoreCase("BUILDING_OC_PLAN_SCRUTINY"))
-				validateApplication(bpaRequest);
+//		if(!bpaRequest.getBPA().getApplicationType().equalsIgnoreCase("BUILDING_OC_PLAN_SCRUTINY"))
+//				validateApplication(bpaRequest);
 	}
 
 

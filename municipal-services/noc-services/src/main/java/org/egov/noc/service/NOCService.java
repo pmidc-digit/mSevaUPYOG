@@ -2,14 +2,7 @@ package org.egov.noc.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -228,7 +221,7 @@ public class NOCService {
 
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 
-
+		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
 		if (criteria.getMobileNumber() != null) {
 //			StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
 //					.append(config.getBpaSearchEndpoint());
@@ -328,11 +321,35 @@ public class NOCService {
 						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
 
-				List<String> accountid = new ArrayList<>();
-				accountid.add(noc.getAccountId());
+				List<String> accountid = nocRepository.getOwnerUserIdsByNocId(noc.getId());
 				criteria.setAccountId(accountid);
 				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				noc.setOwners(userDetailResponse.getUser());
+				List<OwnerInfo> owner = userDetailResponse.getUser();
+
+				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
+						.orElse(Collections.emptyList())
+						.stream()
+						.filter(oi -> oi.getUuid() != null && oi.getAdditionalDetails() != null)
+						.collect(Collectors.toMap(
+								OwnerInfo::getUuid,
+								OwnerInfo::getAdditionalDetails,
+								(a, b) -> a // keep first on duplicate uuid
+						));
+
+
+// Merge by uuid
+				for (OwnerInfo oi : owner) {
+					String uuid = oi.getUuid(); // ensure this getter exists
+					if (uuid != null) {
+						Object ad = adByUuid.get(uuid);
+						if (ad != null) {
+							oi.setAdditionalDetails(ad);
+						}
+					}
+				}
+
+
+				noc.setOwners(owner);
 
 				// BPA CALL
 				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())

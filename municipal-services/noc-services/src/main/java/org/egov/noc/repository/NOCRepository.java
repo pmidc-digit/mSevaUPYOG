@@ -67,6 +67,26 @@ public class NOCRepository {
 		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 		return nocList;
 	}
+
+	public List<String> getOwnerUserIdsByNocId(String clu) {
+		List<Object> preparedStmtList = new ArrayList<>();
+
+		// Build SQL via your QueryBuilder: e.g., "SELECT user_id FROM eg_layoutowner WHERE layout_id = ?"
+		String query = queryBuilder.getOwnerUserIdsQuery(clu, preparedStmtList);
+
+		// Map each row's "user_id" to Long
+		List<String> userIds = jdbcTemplate.query(
+				query,
+				preparedStmtList.toArray(),
+				(rs, rowNum) -> {
+					String userId = rs.getString("uuid");
+					// If user_id can be NULL, guard with rs.wasNull()
+					return userId;
+				}
+		);
+
+		return userIds;
+	}
 	
 	/**
          * using the queryBulider query the data on applying the search criteria and return the count 

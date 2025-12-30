@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
+import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
@@ -14,7 +16,10 @@ import org.egov.bpa.web.model.BPASearchCriteria;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.collection.PaymentDetail;
 import org.egov.bpa.web.model.collection.PaymentRequest;
+import org.egov.bpa.web.model.workflow.BusinessService;
+import org.egov.bpa.web.model.workflow.State;
 import org.egov.bpa.workflow.WorkflowIntegrator;
+import org.egov.bpa.workflow.WorkflowService;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
@@ -39,15 +44,23 @@ public class PaymentUpdateService {
 	private EnrichmentService enrichmentService;
 
 	private ObjectMapper mapper;
+	
+	private WorkflowService workflowService;
+	
+	private UserService userService;
+	
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
-			WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper) {
+			WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper,
+			WorkflowService workflowService, UserService userService) {
 		this.config = config;
 		this.repository = repository;
 		this.wfIntegrator = wfIntegrator;
 		this.enrichmentService = enrichmentService;
 		this.mapper = mapper;
+		this.workflowService = workflowService;
+		this.userService = userService;
 
 	}
 
@@ -99,6 +112,36 @@ public class PaymentUpdateService {
 					requestInfo.getUserInfo().getRoles().add(role);
 					BPARequest updateRequest = BPARequest.builder().requestInfo(requestInfo).BPA(bpas.get(0)).build();
 
+					// Add Assignees in application workflow 
+					bpas.forEach(bpa -> {
+						BusinessService busSer = workflowService.getBusinessService(bpa, updateRequest.getRequestInfo(),
+								bpa.getApplicationNo());
+						State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), busSer);
+						String nextStateId = currentState.getActions().stream()
+								.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
+								.findFirst().get().getNextState();
+						State nextState = busSer.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+						
+						String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+						
+						if (nextState != null 
+								&& nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE)
+								&& BPAConstants.ACTION_PAY.equalsIgnoreCase(action)) {
+							List<String> roles = new ArrayList<>();
+							nextState.getActions().forEach(stateAction -> {
+								roles.addAll(stateAction.getRoles());
+							});
+							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
+							bpa.getWorkflow().setAssignes(assignee);
+							
+							if(BPAConstants.BPA_LOW_MODULE_CODE.equalsIgnoreCase(bpa.getBusinessService())) {
+								Map<String, Object> additionalDetails = (Map<String, Object>)bpa.getAdditionalDetails();
+								additionalDetails.put("isSanctionLetterGenerated", Boolean.TRUE);
+								bpa.setAdditionalDetails(additionalDetails);
+							}
+						}
+					});
+					
 					/*
 					 * calling workflow to update status
 					 */
@@ -110,7 +153,7 @@ public class PaymentUpdateService {
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */
 					enrichmentService.postStatusEnrichment(updateRequest);
-
+					
 					repository.update(updateRequest, true);
 
 				}

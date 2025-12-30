@@ -233,6 +233,8 @@ public class BPAConstants {
 	// OCCUPANCY TYPE
 
 	public static final String RESIDENTIAL_OCCUPANCY = "A";
+	
+	public static final String RESIDENTIAL_GH_SUBOCCUPANCY = "A-AF";
 
 	// CALCULATION FEEe
 	public static final String APPLICATION_FEE_KEY = "ApplicationFee";
@@ -407,5 +409,19 @@ public class BPAConstants {
 	public static final String ACTION_VERIFY = "VERIFY";
 	
 	public static final String SYSTEM = "SYSTEM";
+	
+	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
+	
+	public static final String TENANT_MODULE = "tenant";
+
+	public static final String TENANTS = "tenants";
+
+	public static final String PENDINGVERIFICATION_STATE = "PENDINGVERIFICATION";
+	
+	public static final String PENDINGINITIALVERIFICATION_STATE = "PENDINGINITIALVERIFICATION";
+	
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
+	
+	public static final Long DAY_TO_MILLISECOND = 86400000L;
 
 }

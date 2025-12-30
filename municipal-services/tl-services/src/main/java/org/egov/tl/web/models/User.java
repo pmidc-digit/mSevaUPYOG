@@ -156,7 +156,18 @@ public class User   {
         @Size(max=256)
         @JsonProperty("tenantId")
         private String tenantId;
+        
+        @JsonProperty("permanentState")
+        private String permanentState;
 
+        @JsonProperty("correspondenceState")
+        private String correspondenceState;
+        
+        @JsonProperty("permanentDistrict")
+        String permanentDistrict;
+        
+        @JsonProperty("correspondenceDistrict")
+        String correspondenceDistrict;
 
         public User addRolesItem(Role rolesItem) {
                 if (this.roles == null) {

@@ -36,18 +36,23 @@ public class NocQueryBuilder {
 
 	private static final String QUERY =
 			"SELECT noc.*, " +
-					"json_build_object(" +
+					"jsonb_build_object(" +
 					"'id', details.id, " +
 					"'nocid', details.nocid, " +
 					"'additionalDetails', details.additionalDetails" +
 					") AS nocDetails, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', nocdoc.uuid, " +
 					"'documentType', nocdoc.documenttype, " +
-					"'documentAttachment', nocdoc.documentAttachment)) AS documents " +
+					"'documentAttachment', nocdoc.documentAttachment)) AS documents, " +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
+					"'additionalDetails', nocowner.additionalDetails, " +
+					"'uuid', nocowner.uuid " +
+					")) AS owners " +
 					"FROM eg_noc noc " +
 					"LEFT JOIN eg_noc_details details ON details.nocid = noc.id " +
 					"LEFT JOIN eg_noc_document nocdoc ON nocdoc.nocid = noc.id " +
+					"LEFT JOIN eg_noc_owner nocowner ON nocowner.nocid = noc.id " +
 					"WHERE 1=1";
 
 
@@ -93,6 +98,14 @@ public class NocQueryBuilder {
 			+ " result) ranked_result";
 
 
+	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT uuid FROM eg_noc_owner WHERE nocid = ?");
+
+		preparedStmtList.add(layoutId);
+		return sb.toString();
+	}
+
 //	private final String paginationWrapper = "SELECT * FROM "
 //			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) offset_ FROM " + "({})"
 //			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
@@ -129,12 +142,12 @@ public class NocQueryBuilder {
 			addToPreparedStatement(preparedStmtList, ids);
 		}
 
-		List<String> ownerIds = criteria.getOwnerIds();
-		if (!CollectionUtils.isEmpty(ownerIds)) {
-			addClauseIfRequired(builder);
-			builder.append(" (noc.accountId IN (").append(createQuery(ownerIds)).append(")) ");
-			addToPreparedStatement(preparedStmtList, ownerIds);
-		}
+//		List<String> ownerIds = criteria.getOwnerIds();
+//		if (!CollectionUtils.isEmpty(ownerIds)) {
+//			addClauseIfRequired(builder);
+//			builder.append(" (noc.accountId IN (").append(createQuery(ownerIds)).append(")) ");
+//			addToPreparedStatement(preparedStmtList, ownerIds);
+//		}
 
 
 		String applicationNo = criteria.getApplicationNo();
@@ -204,6 +217,34 @@ public class NocQueryBuilder {
                         builder.append(" noc.status IN (").append(createQuery(status)).append(")");
                         addToPreparedStatement(preparedStmtList, status);
                 }
+
+		List<String> ownerIds = criteria.getOwnerIds(); // mapped to clu.accountId
+		String createdBy = criteria.getCreatedBy();
+
+		boolean hasOwnerIds  = (ownerIds != null && !ownerIds.isEmpty());
+		boolean hasCreatedBy = (createdBy != null && !createdBy.isEmpty());
+
+		if ((hasOwnerIds || hasCreatedBy) && criteria.getApplicationNo()==null){
+			addClauseIfRequired(builder);
+			builder.append(" ( ");
+
+			boolean wroteOne = false;
+
+			if (hasOwnerIds) {
+				builder.append(" noc.accountId IN (").append(createQuery(ownerIds)).append(") ");
+				addToPreparedStatement(preparedStmtList, ownerIds);
+				wroteOne = true;
+			}
+
+			if (hasCreatedBy) {
+				if (wroteOne) builder.append(" OR ");
+				builder.append(" noc.createdby = ? ");
+				preparedStmtList.add(createdBy);
+			}
+
+			builder.append(" ) ");
+		}
+
 
 		builder.append(" GROUP BY noc.id, noc.tenantid, noc.lastModifiedTime, noc.createdBy, ")
 				.append("noc.lastModifiedBy, noc.createdTime, noc.applicationNo, noc.nocNo, noc.nocType,details.id, details.nocid, details.additionalDetails ");

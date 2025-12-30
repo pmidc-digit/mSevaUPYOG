@@ -293,8 +293,13 @@ public class InboxService {
                         .collect(Collectors.toMap(
                                 ProcessInstance::getBusinessId,
                                 Function.identity(),
-                                (oldVal, newVal) -> newVal
+                                (oldVal, newVal) ->
+                                        oldVal.getAuditDetails().getLastModifiedTime() >
+                                        newVal.getAuditDetails().getLastModifiedTime()
+                                                ? oldVal
+                                                : newVal
                         ));
+
 
         // FIXED: store businessIds as List<String>, not CSV
         moduleSearchCriteria.put(srvMap.get("applNosParam"), new ArrayList<>(processInstanceMap.keySet()));
@@ -310,6 +315,24 @@ public class InboxService {
         // Use full status count map (not filtered) so UI shows all statuses
         List<HashMap<String, Object>> statusMap = fullStatusCountMap;
         
+        Map<String, List<ProcessInstance>> groupedByStatus =
+                processInstanceMap.values().stream()
+                        .collect(Collectors.groupingBy(pi -> pi.getState().getUuid()));
+
+        List<HashMap<String, Object>> statusMap = new ArrayList<>();
+
+        groupedByStatus.forEach((statusId, list) -> {
+            ProcessInstance pi = list.get(0);
+
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("count", list.size());
+            map.put("applicationstatus", pi.getState().getApplicationStatus());
+            map.put("businessservice", pi.getBusinessService());
+            map.put("statusid", statusId);
+
+            statusMap.add(map);
+        });
+
         // Populate Inbox Items
         if (businessObjects != null && businessObjects.length() > 0 && !processInstances.isEmpty()) {
 
@@ -338,7 +361,7 @@ public class InboxService {
         }
 
         // Build final response
-        response.setTotalCount(processInstances.size());   // FIXED
+        response.setTotalCount(processInstanceMap.size());   // CORRECT
         response.setItems(inboxes);
         response.setStatusMap(statusMap);
 

@@ -153,7 +153,7 @@ public class UserService {
 
 		ownerFromRequest.setId(ownerInfoFromSearch.getId());
 		ownerFromRequest.setUuid(ownerInfoFromSearch.getUuid());
-		addUserDefaultFields(petApplication.getTenantId(), role, ownerFromRequest);
+		ownerFromRequest.setRoles(ownerInfoFromSearch.getRoles());
 
 		// Convert Owner to User for user service call
 		org.egov.ptr.models.user.User user = convertOwnerToUser(ownerFromRequest);

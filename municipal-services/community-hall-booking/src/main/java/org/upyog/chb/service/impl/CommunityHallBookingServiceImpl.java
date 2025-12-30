@@ -415,6 +415,34 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
             }
         }
 
+        // Handle CANCEL action - mark booking as CANCELLED and release slots
+        if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
+                && "CANCEL".equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction())) {
+            
+            String bookingId = communityHallsBookingRequest.getHallsBookingApplication().getBookingId();
+            log.info("CANCEL action received for bookingId: {}, marking slots as AVAILABLE", bookingId);
+            
+            // Set booking status to CANCELLED
+            communityHallsBookingRequest.getHallsBookingApplication().setBookingStatus(BookingStatusEnum.CANCELLED.toString());
+            
+            // Update all slot statuses to AVAILABLE so they can be rebooked
+            List<BookingSlotDetail> slots = communityHallsBookingRequest.getHallsBookingApplication().getBookingSlotDetails();
+            if (slots != null && !slots.isEmpty()) {
+                for (BookingSlotDetail slot : slots) {
+                    slot.setStatus(BookingStatusEnum.AVAILABLE.toString());
+                }
+                log.info("Marked {} slots as AVAILABLE for cancelled booking {}", slots.size(), bookingNo);
+            }
+            
+            // Delete payment timer if exists
+            try {
+                bookingTimerService.deleteBookingTimer(bookingId, false);
+                log.info("Deleted payment timer for cancelled booking: {}", bookingId);
+            } catch (Exception e) {
+                log.warn("Failed to delete payment timer for booking {}: {}", bookingId, e.getMessage());
+            }
+        }
+
         //Create demand on verified action
 		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
 				&& "SUBMIT"

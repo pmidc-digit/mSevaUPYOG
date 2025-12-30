@@ -85,7 +85,7 @@ public class TLQueryBuilder {
       
       private final String countWrapper = "SELECT COUNT(DISTINCT(tl_id)) FROM ({INTERNAL_QUERY}) as license_count";
       
-      public static final String TENANTIDQUERY="select distinct(tenantid) from eg_tl_tradelicense";
+      public static final String TENANTIDQUERY="select distinct(tenantid) from eg_tl_tradelicense Where businessservice = ?";
 
 
 
@@ -115,7 +115,7 @@ public class TLQueryBuilder {
         
         else {
 
-            if (criteria.getTenantId() != null) {
+            if (criteria.getTenantId() != null && !criteria.getOnlyLatestApplication()) {
                 addClauseIfRequired(preparedStmtList, builder);
                 builder.append(" tl.tenantid=? ");
                 preparedStmtList.add(criteria.getTenantId());

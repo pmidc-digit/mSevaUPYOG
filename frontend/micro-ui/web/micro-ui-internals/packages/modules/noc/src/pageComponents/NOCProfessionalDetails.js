@@ -20,6 +20,7 @@ const NOCProfessionalDetails = (_props) => {
   const [profData, setProfData] = useState(null);
   const [regId, setRegId]= useState(null);
   const [address, setAddress] = useState(null);
+  const [licenseValidity, setLicenseValidity]=useState(null);
 
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo here", userInfo);
@@ -60,6 +61,7 @@ const NOCProfessionalDetails = (_props) => {
      }
 
      setAddress(profData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || profData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress);
+     setLicenseValidity( Digit.DateUtils.ConvertEpochToDate(profData?.validTo));
     }
   },[profData]);
   
@@ -67,12 +69,11 @@ const NOCProfessionalDetails = (_props) => {
     if (regId) {
       setValue("professionalRegId", regId, { shouldValidate: true, shouldDirty: false });
       setValue("professionalAddress", address);
+      setValue("professionalRegIdValidity", licenseValidity, { shouldValidate: true, shouldDirty: false });
     }
-  }, [address,regId, setValue]);
+  }, [address,regId, setValue,licenseValidity]);
 
   // console.log("profData=>>", profData);
-  // console.log("regId", regId);
-  // console.log("address==>", address);
 
   return (
     <React.Fragment>
@@ -178,6 +179,37 @@ const NOCProfessionalDetails = (_props) => {
       <CardLabelError style={errorStyle}>{errors?.professionalRegId?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}*</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="professionalRegIdValidity"
+            rules={{
+              required: t("REQUIRED_FIELD"),
+              // pattern: {
+              //   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              //   message: t("INVALID_EMAIL_FORMAT"),
+              // },
+            }}
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  props.onBlur(e);
+                }}
+                t={t}
+                disabled="true"
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
+
+      <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")}`}*</CardLabel>
         <div className="field">
           <Controller
@@ -224,6 +256,8 @@ const NOCProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
+                disable="true"
               />
             )}
           />

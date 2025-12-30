@@ -462,6 +462,26 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 ),
         },
     ];
+    const oldEDCRDocumentsColumns = [
+        {
+            Header: t("BPA_EDCR_NO_LABEL"),
+            accessor: "edcrNumber",
+            Cell: ({ value }) => value || t("CS_NA"),
+        },
+        {
+            Header: t(""),
+            accessor: "planReport",
+            Cell: ({ value }) =>
+                value ? (
+                    <LinkButton className="view-link-button"
+                        label={t("View")}
+                        onClick={() => routeTo(value)}
+                    />
+                ) : (
+                    t("CS_NA")
+                ),
+        },
+    ];
 
     const handleMobileNumberChange = (e) => {
         setMobileNumber(e.target.value);
@@ -577,12 +597,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }
         const documents = currentStepData?.createdResponse?.documents?.filter((item) => item.documentType !== "ARCHITECT.UNDERTAKING")
         documents.push(consentDocument);
+        const applicationType = currentStepData?.BasicDetails?.edcrDetails?.appliactionType;
 
         try {
             setApiLoading(true);
             const result = await Digit.OBPSService.update({
                 BPA: {
                     ...currentStepData?.createdResponse,
+                    applicationType,
                     additionalDetails: {
                         ...currentStepData?.createdResponse?.additionalDetails,
                         isArchitectDeclared,
@@ -603,13 +625,13 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     documents,
                     workflow: {
                         action: workflowAction,
-                        assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
+                        assignes: (workflowAction === "RESUBMIT") || (workflowAction === "RESUBMIT_AND_PAY") || (workflowAction === "APPROVE_AND_PAY") ? [] : [accountId]
                     }
                 }
             }, tenantId)
             if (result?.ResponseInfo?.status === "successful") {
                 setApiLoading(false);
-                history.push(`/digit-ui/citizen/obps/self-certification/response/${currentStepData?.createdResponse?.applicationNo}`);
+                history.push(`/digit-ui/citizen/obps/self-certification/response/${currentStepData?.createdResponse?.applicationNo}`,{workflowAction});
             } else {
                 alert(t("BPA_CREATE_APPLICATION_FAILED"));
                 setApiLoading(false);
@@ -1067,6 +1089,24 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             </div>
                         </div>
                     </div>
+
+                    {currentStepData?.createdResponse?.additionalDetails?.oldEDCR?.length > 0 && <div>
+                    <CardSubHeader className="bpa-block-header">{t("OLD_BPA_EDCR_DETAILS")}</CardSubHeader>
+
+                    <div className="bpa-table-container">
+                        <Table
+                            className="customTable table-border-style"
+                            t={t}
+                            data={currentStepData?.createdResponse?.additionalDetails?.oldEDCR}
+                            columns={oldEDCRDocumentsColumns}
+                            getCellProps={() => ({ style: {} })}
+                            disableSort={false}
+                            autoSort={true}
+                            manualPagination={false}
+                            isPaginationRequired={false}
+                        />
+                    </div>
+                    </div>}
                 </div>
 
                 <div className="bpa-stepper-form-section">

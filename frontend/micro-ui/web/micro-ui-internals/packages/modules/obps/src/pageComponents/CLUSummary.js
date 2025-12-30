@@ -26,8 +26,8 @@ function CLUSummary({ currentStepData: formData, t }) {
   console.log("ownerFileStoreId", ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId);
 
   const renderLabel = (label, value) => (
-    <div className="clu-summary-label-field-pair">
-      <CardLabel className="clu-summary-bold-label">{label}</CardLabel>
+    <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -36,16 +36,16 @@ function CLUSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs);
 
   return (
-    <div className="clu-summary-page">
-      <h2 className="clu-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
-      <div className="clu-summary-section">
+    <div className="bpa-summary-page">
+      <h2 className="bpa-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
+      <div className="bpa-summary-section">
         <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
       </div>
 
       {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
         return (
-        <div key={index} className="clu-summary-section">
-         <h2 className="clu-summary-heading">
+        <div key={index} className="bpa-summary-section">
+         <h2 className="bpa-summary-heading">
            {index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`}
          </h2>
 
@@ -149,13 +149,13 @@ function CLUSummary({ currentStepData: formData, t }) {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_UPLOADED_OWNER_ID")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_UPLOADED_OWNER_ID")}</h2>
+      <div className="bpa-summary-section">
         {ownerIds?.ownerIdList?.length > 0 && <CLUDocumentTableView documents={ownerIds?.ownerIdList} />}
       </div>
 
-      <h2 className="clu-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div className="clu-summary-section">
+      <h2 className="bpa-summary-heading">{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div className="bpa-summary-section">
         {formData?.documents?.documents?.documents?.length > 0 && <CLUDocumentTableView documents={formData?.documents?.documents?.documents} />}
       </div>
 

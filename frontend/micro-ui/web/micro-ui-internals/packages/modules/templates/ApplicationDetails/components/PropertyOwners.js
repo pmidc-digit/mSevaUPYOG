@@ -43,11 +43,6 @@ function PropertyOwners({ owners }) {
     cardStyles = { ...cardStyles, maxWidth: "950px" };
     rowContainerStyle = {};
   }
-
-  let tableStyle = {
-    backgroundColor: "#fff",
-  };
-
   let owners1 = owners.sort((item, item2) => {
     return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence;
   });
@@ -84,7 +79,7 @@ function PropertyOwners({ owners }) {
                     return <Row key={t(value.title)} label={t(value.title)} text={<img src={t(value.value)} alt="" privacy={value?.privacy} />} />;
                   }
                   return (
-                    <span style={index % 2 === 0 ? { backgroundColor: "#eee", display: "block" } : { display: "block" }}>
+                    <span>
                       <Row
                         key={t(value.title)}
                         label={!checkLocation ? t(value.title) : `${t(value.title)}`}

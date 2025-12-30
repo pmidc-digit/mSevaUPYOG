@@ -36,16 +36,16 @@ public class NocQueryBuilder {
 
 	private static final String QUERY =
 			"SELECT noc.*, " +
-					"json_build_object(" +
+					"jsonb_build_object(" +
 					"'id', details.id, " +
 					"'nocid', details.nocid, " +
 					"'additionalDetails', details.additionalDetails" +
 					") AS nocDetails, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', nocdoc.uuid, " +
 					"'documentType', nocdoc.documenttype, " +
 					"'documentAttachment', nocdoc.documentAttachment)) AS documents, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', nocowner.additionalDetails, " +
 					"'uuid', nocowner.uuid " +
 					")) AS owners " +

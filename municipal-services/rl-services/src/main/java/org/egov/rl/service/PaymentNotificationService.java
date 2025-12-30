@@ -141,6 +141,7 @@ public class PaymentNotificationService {
 						applicationStatus, applicationNumber, applicationType);
 			}
 			applicationStatus = "APPROVED";
+			application.setStatus(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
 			
 			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
 					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
@@ -150,7 +151,6 @@ public class PaymentNotificationService {
 				updateDatabaseWithStatus(application,applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
 			}else {
 				applicationStatus = "CLOSED";
-				application.setStatus(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
 				updateDatabaseWithStatus(application,applicationNumber, applicationStatus, paymentRequest.getRequestInfo());	
 			}
 		} catch (Exception e) {

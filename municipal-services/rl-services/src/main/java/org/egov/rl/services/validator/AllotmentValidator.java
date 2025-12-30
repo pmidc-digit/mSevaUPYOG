@@ -20,6 +20,7 @@ import org.egov.rl.services.models.AllotmentRequest;
 import org.egov.rl.services.models.OwnerInfo;
 import org.egov.rl.services.models.enums.Status;
 import org.egov.rl.services.repository.AllotmentRepository;
+import org.egov.rl.services.service.BoundaryService;
 import org.egov.rl.services.util.EncryptionDecryptionUtil;
 import org.egov.rl.services.util.RLConstants;
 import org.egov.tracer.model.CustomException;
@@ -53,6 +54,8 @@ public class AllotmentValidator {
 	@Autowired
 	ObjectMapper mapper;
 
+	@Autowired
+	BoundaryService boundaryService;
 	/**
 	 * Validate the masterData and ctizenInfo of the given propertyRequest
 	 * 
@@ -144,7 +147,7 @@ public class AllotmentValidator {
 			throw new CustomException(errorMap);
 
 		validateOwnersData(allotementRequest, errorMap);
-		validateAndLoadPropertyData(allotementRequest, errorMap);
+		boundaryService.validateAndLoadPropertyData(allotementRequest, errorMap);
 
 		try {
 			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getStartDate()).orElse(null);
@@ -247,7 +250,7 @@ public class AllotmentValidator {
 			throw new CustomException(errorMap);
 
 		validateOwnersData(allotementRequest, errorMap);
-		validateAndLoadPropertyData(allotementRequest, errorMap);
+		boundaryService.validateAndLoadPropertyData(allotementRequest, errorMap);
 		try {
 			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getStartDate()).orElse(null);
 			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getEndDate()).orElse(null);
@@ -324,46 +327,5 @@ public class AllotmentValidator {
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 
-	}
-
-	private void validateAndLoadPropertyData(AllotmentRequest allotementRequest, Map<String, String> errorMap) {
-		try {
-			String propertyId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getPropertyId()).orElse(null);
-			String tenantId = Optional.ofNullable(allotementRequest.getAllotment().get(0).getTenantId()).orElse(null);
-
-			MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
-			mdmsCriteriaReq.setRequestInfo(allotementRequest.getRequestInfo()); // from your context
-			MdmsCriteria mdmsCriteria = new MdmsCriteria();
-			mdmsCriteria.setTenantId(tenantId);
-			ModuleDetail moduleDetail = new ModuleDetail();
-			moduleDetail.setModuleName("rentAndLease");
-			MasterDetail masterDetail = new MasterDetail();
-			masterDetail.setName("RLProperty");
-			masterDetail.setFilter("$.[?(@.propertyId=='" + propertyId + "')]");
-			moduleDetail.setMasterDetails(Arrays.asList(masterDetail));
-			mdmsCriteria.setModuleDetails(Arrays.asList(moduleDetail));
-			mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
-
-			String mdmsUrl = configs.getMdmsHost() + configs.getMdmsEndpoint();// "http://<mdms-host>/egov-mdms-service/v1/_search";
-			ResponseEntity<Map> response = restTemplate.postForEntity(mdmsUrl, mdmsCriteriaReq, Map.class);
-			Map<String, Object> body = response.getBody();
-
-			Map<String, Object> mdms = (Map<String, Object>) body.get("MdmsRes");
-			Map<String, Object> rentLease = (Map<String, Object>) mdms.get("rentAndLease");
-			List<Map<String, Object>> rlProps = (List<Map<String, Object>>) rentLease.get("RLProperty");
-			if (rlProps.isEmpty()) {
-				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
-						"propertyId and tenantId cannot be wrong, please provide the valid propertyId and tenentId information");
-			} else {
-				JsonNode node = mapper.valueToTree(rlProps);
-				allotementRequest.getAllotment().get(0).setAdditionalDetails(node);
-			}
-			if (!errorMap.isEmpty())
-				throw new CustomException(errorMap);
-		} catch (Exception e) {
-			throw new CustomException("TENANT ID INFO ERROR",
-					"TENANT ID is wrong, please provide the valid tenentId information");
-
-		}
 	}
 }

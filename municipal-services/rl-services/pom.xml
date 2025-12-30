@@ -9,7 +9,7 @@
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.2.6.RELEASE</version>
 	</parent>
-	<groupId>org.egov</groupId>
+	<groupId>org.egov.rl.services</groupId>
 	<artifactId>rl-services</artifactId>
 	<version>1.2.1-beta-SNAPSHOT</version>
 	<name>egov-rl-registry</name>
@@ -191,7 +191,7 @@
 				<configuration>
 					<jsonLibrary>jackson2</jsonLibrary>
 					<classes>
-						<class>org.egov.rl.RentLeaseApplication</class>
+						<class>org.egov.rl.services.RentLeaseApplication</class>
 					</classes>
 					<customTypeMappings>
 						<customTypeMapping>org.egov.common.contract.request.User:User</customTypeMapping>

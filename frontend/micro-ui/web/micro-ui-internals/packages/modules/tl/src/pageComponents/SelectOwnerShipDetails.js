@@ -49,6 +49,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         ?.map((item) => ({
           ...item,
           i18nKey: `TL_${item.code}`,
+          value: item.code
         }));
     } else if (ownershipTypeMain?.code === "INSTITUTIONALGOVERNMENT") {
       modifiedFilteredData = currentFilteredData
@@ -56,12 +57,14 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         ?.map((item) => ({
           ...item,
           i18nKey: `TL_${item.code}`,
+          value: item.code
         }));
     } else {
       modifiedFilteredData = currentFilteredData?.map((item) => {
         return {
           ...item,
           i18nKey: `TL_${item.code}`,
+          value: item.code
         };
       });
     }
@@ -171,7 +174,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       if (!ownershipCategory?.code) setError(config.key, { type: "required", message: t(`REQUIRED_FIELD`) });
       //message: `${config.key.toUpperCase()}_REQUIRED` }
       else clearErrors(config.key);
-      // goNext();
+      goNext();
     }
   }, [ownershipCategory]);
 
@@ -205,7 +208,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
                   onChange={selectisSameAsPropertyOwner}
                   value={isSameAsPropertyOwner}
                   checked={isSameAsPropertyOwner || false}
-                  style={{ marginBottom: "20px" }}
                   disable={isRenewal}
                   //disable={isUpdateProperty || isEditProperty}
                 />
@@ -247,7 +249,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           />
         </LabelFieldPair>
         {formState.touched?.[config.key] ? (
-          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+          <CardLabelError>
             {formState.errors[config.key]?.message}
           </CardLabelError>
         ) : null}
@@ -266,7 +268,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
               onChange={selectisSameAsPropertyOwner}
               value={isSameAsPropertyOwner}
               checked={isSameAsPropertyOwner || false}
-              style={{ marginBottom: "20px" }}
               disable={isEdit}
             />
           )}

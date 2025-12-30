@@ -20,21 +20,12 @@ import org.egov.rl.services.models.enums.Status;
 import org.egov.rl.services.models.user.User;
 import org.egov.rl.services.repository.AllotmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public class SearchPropertyService {
 
-	@Value("${egov.location.host}")
-	private String locationHost;
-
-	@Value("${egov.location.context.path}")
-	private String locationContextPath;
-
-	@Value("${egov.location.endpoint}")
-	private String locationEndpoint;
 
 	@Autowired
 	private AllotmentRepository allotmentRepository;

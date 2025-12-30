@@ -81,16 +81,16 @@ public class AllotmentService {
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
-			allotmentRequest.getAllotment().get(0).setStatus("APPROVED");
+			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
 		}
 		String previousApplicationNumber = allotmentRequest.getAllotment().get(0).getPreviousApplicationNumber();
 		if (previousApplicationNumber != null && previousApplicationNumber.trim().length() > 0) {
 			AllotmentDetails allotment = allotmentRequest.getAllotment().get(0);
-			allotment.setApplicationType("RENEWAL");
+			allotment.setApplicationType(RLConstants.RENEWAL_RL_APPLICATION);
 			allotmentRequest.setAllotment(Arrays.asList(allotment));
 		} else {
 			AllotmentDetails allotment = allotmentRequest.getAllotment().get(0);
-			allotment.setApplicationType("NEW");
+			allotment.setApplicationType(RLConstants.NEW_RL_APPLICATION);
 			allotmentRequest.setAllotment(Arrays.asList(allotment));
 		}
 		allotmentProducer.push(config.getSaveRLAllotmentTopic(), allotmentRequest);
@@ -111,7 +111,7 @@ public class AllotmentService {
 		if (config.getIsWorkflowEnabled()) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
-			allotmentRequest.getAllotment().get(0).setStatus("APPROVED");
+			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
 		}
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
@@ -189,7 +189,6 @@ public class AllotmentService {
 	public List<AllotmentDetails> searchAllotedApplications(RequestInfo requestInfo,
 			AllotmentCriteria allotmentCriteria) {
 
-// Handle mobile number search by converting to owner UUIDs
 		if (!ObjectUtils.isEmpty(allotmentCriteria.getMobileNumber())) {
 			log.info("DEBUG: Searching by mobile number: " + allotmentCriteria.getMobileNumber());
 
@@ -199,12 +198,10 @@ public class AllotmentService {
 			log.info("DEBUG: Found user UUIDs: " + userUuidSet);
 
 			if (CollectionUtils.isEmpty(userUuidSet)) {
-           // No users found for this mobile number, return empty list
+        
 				log.info("DEBUG: No users found for mobile number, returning empty list");
 				return new ArrayList<>();
 			}
-
-// Set owner UUIDs for search and clear mobile number
 			allotmentCriteria.setOwnerIds(userUuidSet);
 			allotmentCriteria.setMobileNumber(null);
 		}

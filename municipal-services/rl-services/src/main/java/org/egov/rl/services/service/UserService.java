@@ -479,42 +479,42 @@ public class UserService {
 	 * Converts Owner to User for user service calls
 	 */
 	private org.egov.rl.services.models.user.User convertOwnerToUser(Owner owner) {
-		org.egov.rl.services.models.user.User user = new org.egov.rl.services.models.user.User();
-		user.setId(owner.getId());
-		user.setUuid(owner.getUuid());
-		user.setUserName(owner.getUserName());
-		user.setPassword(owner.getPassword());
-		user.setSalutation(owner.getSalutation());
-		user.setName(owner.getName());
-		user.setGender(owner.getGender());
-		user.setMobileNumber(owner.getMobileNumber());
-		user.setEmailId(owner.getEmailId());
-		user.setAltContactNumber(owner.getAltContactNumber());
-		user.setPan(owner.getPan());
-		user.setAadhaarNumber(owner.getAadhaarNumber());
-		user.setPermanentAddress(owner.getPermanentAddress());
-		user.setPermanentCity(owner.getPermanentCity());
-		user.setPermanentPincode(owner.getPermanentPincode());
-		user.setCorrespondenceCity(owner.getCorrespondenceCity());
-		user.setCorrespondencePincode(owner.getCorrespondencePincode());
-		user.setCorrespondenceAddress(owner.getCorrespondenceAddress());
-		user.setActive(owner.getActive());
-		user.setDob(owner.getDob());
-		user.setPwdExpiryDate(owner.getPwdExpiryDate());
-		user.setLocale(owner.getLocale());
-		user.setType(owner.getType());
-		user.setSignature(owner.getSignature());
-		user.setAccountLocked(owner.getAccountLocked());
-		user.setRoles(owner.getRoles());
-		user.setFatherOrHusbandName(owner.getFatherOrHusbandName());
-		user.setBloodGroup(owner.getBloodGroup());
-		user.setIdentificationMark(owner.getIdentificationMark());
-		user.setPhoto(owner.getPhoto());
-		user.setCreatedBy(owner.getCreatedBy());
-		user.setCreatedDate(owner.getCreatedDate());
-		user.setLastModifiedBy(owner.getLastModifiedBy());
-		user.setLastModifiedDate(owner.getLastModifiedDate());
-		user.setTenantId(owner.getTenantId());
+		org.egov.rl.services.models.user.User user = org.egov.rl.services.models.user.User.builder()
+		.id(owner.getId())
+		.uuid(owner.getUuid())
+		.userName(owner.getUserName())
+		.password(owner.getPassword())
+		.salutation(owner.getSalutation())
+		.name(owner.getName())
+		.gender(owner.getGender())
+		.mobileNumber(owner.getMobileNumber())
+		.emailId(owner.getEmailId())
+		.altContactNumber(owner.getAltContactNumber())
+		.pan(owner.getPan())
+		.aadhaarNumber(owner.getAadhaarNumber())
+		.permanentAddress(owner.getPermanentAddress())
+		.permanentCity(owner.getPermanentCity())
+		.permanentPincode(owner.getPermanentPincode())
+		.correspondenceCity(owner.getCorrespondenceCity())
+		.correspondencePincode(owner.getCorrespondencePincode())
+		.correspondenceAddress(owner.getCorrespondenceAddress())
+		.active(owner.getActive())
+		.dob(owner.getDob())
+		.pwdExpiryDate(owner.getPwdExpiryDate())
+		.locale(owner.getLocale())
+		.type(owner.getType())
+		.signature(owner.getSignature())
+		.accountLocked(owner.getAccountLocked())
+		.roles(owner.getRoles())
+		.fatherOrHusbandName(owner.getFatherOrHusbandName())
+		.bloodGroup(owner.getBloodGroup())
+		.identificationMark(owner.getIdentificationMark())
+		.photo(owner.getPhoto())
+		.createdBy(owner.getCreatedBy())
+		.createdDate(owner.getCreatedDate())
+		.lastModifiedBy(owner.getLastModifiedBy())
+		.lastModifiedDate(owner.getLastModifiedDate())
+		.tenantId(owner.getTenantId()).build();
 		return user;
 	}
 
@@ -522,42 +522,42 @@ public class UserService {
 	 * Converts User to Owner for pet service use
 	 */
 	private Owner convertUserToOwner(org.egov.rl.services.models.user.User user) {
-		Owner owner = new Owner();
-		owner.setId(user.getId());
-		owner.setUuid(user.getUuid());
-		owner.setUserName(user.getUserName());
-		owner.setPassword(user.getPassword());
-		owner.setSalutation(user.getSalutation());
-		owner.setName(user.getName());
-		owner.setGender(user.getGender());
-		owner.setMobileNumber(user.getMobileNumber());
-		owner.setEmailId(user.getEmailId());
-		owner.setAltContactNumber(user.getAltContactNumber());
-		owner.setPan(user.getPan());
-		owner.setAadhaarNumber(user.getAadhaarNumber());
-		owner.setPermanentAddress(user.getPermanentAddress());
-		owner.setPermanentCity(user.getPermanentCity());
-		owner.setPermanentPincode(user.getPermanentPincode());
-		owner.setCorrespondenceCity(user.getCorrespondenceCity());
-		owner.setCorrespondencePincode(user.getCorrespondencePincode());
-		owner.setCorrespondenceAddress(user.getCorrespondenceAddress());
-		owner.setActive(user.getActive());
-		owner.setDob(user.getDob());
-		owner.setPwdExpiryDate(user.getPwdExpiryDate());
-		owner.setLocale(user.getLocale());
-		owner.setType(user.getType());
-		owner.setSignature(user.getSignature());
-		owner.setAccountLocked(user.getAccountLocked());
-		owner.setRoles(user.getRoles());
-		owner.setFatherOrHusbandName(user.getFatherOrHusbandName());
-		owner.setBloodGroup(user.getBloodGroup());
-		owner.setIdentificationMark(user.getIdentificationMark());
-		owner.setPhoto(user.getPhoto());
-		owner.setCreatedBy(user.getCreatedBy());
-		owner.setCreatedDate(user.getCreatedDate());
-		owner.setLastModifiedBy(user.getLastModifiedBy());
-		owner.setLastModifiedDate(user.getLastModifiedDate());
-		owner.setTenantId(user.getTenantId());
+		Owner owner = Owner.builder()
+		.id(user.getId())
+		.uuid(user.getUuid())
+		.userName(user.getUserName())
+		.password(user.getPassword())
+		.salutation(user.getSalutation())
+		.name(user.getName())
+		.gender(user.getGender())
+		.mobileNumber(user.getMobileNumber())
+		.emailId(user.getEmailId())
+		.altContactNumber(user.getAltContactNumber())
+		.pan(user.getPan())
+		.aadhaarNumber(user.getAadhaarNumber())
+		.permanentAddress(user.getPermanentAddress())
+		.permanentCity(user.getPermanentCity())
+		.permanentPincode(user.getPermanentPincode())
+		.correspondenceCity(user.getCorrespondenceCity())
+		.correspondencePincode(user.getCorrespondencePincode())
+		.correspondenceAddress(user.getCorrespondenceAddress())
+		.active(user.getActive())
+		.dob(user.getDob())
+		.pwdExpiryDate(user.getPwdExpiryDate())
+		.locale(user.getLocale())
+		.type(user.getType())
+		.signature(user.getSignature())
+		.accountLocked(user.getAccountLocked())
+		.roles(user.getRoles())
+		.fatherOrHusbandName(user.getFatherOrHusbandName())
+		.bloodGroup(user.getBloodGroup())
+		.identificationMark(user.getIdentificationMark())
+		.photo(user.getPhoto())
+		.createdBy(user.getCreatedBy())
+		.createdDate(user.getCreatedDate())
+		.lastModifiedBy(user.getLastModifiedBy())
+		.lastModifiedDate(user.getLastModifiedDate())
+		.tenantId(user.getTenantId()).build();
 		return owner;
 	}
 

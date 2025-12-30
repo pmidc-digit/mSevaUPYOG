@@ -137,7 +137,7 @@ const CreateSurveyQuestions = () => {
   // }, [getValues]);
 
   return (
-    <div className="pageCard">
+    <div className="card">
       <Header>{t(SURVEY_QUESIONS)}</Header>
       <FormProvider
         {...{

@@ -141,7 +141,7 @@ export const RenewTLStepForm = (props) => {
   };
 
   return (
-    <div className="pageCard">
+    <div className="card">
       {applicationData && <div>
         {isLoading? <Loader/> : <div><CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
           {t("ES_TITLE_RENEW_TRADE_LICESE_APPLICATION")}

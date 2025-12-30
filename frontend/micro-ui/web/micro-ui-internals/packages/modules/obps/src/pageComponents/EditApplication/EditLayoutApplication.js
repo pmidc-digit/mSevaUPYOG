@@ -71,8 +71,8 @@ const createEmployeeConfig = [
   },
 ];
 
-const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
-  return { ...item, currStepConfig: layoutStepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+const updatedCreateEmployeeconfig = createEmployeeConfig?.map((item) => {
+  return { ...item, currStepConfig: layoutStepperConfig?.filter((newConfigItem) => newConfigItem?.stepNumber === item?.stepNumber) };
 });
 
 const EditLayoutApplication = () => {
@@ -82,9 +82,9 @@ const EditLayoutApplication = () => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
 
-  const formState = useSelector((state) => state.obps.LayoutNewApplicationFormReducer);
-  const formData = formState.formData;
-  const step = formState.step;
+  const formState = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer);
+  const formData = formState?.formData;
+  const step = formState?.step;
 
   console.log("FORM DATA FOR EDIT", formState);
 
@@ -95,7 +95,7 @@ const EditLayoutApplication = () => {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
 
-  const { isLoading, data } = Digit.Hooks.obps.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", data);
   const layoutObject = data?.data?.[0]?.Applications;
@@ -110,16 +110,16 @@ const EditLayoutApplication = () => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { data: buildingTypeData, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
-  const { data: buildingCategoryData, isLoading: isBuildingCategoryLoading } = Digit.Hooks.obps.useLayoutBuildingCategory(stateId);
-  const { data: roadTypeData, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
-  const { data: layoutTypeData, isLoading: isLayoutTypeLoading } = Digit.Hooks.obps.useLayoutType(stateId);
+  const { data: buildingTypeData, isLoading: isBuildingTypeLoading } = Digit?.Hooks?.obps?.useLayoutBuildingType(stateId);
+  const { data: buildingCategoryData, isLoading: isBuildingCategoryLoading } = Digit?.Hooks?.obps?.useLayoutBuildingCategory(stateId);
+  const { data: roadTypeData, isLoading: isRoadTypeLoading } = Digit?.Hooks?.obps?.useLayoutRoadType(stateId);
+  const { data: layoutTypeData, isLoading: isLayoutTypeLoading } = Digit?.Hooks?.obps?.useLayoutType(stateId);
   console.log(layoutTypeData, "LAYOUT TYPE");
 
-  const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
+  const { data: mdmsData, isLoading: isMdmsLoading } = Digit?.Hooks?.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
   const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
 
-  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
+  const { data: ulbList, isLoading: isUlbListLoading } = Digit?.Hooks?.useTenants();
   const [cities, setCitiesOptions] = useState([]);
 
   useEffect(() => {
@@ -129,7 +129,7 @@ const EditLayoutApplication = () => {
   }, [ulbList]);
 
   const [selectedDistrict, setSelectedDistrict] = useState(null);
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(selectedDistrict?.code, "revenue", { enabled: !!selectedDistrict }, t);
+  const { data: fetchedLocalities } = Digit?.Hooks?.useBoundaryLocalities(selectedDistrict?.code, "revenue", { enabled: !!selectedDistrict }, t);
 
   const isDataInitialized = useRef(false);
   const hasResetForm = useRef(false);
@@ -181,7 +181,7 @@ const EditLayoutApplication = () => {
     displayName: t(city.i18nKey),
   }));
 
-  const { data: genderTypeData, isLoading: isGenderLoading } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+  const { data: genderTypeData, isLoading: isGenderLoading } = Digit?.Hooks?.obps?.useMDMS(stateId, "common-masters", ["GenderType"]);
   const menu = [];
   genderTypeData &&
     genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active)?.map((genderDetails) => {

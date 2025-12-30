@@ -78,7 +78,7 @@ const CreateSurveyStepForm = () => {
 
   console.log("formState: ", formState);
   return (
-    <div class="pageCard">
+    <div class="card">
       {/* <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("CREATE_NEW_SURVEY")}
       </CardHeader> */}

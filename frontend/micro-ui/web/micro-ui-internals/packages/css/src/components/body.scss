@@ -38,8 +38,11 @@ body {
   @apply text-heading-l text-text-primary font-bold mb-md ml-md;
 }
 
+.app-container{
+  padding: 10px;
+}
+
 .link-label {
-    display: inline-flex;
     align-items: center;
     justify-content: center;
     height: 40px;

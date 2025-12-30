@@ -598,6 +598,13 @@ const WrapPaymentComponent = (props) => {
           { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
           generatePdfKeyForTL
         );
+        const updatedApplication = {
+          ...applicationDetails?.hallsBookingApplication[0],
+          permissionLetterFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });

@@ -137,6 +137,7 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
+    console.log('payments', payments)
     try {
       setLoading(true);
       let application = {
@@ -153,10 +154,10 @@ const CHBApplicationDetails = () => {
           };
         }),
       };
+      console.log('application', application)
       let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = { filestoreIds: [payments?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
         const updatedApplication = {
           ...data?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],
@@ -194,10 +195,18 @@ const CHBApplicationDetails = () => {
         }),
       };
 
-      let fileStoreId = payments?.fileStoreId;
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
         fileStoreId = response?.filestoreIds[0];
+        const updatedApplication = {
+          ...data?.hallsBookingApplication[0],
+          permissionLetterFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");

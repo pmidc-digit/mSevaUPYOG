@@ -7,6 +7,7 @@
   .ground-container {
     margin-bottom: 56px;
     margin-left: 0px;
+    margin-top: 0px;
     @apply flex flex-col;
   }
   .card-home {
@@ -64,7 +65,16 @@
   }
 
   .main {
-    padding-top: 56px;
+    padding: 10px;
+    margin-top: 3rem;
+  }
+
+  @media (min-width: 640px) {
+    .main {
+      padding-top: 56px;
+      margin-top: 0;
+      padding: 0;
+    }
   }
 
   .submit-bar header {
@@ -545,6 +555,13 @@
   }
 }
 
+/* Mobile view - add margin-top to ground-container */
+@media only screen and (max-width: 639px) {
+  .employee .ground-container {
+    margin-top: 36px;
+  }
+}
+
 @media only screen and (max-width: 950px) {
   #main-img {
     content: url("https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png");
@@ -623,8 +640,7 @@
 .pageCard {
   width: 100%;
   height: 100%;
-  padding: 48px;
-  gap: 48px;
+  padding: 20px;
   border-radius: 24px;
   background: #ffffff;
 }

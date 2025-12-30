@@ -127,7 +127,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
 
   return (
     <React.Fragment>
-      <div className="search-container" style={{ width: "auto" }}>
+      <div className="search-container">
         <div className="search-complaint-container">
           {(type === "mobile" || mobileView) && (
             <div className="complaint-header">

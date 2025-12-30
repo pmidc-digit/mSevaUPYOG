@@ -94,7 +94,7 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
   };
 
   return (
-    <div className="pageCard">
+    <div className="card">
       <div>
         <Header styles={{ fontSize: "32px", marginLeft: "18px", display: "flex", justifyContent: "space-between", marginRight: "12px" }}>
           <div>{t("WS_SERVICES_MASTERS_REQ_DOCS_HEADER")}</div>

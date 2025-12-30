@@ -361,7 +361,7 @@ export const FormComposer = (props) => {
             {props.heading}{" "}
           </CardSubHeader>
         )}
-        {props.description && <CardLabelDesc className="descStyle"> {props.description} </CardLabelDesc>}
+        {props.description && <CardLabelDesc style={{fontSize:"16px"}} className="descStyle"> {props.description} </CardLabelDesc>}
         {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
         {props.childrenAtTheBottom && props.children}

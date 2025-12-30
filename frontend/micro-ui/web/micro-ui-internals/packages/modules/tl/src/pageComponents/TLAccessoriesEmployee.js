@@ -124,7 +124,7 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
         <LinkButton
           label={`${t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}`}
           onClick={addAccessories}
-          style={{ color: "#a82227", width: "fit-content" }}
+          style={{ width: "fit-content" }}
         />
       )}
     </React.Fragment>
@@ -290,11 +290,11 @@ const AccessoriersForm = (_props) => {
   };
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ border: "1px solid #D6D5D4", padding: "16px", marginTop: "8px", background: "#FAFAFA" }}>
+      <div>
+        <div className="clu-doc-required-card no-width">
           {allAccessoriesList?.length > 1 ? (
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <div onClick={() => removeAccessor(accessor)} style={{ padding: "5px", cursor: "pointer", textAlign: "right" }}>
+            <div >
+              <div onClick={() => removeAccessor(accessor)}>
                 <span>
                   <svg
                     style={{ float: "right", position: "relative", bottom: "5px" }}
@@ -364,7 +364,6 @@ const AccessoriersForm = (_props) => {
                     }}
                     disable={true}
                     onBlur={props.onBlur}
-                    style={{ background: "#FAFAFA" }}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}
                   />
                 )}
@@ -406,14 +405,13 @@ const AccessoriersForm = (_props) => {
                     // disable={/*getValues("uomValue")?!(accessor?.accessoryCategory?.uom) || accessor?.id:*/!(accessor?.accessoryCategory?.uom) }
                     disable={isRenewal ? !enableUOM : false}
                     onBlur={props.onBlur}
-                    style={{ background: "#FAFAFA" }}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.uomValue ? errors?.uomValue?.message : ""}</CardLabelError>
+          <CardLabelError>{localFormState.touched.uomValue ? errors?.uomValue?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")}` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}
@@ -443,14 +441,13 @@ const AccessoriersForm = (_props) => {
                     onBlur={props.onBlur}
                     disable={isRenewal ? !enableUOM : false}
                     //disable={accessor?.id}
-                    style={{ background: "#FAFAFA" }}
                     placeholder={t("TL_NEW_TRADE_ACCESSORY_COUNT_PLACEHOLDER")}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.count ? errors?.count?.message : ""}</CardLabelError>
+          <CardLabelError>{localFormState.touched.count ? errors?.count?.message : ""}</CardLabelError>
         </div>
       </div>
     </React.Fragment>

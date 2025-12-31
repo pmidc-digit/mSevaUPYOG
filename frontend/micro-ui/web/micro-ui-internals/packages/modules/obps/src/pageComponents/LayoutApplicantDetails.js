@@ -713,7 +713,7 @@ const LayoutApplicantDetails = (_props) => {
           {applicants.length > 1 && (
             <React.Fragment>
               <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
-                {t("BPA_ADDITIONAL_APPLICANTS")}
+                {t("Additional Applicants")}
               </CardSectionHeader>
 
               {applicants.map(
@@ -734,11 +734,17 @@ const LayoutApplicantDetails = (_props) => {
                         }}
                       >
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
-                          {`${t("BPA_APPLICANT")} ${index + 1}`}
+                          {`${t("Applicant")} ${index + 1}`}
                         </CardLabel>
                         <LinkButton
                           onClick={() => handleRemoveApplicant(index)}
-                         
+                          style={{
+                            color: "#a82227",
+                            fontWeight: "600",
+                            fontSize: "14px",
+                            textDecoration: "none",
+                            cursor: "pointer",
+                          }}
                         >
                            Remove
                         </LinkButton>
@@ -905,15 +911,38 @@ const LayoutApplicantDetails = (_props) => {
 
               {/* Add More Applicants Button */}
               <div style={{ marginTop: "20px" }}>
-                <LinkButton onClick={handleAddApplicant}>{t("BPA_ADD_MORE_APPLICANTS")}</LinkButton>
+                <div
+                  onClick={handleAddApplicant}
+                  style={{
+                    color: "#a82227",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "inline-block",
+                  }}
+                >
+                  + Add Applicant
+                </div>
               </div>
             </React.Fragment>
           )}
 
+
           {/* Add First Additional Applicant Button */}
           {applicants.length === 1 && (
             <div style={{ marginTop: "20px" }}>
-              <LinkButton onClick={handleAddApplicant}>{t("BPA_ADD_MORE_APPLICANTS")}</LinkButton>
+              <div
+                onClick={handleAddApplicant}
+                style={{
+                  color: "#a82227",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  display: "inline-block",
+                }}
+              >
+                + Add Applicant
+              </div>
             </div>
           )}
         </div>

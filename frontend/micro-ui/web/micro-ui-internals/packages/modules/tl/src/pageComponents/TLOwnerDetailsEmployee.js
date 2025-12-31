@@ -160,17 +160,11 @@ const OwnerForm = (_props) => {
   return (
     <React.Fragment>
       {/* <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(errors)}> */}
-      <div style={{ marginBottom: "16px" }}>
-        <div
-          style={
-            typeOfOwner === "MULTIOWNER"
-              ? { border: "1px solid #D6D5D4", padding: "16px", marginTop: "8px", borderRadius: "4px", background: "#FAFAFA" }
-              : {}
-          }
-        >
+      <div>
+        <div className="clu-doc-required-card no-width">
           {allOwners?.length > 1 ? (
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <div onClick={() => removeOwner(owner)} style={{ padding: "5px", cursor: "pointer", textAlign: "right" }}>
+            <div >
+              <div onClick={() => removeOwner(owner)}>
                 <span>
                   <svg
                     style={{ float: "right", position: "relative", bottom: "5px" }}
@@ -284,7 +278,7 @@ const OwnerForm = (_props) => {
                   ></Controller>
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel>{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
                 <div className="field">
@@ -319,7 +313,7 @@ const OwnerForm = (_props) => {
                   ></Controller>
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel>
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
@@ -351,7 +345,7 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel>{`${t("TL_NEW_OWNER_PHONE_LABEL")}`}</CardLabel>
                 <div className="field">
@@ -381,7 +375,7 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.altContactNumber ? errors?.altContactNumber?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.altContactNumber ? errors?.altContactNumber?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel>{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
                 <div className="field">
@@ -421,7 +415,7 @@ const OwnerForm = (_props) => {
                   ></Controller>
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
 
               {/**here */}
               <LabelFieldPair>
@@ -455,7 +449,7 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
+              <CardLabelError>
                 {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
               </CardLabelError>
               <LabelFieldPair>
@@ -492,7 +486,7 @@ const OwnerForm = (_props) => {
                     )}
                   />
                 </LabelFieldPair>
-                <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+                <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
 
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
@@ -524,7 +518,7 @@ const OwnerForm = (_props) => {
                     )}
                   />
                 </LabelFieldPair>
-                <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+                <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
               </LabelFieldPair>
 
               <LabelFieldPair>
@@ -547,14 +541,14 @@ const OwnerForm = (_props) => {
                         }}
                         onBlur={props.onBlur}
                         // disable={isRenewal}
-                        style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
                         placeholder={t("Enter Official Correspondence Address")}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
             </React.Fragment>
           )}
           {typeOfOwner !== "INSTITUTIONAL" && (
@@ -587,14 +581,14 @@ const OwnerForm = (_props) => {
                           props.onBlur(e);
                         }}
                         // disable={isRenewal}
-                        style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
                         placeholder={t("TL_NEW_OWNER_DETAILS_NAME_PLACEHOLDER")}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
               {/* <LabelFieldPair>
                   <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
                 </LabelFieldPair> */}
@@ -629,7 +623,7 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`}
@@ -661,7 +655,7 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
+              <CardLabelError>
                 {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
               </CardLabelError>
               <LabelFieldPair>
@@ -697,7 +691,7 @@ const OwnerForm = (_props) => {
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
@@ -728,7 +722,7 @@ const OwnerForm = (_props) => {
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                 <div className="field">
@@ -751,14 +745,14 @@ const OwnerForm = (_props) => {
                         labelStyle={{ marginTop: "unset" }}
                         onBlur={props.onBlur}
                         //disable={isRenewal}
-                        style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
                         placeholder={t("TL_NEW_OWNER_DETAILS_EMAIL_PLACEHOLDER")}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
                 <Controller
@@ -786,7 +780,7 @@ const OwnerForm = (_props) => {
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")} `}</CardLabel>
                 <div className="field">
@@ -807,14 +801,14 @@ const OwnerForm = (_props) => {
                         }}
                         onBlur={props.onBlur}
                         // disable={isRenewal}
-                        style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
                         placeholder={t("TL_NEW_OWNER_DETAILS_ADDR_PLACEHOLDER")}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
             </React.Fragment>
           )}
         </div>
@@ -961,8 +955,8 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       ))}
       {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
         <div>
-          <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} style={{ color: "#a82227", width: "fit-content" }} />
-          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-24px" }}>
+          <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} style={{ width: "fit-content" }} />
+          <CardLabelError>
             {t(formState.errors?.mulipleOwnerError?.message || "")}
           </CardLabelError>
         </div>

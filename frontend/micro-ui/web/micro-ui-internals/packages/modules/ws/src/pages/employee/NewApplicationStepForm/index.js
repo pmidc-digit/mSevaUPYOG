@@ -381,7 +381,7 @@ const NewApplicationStepForm = () => {
 
   console.log("formState: ", formState);
   return (
-    <div className="pageCard">
+    <div className="card">
       <CardHeader divider={true}>{t("WS_APPLICATION_NEW_CONNECTION_HEADER")}</CardHeader>
       <Stepper stepsList={updatedConfig} onSubmit={createAndUpdateWS} step={step} setStep={setStep} />
       {showToast && (

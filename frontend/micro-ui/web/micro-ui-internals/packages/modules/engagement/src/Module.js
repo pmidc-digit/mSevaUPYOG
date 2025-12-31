@@ -56,6 +56,9 @@ import FillSurveyEmp from "./pages/employee/CitizenSurveys/FillSurveyEmp";
 import FillQuestions from "./components/Surveys/FillQuestions";
 import SurveyModal from "./components/Modal/SurveyModal";
 export const SurveyReducers = getRootReducer;
+export { SurveyModal };
+
+
 
 const EventsBreadCrumb = ({ location }) => {
   const { t } = useTranslation();
@@ -292,6 +295,8 @@ const EngagementModule = ({ stateCode, userType, tenants }) => {
 
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
 
+  // initEngagementComponents();
+
   //console.log("path", path);
   if (isLoading) {
     return <Loader />;
@@ -375,11 +380,12 @@ const componentsToRegister = {
   FillSurveyNew,
   FillSurveyEmp,
   FillQuestions,
-  SurveyModal
+  SurveyModal,
 };
 
 export const initEngagementComponents = () => {
   Object.entries(componentsToRegister).forEach(([key, value]) => {
+    console.log("Registering component:", key, value);
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };

@@ -144,6 +144,7 @@
   max-width: 540px;
   width: 100%;
 
+
   .select {
     @apply relative block w-full;
     height: 3rem;
@@ -151,10 +152,12 @@
     border-radius: 8px;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
     background-color: #ffffff;
+    margin-bottom: 20px;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
+      margin-bottom: 20px;
 
       @apply absolute z-10 w-full h-full outline-none text-form-field pl-sm;
     }

@@ -213,7 +213,7 @@ const SearchBill = () => {
         </div>
       </div>
 
-      <div className="pageCard">
+      <div className="card">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="ndcFormCard">

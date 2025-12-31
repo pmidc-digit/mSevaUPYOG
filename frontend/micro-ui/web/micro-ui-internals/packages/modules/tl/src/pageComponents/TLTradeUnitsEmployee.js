@@ -120,7 +120,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
       {units.map((unit, index) => (
         <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
       ))}
-      {!isRenewal && <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits} style={{ color: "#a82227", width: "fit-content" }} />}
+      {!isRenewal && <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits} style={{ width: "fit-content" }} />}
     </React.Fragment>
   );
 };
@@ -338,11 +338,11 @@ const TradeUnitForm = (_props) => {
   };
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ border: "1px solid #D6D5D4", padding: "16px", marginTop: "8px", background: "#FAFAFA" }}>
+      <div>
+        <div className="clu-doc-required-card no-width">
           {allUnits?.length > 1 ? (
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <div onClick={() => removeUnit(unit)} style={{ padding: "5px", cursor: "pointer", textAlign: "right" }}>
+            <div>
+              <div onClick={() => removeUnit(unit)}>
                 <span>
                   <svg
                     style={{ float: "right", position: "relative", bottom: "5px" }}
@@ -408,7 +408,7 @@ const TradeUnitForm = (_props) => {
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
+          <CardLabelError>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("TRADELICENSE_TRADETYPE_LABEL")}`}
@@ -457,7 +457,7 @@ const TradeUnitForm = (_props) => {
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
+          <CardLabelError>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")}`}
@@ -500,7 +500,7 @@ const TradeUnitForm = (_props) => {
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
+          <CardLabelError>
             {" "}
             {localFormState.touched.tradeSubType || localFormState.touched.uomValue || (isRenewal && getValues("tradeSubType"))
               ? errors?.tradeSubType?.message
@@ -529,14 +529,13 @@ const TradeUnitForm = (_props) => {
                     }}
                     disable={true}
                     onBlur={props.onBlur}
-                    style={{ background: "#FAFAFA" }}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
+          <CardLabelError>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}
@@ -572,15 +571,14 @@ const TradeUnitForm = (_props) => {
                       setFocusIndex({ index: unit.key, type: "uomValue" });
                     }}
                     disable={!unit?.tradeSubType?.uom}
-                    onBlur={props.onBlur}
-                    style={{ background: "#FAFAFA" }}
+                    onBlur={props.onBlur}                    
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}> {localFormState.touched.uomValue ? errors?.uomValue?.message : ""} </CardLabelError>
+          <CardLabelError> {localFormState.touched.uomValue ? errors?.uomValue?.message : ""} </CardLabelError>
         </div>
       </div>
     </React.Fragment>

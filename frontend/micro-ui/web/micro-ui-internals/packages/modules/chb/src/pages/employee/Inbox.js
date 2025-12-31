@@ -218,20 +218,18 @@ const Inbox = ({ parentRoute }) => {
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
       </Header>
 
-      <div className="NDCSection">
-        <InboxComposer
-          {...{
-            isInboxLoading,
-            PropsForInboxLinks,
-            ...propsForSearchForm,
-            ...propsForFilterForm,
-            ...propsForMobileSortForm,
-            propsForInboxTable,
-            propsForInboxMobileCards,
-            formState,
-          }}
-        />
-      </div>
+      <InboxComposer
+        {...{
+          isInboxLoading,
+          PropsForInboxLinks,
+          ...propsForSearchForm,
+          ...propsForFilterForm,
+          ...propsForMobileSortForm,
+          propsForInboxTable,
+          propsForInboxMobileCards,
+          formState,
+        }}
+      />
     </>
   );
 };

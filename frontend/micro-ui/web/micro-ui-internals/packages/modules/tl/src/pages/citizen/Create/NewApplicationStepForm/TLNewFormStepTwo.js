@@ -278,6 +278,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
     }
 
+    const subOwner = sessionStorage.getItem("SubownershipCategory");
+
+    console.log("subOwner", subOwner);
+
+    formData.tradeLicenseDetail.subOwnerShipCategory = subOwner;
+
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
     console.log("formData in step 2: ", formData);
@@ -314,6 +320,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
+        className="employeeCard"
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>

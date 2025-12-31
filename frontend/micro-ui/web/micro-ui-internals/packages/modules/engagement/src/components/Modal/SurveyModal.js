@@ -24,8 +24,9 @@ const SurveyModal = ({ isOpen, onClose }) => {
   const history = useHistory();
   const { t } = useTranslation();
   const userInfo = Digit.UserService.getUser().info;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
@@ -36,6 +37,8 @@ console.log(tenantId, "TENANTTTTTT");
       try {
         const parsedData = JSON.parse(cachedData);
         setData(parsedData);
+        setHasFetched(true);
+        setLoading(false);
       } catch (e) {
         console.error("Failed to parse cached survey data", e);
       }
@@ -43,10 +46,10 @@ console.log(tenantId, "TENANTTTTTT");
   }, []);
 
   useEffect(() => {
-    if (isOpen && tenantId && data.length === 0) {
+    if (isOpen && tenantId && !hasFetched) {
       fetchActiveAndOpenSurveys();
     }
-  }, [isOpen, tenantId, data.length]);
+  }, [isOpen, tenantId, hasFetched]);
 
   function fetchActiveAndOpenSurveys() {
     setLoading(true);
@@ -58,9 +61,11 @@ console.log(tenantId, "TENANTTTTTT");
         setData(tableData);
         // Cache data in sessionStorage to persist across navigation
         sessionStorage.setItem("survey_modal_data", JSON.stringify(tableData));
+        setHasFetched(true);
         setLoading(false);
       })
       .catch((error) => {
+        setHasFetched(true);
         setLoading(false);
         console.error("Failed to fetch surveys", error);
       });
@@ -75,6 +80,12 @@ console.log(tenantId, "TENANTTTTTT");
   };
 
   if (!isOpen) {
+    return null;
+  }
+
+  // Don't show modal until data has been fetched
+  // If fetched and no data, don't show modal
+  if (!hasFetched || (hasFetched && data.length === 0)) {
     return null;
   }
 

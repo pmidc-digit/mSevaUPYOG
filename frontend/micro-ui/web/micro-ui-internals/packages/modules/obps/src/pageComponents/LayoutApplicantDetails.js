@@ -736,18 +736,17 @@ const LayoutApplicantDetails = (_props) => {
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
                           {`${t("Applicant")} ${index + 1}`}
                         </CardLabel>
-                        <LinkButton
+                        <span
                           onClick={() => handleRemoveApplicant(index)}
                           style={{
-                            color: "#a82227",
-                            fontWeight: "600",
-                            fontSize: "14px",
-                            textDecoration: "none",
                             cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
                           }}
+                          title={t("Remove Applicant")}
                         >
-                           Remove
-                        </LinkButton>
+                          <DeleteIcon fill="#a82227" />
+                        </span>
                       </div>
 
                       {/* Name */}
@@ -866,7 +865,7 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
                       {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>}
 
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
@@ -886,7 +885,7 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
 
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}*</CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile

@@ -34,7 +34,7 @@
     "@mseva/upyog-ui-module-pgrai": "1.1.17",
     "@mseva/digit-ui-module-challangeneration": "1.0.27",
     "@mseva/digit-ui-module-garbagecollection": "1.0.31",
-    "@mseva/digit-ui-module-rentandlease": "1.0.27",
+    "@mseva/digit-ui-module-rentandlease": "1.0.28",
     "@mseva/digit-ui-module-ndc": "1.0.60",
     "http-proxy-middleware": "^1.0.5",
     "react": "17.0.2",

@@ -380,6 +380,8 @@ public class EnrichmentService {
 					log.warn("No approval conditions found for the application " + bpa.getApplicationNo());
 				}
 			}
+			
+			additionalDetail.put("isSanctionLetterGenerated", Boolean.TRUE);
 		}
 	}
 

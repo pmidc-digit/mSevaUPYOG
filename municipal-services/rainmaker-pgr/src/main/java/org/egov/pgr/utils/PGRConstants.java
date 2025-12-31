@@ -131,7 +131,7 @@ public class PGRConstants {
 	    // =========================
 	    // Application info
 	    // =========================
-	    public static final String DEPARTMENT_ID = "108";
+	    public static final String DEPARTMENT_ID = "178";
 	    public static final String DEPARTMENT_NAME = "DIRECTOR GOVERNANCE REFORMS- PMIDC";
 	    public static final String DEPARTMENT_LOCAL_LANG = "ਪੀਐਮਆਈਡੀਸੀ";
 	    public static final String STATE_NAME = "PUNJAB";

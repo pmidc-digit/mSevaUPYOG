@@ -80,6 +80,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
 
     if(!isEqual){
+        setTimeout(()=>{setShowToast(null);},3000);
         setShowToast({ key: "true", error:true, message: "BPA_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
         return;
     }

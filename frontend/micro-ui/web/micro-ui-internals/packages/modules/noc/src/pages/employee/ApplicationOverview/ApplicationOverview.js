@@ -223,6 +223,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
     else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning:true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL"});
+      setTimeout(()=>{setShowToast(null);},3000);
     }
     else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
@@ -271,6 +272,9 @@ const NOCEmployeeApplicationOverview = () => {
           setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
+          setTimeout(() => {
+            history.push("/digit-ui/employee/noc/inbox");
+          }, 3000);
         }
         else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
@@ -285,6 +289,9 @@ const NOCEmployeeApplicationOverview = () => {
           setShowToast({ key: "true", success:true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
+          setTimeout(() => {
+            history.push("/digit-ui/employee/noc/inbox");
+          }, 3000);
         }
       }
       else{
@@ -293,6 +300,8 @@ const NOCEmployeeApplicationOverview = () => {
       }
     } catch (err) {
       setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+      setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 

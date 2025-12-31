@@ -15,10 +15,7 @@ import {
   SearchIcon,
   Toast,
   CardSectionSubText,
-  DeleteIcon,
-  ImageIcon,
-  LinkButton,
-  Loader,
+  CardSubHeader
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
@@ -48,7 +45,10 @@ const CLUApplicantDetails = (_props) => {
     const file = e.target.files[0]
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
-      return
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
+      return;
     }
     try {
       setLoader(true)
@@ -80,6 +80,10 @@ const CLUApplicantDetails = (_props) => {
     } catch (err) {
       setLoader(false)
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+    }finally{
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
     }
   }
 
@@ -97,6 +101,9 @@ const CLUApplicantDetails = (_props) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
       return;
     }
     try {
@@ -128,6 +135,10 @@ const CLUApplicantDetails = (_props) => {
     } catch (err) {
       setLoader(false);
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+    }finally{
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
     }
   };
 
@@ -276,9 +287,9 @@ const getOwnerDetails = async (idx) => {
 
         {fields.map((field, index) => (
           <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
-            <CardSectionSubText >
+            <CardSubHeader >
              {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}
-            </CardSectionSubText>
+            </CardSubHeader>
 
             <div
               style={{ display: "flex", justifyContent: "flex-end", gap: 8 , cursor: "pointer"}}
@@ -390,6 +401,16 @@ const getOwnerDetails = async (idx) => {
                 <Controller
                   control={control}
                   name={`owners[${index}].fatherOrHusbandName`}
+                  rules={{
+                   pattern: {
+                     value: /^[A-Za-z\s]+$/,
+                     message: t("ONLY_ENGLISH_LETTERS_ALLOWED"),
+                   },
+                   maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                  }}
                   render={(props) => (
                     <TextInput
                       value={props.value}
@@ -406,6 +427,7 @@ const getOwnerDetails = async (idx) => {
                 />
               </div>
             </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>

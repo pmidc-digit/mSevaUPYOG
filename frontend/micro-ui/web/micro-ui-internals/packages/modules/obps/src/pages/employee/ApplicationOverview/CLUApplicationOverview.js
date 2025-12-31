@@ -221,9 +221,11 @@ const CLUEmployeeApplicationDetails = () => {
 
     if (action?.action == "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_NOT_EDITABLE_HERE_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000);
       //cant be edited here
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -265,6 +267,9 @@ const CLUEmployeeApplicationDetails = () => {
           setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
+          setTimeout(() => {
+            history.push("/digit-ui/employee/obps/clu/inbox");
+          }, 3000);
         }
         else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
@@ -279,6 +284,9 @@ const CLUEmployeeApplicationDetails = () => {
           setShowToast({ key: "true", success:true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
+          setTimeout(() => {
+            history.push("/digit-ui/employee/obps/clu/inbox");
+          }, 3000);
         }
       }
       else{
@@ -287,6 +295,8 @@ const CLUEmployeeApplicationDetails = () => {
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+      setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 

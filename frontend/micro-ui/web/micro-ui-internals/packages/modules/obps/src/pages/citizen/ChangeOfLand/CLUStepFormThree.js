@@ -30,12 +30,20 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     if (missingFields.length > 0) {
       setError(`${t("BPA_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
+      setTimeout(()=>{
+        setShowToast(false);
+        setError("");
+      },3000);
       return;
     }
 
      if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
       setError(`${t("BPA_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
       setShowToast(true);
+      setTimeout(()=>{
+        setShowToast(false);
+        setError("");
+      },3000);
       return;
     }
 

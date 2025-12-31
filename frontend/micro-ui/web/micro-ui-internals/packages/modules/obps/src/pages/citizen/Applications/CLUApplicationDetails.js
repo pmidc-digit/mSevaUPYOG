@@ -293,6 +293,7 @@ const CLUApplicationDetails = () => {
       history.push(`/digit-ui/citizen/obps/clu/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000)
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -347,6 +348,8 @@ const CLUApplicationDetails = () => {
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+       setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 

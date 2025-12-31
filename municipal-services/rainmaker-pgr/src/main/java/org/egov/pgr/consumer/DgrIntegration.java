@@ -118,33 +118,48 @@ public class DgrIntegration {
     /* =========================
        Token generation
        ========================= */
+
     public String generateLoginToken() {
         try {
             String url = TOKEN_URL;
+            log.info("Generating login token. URL: {}", url);
 
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("Access_Key", TOKEN_ACCESS_KEY);
             requestBody.put("Public_Key", TOKEN_PUBLIC_KEY);
-            
+            log.info("Token request body: {}", requestBody);
+            log.info("Access Key: {}", TOKEN_ACCESS_KEY);
+            log.info("Public_Key Key: {}", TOKEN_PUBLIC_KEY);
+            log.debug("Token request body prepared");
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
             RestTemplate restTemplate = new RestTemplate();
+            log.info("Calling token API");
+
             ResponseEntity<String> response =
                     restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+            log.info("Token API response status: {}", response.getStatusCode());
+            log.debug("Token API response body: {}", response.getBody());
 
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> json = mapper.readValue(response.getBody(), Map.class);
 
-            return (String) json.get("sys_message");
+            String token = (String) json.get("sys_message");
+            log.info("Login token generated successfully");
+
+            return token;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error while generating login token", ex);
             return null;
         }
     }
+
 
     /* =========================
        Main createGrievance flow (unchanged)

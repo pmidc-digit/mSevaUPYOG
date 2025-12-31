@@ -220,7 +220,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
         />
-        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
+        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1, marginTop: "24px" }}>
           {result}
         </div>
       </div>

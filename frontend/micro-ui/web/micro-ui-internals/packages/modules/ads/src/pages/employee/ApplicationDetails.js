@@ -20,7 +20,7 @@ import ADSDocument from "../../pageComponents/ADSDocument";
 import ADSModal from "../../pageComponents/ADSModal";
 import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
-import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { formatLabel, pdfDownloadLink, transformAdsData, transformBookingResponseToBookingData } from "../../utils";
 import getAcknowledgement from "../../getAcknowledgment";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
@@ -498,7 +498,7 @@ const ApplicationDetails = () => {
           )}
         </>
 
-        <ADSWFApplicationTimeline application={application} id={displayData?.applicantData?.applicationNo || id} userType={"employee"} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </Card>
 
       {/* BEFORE: !businessLoading && Array.isArray(wfActions) && wfActions.length > 0 */}

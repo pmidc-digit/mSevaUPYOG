@@ -21,6 +21,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   //let isEditProperty = formData?.isEditProperty || false;
   let isEdit = window.location.href.includes("edit-application") || window.location.href.includes("renew-trade");
   const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
+  // const [getSubOwnerShip, setSubOwnerShip] = useState();
   const [isSameAsPropertyOwner, setisSameAsPropertyOwner] = useState(
     (formData?.ownershipCategory?.isSameAsPropertyOwner === "false" ? false : formData?.ownershipCategory?.isSameAsPropertyOwner) || null
   );
@@ -48,6 +49,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         ?.map((item) => ({
           ...item,
           i18nKey: `TL_${item.code}`,
+          value: item.code
         }));
     } else if (ownershipTypeMain?.code === "INSTITUTIONALGOVERNMENT") {
       modifiedFilteredData = currentFilteredData
@@ -55,12 +57,14 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         ?.map((item) => ({
           ...item,
           i18nKey: `TL_${item.code}`,
+          value: item.code
         }));
     } else {
       modifiedFilteredData = currentFilteredData?.map((item) => {
         return {
           ...item,
           i18nKey: `TL_${item.code}`,
+          value: item.code
         };
       });
     }
@@ -74,6 +78,9 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   const editScreen = url.includes("/modify-application/");
 
   function selectedValue(value) {
+    console.log("value===???", value);
+    // setSubOwnerShip(value);
+    sessionStorage.setItem("SubownershipCategory", value?.code);
     setOwnershipCategory(value);
   }
 
@@ -152,9 +159,12 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       if (sessionStorage.getItem("ownersFromProperty")) sessionStorage.removeItem("ownersFromProperty");
     }
   }, [formData?.ownershipCategory?.isSameAsPropertyOwner, isSameAsPropertyOwner, formData?.cpt?.details?.propertyId, formData?.cptId?.id]);
+
   const onSkip = () => onSelect();
+
   function goNext() {
     sessionStorage.setItem("ownershipCategory", ownershipCategory?.value);
+
     sessionStorage.setItem("isSameAsPropertyOwner", isSameAsPropertyOwner);
     onSelect(config.key, { ...ownershipCategory, isSameAsPropertyOwner: isSameAsPropertyOwner });
   }
@@ -164,7 +174,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       if (!ownershipCategory?.code) setError(config.key, { type: "required", message: t(`REQUIRED_FIELD`) });
       //message: `${config.key.toUpperCase()}_REQUIRED` }
       else clearErrors(config.key);
-      // goNext();
+      goNext();
     }
   }, [ownershipCategory]);
 
@@ -198,7 +208,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
                   onChange={selectisSameAsPropertyOwner}
                   value={isSameAsPropertyOwner}
                   checked={isSameAsPropertyOwner || false}
-                  style={{ marginBottom: "20px" }}
                   disable={isRenewal}
                   //disable={isUpdateProperty || isEditProperty}
                 />
@@ -240,7 +249,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           />
         </LabelFieldPair>
         {formState.touched?.[config.key] ? (
-          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+          <CardLabelError>
             {formState.errors[config.key]?.message}
           </CardLabelError>
         ) : null}
@@ -259,7 +268,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
               onChange={selectisSameAsPropertyOwner}
               value={isSameAsPropertyOwner}
               checked={isSameAsPropertyOwner || false}
-              style={{ marginBottom: "20px" }}
               disable={isEdit}
             />
           )}

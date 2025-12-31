@@ -29,7 +29,7 @@ import { Loader } from "../../components/Loader";
 
 import get from "lodash/get";
 import { size } from "lodash";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -521,7 +521,7 @@ const CHBApplicationDetails = () => {
         </Card>
 
         <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (

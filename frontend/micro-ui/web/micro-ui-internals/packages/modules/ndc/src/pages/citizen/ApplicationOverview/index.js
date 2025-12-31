@@ -27,8 +27,7 @@ import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
-import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
-
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
@@ -111,10 +110,10 @@ const CitizenApplicationOverview = () => {
           item?.businessService === "WS"
             ? "NDC_WATER_SERVICE_CONNECTION"
             : item?.businessService === "SW"
-              ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-              : item?.businessService === "PT"
-                ? "NDC_PROPERTY_TAX"
-                : item?.businessService,
+            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+            : item?.businessService === "PT"
+            ? "NDC_PROPERTY_TAX"
+            : item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
@@ -136,6 +135,12 @@ const CitizenApplicationOverview = () => {
 
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
+    const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+    const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+
+    Property.propertyOwnerNames = propertyOwnerNames;
+
+    console.log("propertyOwnerNames", propertyOwnerNames);
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
     console.log("tenantInfo", tenantInfo);
     const ulbType = tenantInfo?.city?.ulbType;
@@ -196,16 +201,16 @@ const CitizenApplicationOverview = () => {
         )}
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
           applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
-            <ActionBar>
-              <SubmitBar
-                label={t("COMMON_EDIT")}
-                onSubmit={() => {
-                  const id = applicationDetails?.Applications?.[0]?.applicationNo;
-                  history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
-                }}
-              />
-            </ActionBar>
-          )}
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = applicationDetails?.Applications?.[0]?.applicationNo;
+                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+              }}
+            />
+          </ActionBar>
+        )}
       </div>
 
       <Card className="ndc_card_main">
@@ -220,8 +225,8 @@ const CitizenApplicationOverview = () => {
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
                     : typeof value === "object"
-                      ? t(value?.code || "N/A")
-                      : t(value || "N/A")
+                    ? t(value?.code || "N/A")
+                    : t(value || "N/A")
                 }
               />
             ))}
@@ -296,7 +301,7 @@ const CitizenApplicationOverview = () => {
           )}
         </div>
       </Card>
-      <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
     </div>
   );
 };

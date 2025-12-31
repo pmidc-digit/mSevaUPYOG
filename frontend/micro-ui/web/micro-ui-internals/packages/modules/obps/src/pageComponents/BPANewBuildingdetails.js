@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker, Toast } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
@@ -570,6 +570,17 @@ if (anyYes && !ecbcCertificateFile) {
   const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType")
   const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts")
   const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb")
+
+  const TypeofproposedsiteSelected = useMemo(() => {
+    if(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification){
+      return [{
+      code: "PROPOSED",
+      i18nKey: "Proposed",
+    }]
+    }else{
+      return Typeofproposedsite
+    }
+  }, [currentStepData?.createdResponse?.additionalDetails?.isSelfCertification])
 
   const ulblists = []
   const menu = []
@@ -1411,7 +1422,7 @@ console.log("appDate", nocApprovedOn);
             <Dropdown
               selected={proposedSite}
               select={setProposedSite}
-              option={Typeofproposedsite}
+              option={TypeofproposedsiteSelected}
               placeholder="Proposed Site Type"
               optionKey="i18nKey"
               t={t}

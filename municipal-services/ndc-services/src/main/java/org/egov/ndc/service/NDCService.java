@@ -241,6 +241,9 @@ public class NDCService {
 		if (StringUtils.isBlank(criteria.getTenantId())) {
 			throw new CustomException("EG_NDC_TENANT_ID_NULL", "Tenant ID must not be null");
 		}
+
+		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
 			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
 			if (userDetailResponse.getUser().isEmpty()) {

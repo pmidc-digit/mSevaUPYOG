@@ -134,11 +134,6 @@ public class PaymentUpdateService {
 							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
 							bpa.getWorkflow().setAssignes(assignee);
 							
-							if(BPAConstants.BPA_LOW_MODULE_CODE.equalsIgnoreCase(bpa.getBusinessService())) {
-								Map<String, Object> additionalDetails = (Map<String, Object>)bpa.getAdditionalDetails();
-								additionalDetails.put("isSanctionLetterGenerated", Boolean.TRUE);
-								bpa.setAdditionalDetails(additionalDetails);
-							}
 						}
 					});
 					

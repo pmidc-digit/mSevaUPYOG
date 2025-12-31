@@ -96,7 +96,8 @@ public class BPAQueryBuilder {
         }
 
         String applicationNo = criteria.getApplicationNo();
-        if (applicationNo != null) {
+        if (applicationNo != null) {
+
         	List<String> applicationNos=new ArrayList<String>();
         	if(applicationNo.contains(",")) {
         		applicationNos = Arrays.asList(applicationNo.split(","));

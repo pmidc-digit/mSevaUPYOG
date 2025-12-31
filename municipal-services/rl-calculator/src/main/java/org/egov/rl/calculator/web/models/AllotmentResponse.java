@@ -2,6 +2,9 @@ package org.egov.rl.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
+import java.util.List;
+
 import org.egov.common.contract.response.ResponseInfo;
 
 @AllArgsConstructor
@@ -15,5 +18,5 @@ public class AllotmentResponse {
     ResponseInfo responseInfo;
     
     @JsonProperty("AllotmentDetails")
-    private AllotmentDetails allotment;
+    private List<AllotmentDetails> allotment;
 }

@@ -36,7 +36,7 @@ public class NotificationService {
 
 	public void sendNotificationSMS(AllotmentRequest allotmentRequest) {
 
-		String msg = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().getTenantId(),
+		String msg = notifUtil.getLocalizationMessages(allotmentRequest.getAllotment().get(0).getTenantId(),
 				allotmentRequest.getRequestInfo());
 		if (!StringUtils.isEmpty(msg)) {
 			prepareMsgAndSend(allotmentRequest, msg);
@@ -52,7 +52,7 @@ public class NotificationService {
 	 */
 	private void prepareMsgAndSend(AllotmentRequest request, String msg) {
 
-		AllotmentDetails allotmentDetails = request.getAllotment();
+		AllotmentDetails allotmentDetails = request.getAllotment().get(0);
 		RequestInfo requestInfo = request.getRequestInfo();
 		
 		Map<String, String> mobileNumberToOwner = new HashMap<>();

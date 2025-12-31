@@ -104,7 +104,7 @@ public class DemandService {
 				BigDecimal amountPayable = new BigDecimal(0);
 				String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
-				JsonNode property = allotmentDetails.getAdditionalDetails();
+				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
 				String status = property.path("feesPeriodCycle").asText();
 				long startDay = 0;
 				long endDay = 0;
@@ -436,7 +436,7 @@ public class DemandService {
                      	List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
 						list.forEach(d -> {
-							JsonNode property = d.getAdditionalDetails();
+							JsonNode property = d.getAdditionalDetails().get(0);
 							String status = property.path("feesPeriodCycle").asText();
 
 							switch (status) {

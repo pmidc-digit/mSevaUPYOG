@@ -7,7 +7,7 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   const stepStyle = (isActive, isLast) => ({
     display: "flex",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     flex: "0 0 auto",
     color: isActive ? "#0D43A7" : "#9CA3AF",
     padding: "14px 12px",
@@ -95,15 +95,43 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   };
   const isMobile = window.Digit.Utils.browser.isMobile();
   const totalSteps = stepsList.length;
+
+  // Mobile-only styles
+  const mobileNavBarStyle = isMobile ? {
+    flexDirection: "row",
+    overflowX: "auto",
+    whiteSpace: "nowrap",
+    minWidth: "100%",
+    maxWidth: "100%",
+    gap: "8px",
+    padding: "10px",
+  } : {};
+
+  const mobileCircleStyle = isMobile ? {
+    width: "32px",
+    height: "32px",
+    fontSize: "12px",
+  } : {};
+
+  const mobileLabelStyle = isMobile ? {
+    fontSize: "10px",
+  } : {};
+
+  const mobileStepStyle = isMobile ? {
+    width: "auto",
+    padding: "6px",
+    marginBottom: "0",
+    flexDirection: "column",
+    alignItems: "center",
+  } : {};
+
   return (
     <div
       className="stepper"
       style={{
         width: "100%",
         display: "flex",
-        flexDirection: "row",
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
+        flexDirection: isMobile ? "column" : "row",
         gap: "24px",
       }}
     >
@@ -117,24 +145,26 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
           minWidth: "120px",
           maxWidth: "320px",
           marginBottom: "20px",
+          marginTop: isMobile ? "20px" : "0",
+          height: isMobile ? "106px" : "",
+          ...mobileNavBarStyle,
         }}
       >
         {[...Array(totalSteps)].map((_, index) => (
-          <div className="step-content" key={index} style={stepStyle(index + 1 <= currentStep, index === totalSteps - 1)}>
-            <div className="step-sub-content" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", margin: "10px" }}>
+          <div className="step-content" key={index} style={{...stepStyle(index + 1 <= currentStep, index === totalSteps - 1), ...mobileStepStyle}}>
+            <div className="step-circle" style={{...circleStyle(index + 1), ...mobileCircleStyle}}>
+              {index + 1}
+              {index < totalSteps - 1 && !isMobile && <div style={lineStyle}></div>}
+            </div>
+            <div className="step-sub-content" style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", margin: isMobile ? "4px" : "10px" }}>
               {index + 1 === totalSteps ? null : (
                 <div className="step-number" style={stepNumberStyle}>
                   {/* Step {index + 1} */}
                 </div>
               )}
-              <div className="step-label" style={labelStyle}>
+              <div className="step-label" style={{...labelStyle, ...mobileLabelStyle, textAlign: isMobile ? "center" : "right"}}>
                 {t(stepsList[index].stepLabel)}
               </div>
-            </div>
-
-            <div className="step-circle" style={circleStyle(index + 1)}>
-              {index + 1}
-              {index < totalSteps - 1 && <div style={lineStyle}></div>}
             </div>
           </div>
         ))}

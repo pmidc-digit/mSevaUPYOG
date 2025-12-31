@@ -453,9 +453,9 @@ const ApplicationDetails = () => {
               optionStyle={{ padding: "10px" }}
             />
           </div>
-          <div>
+          {/* <div>
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
-          </div>
+          </div> */}
         </div>
       </div>
       <ApplicationDetailsTemplate

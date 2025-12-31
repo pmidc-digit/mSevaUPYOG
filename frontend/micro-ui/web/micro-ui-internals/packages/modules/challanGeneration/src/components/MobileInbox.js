@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApplicationCard } from "./inbox/ApplicationCard";
+import { format } from "date-fns";
 import ApplicationLinks from "./inbox/ApplicationLinks";
 import { getActionButton, printReciept } from "../utils";
 import { Link } from "react-router-dom";
@@ -44,85 +45,47 @@ const MobileInbox = ({
   };
   const inboxColumns = (props) => [
     {
-      Header: t("UC_CHALLAN_NUMBER"),
+      Header: t("UC_CHALLAN_NO"),
       mobileCell: (original) => GetMobCell(original?.["challanNo"]),
     },
     {
       Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
+      Cell: ({ row }) => {
+        return GetCell(`${row.original?.["name"]}`);
+      },
       mobileCell: (original) => GetMobCell(original?.["name"]),
     },
     {
-      Header: t("UC_SERVICE_CATEGORY_LABEL"),
-      mobileCell: (original) => {
-        let code = stringReplaceAll(`${original?.["businessService"]}`, ".", "_");
-        code = code.toUpperCase();
-        return GetMobCell(t(`BILLINGSERVICE_BUSINESSSERVICE_${code}`));
+      Header: t("CHALLAN_OFFENCE_TYPE"),
+      Cell: ({ row }) => {
+        return GetCell(`${row.original?.["offenceName"]}`);
       },
+      mobileCell: (original) => GetMobCell(original?.["offenceName"]),
     },
     {
-      Header: t("UC_DUE_DATE"),
-      mobileCell: (original) => GetMobCell(original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(original?.dueDate)),
-    },
-    {
-      Header: t("UC_RECIEPT_NUMBER_LABEL"),
-      mobileCell: (original) => GetMobCell(original?.receiptNumber === null ? t("CS_NA") : original?.receiptNumber),
-    },
-    {
-      Header: t("UC_TOTAL_AMOUNT"),
+      Header: t("UC_COMMON_TOTAL_AMT"),
+      Cell: ({ row }) => {
+        const total = row.original?.totalAmount ?? 0;
+        const waiver = row.original?.feeWaiver ?? 0;
+        const finalAmount = total - waiver;
+
+        return GetCell(finalAmount);
+      },
       mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
     },
     {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
-      mobileCell: (original) => GetMobCell(original?.applicationStatus),
+      Cell: ({ row }) => {
+        const wf = row.original?.challanStatus;
+        return GetCell(t(`${row.original?.challanStatus}`));
+      },
+      mobileCell: (original) => GetMobCell(t(`${original?.challanStatus}`)),
     },
-
-    // {
-    //   Header: t("UC_TABLE_COL_ACTION"),
-    //   mobileCell: (original) => {
-    //     const amount = original?.totalAmount;
-    //     let action = "ACTIVE";
-    //     if (amount > 0) action = "COLLECT";
-    //     if (action == "COLLECT") {
-    //       return (
-    //         <div>
-    //           <span className="link">
-    //             <Link
-    //               to={{
-    //                 pathname: `/digit-ui/employee/payment/collect/${original?.["businessService"]}/${original?.["challanNo"]}/tenantId=${original?.["tenantId"]}?workflow=mcollect`,
-    //               }}
-    //             >
-    //               {t(`UC_${action}`)}
-    //             </Link>
-    //           </span>
-    //         </div>
-    //       );
-    //     } else if (original?.applicationStatus == "PAID") {
-    //       return (
-    //         <div>
-    //           <span className="link">
-    //             <Link>
-    //               <a
-    //                 href="javascript:void(0)"
-    //                 style={{
-    //                   color: "#FE7A51",
-    //                   cursor: "pointer",
-    //                 }}
-    //                 onClick={(value) => {
-    //                   printReciept(original?.["businessService"], original?.["challanNo"]);
-    //                 }}
-    //               >
-    //                 {" "}
-    //                 {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
-    //               </a>
-    //             </Link>
-    //           </span>
-    //         </div>
-    //       );
-    //     } else {
-    //       return GetMobCell(t(`${"CS_NA"}`));
-    //     }
-    //   },
-    // },
+    {
+      Header: t("WF_INBOX_HEADER_CREATED_DATE"),
+      Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
+      mobileCell: (original) => (original?.date ? format(new Date(original?.date), "dd/MM/yyyy") : ""),
+    },
   ];
 
   const serviceRequestIdKey = (original) => original?.[t("UC_CHALLAN_NUMBER")]?.props?.children;
@@ -142,7 +105,7 @@ const MobileInbox = ({
     <div style={{ padding: 0 }}>
       <div className="inbox-container">
         <div className="filters-container">
-          {!isSearch && (
+          {/* {!isSearch && (
             <ApplicationLinks
               linkPrefix={parentRoute}
               allLinks={[
@@ -155,7 +118,7 @@ const MobileInbox = ({
               headerText={t("ACTION_TEST_MCOLLECT")}
               isMobile={true}
             />
-          )}
+          )} */}
           <ApplicationCard
             t={t}
             data={getData()}

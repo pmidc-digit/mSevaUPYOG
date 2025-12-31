@@ -222,27 +222,26 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
           )} */}
           {propertyDetails && propertyDetails?.Properties.length ? (
             <React.Fragment>
-              <header className="card-section-header" style={{ marginBottom: "5px", marginTop: "20px" }}>
+              <header className="card-section-header" >
                 {t("PT_DETAILS")}
               </header>
               <StatusTable>
-                <div style={isMobile ? {} : { maxWidth: "60%" }}>
                   <Row
                     className="border-none"
-                    labelStyle={isMobile ? { width: "40%" } : {}}
+                    // labelStyle={isMobile ? { width: "40%" } : {}}
                     label={t(`PROPERTY_ID`)}
                     text={propertyDetails?.Properties[0]?.propertyId}
                   />
                   <Row
                     className="border-none"
-                    labelStyle={isMobile ? { width: "40%" } : {}}
+                    // labelStyle={isMobile ? { width: "40%" } : {}}
                     label={t(`OWNER_NAME`)}
                     text={getOwnerNames(propertyDetails?.Properties[0])}
                   />
                   {/* <span style={{ display: "inline-flex", width: "fit-content"}}> */}
                   <Row
                     className="border-none"
-                    labelStyle={isMobile ? { width: "40%" } : {}}
+                    // labelStyle={isMobile ? { width: "40%" } : {}}
                     textStyle={{ wordBreak: "break-word" }}
                     label={t(`PROPERTY_ADDRESS`)}
                     text={propertyAddress}
@@ -267,7 +266,6 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
                       },
                     }}
                   />
-                </div>
               </StatusTable>
               <Link
                 to={`/digit-ui/${
@@ -284,7 +282,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
                     : ""
                 }`}
               >
-                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ color: "#a82227", textAlign: "Left" }} />
+                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ width: "fit-content" }} />
               </Link>
             </React.Fragment>
           ) : null}

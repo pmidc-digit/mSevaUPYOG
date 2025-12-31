@@ -3,7 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { transformBookingResponseToBookingData, ChallanData, amountToWords ,getLocationName } from "../../index";
+import { transformBookingResponseToBookingData, ChallanData, amountToWords ,getLocationName,formatDate } from "../../index";
 
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
@@ -577,12 +577,17 @@ const WrapPaymentComponent = (props) => {
         hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
           return {
             ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            }),
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
           };
         }),
       };
+
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
       const generatePdfKeyForTL = "chb-permissionletter";
       if (!fileStoreId) {
@@ -593,6 +598,13 @@ const WrapPaymentComponent = (props) => {
           { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
           generatePdfKeyForTL
         );
+        const updatedApplication = {
+          ...applicationDetails?.hallsBookingApplication[0],
+          permissionLetterFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
         fileStoreId = response?.filestoreIds[0];
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -608,7 +620,18 @@ const WrapPaymentComponent = (props) => {
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
       let application = {
-        hallsBookingApplication: applicationDetails?.hallsBookingApplication || [],
+                    hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
+                      return {
+                        ...app,
+                        bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+                          .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+                          .map((slot) => ({
+                            ...slot,
+                            bookingDate: formatDate(slot.bookingDate),
+                            bookingEndDate: formatDate(slot.bookingEndDate),
+                  })),
+                };
+              }),
       };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {

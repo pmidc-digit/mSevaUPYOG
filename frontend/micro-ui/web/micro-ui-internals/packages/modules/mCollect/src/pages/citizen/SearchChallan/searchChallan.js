@@ -32,6 +32,7 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   if (isLoading) {
     return <Loader />;
   }
+
   const onChallanSearch = async (data) => {
     //history.push(`/digit-ui/citizen/mcollect/search-results`);
     if (!mobileNumber && !challanNo && !Servicecateogry && !city) {

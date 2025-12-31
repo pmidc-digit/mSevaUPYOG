@@ -319,7 +319,7 @@ const TLApplicationDetails = () => {
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+          {/* <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton> */}
         </div>
       </div>
       {isLoading ? (
@@ -605,7 +605,7 @@ const TLApplicationDetails = () => {
                     </StatusTable>
                   )}
                 </div>
-                {workflowDocs?.length > 0 && (
+                {/* {workflowDocs?.length > 0 && (
                   <div>
                     <CardSubHeader>{t("TL_TIMELINE_DOCS")}</CardSubHeader>
                     <div>
@@ -618,7 +618,7 @@ const TLApplicationDetails = () => {
                       )}
                     </div>
                   </div>
-                )}
+                )} */}
                 <div id="timeline">
                   {/* <TLWFApplicationTimeline application={application} id={id} /> */}
                   <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
@@ -634,7 +634,7 @@ const TLApplicationDetails = () => {
                   ) : null}
                 </div>
                 {/* //TODO: change the actions to be fulfilled from workflow nextactions */}
-                {application?.status === "PENDINGPAYMENT" ? (
+                {/* {application?.status === "PENDINGPAYMENT" ? (
                   <Link
                     to={{
                       pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
@@ -643,28 +643,13 @@ const TLApplicationDetails = () => {
                   >
                     <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
                   </Link>
-                ) : null}
+                ) : null} */}
               </div>
             );
           })}
         </Card>
       )}
-      {/* <ApplicationDetailsTemplate
-        applicationDetails={application}
-        isLoading={isLoading}
-        isDataLoading={isLoading}
-        applicationData={application?.applicationData}
-        mutate={mutate}
-        id={"timeline"}
-        workflowDetails={workflowDetails}
-        businessService={businessService}
-        moduleCode="TL"
-        showToast={showToast}
-        setShowToast={setShowToast}
-        closeToast={closeToast}
-        timelineStatusPrefix={"WF_NEWTL_"}
-      /> */}
-      {!workflowDetails?.isLoading && actions?.length && isActionRenew() && (
+      {/* {!workflowDetails?.isLoading && actions?.length && isActionRenew() && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
@@ -677,7 +662,7 @@ const TLApplicationDetails = () => {
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
-      )}
+      )} */}
     </React.Fragment>
   );
 };

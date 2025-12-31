@@ -261,7 +261,7 @@ const NewApplication = () => {
 
   return (
     <React.Fragment>
-      <div className="pageCard">
+      <div className="card">
         <div style={{ marginLeft: "15px" }}>
           <Header>{t(config.head)}</Header>
         </div>

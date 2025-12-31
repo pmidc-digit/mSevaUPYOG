@@ -8,8 +8,21 @@ function TLTradeUnits({ units }) {
     <React.Fragment>
       {units.map((unit, index) => (
         // TODO, Later will move to classes
-        <div key={t(unit?.title)} style={{ marginTop: "19px", background: "#FAFAFA", border: "1px solid #D6D5D4", borderRadius: "4px", padding: "8px", lineHeight: "19px", maxWidth: "600px", minWidth: "280px" }}>
-          <CardSubHeader style={{ marginBottom: "9px", paddingBottom: "9px", color: "#0B0C0C", fontSize: "16px", lineHeight: "19px" }}>{`${t(unit?.title)} ${index + 1}`}</CardSubHeader>
+        <div
+          key={t(unit?.title)}
+          style={{
+            marginTop: "19px",
+            background: "#FAFAFA",
+            border: "1px solid #D6D5D4",
+            borderRadius: "4px",
+            padding: "8px",
+            lineHeight: "19px",
+            minWidth: "280px",
+          }}
+        >
+          <CardSubHeader style={{ marginBottom: "9px", paddingBottom: "9px", color: "#0B0C0C", fontSize: "16px", lineHeight: "19px" }}>{`${t(
+            unit?.title
+          )} ${index + 1}`}</CardSubHeader>
           <React.Fragment key={index}>
             <StatusTable style={{ position: "relative", marginTop: "19px" }}>
               <div
@@ -20,7 +33,7 @@ function TLTradeUnits({ units }) {
                   left: 0,
                   bottom: 0,
                   right: 0,
-                  width: "auto"
+                  width: "auto",
                 }}
               ></div>
               {unit?.values?.map((value, index) => {
@@ -36,7 +49,7 @@ function TLTradeUnits({ units }) {
                     caption={value.caption}
                     className="border-none"
                     // TODO, Later will move to classes
-                    rowContainerStyle={{justifyContent: "space-between", fontSize: "16px", lineHeight: "19px", color: "#0B0C0C"}}
+                    rowContainerStyle={{ justifyContent: "space-between", fontSize: "16px", lineHeight: "19px", color: "#0B0C0C" }}
                   />
                 );
               })}

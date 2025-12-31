@@ -22,7 +22,7 @@ import getChbAcknowledgementData from "../../getChbAcknowledgementData";
 import CHBWFApplicationTimeline from "../../pageComponents/CHBWFApplicationTimeline";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
-import { pdfDownloadLink } from "../../utils";
+import { pdfDownloadLink,formatDate } from "../../utils";
 
 import get from "lodash/get";
 import { size } from "lodash";
@@ -137,15 +137,29 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
+    console.log('payments', payments)
     try {
       setLoading(true);
-      let application = data?.hallsBookingApplication?.[0];
-      let fileStoreId = application?.paymentReceiptFilestoreId;
+      let application = {
+        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
+          };
+        }),
+      };
+      console.log('application', application)
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = { filestoreIds: [payments?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
         const updatedApplication = {
-          ...application,
+          ...data?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],
         };
         await mutation.mutateAsync({
@@ -170,17 +184,29 @@ const CHBApplicationDetails = () => {
         hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
           return {
             ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            }),
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
           };
         }),
       };
 
-      let fileStoreId = payments?.fileStoreId;
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
         fileStoreId = response?.filestoreIds[0];
+        const updatedApplication = {
+          ...data?.hallsBookingApplication[0],
+          permissionLetterFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");

@@ -1,15 +1,36 @@
 
+/* Table container for responsive behavior like .card */
+.table-container {
+  max-width: 95vw;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 15px;
+}
+
 .table {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
   width: 100%;
-  table-layout: fixed; /* Force fixed table layout to prevent shrinking */
+  max-width: 95vw;
+  table-layout: auto;
   border-radius: 12px;
   border: 1px solid #e1e8f0;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  display: block;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   border-collapse: separate;
   border-spacing: 0;
   transition: box-shadow 0.3s ease;
+  margin-bottom: 15px;
+}
+
+/* Desktop styles - remove block display */
+@media (min-width: 1024px) {
+  .table {
+    display: table;
+    overflow: hidden;
+  }
 }
 
 .table:hover {

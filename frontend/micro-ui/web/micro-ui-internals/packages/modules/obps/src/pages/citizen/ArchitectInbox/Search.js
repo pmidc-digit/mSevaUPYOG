@@ -50,7 +50,7 @@ const Search = ({ onSearch, searchParams, searchFields, type, onClose, isInboxPa
   const clearAll = (mobileView) => {
     const mobileViewStyles = mobileView ? { margin: 0 } : {};
     return (
-      <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
+      <LinkLabel style={{ ...mobileViewStyles }} onClick={clearSearch}>
         {t("ES_COMMON_CLEAR_SEARCH")}
       </LinkLabel>
     );
@@ -58,7 +58,7 @@ const Search = ({ onSearch, searchParams, searchFields, type, onClose, isInboxPa
 
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
-      <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
+      <div className="search-container" style={{  marginLeft: isInboxPage ? "24px" : "revert" }}>
         <div className="search-complaint-container">
           {(type === "mobile" || mobileView) && (
             <div className="complaint-header">

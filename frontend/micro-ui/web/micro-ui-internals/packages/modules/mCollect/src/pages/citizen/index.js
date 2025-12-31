@@ -1,7 +1,7 @@
 import { AppContainer, BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { Redirect, Switch, useRouteMatch } from "react-router-dom";
-// import SearchChallanComponent from "./SearchChallan";
+import SearchChallanComponent from "./SearchChallan";
 // import SearchResultsComponent from "./SearchResults";
 // import MyChallanResultsComponent from "./MyChallan";
 //import BillInfo from "./SearchResults/BillInfo";

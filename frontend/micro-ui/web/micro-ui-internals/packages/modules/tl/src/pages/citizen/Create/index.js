@@ -145,7 +145,7 @@ const CreateTradeLicence = ({ parentRoute }) => {
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
         return (
           <Route path={`${match.path}/${routeObj.route}`} key={index}>
-            <div className="pageCard">
+            <div className="card">
               <h1 style={{ color: "black", fontFamily: "Noto Sans,sans-serif", fontSize: "28px", fontWeight: "500" }}>
                 {t("Trade Licence New Application")}
               </h1>
@@ -164,7 +164,7 @@ const CreateTradeLicence = ({ parentRoute }) => {
         );
       })}
       <Route path={`${match.path}/check`}>
-        <div className="pageCard">
+        <div className="card">
           <h1 style={{ color: "black", fontFamily: "Noto Sans,sans-serif", fontSize: "28px", fontWeight: "500" }}>
             {t("Trade Licence New Application")}
           </h1>

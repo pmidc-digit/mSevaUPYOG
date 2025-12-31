@@ -228,3 +228,9 @@ export const getLocationName = async (lat, lng) => {
     return "Address not provided";
   }
 };
+
+export const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-");
+  return `${day}/${month}/${year}`;
+};

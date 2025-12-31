@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import NavItem from "./NavItem";
 import _, { findIndex } from "lodash";
 
-const EmployeeSideBar = () => {
+const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogout }) => {
   const sidebarRef = useRef(null);
   const { isLoading, data } = Digit.Hooks.useAccessControl();
   const [search, setSearch] = useState("");
@@ -14,9 +14,11 @@ const EmployeeSideBar = () => {
     if (isLoading) {
       return <Loader />;
     }
-    sidebarRef.current.style.cursor = "pointer";
-    collapseNav();
-  }, [isLoading]);
+    if (sidebarRef.current && !mobileView) {
+      sidebarRef.current.style.cursor = "pointer";
+      collapseNav();
+    }
+  }, [isLoading, mobileView]);
 
   const expandNav = () => {
     sidebarRef.current.style.width = "350px";
@@ -177,6 +179,166 @@ const EmployeeSideBar = () => {
     );
   };
 
+  const closeSidebar = () => {
+    toggleSidebar(false);
+  };
+
+  // Mobile sidebar styles
+  const mobileOverlayStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 9998,
+    display: isSidebarOpen ? "block" : "none",
+  };
+
+  const mobileSidebarStyle = {
+    position: "fixed",
+    top: 0,
+    left: isSidebarOpen ? 0 : "-280px",
+    width: "280px",
+    height: "100vh",
+    backgroundColor: "#fff",
+    zIndex: 9999,
+    transition: "left 0.3s ease",
+    overflowY: "auto",
+    boxShadow: isSidebarOpen ? "2px 0 8px rgba(0,0,0,0.15)" : "none",
+  };
+
+  const mobileHeaderStyle = {
+    padding: "16px",
+    borderBottom: "1px solid #e5e7eb",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#f9fafb",
+  };
+
+  const closeButtonStyle = {
+    background: "none",
+    border: "none",
+    fontSize: "24px",
+    cursor: "pointer",
+    color: "#6b7280",
+    padding: "4px 8px",
+  };
+
+  // Mobile view render
+  if (mobileView) {
+    return (
+      <React.Fragment>
+        <div style={mobileOverlayStyle} onClick={closeSidebar}></div>
+        <div style={mobileSidebarStyle} className="employee-mobile-sidebar">
+          <style>
+            {`
+              .employee-mobile-sidebar .submenu-container {
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              .employee-mobile-sidebar .sidebar-link {
+                padding: 12px 16px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                border-bottom: 1px solid #f3f4f6 !important;
+                cursor: pointer !important;
+              }
+              .employee-mobile-sidebar .sidebar-link:hover {
+                background-color: #f9fafb !important;
+              }
+              .employee-mobile-sidebar .sidebar-link.active {
+                background-color: #eef2ff !important;
+                border-left: 3px solid #4f46e5 !important;
+              }
+              .employee-mobile-sidebar .actions {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 0 !important;
+              }
+              .employee-mobile-sidebar .actions svg {
+                width: 20px !important;
+                height: 20px !important;
+                fill: #6b7280 !important;
+              }
+              .employee-mobile-sidebar .actions span,
+              .employee-mobile-sidebar .actions a,
+              .employee-mobile-sidebar .custom-link {
+                font-size: 14px !important;
+                color: #1f2937 !important;
+                text-decoration: none !important;
+                font-weight: 500 !important;
+              }
+              .employee-mobile-sidebar .dropdown-link {
+                display: flex !important;
+                padding: 10px 16px 10px 48px !important;
+                font-size: 13px !important;
+                color: #4b5563 !important;
+                text-decoration: none !important;
+                border-bottom: 1px solid #f9fafb !important;
+              }
+              .employee-mobile-sidebar .dropdown-link:hover {
+                background-color: #f3f4f6 !important;
+              }
+              .employee-mobile-sidebar .dropdown-link.active {
+                background-color: #eef2ff !important;
+                color: #4f46e5 !important;
+              }
+              .employee-mobile-sidebar .search-icon-wrapper {
+                padding: 8px 16px !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                background-color: #f9fafb !important;
+                margin: 8px 12px !important;
+                border-radius: 6px !important;
+                border: 1px solid #e5e7eb !important;
+              }
+              .employee-mobile-sidebar .employee-search-input {
+                border: none !important;
+                background: transparent !important;
+                outline: none !important;
+                font-size: 14px !important;
+                width: 100% !important;
+              }
+            `}
+          </style>
+          <div style={mobileHeaderStyle}>
+            <span style={{ fontWeight: 600, fontSize: "16px", color: "#1f2937" }}>{t("")}</span>
+            <button style={closeButtonStyle} onClick={closeSidebar}>×</button>
+          </div>
+          <div style={{ padding: "8px 0" }}>
+            {renderSearch()}
+            {splitKeyValue()}
+          </div>
+          {handleLogout && (
+            <div style={{ borderTop: "1px solid #e5e7eb", padding: "16px" }}>
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  
+                  color: "black",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                {t("CORE_COMMON_LOGOUT")}
+              </button>
+            </div>
+          )}
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  // Desktop view render
   return (
     <div
       className="sidebar"

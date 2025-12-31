@@ -35,51 +35,17 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
 
   console.log("formData in Summary", formData)
 
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  };
-
-  const headingStyle = {
-    fontSize: "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-  };
-
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-  };
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+    <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
 
   return (
-    <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("Application Summary")}</h2>
-      <div style={sectionStyle}>
+    <div className="bpa-summary-page">
+      <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("Trade License Tax"), getTaxAmount("TAX"))}
         {renderLabel(t("Rebate"), getTaxAmount("REBATE"))}
         {renderLabel(t("Penalty"), getTaxAmount("PENALTY"))}
@@ -87,8 +53,8 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         {renderLabel(t("Payment Status"), status || "NA")}
       </div>
 
-      <h2 style={headingStyle}>{t("Trade Details")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("Trade Details")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("Application Type"), applicationType)}
         {renderLabel(t("Licence Type"), licenseType)}
         {renderLabel(t("Trade Name"), tradeName)}
@@ -102,9 +68,9 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         {renderLabel(t("Validity (In Years)"), tradeLicenseDetail?.additionalDetail?.validityYears)}
       </div>
 
-      <h2 style={headingStyle}>{t("Trade Units")}</h2>
+      <h2 className="bpa-summary-heading">{t("Trade Units")}</h2>
       {tradeUnits.map((unit, index) => (
-        <div key={index} style={sectionStyle}>
+        <div key={index} className="bpa-summary-section">
           <div style={{ fontWeight: "600", marginBottom: "0.5rem" }}>#{index + 1}</div>
           {renderLabel(t("Trade Category"), unit?.tradeType?.split(".")[0])}
           {renderLabel(t("Trade Type"), unit?.tradeType?.split(".")[1])}
@@ -114,9 +80,9 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         </div>
       ))}
 
-      <h2 style={headingStyle}>{t("Accessories")}</h2>
+      <h2 className="bpa-summary-heading">{t("Accessories")}</h2>
       {accessories.map((acc, index) => (
-        <div key={index} style={sectionStyle}>
+        <div key={index} className="bpa-summary-section">
           <div style={{ fontWeight: "600", marginBottom: "0.5rem" }}>#{index + 1}</div>
           {renderLabel(t("Accessory Category"), acc?.accessoryCategory)}
           {renderLabel(t("UOM"), acc?.uom)}
@@ -124,8 +90,8 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         </div>
       ))}
 
-      <h2 style={headingStyle}>{t("Property Address")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("Property Address")}</h2>
+      <div className="bpa-summary-section">
         {renderLabel(t("City"), address?.city)}
         {renderLabel(t("Door/House No."), address?.doorNo)}
         {renderLabel(t("Building/Colony Name"), address?.buildingName)}
@@ -134,9 +100,9 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         {renderLabel(t("Pincode"), address?.pincode)}
       </div>
 
-      <h2 style={headingStyle}>{t("Owner Details")}</h2>
+      <h2 className="bpa-summary-heading">{t("Owner Details")}</h2>
       {owners.map((owner, index) => (
-        <div key={index} style={sectionStyle}>
+        <div key={index} className="bpa-summary-section">
           <div style={{ fontWeight: "600", marginBottom: "0.5rem" }}>#{index + 1}</div>
           {renderLabel(t("Name"), owner?.name)}
           {renderLabel(t("Mobile No."), owner?.mobileNumber)}
@@ -146,8 +112,8 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         </div>
       ))}
 
-      <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("Documents Uploaded")}</h2>
+      <div className="bpa-summary-section">
         {Array.isArray(formData?.Documents?.documents?.documents) && formData.Documents.documents.documents.length > 0 ? (
           <TLDocument value={{ workflowDocs: formData.Documents.documents.documents }} ></TLDocument>
         ) : (

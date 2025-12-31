@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast, Dropdown, Table } from "@mseva/digit-ui-react-components";
+import {
+  Card,
+  TextInput,
+  Header,
+  ActionBar,
+  SubmitBar,
+  Loader,
+  InfoIcon,
+  Toast,
+  Dropdown,
+  Table,
+  Label,
+  MobileNumber,
+  CardLabelError,
+} from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -50,7 +64,6 @@ const SearchBill = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setHasSearched(true);
-    console.log("data is here==========", data);
     const businessServiceData = data?.businesService?.code;
     delete data["ULB"];
 
@@ -70,21 +83,8 @@ const SearchBill = () => {
       return acc;
     }, {});
 
-    console.log("filteredData", filteredData);
-
-    // const payload = {
-    //   businesService: businessServiceData,
-    //   billNo: data?.billNo,
-    //   consumerCode: data?.consumerCode,
-    //   mobileNumber: data?.mobileNumber,
-    //   url: "egov-searcher/bill-genie/mcollectbills/_get",
-    // };
-
     try {
       const response = await Digit.MCollectService.search_bill(tenantId, filteredData);
-      // console.log("response ✅", response?.Payments);
-      // setTableData(response?.Payments);
-      console.log("response", response?.Bills);
       setTableData(response?.Bills);
       setIsLoading(false);
     } catch (error) {
@@ -97,32 +97,64 @@ const SearchBill = () => {
     setShowToast(null);
   };
 
-  //need to get from workflow
+  const downloadPDF = async (rowData) => {
+    setIsLoading(true);
+    try {
+      const response = await Digit.MCollectService.generatePdf(tenantId, { Bills: [{ ...rowData }] }, "mcollectbill");
+      setIsLoading(false);
+      if (response?.filestoreIds?.[0]) {
+        fileFetch(response?.filestoreIds?.[0]);
+      } else {
+        setShowToast({ isError: true, label: "ERR_PDF_GEN_FAILED" });
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+      setShowToast({ isError: true, label: "ERR_PDF_GEN_FAILED" });
+    }
+  };
+
+  const fileFetch = async (fileStoreId) => {
+    setIsLoading(true);
+    try {
+      const response = await Digit.MCollectService.file_fetch(tenantId, fileStoreId);
+      setIsLoading(false);
+      const fileUrl = response?.[fileStoreId] || response?.fileStoreIds?.[0]?.url;
+      if (fileUrl) {
+        window.open(fileUrl, "_blank");
+      } else {
+        console.error("File URL not found in response.");
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+    }
+  };
+
   const GetCell = (value) => <span className="cell-text">{value}</span>;
   const columns = useMemo(
     () => [
       {
-        Header: "Bill No",
+        Header: t("UC_BILL_NO_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
           const receiptNumber = row?.billNumber;
           return (
-            <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+            <span className="link" onClick={() => downloadPDF(row)}>
               {receiptNumber}
             </span>
           );
-          // return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
         },
       },
       {
-        Header: "Consumer Name",
+        Header: t("UC_CONSUMER_NAME_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
           return GetCell(row?.payerName);
         },
       },
       {
-        Header: "Bill Date",
+        Header: t("UC_BILL_DATE_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
           const date = new Date(row?.billDate);
@@ -131,230 +163,193 @@ const SearchBill = () => {
         },
       },
       {
-        Header: "Bill Amount (Rs)",
+        Header: t("UC_BILL_AMOUNT_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
           return GetCell(row?.totalAmount);
         },
       },
       {
-        Header: "Status",
+        Header: t("UC_STATUS_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
           return GetCell(row?.status);
         },
       },
       {
-        Header: "Action",
+        Header: t("UC_ACTION_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
-          return (
-            <SubmitBar onSubmit={() => alert("payment integration is pending")} label="Pay" />
-            // <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => alert("new bill")}>
-            //   Generate New Bill
-            // </span>
-          );
+          return <SubmitBar onSubmit={() => alert("payment integration is pending")} label={t("UC_PAY_LABEL")} />;
         },
       },
     ],
-    []
+    [t]
   );
 
   return (
     <React.Fragment>
-      <style>
-        {`
-          .formWrapperNDC {
-            // padding: 20px;
-            // background: #fff;
-            // border-radius: 10px;
-            max-width: 1200px;
-            // margin: auto;
-            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
-
-          .ndcFormCard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-
-          .surveydetailsform-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-          .surveydetailsform-wrapper p {
-            color: red;
-            font-size: 14px;
-          }
-
-          .citizen-card-input{
-            margin-bottom: 0 !important;
-         }
-
-          @media (max-width: 1024px) {
-            .ndcFormCard {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 768px) {
-            .ndcFormCard {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-        <Header>Search Bill</Header>
-        <div>
-          <SubmitBar onSubmit={() => history.push("/digit-ui/employee/mcollect/group-bill")} label="Group Bills" />{" "}
-        </div>
+      <div className={"employee-application-details"}>
+        <Header>{t("UC_SEARCH_BILL_HEADER")}</Header>
+        <SubmitBar onSubmit={() => history.push("/digit-ui/employee/mcollect/group-bill")} label={t("UC_GROUP_BILLS_LABEL")} />
       </div>
 
-      <div className="card">
+      <Card>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="ndcFormCard">
-              <div className="surveydetailsform-wrapper">
-                <label>
-                  ULB<span style={{ color: "red" }}>*</span>
-                </label>
-                <Controller
-                  control={control}
-                  // rules={{ required: t("REQUIRED_FIELD") }}
-                  name="ULB"
-                  render={(props) => (
-                    <Dropdown
-                      option={ULBData}
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      optionKey="name"
-                      onBlur={props.onBlur}
-                      t={t}
-                      selected={props.value}
+            <div className="search-complaint-container" style={{ padding: "0", margin: "0" }}>
+              <div
+                className="complaint-input-container for-pt"
+                style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", margin: "0" }}
+              >
+                <div className="input-fields">
+                  <span className="complaint-input">
+                    <Label>{t("UC_ULB_LABEL")}*</Label>
+                    <Controller
+                      control={control}
+                      // rules={{ required: t("REQUIRED_FIELD") }}
+                      name="ULB"
+                      render={(props) => (
+                        <Dropdown
+                          option={ULBData}
+                          select={(e) => {
+                            props.onChange(e);
+                          }}
+                          optionKey="name"
+                          onBlur={props.onBlur}
+                          t={t}
+                          selected={props.value}
+                        />
+                      )}
                     />
-                  )}
-                />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
-              </div>
-              <div className="surveydetailsform-wrapper">
-                <label>
-                  Service Type <span style={{ color: "red" }}>*</span>
-                </label>
-                <Controller
-                  control={control}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  name="businesService"
-                  render={(props) => (
-                    <Dropdown
-                      option={EmployeeStatusData}
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      optionKey="code"
-                      onBlur={props.onBlur}
-                      t={t}
-                      selected={props.value}
-                    />
-                  )}
-                />
-                {errors.businesService && <p style={{ color: "red" }}>{errors.businesService.message}</p>}
-              </div>
-              <div className="surveydetailsform-wrapper">
-                <label>Consumer code</label>
-                <TextInput
-                  name="consumerCode"
-                  type="text"
-                  inputRef={register({
-                    maxLength: {
-                      value: 500,
-                    },
-                  })}
-                />
-                {errors.consumerCode && <p style={{ color: "red" }}>{errors.consumerCode.message}</p>}
-              </div>
-              <div className="surveydetailsform-wrapper">
-                <label>Bill No</label>
-                <TextInput
-                  name="billNo"
-                  type="text"
-                  inputRef={register({
-                    maxLength: {
-                      value: 500,
-                    },
-                  })}
-                />
-                {errors.billNo && <p style={{ color: "red" }}>{errors.billNo.message}</p>}
-              </div>
-              <div className="surveydetailsform-wrapper">
-                <label>Mobile No</label>
-                <div className="field-container">
-                  <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
-                    +91
+                    {errors.ULB && <CardLabelError>{errors.ULB.message}</CardLabelError>}
                   </span>
-                  <TextInput
-                    name="mobileNumber"
-                    type="text"
-                    inputRef={register({
-                      pattern: {
-                        value: /^[0-9]+$/,
-                        message: "Only numbers are allowed",
-                      },
-                      minLength: {
-                        value: 10,
-                        message: "Mobile number must be at least 10 digits",
-                      },
-                      maxLength: {
-                        value: 15,
-                        message: "Mobile number cannot exceed 15 digits",
-                      },
-                    })}
-                  />
-                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+                </div>
+                <div className="input-fields">
+                  <span className="complaint-input">
+                    <Label>{t("UC_SERVICE_TYPE_LABEL")}*</Label>
+                    <Controller
+                      control={control}
+                      rules={{ required: t("REQUIRED_FIELD") }}
+                      name="businesService"
+                      render={(props) => (
+                        <Dropdown
+                          option={EmployeeStatusData}
+                          select={(e) => {
+                            props.onChange(e);
+                          }}
+                          optionKey="code"
+                          onBlur={props.onBlur}
+                          t={t}
+                          selected={props.value}
+                        />
+                      )}
+                    />
+                    {errors.businesService && <CardLabelError>{errors.businesService.message}</CardLabelError>}
+                  </span>
+                </div>
+                <div className="input-fields">
+                  <span className="complaint-input">
+                    <Label>{t("UC_CONSUMER_CODE_LABEL")}</Label>
+                    <TextInput
+                      name="consumerCode"
+                      type="text"
+                      inputRef={register({
+                        maxLength: {
+                          value: 500,
+                        },
+                      })}
+                    />
+                    {errors.consumerCode && <CardLabelError>{errors.consumerCode.message}</CardLabelError>}
+                  </span>
+                </div>
+                <div className="input-fields">
+                  <span className="complaint-input">
+                    <Label>{t("UC_BILL_NO_LABEL")}</Label>
+                    <TextInput
+                      name="billNo"
+                      type="text"
+                      inputRef={register({
+                        maxLength: {
+                          value: 500,
+                        },
+                      })}
+                    />
+                    {errors.billNo && <CardLabelError>{errors.billNo.message}</CardLabelError>}
+                  </span>
+                </div>
+                <div className="input-fields">
+                  <span className="complaint-input">
+                    <Label>{t("UC_MOBILE_NO_LABEL")}</Label>
+                    <Controller
+                      control={control}
+                      name="mobileNumber"
+                      rules={{
+                        pattern: {
+                          value: /^[0-9]+$/,
+                          message: t("ERR_INVALID_MOBILE_NUMBER"),
+                        },
+                        minLength: {
+                          value: 10,
+                          message: t("ERR_MIN_LENGTH_MOBILE_NUMBER"),
+                        },
+                        maxLength: {
+                          value: 15,
+                          message: t("ERR_MAX_LENGTH_MOBILE_NUMBER"),
+                        },
+                      }}
+                      render={(props) => (
+                        <div className="field-container">
+                          <MobileNumber
+                            onChange={props.onChange}
+                            value={props.value}
+                            componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
+                          />
+                        </div>
+                      )}
+                    />
+                    {errors.mobileNumber && <CardLabelError>{errors.mobileNumber.message}</CardLabelError>}
+                  </span>
                 </div>
               </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+                <SubmitBar label={t("Next")} submit="submit" />
+              </div>
             </div>
-            <SubmitBar label="Next" submit="submit" />
           </form>
         </FormProvider>
+      </Card>
 
-        {tableData?.length > 0 ? (
-          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
-            <Table
-              t={t}
-              data={tableData}
-              totalRecords={9}
-              columns={columns}
-              getCellProps={(cellInfo) => {
-                return {
-                  style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px",
-                  },
-                };
-              }}
-              // onPageSizeChange={onPageSizeChange}
-              currentPage={getValues("offset") / getValues("limit")}
-              // onNextPage={nextPage}
-              // onPrevPage={previousPage}
-              pageSizeLimit={getValues("limit")}
-              // onSort={onSort}
-              disableSort={false}
-              sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-            />
-          </div>
-        ) : (
-          hasSearched &&
-          !isLoading && <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("No Records Found")}</div>
-        )}
+      {tableData?.length > 0 ? (
+        <div style={{ marginTop: "24px", background: "white", padding: "16px", borderRadius: "8px" }}>
+          <Table
+            t={t}
+            data={tableData}
+            totalRecords={tableData.length}
+            columns={columns}
+            getCellProps={(cellInfo) => {
+              return {
+                style: {
+                  minWidth: cellInfo.column.Header === t("UC_BILL_NO_LABEL") ? "240px" : "",
+                  padding: "20px 18px",
+                  fontSize: "16px",
+                },
+              };
+            }}
+            currentPage={getValues("offset") / getValues("limit")}
+            pageSizeLimit={getValues("limit")}
+            disableSort={false}
+          />
+        </div>
+      ) : (
+        hasSearched &&
+        !isLoading && (
+          <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("CS_COMMON_NO_RECORDS_FOUND")}</div>
+        )
+      )}
 
-        {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
-        {isLoading && <Loader />}
-      </div>
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
+      {isLoading && <Loader />}
     </React.Fragment>
   );
 };

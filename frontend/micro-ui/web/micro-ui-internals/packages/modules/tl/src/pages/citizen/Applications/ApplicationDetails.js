@@ -18,9 +18,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory, useParams } from "react-router-dom";
 import getPDFData from "../../../utils/getTLAcknowledgementData";
-import TLWFApplicationTimeline from "../../../pageComponents/TLWFApplicationTimeline";
+// import TLWFApplicationTimeline from "../../../pageComponents/TLWFApplicationTimeline";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import TLDocument from "../../../pageComponents/TLDocumets";
-
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
     address?.landmark ? `${address?.landmark}, ` : ""
@@ -620,7 +620,8 @@ const TLApplicationDetails = () => {
                   </div>
                 )} */}
                 <div id="timeline">
-                  <TLWFApplicationTimeline application={application} id={id} />
+                  {/* <TLWFApplicationTimeline application={application} id={id} /> */}
+                  <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
                   {application?.status === "CITIZENACTIONREQUIRED" ? (
                     <Link
                       to={{

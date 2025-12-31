@@ -17,7 +17,7 @@ import get from "lodash/get";
 import { Loader } from "../../components/Loader";
 import { ChallanData, getAcknowledgementData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 // const getTimelineCaptions = (checkpoint, index, arr, t) => {
 //   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -286,7 +286,7 @@ const ChallanApplicationDetails = () => {
           </Card>
         )} */}
 
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>

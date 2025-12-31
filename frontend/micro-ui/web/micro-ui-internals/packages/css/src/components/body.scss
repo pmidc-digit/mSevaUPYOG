@@ -42,35 +42,6 @@ body {
   padding: 10px;
 }
 
-.link-label {
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-    color: white !important;
-    text-align: center;
-    outline: none;
-    width: 175px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24);
-    margin: 0;
-    text-decoration: none;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32);
-      color: white !important;
-    }
-
-    &:focus {
-      outline: none;
-    }
-  }
 
 
 .back-btn {

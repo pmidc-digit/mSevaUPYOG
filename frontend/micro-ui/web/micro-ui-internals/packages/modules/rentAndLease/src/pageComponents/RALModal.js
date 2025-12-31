@@ -153,7 +153,8 @@ const RALModal = ({
       action?.action === "REQUEST_FOR_DISCONNECTION" ||
       action?.action === "FORWARD_FOT_SETLEMENT" ||
       action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
-      action?.action === "FORWARD_FOR_FIELDINSPECTION";
+      action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+      action?.action === "FORWARD_FOR_DESCONNECTION_FIELD_INSPECTION";
 
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 

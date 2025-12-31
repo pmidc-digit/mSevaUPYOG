@@ -1,15 +1,14 @@
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Label, SubmitBar, LinkLabel, ActionBar, CloseSvg, DatePicker } from "@mseva/digit-ui-react-components";
+import { TextInput, Label, SubmitBar, LinkLabel, ActionBar, CloseSvg, DatePicker, MobileNumber } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-// import _ from "lodash";
 
 const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams, isInboxPage, defaultSearchParams }) => {
   const { t } = useTranslation();
   const { register, handleSubmit, reset, watch, control } = useForm({
     defaultValues: searchParams,
   });
-  const mobileView = innerWidth <= 640;
+  const mobileView = window.Digit.Utils.browser.isMobile();
 
   const onSubmitInput = (data) => {
     if (!data.mobileNumber) {
@@ -40,8 +39,8 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     onSearch({ ..._newParams });
   }
 
-  const clearAll = (mobileView) => {
-    const mobileViewStyles = mobileView ? { margin: 0 } : {};
+  const clearAll = (isMobileView) => {
+    const mobileViewStyles = isMobileView ? { margin: 0 } : {};
     return (
       <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
         {t("CS_COMMON_CLEAR_SEARCH")}
@@ -55,9 +54,9 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
         <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
-              <div className="complaint-header">
+              <div className="complaint-header" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                 <h2>{t("ES_COMMON_SEARCH_BY")}</h2>
-                <span onClick={onClose}>
+                <span onClick={onClose} style={{ cursor: "pointer" }}>
                   <CloseSvg />
                 </span>
               </div>
@@ -66,39 +65,47 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
               className={"complaint-input-container for-pt " + (!(type === "desktop" && !mobileView) ? "for-search" : "")}
               style={{ width: "100%", display: "grid" }}
             >
-              {searchFields
-                ?.filter((e) => true)
-                ?.map((input, index) => (
-                  <div key={input.name} className="input-fields">
-                    <span key={index} className={"complaint-input"}>
-                      {" "}
-                      {/* //{index === 0 ? "complaint-input" : "mobile-input"} */}
-                      <Label>{input.label}</Label>
-                      {input.type !== "date" ? (
-                        <div className="field-container">
-                          {input?.componentInFront ? (
-                            <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
-                              {input?.componentInFront}
-                            </span>
-                          ) : null}
-                          <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
-                        </div>
-                      ) : (
+              {searchFields?.map((input, index) => (
+                <div key={input.name} className="input-fields">
+                  <span key={index} className={"complaint-input"}>
+                    <Label>{input.label}</Label>
+                    {input.name === "mobileNumber" ? (
+                      <div className="field-container">
                         <Controller
-                          render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
-                          name={input.name}
                           control={control}
-                          defaultValue={null}
+                          name="mobileNumber"
+                          rules={{ pattern: input.pattern, maxLength: input.maxlength }}
+                          defaultValue={searchParams?.mobileNumber || ""}
+                          render={(props) => (
+                            <MobileNumber
+                              onChange={props.onChange}
+                              value={props.value}
+                              componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
+                            />
+                          )}
                         />
-                      )}{" "}
-                    </span>
-                  </div>
-                ))}
+                      </div>
+                    ) : input.type !== "date" ? (
+                      <div className="field-container">
+                        <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
+                      </div>
+                    ) : (
+                      <Controller
+                        render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
+                        name={input.name}
+                        control={control}
+                        defaultValue={null}
+                      />
+                    )}
+                  </span>
+                </div>
+              ))}
               {type === "desktop" && !mobileView && (
                 <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
                   <div>{clearAll()}</div>
                 </div>
               )}
+
               {type === "desktop" && !mobileView && (
                 <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
                   <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />

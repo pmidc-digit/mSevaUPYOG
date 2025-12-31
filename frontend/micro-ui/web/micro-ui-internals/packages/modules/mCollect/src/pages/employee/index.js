@@ -4,11 +4,15 @@ import Inbox from "./Inbox";
 import { Switch, useLocation, Link } from "react-router-dom";
 import { PrivateRoute } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+// import SearchChallanPage from "./SearchChallan";
+// import SearchBillPage from "./SearchBill";
+// import SearchReceiptPage from "./SearchReceipt";
+// import NewChallan from "./NewChallan";
 // import EmployeeChallan from "../../EmployeeChallan";
 // import CreateChallen from "../employee/CreateChallan";
 // import MCollectAcknowledgement from "../employee/EmployeeChallanAcknowledgement";
 // import EditChallan from "../employee/EditChallan/index";
-// import NewChallan from "./NewChallan";
+
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -51,10 +55,10 @@ const EmployeeApp = ({ path, url, userType }) => {
   const EmployeeChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEmployeeChallan");
   const MCollectAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MCollectAcknowledgement");
   const EditChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEditChallan");
-  const NewChallan = Digit?.ComponentRegistryService?.getComponent("MCollectNewChallan");
-  const SearchReceiptPage = Digit?.ComponentRegistryService?.getComponent("SearchReceipt");
-  const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("SearchChallan");
-  const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
+  const NewChallan = Digit?.ComponentRegistryService?.getComponent("MCollectNewChallanPage");
+  const SearchReceiptPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchReceipt");
+  const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchChallan");
+  const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchBill");
   const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
 
   return (

@@ -13,7 +13,6 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   let validation = {};
   const history = useHistory();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -22,6 +21,7 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
 
   const [mobileNumber, setMobileNumber] = useState(formData?.mobileNumber || "");
   const [challanNo, setchallanNumber] = useState(formData?.challanNo || "");
+  console.log("challanNo", challanNo);
   const [Servicecateogry, setServicecateogry] = useState(formData?.Servicecateogry || "");
   const [city, setcity] = useState(formData?.city || "");
   const allCities = Digit.Hooks.mcollect.usemcollectTenants()?.sort((a, b) => a?.i18nKey?.localeCompare?.(b?.i18nKey));

@@ -91,7 +91,9 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
-  console.log("menuList2",menuList2,zonesOptions, buildingHeightData?.BPA?.BuildingHeight?.[0]?.value)
+  const { occupancyTypes, subOccupancyTypes, value: heightLimit} = buildingHeightData?.BPA?.BuildingHeight?.find(val => val.name === "SELF_CERTIFICATION") || {};
+  const isSelfCertificationCondition = (occupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code)) && (subOccupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code)) && (data?.planDetail?.blocks?.[0]?.building?.buildingHeight < heightLimit);
+  console.log("menuList2",currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding) //buildingHeightData?.BPA?.BuildingHeight?.[0]?.value
 
 console.log("sessionStorageData",currentStepData);
 
@@ -285,17 +287,34 @@ console.log("sessionStorageData",currentStepData);
   }, [isClubbedPlot, currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot]);
   
   useEffect(() => {
+    if (buildingHeightData?.BPA?.BuildingHeight?.[0]?.value) {
+      if (isSelfCertificationCondition) {
         if (typeof isSelfCertification === "boolean") {
           const plan = common.find((item) => item.value === isSelfCertification);
           if (plan) setIsSelfCertification(plan);
         } else if (isSelfCertification === null) {
           if (currentStepData?.createdResponse?.additionalDetails?.isSelfCertification) {
             setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
-          }else{
+          } else {
             setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
           }
         }
-  }, [isSelfCertification, currentStepData?.createdResponse?.additionalDetails?.isSelfCertification]);
+      } else {
+        if (typeof isSelfCertification === "boolean") {
+          const plan = common.find((item) => item.value === isSelfCertification);
+          if (plan) setIsSelfCertification(plan);
+        } else if (isSelfCertification === null) {
+          if (currentStepData?.createdResponse?.additionalDetails?.isSelfCertification) {
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          } else {
+            setIsSelfCertification(currentStepData?.createdResponse?.additionalDetails?.isSelfCertification);
+          }
+        } else if (!isSelfCertification?.code) {
+          setIsSelfCertification(common?.[1])
+        }
+      }
+    }
+  }, [isSelfCertification, currentStepData?.createdResponse?.additionalDetails?.isSelfCertification, buildingHeightData]);
 
   // useEffect(() => {
   //   const userInfoString = window.localStorage.getItem("user-info");
@@ -414,9 +433,9 @@ useEffect(() => {
       newErrors.registrationDetails = t("BPA_REGISTRATION_DETAILS_REQUIRED");
     }
 
-    // if (!isSelfCertification?.code && currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A")) {
-    //   newErrors.isSelfCertification = t("BPA_IS_SELF_CERTIFICATION_REQUIRED_MESSAGE");
-    // }
+    if (!isSelfCertification?.code && currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A")) {
+      newErrors.isSelfCertification = t("BPA_IS_SELF_CERTIFICATION_REQUIRED_MESSAGE");
+    }
 
     if(!isPropertyAvailable?.code){
       newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
@@ -592,7 +611,7 @@ useEffect(() => {
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       isClubbedPlot: isClubbedPlot?.value,
       isPropertyAvailable: isPropertyAvailable?.value,
-      isSelfCertification: customSelfcertificationRequired,
+      isSelfCertification: isSelfCertification?.value,
       categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
@@ -636,7 +655,7 @@ useEffect(() => {
       farDetails,
       isClubbedPlot: isClubbedPlot?.value,
       isPropertyAvailable: isPropertyAvailable?.value,
-      isSelfCertification: customSelfcertificationRequired,
+      isSelfCertification: isSelfCertification?.value,
       categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
@@ -750,7 +769,7 @@ useEffect(() => {
 
   const onSkip = () => onSelect();
 
-  if (apiLoading || LicenseDataLoading || isLoading2 || edcrLoading) {
+  if (apiLoading || LicenseDataLoading || isLoading2 || edcrLoading || isBuildingHeightLoading) {
     return <Loader />;
   }
 
@@ -851,7 +870,7 @@ useEffect(() => {
             <CardLabelError>{errors["isClubbedPlot"]}</CardLabelError>
           )}
           
-          {/* {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code?.includes("A") &&
+          {occupancyTypes.includes(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code) &&
             <React.Fragment>
               <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
               <Dropdown
@@ -861,13 +880,13 @@ useEffect(() => {
                 option={common}
                 optionKey="i18nKey"
                 t={t}
-                disable={currentStepData?.createdResponse?.applicationNo}
+                disable={!isSelfCertificationCondition || currentStepData?.createdResponse?.applicationNo}
               />
             </React.Fragment>
           }
           {errors["isSelfCertification"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
-          )} */}
+          )}
             
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}
           {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}

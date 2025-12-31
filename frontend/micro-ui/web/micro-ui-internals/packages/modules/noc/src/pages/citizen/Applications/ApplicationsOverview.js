@@ -96,7 +96,7 @@ const CitizenApplicationOverview = () => {
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-
+  const [loading, setLoading] = useState(false);
   let user = Digit.UserService.getUser();
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -153,18 +153,17 @@ const CitizenApplicationOverview = () => {
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
     const application = applicationDetails?.Noc?.[0];
     try {
+      setLoading(true);
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );
-
-      let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );       
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
       console.error("Sanction Letter download error:", error);
-    }
+    }finally { setLoading(false); }
     
   }
 
@@ -346,6 +345,7 @@ const CitizenApplicationOverview = () => {
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+        {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"

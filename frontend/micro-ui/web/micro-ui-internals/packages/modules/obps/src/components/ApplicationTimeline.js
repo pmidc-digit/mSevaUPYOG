@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ActionLinks, CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader, SubmitBar, LinkButton } from "@mseva/digit-ui-react-components";
 import BPACaption from "../pages/citizen/BpaApplicationDetail/BPACaption";
 import ApplicationTimelineTemplate from "../../../templates/ApplicationDetails/components/ApplicationTimeline"
+import NewApplicationTimeline from "../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const ApplicationTimeline = ({ id, tenantId }) => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
   if (isLoading) {
     return <Loader />;
   }
+  console.log("workflowDetails", data)
 
   function OpenImage(imageSource, index,thumbnailsToShow){
     window.open(thumbnailsToShow?.fullImage?.[0],"_blank");
@@ -72,7 +74,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
     }
   };
 
-  return <ApplicationTimelineTemplate workflowDetails={data} t={t} />
+  return <NewApplicationTimeline workflowDetails={data} t={t} />
 
   // return (
   //   <React.Fragment>

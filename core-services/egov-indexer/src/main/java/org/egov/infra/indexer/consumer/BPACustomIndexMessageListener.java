@@ -36,6 +36,10 @@ public class BPACustomIndexMessageListener implements MessageListener<String, St
     @Autowired
     private DLQHandler dlqHandler;
 
+    @Value("${egov.indexer.bpa.create.topic.name}")
+    private String bpaCreateTopic;
+
+
     @Override
     /**
      * Messages listener which acts as consumer. This message listener is injected
@@ -46,6 +50,9 @@ public class BPACustomIndexMessageListener implements MessageListener<String, St
     public void onMessage(ConsumerRecord<String, String> data) {
         ObjectMapper mapper = indexerUtils.getObjectMapperWithNull();
         try {
+            if(data.topic().equalsIgnoreCase(bpaCreateTopic)){
+                Thread.sleep(2000);
+            }
             BPARequest bpaRequest = mapper.readValue(data.value(), BPARequest.class);
             EnrichedBPARequest enrichedBPARequest = bpaCustomDecorator.transformData(bpaRequest);
             indexerService.esIndexer(data.topic(), mapper.writeValueAsString(enrichedBPARequest));

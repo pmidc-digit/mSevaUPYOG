@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-const { forwardRef, useRef, useImperativeHandle } = React;
 import {
   BreakLine,
   Card,
@@ -16,9 +15,9 @@ import {
 } from "@mseva/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
+const { forwardRef, useRef, useImperativeHandle } = React;
 
 export const FormComposer = forwardRef((props, ref) => {
-
   //TODO: @naveen @vamshi please migrate to HOC/FormComposer
   let setFormData = props.setFormData;
   const { register, handleSubmit, errors, setValue } = useForm();
@@ -104,8 +103,10 @@ export const FormComposer = forwardRef((props, ref) => {
                   ) : (
                     <div className="field">{fieldSelector(field.type, field.populators)}</div>
                   )}
-                   {props.errors[field.populators.name] && (field.populators?.validate ? errors[field.populators.validate] : true) && (
-                    <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{field.populators.error}</CardLabelError>
+                  {props.errors[field.populators.name] && (field.populators?.validate ? errors[field.populators.validate] : true) && (
+                    <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                      {field.populators.error}
+                    </CardLabelError>
                   )}
                 </React.Fragment>
               );

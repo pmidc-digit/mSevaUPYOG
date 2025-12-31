@@ -81,6 +81,13 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.["baseRent"]) || "-",
     },
     {
+      Header: t("CS_CREATED_DATE"),
+      Cell: ({ row }) => {
+        return GetCell(convertEpochToDate(row.original?.searchData?.auditDetails?.["createdTime"]));
+      },
+      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.searchData?.auditDetails?.["createdTime"])),
+    },
+    {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
       Cell: ({ row }) => {
         return GetCell(t(`${row.original?.searchData?.["status"]}`));

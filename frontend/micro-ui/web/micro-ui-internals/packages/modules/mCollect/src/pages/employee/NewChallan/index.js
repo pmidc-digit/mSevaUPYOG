@@ -65,7 +65,7 @@ const NewChallan = ({ ChallanData }) => {
     isEdit = true;
   }
 
-  console.log("here", ChallanData);
+  console.log("here1", ChallanData);
 
   const [canSubmit, setSubmitValve] = useState(false);
   const defaultValues = {};
@@ -81,6 +81,7 @@ const NewChallan = ({ ChallanData }) => {
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading } = Digit.Hooks.mcollect.useMcollectFormConfig.getFormConfig(stateId, {});
+  console.log("newConfig", newConfig);
   let lastModTime = ChallanData ? ChallanData[0].auditDetails.lastModifiedTime : null;
 
   const { data: fetchBillData } = ChallanData

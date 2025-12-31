@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import cloneDeep from "lodash/cloneDeep";
 import { useParams } from "react-router-dom";
 import { Header, MultiLink, LinkButton } from "@mseva/digit-ui-react-components";
@@ -30,7 +31,7 @@ const ApplicationDetails = () => {
   const [viewTimeline, setViewTimeline] = useState(false);
   const [latestRenewalYearofAPP, setlatestRenewalYearofAPP] = useState("");
   sessionStorage.setItem("applicationNumber", applicationNumber);
-  const { renewalPending: renewalPending } = Digit.Hooks.useQueryParams();
+  const { renewalPending } = Digit.Hooks.useQueryParams();
 
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.tl.useApplicationDetail(t, tenantId, applicationNumber);
 
@@ -471,7 +472,9 @@ const ApplicationDetails = () => {
         setShowToast={setShowToast}
         closeToast={closeToast}
         timelineStatusPrefix={"WF_NEWTL_"}
+        showTimeLine={false}
       />
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
     </div>
   );
 };

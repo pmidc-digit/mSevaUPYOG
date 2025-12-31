@@ -5,7 +5,7 @@ import { useHistory, useParams, Link } from "react-router-dom";
 import ADSDocument from "../../pageComponents/ADSDocument";
 import { pdfDownloadLink, transformBookingResponseToBookingData, transformAdsData } from "../../utils";
 import get from "lodash/get";
-import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import getAcknowledgement from "../../getAcknowledgment";
 import ADSCartDetails from "../../pageComponents/ADSCartDetails";
 /*
@@ -55,7 +55,7 @@ const ADSApplicationDetails = () => {
     filters: { bookingNo: acknowledgementIds },
   });
   const new_data = transformBookingResponseToBookingData(adsData);
-  console.log('new_data my here', new_data)
+  console.log("new_data my here", new_data);
 
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
@@ -372,7 +372,7 @@ const ADSApplicationDetails = () => {
               <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
             )}
           </StatusTable>
-          <ADSWFApplicationTimeline application={application} id={ads_details?.bookingNo} userType={"citizen"} />
+          <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         </Card>
 
         {showToast && <Toast error={showToast.key === "error"} label={actionError || error} onClose={() => setShowToast(null)} isDleteBtn={true} />}

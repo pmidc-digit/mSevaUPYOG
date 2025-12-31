@@ -267,7 +267,7 @@ const RALApplicationDetails = () => {
         propertyId: data?.propertyId,
         previousApplicationNumber: data?.applicationNumber,
         OwnerInfo: sanitizedOwners,
-        tradeLicenseNumber: data?.tradeLicenseNumber ? data?.tradeLicenseNumber : null,
+        tradeLicenseNumber: data?.tradeLicenseNumber ? data?.tradeLicenseNumber : "",
         registrationNumber: data?.registrationNumber,
         additionalDetails: data?.additionalDetails,
         startDate: newStart.getTime(),

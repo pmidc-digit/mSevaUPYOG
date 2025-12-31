@@ -5,7 +5,7 @@ RUN yarn add @mseva/digit-ui-libraries@1.1.49
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
-RUN yarn add @mseva/digit-ui-module-mcollect@1.0.8
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.12
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.18
 RUN yarn add @mseva/digit-ui-module-noc@1.0.33
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.30

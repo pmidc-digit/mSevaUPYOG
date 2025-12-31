@@ -19,9 +19,7 @@ import { useParams, useHistory } from "react-router-dom";
 import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { Loader } from "../../../components/Loader";
-import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
-
-
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const availableOptions = [
   { code: "yes", name: "Yes" },
@@ -81,7 +79,6 @@ const ApplicationOverview = () => {
     moduleCode: "ndc-services",
     role: "EMPLOYEE",
   });
-
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -559,7 +556,7 @@ const ApplicationOverview = () => {
           )}
         </div>
       </Card>
-       <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (
         <ActionBar>

@@ -136,7 +136,6 @@
 @import "./modules/rentAndLease/index.scss";
 @import "./components/SurveyModal.scss";
 
-
 @import "./modules/adv/index.scss";
 .display-none {
   display: none;
@@ -477,6 +476,11 @@
 
 .text-mobile-input-width {
   max-width: 500px;
+}
+
+.employeeCard,
+.text-mobile-input-width {
+  max-width: 100%;
 }
 
 .custom-time-picker {

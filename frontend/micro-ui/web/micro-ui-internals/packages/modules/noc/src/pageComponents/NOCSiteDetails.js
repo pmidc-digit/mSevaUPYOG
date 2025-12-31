@@ -112,10 +112,10 @@ const basementAreaValues= watch("basementArea");
   const [cities, setcitiesopetions] = useState(allCities);
 
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
-  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
+ // const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const [selectedCity, setSelectedCity]=useState(currentStepData?.siteDetails?.district || null);
-  const [localities, setLocalities] = useState([]);
+ // const [localities, setLocalities] = useState([]);
 
   // const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
   //   selectedCity?.code,
@@ -131,13 +131,6 @@ const basementAreaValues= watch("basementArea");
   //   setLocalities(fetchedLocalities);
   // } 
   // }, [fetchedLocalities]);\
-
-  useEffect(() => {
-      if (!isZoneListLoading && zoneOptions.length > 0) {
-       // console.log("ZoneOptions ==>", zoneOptions);
-        setLocalities(zoneOptions);
-      }
-   }, [zoneOptions]);
 
 
  //logic for default selection of district
@@ -754,6 +747,7 @@ const basementAreaValues= watch("basementArea");
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ZONE_LABEL")}`}*</CardLabel>
+            {!isZoneListLoading && (
               <Controller
                 control={control}
                 name={"zone"}
@@ -765,11 +759,12 @@ const basementAreaValues= watch("basementArea");
                   className="form-field" 
                   select={props.onChange} 
                   selected={props.value} 
-                  option={localities} 
+                  option={zoneList?.tenant?.zoneMaster?.[0]?.zones} 
                   optionKey="code"
                   t={t} />
                 )}
               />
+            )}
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
 

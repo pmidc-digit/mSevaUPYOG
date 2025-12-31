@@ -10,7 +10,7 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const stateId = Digit.ULBService.getStateId();
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["CLUDocuments"]);
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["Documents"]);
 
   const currentStepData = useSelector(function (state) {
     return state.obps.OBPSFormReducer.formData && state.obps.OBPSFormReducer.formData[config?.key]
@@ -46,7 +46,7 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function validation(documents) {
     if (!isLoading) {
-      const cluDocumentsType = data?.BPA?.CLUDocuments || [];
+      const cluDocumentsType = data?.CLU?.Documents || [];
       const documentsData = documents?.documents?.documents || [];
 
       // Step 1: Extract required document codes from layoutDocumentsType

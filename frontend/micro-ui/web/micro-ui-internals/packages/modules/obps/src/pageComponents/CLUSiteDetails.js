@@ -109,10 +109,10 @@ const CLUSiteDetails = (_props) => {
   const [cities, setcitiesopetions] = useState(allCities);
 
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
-  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
+  // const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
-  const [localities, setLocalities] = useState([]);
+  // const [localities, setLocalities] = useState([]);
 
   // const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
   //   selectedCity?.code,
@@ -129,12 +129,6 @@ const CLUSiteDetails = (_props) => {
   //   }
   // }, [fetchedLocalities]);
 
-  useEffect(() => {
-    if (!isZoneListLoading && zoneOptions.length > 0) {
-      console.log("ZoneOptions ==>", zoneOptions);
-      setLocalities(zoneOptions);
-    }
-  }, [zoneOptions]);
 
   //logic for default selection of district
    useEffect(() => {
@@ -173,9 +167,7 @@ const CLUSiteDetails = (_props) => {
 
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
 
-  const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "CLUAppliedCategory" }]);
-
-  const appliedCluCategoryOptions = mdmsData?.BPA?.CLUAppliedCategory || [];
+  const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "CLU", [{ name: "AppliedCategory" }]);
 
 
   return (
@@ -642,7 +634,7 @@ const CLUSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}*</CardLabel>
-            <Controller
+            <Controller 
               control={control}
               name={"district"}
               rules={{
@@ -666,7 +658,7 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+         {!isZoneListLoading &&  (<LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}*</CardLabel>
             <Controller
               control={control}
@@ -675,10 +667,11 @@ const CLUSiteDetails = (_props) => {
                 required: t("REQUIRED_FIELD"),
               }}
               render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="code" t={t}/>
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={zoneList?.tenant?.zoneMaster?.[0]?.zones} optionKey="code" t={t}/>
               )}
             />
           </LabelFieldPair>
+           )}
           <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
@@ -828,7 +821,7 @@ const CLUSiteDetails = (_props) => {
                       props.onChange(e);
                     }}
                     selected={props.value}
-                    option={appliedCluCategoryOptions}
+                    option={mdmsData?.CLU?.AppliedCategory}
                     optionKey="name"
                     t={t}
                   />

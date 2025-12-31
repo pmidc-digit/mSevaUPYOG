@@ -75,7 +75,7 @@ public class BPACustomDecorator {
 		List<EnrichedUnit> enrichedUnitList = new ArrayList<>();
 		Double plotAreaApproved = null;
 		Integer plotArea = null;
-
+		
 		//fetching plotArea after approval based on approval number
 		if (bpaRequest.getBPA().getStatus().equals("APPROVED")) {
 			log.info("INSIDE APPROVED ");
@@ -206,7 +206,7 @@ public class BPACustomDecorator {
 		}
 
 		String jsonString = new JSONObject(responseMap).toString();
-		log.error("Exception while fetching edcr number from bpa response "+jsonString);
+//		log.error("Exception while fetching edcr number from bpa response "+jsonString);
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
 		//edcrNumber = context.read("BPA[0].edcrNumber");
 		 edcrNumber = context.read("$.BPA[0].edcrNumber");

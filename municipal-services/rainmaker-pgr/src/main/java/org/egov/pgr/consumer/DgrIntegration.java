@@ -80,6 +80,7 @@ public class DgrIntegration {
                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         String tokenResponse = generateLoginToken();
+        log.info("Generated Token: {}", tokenResponse);
         if (tokenResponse == null || tokenResponse.trim().isEmpty() 
                 || "Invalid credentials!".equalsIgnoreCase(tokenResponse.trim())) {            log.error("Failed to generate token. Aborting DGR grievance creation.");
             return;
@@ -144,7 +145,7 @@ public class DgrIntegration {
                     restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
             log.info("Token API response status: {}", response.getStatusCode());
-            log.debug("Token API response body: {}", response.getBody());
+            log.info("Token API response body: {}", response.getBody());
 
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> json = mapper.readValue(response.getBody(), Map.class);

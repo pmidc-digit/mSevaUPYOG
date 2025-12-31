@@ -1,5 +1,5 @@
 import React from "react";
-import { ActionBar, CloseSvg } from "@mseva/digit-ui-react-components";
+import { ActionBar, CloseSvg, FilterIcon, RefreshIcon } from "@mseva/digit-ui-react-components";
 import { ApplyFilterBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import Status from "./Status";
@@ -22,21 +22,21 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
     <React.Fragment>
       <div className="filter">
         <div className="filter-card">
-          <div className="heading">
-            <div className="filter-label">{t("COMMON_TABLE_FILTERS")}:</div>
-            <div className="clearAll" onClick={clearAll}>
-              {t("ES_COMMON_CLEAR_ALL")}
+          <div className="heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="filter-label" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <FilterIcon />
+              {t("ES_COMMON_FILTER_BY").toUpperCase()}:
             </div>
-            {props.type === "desktop" && (
-              <span className="clear-search" onClick={clearAll}>
-                {t("ES_COMMON_CLEAR_ALL")}
-              </span>
-            )}
             {props.type === "mobile" && (
-              <span onClick={props.onClose}>
+              <span onClick={props.onClose} style={{ cursor: "pointer" }}>
                 <CloseSvg />
               </span>
             )}
+          </div>
+          <div className="clearAll" onClick={clearAll} style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+            <div style={{ border: "1px solid #e8e8e8", padding: "4px", borderRadius: "4px", cursor: "pointer" }}>
+              <RefreshIcon />
+            </div>
           </div>
           <div>
             <Status

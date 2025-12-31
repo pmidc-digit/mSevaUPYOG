@@ -60,6 +60,10 @@ const MobileInbox = ({
       mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.["baseRent"] || "-"),
     },
     {
+      Header: t("CS_CREATED_DATE"),
+      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.searchData?.auditDetails?.["createdTime"])),
+    },
+    {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
       mobileCell: (original) => GetMobCell(t(original?.searchData?.["status"])),
     },

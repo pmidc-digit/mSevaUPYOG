@@ -21,6 +21,7 @@ import { ChallanData, getLocationName } from "../../utils/index";
 import NDCModal from "../../pageComponents/NDCModal";
 import CHBDocument from "../../components/ChallanDocument";
 import NDCDocumentTimline from "../../components/NDCDocument";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -392,25 +393,7 @@ const ChallanApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-        {workflowDetails?.data?.timeline && (
-          <Card style={{ marginTop: "20px" }}>
-            <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-            {workflowDetails?.data?.timeline.length === 1 ? (
-              <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-            ) : (
-              <ConnectingCheckPoints>
-                {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                  <CheckPoint
-                    keyValue={index}
-                    isCompleted={index === 0}
-                    label={t(checkpoint.status)}
-                    customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                  />
-                ))}
-              </ConnectingCheckPoints>
-            )}
-          </Card>
-        )}
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (

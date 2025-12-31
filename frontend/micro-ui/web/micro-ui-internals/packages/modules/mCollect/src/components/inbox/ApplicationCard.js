@@ -8,7 +8,7 @@ import SortBy from "./SortBy";
 export const ApplicationCard = ({
   t,
   data,
-  defaultSearchParams={},
+  defaultSearchParams = {},
   onFilterChange,
   onSearch,
   onSort,
@@ -62,7 +62,13 @@ export const ApplicationCard = ({
       </Card>
     );
   } else if (data && data?.length > 0) {
-    result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={linkPrefix ? linkPrefix : "/digit-ui/employee/mcollect/challansearch/"} />;
+    result = (
+      <DetailsCard
+        data={data}
+        serviceRequestIdKey={serviceRequestIdKey}
+        linkPrefix={linkPrefix ? linkPrefix : "/digit-ui/employee/mcollect/challansearch/"}
+      />
+    );
   }
 
   return (
@@ -70,51 +76,42 @@ export const ApplicationCard = ({
       <div className="searchBox">
         {onSearch && (
           <SearchAction
-            text="SEARCH"
+            text={t("SEARCH")}
             handleActionClick={() => {
               setType("SEARCH");
-              setSearchFilterParams({
-                businessService: [],
-                status: []
-              });
+              setSearchFilterParams(searchParams);
               setPopup(true);
             }}
           />
         )}
         {!isSearch && onFilterChange && (
           <FilterAction
-            text="FILTER"
+            text={t("FILTER")}
             handleActionClick={() => {
               setType("FILTER");
-              setSearchFilterParams({
-                businessService: [],
-                status: []
-              });
+              setSearchFilterParams(searchParams);
               setPopup(true);
             }}
           />
         )}
-        {/* <FilterAction
-          text="SORT"
-          handleActionClick={() => {
-            setType("SORT");
-            setPopup(true);
-          }}
-        /> */}
       </div>
       {result}
       {popup && (
         <PopUp>
           {type === "FILTER" && (
             <div className="popup-module">
-              {<FilterComp onFilterChange={onSearchFilter} onRefresh={onFilterChange} Close={handlePopupClose} type="mobile" searchParams={searchFilterParams} defaultSearchParams={defaultSearchParams} />}
+              {
+                <FilterComp
+                  onFilterChange={onSearchFilter}
+                  onRefresh={onFilterChange}
+                  onClose={handlePopupClose}
+                  type="mobile"
+                  searchParams={searchFilterParams}
+                  defaultSearchParams={defaultSearchParams}
+                />
+              }
             </div>
           )}
-          {/* {type === "SORT" && (
-            <div className="popup-module">
-              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} type="mobile" onSort={onSort} />}
-            </div>
-          )} */}
           {type === "SEARCH" && (
             <div className="popup-module">
               <SearchApplication

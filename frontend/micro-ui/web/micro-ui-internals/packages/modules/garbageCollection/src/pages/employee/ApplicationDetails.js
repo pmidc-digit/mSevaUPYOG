@@ -22,7 +22,7 @@ import { Loader } from "../../components/Loader";
 import { ChallanData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
 import NDCModal from "../../pageComponents/NDCModal";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 // const getTimelineCaptions = (checkpoint, index, arr, t) => {
 //   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -334,7 +334,7 @@ const ChallanApplicationDetails = () => {
             )}
           </Card>
         )} */}
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {getChallanData?.applicationStatus != "INITIATED" && actions && (
           <ActionBar>

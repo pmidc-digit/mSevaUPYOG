@@ -27,7 +27,7 @@ import { pdfDownloadLink,formatDate } from "../../utils";
 import get from "lodash/get";
 import { size } from "lodash";
 import { doc } from "prettier";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -378,7 +378,7 @@ const CHBApplicationDetails = () => {
           </StatusTable>
         </Card>
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
     </React.Fragment>
   );

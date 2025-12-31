@@ -206,7 +206,7 @@ public class BPACustomDecorator {
 		}
 
 		String jsonString = new JSONObject(responseMap).toString();
-		log.error("Exception while fetching edcr number from bpa response "+jsonString);
+//		log.error("Exception while fetching edcr number from bpa response "+jsonString);
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
 		//edcrNumber = context.read("BPA[0].edcrNumber");
 		 edcrNumber = context.read("$.BPA[0].edcrNumber");

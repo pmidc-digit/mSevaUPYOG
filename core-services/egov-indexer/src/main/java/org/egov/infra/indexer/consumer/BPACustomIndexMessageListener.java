@@ -46,6 +46,9 @@ public class BPACustomIndexMessageListener implements MessageListener<String, St
     public void onMessage(ConsumerRecord<String, String> data) {
         ObjectMapper mapper = indexerUtils.getObjectMapperWithNull();
         try {
+            if(data.topic().equalsIgnoreCase("save-bpa-buildingplan")){
+                Thread.sleep(2000);
+            }
             BPARequest bpaRequest = mapper.readValue(data.value(), BPARequest.class);
             EnrichedBPARequest enrichedBPARequest = bpaCustomDecorator.transformData(bpaRequest);
             indexerService.esIndexer(data.topic(), mapper.writeValueAsString(enrichedBPARequest));

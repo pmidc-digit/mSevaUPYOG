@@ -64,14 +64,16 @@ public class DemandService {
 		CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
 		User owner = bookingRequest.getHallsBookingApplication().getOwners().get(0);
 
+		// CalculationService now applies discount BEFORE tax calculation
+		// The demandDetails returned already have taxes calculated on post-discount amount
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest);
 
-		// --- Apply discount from additionalDetails (if provided) ---
+		// --- Add discount as line item for bill transparency ---
 		try {
 			Object addDetails = bookingRequest.getHallsBookingApplication().getAdditionalDetails();
 			java.math.BigDecimal discountAmount = java.math.BigDecimal.ZERO;
 			if (addDetails != null) {
-//				 Authorization: only EMPLOYEE users can set discount in additionalDetails
+				// Authorization: only EMPLOYEE users can set discount in additionalDetails
 				if (bookingRequest.getRequestInfo() == null || bookingRequest.getRequestInfo().getUserInfo() == null
 						|| StringUtils.equalsIgnoreCase(bookingRequest.getRequestInfo().getUserInfo().getType(),
                         CommunityHallBookingConstants.CITIZEN)) {
@@ -90,18 +92,8 @@ public class DemandService {
 			}
 
 			if (discountAmount != null && discountAmount.compareTo(java.math.BigDecimal.ZERO) > 0) {
-				// Sum current demand details to know total payable
-				java.math.BigDecimal totalAmount = demandDetails.stream()
-						.map(DemandDetail::getTaxAmount)
-						.reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-
-				if (discountAmount.compareTo(totalAmount) > 0) {
-					// Clamp discount to total amount to avoid negative payable
-					log.warn("Discount {} exceeds total {} for booking {}, clamping to total", discountAmount, totalAmount, bookingRequest.getHallsBookingApplication().getBookingId());
-					discountAmount = totalAmount;
-				}
-
-				// Create negative demand detail for discount. Ensure tax head CHB_DISCOUNT exists in MDMS.
+				// Add discount as negative line item for transparency
+				// Note: Tax was already calculated on (amount - discount) in CalculationService
 				DemandDetail discountDetail = DemandDetail.builder()
 						.taxAmount(discountAmount.negate().setScale(2, RoundingMode.FLOOR))
 						.taxHeadMasterCode("CHB_DISCOUNT")
@@ -109,7 +101,7 @@ public class DemandService {
 						.build();
 
 				demandDetails.add(discountDetail);
-				log.info("Applied discount {} for booking {}", discountAmount, bookingRequest.getHallsBookingApplication().getBookingId());
+				log.info("Added discount line item {} for booking {}", discountAmount, bookingRequest.getHallsBookingApplication().getBookingId());
 			}
 		} catch (Exception ex) {
 			log.warn("Unable to apply discount from additionalDetails for booking {} : {}", bookingRequest.getHallsBookingApplication().getBookingId(), ex.getMessage());

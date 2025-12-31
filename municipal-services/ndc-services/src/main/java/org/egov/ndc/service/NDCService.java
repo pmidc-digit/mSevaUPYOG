@@ -246,8 +246,9 @@ public class NDCService {
 			if (userDetailResponse.getUser().isEmpty()) {
 				return Collections.emptyList();
 			}
-			criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
-
+			else {
+				criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
+			}
 		}
 		List<Application> applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
 		SearchCriteria searchCriteria = new SearchCriteria();

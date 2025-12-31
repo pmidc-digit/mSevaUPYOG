@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -72,14 +73,67 @@ public class NdcQueryBuilder {
 			query.append(" a.active = ?");
 			preparedStmtList.add(criteria.getActive());
 		}
-		if (criteria.getOwnerIds() != null && !criteria.getOwnerIds().isEmpty()) {
+
+		Set<String> ownerIds = criteria.getOwnerIds();
+		String createdBy = criteria.getCreatedBy();
+
+		boolean hasOwnerIds  = (ownerIds != null && !ownerIds.isEmpty());
+		boolean hasCreatedBy = (createdBy != null && !createdBy.isEmpty());
+
+		if ((hasOwnerIds || hasCreatedBy) && criteria.getApplicationNo()==null){
 			addClauseIfRequired(query, whereAdded);
 			whereAdded = true;
-			query.append(" a.uuid IN (SELECT ndcapplicationuuid FROM eg_ndc_owner WHERE uuid IN (");
-			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
-			query.append(placeholders).append("))");
-			preparedStmtList.addAll(criteria.getOwnerIds());
+			query.append(" ( ");
+
+			boolean wroteOne = false;
+
+			if (hasOwnerIds) {
+				query.append(" ( ");
+				query.append(" a.uuid IN (SELECT ndcapplicationuuid FROM eg_ndc_owner WHERE uuid IN (");
+				String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
+				query.append(placeholders).append("))");
+				query.append(" ) ");
+				preparedStmtList.addAll(criteria.getOwnerIds());
+				wroteOne = true;
+			}
+
+			if (hasCreatedBy) {
+				if (wroteOne) query.append(" OR ");
+				query.append(" a.createdby = ? ");
+				preparedStmtList.add(createdBy);
+			}
+
+			query.append(" ) ");
+
+
+//			query.append(" a.uuid IN (SELECT ndcapplicationuuid FROM eg_ndc_owner WHERE uuid IN (");
+//			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
+//			query.append(placeholders).append("))");
+//			preparedStmtList.addAll(criteria.getOwnerIds());
 		}
+
+
+
+//		if ((hasOwnerIds || hasCreatedBy) && criteria.getApplicationNo()==null){
+//			addClauseIfRequired(query, whereAdded);
+//			query.append(" ( ");
+//
+//			boolean wroteOne = false;
+//
+//			if (hasOwnerIds) {
+//				query.append(" ndc.accountId IN (").append(createQuery(ownerIds)).append(") ");
+//				addToPreparedStatement(preparedStmtList, ownerIds);
+//				wroteOne = true;
+//			}
+//
+//			if (hasCreatedBy) {
+//				if (wroteOne) builder.append(" OR ");
+//				builder.append(" noc.createdby = ? ");
+//				preparedStmtList.add(createdBy);
+//			}
+//
+//			builder.append(" ) ");
+//		}
 
 		query.append(" ORDER BY a.lastmodifiedtime DESC");
 

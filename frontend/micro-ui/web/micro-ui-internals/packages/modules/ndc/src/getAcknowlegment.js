@@ -83,7 +83,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
   const dateOfApproval = add?.dateOfApproval || "NA";
-
+  const ownerNames = (application?.propertyOwnerNames || []).join(", ") || "NA";
   console.log(appData, "APPDATA");
 
   const readableCity = getReadableCity(appData?.tenantId);
@@ -99,8 +99,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: `${propertyType}\n`, bold: true },
 
   { text: "Property Address: ", bold: false },
-  { text: `${formattedAddress}\n`, bold: true },
-
+  { text: `${formattedAddress}`, bold: true }, { text: " Owned by: ", bold: false }, { text: `${ownerNames}\n`, bold: true },
   { text: "Applicant Name: ", bold: false },
   { text: `${applicantName}`, bold: true },
   { text: " (s/o, d/o) ", bold: false },

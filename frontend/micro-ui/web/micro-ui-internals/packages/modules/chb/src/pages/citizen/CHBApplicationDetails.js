@@ -196,10 +196,10 @@ const CHBApplicationDetails = () => {
       };
 
       let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-      
+      console.log('fileStoreId bef create', fileStoreId)
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
-        fileStoreId = response?.filestoreIds[0];
+        
         const updatedApplication = {
           ...data?.hallsBookingApplication[0],
           permissionLetterFilestoreId: response?.filestoreIds[0],
@@ -207,6 +207,8 @@ const CHBApplicationDetails = () => {
         await mutation.mutateAsync({
           hallsBookingApplication: updatedApplication,
         });
+        fileStoreId = response?.filestoreIds[0];
+        refetch()
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");

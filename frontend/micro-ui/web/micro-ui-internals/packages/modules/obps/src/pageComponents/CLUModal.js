@@ -207,6 +207,7 @@ const CLUModal = ({
           uploadedFile,
           setUploadedFile,
           businessService,
+          applicationData
         })
       );
     }

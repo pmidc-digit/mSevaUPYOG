@@ -505,7 +505,7 @@ const CLUEmployeeApplicationDetails = () => {
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"BPA"}`}
+              localeKeyPrefix={(applicationDetails?.Clu?.[0]?.applicationStatus === "DOCUMENTVERIFY_MTP/ME")  && (businessServiceCode === "clu_mco") ? "WF_EMPLOYEE_BPA_JC":`WF_EMPLOYEE_${"BPA"}`}
               options={actions}
               optionKey={"action"}
               t={t}

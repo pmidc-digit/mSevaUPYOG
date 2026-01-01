@@ -299,7 +299,7 @@ const getOwnerDetails = async (idx) => {
             </div>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div style={{ display: "flex" }} className="field">
                 <Controller
                   control={control}
@@ -334,7 +334,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -365,7 +365,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.ownerOrFirmName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -430,7 +430,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -464,7 +464,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.address?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -503,7 +503,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -529,7 +529,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.gender?.message || ""}</CardLabelError>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-              <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
+              <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 <CustomUploadFile
                   id={`passport-photo-${index}`}
@@ -548,7 +548,7 @@ const getOwnerDetails = async (idx) => {
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-              <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}*</CardLabel>
+              <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}<span className="requiredField">*</span></CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 <CustomUploadFile
                   id={`id-proof-${index}`}

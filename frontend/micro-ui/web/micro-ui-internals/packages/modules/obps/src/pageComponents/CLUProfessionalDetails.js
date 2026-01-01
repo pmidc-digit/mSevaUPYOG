@@ -83,7 +83,7 @@ const CLUProfessionalDetails = (_props) => {
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
 
       <LabelFieldPair>
-        <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}*</CardLabel>
+        <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -119,7 +119,7 @@ const CLUProfessionalDetails = (_props) => {
       <CardLabelError style={errorStyle}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -151,7 +151,7 @@ const CLUProfessionalDetails = (_props) => {
       <CardLabelError style={errorStyle}>{errors?.professionalEmailId?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -182,7 +182,7 @@ const CLUProfessionalDetails = (_props) => {
       <CardLabelError style={errorStyle}>{errors?.professionalRegId?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -213,7 +213,7 @@ const CLUProfessionalDetails = (_props) => {
       <CardLabelError style={errorStyle}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -233,7 +233,7 @@ const CLUProfessionalDetails = (_props) => {
       <CardLabelError style={errorStyle}>{errors?.professionalMobileNumber?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}

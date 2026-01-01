@@ -286,6 +286,7 @@ const CLUEmployeeApplicationDetails = () => {
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/obps/clu/inbox");
+            window.location.reload();
           }, 3000);
         }
       }

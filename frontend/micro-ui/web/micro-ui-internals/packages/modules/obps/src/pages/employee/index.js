@@ -23,10 +23,20 @@ const OBPSBreadCrumbs = ({ location }) => {
       content: t("ES_COMMON_OBPS_INBOX_LABEL"),
       show: location.pathname.includes("obps/inbox") ? true : false,
     },
-     {
+    {
       path: "/digit-ui/employee/layout/inbox",
       content: t("Layout Inbox"),
       show: location.pathname.includes("layout/inbox") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/obps/clu/inbox",
+      content: t("ES_COMMON_INBOX"),
+      show: (location.pathname.includes("clu/inbox") ||  location.pathname.includes("clu/application-overview/")) ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/obps/clu/application-overview/:id",
+      content: t("Application Overview"),
+      show: location.pathname.includes("clu/application-overview/") ? true : false,
     },
     {
       path: "/digit-ui/employee/obps/stakeholder-inbox",

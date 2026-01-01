@@ -357,7 +357,7 @@ function CLUSelectDocument({
       {getLoading && <Loader />}
         <LabelFieldPair>
           <CardLabel className="bpa-doc-required-label">
-            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"} 
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>} 
           </CardLabel>
 
       <div className="bpa-doc-required-field">

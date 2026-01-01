@@ -38,13 +38,19 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					String allotmentId = currentAllotment.getId();
 					if (currentAllotmentList.stream().noneMatch(d -> d.getId().equals(allotmentId))) {
 						currentAllotmentList.add(currentAllotment);
+						if (rs.getLong("applicantCount") == userList.size()) {
+							userList = new ArrayList<>();
+						}
+						if (rs.getLong("documentCount") == docList.size()) {
+							docList = new ArrayList<>();
+						}
 					}
 				}
 			}
-			if (userList.size()==0l||(userList.size() < rs.getLong("applicantCount")&&(userList.get(0).getAllotmentId().equals(rs.getString("onr_allotmentId"))))) {
+			if (userList.size() < rs.getLong("applicantCount")) {
 				userList.add(getOwnerInfo(rs));
 			}
-			if (docList.size()==0l||(docList.size() < rs.getLong("documentCount")&&(docList.get(0).getDocumentUid().equals(rs.getString("onr_allotmentId"))))) {
+			if (docList.size() < rs.getLong("documentCount")) {
 				docList.add(getDocuments(rs));
 			}
 //			if (userList.size() < rs.getLong("applicantCount")) {
@@ -85,6 +91,12 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.build();
 			if (currentAllotmentList.isEmpty()) {
 				currentAllotmentList.add(currentAllotment);
+				if (rs.getLong("applicantCount") == userList.size()) {
+					userList = new ArrayList<>();
+				}
+				if (rs.getLong("documentCount") == docList.size()) {
+					docList = new ArrayList<>();
+				}
 			}
 		}
 		return currentAllotmentList;

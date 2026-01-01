@@ -79,6 +79,7 @@ export const PayTwoTable = ({
                                                     ? `1 ${t("FILEUPLOADED")}`
                                                     : t("ES_NO_FILE_SELECTED_LABEL")
                                             }
+                                            uploadedFile={row.filestoreId}
                                             disabled={disable}
                                         />
                                     )}

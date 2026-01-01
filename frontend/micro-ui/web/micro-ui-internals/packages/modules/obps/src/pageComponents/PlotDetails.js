@@ -24,7 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions";
 import { PropertySearchLudhiana } from "./PropertySearchLudhiana";
 import { PropertySearchBathinda } from "./PropertySearchBathinda";
-import { oldscrutinyDetailsData } from "../utils";
+import { getBase64Img, oldscrutinyDetailsData } from "../utils";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -95,7 +95,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const isSelfCertificationCondition = (occupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code)) && (subOccupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code)) && (data?.planDetail?.blocks?.[0]?.building?.buildingHeight < heightLimit);
   console.log("menuList2",currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding) //buildingHeightData?.BPA?.BuildingHeight?.[0]?.value
 
-console.log("sessionStorageData",currentStepData);
+console.log("sessionStorageData",currentStepData, userDetails);
 
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
     
@@ -553,6 +553,7 @@ useEffect(() => {
     const stakeholderState = userDetails?.user[0]?.correspondenceState
     const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
+    const base64Signature = await getBase64Img(userDetails?.user[0]?.signature, state);
     const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid;
     const address = {
       ...currentStepData?.cpt?.details?.address,
@@ -616,7 +617,8 @@ useEffect(() => {
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
       subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
-      oldEDCR
+      oldEDCR,
+      signature: {base64Signature}
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -660,7 +662,8 @@ useEffect(() => {
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
       subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
-      oldEDCR
+      oldEDCR,
+      signature: {base64Signature}
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;

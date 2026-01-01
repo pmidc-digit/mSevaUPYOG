@@ -125,7 +125,7 @@ public class CommonQueryBuilder {
 		long limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), config.getMaxSearchLimit())
 				: config.getDefaultLimit();
 		long offset = criteria.getOffset() != null ? criteria.getOffset() : config.getDefaultOffset();
-		subQuery.append(" LIMIT ? OFFSET ? ");
+		subQuery.append(" ORDER BY al.created_time DESC LIMIT ? OFFSET ? ");
 		subQueryParams.add(limit);
 		subQueryParams.add(offset);
 

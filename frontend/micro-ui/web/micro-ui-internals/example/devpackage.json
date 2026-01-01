@@ -12,7 +12,7 @@
     "microbundle-crl": "^0.13.11",
     "@mseva/digit-ui-libraries": "1.1.49",
     "@mseva/digit-ui-module-common": "1.1.69",
-    "@mseva/digit-ui-module-engagement": "1.1.30",
+    "@mseva/digit-ui-module-engagement": "1.1.31",
     "@mseva/digit-ui-module-fsm": "1.0.6",
     "@mseva/digit-ui-module-mcollect": "1.0.11",
     "@mseva/digit-ui-module-noc": "1.0.33",

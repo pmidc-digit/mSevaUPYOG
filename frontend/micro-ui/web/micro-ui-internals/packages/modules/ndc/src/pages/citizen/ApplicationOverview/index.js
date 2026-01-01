@@ -29,7 +29,6 @@ import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 
-
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -111,10 +110,10 @@ const CitizenApplicationOverview = () => {
           item?.businessService === "WS"
             ? "NDC_WATER_SERVICE_CONNECTION"
             : item?.businessService === "SW"
-              ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-              : item?.businessService === "PT"
-                ? "NDC_PROPERTY_TAX"
-                : item?.businessService,
+            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+            : item?.businessService === "PT"
+            ? "NDC_PROPERTY_TAX"
+            : item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
@@ -184,7 +183,15 @@ const CitizenApplicationOverview = () => {
     return <Loader />;
   }
 
-  console.log("applicationDetails", applicationDetails);
+  console.log("propertyDetailsFetch", propertyDetailsFetch);
+
+  console.log("displayData?.applicantData", displayData);
+
+  const ownerForName = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+  const ownerNames = ownerForName
+    ?.map((owner) => owner?.name)
+    ?.filter(Boolean)
+    ?.join(", ");
 
   return (
     <div className={"employee-main-application-details"}>
@@ -196,35 +203,38 @@ const CitizenApplicationOverview = () => {
         )}
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
           applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
-            <ActionBar>
-              <SubmitBar
-                label={t("COMMON_EDIT")}
-                onSubmit={() => {
-                  const id = applicationDetails?.Applications?.[0]?.applicationNo;
-                  history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
-                }}
-              />
-            </ActionBar>
-          )}
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = applicationDetails?.Applications?.[0]?.applicationNo;
+                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+              }}
+            />
+          </ActionBar>
+        )}
       </div>
 
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
+          <Row label={t(`Name`)} text={ownerNames} />
           {displayData?.applicantData &&
-            Object.entries(displayData?.applicantData)?.map(([key, value]) => (
-              <Row
-                key={key}
-                label={t(`${key?.toUpperCase()}`)}
-                text={
-                  Array.isArray(value)
-                    ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
-                    : typeof value === "object"
+            Object.entries(displayData?.applicantData)
+              ?.filter(([key]) => key !== "name")
+              ?.map(([key, value]) => (
+                <Row
+                  key={key}
+                  label={t(`${key?.toUpperCase()}`)}
+                  text={
+                    Array.isArray(value)
+                      ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
+                      : typeof value === "object"
                       ? t(value?.code || "N/A")
                       : t(value || "N/A")
-                }
-              />
-            ))}
+                  }
+                />
+              ))}
         </StatusTable>
       </Card>
 
@@ -236,6 +246,7 @@ const CitizenApplicationOverview = () => {
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
+                {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
                 <div

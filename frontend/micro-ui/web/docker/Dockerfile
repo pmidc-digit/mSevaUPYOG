@@ -21,7 +21,7 @@ RUN yarn add @mseva/digit-ui-module-tl@1.0.22
 RUN yarn add @mseva/digit-ui-module-obps@1.1.48
 RUN yarn add @mseva/digit-ui-module-sv@1.1.33
 RUN yarn add @mseva/upyog-ui-module-ads@1.1.64
-RUN yarn add @mseva/upyog-ui-module-chb@1.1.69
+RUN yarn add @mseva/upyog-ui-module-chb@1.1.70
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.27
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.17
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.27

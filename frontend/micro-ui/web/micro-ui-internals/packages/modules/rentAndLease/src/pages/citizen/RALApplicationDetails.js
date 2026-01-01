@@ -104,8 +104,8 @@ const RALApplicationDetails = () => {
     return Digit.DateUtils.ConvertEpochToDate(epoch);
   };
 
-  // Assuming applicationData is your API response
-  const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
+  const rawAdditionalDetails = applicationData?.additionalDetails || {};
+  const propertyDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
   return (
     <React.Fragment>

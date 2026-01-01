@@ -140,7 +140,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
     };
 
     const finalPayload = {
-      AllotmentDetails: updatedApplicant,
+      AllotmentDetails: [updatedApplicant],
     };
     try {
       setLoader(true);
@@ -173,7 +173,13 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
             <Card key={index}>
               {property?.registrationNumber && <KeyNote keyValue={t("RAL_REGISTRATION_NUMBER")} note={property?.registrationNumber || t("CS_NA")} />}
               <KeyNote keyValue={t("RAL_APPLICATION_NUMBER")} note={property?.applicationNumber || t("CS_NA")} />
-              <KeyNote keyValue={t("RAL_ALLOTMENT_TYPE")} note={property?.additionalDetails?.allotmentType || t("CS_NA")} />
+              <KeyNote
+                keyValue={t("RAL_ALLOTMENT_TYPE")}
+                note={
+                  (Array.isArray(property?.additionalDetails) ? property?.additionalDetails[0] : property?.additionalDetails)?.allotmentType ||
+                  t("CS_NA")
+                }
+              />
               <KeyNote keyValue={t("STATUS")} note={t(property?.expireFlag ? "Renewed" : property.status)} />
               {/* <KeyNote
                 keyValue={t("UC_OWNER_NAME_LABEL")}
@@ -181,7 +187,13 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                   property?.OwnerInfo && property?.OwnerInfo.length > 0 ? property?.OwnerInfo.map((o) => o.name || t("CS_NA")).join(", ") : t("CS_NA")
                 }
               /> */}
-              <KeyNote keyValue={t("RENT_LEASE_PROPERTY_NAME")} note={property?.additionalDetails?.propertyName || t("CS_NA")} />
+              <KeyNote
+                keyValue={t("RENT_LEASE_PROPERTY_NAME")}
+                note={
+                  (Array.isArray(property?.additionalDetails) ? property?.additionalDetails[0] : property?.additionalDetails)?.propertyName ||
+                  t("CS_NA")
+                }
+              />
 
               <div className="ral-my-properties-actions">
                 {

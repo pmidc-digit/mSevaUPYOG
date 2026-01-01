@@ -44,6 +44,7 @@ import DcbTable from "./DcbTable";
 import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
 import ApplicationTimeline from "./ApplicationTimeline";
+import NewApplicationTimeline from "./NewApplicationTimeline";
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -828,7 +829,7 @@ function ApplicationDetailsContent({
             </Fragment>
           )}
           {!workflowDetails?.isLoading && !isDataLoading && moduleCode === "BPAREG" && (
-            <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+            <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
           )}
         </React.Fragment>
       )}

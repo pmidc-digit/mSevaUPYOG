@@ -49,7 +49,7 @@ public class ServiceController {
 	 * @param ServiceReqRequest
 	 * @author kaviyarasan1993
 	 */
-	@PostMapping("_update")
+	@PostMapping("_update_old")
 	@ResponseBody
 	private ResponseEntity<?> update(@RequestBody @Valid ServiceRequest serviceRequest) {
 		pgrRequestValidator.validateUpdate(serviceRequest);

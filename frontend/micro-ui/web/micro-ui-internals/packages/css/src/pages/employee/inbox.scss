@@ -304,9 +304,11 @@
         @apply flex flex-col items-start  mb-md bg-white p-md;
 
         .complaint-input-container {
-          /* display: inline-block !important; */
-          display: grid !important;
-          grid-template-columns: 33.33% 33.33% 33.33%;
+         display: flex;
+         justify-content: space-between;
+          width: 100%;
+          align-items: center;
+
 
           &.for-pt {
             &.for-search {

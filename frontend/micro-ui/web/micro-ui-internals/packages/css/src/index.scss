@@ -233,6 +233,7 @@
 }
 .ws-citizen-wrapper{
   padding:15px;
+  width: 100%;
 }
 
 .application-details-link-button {
@@ -484,10 +485,6 @@
   width: 100%;
 }
 
-.employeeCard,
-.text-mobile-input-width {
-  max-width: 100%;
-}
 
 .custom-time-picker {
   @apply w-full;

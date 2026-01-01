@@ -6,6 +6,12 @@
   @apply mb-lg pl-sm block w-full h-10 outline-none border-2 border-error border-solid bg-white leading-10 text-form-field text-text-primary;
 }
 
+
+.text-input-width {
+    max-width: 540px;
+}
+
+
 .employee-card-input {
   @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
   height: 2rem !important;

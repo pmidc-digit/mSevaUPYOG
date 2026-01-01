@@ -29,12 +29,14 @@
 }
 .employee-select-wrap {
   @apply mb-lg relative;
+  width: 100%;
 
   .select {
     background-color: white;
     border-radius: 8px;
     border-color: rgb(46, 46, 236);
     height: 50px;
+    width: 100%;
 
     input[type="text"] {
       width: calc(100% - 32px);
@@ -143,7 +145,7 @@
 
 .select-wrap {
   @apply mb-lg relative;
-  max-width: 540px;
+  max-width: 500px;
   width: 100%;
 
 

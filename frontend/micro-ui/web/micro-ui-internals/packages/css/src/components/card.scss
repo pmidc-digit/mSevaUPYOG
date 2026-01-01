@@ -490,10 +490,36 @@ button.card-link.submit-bar {
       }
 
       .field {
-        width: 50%;
+        width: 100%;
         margin-right: 20%;
         .field {
           margin-right: unset;
+        }
+
+        /* Consistent width for all input types */
+        .employee-card-input,
+        .citizen-card-input,
+        .employee-card-textarea,
+        .card-textarea,
+        input[type="text"],
+        input[type="date"],
+        input[type="email"],
+        input[type="number"],
+        input[type="tel"],
+        textarea {
+          width: 100% !important;
+          max-width: 500px !important;
+        }
+
+        .employee-select-wrap,
+        .select-wrap {
+          width: 100% !important;
+          max-width: 500px !important;
+        }
+
+        .employee-select-wrap .select,
+        .select-wrap .select {
+          width: 100% !important;
         }
       }
     }

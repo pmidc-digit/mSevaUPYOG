@@ -172,8 +172,8 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </div>
               )}
 
-              {type === "desktop" && !mobileView && (
-                <div className="search-submit-wrapper ads-search-submit-wrapper">
+              {type === "desktop" && !mobileView && !isInboxPage && (
+                <div className="search-submit-wrapper">
                   <SubmitBar
                     className="submit-bar-search"
                     label={t("ES_COMMON_SEARCH")}
@@ -181,7 +181,10 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     submit
                   />
                   {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  {!isInboxPage && <div>{clearAll()}</div>}
+                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                    {clearAll()}
+                  </div>
+                
                 </div>
               )}
             </div>

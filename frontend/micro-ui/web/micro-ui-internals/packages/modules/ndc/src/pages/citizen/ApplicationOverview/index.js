@@ -189,7 +189,15 @@ const CitizenApplicationOverview = () => {
     return <Loader />;
   }
 
-  console.log("applicationDetails", applicationDetails);
+  console.log("propertyDetailsFetch", propertyDetailsFetch);
+
+  console.log("displayData?.applicantData", displayData);
+
+  const ownerForName = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+  const ownerNames = ownerForName
+    ?.map((owner) => owner?.name)
+    ?.filter(Boolean)
+    ?.join(", ");
 
   return (
     <div className={"employee-main-application-details"}>
@@ -216,20 +224,23 @@ const CitizenApplicationOverview = () => {
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
+          <Row label={t(`Name`)} text={ownerNames} />
           {displayData?.applicantData &&
-            Object.entries(displayData?.applicantData)?.map(([key, value]) => (
-              <Row
-                key={key}
-                label={t(`${key?.toUpperCase()}`)}
-                text={
-                  Array.isArray(value)
-                    ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
-                    : typeof value === "object"
-                    ? t(value?.code || "N/A")
-                    : t(value || "N/A")
-                }
-              />
-            ))}
+            Object.entries(displayData?.applicantData)
+              ?.filter(([key]) => key !== "name")
+              ?.map(([key, value]) => (
+                <Row
+                  key={key}
+                  label={t(`${key?.toUpperCase()}`)}
+                  text={
+                    Array.isArray(value)
+                      ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
+                      : typeof value === "object"
+                      ? t(value?.code || "N/A")
+                      : t(value || "N/A")
+                  }
+                />
+              ))}
         </StatusTable>
       </Card>
 
@@ -241,6 +252,7 @@ const CitizenApplicationOverview = () => {
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
+                {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
                 <div

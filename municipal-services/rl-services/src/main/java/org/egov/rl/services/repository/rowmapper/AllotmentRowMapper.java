@@ -41,12 +41,18 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					}
 				}
 			}
-			if (userList.size() < rs.getLong("applicantCount")) {
+			if (userList.size()==0l||(userList.size() < rs.getLong("applicantCount")&&(userList.get(0).getAllotmentId().equals(rs.getString("onr_allotmentId"))))) {
 				userList.add(getOwnerInfo(rs));
 			}
-			if (docList.size() < rs.getLong("documentCount")) {
+			if (docList.size()==0l||(docList.size() < rs.getLong("documentCount")&&(docList.get(0).getDocumentUid().equals(rs.getString("onr_allotmentId"))))) {
 				docList.add(getDocuments(rs));
 			}
+//			if (userList.size() < rs.getLong("applicantCount")) {
+//				userList.add(getOwnerInfo(rs));
+//			}
+//			if (docList.size() < rs.getLong("documentCount")) {
+//				docList.add(getDocuments(rs));
+//			}
 			auditDetails = getAuditDetail(rs, "allotment");
 			currentAllotment = AllotmentDetails.builder()
 					.id(rs.getString("id"))
@@ -90,7 +96,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 		try {
 			owner = OwnerInfo.builder()
 					.ownerId(rs.getString("owner_id"))
-					.allotmentId(rs.getString("allotment_id"))
+					.allotmentId(rs.getString("onr_allotmentId"))
 					.userUuid(rs.getString("user_uuid"))
 					.isPrimaryOwner(rs.getBoolean("is_primary_owner"))
 					.ownerShipPercentage(rs.getDouble("ownership_percentage"))
@@ -124,7 +130,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 
 		return Document.builder()
 				.id(rs.getString("doc_id"))
-				.documentUid(rs.getString("allotment_id"))
+				.documentUid(rs.getString("doc_allotmentId"))
 				.documentType(rs.getString("documenttype"))
 				.fileStoreId(rs.getString("fileStoreId"))
 				.status(Status.valueOf(rs.getString("doc_status").toUpperCase()))

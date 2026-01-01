@@ -28,14 +28,14 @@
     .link {
       @apply p-sm text-primary-main items-center;
       display: flex !important;
-      color: #2947A3 !important;
+      color: #2947a3 !important;
     }
 
     .inbox-total {
       padding: 4px;
       display: table;
       @apply whitespace-normal text-center text-white w-8 h-8 bg-primary-main rounded-full ml-xs;
-      background-color: #1359C8 !important;
+      background-color: #1359c8 !important;
     }
   }
 
@@ -50,6 +50,12 @@
       }
     }
   }
+}
+
+.complaint-header {
+  display: flex;
+  @apply flex justify-between w-full;
+  margin-bottom: 20px;
 }
 
 .MobilePopupHeadingWrapper {
@@ -153,6 +159,12 @@
     .search-complaint-container {
       @apply items-center bg-white p-md;
 
+      .complaint-header {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 1rem;
+      }
+
       .complaint-input-container {
         @apply w-full;
         .complaint-input {
@@ -220,7 +232,7 @@
       margin-left: 46px;
 
       .link {
-        color:#a82227 !important;
+        color: #a82227 !important;
         @apply p-sm text-primary-main;
       }
     }
@@ -236,7 +248,7 @@
         @apply bg-white;
         svg {
           path {
-            fill: #1359C8;
+            fill: #1359c8;
           }
         }
       }
@@ -287,17 +299,9 @@
     }
 
     .search-container {
-      width: 874px;
-
       .search-complaint-container {
         margin: auto;
         @apply flex flex-col items-start  mb-md bg-white p-md;
-
-        .complaint-header {
-          display: flex;
-          @apply flex justify-between w-full;
-          margin-bottom: 20px;
-        }
 
         .complaint-input-container {
           /* display: inline-block !important; */
@@ -408,9 +412,9 @@
 }
 
 .sla-cell-error {
-  color: #2947A3;
+  color: #2947a3;
   color: #a82227;
-  background-color: #F5FBFF;
+  background-color: #f5fbff;
   padding: 0 24px;
   border-radius: 11px;
 }
@@ -443,7 +447,7 @@
 @screen dt {
   .complaint-links-container .header .removeBorderRadiusLogo {
     border-radius: 2px !important;
-    background-color: #a82227
+    background-color: #a82227;
   }
 }
 @screen dt {
@@ -454,7 +458,7 @@
   }
 }
 
-.employeeTotalLink{
+.employeeTotalLink {
   color: #a82227;
   font-size: 12px;
 }
@@ -566,43 +570,43 @@
 .inboxLinksFSM {
   margin: 0 !important;
 }
-.complaint-links-container .body .link{
-  color: #2947A3 !important;
+.complaint-links-container .body .link {
+  color: #2947a3 !important;
 }
 
-.employee .customEmployeeCard:nth-child(odd){
-  .employeeCustomCard{
+.employee .customEmployeeCard:nth-child(odd) {
+  .employeeCustomCard {
     background-color: white;
-    background-size: cover
+    background-size: cover;
   }
 }
-.employee .customEmployeeCard:nth-child(even){
-  .employeeCustomCard{
-background-color: white;
-background-size: cover
+.employee .customEmployeeCard:nth-child(even) {
+  .employeeCustomCard {
+    background-color: white;
+    background-size: cover;
   }
 }
 .employee .employeeCustomCard {
   border-radius: 4%;
-    .employeeCustomCard {
-      border-radius: 4%;
+  .employeeCustomCard {
+    border-radius: 4%;
   }
 }
-.employee-card-banner{
-    background-color: white;
-    width: 88%;
-    margin: 0 auto;
-    bottom: 0px;
-    position: absolute;
-    margin-bottom: -10%;
-    left: 6%;
-    border-radius: 10px;
-}
-.text-employee-card{
-  font-size: 1.5rem;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+.employee-card-banner {
+  background-color: white;
+  width: 88%;
+  margin: 0 auto;
+  bottom: 0px;
   position: absolute;
-  top:10%;
+  margin-bottom: -10%;
+  left: 6%;
+  border-radius: 10px;
+}
+.text-employee-card {
+  font-size: 1.5rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  position: absolute;
+  top: 10%;
   padding-left: 10%;
   color: black !important;
   width: 300px;
@@ -687,38 +691,35 @@ background-size: cover
   }
 }
 @media only screen and (max-width: 640px) {
-.dashboardCardTypeOne {
-  border-top:5px solid #2947A3;
-  box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.15);
-  background: #FFFFFF;
-  height: 188px;
-  padding: 16px 20px;
-  gap: 24px;
-  border-radius: 8px 0px 0px 0px;
-  border-top: 5px solid hsl(225, 60%, 40%);
-  opacity: 1;
-  width: 87%;
- 
+  .dashboardCardTypeOne {
+    border-top: 5px solid #2947a3;
+    box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    height: 188px;
+    padding: 16px 20px;
+    gap: 24px;
+    border-radius: 8px 0px 0px 0px;
+    border-top: 5px solid hsl(225, 60%, 40%);
+    opacity: 1;
+    width: 87%;
+  }
 
-}
- 
- 
-.dashboardCardTypeOneHeader {
-  color: #14346D;
-  font-family: Roboto;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 24px;
-  text-align: center;
-  word-wrap: break-word;
-  margin-left: 10%;
-}
+  .dashboardCardTypeOneHeader {
+    color: #14346d;
+    font-family: Roboto;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 24px;
+    text-align: center;
+    word-wrap: break-word;
+    margin-left: 10%;
+  }
 }
 @media only screen and (min-width: 641px) {
   .dashboardCardTypeOne {
-    border-top:5px solid #2947A3;
+    border-top: 5px solid #2947a3;
     box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.15);
-    background: #FFFFFF;
+    background: #ffffff;
     height: 188px;
     padding: 16px 20px;
     gap: 24px;
@@ -726,20 +727,14 @@ background-size: cover
     border-top: 5px solid hsl(225, 60%, 40%);
     opacity: 1;
     width: 100%;
-  
-  
   }
-   
-  
+
   .dashboardCardTypeOneHeader {
-    color: #14346D;
+    color: #14346d;
     font-family: Roboto;
     font-size: 20px;
     font-weight: 500;
     line-height: 24px;
     text-align: left;
-  
-  
   }
-  }
-  
+}

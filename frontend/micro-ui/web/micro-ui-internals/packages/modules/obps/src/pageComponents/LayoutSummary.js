@@ -193,7 +193,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           
           {/* PRIMARY OWNER */}
           <h3 style={{ marginBottom: "0.5rem", color: "#2e4a66", marginTop: "1rem" }}>
-            {t("PRIMARY_OWNER") || "Primary Owner"}
+            {t("Primary Owner") || "Primary Owner"}
           </h3>
           <div style={sectionStyle}>
             {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owners[0]?.name)}
@@ -207,11 +207,11 @@ function LayoutSummary({ currentStepData: formData, t }) {
             {/* Documents Section */}
             <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
               <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
+                <CardLabel style={boldLabelStyle}>{t("Photo") || "Photo"}</CardLabel>
                 <DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />
               </div>
               <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
+                <CardLabel style={boldLabelStyle}>{t("ID Proof") || "ID Proof"}</CardLabel>
                 <DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />
               </div>
             </div>
@@ -221,7 +221,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {owners.length > 1 && owners.slice(1).map((owner, index) => (
             <React.Fragment key={index + 1}>
               <h3 style={{ marginBottom: "0.5rem", color: "#555", marginTop: "1.5rem" }}>
-                {t("ADDITIONAL_OWNER") || "Additional Owner"} {index + 1}
+                {t("Additional Owner") || "Additional Owner"} {index + 1}
               </h3>
               <div style={sectionStyle}>
                 {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
@@ -235,11 +235,11 @@ function LayoutSummary({ currentStepData: formData, t }) {
                 {/* Documents Section */}
                 <div style={{ marginTop: "1rem", borderTop: "1px dashed #e0e0e0", paddingTop: "0.5rem" }}>
                   <div style={labelFieldPairStyle}>
-                    <CardLabel style={boldLabelStyle}>{t("OWNER_PHOTO") || "Photo"}</CardLabel>
+                    <CardLabel style={boldLabelStyle}>{t("Photo") || "Photo"}</CardLabel>
                     <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERPHOTO")} stateCode={stateCode} t={t} />
                   </div>
                   <div style={labelFieldPairStyle}>
-                    <CardLabel style={boldLabelStyle}>{t("OWNER_ID_PROOF") || "ID Proof"}</CardLabel>
+                    <CardLabel style={boldLabelStyle}>{t("ID Proof") || "ID Proof"}</CardLabel>
                     <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERVALIDID")} stateCode={stateCode} t={t} />
                   </div>
                 </div>

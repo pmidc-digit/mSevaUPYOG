@@ -35,35 +35,34 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
       {inputs?.map((input, index) => (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " * " : null}
-            </CardLabel>
-            <div className="field-container" style={{ width:isMobile? "100%":"50%", display: "block" }}>
-              <div>
-                <div style={{ display: "flex" }}>
-                  <div className="employee-card-input employee-card-input--front">+91</div>
-                  <TextInput
-                    className="field desktop-w-full"
-                    key={input.name}
-                    value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
-                    onChange={(e) =>{ setValue(e.target.value, input.name,validate(e.target.value, input))}}
-                    disable={false}
-                    defaultValue={undefined}
-                    onBlur={(e) => validate(e.target.value, input)}
-                    {...input.validation}
-                  />
-                </div>
-                <div>{iserror ? <CardLabelError style={{ width: "100%" }}>{t(input.populators.error)}</CardLabelError> : <span style={{
-                  color: "gray", width: "100%", border: "none",
-                  background: "none",
-                  justifyContent: "start"
-                }}>
-                  {/* {t("ERR_HRMS_INVALID_MOB_NO")} */}
-                </span>}</div>
-              </div>
-            </div>
-          </LabelFieldPair>
+  <CardLabel className="card-label-smaller">
+    {t(input.label)}
+    {input.isMandatory ? " * " : null}
+  </CardLabel>
+
+  <div className="field" style={{ display: "flex", alignItems: "center" }}>
+    <div className="employee-card-input employee-card-input--front">+91</div>
+    <TextInput
+      key={input.name}
+      value={formData?.[config.key]?.[input.name] || ""}
+      onChange={(e) => setValue(e.target.value, input.name, validate(e.target.value, input))}
+      disable={false}
+      defaultValue={undefined}
+      onBlur={(e) => validate(e.target.value, input)}
+      {...input.validation}
+    />
+  </div>
+
+  {iserror ? (
+    <CardLabelError className="error-label">{t(input.populators.error)}</CardLabelError>
+  ) : (
+    <span className="hint-label">
+      {/* {t("ERR_HRMS_INVALID_MOB_NO")} */}
+    </span>
+  )}
+</LabelFieldPair>
+
+
         </React.Fragment>
       ))}
     </div>

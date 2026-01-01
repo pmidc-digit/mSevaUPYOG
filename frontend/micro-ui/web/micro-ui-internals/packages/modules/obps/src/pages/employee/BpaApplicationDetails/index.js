@@ -47,6 +47,7 @@ import BPAApplicationTimeline from "../../citizen/BpaApplicationDetail/BPAApplic
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -503,6 +504,27 @@ const BpaApplicationDetail = () => {
           t("CS_NA")
         )},
     },
+  ];
+
+  const oldEDCRDocumentsColumns = [
+          {
+              Header: t("BPA_EDCR_NO_LABEL"),
+              accessor: "edcrNumber",
+              Cell: ({ value }) => value || t("CS_NA"),
+          },
+          {
+              Header: t(""),
+              accessor: "planReport",
+              Cell: ({ value }) =>
+                  value ? (
+                      <LinkButton className="view-link-button"
+                          label={t("View")}
+                          onClick={() => routeTo(value)}
+                      />
+                  ) : (
+                      t("CS_NA")
+                  ),
+          },
   ];
   // const ecbcDocumentsData = useMemo(() => {
   //   return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
@@ -1398,6 +1420,19 @@ const BpaApplicationDetail = () => {
                               isPaginationRequired={false}
                             />
                           : null}
+
+                          {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length>0 && 
+                          <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={data?.applicationData?.additionalDetails?.oldEDCR}
+                              columns={oldEDCRDocumentsColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                          />}
                           
 
                         {/* to get Owner values */}
@@ -1693,7 +1728,7 @@ const BpaApplicationDetail = () => {
                       </ConnectingCheckPoints>
                     )} */}
                     {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
-                    <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
+                    <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
                     {/* {workflowDetails?.data?.timeline?.length > 2 && (
                       <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
                     )} */}

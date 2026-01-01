@@ -22,12 +22,12 @@ import getChbAcknowledgementData from "../../getChbAcknowledgementData";
 import CHBWFApplicationTimeline from "../../pageComponents/CHBWFApplicationTimeline";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
-import { pdfDownloadLink } from "../../utils";
+import { pdfDownloadLink,formatDate } from "../../utils";
 
 import get from "lodash/get";
 import { size } from "lodash";
 import { doc } from "prettier";
-import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -137,15 +137,29 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
+    console.log('payments', payments)
     try {
       setLoading(true);
-      let application = data?.hallsBookingApplication?.[0];
-      let fileStoreId = application?.paymentReceiptFilestoreId;
+      let application = {
+        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
+          };
+        }),
+      };
+      console.log('application', application)
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        let response = { filestoreIds: [payments?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
         const updatedApplication = {
-          ...application,
+          ...data?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],
         };
         await mutation.mutateAsync({
@@ -170,17 +184,31 @@ const CHBApplicationDetails = () => {
         hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
           return {
             ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            }),
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
           };
         }),
       };
 
-      let fileStoreId = payments?.fileStoreId;
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      console.log('fileStoreId bef create', fileStoreId)
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
+        
+        const updatedApplication = {
+          ...data?.hallsBookingApplication[0],
+          permissionLetterFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
         fileStoreId = response?.filestoreIds[0];
+        refetch()
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
@@ -352,7 +380,7 @@ const CHBApplicationDetails = () => {
           </StatusTable>
         </Card>
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-        <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
     </React.Fragment>
   );

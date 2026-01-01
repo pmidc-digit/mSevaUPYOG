@@ -136,7 +136,6 @@
 @import "./modules/rentAndLease/index.scss";
 @import "./components/SurveyModal.scss";
 
-
 @import "./modules/adv/index.scss";
 .display-none {
   display: none;
@@ -162,7 +161,9 @@
 .w-fullwidth {
   @apply w-full;
 }
-
+.stepper{
+  padding: 10px;
+}
 .margin-unset {
   margin: unset !important;
 }
@@ -229,6 +230,9 @@
 .search-submit-bar {
   margin-top: 32;
   margin-left: auto;
+}
+.ws-citizen-wrapper{
+  padding:15px;
 }
 
 .application-details-link-button {
@@ -463,7 +467,7 @@
 }
 
 .text-input {
-  @apply relative w-full;
+  width: 100%;
   input {
     &:hover {
       @apply border-2 border-solid border-primary-main;
@@ -476,7 +480,13 @@
 }
 
 .text-mobile-input-width {
-  max-width: 500px;
+  max-width: 540px;
+  width: 100%;
+}
+
+.employeeCard,
+.text-mobile-input-width {
+  max-width: 100%;
 }
 
 .custom-time-picker {
@@ -499,7 +509,6 @@
 }
 
 .card-label-smaller {
-  @apply w-1/3;
   margin-bottom: revert;
 }
 
@@ -572,6 +581,10 @@
     }
   }
 }
+.tl-citizen{
+  width: 100%;
+  padding: 10px;
+}
 
 .error-boundary summary,
 .error-boundary details {
@@ -625,6 +638,92 @@
     padding-right: 16px;
   }
 }
+
+/* Citizen Login Mobile Responsive Styles */
+@media only screen and (max-width: 768px) {
+  .citizen-form-wrapper {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .citizen-form-wrapper .AppContainer {
+    width: 100% !important;
+    padding: 12px !important;
+    margin: 0 !important;
+  }
+
+  .citizen-form-wrapper .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .citizen-form-wrapper .card-header {
+    font-size: 20px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .citizen-form-wrapper .card-text {
+    font-size: 14px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .citizen-form-wrapper .field-container {
+    flex-direction: row !important;
+    width: 100% !important;
+  }
+
+  .citizen-form-wrapper .citizen-card-input {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 12px !important;
+    height: auto !important;
+    min-height: 44px !important;
+  }
+
+  .citizen-form-wrapper .citizen-card-input--front {
+    padding: 12px 8px !important;
+    font-size: 16px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    background-color: #f3f4f6 !important;
+    border: 1px solid #464646 !important;
+    border-right: none !important;
+  }
+
+  .citizen-form-wrapper .submit-bar {
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
+
+  .citizen-form-wrapper .submit-bar button {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+    min-height: 48px !important;
+  }
+
+  .citizen-form-wrapper .back-btn {
+    margin-bottom: 12px !important;
+  }
+
+  .citizen-form-wrapper .form-field {
+    margin-bottom: 16px !important;
+  }
+
+  .citizen-form-wrapper .link-button,
+  .citizen-form-wrapper .link-btn {
+    font-size: 14px !important;
+    text-align: center !important;
+    display: block !important;
+    margin-top: 12px !important;
+  }
+}
 @media (min-width: 780px) {
   .citizen-card-container {
     padding-left: 15px;
@@ -647,7 +746,7 @@
   .mcollect-citizen,
   .ws-citizen-wrapper,
   .tl-citizen {
-    width: calc(100% - 219px);
+    width: 90%;
     padding-left: 16px;
     padding-right: 16px;
     margin-top: 3rem;
@@ -870,7 +969,7 @@
     display: grid !important;
   }
   .action-bar-wrap {
-    padding: 10px 0;
+    padding: 10px 10px;
     text-align: center;
   }
   .submit-bar {
@@ -1030,4 +1129,253 @@
 .timeline-subheader {
   font-size: 22px !important;
   font-weight: 500 !important;
+}
+.user-profile{
+  margin-top: 3rem;
+  width: 70%;
+}
+
+.user-profile-section-wrapper {
+  margin: 8px;
+  position: relative;
+
+  &.employee {
+    margin: 24px;
+  }
+}
+
+.user-profile-main-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 8px;
+  gap: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  background: white;
+  border-radius: 12px;
+  max-width: 1200px;
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+
+    margin: 16px;
+    gap: 24px;
+    max-width: none;
+
+    &.employee {
+
+    }
+  }
+}
+
+.user-profile-image-section {
+  position: relative;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  min-height: 280px;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(135deg, #4f65d8, #00157a);
+  padding: 32px 16px;
+
+  @media (min-width: 768px) {
+    flex: 0;
+    border-radius: 0;
+  }
+
+  &.employee {
+    border-radius: 0;
+  }
+}
+
+.user-profile-image-wrapper {
+  height: 160px;
+  width: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.user-profile-image {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  border: 6px solid white;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  object-fit: cover;
+}
+
+.user-profile-camera-button {
+  position: absolute;
+  bottom: -20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 4px solid white;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(102, 126, 234, 0.5);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.user-profile-form-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  background: #fafbfc;
+  padding: 32px;
+  gap: 24px;
+}
+
+.user-profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.user-profile-field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-profile-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 4px;
+}
+
+.user-profile-input {
+  width: 100%;
+}
+
+.user-profile-error-text {
+  margin: 4px 0 0 0;
+  padding: 0;
+  color: #d32f2f;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.user-profile-div-margin {
+  margin-top: 12px;
+  padding: 16px;
+  background-color: #e8f1ff;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.user-profile-change-password-link {
+  color: #667eea;
+  cursor: pointer;
+  position: relative;
+  text-decoration: underline;
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #764ba2;
+  }
+}
+
+.user-profile-save-section-employee {
+  height: 88px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0;
+  align-items: center;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px 32px;
+  width: 100%;
+
+  @media (max-width: 767px) {
+    justify-content: center;
+  }
+}
+
+.user-profile-toast-style {
+  max-width: 670px;
+}
+
+.user-profile-button-padding {
+  padding-bottom: 12px;
+  padding-top: 12px;
+}
+
+.user-profile-label-field-pair-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-profile-label-style-employee {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.user-profile-full-width {
+  width: 100%;
+}
+
+/* Global Responsive Font Sizes for Mobile */
+@media only screen and (max-width: 768px) {
+  /* Headers with 32px should become 18px on mobile */
+  h1, h2, h3,
+  .card-header,
+  .heading,
+  .header-title,
+  .page-header,
+  .section-header,
+  .landing-card-header,
+  .employee-upyog-title,
+  header,
+  .survey-card-header {
+    font-size: 18px !important;
+  }
+
+  /* Headers with ~28px should become 16px on mobile */
+  h4,
+  .card-sub-header,
+  .sub-header {
+    font-size: 16px !important;
+  }
+
+  /* Headers with ~24px should become 15px on mobile */
+  h5, h6,
+  .card-section-header {
+    font-size: 15px !important;
+  }
+
+  /* Card text and body text */
+  .card-text,
+  .card-caption,
+  p {
+    font-size: 14px !important;
+  }
 }

@@ -27,6 +27,9 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
   ];
 
+  console.log("hereemeee");
+  console.log(currentStepData, currentStepData);
+
   const {
     control,
     handleSubmit,
@@ -115,7 +118,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     });
 
     // ✅ If booking already exists, skip slot_search & create
-    const existingPropertyAlloted = currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber;
+    const existingPropertyAlloted = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.applicationNumber;
     if (existingPropertyAlloted) {
       goNext(data);
       return;
@@ -124,15 +127,15 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     triggerLoader(true);
     try {
       // Call create API
-      const response = await Digit.RentAndLeaseService.create({ allotmentDetails: payload }, tenantId);
+      const response = await Digit.RentAndLeaseService.create({ AllotmentDetails: [payload] }, tenantId);
 
       const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
       if (isSuccess) {
-        const appData = Array.isArray(response?.allotment) ? response.allotment[0] : response?.allotment;
+        const appData = Array.isArray(response?.AllotmentDetails) ? response.AllotmentDetails[0] : response?.AllotmentDetails;
 
-        dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", appData || response));
+        dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", response));
         goNext(data);
       } else {
         triggerToast(t("CORE_SOMETHING_WENT_WRONG"), true);

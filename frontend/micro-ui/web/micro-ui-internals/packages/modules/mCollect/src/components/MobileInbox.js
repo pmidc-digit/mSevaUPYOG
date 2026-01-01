@@ -22,7 +22,7 @@ const MobileInbox = ({
   filterComponent,
 }) => {
   const { t } = useTranslation();
-  const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
+
   const convertEpochToDate = (dateEpoch) => {
     if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
       return "NA";
@@ -35,6 +35,7 @@ const MobileInbox = ({
     day = (day > 9 ? "" : "0") + day;
     return `${day}/${month}/${year}`;
   };
+
   const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
     if (searcher == "") return str;
     while (str.includes(searcher)) {
@@ -42,106 +43,28 @@ const MobileInbox = ({
     }
     return str;
   };
-  const inboxColumns = (props) => [
-    {
-      Header: t("UC_CHALLAN_NUMBER"),
-      mobileCell: (original) => GetMobCell(original?.["challanNo"]),
-    },
-    {
-      Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
-      mobileCell: (original) => GetMobCell(original?.["name"]),
-    },
-    {
-      Header: t("UC_SERVICE_CATEGORY_LABEL"),
-      mobileCell: (original) => {
-        let code = stringReplaceAll(`${original?.["businessService"]}`, ".", "_");
-        code = code.toUpperCase();
-        return GetMobCell(t(`BILLINGSERVICE_BUSINESSSERVICE_${code}`));
-      },
-    },
-    {
-      Header: t("UC_DUE_DATE"),
-      mobileCell: (original) => GetMobCell(original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(original?.dueDate)),
-    },
-    {
-      Header: t("UC_RECIEPT_NUMBER_LABEL"),
-      mobileCell: (original) => GetMobCell(original?.receiptNumber === null ? t("CS_NA") : original?.receiptNumber),
-    },
-    {
-      Header: t("UC_TOTAL_AMOUNT"),
-      mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
-    },
-    {
-      Header: t("UC_COMMON_TABLE_COL_STATUS"),
-      mobileCell: (original) => GetMobCell(original?.applicationStatus),
-    },
-    {
-      Header: t("UC_TABLE_COL_ACTION"),
-      mobileCell: (original) => {
-        const amount = original?.totalAmount;
-        let action = "ACTIVE";
-        if (amount > 0) action = "COLLECT";
-        if (action == "COLLECT") {
-          return (
-            <div>
-              <span className="link">
-                <Link
-                  to={{
-                    pathname: `/digit-ui/employee/payment/collect/${original?.["businessService"]}/${original?.["challanNo"]}/tenantId=${original?.["tenantId"]}?workflow=mcollect`,
-                  }}
-                >
-                  {t(`UC_${action}`)}
-                </Link>
-              </span>
-            </div>
-          );
-        } else if (original?.applicationStatus == "PAID") {
-          return (
-            <div>
-              <span className="link">
-                <Link>
-                  <a
-                    href="javascript:void(0)"
-                    style={{
-                      color: "#FE7A51",
-                      cursor: "pointer",
-                    }}
-                    onClick={(value) => {
-                      printReciept(original?.["businessService"], original?.["challanNo"]);
-                    }}
-                  >
-                    {" "}
-                    {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
-                  </a>
-                </Link>
-              </span>
-            </div>
-          );
-        } else {
-          return GetMobCell(t(`${"CS_NA"}`));
-        }
-      },
-    },
-  ];
-
-  const serviceRequestIdKey = (original) => original?.[t("UC_CHALLAN_NUMBER")]?.props?.children;
 
   const getData = () => {
-    return data?.map((dataObj) => {
-      const obj = {};
-      const columns = inboxColumns();
-      columns.forEach((el) => {
-        if (el.mobileCell) obj[el.Header] = el.mobileCell(dataObj);
-      });
-      return obj;
+    return data?.map((item) => {
+      let code = stringReplaceAll(`${item?.businessService}`, ".", "_");
+      code = code.toUpperCase();
+
+      return {
+        [t("UC_CHALLAN_NUMBER")]: item?.challanNo,
+        [t("UC_COMMON_TABLE_COL_PAYEE_NAME")]: item?.name,
+        [t("UC_SERVICE_CATEGORY_LABEL")]: t(`BILLINGSERVICE_BUSINESSSERVICE_${code}`),
+        [t("UC_DUE_DATE")]: item?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(item?.dueDate),
+        [t("UC_TOTAL_AMOUNT")]: `₹ ${item?.totalAmount}`,
+        [t("UC_COMMON_TABLE_COL_STATUS")]: t(item?.applicationStatus),
+      };
     });
   };
 
   return (
     <div style={{ padding: 0 }}>
       <div className="inbox-container">
-        <div className="filters-container">
-          {!isSearch && (
+        {!isSearch && (
+          <div className="filters-container">
             <ApplicationLinks
               linkPrefix={parentRoute}
               allLinks={[
@@ -154,24 +77,24 @@ const MobileInbox = ({
               headerText={t("ACTION_TEST_MCOLLECT")}
               isMobile={true}
             />
-          )}
-          <ApplicationCard
-            t={t}
-            data={getData()}
-            defaultSearchParams={defaultSearchParams}
-            onFilterChange={onFilterChange}
-            isLoading={isLoading}
-            isSearch={isSearch}
-            onSearch={onSearch}
-            onSort={onSort}
-            searchParams={searchParams}
-            searchFields={searchFields}
-            linkPrefix={linkPrefix}
-            sortParams={sortParams}
-            serviceRequestIdKey={serviceRequestIdKey}
-            filterComponent={filterComponent}
-          />
-        </div>
+          </div>
+        )}
+        <ApplicationCard
+          t={t}
+          data={getData()}
+          defaultSearchParams={defaultSearchParams}
+          onFilterChange={onFilterChange}
+          isLoading={isLoading}
+          isSearch={isSearch}
+          onSearch={onSearch}
+          onSort={onSort}
+          searchParams={searchParams}
+          searchFields={searchFields}
+          linkPrefix={linkPrefix ? linkPrefix : "/digit-ui/employee/mcollect/challansearch/"}
+          sortParams={sortParams}
+          serviceRequestIdKey={t("UC_CHALLAN_NUMBER")}
+          filterComponent={filterComponent}
+        />
       </div>
     </div>
   );

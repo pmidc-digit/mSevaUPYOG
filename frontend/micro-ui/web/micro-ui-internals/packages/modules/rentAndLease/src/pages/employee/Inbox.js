@@ -118,7 +118,7 @@ const Inbox = ({
 
   const handleFilterChange = (filterParam) => {
     let keys_to_delete = filterParam.delete;
-    let _new = isMobile ? { ...filterParam } : { ...searchParams, ...filterParam };
+    let _new = { ...searchParams, ...filterParam };
     if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
     delete _new.delete;
     setSearchParams(_new);
@@ -137,7 +137,7 @@ const Inbox = ({
     if (isMobile) {
       return (
         <MobileInbox
-          data={formedData}
+          data={data}
           defaultSearchParams={initialStates.searchParams}
           isLoading={hookLoading}
           isSearch={!isInbox}

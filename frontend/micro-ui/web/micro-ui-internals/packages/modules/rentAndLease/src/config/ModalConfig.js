@@ -25,13 +25,14 @@ export const ModalConfig = ({
     action?.action === "REQUEST_FOR_DISCONNECTION" ||
     action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
     action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
-    action?.action === "FORWARD_FOT_SETLEMENT";
+    action?.action === "FORWARD_FOT_SETLEMENT" ||
+    action?.action === "FORWARD_FOR_DESCONNECTION_FIELD_INSPECTION";
   if (action?.isTerminateState) checkAssigneeMandatory = false;
 
   if (action.isTerminateState) {
     checkAssigneeVisible = false;
   }
-  if (action?.action === "RENEWAL") {
+  if (action?.action === "RENEWAL" || action?.action === "RAL_RENEWAL") {
     return {
       label: {
         // heading: t("RAL_RENEWAL_MODAL_HEADING"),

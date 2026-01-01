@@ -287,8 +287,8 @@ function Assignment({
 
         <LabelFieldPair>
           <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>{`${t("HR_REP_TO_LABEL")}`}</CardLabel>
-
-          <TextInput
+          <div className="field">
+            <TextInput
           // key={input.name}
           value={assignment?.reportingTo}
           onChange={(e) => handleReportingToChange(e.target.value)}
@@ -296,6 +296,9 @@ function Assignment({
           // defaultValue={undefined}
           // {...input.validation}
           />
+          </div>
+
+          
         </LabelFieldPair>
 
         <LabelFieldPair>

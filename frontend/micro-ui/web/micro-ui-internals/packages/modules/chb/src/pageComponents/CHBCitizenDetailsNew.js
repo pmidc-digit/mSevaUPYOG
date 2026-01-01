@@ -186,7 +186,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ width: "50%" }}>
+        <div style={{ width: "100%" }}>
           {/* mobile number */}
           <div style={{ marginBottom: "20px" }}>
             <CardLabel>
@@ -204,7 +204,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <MobileNumber
-                  style={{ marginBottom: 0 }}
+                  
                   value={props.value}
                   onChange={(e) => {
                     props.onChange(e);
@@ -241,7 +241,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <TextInput
-                  style={{ marginBottom: 0 }}
+                 
                   value={props.value}
                   error={errors?.name?.message}
                   onChange={(e) => {
@@ -275,7 +275,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <TextInput
-                  style={{ marginBottom: 0 }}
+                 
                   value={props.value}
                   onChange={(e) => {
                     props.onChange(e.target.value);
@@ -304,7 +304,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <TextArea
-                  style={{ marginBottom: 0 }}
+                 
                   name="address"
                   value={props.value}
                   onChange={(e) => {

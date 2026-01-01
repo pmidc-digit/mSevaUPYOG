@@ -44,87 +44,32 @@ const MobileInbox = ({
   };
   const inboxColumns = (props) => [
     {
-      Header: t("UC_CHALLAN_NUMBER"),
-      mobileCell: (original) => GetMobCell(original?.["challanNo"]),
+      Header: t("APPLICATION_NUMBER"),
+      mobileCell: (original) => GetMobCell(original?.searchData?.["applicationNumber"]),
     },
     {
-      Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
-      mobileCell: (original) => GetMobCell(original?.["name"]),
+      Header: t("RENT_LEASE_PROPERTY_NAME"),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["propertyName"]),
     },
     {
-      Header: t("UC_SERVICE_CATEGORY_LABEL"),
-      mobileCell: (original) => {
-        let code = stringReplaceAll(`${original?.["businessService"]}`, ".", "_");
-        code = code.toUpperCase();
-        return GetMobCell(t(`BILLINGSERVICE_BUSINESSSERVICE_${code}`));
-      },
+      Header: t("RAL_ALLOTMENT_TYPE"),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["allotmentType"]),
     },
     {
-      Header: t("UC_DUE_DATE"),
-      mobileCell: (original) => GetMobCell(original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(original?.dueDate)),
+      Header: t("RENT_AMOUNT "),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["baseRent"] || "-"),
     },
     {
-      Header: t("UC_RECIEPT_NUMBER_LABEL"),
-      mobileCell: (original) => GetMobCell(original?.receiptNumber === null ? t("CS_NA") : original?.receiptNumber),
-    },
-    {
-      Header: t("UC_TOTAL_AMOUNT"),
-      mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
+      Header: t("CS_CREATED_DATE"),
+      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.searchData?.auditDetails?.["createdTime"])),
     },
     {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
-      mobileCell: (original) => GetMobCell(original?.applicationStatus),
-    },
-    {
-      Header: t("UC_TABLE_COL_ACTION"),
-      mobileCell: (original) => {
-        const amount = original?.totalAmount;
-        let action = "ACTIVE";
-        if (amount > 0) action = "COLLECT";
-        if (action == "COLLECT") {
-          return (
-            <div>
-              <span className="link">
-                <Link
-                  to={{
-                    pathname: `/digit-ui/employee/payment/collect/${original?.["businessService"]}/${original?.["challanNo"]}/tenantId=${original?.["tenantId"]}?workflow=mcollect`,
-                  }}
-                >
-                  {t(`UC_${action}`)}
-                </Link>
-              </span>
-            </div>
-          );
-        } else if (original?.applicationStatus == "PAID") {
-          return (
-            <div>
-              <span className="link">
-                <Link>
-                  <a
-                    href="javascript:void(0)"
-                    style={{
-                      color: "#FE7A51",
-                      cursor: "pointer",
-                    }}
-                    onClick={(value) => {
-                      printReciept(original?.["businessService"], original?.["challanNo"]);
-                    }}
-                  >
-                    {" "}
-                    {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
-                  </a>
-                </Link>
-              </span>
-            </div>
-          );
-        } else {
-          return GetMobCell(t(`${"CS_NA"}`));
-        }
-      },
+      mobileCell: (original) => GetMobCell(t(original?.searchData?.["status"])),
     },
   ];
 
-  const serviceRequestIdKey = (original) => original?.[t("UC_CHALLAN_NUMBER")]?.props?.children;
+  const serviceRequestIdKey = "applicationNo";
 
   const getData = () => {
     return data?.map((dataObj) => {
@@ -133,6 +78,7 @@ const MobileInbox = ({
       columns.forEach((el) => {
         if (el.mobileCell) obj[el.Header] = el.mobileCell(dataObj);
       });
+      obj.applicationNo = `${dataObj?.searchData?.applicationNumber}/${dataObj?.searchData?.tenantId}`;
       return obj;
     });
   };
@@ -144,14 +90,15 @@ const MobileInbox = ({
           {!isSearch && (
             <ApplicationLinks
               linkPrefix={parentRoute}
-              allLinks={[
-                {
-                  text: t("UC_GENERATE_NEW_CHALLAN"),
-                  link: "/digit-ui/employee/mcollect/new-application",
-                  roles: [],
-                },
-              ]}
-              headerText={t("ACTION_TEST_MCOLLECT")}
+              // allLinks={[
+              //   {
+              //     text: t("UC_GENERATE_NEW_CHALLAN"),
+              //     link: "/digit-ui/employee/mcollect/new-application",
+              //     roles: [],
+              //   },
+              // ]}
+              allLinks={[]}
+              headerText={t("RAL_TITLE")}
               isMobile={true}
             />
           )}
@@ -165,7 +112,7 @@ const MobileInbox = ({
             onSearch={onSearch}
             onSort={onSort}
             searchParams={searchParams}
-            linkPrefix={linkPrefix}
+            linkPrefix={linkPrefix ? linkPrefix : `${parentRoute}/property/`}
             sortParams={sortParams}
             serviceRequestIdKey={serviceRequestIdKey}
             filterComponent={filterComponent}

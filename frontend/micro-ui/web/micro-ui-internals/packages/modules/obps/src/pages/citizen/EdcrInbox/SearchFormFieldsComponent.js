@@ -8,7 +8,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
 
   if (!isMobile) {
     return <React.Fragment>
-      <div className="search-container" style={{ width: "auto", marginLeft: "24px" }}>
+      <div className="search-container" style={{  marginLeft: "24px" }}>
         <div className="search-complaint-container">
           <div className="complaint-input-container" style={{ textAlign: "start" }}>
             <SearchField>

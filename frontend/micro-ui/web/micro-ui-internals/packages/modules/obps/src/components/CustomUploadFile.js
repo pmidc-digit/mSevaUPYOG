@@ -141,9 +141,9 @@ const CustomUploadFile = (props) => {
   const user_type = Digit.SessionStorage.get("userType");
   let extraStyles = {};
   const handleChange = () => {
-    if (inpRef.current.files[0]) {
+    if (inpRef?.current?.files?.[0]) {
       setHasFile(true);
-      setprevSate(inpRef.current.files[0]);
+      setprevSate(inpRef?.current?.files?.[0]);
     } else setHasFile(false);
   };
   const stateCode = Digit.ULBService.getStateId();
@@ -175,20 +175,20 @@ const CustomUploadFile = (props) => {
   };
 
   const handleEmpty = () => {
-    if (inpRef.current.files.length <= 0 && prevSate !== null) {
+    if (inpRef?.current?.files?.length <= 0 && prevSate !== null) {
       inpRef.current.value = "";
       props.onDelete();
     }
   };
 
-  if (props.uploadMessage && inpRef.current.value) {
+  if (props?.uploadMessage && inpRef?.current?.value) {
     handleDelete();
     setHasFile(false);
   }
 
   useEffect(() => handleEmpty(), [inpRef?.current?.files]);
 
-  useEffect(() => handleChange(), [props.message]);
+  useEffect(() => handleChange(), [props?.message]);
 
   function routeTo(filestoreId) {
     if (props?.customOpen) {
@@ -237,7 +237,7 @@ const CustomUploadFile = (props) => {
   return (
     <Fragment>
       {showHint && <p className="cell-text">{t(props?.hintText)}</p>}
-      <div
+      {!props?.disabled && <div
         className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"} ${props.disabled ? " disabled" : ""}`}
         style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}
       >
@@ -257,20 +257,7 @@ const CustomUploadFile = (props) => {
               </div>
             );
           })}
-          {/* {!hasFile || props.error ? (
-            <h2 className="file-upload-status">{props.message}</h2>
-          ) : (
-            <div className="tag-container" style={extraStyles ? extraStyles?.tagContainerStyles : null}>
-              <div className="tag" style={extraStyles ? extraStyles?.tagStyles : null}>
-                <span className="text" style={extraStyles ? extraStyles?.textStyles : null}>
-                   {(typeof inpRef.current.files[0]?.name !== "undefined") && !(props?.file)  ? inpRef.current.files[0]?.name : props.file?.name} 
-                </span>
-                <span onClick={() => handleDelete()} style={extraStyles ? extraStyles?.closeIconStyles : null}>
-                  <Close style={props.Multistyle} className="close" />
-                </span>
-              </div>
-            </div>
-          )} */}
+          
           {!props.uploadedFile || props.error ? (
             <h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>
           ) : (
@@ -311,7 +298,20 @@ const CustomUploadFile = (props) => {
             target.value = "";
           }}
         />
+      </div>}
+      {props?.disabled && (props.uploadedFile ? 
+      <div className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
+        <SubmitBar
+        onSubmit={() => {
+          routeTo(props.uploadedFile);
+        }}
+        label={t("CS_VIEW_DOCUMENT")}
+      /> 
       </div>
+      : <div className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"} ${props.disabled ? " disabled" : ""}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
+        <h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>
+      </div>)
+      }
       {props.iserror && <p style={{ color: "red" }}>{props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
       {loader && <LoaderNew page={true} />}

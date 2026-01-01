@@ -137,7 +137,7 @@ const ChallanStepperForm = () => {
 
   return (
     <div
-      className="pageCard"
+      className="card"
       style={{
         display: "flex",
         flexDirection: "column",

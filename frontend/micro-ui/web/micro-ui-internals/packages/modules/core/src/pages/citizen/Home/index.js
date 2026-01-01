@@ -29,8 +29,7 @@ import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/Citize
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import DashboardFooter from "./DashboardFooter";
 import CardBasedOptions from "../CardBasedOptions";
-import SurveyModal from "../../../../../engagement/src/components/Modal/SurveyModal";
-// import SurveyModal from "../../../../../engagement"
+import { SurveyModal } from "@mseva/digit-ui-module-engagement";
 
 
 
@@ -55,6 +54,9 @@ const Home = () => {
   const UserType = citizenInfo?.type === "CITIZEN"
   const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some((item) => item.code === "PESCO")
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true)
+  console.log("IS THIS PAGE REACH HERE IN CONSOLE...");
+  //const SurveyModal = Digit?.ComponentRegistryService?.getComponent("SurveyModal");
+
   const {
     data: { stateInfo, uiHomePage } = {},
     isLoading,
@@ -267,6 +269,9 @@ const Home = () => {
   return isLoading ? (
     <Loader />
   ) : (
+    <React.Fragment>
+
+        <SurveyModal isOpen={showSurveyModal} onClose={() => setShowSurveyModal(false)} />
     <div className="HomePageContainer">
       <div className="HomePageWrapper">
         <div className="hero-banner-styles">
@@ -366,12 +371,12 @@ const Home = () => {
           <CardBasedOptions {...allInfoAndUpdatesProps} />
         </div>
 
-        {/* Survey Modal */}
-        <SurveyModal isOpen={showSurveyModal} onClose={() => setShowSurveyModal(false)} />
+      
 
           {/* <DashboardFooter /> */}
       </div>
     </div>
+    </React.Fragment>
   )
 }
 

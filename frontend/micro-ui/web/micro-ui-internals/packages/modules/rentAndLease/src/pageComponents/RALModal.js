@@ -116,7 +116,7 @@ const RALModal = ({
   }, [file]);
 
   function submit(data) {
-    if (action?.action === "RENEWAL") {
+    if (action?.action === "RENEWAL" || action?.action === "RAL_RENEWAL") {
       if (!data?.tradeLicenseNumber) {
         setShowToast({ key: true, label: t("Trade License Number is required") });
         return;
@@ -153,7 +153,8 @@ const RALModal = ({
       action?.action === "REQUEST_FOR_DISCONNECTION" ||
       action?.action === "FORWARD_FOT_SETLEMENT" ||
       action?.action === "DISCONNECTION_FIELD_INSPECTION" ||
-      action?.action === "FORWARD_FOR_FIELDINSPECTION";
+      action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
+      action?.action === "FORWARD_FOR_DESCONNECTION_FIELD_INSPECTION";
 
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 

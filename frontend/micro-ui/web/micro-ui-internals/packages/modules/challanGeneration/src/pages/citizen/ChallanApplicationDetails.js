@@ -12,6 +12,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import NDCDocumentTimline from "../../components/NDCDocument";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CHBDocument from "../../components/ChallanDocument";
 import { useParams } from "react-router-dom";
 import { Loader } from "../../components/Loader";
@@ -258,25 +259,7 @@ const ChallanApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-        {workflowDetails?.data?.timeline && (
-          <Card style={{ marginTop: "20px" }}>
-            <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-            {workflowDetails?.data?.timeline.length === 1 ? (
-              <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-            ) : (
-              <ConnectingCheckPoints>
-                {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                  <CheckPoint
-                    keyValue={index}
-                    isCompleted={index === 0}
-                    label={t(checkpoint.status)}
-                    customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                  />
-                ))}
-              </ConnectingCheckPoints>
-            )}
-          </Card>
-        )}
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>

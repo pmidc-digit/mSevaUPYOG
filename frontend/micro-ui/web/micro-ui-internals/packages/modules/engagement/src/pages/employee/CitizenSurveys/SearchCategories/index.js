@@ -268,7 +268,7 @@ if(Categories.length>0){
   };
 
   return (
-    // <div className="pageCard">
+    // <div className="card">
     <Fragment>
       <Header>
         {t(SEARCH_CATEGORY)}

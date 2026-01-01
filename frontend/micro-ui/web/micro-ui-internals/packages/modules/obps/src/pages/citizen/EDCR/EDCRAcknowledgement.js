@@ -2,11 +2,13 @@ import { Banner, Card, CardText, LinkButton, SubmitBar, Toast } from "@mseva/dig
 import React, { useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { BPASearchModal } from "../../../pageComponents/BPASearchModal";
 
 const EDCRAcknowledgement = (props) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(false);
+  const [showModal, setShowModal] = useState(false)
   console.log("D++++++++");
 
   useEffect(() => {
@@ -88,6 +90,10 @@ const EDCRAcknowledgement = (props) => {
     // window.location.assign(`${window.location.origin}/digit-ui/citizen/obps/new-building-permit/docs-required`);
   };
 
+  function closeModal() {
+    setShowModal(false)
+  }
+
   return (
     <div>
       {edcrData.status == "Accepted" ? (
@@ -134,6 +140,7 @@ const EDCRAcknowledgement = (props) => {
                 {t("BPA_FOR_NEW_CONSTRUCTION_LABEL")}
               </CardText> */}
             </Link>
+            <SubmitBar label={t("BPA_LINK_FOR_PREVIOUS_BPA_LABEL")} onSubmit={() => {setShowModal(true); sessionStorage.setItem("clickOnBPAApplyAfterEDCR", true)}} />
             <div style={{ paddingBottom: "15px" }}>
               <Link to={`/digit-ui/citizen`}>
                 <LinkButton className="submit-bar" label={t("CORE_COMMON_GO_TO_HOME")} />
@@ -169,6 +176,7 @@ const EDCRAcknowledgement = (props) => {
           </div>
         </Card>
       )}
+      {showModal && <BPASearchModal closeModal={closeModal} edcrData={edcrData} />}
     </div>
   );
 };

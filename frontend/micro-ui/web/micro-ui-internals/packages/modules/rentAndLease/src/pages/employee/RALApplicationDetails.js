@@ -70,8 +70,8 @@ const RALApplicationDetails = () => {
     return () => clearTimeout(timer);
   };
 
-  // Assuming applicationData is your API response
-  const propertyDetails = applicationData?.additionalDetails ? applicationData.additionalDetails : {};
+  const rawAdditionalDetails = applicationData?.additionalDetails || {};
+  const propertyDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
   let user = Digit.UserService.getUser();
 
@@ -140,9 +140,13 @@ const RALApplicationDetails = () => {
       const appNo = acknowledgementIds;
       history.push(`/digit-ui/employee/payment/collect/rl-services/${appNo}/${tenantId}`);
       // history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${appNo}`);
-    } else if (action?.action === "RAL_RENEWAL") {
-      setShowModal(true);
-      setSelectedAction(action);
+    } else if (action?.action === "RAL_RENEWAL" || action?.action === "RENEWAL") {
+      if (propertyDetails?.propertyType?.toLowerCase() === "residential") {
+        handleRenewal(applicationData);
+      } else {
+        setShowModal(true);
+        setSelectedAction(action);
+      }
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -192,7 +196,7 @@ const RALApplicationDetails = () => {
     //   return;
     // }
     const finalPayload = {
-      AllotmentDetails: updatedApplicant,
+      AllotmentDetails: [updatedApplicant],
     };
     try {
       const response = await Digit.RentAndLeaseService.update({
@@ -258,26 +262,28 @@ const RALApplicationDetails = () => {
     const sanitizedOwners = data?.OwnerInfo?.map(({ ownerId, ...rest }) => rest);
 
     const payload = {
-      AllotmentDetails: {
-        tenantId: data?.tenantId,
-        propertyId: data?.propertyId,
-        previousApplicationNumber: data?.applicationNumber,
-        OwnerInfo: sanitizedOwners,
-        tradeLicenseNumber: data?.tradeLicenseNumber,
-        registrationNumber: data?.registrationNumber,
-        additionalDetails: data?.additionalDetails,
-        startDate: newStart.getTime(),
-        endDate: newEnd.getTime(),
-        workflow: {
-          action: "INITIATE",
+      AllotmentDetails: [
+        {
+          tenantId: data?.tenantId,
+          propertyId: data?.propertyId,
+          previousApplicationNumber: data?.applicationNumber,
+          OwnerInfo: sanitizedOwners,
+          tradeLicenseNumber: data?.tradeLicenseNumber ? data?.tradeLicenseNumber : "",
+          registrationNumber: data?.registrationNumber,
+          additionalDetails: data?.additionalDetails,
+          startDate: newStart.getTime(),
+          endDate: newEnd.getTime(),
+          workflow: {
+            action: "INITIATE",
+          },
+          Document: null,
         },
-        Document: null,
-      },
+      ],
     };
 
     try {
       const response = await Digit.RentAndLeaseService.create(payload);
-      updateApplication(response?.AllotmentDetails);
+      updateApplication(response?.AllotmentDetails?.[0]);
     } catch (error) {
       setLoader(false);
       setShowToast({ key: true, label: "Error creating renewal application" });
@@ -289,13 +295,15 @@ const RALApplicationDetails = () => {
     const sanitizedDocuments = applicationData?.Document?.map(({ docId, id, ...rest }) => rest);
 
     const payload = {
-      AllotmentDetails: {
-        ...response,
-        Document: sanitizedDocuments,
-        workflow: {
-          action: "APPLY",
+      AllotmentDetails: [
+        {
+          ...response,
+          Document: sanitizedDocuments,
+          workflow: {
+            action: "APPLY",
+          },
         },
-      },
+      ],
     };
     try {
       await Digit.RentAndLeaseService.update(payload);

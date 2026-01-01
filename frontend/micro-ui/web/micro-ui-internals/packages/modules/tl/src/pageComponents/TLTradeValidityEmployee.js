@@ -76,7 +76,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
 
   return (
     <React.Fragment>
-      <div style={{ marginTop: "16px", border: "1px solid #D6D5D4", padding: "16px", background: "#FAFAFA" }}>
+      <div className="clu-doc-required-card no-width">
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("TL_TRADE_VALIDITY_NO_OF_YEAR")}`}<span className="requiredField">*</span></CardLabel>
           <Controller

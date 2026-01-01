@@ -12,7 +12,7 @@ import {
   LinkButton,
   ActionBar,
   SubmitBar,
-  Table
+  Table,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -43,7 +43,8 @@ import { getOrderDocuments } from "../../../obps/src/utils";
 import DcbTable from "./DcbTable";
 import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
-import ApplicationTimeline from "./ApplicationTimeline"
+import ApplicationTimeline from "./ApplicationTimeline";
+import NewApplicationTimeline from "./NewApplicationTimeline";
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -85,35 +86,26 @@ function ApplicationDetailsContent({
       Header: t(" "),
       accessor: "url",
       Cell: ({ value }) =>
-        value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
-            label={t("View")}
-            onClick={() => routeTo(value)}
-          />
-        ) : (
-          t("CS_NA")
-        ),
+        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
 
-
   console.log("TIMELINE", applicationDetails, moduleCode);
   // ISSUE 9 FIX: Fetch payment history for WS applications
-   useEffect(() => {
+  useEffect(() => {
     const fetchPaymentHistory = async () => {
       if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
         try {
           // Determine businessService from serviceType (handle both SEWERAGE and SEWARAGE typo)
-          const businessService = (applicationData?.serviceType === "SEWERAGE" || 
-                                   applicationData?.serviceType === "SEWARAGE") ? "SW" : "WS";
-          
+          const businessService = applicationData?.serviceType === "SEWERAGE" || applicationData?.serviceType === "SEWARAGE" ? "SW" : "WS";
+
           const requestParams = {
-          tenantId: applicationData?.tenantId || tenantId,
-          filters: {
-            consumerCodes: applicationData?.connectionNo,
-            consumerCode: applicationData?.connectionNo
-          },
-          BusinessService: businessService  
+            tenantId: applicationData?.tenantId || tenantId,
+            filters: {
+              consumerCodes: applicationData?.connectionNo,
+              consumerCode: applicationData?.connectionNo,
+            },
+            BusinessService: businessService,
           };
 
           const paymentData = await Digit.WSService.paymentsearch(requestParams);
@@ -126,8 +118,8 @@ function ApplicationDetailsContent({
           console.error("❌ Payment fetch error:", error);
         }
       }
-    }
-      fetchPaymentHistory();
+    };
+    fetchPaymentHistory();
   }, [applicationData?.connectionNo, applicationData?.serviceType, tenantId]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
@@ -242,47 +234,45 @@ function ApplicationDetailsContent({
       //   },
       // };
       // Issue 18 Fix: Safe access to timeline array with proper bounds checking
-      
-      
-const privacy = {
-  // <CHANGE> Use checkpoint.assigner.uuid instead of checkpoint.assignes[0].uuid
-  uuid: checkpoint?.assigner?.uuid || checkpoint?.assignes?.[0]?.uuid,
-  fieldName: "mobileNumber",
-  model: "User",
-  showValue: false,
-  loadData: {
-    serviceName: "/egov-workflow-v2/egov-wf/process/_search",
-    requestBody: {},
-    requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
-    jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
-    isArray: false,
-    d: (res) => {
-      let resultstring = "";
-      // <CHANGE> Try both assigner and assignes paths
-      resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
-      return resultstring;
-    },
-  },
-};
-      
-      
+
+      const privacy = {
+        // <CHANGE> Use checkpoint.assigner.uuid instead of checkpoint.assignes[0].uuid
+        uuid: checkpoint?.assigner?.uuid || checkpoint?.assignes?.[0]?.uuid,
+        fieldName: "mobileNumber",
+        model: "User",
+        showValue: false,
+        loadData: {
+          serviceName: "/egov-workflow-v2/egov-wf/process/_search",
+          requestBody: {},
+          requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
+          jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
+          isArray: false,
+          d: (res) => {
+            let resultstring = "";
+            // <CHANGE> Try both assigner and assignes paths
+            resultstring = `+91 ${
+              _.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)
+            }`;
+            return resultstring;
+          },
+        },
+      };
+
       const previousCheckpoint = timeline && Array.isArray(timeline) && index > 0 && index - 1 < timeline.length ? timeline[index - 1] : null;
 
-const caption = {
-  date: checkpoint?.auditDetails?.lastModified,
-  // <CHANGE> Use checkpoint.assigner instead of checkpoint.assignes[0]
-  name: checkpoint?.assigner?.name || checkpoint?.assignes?.[0]?.name || "N/A",
-  mobileNumber:
-    applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assigner?.uuid &&
-    applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-      ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-      : checkpoint?.assigner?.mobileNumber || checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
-  comment: checkpoint?.comment ? t(checkpoint.comment) : "",
-  wfComment: previousCheckpoint ? previousCheckpoint.wfComment || [] : [],
-  thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
-};
-
-
+      const caption = {
+        date: checkpoint?.auditDetails?.lastModified,
+        // <CHANGE> Use checkpoint.assigner instead of checkpoint.assignes[0]
+        name: checkpoint?.assigner?.name || checkpoint?.assignes?.[0]?.name || "N/A",
+        mobileNumber:
+          applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assigner?.uuid &&
+          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            : checkpoint?.assigner?.mobileNumber || checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
+        comment: checkpoint?.comment ? t(checkpoint.comment) : "",
+        wfComment: previousCheckpoint ? previousCheckpoint.wfComment || [] : [],
+        thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
+      };
 
       return <TLCaption data={caption} OpenImage={OpenImage} privacy={privacy} />;
     } else {
@@ -354,9 +344,9 @@ const caption = {
       window.location.href.includes("employee/noc") ||
       window.location.href.includes("employee/ws")
     ) {
-      return { lineHeight: "19px", maxWidth: "950px", minWidth: "280px" };
+      return {};
     } else if (checkLocation) {
-      return { lineHeight: "19px", maxWidth: "600px", minWidth: "280px" };
+      return {};
     } else {
       return {};
     }
@@ -499,44 +489,41 @@ const caption = {
   const AccessProperty = () => {
     alert("access property");
   };
-  
-  useEffect(()=>{
-    const isWSModule = moduleCode === "WS" || moduleCode === "SW" || 
-                       window.location.href.includes("employee/ws") || 
-                       window.location.href.includes("/ws/");
-    
-    if(isWSModule) {
+
+  useEffect(() => {
+    const isWSModule =
+      moduleCode === "WS" || moduleCode === "SW" || window.location.href.includes("employee/ws") || window.location.href.includes("/ws/");
+
+    if (isWSModule) {
       return;
     }
-    
+
     // Only proceed for PT and BPREG modules
-    if(!propertyId) {
+    if (!propertyId) {
       return;
     }
-    
-    try{      
-      let filters={
-        consumerCodes:propertyId,
+
+    try {
+      let filters = {
+        consumerCodes: propertyId,
+      };
+      const auth = true;
+
+      if (moduleCode === "BPAREG") {
+        Digit.OBPSService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+          setPayments(response?.Payments);
+        });
+      } else if (moduleCode === "PT") {
+        Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+          setPayments(response?.Payments);
+        });
       }
-      const auth=true
-      
-      if(moduleCode==="BPAREG"){
-        Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-          setPayments(response?.Payments)
-        })
-      }else if(moduleCode==="PT"){
-        Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-          setPayments(response?.Payments)
-        })
-      }
-    }
-    catch(error){
+    } catch (error) {
       console.error("❌ Payment search error for PT/BPREG:", error);
     }
-  },[moduleCode, propertyId, tenantId])
+  }, [moduleCode, propertyId, tenantId]);
   return (
-    <Card style={{ position: "relative" }} className={"employeeCard-override"}>
-
+    <Card style={{ position: "relative" }}>
       {/* For UM-4418 changes */}
       {/* {isInfoLabel ? (
         <InfoDetails
@@ -653,32 +640,32 @@ const caption = {
                     );
                   }
                   return window.location.href.includes("modify") ? (
-                        <Row
-                          className="border-none"
-                          key={`${value.title}`}
-                          label={`${t(`${value.title}`)}`}
-                          privacy={value?.privacy}
-                          text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
-                          labelStyle={{ wordBreak: "break-all" }}
-                          textStyle={{ wordBreak: "break-all" }}
-                        />
-                      ) : (
-                        <Row
-                          key={t(value.title)}
-                          label={t(value.title)}
-                          text={getTextValue(value)}
-                          last={index === detail?.values?.length - 1}
-                          caption={value.caption}
-                          className="border-none"
-                          /* privacy object set to the Row Component */
-                          privacy={value?.privacy}
-                          // TODO, Later will move to classes
-                          rowContainerStyle={getRowStyles()}
-                          labelStyle={{ wordBreak: "break-all" }}
-                          textStyle={{ wordBreak: "break-all" }}
-                        />
-                      )
-                      // {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""}                  
+                    <Row
+                      className="border-none"
+                      key={`${value.title}`}
+                      label={`${t(`${value.title}`)}`}
+                      privacy={value?.privacy}
+                      text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
+                      labelStyle={{ wordBreak: "break-all" }}
+                      textStyle={{ wordBreak: "break-all" }}
+                    />
+                  ) : (
+                    <Row
+                      key={t(value.title)}
+                      label={t(value.title)}
+                      text={getTextValue(value)}
+                      last={index === detail?.values?.length - 1}
+                      caption={value.caption}
+                      className="border-none"
+                      /* privacy object set to the Row Component */
+                      privacy={value?.privacy}
+                      // TODO, Later will move to classes
+                      rowContainerStyle={getRowStyles()}
+                      labelStyle={{ wordBreak: "break-all" }}
+                      textStyle={{ wordBreak: "break-all" }}
+                    />
+                  );
+                  // {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""}
                 })}
             </StatusTable>
           </div>
@@ -746,17 +733,19 @@ const caption = {
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
           {/* {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />} */}
-          {detail?.additionalDetails?.documentsWithUrl && <Table
-            className="customTable table-border-style"
-            t={t}
-            data={detail?.additionalDetails?.documentsWithUrl[0]?.values || []}
-            columns={documentsColumns}
-            getCellProps={() => ({ style: {} })}
-            disableSort={false}
-            autoSort={true}
-            manualPagination={false}
-            isPaginationRequired={false}
-          />}
+          {detail?.additionalDetails?.documentsWithUrl && (
+            <Table
+              className="customTable table-border-style"
+              t={t}
+              data={detail?.additionalDetails?.documentsWithUrl[0]?.values || []}
+              columns={documentsColumns}
+              getCellProps={() => ({ style: {} })}
+              disableSort={false}
+              autoSort={true}
+              manualPagination={false}
+              isPaginationRequired={false}
+            />
+          )}
           {/* {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} />} */}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
@@ -776,9 +765,11 @@ const caption = {
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
-        <PaymentHistory payments={payments}/>
-        {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" &&  moduleCode !== "BPAStakeholder" &&  moduleCode !== "BPAREG" &&<ApplicationHistory applicationData={applicationDetails?.applicationData}/>}
+      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
+      <PaymentHistory payments={payments} />
+      {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG" && (
+        <ApplicationHistory applicationData={applicationDetails?.applicationData} />
+      )}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
@@ -838,7 +829,7 @@ const caption = {
             </Fragment>
           )}
           {!workflowDetails?.isLoading && !isDataLoading && moduleCode === "BPAREG" && (
-            <ApplicationTimeline workflowDetails={workflowDetails} t={t}/>
+            <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
           )}
         </React.Fragment>
       )}

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useHistory } from "react-router-dom";
 
+
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -23,8 +24,9 @@ const SurveyModal = ({ isOpen, onClose }) => {
   const history = useHistory();
   const { t } = useTranslation();
   const userInfo = Digit.UserService.getUser().info;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
@@ -35,6 +37,8 @@ console.log(tenantId, "TENANTTTTTT");
       try {
         const parsedData = JSON.parse(cachedData);
         setData(parsedData);
+        setHasFetched(true);
+        setLoading(false);
       } catch (e) {
         console.error("Failed to parse cached survey data", e);
       }
@@ -42,10 +46,10 @@ console.log(tenantId, "TENANTTTTTT");
   }, []);
 
   useEffect(() => {
-    if (isOpen && tenantId && data.length === 0) {
+    if (isOpen && tenantId && !hasFetched) {
       fetchActiveAndOpenSurveys();
     }
-  }, [isOpen, tenantId, data.length]);
+  }, [isOpen, tenantId, hasFetched]);
 
   function fetchActiveAndOpenSurveys() {
     setLoading(true);
@@ -57,9 +61,11 @@ console.log(tenantId, "TENANTTTTTT");
         setData(tableData);
         // Cache data in sessionStorage to persist across navigation
         sessionStorage.setItem("survey_modal_data", JSON.stringify(tableData));
+        setHasFetched(true);
         setLoading(false);
       })
       .catch((error) => {
+        setHasFetched(true);
         setLoading(false);
         console.error("Failed to fetch surveys", error);
       });
@@ -77,22 +83,19 @@ console.log(tenantId, "TENANTTTTTT");
     return null;
   }
 
+  // Don't show modal until data has been fetched
+  // If fetched and no data, don't show modal
+  if (!hasFetched || (hasFetched && data.length === 0)) {
+    return null;
+  }
+
   return (
     <Modal
       headerBarMain={
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="survey-modal-header">
           <span>{t("Active Surveys")}</span>
           {data?.length > 0 && (
-            <span
-              style={{
-                background: "#2563eb",
-                color: "#fff",
-                borderRadius: "12px",
-                padding: "2px 8px",
-                fontSize: "12px",
-                fontWeight: "600",
-              }}
-            >
+            <span className="survey-badge">
               {data.length}
             </span>
           )}
@@ -125,23 +128,23 @@ console.log(tenantId, "TENANTTTTTT");
           <div className="new-card-cards-grid">
             {data?.map((survey, index) => (
               <div key={index} className="new-card-option">
-                <h3 style={{ margin: "0 0 16px 0", fontSize: "16px", fontWeight: "600", color: "#1a202c" }}>{survey?.surveyTitle}</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px" }}>
-                  <div style={{ fontSize: "12px" }}>
-                    <span style={{ color: "#6b7280", fontWeight: "600" }}>Start Date:</span>
-                    <p style={{ margin: "4px 0 0 0", color: "#1f2937", fontSize: "14px" }}>
+                <h3 className="survey-card-title">{survey?.surveyTitle}</h3>
+                <div className="survey-card-container">
+                  <div className="survey-card-field">
+                    <span className="survey-card-label">Start Date:</span>
+                    <p className="survey-card-value">
                       {survey?.startDate ? format(new Date(survey?.startDate), "dd/MM/yyyy") : "NA"}
                     </p>
                   </div>
                   {survey?.endDate && (
-                    <div style={{ fontSize: "12px" }}>
-                      <span style={{ color: "#6b7280", fontWeight: "600" }}>End Date:</span>
-                      <p style={{ margin: "4px 0 0 0", color: "#1f2937", fontSize: "14px" }}>{format(new Date(survey?.endDate), "dd/MM/yyyy")}</p>
+                    <div className="survey-card-field">
+                      <span className="survey-card-label">End Date:</span>
+                      <p className="survey-card-value">{format(new Date(survey?.endDate), "dd/MM/yyyy")}</p>
                     </div>
                   )}
-                  <div style={{ fontSize: "12px" }}>
-                    <span style={{ color: "#6b7280", fontWeight: "600" }}>Description:</span>
-                    <p style={{ margin: "4px 0 0 0", color: "#1f2937", fontSize: "14px", lineHeight: "1.4" }}>
+                  <div className="survey-card-field">
+                    <span className="survey-card-label">Description:</span>
+                    <p className="survey-card-value">
                       {survey?.surveyDescription || "No description available"}
                     </p>
                   </div>
@@ -151,11 +154,11 @@ console.log(tenantId, "TENANTTTTTT");
             ))}
           </div>
         ) : (
-          <div className="survey-modal-empty-state" style={{ textAlign: "center", padding: "40px 20px" }}>
-            <p style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: "500", color: "#374151" }}>
+          <div className="survey-modal-empty-state">
+            <p>
               {t("No active surveys available at this time")}
             </p>
-            <p style={{ margin: "0", fontSize: "12px", color: "#6b7280" }}>Please check back later for new surveys</p>
+            <p>Please check back later for new surveys</p>
           </div>
         )}
       </div>

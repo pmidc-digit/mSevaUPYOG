@@ -30,9 +30,11 @@ const Inbox = ({
   const [isLoader, setIsLoader] = useState(false);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+  const paginationParams = {
+    limit: isMobile ? 10 : pageSize,
+    offset: isMobile ? 0 : pageOffset,
+    sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC",
+  };
 
   const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
 
@@ -105,7 +107,7 @@ const Inbox = ({
 
   const handleFilterChange = (filterParam) => {
     let keys_to_delete = filterParam.delete;
-    let _new = isMobile ? { ...filterParam } : { ...searchParams, ...filterParam };
+    let _new = { ...searchParams, ...filterParam };
     if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
     delete _new.delete;
     setSearchParams(_new);

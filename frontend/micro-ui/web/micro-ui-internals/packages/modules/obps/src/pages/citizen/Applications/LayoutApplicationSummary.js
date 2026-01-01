@@ -121,6 +121,7 @@ const LayoutApplicationOverview = () => {
 const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
   const [loading, setLoading] = useState(false);
+  const state = Digit.ULBService.getStateId()
 
 // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
@@ -247,7 +248,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+        onClick: () => getRecieptSearch({ tenantId: state, payments: reciept_data?.Payments[0] }),
       });
     }
   }

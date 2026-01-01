@@ -8,22 +8,22 @@ import { useTranslation } from "react-i18next";
 const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { mobileNumber, challanNo, Servicecategory,tenantId } = Digit.Hooks.useQueryParams();
+  const { mobileNumber, challanNo, Servicecategory, tenantId } = Digit.Hooks.useQueryParams();
   const filters = {};
   if (mobileNumber) filters.mobileNumber = mobileNumber;
   if (challanNo) filters.consumerCode = challanNo;
   if (Servicecategory) filters.businesService = Servicecategory;
 
   const result = Digit.Hooks.mcollect.useMcollectSearchBill({ tenantId, filters });
+  console.log("result", result);
   let bills = result?.data?.Bills;
 
   if (result.isLoading) {
     return <Loader />;
   }
 
-
   const onSubmit = (data) => {
- history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
+    history.push(`/digit-ui/citizen/payment/my-bills/${data?.businesService}/${data?.ChannelNo}?workflow=mcollect`);
   };
 
   const payment = {};
@@ -57,7 +57,7 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
 
   return (
     <div style={{ marginTop: "16px" }}>
-      <div >
+      <div>
         {header && (
           <Header style={{ marginLeft: "8px" }}>
             {t(header)} ({searchResults?.length})

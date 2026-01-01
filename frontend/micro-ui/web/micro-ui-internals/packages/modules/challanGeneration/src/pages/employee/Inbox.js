@@ -142,7 +142,12 @@ const Inbox = ({
   } else {
     return (
       <div>
-        {/* {isInbox && <Header>{t("ACTION_TEST_CHALLANGENERATION")}</Header>} */}
+        {isInbox && (
+          <Header>
+            {t("ES_COMMON_INBOX")}
+            {data?.totalCount ? <p className="inbox-count">{data?.totalCount}</p> : null}
+          </Header>
+        )}
         <DesktopInbox
           businessService={businessService}
           data={formedData}

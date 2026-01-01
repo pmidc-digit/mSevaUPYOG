@@ -62,23 +62,30 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
     {
       Header: t("RENT_LEASE_PROPERTY_NAME"),
       Cell: ({ row }) => {
-        return GetCell(`${row.original?.searchData?.additionalDetails?.["propertyName"]}`);
+        return GetCell(`${row.original?.searchData?.additionalDetails?.[0]?.["propertyName"]}`);
       },
-      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.["propertyName"]}`),
+      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.[0]?.["propertyName"]}`),
     },
     {
       Header: t("RAL_ALLOTMENT_TYPE"),
       Cell: ({ row }) => {
-        return GetCell(`${row.original?.searchData?.additionalDetails?.["allotmentType"]}`);
+        return GetCell(`${row.original?.searchData?.additionalDetails?.[0]?.["allotmentType"]}`);
       },
-      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.["allotmentType"]}`),
+      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.[0]?.["allotmentType"]}`),
     },
     {
       Header: t("RENT_AMOUNT "),
       Cell: ({ row }) => {
-        return GetCell(`${row.original?.searchData?.additionalDetails?.["baseRent"]}`);
+        return GetCell(`${row.original?.searchData?.additionalDetails?.[0]?.["baseRent"]}`);
       },
-      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.["baseRent"]) || "-",
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["baseRent"]) || "-",
+    },
+    {
+      Header: t("CS_CREATED_DATE"),
+      Cell: ({ row }) => {
+        return GetCell(convertEpochToDate(row.original?.searchData?.auditDetails?.["createdTime"]));
+      },
+      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.searchData?.auditDetails?.["createdTime"])),
     },
     {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),

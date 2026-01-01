@@ -49,7 +49,8 @@ import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
-import { getBase64Img } from "../../../utils"
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
+
 
 const BpaApplicationDetail = () => {
   const { id } = useParams()
@@ -101,6 +102,7 @@ const BpaApplicationDetail = () => {
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
+  const applicationType = data?.edcrDetails?.appliactionType
 
 
 
@@ -272,12 +274,7 @@ console.log("building category here: & fileNo", usage,fileno);
   })
   const userInfo = Digit.UserService.getUser();
 console.log('userInfo', userInfo)
-  const architecttype =
-  data?.applicationData?.additionalDetails?.typeOfArchitect ||
-  user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name ||
-  "";
-console.log('architecttype', architecttype)
-  const isArchitect = architecttype?.toUpperCase() === "ARCHITECT";
+  const isArchitect = data?.applicationData?.additionalDetails?.architectMobileNumber === userInfo?.info?.mobileNumber;
 
   console.log("datata=====", workflowDetails, data, isArchitect)
 
@@ -345,8 +342,8 @@ console.log('architecttype', architecttype)
   const handleMobileNumberChange = (e) => {
     setMobileNumber(e.target.value)
   }
-  const requestor = data?.applicationData?.additionalDetails?.architectMobileNumber;
- console.log("requeestor",requestor); 
+  const requestor = userInfo?.info?.mobileNumber;
+console.log(requestor); 
 
     const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
 
@@ -354,24 +351,27 @@ console.log('architecttype', architecttype)
   console.log('LicenseData', LicenseData)
 
   let stakeholderAddress="";
-  let signFilestoreId =null
-  if (!LicenseDataLoading && requestor) {
-    const matchedLicense = LicenseData?.Licenses?.find((lic) => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor);
 
-    if (matchedLicense) {
-      const signDoc = matchedLicense?.tradeLicenseDetail?.applicationDocuments?.find((doc) => doc?.documentType === "APPL.BPAREG_SCANNED_SIGNATURE");
+if (!LicenseDataLoading && requestor) {
+  const matchedLicense = LicenseData?.Licenses?.find(
+    lic => lic?.tradeLicenseDetail?.owners?.[0]?.mobileNumber === requestor
+  );
 
-      signFilestoreId = signDoc?.fileStoreId
-      const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
+  console.log('matchedLicense', matchedLicense)
+  if (matchedLicense) {
+    const owner = matchedLicense?.tradeLicenseDetail?.owners?.[0];
 
-      stakeholderAddress = [owner?.permanentAddress, owner?.permanentCity, owner?.permanentDistrict, owner?.permanentPinCode]
-        .filter(Boolean)
-        .join(", ");
+stakeholderAddress = [
+  owner?.permanentAddress,
+  owner?.permanentCity,
+  owner?.permanentDistrict,
+  owner?.permanentPinCode
+]
+.filter(Boolean) 
+.join(", ");
 
-    }
-  }
-  console.log('signFilestoreId', signFilestoreId)
-
+console.log(stakeholderAddress,"stakeholderAddress");  }
+}
   const handleGetOTPClick = async () => {
     // Call the Digit.UserService.sendOtp API to send the OTP
     try {
@@ -512,6 +512,27 @@ console.log('architecttype', architecttype)
         ),
     },
   ];
+
+  const oldEDCRDocumentsColumns = [
+            {
+                Header: t("BPA_EDCR_NO_LABEL"),
+                accessor: "edcrNumber",
+                Cell: ({ value }) => value || t("CS_NA"),
+            },
+            {
+                Header: t(""),
+                accessor: "planReport",
+                Cell: ({ value }) =>
+                    value ? (
+                        <LinkButton style={{ float: "right", display: "inline" }}
+                            label={t("View")}
+                            onClick={() => routeTo(value)}
+                        />
+                    ) : (
+                        t("CS_NA")
+                    ),
+            },
+    ];
 
   const isValidMobileNumber = mobileNumber?.length === 10 && /^[0-9]+$/.test(mobileNumber)
   const citizenvalidations = sessionStorage.getItem("CitizenConsentdocFilestoreid") ? true : false
@@ -696,8 +717,9 @@ useEffect(() => {
     const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
+
   async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
     console.log('nowIST', nowIST)
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
@@ -707,19 +729,9 @@ useEffect(() => {
     const approvalDatePlusThree = newValidityDate.getTime();
 
     console.log("validity date",approvalDatePlusThree); 
-    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    let base64Image = null;
 
-      if (signFilestoreId && signFilestoreId.length > 0) {
-        const fetchedBase64 = await getBase64Img(signFilestoreId, state);
-        if (fetchedBase64) {
-          base64Image = fetchedBase64;
-        } else {
-          console.warn("Signature image not found, skipping.");
-        }
-      }
-    
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation,...(base64Image ? { base64Image } : {})}
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
@@ -960,7 +972,7 @@ useEffect(() => {
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t)
     }
-    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "APPROVE_AND_PAY"){
+    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY"){
       if(!validateDataForAction(action)){
         return;
       }
@@ -1086,11 +1098,12 @@ useEffect(() => {
             const result = await Digit.OBPSService.update({
                 BPA: {
                   ...data,
+                  applicationType,
                   riskType: data?.additionalDetails?.riskType,
                   documents: (isCitizenConsentIncluded && action === "APPROVE_AND_PAY") ? updatedDocuments : app.documents,
                   workflow: {
                         action: workflowAction,
-                        assignes: workflowAction === "RESUBMIT" ? [] : [accountId]
+                        assignes: (workflowAction === "RESUBMIT") || (workflowAction === "RESUBMIT_AND_PAY") || (workflowAction === "APPROVE_AND_PAY") ? [] : [accountId]
                   }
                 }
             }, tenantId)
@@ -1100,7 +1113,7 @@ useEffect(() => {
                   history.replace(`/digit-ui/citizen/obps/response`, { data: result });                  
                 }
                 else{
-                  history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`);
+                  history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`,{workflowAction});
                 }                
             } else {
                 alert(t("BPA_CREATE_APPLICATION_FAILED"));
@@ -1327,7 +1340,7 @@ useEffect(() => {
       }
     }
 
-    let payload = { ...app, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow };
+    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
 
     mutation.mutate(
       { BPA: payload },
@@ -1488,7 +1501,7 @@ useEffect(() => {
     })
   }
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0 && data?.applicationData?.status === "APPROVED") {
+  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0 && data?.applicationData?.additionalDetails?.isSanctionLetterGenerated) {
     !data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
@@ -1774,32 +1787,7 @@ useEffect(() => {
 
                         {/* to get Scrutiny values */}
                         {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0
-                          ? 
-                          // detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => {
-                          //   console.log("scrutinyForReportPlans", scrutiny)
-                          //   return (
-                          //   <Fragment key={scrutiny?.title}>
-                          //     {/* <Row className="border-none" label={t(scrutiny?.title)} />
-                          //     <LinkButton
-                          //       onClick={() => downloadDiagram(scrutiny?.value)}
-                          //       label={<PDFSvg />}
-                          //     ></LinkButton>
-                          //     <p
-                          //       style={{
-                          //         marginTop: "8px",
-                          //         marginBottom: "20px",
-                          //         fontWeight: "bold",
-                          //         fontSize: "16px",
-                          //         lineHeight: "19px",
-                          //         color: "#505A5F",
-                          //         fontWeight: "400",
-                          //       }}
-                          //     >
-                          //       {t(scrutiny?.text)}
-                          //     </p> */}
-                          //   </Fragment>
-                          // )})
-                          <Table
+                          ? <Table
                               className="customTable table-border-style"
                               t={t}
                               data={detail?.additionalDetails?.scruntinyDetails}
@@ -1811,6 +1799,19 @@ useEffect(() => {
                               isPaginationRequired={false}
                             />
                           : null}
+
+                        {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 &&
+                          <Table
+                            className="customTable table-border-style"
+                            t={t}
+                            data={data?.applicationData?.additionalDetails?.oldEDCR}
+                            columns={oldEDCRDocumentsColumns}
+                            getCellProps={() => ({ style: {} })}
+                            disableSort={false}
+                            autoSort={true}
+                            manualPagination={false}
+                            isPaginationRequired={false}
+                          />}
                           
 
                         {/* to get Owner values */}
@@ -2055,7 +2056,7 @@ useEffect(() => {
                     <Fragment>
                       <div id="timeline">
                         {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
-                        <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
+                        <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
                         {/* {!workflowDetails?.isLoading &&
                           workflowDetails?.data?.newNextAction?.length > 0 &&
                           !isFromSendBack &&

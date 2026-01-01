@@ -81,6 +81,8 @@ public class Kitchen extends FeatureProcess {
     private static final String SUBRULE_41_III_AREA_DESC = "Total area of %s";
     private static final String SUBRULE_41_III_TOTAL_WIDTH = "Minimum Width of %s";
 
+    private static final String SUBRULE_41_III_EMPTY_ERROR = "Kitchen %s is empty for floor %s";
+    
     public static final BigDecimal MINIMUM_HEIGHT_2_75 = BigDecimal.valueOf(2.75);
     public static final BigDecimal MINIMUM_HEIGHT_2_4 = BigDecimal.valueOf(2.4);
     public static final BigDecimal MINIMUM_AREA_4_5 = BigDecimal.valueOf(4.5);
@@ -210,6 +212,9 @@ public class Kitchen extends FeatureProcess {
                                         isTypicalRepititiveFloor);
                                 buildResult(pl, floor, minimumHeight, subRule, subRuleDesc, totalArea, valid, typicalFloorValues);
 
+                            }else {
+                            	//errors.put("kitchen Areas is empty",String.format(SUBRULE_41_III_EMPTY_ERROR, "area",floor.getNumber()));
+                                //pl.addErrors(errors);
                             }
 
                             if (!kitchenWidths.isEmpty()) {
@@ -221,6 +226,9 @@ public class Kitchen extends FeatureProcess {
                                 minWidth = MINIMUM_WIDTH_1_8;
                                 subRuleDesc = String.format(SUBRULE_41_III_TOTAL_WIDTH, KITCHEN);
                                 buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
+                            }else {
+                            	//errors.put("kitchen width is empty",String.format(SUBRULE_41_III_EMPTY_ERROR, "width",floor.getNumber()));
+                                //pl.addErrors(errors);
                             }
 
                             if (!kitchenStoreAreas.isEmpty()) {
@@ -234,6 +242,9 @@ public class Kitchen extends FeatureProcess {
                                         isTypicalRepititiveFloor);
                                 buildResult(pl, floor, minimumHeight, subRule, subRuleDesc, totalArea, valid, typicalFloorValues);
 
+                            }else {
+                            	//errors.put("kitchen store area is empty",String.format(SUBRULE_41_III_EMPTY_ERROR, "store",floor.getNumber()));
+                                //pl.addErrors(errors);
                             }
 
                             if (!kitchenStoreWidths.isEmpty()) {
@@ -245,6 +256,9 @@ public class Kitchen extends FeatureProcess {
                                 minWidth = MINIMUM_WIDTH_1_8;
                                 subRuleDesc = String.format(SUBRULE_41_III_TOTAL_WIDTH, KITCHEN_STORE);
                                 buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
+                            }else {
+                            	//errors.put("kitchen store width is empty",String.format(SUBRULE_41_III_EMPTY_ERROR, "store width",floor.getNumber()));
+                                //pl.addErrors(errors);
                             }
 
                             if (!kitchenDiningAreas.isEmpty()) {
@@ -258,6 +272,9 @@ public class Kitchen extends FeatureProcess {
                                         isTypicalRepititiveFloor);
                                 buildResult(pl, floor, minimumHeight, subRule, subRuleDesc, totalArea, valid, typicalFloorValues);
 
+                            }else {
+                            	//errors.put("kitchen dining area is empty",String.format(SUBRULE_41_III_EMPTY_ERROR, "dining area",floor.getNumber()));
+                                //pl.addErrors(errors);
                             }
 
                             if (!kitchenDiningWidths.isEmpty()) {
@@ -269,6 +286,9 @@ public class Kitchen extends FeatureProcess {
                                 minWidth = MINIMUM_WIDTH_2_1;
                                 subRuleDesc = String.format(SUBRULE_41_III_TOTAL_WIDTH, KITCHEN_DINING);
                                 buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
+                            }else {
+                            	//errors.put("kitchen dining width is empty",String.format(SUBRULE_41_III_EMPTY_ERROR, "dining width",floor.getNumber()));
+                                //pl.addErrors(errors);
                             }
                         }
                     }

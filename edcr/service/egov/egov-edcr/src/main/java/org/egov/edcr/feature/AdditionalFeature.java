@@ -559,7 +559,7 @@ public class AdditionalFeature extends FeatureProcess {
             boolean isAccepted = false;
             String ruleNo = RULE_38;
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetailRoadArea(
-                    "Block_" + block.getNumber() + "_" + "Height of Building");
+                    "Block_" + block.getNumber() + "_" + "Height of Building (excluding mumty)");
             String requiredBuildingHeight = StringUtils.EMPTY;
             //BigDecimal buildingHeight = block.getBuilding().getBuildingHeight();
             // modify the building height check from total building height to building height exclude mumty

@@ -50,6 +50,7 @@ package org.egov.common.entity.edcr;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import org.egov.common.entity.edcr.TerraceToilet;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

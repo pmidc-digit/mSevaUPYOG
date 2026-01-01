@@ -85,8 +85,8 @@ public class GateService  extends FeatureProcess {
 	        details.put(STATUS, Result.Not_Accepted.getResultVal());
 	    }
 
-	    scrutinyDetail.getDetail().add(details);
-	    plan.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	    //scrutinyDetail.getDetail().add(details);
+	    //plan.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 	    LOG.info("Completed Main Gate validation.");
 

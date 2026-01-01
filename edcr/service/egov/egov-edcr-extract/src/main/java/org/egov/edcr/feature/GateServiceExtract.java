@@ -54,10 +54,10 @@ public class GateServiceExtract extends FeatureExtract {
 
                 LOG.error("Main gate polyline is not defined.");
 
-                planDetail.addError(
-                        "GATE_POLYLINE_MISSING",
-                        "Main gate polyline is mandatory but not defined in the plan."
-                );
+				/*
+				 * planDetail.addError( "GATE_POLYLINE_MISSING",
+				 * "Main gate polyline is mandatory but not defined in the plan." );
+				 */
                 return planDetail;
             }
 

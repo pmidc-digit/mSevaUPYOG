@@ -106,10 +106,10 @@ public class TravelDistanceToExit extends FeatureProcess {
             HashMap<String, String> errors = new HashMap<>();
             if (pl != null) {
                 if (pl.getTravelDistancesToExit().isEmpty()) {
-                    errors.put(DcrConstants.TRAVEL_DIST_EXIT,
-                            edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED, new String[] {
-                                    DcrConstants.TRAVEL_DIST_EXIT }, LocaleContextHolder.getLocale()));
-                    pl.addErrors(errors);
+//                    errors.put(DcrConstants.TRAVEL_DIST_EXIT,
+//                            edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED, new String[] {
+//                                    DcrConstants.TRAVEL_DIST_EXIT }, LocaleContextHolder.getLocale()));
+//                    pl.addErrors(errors);
                     return pl;
                 }
             }

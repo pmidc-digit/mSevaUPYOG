@@ -63,10 +63,10 @@ public class GeneralStair extends FeatureProcess {
             int totalFlights = 0;
             BigDecimal riserHeigt = BigDecimal.ZERO;
            BigDecimal flrHt = BigDecimal.ZERO;
-           BigDecimal totalLandingWidth = BigDecimal.ZERO;
+           //BigDecimal totalLandingWidth = BigDecimal.ZERO;
            BigDecimal totalFlightWidth = BigDecimal.ZERO;
-           BigDecimal totalRisers = BigDecimal.ZERO;
-           BigDecimal totalSteps = BigDecimal.ZERO;
+           //BigDecimal totalRisers = BigDecimal.ZERO;
+           //BigDecimal totalSteps = BigDecimal.ZERO;
 
             if (block.getBuilding() != null) {
                 /*
@@ -218,6 +218,9 @@ public class GeneralStair extends FeatureProcess {
 //                    }
 //                }
                 for (Floor floor : floors) {
+                	BigDecimal totalSteps = BigDecimal.ZERO;
+                	BigDecimal totalLandingWidth = BigDecimal.ZERO;
+                	BigDecimal totalRisers = BigDecimal.ZERO;
 
                     currentFloor = floor;
 

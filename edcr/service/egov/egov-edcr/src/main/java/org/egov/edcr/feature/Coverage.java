@@ -264,7 +264,13 @@ public class Coverage extends FeatureProcess {
 
 			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 					|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
-				permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);				
+				//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
+				
+				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
+			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
+			        permissibleCoverageValue = scOpt.get();
+				}
 			}else {
 				// getting permissible value from mdms
 //				Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
@@ -286,8 +292,8 @@ public class Coverage extends FeatureProcess {
 		
 		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);
-//			permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
-			permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);				
+			permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
+			//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);				
 		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
 			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
@@ -318,9 +324,11 @@ public class Coverage extends FeatureProcess {
 				&& A.equals(mostRestrictiveOccupancy.getType().getCode())) {
 			//if (occupancyList != null && occupancyList.size() > 1) {
 //				processCoverage(pl,mostRestrictiveOccupancy.getType().getName(), totalCoverage, 
-//						permissibleCoverageValue,coverageArea,plotArea);			
-			processCoverage(pl,mostRestrictiveOccupancy, totalCoverageArea, 
+//						permissibleCoverageValue,coverageArea,plotArea);
+			processCoverage(pl,mostRestrictiveOccupancy, totalCoverage, 
 					permissibleCoverageValue,coverageArea,plotArea);
+//			processCoverage(pl,mostRestrictiveOccupancy, totalCoverageArea, 
+//					permissibleCoverageValue,coverageArea,plotArea);
 			}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) {
 				processCoverage(pl, mostRestrictiveOccupancy, totalCoverageArea,
 						permissibleCoverageValue,coverageArea,plotArea);
@@ -553,16 +561,16 @@ public class Coverage extends FeatureProcess {
 		
 		if(occupancyTypeHelper!=null && occupancyTypeHelper.getType().getName()!=null) {
 			occupancy = occupancyTypeHelper.getType().getName();
-			if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
-					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
-					|| F.equalsIgnoreCase(occupancyTypeHelper.getType().getCode())
-					) {
-				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + " m²";
-				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
-			}else {
+//			if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
+//					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
+//					|| F.equalsIgnoreCase(occupancyTypeHelper.getType().getCode())
+//					) {
+//				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + " m²";
+//				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
+//			}else {
 				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverageArea.setScale(2, RoundingMode.HALF_UP).toString() +" %");
 				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");
-			}
+			//}
 		}
 		
 		if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial")

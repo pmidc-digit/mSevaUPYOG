@@ -1454,7 +1454,7 @@ public class PlanReportService {
             valuesMap.put("bpaApplicationDate", DateUtils.toDefaultDateFormat(dcrApplication.getPermitApplicationDate()));
         }
         
-        finalReportStatus = processComplianceReport(valuesMap);
+        //finalReportStatus = processComplianceReport(valuesMap);
         
         if (finalReportStatus) {
             String dcrApplicationNumber = "";
@@ -1853,9 +1853,9 @@ public class PlanReportService {
                     	    //MANDATORY_KEYS.add("1Fire Tender Movement");
                     }
                     
-                    if(building.getMostRestrictiveFarHelper().getType().equals("A")) {
-                    	MANDATORY_KEYS.add("1Number of Floors");
-                    }
+//                    if(building.getMostRestrictiveFarHelper().getType()!=null && building.getMostRestrictiveFarHelper().getType().equals("A")) {
+//                    	MANDATORY_KEYS.add("1Number of Floors");
+//                    }
 
                     if (!floors.isEmpty()) {
                         List<DcrReportFloorDetail> dcrReportFloorDetails = new ArrayList<>();

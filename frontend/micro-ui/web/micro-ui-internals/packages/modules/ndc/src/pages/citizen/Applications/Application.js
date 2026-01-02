@@ -9,7 +9,7 @@ const MyApplications = ({ view }) => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const itemsPerPage = 5;
 
-  const { isLoading, data } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: userInfo.mobileNumber }, tenantId);
+  const { isLoading, data } = Digit.Hooks.ndc.useSearchApplication({}, tenantId);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -23,35 +23,40 @@ const MyApplications = ({ view }) => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentApplications = applicationsList.slice(indexOfFirstItem, indexOfLastItem);
 
+  console.log("currentApplications", currentApplications);
+
   return (
     <React.Fragment>
       <Header>{t("TL_MY_APPLICATIONS_HEADER")}</Header>
 
       {currentApplications.map((application, index) => {
-        const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
-
+        const ownerForName = application?.Applications?.owners || [];
+        const ownerNames = ownerForName
+          ?.map((owner) => owner?.name)
+          ?.filter(Boolean)
+          ?.join(", ");
         return (
           <div key={`card-${index}`}>
             <Card>
-              {Object.keys(filteredApplication)
-                .filter((key) => filteredApplication[key] !== null)
-                .map((item) => (
-                  <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
-                ))}
+              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={t(application?.Applications?.applicationNo)} />
+              <KeyNote keyValue={t("TL_LOCALIZATION_OWNER_NAME")} note={t(ownerNames)} />
+              <KeyNote keyValue={t("TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL")} note={t(application?.TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL)} />
 
-              {application?.Applications?.applicationStatus !== "PENDINGPAYMENT" && (
+              <div style={{ display: "flex", gap: "20px" }}>
+                {/* {application?.Applications?.applicationStatus !== "PENDINGPAYMENT" && ( */}
                 <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.applicationNo}`}>
                   <SubmitBar label={t("CS_VIEW_DETAILS")} />
                 </Link>
-              )}
+                {/* )} */}
 
-              {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
-                <Link to={`/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`}>
-                  <div style={{ marginTop: "10px" }}>
-                    <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
-                  </div>
-                </Link>
-              )}
+                {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
+                  <Link to={`/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`}>
+                    <div>
+                      <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
+                    </div>
+                  </Link>
+                )}
+              </div>
             </Card>
           </div>
         );

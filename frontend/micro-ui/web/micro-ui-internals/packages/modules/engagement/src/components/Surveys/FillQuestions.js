@@ -18,6 +18,7 @@ import { useHistory } from "react-router-dom";
 import Dialog from "../Modal/Dialog";
 
 const FillQuestions = (props) => {
+  console.log("testing");
   const { t } = useTranslation();
   const [formData, setFormData] = useState({});
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
@@ -43,6 +44,7 @@ const FillQuestions = (props) => {
     (async () => {
       setLoading(true);
       let response = await Digit.LocationService.getLocalities(city);
+      console.log("response==", response);
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary.length > 0) {
@@ -50,9 +52,24 @@ const FillQuestions = (props) => {
         __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
         setLoading(false);
       }
-      setLocalityList(__localityList);
+      const localityDropdownOptions = (__localityList || [])
+        ?.map((item) => {
+          const wardMatch = item.name.match(/Ward\s(\d+)/);
+          const wardNumber = wardMatch ? Number(wardMatch[1]) : Infinity;
+
+          return {
+            ...item,
+            wardNumber,
+          };
+        })
+        ?.sort((a, b) => a.wardNumber - b.wardNumber);
+
+      console.log("localityDropdownOptions==", localityDropdownOptions);
+      setLocalityList(localityDropdownOptions);
     })();
   }, [city]);
+
+  console.log("hererere");
 
   useEffect(() => {
     (async () => {

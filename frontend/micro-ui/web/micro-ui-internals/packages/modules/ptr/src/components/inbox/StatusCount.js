@@ -5,6 +5,7 @@ import { CheckBox } from "@mseva/digit-ui-react-components";
 const StatusCount = ({ status, searchParams, onAssignmentChange, statusMap, businessServices }) => {
   const { t } = useTranslation();
 
+  console.log("status===", status);
 
   return (
     <CheckBox
@@ -13,7 +14,8 @@ const StatusCount = ({ status, searchParams, onAssignmentChange, statusMap, busi
       checked={(() => {
         return searchParams?.applicationStatus?.some((e) => e.uuid === status.uuid);
       })()}
-      label={`${status.name} (${statusMap?.find((e) => e.statusid === status.uuid)?.count || "-"})`}
+      label={`${status.name} 
+      (${statusMap?.find((e) => e.statusid === status.uuid)?.count || "-"})`}
     />
   );
 };

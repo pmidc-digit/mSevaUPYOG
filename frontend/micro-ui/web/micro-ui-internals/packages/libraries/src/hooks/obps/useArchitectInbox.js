@@ -3,6 +3,7 @@ import useInbox from "../useInbox"
 import { InboxGeneral } from "../../services/elements/InboxService";
 import { Search } from "../../services/molecules/OBPS/Search";
 import { useQuery } from "react-query";
+import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../constants/constants";
 
 const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCount = false, config={} }) => {
 
@@ -19,7 +20,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
         tenantId: normalizedTenantId,
 		processSearchCriteria: {
             moduleName: moduleName ? moduleName : "bpa-services",
-			businessService: businessService?.length > 0 ? [businessService] : ["BPA_LOW", "BPA", "BPA_OC"],
+			businessService: businessService?.length > 0 ? [businessService] : OBPS_BPA_BUSINESS_SERVICES,
             ...(applicationStatus?.length > 0 ? {status: applicationStatus} : {}),
         },
 		moduleSearchCriteria: {
@@ -86,7 +87,7 @@ const useArchitectInbox = ({ tenantId, filters, withEDCRData = true, isTotalCoun
       tenantId: normalizedTenantId,
       processSearchCriteria: {
         moduleName: moduleName ? moduleName : "bpa-services",
-        businessService: businessService?.length > 0 ? businessService : ["BPA_LOW", "BPA", "BPA_OC"],
+        businessService: businessService?.length > 0 ? businessService : OBPS_BPA_BUSINESS_SERVICES,
       },
       moduleSearchCriteria: {
         ...(mobileNumber ? { mobileNumber } : {}),

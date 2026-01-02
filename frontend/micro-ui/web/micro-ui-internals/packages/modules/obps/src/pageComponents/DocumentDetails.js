@@ -55,16 +55,25 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
+  console.log("currentStepData",currentStepData)
+  const searchObj = currentStepData?.createdResponse
   const { data: bpaTaxDocuments, isLoading } = Digit.Hooks.obps.useBPATaxDocuments(
     stateId,
     {
-      status: "INPROGRESS",
-      RiskType: "LOW",
-      ServiceType: "NEW_CONSTRUCTION",
-      applicationType: "BUILDING_PLAN_SCRUTINY",
+      status: searchObj?.status,
+      riskType: searchObj?.riskType,
+      data: {
+        serviceType: searchObj?.additionalDetails?.serviceType,
+        applicationType: searchObj?.additionalDetails?.applicationType,
+      }
     },
     beforeUploadDocuments || []
   );
+
+  const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["DocTypeMapping"]);
+  console.log("bpaTaxDocuments", 
+    bpaDocs?.BPA?.DocTypeMapping.filter(data => (data.WFState == searchObj?.status && data.RiskType == searchObj?.riskType && data.ServiceType == searchObj?.additionalDetails?.serviceType && data.applicationType == searchObj?.additionalDetails?.applicationType))
+  )
 
   console.log(formData, "FDFDFDF");
   console.log(bpaTaxDocuments, "bpabpa");

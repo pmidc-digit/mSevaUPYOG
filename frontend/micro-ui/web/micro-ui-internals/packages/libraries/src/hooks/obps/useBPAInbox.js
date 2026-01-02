@@ -1,3 +1,4 @@
+import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../constants/constants";
 import useInbox from "../useInbox";
 import { useTranslation } from "react-i18next";
 
@@ -18,7 +19,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     applicationType === "BUILDING_OC_PLAN_SCRUTINY" &&
     (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox"))
   ) {
-    businessService = ["BPA_LOW", "BPA"];
+    businessService = OBPS_BPA_BUSINESS_SERVICES;
   }
 
   let _filters = {
@@ -30,7 +31,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
         moduleName !== "BPAREG"
           ? businessService
             ? [businessService]
-            : ["BPA_LOW", "BPA"]
+            : OBPS_BPA_BUSINESS_SERVICES
           : businessService
           ? [businessService.identifier]
           // ? [businessService]

@@ -32,10 +32,7 @@ const useADSDocumentSearch = ({ application } = {}, config = {}, Code, index) =>
   const newDocs = Code ? candidateDocs.filter((doc) => doc && doc.documentType === Code) : candidateDocs;
 
   // Extract fileStoreIds and drop falsy values
-  const filesArray = newDocs.map((v) => v?.fileStoreId).filter(Boolean);
-  console.log("useADSDocumentSearch candidateDocs:", candidateDocs, "Code:", Code);
-  console.log("useADSDocumentSearch newDocs:", newDocs);
-  console.log("useADSDocumentSearch filesArray:", filesArray);
+  const filesArray = newDocs.map((v) => (v?.fileStoreId || v?.documentUid)).filter(Boolean);
 
   const queryKey = [`adsDocuments-${bookingId}`, filesArray];
 

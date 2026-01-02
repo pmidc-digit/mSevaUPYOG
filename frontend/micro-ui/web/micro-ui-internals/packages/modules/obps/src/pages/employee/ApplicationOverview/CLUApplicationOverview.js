@@ -28,6 +28,7 @@ import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDet
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
 import CLUModal from "../../../pageComponents/CLUModal";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 
 
@@ -481,7 +482,7 @@ const CLUEmployeeApplicationDetails = () => {
         )}
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card>
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -499,7 +500,9 @@ const CLUEmployeeApplicationDetails = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions?.length > 0 && (
         <ActionBar>

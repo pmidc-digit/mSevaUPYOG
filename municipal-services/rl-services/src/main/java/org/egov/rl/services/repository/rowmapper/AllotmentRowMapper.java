@@ -29,8 +29,8 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 		AuditDetails auditDetails = null;
 		List<AllotmentDetails> currentAllotmentList = new ArrayList<>();
 
-		List<OwnerInfo> userList = new ArrayList<>();
-		List<Document> docList = new ArrayList<>();
+		Set<OwnerInfo> userList = new HashSet<>();
+		Set<Document> docList = new HashSet<>();
 		AllotmentDetails currentAllotment = null;
 		while (rs.next()) {
 			if (currentAllotmentList.size() <= rs.getLong("totalAllotments") && rs.getLong("totalAllotments") > 1) {
@@ -39,26 +39,16 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					if (currentAllotmentList.stream().noneMatch(d -> d.getId().equals(allotmentId))) {
 						currentAllotmentList.add(currentAllotment);
 						if (rs.getLong("applicantCount") == userList.size()) {
-							userList = new ArrayList<>();
+							userList = new HashSet<>();
 						}
 						if (rs.getLong("documentCount") == docList.size()) {
-							docList = new ArrayList<>();
+							docList = new HashSet<>();
 						}
 					}
 				}
 			}
-			// if (userList.size() < rs.getLong("applicantCount")) {
-			// 	userList.add(getOwnerInfo(rs));
-			// }
-			// if (docList.size() < rs.getLong("documentCount")) {
-			// 	docList.add(getDocuments(rs));
-			// }
-			if (userList.size()==0l||(userList.size() < rs.getLong("applicantCount")&&(userList.get(0).getAllotmentId().equals(rs.getString("onr_allotmentId"))))) {
-				userList.add(getOwnerInfo(rs));
-			}
-			if (rs.getLong("documentCount")!=0l&&(docList.size()==0l||(docList.size() < rs.getLong("documentCount")&&(docList.get(0).getDocumentUid().equals(rs.getString("onr_allotmentId")))))) {
-				docList.add(getDocuments(rs));
-			}
+			userList.add(getOwnerInfo(rs));
+			docList.add(getDocuments(rs));
 			auditDetails = getAuditDetail(rs, "allotment");
 			currentAllotment = AllotmentDetails.builder()
 					.id(rs.getString("id"))
@@ -78,14 +68,14 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.penaltyType(rs.getString("penalty_type"))
 					.createdTime(rs.getLong("created_time"))
 					.createdBy(rs.getString("created_by"))
-					.documents(docList)
+					.documents(new ArrayList<>(docList))
 					.reasonForClosure(rs.getString("reason_for_closure"))
 					.notesComments(rs.getString("notes_comments"))
 					.amountToBeDeducted(rs.getBigDecimal("amount_tobe_deducted"))
 					.amountToBeRefund(rs.getBigDecimal("amount_to_be_refund"))
 					.expireFlag(rs.getBoolean("expireflag"))
 					.status(rs.getString("status"))
-					.ownerInfo(userList)
+					.ownerInfo(new ArrayList<>(userList))
 					.auditDetails(auditDetails)
 					.additionalDetails(getAdditionalDetails(rs.getObject("additional_details")))
 					.build();

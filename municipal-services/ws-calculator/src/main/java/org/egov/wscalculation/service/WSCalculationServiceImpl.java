@@ -1,6 +1,7 @@
 package org.egov.wscalculation.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -317,6 +318,72 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 					break;
 				}
 		}
+		
+//	    PI-20289 Metered Breakdown penalty enable and working new logic
+
+		
+		boolean isBreakdownPenaltyEnabled = false;
+		int breakdownPenaltyRate = 1;
+
+		Object bpObj = masterMap.get(WSCalculationConstant.Billing_Period_Master);
+
+		if (bpObj instanceof List) {
+
+		    @SuppressWarnings("unchecked")
+		    List<Map<String, Object>> billingPeriods =
+		            (List<Map<String, Object>>) bpObj;
+
+		    for (Map<String, Object> bp : billingPeriods) {
+
+		        String connectionType = (String) bp.get("connectionType");
+
+		        if (WSCalculationConstant.meteredConnectionType
+		                .equalsIgnoreCase(connectionType)) {
+
+		            isBreakdownPenaltyEnabled =
+		                    Boolean.TRUE.equals(bp.get("isBreakdownPenaltyEnabled"));
+
+		            if (bp.get("breakdownPenaltyRate") != null) {
+		                breakdownPenaltyRate =
+		                        ((Number) bp.get("breakdownPenaltyRate")).intValue();
+		            }
+		            break;
+		        }
+		    }
+		}
+		
+		// === Breakdown Penalty Logic ===
+		if (WSCalculationConstant.meteredConnectionType
+		        .equalsIgnoreCase(waterConnection.getConnectionType())) {
+
+		    String currentStatus = criteria.getMeterStatus().toString();
+		    String previousStatus = wSCalculationDao.getPreviousMeterStatus(
+		            criteria.getTenantId(),
+		            criteria.getConnectionNo()
+		    );
+
+		    log.info("Breakdown penalty check | current={} previous={}",
+		            currentStatus, previousStatus);
+
+		    if (isBreakdownPenaltyEnabled
+		            && WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(currentStatus)
+		            && WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(previousStatus)) {
+
+		        BigDecimal breakdownPenalty = waterCharge
+		                .multiply(BigDecimal.valueOf(breakdownPenaltyRate))
+		                .setScale(2, RoundingMode.HALF_UP);
+
+		        penalty = penalty.add(breakdownPenalty);
+
+		        estimates.add(TaxHeadEstimate.builder()
+		                .taxHeadCode(WSCalculationConstant.WS_BREAKDOWN_PENALTY)
+		                .estimateAmount(breakdownPenalty)
+		                .category(TaxHeadCategory.PENALTY)
+		                .build());
+		    }
+		}
+//	    PI-20289 Metered Breakdown penalty enable and working new logic
+
 		TaxHeadEstimate decimalEstimate = payService.roundOfDecimals(taxAmt.add(penalty).add(waterCharge).add(fee),
 				rebate.add(exemption), isConnectionFee);
 		if (null != decimalEstimate) {

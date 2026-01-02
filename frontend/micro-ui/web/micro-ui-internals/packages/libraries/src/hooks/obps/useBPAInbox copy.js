@@ -3,6 +3,7 @@ import useInbox from "../useInbox"
 import { InboxGeneral } from "../../services/elements/InboxService";
 import { Search } from "../../services/molecules/OBPS/Search";
 import { useQuery } from "react-query"
+import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../constants/constants";
 
 const useBPAInbox = ({ tenantId, filters, config={} }) => {
     const { filterForm, searchForm , tableForm } = filters
@@ -15,7 +16,7 @@ const useBPAInbox = ({ tenantId, filters, config={} }) => {
         tenantId,
 		processSearchCriteria: {
             moduleName: moduleName ? moduleName : "bpa-services",
-			businessService: businessService?.length > 0 ? businessService.map( o => o.code) : ["BPA_LOW", "BPA", "BPA_OC"],
+			businessService: businessService?.length > 0 ? businessService.map( o => o.code) : OBPS_BPA_BUSINESS_SERVICES,
             ...(applicationStatus?.length > 0 ? {status: applicationStatus} : {}),
         },
 		moduleSearchCriteria: {

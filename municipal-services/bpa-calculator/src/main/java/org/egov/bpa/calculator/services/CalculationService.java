@@ -202,7 +202,7 @@ public class CalculationService {
 		}
 		
 		else if (calulationCriteria.getFeeType().equalsIgnoreCase(BPACalculatorConstants.MDMS_CALCULATIONTYPE_SANC_FEETYPE) 
-				&& ( calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA) 
+				&& ( calulationCriteria.getBpa().getBusinessService().startsWith(BPACalculatorConstants.MDMS_BPA) 
 						|| calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW) ) )
 		{
 			

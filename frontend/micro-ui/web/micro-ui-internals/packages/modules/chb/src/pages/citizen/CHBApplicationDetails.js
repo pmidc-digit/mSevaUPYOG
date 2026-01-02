@@ -22,7 +22,7 @@ import getChbAcknowledgementData from "../../getChbAcknowledgementData";
 import CHBWFApplicationTimeline from "../../pageComponents/CHBWFApplicationTimeline";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
-import { pdfDownloadLink } from "../../utils";
+import { pdfDownloadLink,formatDate } from "../../utils";
 
 import get from "lodash/get";
 import { size } from "lodash";
@@ -137,59 +137,86 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    try{
+    console.log('payments', payments)
+    try {
       setLoading(true);
-      let application = data?.hallsBookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
-      const updatedApplication = {
-        ...application,
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
+      let application = {
+        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
+          };
+        }),
       };
-      await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-    }catch (error) {
-      console.error("Sanction Letter download error:", error);
+      console.log('application', application)
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const updatedApplication = {
+          ...data?.hallsBookingApplication[0],
+          paymentReceiptFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+        refetch();
       }
-      finally { setLoading(false); }
-    
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    try{
+    try {
       setLoading(true);
       let application = {
-      hallsBookingApplication: (data?.hallsBookingApplication || []).map(app => {
+        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
           return {
             ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])].sort((a, b) => {
-              return new Date(a.bookingDate) - new Date(b.bookingDate);
-            })
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
           };
-        })
-    };
+        }),
+      };
 
-    let fileStoreId = payments?.fileStoreId;
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
-      fileStoreId = response?.filestoreIds[0];
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-    }
-    catch (error) {
-      console.error("Sanction Letter download error:", error);
+      let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+      console.log('fileStoreId bef create', fileStoreId)
+      if (!fileStoreId) {
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
+        
+        const updatedApplication = {
+          ...data?.hallsBookingApplication[0],
+          permissionLetterFilestoreId: response?.filestoreIds[0],
+        };
+        await mutation.mutateAsync({
+          hallsBookingApplication: updatedApplication,
+        });
+        fileStoreId = response?.filestoreIds[0];
+        refetch()
       }
-      finally { setLoading(false); }
-    
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleDownload = async (document, tenantid) => {
@@ -265,6 +292,9 @@ const CHBApplicationDetails = () => {
       bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_CHB_${slot?.status}`),
     })) || [];
+
+  console.log("docs===", docs);
+
   return (
     <React.Fragment>
       <div>
@@ -349,7 +379,7 @@ const CHBApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
-         <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <ApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
     </React.Fragment>

@@ -53,12 +53,6 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			if (docList.size() < rs.getLong("documentCount")) {
 				docList.add(getDocuments(rs));
 			}
-//			if (userList.size() < rs.getLong("applicantCount")) {
-//				userList.add(getOwnerInfo(rs));
-//			}
-//			if (docList.size() < rs.getLong("documentCount")) {
-//				docList.add(getDocuments(rs));
-//			}
 			auditDetails = getAuditDetail(rs, "allotment");
 			currentAllotment = AllotmentDetails.builder()
 					.id(rs.getString("id"))
@@ -91,12 +85,6 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.build();
 			if (currentAllotmentList.isEmpty()) {
 				currentAllotmentList.add(currentAllotment);
-				if (rs.getLong("applicantCount") == userList.size()) {
-					userList = new ArrayList<>();
-				}
-				if (rs.getLong("documentCount") == docList.size()) {
-					docList = new ArrayList<>();
-				}
 			}
 		}
 		return currentAllotmentList;

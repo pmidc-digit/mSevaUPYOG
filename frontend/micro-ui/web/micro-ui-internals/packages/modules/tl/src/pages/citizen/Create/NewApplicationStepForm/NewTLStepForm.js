@@ -102,7 +102,7 @@ const NewTLStepForm = () => {
 
   // console.log("formState: ",formState);
   return (
-    <div>
+    <div className="employeeCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("New Trade License Application")}
       </CardHeader>

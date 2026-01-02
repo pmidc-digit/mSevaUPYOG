@@ -324,7 +324,7 @@ const getDocuments = async (appData, t) => {
             // console.log("doc link", documentLink);
 
             return {
-                title: t((document?.documentType || t("CS_NA")).replace(/\./g, "_"))
+                title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")
             };
           })
         : {

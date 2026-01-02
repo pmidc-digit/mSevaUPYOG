@@ -10,7 +10,7 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const stateId = Digit.ULBService.getStateId();
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["CLUDocuments"]);
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["Documents"]);
 
   const currentStepData = useSelector(function (state) {
     return state.obps.OBPSFormReducer.formData && state.obps.OBPSFormReducer.formData[config?.key]
@@ -30,12 +30,20 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     if (missingFields.length > 0) {
       setError(`${t("BPA_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
+      setTimeout(()=>{
+        setShowToast(false);
+        setError("");
+      },3000);
       return;
     }
 
      if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
       setError(`${t("BPA_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
       setShowToast(true);
+      setTimeout(()=>{
+        setShowToast(false);
+        setError("");
+      },3000);
       return;
     }
 
@@ -46,7 +54,7 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function validation(documents) {
     if (!isLoading) {
-      const cluDocumentsType = data?.BPA?.CLUDocuments || [];
+      const cluDocumentsType = data?.CLU?.Documents || [];
       const documentsData = documents?.documents?.documents || [];
 
       // Step 1: Extract required document codes from layoutDocumentsType

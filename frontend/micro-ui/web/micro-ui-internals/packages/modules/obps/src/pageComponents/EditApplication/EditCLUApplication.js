@@ -111,8 +111,8 @@ const CLUEditApplication = () => {
   const { data: mdmsData, isLoading:isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
   const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
 
-  const { data: areaTypeData } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "CLUAppliedCategory" }]);
-  const appliedCluCategoryOptions = areaTypeData?.BPA?.CLUAppliedCategory || [];
+  const { data: areaTypeData } = Digit.Hooks.useCustomMDMS(stateId, "CLU", [{ name: "AppliedCategory" }]);
+  const appliedCluCategoryOptions = areaTypeData?.CLU?.AppliedCategory || [];
  
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
   const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];

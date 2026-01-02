@@ -14,7 +14,8 @@ import {
   RadioButtons,
   SearchIcon,
   Toast,
-  CardSectionSubText
+  CardSectionSubText,
+  CardSubHeader,
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
@@ -41,7 +42,10 @@ const NOCApplicantDetails = (_props) => {
     const file = e.target.files[0]
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
-      return
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
+      return;
     }
     try {
       setLoader(true)
@@ -73,6 +77,10 @@ const NOCApplicantDetails = (_props) => {
     } catch (err) {
       setLoader(false)
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+    }finally{
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
     }
   }
 
@@ -90,6 +98,9 @@ const NOCApplicantDetails = (_props) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
       return;
     }
     try {
@@ -121,6 +132,10 @@ const NOCApplicantDetails = (_props) => {
     } catch (err) {
       setLoader(false);
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+    }finally{
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
     }
   };
 
@@ -271,9 +286,9 @@ const getOwnerDetails = async (idx) => {
 
         {fields.map((field, index) => (
           <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
-            <CardSectionSubText >
+            <CardSubHeader >
              {index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}
-            </CardSectionSubText>
+            </CardSubHeader>
 
             <div
               style={{ display: "flex", justifyContent: "flex-end", gap: 8 , cursor: "pointer"}}
@@ -283,7 +298,7 @@ const getOwnerDetails = async (idx) => {
             </div>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div style={{ display: "flex" }} className="field">
                 <Controller
                   control={control}
@@ -318,7 +333,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -349,7 +364,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.ownerOrFirmName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -385,6 +400,16 @@ const getOwnerDetails = async (idx) => {
                 <Controller
                   control={control}
                   name={`owners[${index}].fatherOrHusbandName`}
+                  rules={{
+                   pattern: {
+                     value: /^[A-Za-z\s]+$/,
+                     message: t("ONLY_ENGLISH_LETTERS_ALLOWED"),
+                   },
+                   maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                  }}
                   render={(props) => (
                     <TextInput
                       value={props.value}
@@ -401,9 +426,10 @@ const getOwnerDetails = async (idx) => {
                 />
               </div>
             </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -437,7 +463,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.address?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -472,7 +498,7 @@ const getOwnerDetails = async (idx) => {
           
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_DOB_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -511,7 +537,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -537,7 +563,7 @@ const getOwnerDetails = async (idx) => {
             <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.gender?.message || ""}</CardLabelError>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-              <CardLabel className="card-label-smaller">{t("NOC_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
+              <CardLabel className="card-label-smaller">{t("NOC_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 <NOCCustomUploadFile
                   id={`passport-photo-${index}`}
@@ -556,7 +582,7 @@ const getOwnerDetails = async (idx) => {
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-              <CardLabel className="card-label-smaller">{t("NOC_APPLICANT_ID_PROOF")}*</CardLabel>
+              <CardLabel className="card-label-smaller">{t("NOC_APPLICANT_ID_PROOF")}<span className="requiredField">*</span></CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 <NOCCustomUploadFile
                   id={`id-proof-${index}`}

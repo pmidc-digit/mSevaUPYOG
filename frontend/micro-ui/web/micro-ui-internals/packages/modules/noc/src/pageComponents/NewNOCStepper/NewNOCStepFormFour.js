@@ -70,6 +70,9 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
       return;
     }
 
@@ -120,6 +123,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     } catch (error) {
       console.log("errors here in goNext - catch block", error);
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+      setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 

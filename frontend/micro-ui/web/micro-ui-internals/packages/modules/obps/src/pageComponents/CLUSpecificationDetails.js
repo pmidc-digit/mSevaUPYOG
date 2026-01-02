@@ -35,7 +35,7 @@ const CLUSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")}`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}

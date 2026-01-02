@@ -78,11 +78,17 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const ownersCount = data?.owners?.length ?? 0;
 
   if (ownersCount !== ownerPhotoCount) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
     setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
     return false;
   }
 
   if (ownersCount !== ownerIdCount) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
     setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
     return false;
   }

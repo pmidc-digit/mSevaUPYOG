@@ -55,7 +55,7 @@ const NOCSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -90,7 +90,7 @@ const NOCSpecificationDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_BUILDING_CATEGORY_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_BUILDING_CATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           {/* <div className="field"> */}
           {!isLoading && buildingCategory.length > 0 && (
             <Controller
@@ -119,7 +119,7 @@ const NOCSpecificationDetails = (_props) => {
         </CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_NOC_TYPE_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_NOC_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isNocTypeLoading && (
                 <Controller
                   control={control}
@@ -136,7 +136,7 @@ const NOCSpecificationDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.specificationNocType?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_RESTRICTED_AREA_LABEL")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_RESTRICTED_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             control={control}
             name={"specificationRestrictedArea"}
@@ -158,7 +158,7 @@ const NOCSpecificationDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.specificationRestrictedArea?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             control={control}
             name={"specificationIsSiteUnderMasterPlan"}

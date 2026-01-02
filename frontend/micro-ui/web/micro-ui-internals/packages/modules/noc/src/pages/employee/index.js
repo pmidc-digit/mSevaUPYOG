@@ -16,7 +16,12 @@ const NOCBreadCrumbs = ({ location }) => {
     {
       path: "/digit-ui/employee/noc/inbox",
       content: t("ES_COMMON_INBOX"),
-      show: location.pathname.includes("noc/inbox") ? true : false,
+      show: (location.pathname.includes("noc/inbox") || location.pathname.includes("noc/new-application")) ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/noc/new-application",
+      content: t("NOC_NEW_APPLICATION"),
+      show: location.pathname.includes("noc/new-application") ? true : false,
     },
     {
       path: "/digit-ui/employee/noc/inbox/application-overview/:id",

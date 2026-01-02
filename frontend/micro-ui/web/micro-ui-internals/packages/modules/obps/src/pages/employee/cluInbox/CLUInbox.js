@@ -95,7 +95,7 @@ const CLUInbox = ({ parentRoute }) => {
     filters: { ...formState },
   })
 
-  console.log("inboxData ==>", inboxData)
+  //console.log("inboxData ==>", inboxData)
 
   useEffect(() => {
     if (inboxData) {

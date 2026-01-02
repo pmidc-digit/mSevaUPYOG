@@ -113,7 +113,7 @@ const SelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
         <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
           {t("PT_OWNERS_ADDRESS")}
         </CardLabel>
-        <div className="field">
+        <div className="form-field">
           <TextInput name="address" onChange={setOwnerPermanentAddress} value={permanentAddress} disable={editScreen} />
         </div>
       </LabelFieldPair>

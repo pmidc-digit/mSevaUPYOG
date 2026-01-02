@@ -145,9 +145,11 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div>{value || "NA"}</div>
-    </div>
+         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+           <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+         </div>
+         <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
+       </div>
   );
 
   return (

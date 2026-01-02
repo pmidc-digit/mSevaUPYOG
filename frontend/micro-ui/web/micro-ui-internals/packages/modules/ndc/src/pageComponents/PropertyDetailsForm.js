@@ -393,7 +393,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {waterConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+              <div className="form-field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                 {propertyDetails?.waterConnection?.map((item, index) => (
                   <div
                     className="ndc_property_search"
@@ -499,7 +499,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+              <div className="form-field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                 {propertyDetails?.sewerageConnection?.map((item, index) => (
                   <div
                     className="ndc_property_search"
@@ -610,7 +610,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"firstName"}
@@ -662,7 +662,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"email"}
@@ -687,7 +687,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"mobileNumber"}
@@ -712,7 +712,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_ADDRESS")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"address"}
@@ -738,7 +738,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       )}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name={"tlNumber"}

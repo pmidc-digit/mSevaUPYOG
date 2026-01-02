@@ -103,7 +103,7 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-        className="employeeCard"
+       
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>

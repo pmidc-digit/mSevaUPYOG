@@ -124,7 +124,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)} // Submit button label
         currentStep={config.currStepNumber} // Current step number
         onBackClick={onGoBack} // Handle back button click
-        className="employeeCard"
+       
       />
     </React.Fragment>
   );

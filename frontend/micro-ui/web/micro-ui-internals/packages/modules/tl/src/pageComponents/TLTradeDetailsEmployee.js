@@ -434,7 +434,7 @@ const OwnerForm1 = (_props) => {
           {`${t("TL_COMMON_TABLE_COL_TRD_NAME")}`}
           <span className="requiredField">*</span>
         </CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name={"tradeName"}
@@ -538,7 +538,7 @@ const OwnerForm1 = (_props) => {
           {`${t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")}`}
           <span className="requiredField">*</span>
         </CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             name="commencementDate"
             rules={{ required: t("REQUIRED_FIELD") }}
@@ -559,7 +559,7 @@ const OwnerForm1 = (_props) => {
       <CardLabelError>{localFormState.touched.commencementDate ? errors?.commencementDate?.message : ""}</CardLabelError>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="gstNo"
@@ -586,7 +586,7 @@ const OwnerForm1 = (_props) => {
       <CardLabelError>{localFormState.touched.gstNo ? errors?.gstNo?.message : ""}</CardLabelError>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             name="operationalArea"
             rules={{ validate: (e) => ((e && getPattern("OperationalArea").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
@@ -612,7 +612,7 @@ const OwnerForm1 = (_props) => {
       <CardLabelError>{localFormState.touched.operationalArea ? errors?.operationalArea?.message : ""}</CardLabelError>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             name="noOfEmployees"
             rules={{ validate: (e) => ((e && getPattern("NoOfEmp").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
@@ -639,7 +639,7 @@ const OwnerForm1 = (_props) => {
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO")} `}</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             name="oldReceiptNo"
             rules={{ validate: (e) => ((e && getPattern("OldLicenceNo").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}

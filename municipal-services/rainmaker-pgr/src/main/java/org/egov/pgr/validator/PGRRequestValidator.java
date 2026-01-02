@@ -142,6 +142,16 @@ public class PGRRequestValidator {
 
 				}
 			}
+			
+			if (serviceRequest.getServices().get(0).getAuditDetails().getCreatedTime() > 1767225599000L) {
+			    // Add existing invalid createdTime error
+
+			    // Add custom error for DGR PGR Service
+			    errorMap.put("ACTION_NOT_ALLOWED_CODE", 
+			                 "Action cannot be performed for this request. Please resolve on DGR PGR Service.");
+			}
+
+
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 	}

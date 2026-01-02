@@ -50,7 +50,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
             businessService: application?.ProcessInstance?.businessService,
             locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
             status: `${application.businessObject.applicationStatus}`,
-            owner: application?.ProcessInstance?.assigner?.[0]?.name || "-",
+            owner: application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
           };
         });
 

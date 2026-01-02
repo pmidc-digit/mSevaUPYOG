@@ -56,16 +56,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const applicantId = applicant?.uuid;
 
     // Build owners array
-    const owners = [
-      {
-        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        name: user?.info?.name,
-        mobileNumber: user?.info?.mobileNumber,
-        gender: data?.PropertyDetails?.gender,
-        emailId: user?.info?.emailId,
-        type: user?.info?.type,
-      },
-    ];
+    // const owners = data?.cpt?.details?.owners;
+
+    const owners = (data?.cpt?.details?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
 
     // Prepare NdcDetails
     const ndcDetails = [];
@@ -157,20 +150,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
-    console.log("data===?????", data);
-    console.log("checkFormData???====", checkFormData);
-
     // Build owners array
-    const owners = [
-      {
-        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        name: user?.info?.name,
-        mobileNumber: user?.info?.mobileNumber,
-        gender: data?.PropertyDetails?.gender,
-        emailId: user?.info?.emailId,
-        type: user?.info?.type,
-      },
-    ];
+    const owners = data?.cpt?.details?.owners;
 
     // Prepare NdcDetails
     let ndcDetails = [];
@@ -318,7 +299,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     if (!NDCReason?.code) missingFields.push(t("NDC_MESSAGE_NDC_REASON"));
 
     // Format Validations
-    const nameRegex = /^[A-Za-z\s]+$/;
+    const nameRegex = /^[A-Za-z\s]+(,\s*[A-Za-z\s]+)*$/;
     // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const emailRegex = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
 

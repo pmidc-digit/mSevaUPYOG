@@ -203,14 +203,17 @@ const getSiteDetails = (appData, t) => {
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name ||
       appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus || "N/A",
     },
-    {
+  ];
+
+  if (appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable) {
+    values.push({
       title: t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code ||
       appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable || "N/A",
-    },
-  ];
+    });
+  }
 
-  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus == "Built Up") {
+  if (appData?.nocDetails?.additionalDetails?.siteDetails?.basementArea) {
     values.push({
       title: t("NOC_BASEMENT_AREA_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.basementArea || "N/A",
@@ -314,7 +317,7 @@ const getDocuments = async (appData, t) => {
            // console.log("doc link", documentLink);
 
             return {
-              title: t(document?.documentType || t("CS_NA").replace(/\./g, "_")),
+              title: t(document?.documentType?.replace(/\./g, "_")) ||  t("CS_NA"),
           
             };
           })

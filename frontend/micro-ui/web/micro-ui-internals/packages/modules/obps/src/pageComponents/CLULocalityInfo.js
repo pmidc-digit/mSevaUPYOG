@@ -73,7 +73,7 @@ const CLULocalityInfo = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           {areaTypeOptions.length > 0 && (
             <Controller
               control={control}
@@ -99,7 +99,7 @@ const CLULocalityInfo = (_props) => {
 
         {selectedAreaType?.code === "SCHEME_AREA" && (
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_NAME_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -128,7 +128,7 @@ const CLULocalityInfo = (_props) => {
 
         {selectedAreaType?.code === "APPROVED_COLONY" && (
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -157,7 +157,7 @@ const CLULocalityInfo = (_props) => {
 
         {selectedAreaType?.code === "NON_SCHEME" && (
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NON_SCHEME_TYPE_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NON_SCHEME_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <Controller
               control={control}
               name={"localityNonSchemeType"}
@@ -173,7 +173,7 @@ const CLULocalityInfo = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.localityNonSchemeType?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_NOTICE_ISSUED_LABEL")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_NOTICE_ISSUED_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             control={control}
             name={"localityNoticeIssued"}
@@ -199,7 +199,7 @@ const CLULocalityInfo = (_props) => {
 
         {noticeIssued?.code === "YES" && (
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NOTICE_NUMBER_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NOTICE_NUMBER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -229,7 +229,7 @@ const CLULocalityInfo = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.localityNoticeNumber?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_COLONY_TYPE_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_COLONY_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             control={control}
             name={"localityColonyType"}
@@ -244,7 +244,7 @@ const CLULocalityInfo = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.localityColonyType?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             control={control}
             name={"localityTransferredSchemeType"}

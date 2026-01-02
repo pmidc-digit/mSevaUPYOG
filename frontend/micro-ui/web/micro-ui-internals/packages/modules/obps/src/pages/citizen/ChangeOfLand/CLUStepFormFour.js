@@ -8,7 +8,7 @@ import { useHistory, useLocation } from "react-router-dom";
 
 const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
   const [selectedCheckBox, setSelectedCheckBox] = useState(false);
 
@@ -69,6 +69,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
+      setTimeout(()=>{
+        setShowToast(null);
+      },3000);
       return;
     }
 
@@ -120,6 +123,8 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     } catch (error) {
       console.log("errors here in goNext - catch block", error);
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+      setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 
@@ -241,8 +246,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const closeToast = () => {
-    setShowToast(false);
-    setError("");
+    // setShowToast(false);
+    // setError("");
+    setShowToast(null);
   };
 
   console.log("currentStepData in StepFour", currentStepData);

@@ -72,21 +72,37 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   function checkValidation(data) {
 
   const ownerPhotoCount = ownerPhotoList?.length ?? 0;        
-  const ownerIdCount  = ownerIdList?.length ?? 0;         
-
+  const ownerIdCount  = ownerIdList?.length ?? 0;  
+  
   const ownersCount = data?.owners?.length ?? 0;
+  
+  const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
+  const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;
 
   if (ownersCount !== ownerPhotoCount) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
     setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
     return false;
   }
-
-  if (ownersCount !== ownerIdCount) {
+  else if (ownersCount !== ownerIdCount) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
     setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
     return false;
   }
-
-  return true;
+  else if (isDuplicateOwner) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
+    setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
+    return false;
+  }
+  else{
+      return true;
+  }
  }
 
   const onSubmit = (data) => {
@@ -175,7 +191,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast}/>}
     </React.Fragment>
   );
 };

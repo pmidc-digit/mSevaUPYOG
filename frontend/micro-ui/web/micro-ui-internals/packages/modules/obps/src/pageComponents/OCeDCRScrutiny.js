@@ -16,7 +16,7 @@ import {
 import { getPattern, convertDateToEpoch, convertEpochToDate } from "../utils";
 
 const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast }) => {
-    const tenantId = Digit.ULBService.getCurrentTenantId();
+    const tenantId = localStorage.getItem("CITIZEN.CITY");
     const stateId = Digit.ULBService.getStateId();
     const [permitNumber, setPermitNumber] = useState(formData?.ScrutinyDetails?.ocPermitNumber);
     const [permitDate, setPermitDate] = useState(formData?.ScrutinyDetails?.ocPermitdate);

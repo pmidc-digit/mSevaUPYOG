@@ -158,10 +158,11 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
             dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("responseData", allotmentDetails));
 
             // ✅ Set CreatedResponse to prevent "create" API call in Step 2
-            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", { AllotmentDetails: allotmentDetails }));
+            dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("CreatedResponse", result));
 
             // --- Map Property Details ---
-            const apiAdditionalDetails = allotmentDetails?.additionalDetails || {};
+            const rawAdditionalDetails = allotmentDetails?.additionalDetails || {};
+            const apiAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
             // Create a NEW object for the form, merging root fields and additionalDetails
             const formPropertyDetails = {

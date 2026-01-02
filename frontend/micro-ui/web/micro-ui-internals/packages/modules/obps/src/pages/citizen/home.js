@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
 import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
 import { ProfessionalSignUpdate } from "../../pageComponents/ProfessionalSignUpdate";
+import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../constants/constants";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
   const userInfo = Digit.UserService.getUser();
@@ -62,7 +63,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { isLoading: bpaLoading, data: bpaInboxData } = Digit.Hooks.obps.useArchitectInbox({
     tenantId: stateCode,
     moduleName: "bpa-services",
-    businessService: ["BPA_LOW", "BPA"],
+    businessService: OBPS_BPA_BUSINESS_SERVICES,
     filters: {
       searchForm: {
         ...searchParams,

@@ -453,7 +453,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             accessor: "fileUrl",
             Cell: ({ value }) =>
                 value ? (
-                    <LinkButton className="view-link-button"
+                    <LinkButton
                         label={t("View")}
                         onClick={() => routeTo(value)}
                     />
@@ -473,7 +473,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             accessor: "planReport",
             Cell: ({ value }) =>
                 value ? (
-                    <LinkButton className="view-link-button"
+                    <LinkButton
                         label={t("View")}
                         onClick={() => routeTo(value)}
                     />

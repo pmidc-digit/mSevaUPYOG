@@ -49,6 +49,7 @@ import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
 
 
 const BpaApplicationDetail = () => {
@@ -2055,7 +2056,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                     <Fragment>
                       <div id="timeline">
                         {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
-                        <ApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
+                        <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
                         {/* {!workflowDetails?.isLoading &&
                           workflowDetails?.data?.newNextAction?.length > 0 &&
                           !isFromSendBack &&

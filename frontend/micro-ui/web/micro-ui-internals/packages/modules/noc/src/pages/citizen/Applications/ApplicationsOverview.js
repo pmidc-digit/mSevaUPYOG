@@ -96,7 +96,7 @@ const CitizenApplicationOverview = () => {
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-
+  const [loading, setLoading] = useState(false);
   let user = Digit.UserService.getUser();
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -153,18 +153,17 @@ const CitizenApplicationOverview = () => {
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
     const application = applicationDetails?.Noc?.[0];
     try {
+      setLoading(true);
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );
-
-      let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData );       
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments ,Noc: nocSanctionData.Noc, }] }, pdfkey);
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
       console.error("Sanction Letter download error:", error);
-    }
+    }finally { setLoading(false); }
     
   }
 
@@ -279,6 +278,7 @@ const CitizenApplicationOverview = () => {
       history.push(`/digit-ui/citizen/noc/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -335,6 +335,8 @@ const CitizenApplicationOverview = () => {
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+       setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 
@@ -346,6 +348,7 @@ const CitizenApplicationOverview = () => {
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+        {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
@@ -413,10 +416,7 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
-              <Row
-                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
-                text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
-              />
+              {detail?.isBasementAreaAvailable && <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}  text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}/>}
 
               {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"} />}
 

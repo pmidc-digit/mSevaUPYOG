@@ -54,18 +54,52 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
   
   // console.log("tenantId here==>", tenantId);
+  const toNum2 = (val) => {
+  if (val === null || val === undefined) return NaN;
+  // Strip commas / spaces; keep only digits and decimal point
+  const cleaned = String(val).trim().replace(/,/g, '');
+  const num = Number(cleaned);
+  if (Number.isNaN(num)) return NaN;
+  // Round to 5 decimals to normalize "300", "300.0", "300.00", "300.000", "300.0000", "300.00000"
+  return Number(num.toFixed(5));
+  };
+
+ const isEqualArea = (a, b) => {
+  const n1 = toNum2(a);
+  const n2 = toNum2(b);
+  if (Number.isNaN(n1) || Number.isNaN(n2)) return false;
+  const epsilon = 1e-9; // extremely small tolerance
+  return Math.abs(n1 - n2) <= epsilon;
+ }; 
+  
+ function checkValidation(data){
+    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
+    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
+
+    const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
+
+    const netPlotArea= parseFloat(data?.specificationPlotArea);;
+    const groundFloorArea = data?.floorArea?.[0]?.value ? parseFloat(data?.floorArea?.[0]?.value) : 0;
+
+    if(!isEqual){
+        setTimeout(()=>{setShowToast(null);},3000);
+        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
+        return false;
+    }
+    else if(isBuiltUp && groundFloorArea > netPlotArea){
+        setTimeout(()=>{setShowToast(null);},3000);
+        setShowToast({ key: "true", error:true, message: "NOC_GROUND_FLOOR_AREA_VALIDATION_LABEL"});
+        return false;
+    }else{
+      return true;
+    }
+ };
 
   const onSubmit = (data) => {
     trigger();
 
-    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
-    const isEqual= (data?.netTotalArea === data?.specificationPlotArea) || false;
+    if(!checkValidation(data))return;
 
-    if(!isEqual){
-        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
-        return;
-    }
-    
     //Save data in redux
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     

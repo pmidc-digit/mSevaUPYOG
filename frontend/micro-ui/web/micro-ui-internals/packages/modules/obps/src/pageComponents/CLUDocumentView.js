@@ -20,17 +20,17 @@ function CLUDocumentView({ value = {}}) {
   if (!data.pdfFiles || Object.keys(data.pdfFiles).length === 0) return <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>;
 
   return (
-    <div className="clu-doc-view-container">
+    <div className="bpa-doc-view-container">
       <React.Fragment>
-        <div className="clu-doc-view-grid">
+        <div className="bpa-doc-view-grid">
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data?.pdfFiles, document?.documentAttachment || document?.documentUid);
             return (
               <a target="_" href={documentLink} 
-                className="clu-doc-view-link"
+                className="bpa-doc-view-link"
               key={index}>
-                <PDFSvg width={85} height={100} className="clu-doc-view-pdf-icon" />
-                <p className="clu-doc-view-label">
+                <PDFSvg width={85} height={100} className="bpa-doc-view-pdf-icon" />
+                <p className="bpa-doc-view-label">
                   {t(document?.documentType?.replace(".", "_")?.toUpperCase())}
                 </p>
               </a>

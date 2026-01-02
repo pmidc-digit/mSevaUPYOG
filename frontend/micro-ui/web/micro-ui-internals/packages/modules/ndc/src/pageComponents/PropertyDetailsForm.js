@@ -49,6 +49,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     t,
   });
 
+  console.log("formData=====", formData);
+
   const { isLoading: sewerageConnectionLoading, data: sewerageConnectionData, error: sewerageConnectionError } = Digit.Hooks.ws.useSearchWS({
     tenantId,
     filters: {
@@ -64,9 +66,15 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   useEffect(() => {
     const owner = formData?.cpt?.details?.owners?.[0];
+    const ownerForName = formData?.cpt?.details?.owners || [];
+    const ownerNames = ownerForName
+      ?.map((owner) => owner?.name)
+      ?.filter(Boolean)
+      ?.join(", ");
+
     const emailApi = apiDataCheck?.[0]?.owners?.[0]?.emailId;
     const fullName = owner?.name?.split(" ");
-    const firstName = owner?.name;
+    const firstName = ownerNames;
     // let lastName;
     // if (fullName?.length > 1) {
     //   lastName = fullName?.[fullName.length - 1];

@@ -21,7 +21,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   });
 
-  const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.applicationNumber;
+  const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.applicationNumber;
 
   const updatedApplicantDetails = currentStepData?.applicantDetails || {};
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
@@ -69,8 +69,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const res = await onSubmit(currentStepData, selectedAction);
 
       if (res?.isSuccess) {
-        const action = res?.response?.AllotmentDetails?.workflow?.action;
-        const status = res?.response?.AllotmentDetails?.status;
+        const action = res?.response?.AllotmentDetails?.[0]?.workflow?.action;
+        const status = res?.response?.AllotmentDetails?.[0]?.status;
         if (action == "CANCEL") {
           onGoToRentAndLease();
         } else if (status == "DRAFTED" || status == "INITIATED" || action == "DRAFT" || action == "SAVEASDRAFT" || action == "SAVEDRAFT") {
@@ -101,7 +101,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
     if (id) {
       // EDIT FLOW: Merge updated form data
-      const originalOwners = CreatedResponse?.AllotmentDetails?.OwnerInfo || [];
+      const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
       const updatedApplicants = updatedApplicantDetails?.applicants || [];
 
       const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
@@ -126,7 +126,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         };
       });
 
-      const originalAdditionalDetails = CreatedResponse?.AllotmentDetails?.additionalDetails || {};
+      const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
+      const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
+
       const mergedAdditionalDetails = {
         ...originalAdditionalDetails,
         ...updatedPropertyDetails,
@@ -136,21 +138,23 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       };
 
       // Get the allotmentId from CreatedResponse for new documents
-      const allotmentIdForNewDocs = CreatedResponse?.AllotmentDetails?.id;
+      const allotmentIdForNewDocs = CreatedResponse?.AllotmentDetails?.[0]?.id;
 
       formData = {
-        ...CreatedResponse?.AllotmentDetails,
+        ...CreatedResponse?.AllotmentDetails?.[0],
         startDate: updatedPropertyDetails?.startDate
           ? new Date(updatedPropertyDetails?.startDate).getTime()
-          : CreatedResponse?.AllotmentDetails?.startDate,
-        endDate: updatedPropertyDetails?.endDate ? new Date(updatedPropertyDetails?.endDate).getTime() : CreatedResponse?.AllotmentDetails?.endDate,
-        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.penaltyType,
+          : CreatedResponse?.AllotmentDetails?.[0]?.startDate,
+        endDate: updatedPropertyDetails?.endDate
+          ? new Date(updatedPropertyDetails?.endDate).getTime()
+          : CreatedResponse?.AllotmentDetails?.[0]?.endDate,
+        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
-        additionalDetails: mergedAdditionalDetails,
+        additionalDetails: [mergedAdditionalDetails],
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
-            (CreatedResponse?.AllotmentDetails?.Document || [])?.find(
+            (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
               (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
             ) || {};
 
@@ -158,13 +162,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           const isNewDocument = !originalDoc?.documentUid && !originalDoc?.fileStoreId;
 
           // Get docId and allotmentId
-          const docId = originalDoc?.docId;
+          const docId = doc?.docId || originalDoc?.docId;
           const allotmentId = doc?.allotmentId || originalDoc?.allotmentId || (isNewDocument ? allotmentIdForNewDocs : undefined);
 
           return {
-            documentType: originalDoc?.documentType || doc?.documentType || "",
+            documentType: doc?.documentType || originalDoc?.documentType || "",
             fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-            documentUid: originalDoc?.documentUid || doc?.documentUid,
+            documentUid: doc?.documentUid || originalDoc?.documentUid,
             id: doc?.id || originalDoc?.id,
             // Only include docId if it exists (backend generates it for new documents)
             ...(docId ? { docId } : {}),
@@ -183,7 +187,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       };
     } else {
       // NORMAL FLOW: Use original logic
-      const originalOwners = CreatedResponse?.AllotmentDetails?.OwnerInfo || [];
+      const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
       const updatedApplicants = updatedApplicantDetails?.applicants || [];
 
       const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
@@ -208,7 +212,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         };
       });
 
-      const originalAdditionalDetails = CreatedResponse?.AllotmentDetails?.additionalDetails || {};
+      const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
+      const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
+
       const mergedAdditionalDetails = {
         ...originalAdditionalDetails,
         ...updatedPropertyDetails,
@@ -218,23 +224,32 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       };
 
       formData = {
-        ...CreatedResponse?.AllotmentDetails,
+        ...CreatedResponse?.AllotmentDetails?.[0],
         startDate: updatedPropertyDetails?.startDate
           ? new Date(updatedPropertyDetails?.startDate).getTime()
-          : CreatedResponse?.AllotmentDetails?.startDate,
-        endDate: updatedPropertyDetails?.endDate ? new Date(updatedPropertyDetails?.endDate).getTime() : CreatedResponse?.AllotmentDetails?.endDate,
-        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.penaltyType,
+          : CreatedResponse?.AllotmentDetails?.[0]?.startDate,
+        endDate: updatedPropertyDetails?.endDate
+          ? new Date(updatedPropertyDetails?.endDate).getTime()
+          : CreatedResponse?.AllotmentDetails?.[0]?.endDate,
+        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
-        additionalDetails: mergedAdditionalDetails,
+        additionalDetails: [mergedAdditionalDetails],
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
-            (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
+            (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
+              (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
+            ) || {};
+
+          const docId = doc?.docId || originalDoc?.docId;
+          const allotmentId = doc?.allotmentId || originalDoc?.allotmentId;
+
           return {
             documentType: doc?.documentType || originalDoc?.documentType || "",
-            filestoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-            ...(doc?.docId ? { docId: doc.docId } : {}),
-            ...(doc?.allotmentId ? { allotmentId: doc.allotmentId } : {}),
+            fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+            ...(docId ? { docId } : {}),
+            ...(allotmentId ? { allotmentId } : {}),
+            active: true,
           };
         }),
         workflow: {
@@ -247,7 +262,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     }
 
     // Adapt this to your actual service call
-    const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: formData }, tenantId);
+    const response = await Digit.RentAndLeaseService.update({ AllotmentDetails: [formData] }, tenantId);
     if (response?.AllotmentDetails && response?.AllotmentDetails.length > 0) {
       return { isSuccess: true, response: { RentAndLeaseApplications: response.AllotmentDetails } };
     } else if (response?.ResponseInfo?.status === "successful") {

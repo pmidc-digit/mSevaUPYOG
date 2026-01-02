@@ -82,7 +82,6 @@ const CLUApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-
   const [displayData, setDisplayData] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -190,19 +189,14 @@ const CLUApplicationDetails = () => {
         const finalComment = approvecomments
       ? `The above approval is subjected to followings conditions: ${approvecomments}`
       : "";
-    console.log('application', application)
-      let response = null;
+      console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey, "garbage-receipt");
-      }
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
 
@@ -211,7 +205,6 @@ const CLUApplicationDetails = () => {
       }
       finally { setLoading(false); }
     }
-
 
   const dowloadOptions = [];
   if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED") {
@@ -293,6 +286,7 @@ const CLUApplicationDetails = () => {
       history.push(`/digit-ui/citizen/obps/clu/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000)
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -347,6 +341,8 @@ const CLUApplicationDetails = () => {
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+       setTimeout(()=>{setShowToast(null);},3000);
     }
   };
 

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import DesktopInbox from "./DesktopInbox";
 import MobileInbox from "./MobileInbox";
+import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
 const headerStyle = {
   fontSize: "30px",
@@ -32,7 +33,7 @@ const Inbox = ({ tenants, parentRoute }) => {
   const { isLoading: bpaLoading, data: bpaInboxData } = Digit.Hooks.obps.useArchitectInbox({
     tenantId: stateCode,
     moduleName: "bpa-services",
-    businessService: ["BPA_LOW", "BPA", "BPA_OC"],
+    businessService: OBPS_BPA_BUSINESS_SERVICES,
     filters: {
       searchForm: {
         ...searchParams

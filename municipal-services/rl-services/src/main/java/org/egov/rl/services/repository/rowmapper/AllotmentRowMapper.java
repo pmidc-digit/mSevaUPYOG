@@ -56,7 +56,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			if (userList.size()==0l||(userList.size() < rs.getLong("applicantCount")&&(userList.get(0).getAllotmentId().equals(rs.getString("onr_allotmentId"))))) {
 				userList.add(getOwnerInfo(rs));
 			}
-			if (docList.size()==0l||(docList.size() < rs.getLong("documentCount")&&(docList.get(0).getDocumentUid().equals(rs.getString("onr_allotmentId"))))) {
+			if (rs.getLong("documentCount")!=0l(docList.size()==0l||(docList.size() < rs.getLong("documentCount")&&(docList.get(0).getDocumentUid().equals(rs.getString("onr_allotmentId")))))) {
 				docList.add(getDocuments(rs));
 			}
 			auditDetails = getAuditDetail(rs, "allotment");

@@ -292,8 +292,15 @@ public class Coverage extends FeatureProcess {
 		
 		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);
-			permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
-			//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);				
+			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
+			//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);
+			
+			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
+		        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
+		        permissibleCoverageValue = scOpt.get();
+			}
+			
 		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
 			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					

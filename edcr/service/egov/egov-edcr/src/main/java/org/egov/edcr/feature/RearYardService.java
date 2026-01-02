@@ -1334,7 +1334,12 @@ public class RearYardService extends GeneralRule {
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
 	         * ====================================================== */	    		
-	    	minVal= getPermisableForCommericalBelow21m(plotArea,pl, rearYardResult);
+	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, rearYardResult);
+	    	if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
+    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
+    			minVal = scOpt.get();
+    		}
 	    }
 
 	    return minVal.setScale(2, RoundingMode.HALF_UP);

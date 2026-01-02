@@ -373,6 +373,11 @@ public class FireStair extends FeatureProcess {
                 
 	            if(flrHt != null) {
 	                BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
+//	            	BigDecimal riserHeight = BigDecimal.ZERO;
+//	            	if (flrHt != null && totalRisers.compareTo(BigDecimal.ZERO) > 0) {
+//	            	    riserHeight = flrHt.divide(totalRisers,3,RoundingMode.HALF_UP);
+//	            	    LOG.info("Calculated Riser Height (m): " + riserHeight);
+//	            	}
 	            
 	                if (floor != null) {	                    
 	                    String floorNumber = "" + floor.getNumber().toString();

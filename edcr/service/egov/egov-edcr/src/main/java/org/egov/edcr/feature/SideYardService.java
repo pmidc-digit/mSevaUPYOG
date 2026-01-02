@@ -1836,26 +1836,39 @@ public class SideYardService extends GeneralRule {
 	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
 	    	sideYard1Result.isSetbackCombine=true;
 	    	sideYard2Result.isSetbackCombine=true;
-	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
-	    	if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
-	             requiredSetback.ifPresent(
-	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
-	             );
-	             minVal = requiredSetback.get().abs().stripTrailingZeros();
-	             sideYard1Result.setBackPercentage = minVal.toPlainString().concat("m");
-	             sideYard2Result.setBackPercentage = minVal.toPlainString().concat("m");
-	        }	    	
+	    	Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+		            pl.getMdmsMasterData().get("masterMdmsData"),
+		            MdmsFilter.SIDE_SETBACK_PATH,
+		            BigDecimal.class
+		    );
+
+		    if (scOpt.isPresent()) {
+		        BigDecimal mdmsValue = scOpt.get();
+		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
+		        minVal = mdmsValue;
+		    }	    
+		    sideYard1Result.setBackPercentage = "10";
+	        sideYard2Result.setBackPercentage = "10";
 	    }else {
 	    	sideYard1Result.isSetbackCombine=true;
 	    	sideYard2Result.isSetbackCombine=true;
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
 	         * ====================================================== */	    	
-	    	minVal= getPermisableForCommericalBelow21m(plotArea,pl, sideYard1Result, sideYard2Result);
+	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, sideYard1Result, sideYard2Result);
+	    	Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+		            pl.getMdmsMasterData().get("masterMdmsData"),
+		            MdmsFilter.SIDE_SETBACK_PATH,
+		            BigDecimal.class
+		    );
+
+		    if (scOpt.isPresent()) {
+		        BigDecimal mdmsValue = scOpt.get();
+		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
+		        minVal = mdmsValue;
+		    }
+		    sideYard1Result.setBackPercentage = "10";
+	        sideYard2Result.setBackPercentage = "10";
 	    }
 
 	    return minVal.setScale(2, RoundingMode.HALF_UP);

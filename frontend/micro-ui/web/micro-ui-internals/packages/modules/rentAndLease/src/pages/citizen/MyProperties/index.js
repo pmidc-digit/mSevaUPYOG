@@ -203,7 +203,9 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
                 }
                 {(property?.status == "PENDINGPAYMENT" ||
                   property?.status == "PENDING_FOR_PAYMENT" ||
-                  (property?.status == "PENDING_FOT_SETLEMENT" && property?.amountToBeDeducted > 0 && property?.amountToBeRefund == 0)) && (
+                  ((property?.status == "PENDING_FOT_SETLEMENT" || property?.status == "FORWARD_FOT_SETLEMENT") &&
+                    property?.amountToBeDeducted > 0 &&
+                    property?.amountToBeRefund == 0)) && (
                   <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(property?.applicationNumber)} />
                 )}
                 {property?.status == "APPROVED" && !property?.expireFlag && (

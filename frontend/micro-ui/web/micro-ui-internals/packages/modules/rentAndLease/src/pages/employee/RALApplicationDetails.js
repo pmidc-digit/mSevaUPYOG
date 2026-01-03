@@ -62,6 +62,14 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
+  if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
+  }
+
   const handleNavigation = () => {
     const timer = setTimeout(() => {
       history.push("/digit-ui/employee/rentandlease/inbox");

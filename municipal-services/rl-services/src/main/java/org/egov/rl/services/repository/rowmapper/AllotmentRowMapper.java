@@ -27,30 +27,15 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 	@Override
 	public List<AllotmentDetails> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		AuditDetails auditDetails = null;
-		List<AllotmentDetails> currentAllotmentList = new ArrayList<>();
-
-		Set<OwnerInfo> userList = new HashSet<>();
-		Set<Document> docList = new HashSet<>();
-		AllotmentDetails currentAllotment = null;
+			
+		Map<String, AllotmentDetails> allotmentDetailsMap = new LinkedHashMap<>();
+		
 		while (rs.next()) {
-			if (currentAllotmentList.size() <= rs.getLong("totalAllotments") && rs.getLong("totalAllotments") > 1) {
-				if (currentAllotment != null) {
-					String allotmentId = currentAllotment.getId();
-					if (currentAllotmentList.stream().noneMatch(d -> d.getId().equals(allotmentId))) {
-						currentAllotmentList.add(currentAllotment);
-						if (rs.getLong("applicantCount") == userList.size()) {
-							userList = new HashSet<>();
-						}
-						if (rs.getLong("documentCount") == docList.size()) {
-							docList = new HashSet<>();
-						}
-					}
-				}
-			}
-			userList.add(getOwnerInfo(rs));
-			docList.add(getDocuments(rs));
-			auditDetails = getAuditDetail(rs, "allotment");
-			currentAllotment = AllotmentDetails.builder()
+			String uuid = rs.getString("id");
+			AllotmentDetails allotmentDetails = allotmentDetailsMap.get(uuid);
+			if (allotmentDetails == null) {
+				auditDetails = getAuditDetail(rs, "allotment");
+				allotmentDetails = AllotmentDetails.builder()
 					.id(rs.getString("id"))
 					.propertyId(rs.getString("property_id"))
 					.tenantId(rs.getString("tenant_id"))
@@ -68,26 +53,42 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.penaltyType(rs.getString("penalty_type"))
 					.createdTime(rs.getLong("created_time"))
 					.createdBy(rs.getString("created_by"))
-					.documents(new ArrayList<>(docList))
 					.reasonForClosure(rs.getString("reason_for_closure"))
 					.notesComments(rs.getString("notes_comments"))
 					.amountToBeDeducted(rs.getBigDecimal("amount_tobe_deducted"))
 					.amountToBeRefund(rs.getBigDecimal("amount_to_be_refund"))
 					.expireFlag(rs.getBoolean("expireflag"))
 					.status(rs.getString("status"))
-					.ownerInfo(new ArrayList<>(userList))
 					.auditDetails(auditDetails)
 					.additionalDetails(getAdditionalDetails(rs.getObject("additional_details")))
 					.build();
-			if (currentAllotmentList.isEmpty()) {
-				currentAllotmentList.add(currentAllotment);
+					 getOwnerInfo(rs,allotmentDetails);
+					 getDocuments(rs,allotmentDetails);
+			}else {
+				String allUuid=rs.getString("id");
+			    List<AllotmentDetails>	allotmentDetail=new ArrayList<>();
+			    allotmentDetail.add(allotmentDetails);
+			    AllotmentDetails allotment=allotmentDetail.stream().filter(al->al.getId().equals(allUuid)).findFirst().orElse(null);
+				
+			    if(allotment!=null) {
+				     
+			    	 String ownerId=rs.getString("owner_id");
+					 if(allotment.getOwnerInfo().stream().noneMatch(onr->onr.getOwnerId().equalsIgnoreCase(ownerId))) {
+						 getOwnerInfo(rs,allotmentDetails);			
+					 }
+					 
+					 String docId=rs.getString("doc_id");
+					 if(allotmentDetails.getDocuments()!=null&&!allotmentDetails.getDocuments().isEmpty()&&allotment.getDocuments().stream().noneMatch(onr->onr.getId().equalsIgnoreCase(docId))) {
+					 	 getDocuments(rs, allotmentDetails);			
+					 }
+				}	 			   		
 			}
+			allotmentDetailsMap.put(uuid, allotmentDetails);
 		}
-		return currentAllotmentList;
-
+		return new ArrayList<>(allotmentDetailsMap.values());
 	}
 
-	private OwnerInfo getOwnerInfo(ResultSet rs) {
+	private void getOwnerInfo(ResultSet rs,AllotmentDetails allotmentDetails) {
 		OwnerInfo owner = null;
 		try {
 			owner = OwnerInfo.builder()
@@ -99,11 +100,11 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.ownerType(rs.getString("owner_type"))
 					.status(Status.valueOf(rs.getString("onr_status").toUpperCase()))
 					.build();
+			allotmentDetails.addOwnersItem(owner);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CustomException("PARSING_ERROR", "Error parsing OwnerInfo from JSON");
 		}
-		return owner;
 	}
 
 	private AuditDetails getAuditDetail(ResultSet rs, String source) throws SQLException {
@@ -122,15 +123,19 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 		return null;
 	}
 
-	private Document getDocuments(ResultSet rs) throws SQLException {
-
-		return Document.builder()
-				.id(rs.getString("doc_id"))
-				.documentUid(rs.getString("doc_allotmentId"))
-				.documentType(rs.getString("documenttype"))
-				.fileStoreId(rs.getString("fileStoreId"))
-				.status(Status.valueOf(rs.getString("doc_status").toUpperCase()))
-				.build();
+	private void getDocuments(ResultSet rs,AllotmentDetails allotmentDetails) throws SQLException {
+      try {
+			Document doc= Document.builder()
+					.id(rs.getString("doc_id"))
+					.documentUid(rs.getString("doc_allotmentId"))
+					.documentType(rs.getString("documenttype"))
+					.fileStoreId(rs.getString("fileStoreId"))
+					.status(Status.valueOf(rs.getString("doc_status").toUpperCase()))
+					.build();
+			allotmentDetails.addDocumentsItem(doc);
+		}catch(Exception e) {
+			allotmentDetails.setDemandId(null);
+		}
 	}
 
 	private JsonNode getAdditionalDetails(Object additionalDetails) {
@@ -164,5 +169,4 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 			throw new RuntimeException("Failed to parse 'additionalDetails.value' as JSON array", e);
 		}
 	}
-
 }

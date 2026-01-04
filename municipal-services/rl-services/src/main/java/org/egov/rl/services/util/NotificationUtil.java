@@ -484,8 +484,8 @@ public class NotificationUtil {
 
 	private String getMessageWithApplicationNumber(AllotmentDetails allotmentDetails, String message) {
 		message = message.replace("{1}", allotmentDetails.getOwnerInfo().get(0).getName());
-		message = message.replace("{2}", allotmentDetails.getApplicationType());
-		message = message.replace("{3}", allotmentDetails.getApplicationNumber());
+		message = message.replace("{2}", allotmentDetails.getApplicationNumber());
+		message = message.replace("{3}", allotmentDetails.getApplicationType());
 		return message;
 	}
 

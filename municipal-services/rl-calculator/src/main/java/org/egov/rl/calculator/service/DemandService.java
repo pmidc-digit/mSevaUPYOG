@@ -85,27 +85,26 @@ public class DemandService {
 			boolean isSecurityDeposite = calculationReq.getCalculationCriteria().get(0).isSecurityDeposite();
 			List<Demand> demands = new ArrayList<>();
 			RequestInfo requestInfo = calculationReq.getRequestInfo();
-			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
-					.getTenantId();
+			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)					.getTenantId();
 
 			for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
 
 				AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
-				AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+				AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 
-//            String tenantId = allotmentRequest.getAllotment().getTenantId();
-				String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
+//            String tenantId = allotmentRequest.getAllotment().get(0).getTenantId();
+				String consumerCode = allotmentRequest.getAllotment().get(0).getApplicationNumber();
 
-				OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+				OwnerInfo ownerInfo = allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0);
 				Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
 						.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo())
 						.tenantId(ownerInfo.getTenantId()).build();
 				List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite,
 						allotmentRequest);
 				BigDecimal amountPayable = new BigDecimal(0);
-				String applicationType = allotmentRequest.getAllotment().getApplicationType();
+				String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
-				JsonNode property = allotmentDetails.getAdditionalDetails();
+				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
 				String status = property.path("feesPeriodCycle").asText();
 				long startDay = 0;
 				long endDay = 0;
@@ -163,22 +162,22 @@ public class DemandService {
 		AllotmentRequest allotmentRequest = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest();
 		List<Demand> demands = new ArrayList<>();
 		RequestInfo requestInfo = calculationReq.getRequestInfo();
-		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
+		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 				.getTenantId();
 
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 		BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of
 																// billing
-		String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
+		String consumerCode = allotmentRequest.getAllotment().get(0).getApplicationNumber();
 
-		OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+		OwnerInfo ownerInfo = allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0);
 		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
 				.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId())
 				.build();
 
 		List<DemandDetail> demandDetails = calculationService.calculateSatelmentDemand(allotmentRequest);
 		BigDecimal amountPayable = new BigDecimal(0);
-		String applicationType = allotmentRequest.getAllotment().getApplicationType();
+		String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
@@ -202,7 +201,7 @@ public class DemandService {
 
 		List<Demand> demands = new ArrayList<>();
 		RequestInfo requestInfo = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo();
-		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment()
+		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 				.getTenantId();
 
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
@@ -212,15 +211,15 @@ public class DemandService {
 		for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
 
 			AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
-			String consumerCode = allotmentRequest.getAllotment().getApplicationNumber();
+			String consumerCode = allotmentRequest.getAllotment().get(0).getApplicationNumber();
 
-			OwnerInfo ownerInfo = allotmentRequest.getAllotment().getOwnerInfo().get(0);
+			OwnerInfo ownerInfo = allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0);
 			Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
 					.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo())
 					.tenantId(ownerInfo.getTenantId()).build();
 			List<DemandDetail> demandDetails = calculationService.calculateDemand(isSecurityDeposite, allotmentRequest);
 			BigDecimal amountPayable = new BigDecimal(0);
-			String applicationType = allotmentRequest.getAllotment().getApplicationType();
+			String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
 			amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 					BigDecimal::add);
@@ -437,7 +436,7 @@ public class DemandService {
                      	List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
 						list.forEach(d -> {
-							JsonNode property = d.getAdditionalDetails();
+							JsonNode property = d.getAdditionalDetails().get(0);
 							String status = property.path("feesPeriodCycle").asText();
 
 							switch (status) {
@@ -544,7 +543,7 @@ public class DemandService {
 					updatePenalty(baseAmount.getTaxAmount(), d, requestInfo);
 				} else {
 					notificationService.sendNotificationSMS(
-							AllotmentRequest.builder().allotment(alt).requestInfo(requestInfo).build());
+							AllotmentRequest.builder().allotment(Arrays.asList(alt)).requestInfo(requestInfo).build());
 				}
 			});
 		});
@@ -581,7 +580,7 @@ public class DemandService {
 				.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId())
 				.build();
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(false,
-				AllotmentRequest.builder().allotment(allotmentDetails).requestInfo(requestInfo).build());
+				AllotmentRequest.builder().allotment(Arrays.asList(allotmentDetails)).requestInfo(requestInfo).build());
 		BigDecimal amountPayable = new BigDecimal(0);
 		String applicationType = allotmentDetails.getApplicationType();
 

@@ -33,10 +33,10 @@ public class CalculatorController {
 	private ResponseInfoFactory responseInfoFactory;
 
     @PostMapping("/_calculate")
-    public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq allotmentRequest) {
+    public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq request) {
 
-    	DemandResponse demandResponse =demandService.createDemand(allotmentRequest);
-       demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(allotmentRequest.getRequestInfo(), true));
+    	DemandResponse demandResponse =demandService.createDemand(request);
+       demandResponse.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true));
         return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
     }
 

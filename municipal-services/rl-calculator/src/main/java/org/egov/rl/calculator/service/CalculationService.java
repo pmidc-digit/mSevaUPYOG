@@ -28,9 +28,9 @@ public class CalculationService {
 	 * @return A list of DemandDetail objects representing the calculated demand.
 	 */
 	public List<DemandDetail> calculateDemand(boolean isSecurityDeposite, AllotmentRequest allotmentRequest) {
-		String tenantId = allotmentRequest.getAllotment().getTenantId();
+		String tenantId = allotmentRequest.getAllotment().get(0).getTenantId();
 
-		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
+		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().get(0).getPropertyId(),
 				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 
 		return processCalculationForDemandGeneration(isSecurityDeposite, tenantId, calculationTypes, allotmentRequest);
@@ -39,7 +39,7 @@ public class CalculationService {
 	private List<DemandDetail> processCalculationForDemandGeneration(boolean isSecurityDeposite, String tenantId,
 			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
 
-		String applicationType = allotmentRequest.getAllotment().getApplicationType();
+		String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 		BigDecimal fee = BigDecimal.ZERO;
 		List<DemandDetail> demandDetails = new ArrayList<>();
 		// Step 1: Calculate base fee
@@ -70,7 +70,7 @@ public class CalculationService {
 			List<DemandDetail> demandDetails) {
 
 		BigDecimal baseAmount = new BigDecimal(calculateAmount.getBaseRent());
-//		Long lastModifiedDate = allotmentRequest.getAllotment().getAuditDetails().getLastModifiedTime();
+//		Long lastModifiedDate = allotmentRequest.getAllotment().get(0).getAuditDetails().getLastModifiedTime();
 //		Long rentLeasePayDate = Instant.ofEpochMilli(lastModifiedDate).plus(Duration.ofDays(30)).toEpochMilli();
 //		Long rentLeasePayWithPenaltyDate = Instant.ofEpochMilli(rentLeasePayDate).plus(Duration.ofDays(30)).toEpochMilli();
 
@@ -79,7 +79,7 @@ public class CalculationService {
 		List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION,
 				RLConstants.COWCESS_FEE_RL_APPLICATION);
 			taxRate.stream().forEach(t -> {
-//			String penaltyType = allotmentRequest.getAllotment().getPenaltyType();
+//			String penaltyType = allotmentRequest.getAllotment().get(0).getPenaltyType();
 			BigDecimal amount = BigDecimal.ZERO;
 			if (taxList.contains(t.getTaxType()) && t.isActive()) {
 				if (t.getType().contains("%")) {
@@ -98,9 +98,9 @@ public class CalculationService {
 	}
 
 	public List<DemandDetail> calculateSatelmentDemand(AllotmentRequest allotmentRequest) {
-		String tenantId = allotmentRequest.getAllotment().getTenantId();
+		String tenantId = allotmentRequest.getAllotment().get(0).getTenantId();
 
-		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().getPropertyId(),
+		List<RLProperty> calculationTypes = mdmsUtil.getCalculateAmount(allotmentRequest.getAllotment().get(0).getPropertyId(),
 				allotmentRequest.getRequestInfo(), tenantId, RLConstants.RL_MASTER_MODULE_NAME);
 
 		return satelmentCalculationForDemandGeneration(tenantId, calculationTypes, allotmentRequest);
@@ -109,7 +109,7 @@ public class CalculationService {
 	private List<DemandDetail> satelmentCalculationForDemandGeneration(String tenantId,
 			List<RLProperty> calculateAmount, AllotmentRequest allotmentRequest) {
 		List<DemandDetail> demandDetails = new ArrayList<>();
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		BigDecimal amountDeducted = allotmentDetails.getAmountToBeDeducted(); // BigDecimal
 		BigDecimal securityAmount = calculateAmount.stream()
 				.filter(d -> d.getPropertyId().equals(allotmentDetails.getPropertyId())).findFirst()

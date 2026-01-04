@@ -25,13 +25,13 @@ public class NotificationConsumer {
 	private ObjectMapper mapper;
 
 	@KafkaListener(topics = { "${save.rl.allotment}", "${update.rl.allotment}" })
-	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+	public void listen(final String record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		AllotmentRequest allotmentRequest = new AllotmentRequest();
 		try {
 
 			log.debug("Consuming record in RL for notification: " + record.toString());
-			allotmentRequest = mapper.convertValue(record, AllotmentRequest.class);
+			allotmentRequest = mapper.readValue(record, AllotmentRequest.class);
 		} catch (final Exception e) {
 
 			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);

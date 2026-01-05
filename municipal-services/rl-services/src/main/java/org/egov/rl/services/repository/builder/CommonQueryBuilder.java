@@ -32,10 +32,15 @@ public class CommonQueryBuilder {
 			+ " al.id, al.property_id, al.tenant_id, al.status, al.application_type, al.application_number, al.previous_application_number, al.start_date, al.end_date, al.expireflag, al.is_gst_applicable, al.is_cow_cess_applicable, al.is_refund_applicable_on_discontinuation, al.penalty_type, al.created_time, al.created_by, al.lastmodified_time, al.lastmodified_by, al.additional_details, al.term_and_condition, al.reason_for_closure, al.notes_comments, al.trade_license_number, al.registration_number, al.amount_tobe_deducted, al.amount_to_be_refund, "
             + " onr.id as owner_id, onr.allotment_id as onr_allotmentId, onr.user_uuid, onr.is_primary_owner, onr.owner_type, onr.ownership_percentage, onr.relationship, onr.status as onr_status, "
 	        + " doc.id as doc_id, doc.allotment_id as doc_allotmentId, doc.documenttype, doc.filestoreid, doc.status as doc_status, doc.createdby, doc.lastmodifiedby, doc.createdtime, doc.lastmodifiedtime"
-            + " FROM eg_rl_allotment AS al"
+	        + " FROM latest_allotment AS la"
+			+ " INNER JOIN eg_rl_allotment al  ON al.id = la.id "
 			+ " INNER JOIN eg_rl_owner_info AS onr ON al.id = onr.allotment_id"
-			+ " LEFT JOIN eg_rl_document AS doc ON al.id = doc.allotment_id ";
-			
+			+ " LEFT JOIN eg_rl_document AS doc ON al.id = doc.allotment_id "
+			+ " ORDER BY al.created_time DESC NULLS LAST, al.id DESC ";
+	private static final String FILTER_BASE_QUERY = "WITH latest_allotment AS ("
+			+ "  SELECT al.id "
+			+ "  FROM eg_rl_allotment al ";
+		
 	public String getAllotmentSearch(AllotmentCriteria criteria, List<Object> preparedStmtList) {
 		StringBuilder subQuery = new StringBuilder("");
 		List<Object> subQueryParams = new ArrayList<>();
@@ -114,17 +119,17 @@ public class CommonQueryBuilder {
 		long limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), config.getMaxSearchLimit())
 				: config.getDefaultLimit();
 		long offset = criteria.getOffset() != null ? criteria.getOffset() : config.getDefaultOffset();
-		subQuery.append(" ORDER BY al.created_time DESC NULLS LAST, al.id LIMIT ? OFFSET ? ");
+		subQuery.append(" ORDER BY al.created_time DESC NULLS LAST, al.id DESC LIMIT ? OFFSET ? )");
 		subQueryParams.add(limit);
 		subQueryParams.add(offset);
         
 		// Now build the main query
-		StringBuilder mainQuery = new StringBuilder(BASE_QUERY);
+		StringBuilder mainQuery = new StringBuilder(FILTER_BASE_QUERY);
 		mainQuery.append(subQuery);
 
 		// Add all subquery parameters to the main prepared statement list
 		preparedStmtList.addAll(subQueryParams);
-	    
+		mainQuery.append(BASE_QUERY);
 		return mainQuery.toString();
 	}
 

@@ -120,7 +120,7 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
             log.error(ex.getMessage());
         }
         
-        Bill bill = null;
+        Bill bill = Bill.builder().fileStoreId(rs.getString("b_filestoreid")).build();
         
         if(billDetailIdExists == null || billDetailIdExists.trim().isEmpty()) {
         	if (billIdExists != null && !billIdExists.trim().isEmpty()) {

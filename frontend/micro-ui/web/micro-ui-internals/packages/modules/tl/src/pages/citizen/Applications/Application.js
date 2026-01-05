@@ -40,11 +40,7 @@ const MyApplications = ({ view }) => {
               <KeyNote keyValue={t("TL_COMMON_TABLE_COL_OWN_NAME")} note={application?.TL_COMMON_TABLE_COL_OWN_NAME || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(application?.raw?.status)} />
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "20px",
-                }}
+              <div className="action-button-myapplication"
               >
                 <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
                   <SubmitBar label={t("CS_VIEW_DETAILS")} />
@@ -56,9 +52,9 @@ const MyApplications = ({ view }) => {
                       state: { application, tenantId: tenantId },
                     }}
                   >
-                    <div>
+                   
                       <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
-                    </div>
+                  
                   </Link>
                 )}
               </div>

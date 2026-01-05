@@ -106,7 +106,7 @@ const TLTradeUnitsEmployeeInitial = ({ config, onSelect, userType, formData, set
             {units.map((unit, index) => (
                 <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
             ))}
-            <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits} style={{ color: "#a82227", width: "fit-content" }} />
+            <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits}  />
         </React.Fragment>
     );
 };
@@ -383,7 +383,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                     <CardLabelError style={errorStyle}> {localFormState.touched.tradeSubType ? errors?.tradeSubType?.message : ""} </CardLabelError>
                     <LabelFieldPair>
                         <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}`}</CardLabel>
-                        <div className="field">
+                        <div className="form-field">
                             <Controller
                                 control={control}
                                 name={"uom"}
@@ -410,7 +410,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                     <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
                     <LabelFieldPair>
                         <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}</CardLabel>
-                        <div className="field">
+                        <div className="form-field">
                             <Controller
                                 control={control}
                                 name={"uomValue"}

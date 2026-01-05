@@ -222,7 +222,7 @@ function SelectDocument({
             `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `}
             <span className={doc?.documentType != "OLDLICENCENO" ? "requiredField": ""}>{doc?.documentType != "OLDLICENCENO" ? "*":""}</span>
         </CardLabel>
-        <div className="field">
+        <div className="form-field">
           <UploadFile
             id={id}
             onUpload={(e) => { selectfile(e, doc?.documentType.replaceAll(".", "_")) }}

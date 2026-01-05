@@ -3,7 +3,7 @@
   border: none !important;
   border-radius: 0.375rem;
   padding: 0.5rem 1rem;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: "Noto Sans", sans-serif;
   font-weight: 500;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -38,7 +38,7 @@
 
 .selector-button-primary {
   @extend .selector-button;
-  background-color: #2947A3 !important;
+  background-color: #2947a3 !important;
 
   &:hover {
     background-color: #1e3a8a !important;
@@ -48,30 +48,29 @@
 .selector-button-secondary {
   @extend .selector-button;
   background-color: #ffffff !important;
-  color: #2947A3 !important;
+  color: #2947a3 !important;
 
   h2 {
-    color: #2947A3 !important;
+    color: #2947a3 !important;
   }
 }
 
-
 .selector-button-border {
-  background-color: #2947A3 !important;
+  background-color: #2947a3 !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 0.375rem;
   padding: 0.5rem 1rem;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: "Noto Sans", sans-serif;
   font-weight: 500;
   font-size: 0.875rem;
   line-height: 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: normal;      /* allow wrapping */
-  word-break: break-word;   /* break long words */
+  white-space: normal; /* allow wrapping */
+  word-break: break-word; /* break long words */
   overflow-wrap: break-word;
-  text-align: center; 
+  text-align: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -97,7 +96,6 @@
     width: 100%;
   }
 }
-
 
 .input-mirror-selector-button {
   @apply h-16 bg-border text-center border-b-2 border-input-border border-solid outline-none px-lg !important;
@@ -132,3 +130,11 @@
   border: 1px solid !important;
   margin-right: 10px !important;
 }
+.action-button-myapplication {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+

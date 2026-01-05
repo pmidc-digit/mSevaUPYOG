@@ -1,0 +1,505 @@
+$hrms-primary: #a82227;
+$hrms-primary-blue: #0B4B66;
+$hrms-accent-orange: #f47738;
+$hrms-text-primary: #0b0c0c;
+$hrms-text-secondary: #505a5f;
+$hrms-text-tertiary: #666;
+$hrms-text-light: #999;
+
+$hrms-bg-white: #ffffff;
+$hrms-bg-light: #f9f9f9;
+$hrms-bg-lighter: #fafafa;
+$hrms-bg-gray: #f5f5f5;
+$hrms-bg-light-blue: #f7f7f7;
+
+$hrms-border-light: #e0e0e0;
+$hrms-border-medium: #d6d5d4;
+$hrms-border-gray: #e8e8e8;
+$hrms-border-dark: #ddd;
+$hrms-border-darker: #ccc;
+
+$badge-category-bg: #E0F2FE;
+$badge-category-text: #0369A1;
+$badge-subcategory-bg: #DBEAFE;
+$badge-subcategory-text: #1E40AF;
+$badge-zone-bg: #D1F2EB;
+$badge-zone-text: #0D6759;
+$badge-role-bg: #E9D5FF;
+$badge-role-text: #7C3AED;
+
+$hrms-space-xs: 8px;
+$hrms-space-sm: 10px;
+$hrms-space-md: 12px;
+$hrms-space-base: 16px;
+$hrms-space-lg: 20px;
+$hrms-space-xl: 24px;
+$hrms-space-xxl: 28px;
+
+$hrms-font-sm: 14px;
+$hrms-font-base: 16px;
+$hrms-font-lg: 18px;
+$hrms-font-xl: 28px;
+
+$hrms-font-normal: 400;
+$hrms-font-medium: 500;
+$hrms-font-semibold: 600;
+$hrms-font-bold: 700;
+
+$hrms-radius-sm: 4px;
+$hrms-radius-md: 8px;
+$hrms-radius-lg: 16px;
+
+
+.hrms-flex {
+  display: flex;
+}
+
+.hrms-flex-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.hrms-flex-center {
+  display: flex;
+  align-items: center;
+}
+
+.hrms-flex-between-center {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hrms-flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.hrms-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.hrms-flex-end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hrms-gap-xs { gap: $hrms-space-xs; }
+.hrms-gap-sm { gap: $hrms-space-sm; }
+.hrms-gap-md { gap: $hrms-space-md; }
+.hrms-gap-base { gap: $hrms-space-base; }
+.hrms-gap-lg { gap: $hrms-space-lg; }
+
+
+.hrms-mt-xs { margin-top: $hrms-space-xs; }
+.hrms-mt-sm { margin-top: $hrms-space-sm; }
+.hrms-mt-md { margin-top: $hrms-space-md; }
+.hrms-mt-base { margin-top: $hrms-space-base; }
+.hrms-mt-lg { margin-top: $hrms-space-lg; }
+.hrms-mt-xl { margin-top: $hrms-space-xl; }
+
+.hrms-mb-xs { margin-bottom: $hrms-space-xs; }
+.hrms-mb-sm { margin-bottom: $hrms-space-sm; }
+.hrms-mb-md { margin-bottom: $hrms-space-md; }
+.hrms-mb-base { margin-bottom: $hrms-space-base; }
+.hrms-mb-lg { margin-bottom: $hrms-space-lg; }
+.hrms-mb-xl { margin-bottom: $hrms-space-xl; }
+
+.hrms-ml-xs { margin-left: $hrms-space-xs; }
+.hrms-ml-sm { margin-left: $hrms-space-sm; }
+.hrms-ml-md { margin-left: $hrms-space-md; }
+.hrms-ml-base { margin-left: $hrms-space-base; }
+
+.hrms-mr-0 { margin-right: 0; }
+
+.hrms-p-xs { padding: $hrms-space-xs; }
+.hrms-p-sm { padding: $hrms-space-sm; }
+.hrms-p-md { padding: $hrms-space-md; }
+.hrms-p-base { padding: $hrms-space-base; }
+.hrms-p-lg { padding: $hrms-space-lg; }
+
+
+.hrms-text-bold {
+  font-weight: $hrms-font-bold;
+}
+
+.hrms-text-semibold {
+  font-weight: $hrms-font-semibold;
+}
+
+.hrms-text-medium {
+  font-weight: $hrms-font-medium;
+}
+
+.hrms-text-lg {
+  font-size: $hrms-font-lg;
+}
+
+.hrms-text-xl {
+  font-size: $hrms-font-xl;
+}
+
+.hrms-text-accent {
+  color: $hrms-accent-orange;
+}
+
+.hrms-text-secondary {
+  color: $hrms-text-secondary;
+}
+
+.hrms-text-primary {
+  color: $hrms-text-primary;
+}
+
+
+.hrms-bg-light {
+  background-color: $hrms-bg-light;
+}
+
+.hrms-bg-lighter {
+  background-color: $hrms-bg-lighter;
+}
+
+.hrms-bg-white {
+  background-color: $hrms-bg-white;
+}
+
+
+.hrms-breadcrumb-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $hrms-space-base $hrms-space-lg $hrms-space-sm $hrms-space-lg;
+  border-bottom: 1px solid $hrms-border-light;
+  background: $hrms-bg-white;
+  
+  @media (max-width: 768px) {
+    padding: $hrms-space-md;
+  }
+}
+
+.hrms-breadcrumb-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $hrms-text-secondary;
+  text-decoration: none;
+  font-size: $hrms-font-sm;
+  font-weight: $hrms-font-medium;
+  transition: all 0.2s ease;
+  padding: 6px $hrms-space-md;
+  border-radius: $hrms-radius-sm;
+  white-space: nowrap;
+
+  .back-arrow {
+    font-size: $hrms-font-base;
+    font-weight: $hrms-font-semibold;
+    line-height: 1;
+  }
+
+  &:hover {
+    color: $hrms-primary-blue;
+    background-color: #f7f7f7;
+  }
+
+  &:active {
+    background-color: #e8e8e8;
+  }
+
+  @media (max-width: 768px) {
+    padding: 4px $hrms-space-xs;
+    font-size: 13px;
+  }
+}
+
+
+.hrms-card {
+  padding: $hrms-space-lg;
+  margin: $hrms-space-sm 0;
+  border: 1px solid $hrms-border-light;
+  border-radius: $hrms-radius-sm;
+  background-color: $hrms-bg-white;
+}
+
+.hrms-card-light {
+  background-color: $hrms-bg-light;
+  padding: 15px;
+}
+
+.hrms-card-header {
+  font-size: $hrms-font-xl;
+  font-weight: $hrms-font-normal;
+  color: #1C1D1F;
+}
+
+
+.hrms-form-section {
+  margin-bottom: $hrms-space-xl;
+}
+
+.hrms-form-header {
+  font-size: $hrms-font-lg;
+  font-weight: $hrms-font-bold;
+  margin-bottom: $hrms-space-base;
+}
+
+.hrms-form-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2%;
+  
+  &__item {
+    flex: 0 0 48%;
+    margin: 1%;
+    
+    @media (max-width: 768px) {
+      flex: 0 0 100%;
+    }
+  }
+}
+
+.hrms-form-field {
+  margin-bottom: $hrms-space-xl;
+}
+
+.hrms-form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: $hrms-space-lg;
+}
+
+
+.hrms-jurisdiction-card,
+.hrms-assignment-card {
+  padding: $hrms-space-md;
+  border: 1px solid $hrms-border-dark;
+  border-radius: $hrms-radius-sm;
+  margin-bottom: $hrms-space-sm;
+  background: $hrms-bg-white;
+}
+
+.hrms-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $hrms-space-sm;
+  margin-top: $hrms-space-sm;
+}
+
+.hrms-item-header {
+  display: flex;
+  align-items: center;
+  gap: $hrms-space-xs;
+}
+
+
+.hrms-inbox-header {
+  display: flex;
+  justify-content: space-between;
+  padding: $hrms-space-base;
+  border-bottom: 1px solid $hrms-border-light;
+}
+
+.hrms-inbox-row {
+  padding: $hrms-space-md;
+  margin-bottom: $hrms-space-xs;
+  background-color: $hrms-bg-lighter;
+  
+  @media (max-width: 768px) {
+    padding: $hrms-space-sm;
+  }
+}
+
+.hrms-inbox-actions {
+  display: flex;
+  gap: $hrms-space-sm;
+  margin-left: $hrms-space-sm;
+}
+
+
+.hrms-filter-container {
+  margin-bottom: $hrms-space-base;
+}
+
+.hrms-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $hrms-space-base;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.hrms-badge {
+  padding: 4px $hrms-space-md;
+  border-radius: $hrms-radius-lg;
+  font-size: 12px;
+  font-weight: $hrms-font-medium;
+  display: inline-block;
+  text-align: center;
+  
+  &--category {
+    background-color: $badge-category-bg;
+    color: $badge-category-text;
+  }
+  
+  &--subcategory {
+    background-color: $badge-subcategory-bg;
+    color: $badge-subcategory-text;
+  }
+  
+  &--zone {
+    background-color: $badge-zone-bg;
+    color: $badge-zone-text;
+  }
+  
+  &--role {
+    background-color: $badge-role-bg;
+    color: $badge-role-text;
+  }
+}
+
+
+.hrms-response-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $hrms-space-xl;
+}
+
+
+.hrms-details-section {
+  margin-top: $hrms-space-lg;
+}
+
+.hrms-details-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+
+.hrms-stepper-container {
+}
+
+
+.hrms-divider {
+  border-bottom: 1px solid $hrms-border-light;
+}
+
+.hrms-section-bg {
+  background-color: $hrms-bg-light;
+  padding: 15px;
+  border-radius: $hrms-radius-sm;
+}
+
+.hrms-cursor-pointer {
+  cursor: pointer;
+}
+
+
+@media (max-width: 768px) {
+  .hrms-mobile-full {
+    width: 100%;
+  }
+  
+  .hrms-mobile-p-sm {
+    padding: $hrms-space-sm;
+  }
+  
+  .hrms-mobile-mb-xs {
+    margin-bottom: $hrms-space-xs;
+  }
+}
+
+
+.hrms-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $hrms-space-base;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hrms-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $hrms-space-base;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hrms-header-wrapper {
+  margin-left: 15px;
+  
+  @media (max-width: 640px) {
+    margin-left: -12px;
+  }
+}
+
+.hrms-document-link {
+  min-width: 160px;
+  margin-right: $hrms-space-lg;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.hrms-document-svg {
+  background: #f6f6f6;
+  padding: $hrms-space-xs;
+  margin-left: 15px;
+}
+
+.hrms-document-name {
+  margin-top: $hrms-space-xs;
+  max-width: 196px;
+}
+
+.hrms-jurisdiction-status-table {
+  max-width: 640px;
+  border: 1px solid rgb(214, 213, 212);
+  inset: 0px;
+  width: auto;
+  padding: .2rem;
+  margin-bottom: 2rem;
+}
+
+.hrms-section-title {
+  padding-bottom: 2rem;
+}
+
+.hrms-card .card-header {
+  font-size: $hrms-font-xl;
+  font-weight: $hrms-font-normal;
+  color: #1C1D1F;
+}
+
+.hrms-delete-btn {
+  background: none;
+  border: none;
+  color: #D4351C;
+  cursor: pointer;
+  font-size: $hrms-font-sm;
+  font-weight: $hrms-font-medium;
+  padding: 0;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.hrms-toast-container {
+}
+
+// Loader adjustments
+.hrms-loader-container {
+}

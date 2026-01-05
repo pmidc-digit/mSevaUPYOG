@@ -1,4 +1,4 @@
-import { PrivateRoute } from "@mseva/digit-ui-react-components";
+import { PrivateRoute, BreadCrumb } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Switch, useLocation } from "react-router-dom";
@@ -24,23 +24,31 @@ const EmployeeApp = ({ path, url, userType }) => {
   const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
   const EmpMaping = Digit?.ComponentRegistryService?.getComponent("EmpMaping");
 
+  const crumbs = [
+    {
+      path: "/digit-ui/employee",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/employee/hrms",
+      content: t("HR_COMMON_HEADER"),
+      show: true,
+      isclickable: false,
+    },
+  ];
+
   //console.log("Path in hrms: ", path);
   return (
     <Switch>
       <React.Fragment>
         <div className="ground-container">
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <p className="breadcrumb" style={{ marginLeft: mobileView ? "1vw" : "15px" }}>
-              <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
-                {t("ES_COMMON_HOME")}
-              </Link>{" "}
-              <span>{location.pathname === "/digit-ui/employee/hrms/inbox" ? t("HR_COMMON_HEADER") : t("HR_COMMON_HEADER")}</span>
-            </p>
-            <p className="breadcrumb">
-              <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
-                {"<"} {t("CS_COMMON_BACK")}
-              </Link>{" "}
-            </p>
+          <div className="hrms-breadcrumb-wrapper">
+            <BreadCrumb 
+              crumbs={crumbs}
+              style={{ fontSize: "16px" }}
+              spanStyle={{ fontWeight: "500" }}
+            />
           </div>
           <PrivateRoute
             path={`${path}/inbox`}

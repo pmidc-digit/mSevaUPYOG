@@ -53,9 +53,10 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
             }
 
             // Create and add a Bill object to the current PropertyBasedBill
-            String billId = rs.getString("b_id");
-            Bill bill = createBill(rs, userIds);
-            propertyBill.getBills().add(bill);
+            Bill bill = createBill(rs, userIds,propertyBillMap);
+            if (bill.getId() != null) {
+            	propertyBill.getBills().add(bill);
+            }
         }
 
         // Populate user information
@@ -67,8 +68,11 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
         return propertyBills;
     }
 
-    private Bill createBill(ResultSet rs, Set<String> userIds) throws SQLException {
-        AuditDetails auditDetails = new AuditDetails();
+    @SuppressWarnings("null")
+	private Bill createBill(ResultSet rs, Set<String> userIds,
+			Map<String, PropertyBasedBill> propertyBillMap) throws SQLException {
+    	
+    	AuditDetails auditDetails = new AuditDetails();
         auditDetails.setCreatedBy(rs.getString("b_createdby"));
         auditDetails.setCreatedTime((Long) rs.getObject("b_createddate"));
         auditDetails.setLastModifiedBy(rs.getString("b_lastmodifiedby"));
@@ -83,6 +87,29 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
 
         User user = User.builder().id(rs.getString("ptown_userid")).build();
         Connection connection = new Connection();
+        
+        /*
+         * Sharan Gakhar
+         * 		For Integrated Billing 
+         * 		excludes duplicate bills (using billDetailsId and billId ) before creating bill 
+         * */
+        
+        String billId = rs.getString("b_id");
+        
+        String billDetailId = rs.getString("bd_id");
+        String billIdExists = propertyBillMap.values().stream()
+                .filter(pbb -> pbb.getBills() != null)
+                .flatMap(pbb -> pbb.getBills().stream())
+                .filter(bill -> billId.equals(bill.getId()))
+                .map(Bill::getId).findFirst().orElse(null);
+        String billDetailIdExists = propertyBillMap.values().stream()
+                .filter(pbb -> pbb.getBills() != null)
+                .flatMap(pbb -> pbb.getBills().stream())
+                .filter(bill -> bill.getBillDetails() != null)
+                .flatMap(bill -> bill.getBillDetails().stream())
+                .filter(detail -> billDetailId.equals(detail.getId()))
+                .map(BillDetail::getId).findFirst().orElse(null);
+        
         try {
             connection.setPropertyId(rs.getString("propertyId"));
             connection.setOldConnectionNo(rs.getString("oldPropertyId"));
@@ -92,35 +119,57 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
             log.info("Exception in BillRowMapper: ", ex);
             log.error(ex.getMessage());
         }
+        
+        Bill bill = null;
+        
+        if(billDetailIdExists == null || billDetailIdExists.trim().isEmpty()) {
+        	if (billIdExists != null && !billIdExists.trim().isEmpty()) {
 
-        Bill bill = Bill.builder()
-            .id(rs.getString("b_id"))
-            .propertyId(rs.getString("propertyId"))
-            .totalAmount(BigDecimal.ZERO)
-            .tenantId(rs.getString("b_tenantid"))
-            .payerName(rs.getString("b_payername"))
-            .payerAddress(rs.getString("b_payeraddress"))
-            .payerEmail(rs.getString("b_payeremail"))
-            .mobileNumber(rs.getString("mobilenumber"))
-            .status(StatusEnum.fromValue(rs.getString("b_status")))
-            .businessService(rs.getString("bd_businessService"))
-            .billNumber(rs.getString("bd_billno"))
-            .billDate(rs.getLong("bd_billDate"))
-            .consumerCode(rs.getString("bd_consumerCode"))
-            .partPaymentAllowed(rs.getBoolean("bd_partpaymentallowed"))
-            .isAdvanceAllowed(rs.getBoolean("bd_isadvanceallowed"))
-            .additionalDetails(rs.getObject("b_additionalDetails"))
-            .auditDetails(auditDetails)
-            .fileStoreId(rs.getString("b_filestoreid"))
-            .address(address)
-            .user(user)
-            .connection(connection)
-            .build();
-
-        userIds.add(user.getId());
-
-        // Add BillDetails and BillAccountDetails to Bill
-        addBillDetailsAndAccountDetails(rs, bill);
+        	    propertyBillMap.values().stream()
+        	        .filter(pbb -> pbb.getBills() != null)
+        	        .flatMap(pbb -> pbb.getBills().stream())
+        	        .filter(b -> billIdExists.equals(b.getId()))
+        	        .findFirst()
+        	        .ifPresent(b -> {
+        	        	try {
+							addBillDetailsAndAccountDetails(rs, b);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+        	            // appended as next entry (comma in JSON)
+        	        });
+        	}
+        	else {
+				bill = Bill.builder()
+						.id(billId)
+			            .propertyId(rs.getString("propertyId"))
+			            .totalAmount(BigDecimal.ZERO)
+			            .tenantId(rs.getString("b_tenantid"))
+			            .payerName(rs.getString("b_payername"))
+			            .payerAddress(rs.getString("b_payeraddress"))
+			            .payerEmail(rs.getString("b_payeremail"))
+			            .mobileNumber(rs.getString("mobilenumber"))
+			            .status(StatusEnum.fromValue(rs.getString("b_status")))
+			            .businessService(rs.getString("bd_businessService"))
+			            .billNumber(rs.getString("bd_billno"))
+			            .billDate(rs.getLong("bd_billDate"))
+			            .consumerCode(rs.getString("bd_consumerCode"))
+			            .partPaymentAllowed(rs.getBoolean("bd_partpaymentallowed"))
+			            .isAdvanceAllowed(rs.getBoolean("bd_isadvanceallowed"))
+			            .additionalDetails(rs.getObject("b_additionalDetails"))
+			            .auditDetails(auditDetails)
+			            .fileStoreId(rs.getString("b_filestoreid"))
+			            .address(address)
+			            .user(user)
+			            .connection(connection)
+			            .build();
+	        	userIds.add(user.getId());
+		        // Add BillDetails and BillAccountDetails to Bill
+		    	addBillDetailsAndAccountDetails(rs, bill);
+		    	
+    		 }
+        }
         return bill;
     }
 

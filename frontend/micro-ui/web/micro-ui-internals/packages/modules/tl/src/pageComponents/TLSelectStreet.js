@@ -127,7 +127,7 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
             {t(input.label)}
             {config.isMandatory ? " * " : null}
           </CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               defaultValue={formData?.address?.[input.name] || formData?.cpt?.details?.address?.[input.name]}

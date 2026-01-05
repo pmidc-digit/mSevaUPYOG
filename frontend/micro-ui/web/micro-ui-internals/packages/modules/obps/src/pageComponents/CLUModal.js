@@ -157,13 +157,21 @@ const CLUModal = ({
     const commentsText = data?.comments?.toString().trim();
 
     if (action?.action !== "APPROVE"  && action?.action !== "REJECT" && !selectedApprover?.uuid) {
-      setShowToast({ key: "true", warning:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
+      setTimeout(()=>{
+        closeToast();
+      },2000);
+
+      setShowToast({ key: "true", error:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
       return;
     }
 
     if (checkCommentsMandatory && !commentsText) {
-      setShowToast({ key: "true", warning:true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
-     return;
+      setTimeout(()=>{
+        closeToast();
+      },2000);
+
+      setShowToast({ key: "true", error:true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
+      return;
     }
 
 

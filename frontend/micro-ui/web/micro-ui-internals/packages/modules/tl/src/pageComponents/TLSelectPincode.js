@@ -100,7 +100,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       return (
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">{`${t(input.label)}`}</CardLabel>
-          <div className="field">
+          <div className="form-field">
             {/* <TextInput 
               key={input.name} 
               value={formData?.cpt?.details?.address?.pincode || pincode} 

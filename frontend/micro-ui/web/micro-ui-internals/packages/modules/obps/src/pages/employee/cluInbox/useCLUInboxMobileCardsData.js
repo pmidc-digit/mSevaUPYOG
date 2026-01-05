@@ -8,11 +8,13 @@ const useCLUInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) =>
     const { t } = useTranslation()
 
 
-    const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType,businessService, locality, status, owner, sla, state}) => ({
+    const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType,businessService, locality, status, owner, sla, state, professionalName}) => ({
             [t("BPA_APPLICATION_NUMBER_LABEL")]: applicationId,
             [t("CS_APPLICATION_DETAILS_APPLICATION_DATE")]: format(new Date(date), 'dd/MM/yyyy'),
             //[t("BPA_SEARCH_APPLICATION_TYPE_LABEL")]: t(applicationType),
             // [t("ES_INBOX_LOCALITY")]: t(locality),
+            [t("BPA_PRIMARY_OWNER_NAME_LABEL")]: owner,
+            [t("BPA_PROFESSIONAL_NAME_LABEL")]: professionalName,
             [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(`BPA_STATUS_${status}`),
             // [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla

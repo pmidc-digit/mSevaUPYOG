@@ -1,7 +1,7 @@
 .search-form-wrapper{
     @apply flex flex-wrap justify-between bg-white mb-lg py-lg pl-lg;
     border-radius:8px;
-    .form-field{
+    .form-field, .field{
         width: calc( 25% - 16px );
         @apply inline-block mr-md align-middle;
     }

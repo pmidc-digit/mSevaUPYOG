@@ -106,13 +106,13 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
 
   return (
     <React.Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form className="card" onSubmit={handleSubmit(onSubmit)}>
         <CardSectionHeader className="card-section-header">{t("PTR_CITIZEN_DETAILS")}</CardSectionHeader>
 
         {/* Mobile Number */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               name="mobileNumber"
@@ -149,7 +149,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* First Name */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} *</CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               name="name"
@@ -181,7 +181,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* Email */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`} *</CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               name="emailId"
@@ -212,7 +212,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* Father/Husband Name */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_FATHER_HUSBAND")}`} *</CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               name="fatherOrHusbandName"
@@ -244,7 +244,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* Address */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("PT_COMMON_COL_ADDRESS")}`} *</CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               name="address"
@@ -276,7 +276,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* Pincode */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("CORE_COMMON_PINCODE")}`} *</CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               name="pincode"

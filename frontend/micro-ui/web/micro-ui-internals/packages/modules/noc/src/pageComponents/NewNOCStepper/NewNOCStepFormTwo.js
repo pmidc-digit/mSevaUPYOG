@@ -70,20 +70,36 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   if (Number.isNaN(n1) || Number.isNaN(n2)) return false;
   const epsilon = 1e-9; // extremely small tolerance
   return Math.abs(n1 - n2) <= epsilon;
+ }; 
+  
+ function checkValidation(data){
+    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
+    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
+
+    const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
+
+    const netPlotArea= parseFloat(data?.specificationPlotArea);;
+    const groundFloorArea = data?.floorArea?.[0]?.value ? parseFloat(data?.floorArea?.[0]?.value) : 0;
+
+    if(!isEqual){
+        setTimeout(()=>{setShowToast(null);},3000);
+        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
+        return false;
+    }
+    else if(isBuiltUp && groundFloorArea > netPlotArea){
+        setTimeout(()=>{setShowToast(null);},3000);
+        setShowToast({ key: "true", error:true, message: "NOC_GROUND_FLOOR_AREA_VALIDATION_LABEL"});
+        return false;
+    }else{
+      return true;
+    }
  };
 
   const onSubmit = (data) => {
     trigger();
 
-    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
-    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
+    if(!checkValidation(data))return;
 
-    if(!isEqual){
-        setTimeout(()=>{setShowToast(null);},3000);
-        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
-        return;
-    }
-    
     //Save data in redux
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     

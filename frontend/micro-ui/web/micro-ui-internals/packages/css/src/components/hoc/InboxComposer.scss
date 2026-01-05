@@ -1,6 +1,6 @@
 .InboxComposerWrapper {
   .form-field-flex-one {
-    .form-field {
+    .form-field , .field{
       @apply flex-1;
     }
   }
@@ -11,7 +11,7 @@
   .submit {
     @apply flex left-0 w-full px-xl items-center flex-row-reverse !important;
   }
-  .form-field {
+  .form-field , .field{
     margin: 0 !important;
     @apply w-full;
   }
@@ -36,7 +36,7 @@
       .field-container {
       }
     }
-    .form-field {
+    .form-field , .field{
       width: 100% !important;
     }
 
@@ -99,7 +99,7 @@
         display: grid !important;
         grid-template-columns: 33.33% 33.33% 33.33%;
       }
-      .form-field {
+      .form-field , .field{
         width: 100%;
         padding-right: 15px;
         .clear-search {

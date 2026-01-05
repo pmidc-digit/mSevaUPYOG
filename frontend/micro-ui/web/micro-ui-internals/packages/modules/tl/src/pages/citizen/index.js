@@ -44,7 +44,7 @@ const App = () => {
   console.log("path==??", path);
 
   return (
-    <span className={"tl-citizen"}>
+    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
         <AppContainer>
           {!window.location.href.includes("/acknowledgement") && window.location.href.includes("tl/tradelicence") && (

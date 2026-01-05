@@ -540,6 +540,9 @@ const [description, setDescription] = useState("")
    
   },[propertyId])
   return (
+    <div className="employeeCard">
+
+    
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}
@@ -547,6 +550,7 @@ const [description, setDescription] = useState("")
       isDisabled={!canSubmit && !submitted && !imageUploaded?.current?.uploadedImages}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
     />
+    </div>
   
   );
 };

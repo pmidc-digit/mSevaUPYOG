@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TextInput, CardLabel, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, TextArea, ActionBar, SubmitBar, LabelFieldPair, CardLabelError } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -102,133 +102,141 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     }
   };
 
+  // const isCitizen = window.location.href.includes("citizen");
+
   return (
     <React.Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ width: "100%" }}>
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
+      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+        <div style={{ maxWidth: !isCitizen ? "100%" : "100%" }}>
+          {/* Mobile Number */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
               {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="mobileNumber"
-              rules={{
-                required: "Mobile number is required",
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: "Enter a valid 10-digit mobile number",
-                },
-              }}
-              render={(props) => (
-                <MobileNumber
-                 
-                  value={props.value}
-                  onChange={(e) => {
-                    console.log("eee", e);
-                    props.onChange(e);
-                    setValue("name", "");
-                    // ✅ updates react-hook-form
-                    if (e.length === 10) {
-                      handleMobileChange(e); // 🔥 only then fire API
-                    }
-                  }}
-                  onBlur={props.onBlur}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
-          </div>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="mobileNumber"
+                rules={{
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={(props) => (
+                  <MobileNumber
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      setValue("name", "");
+                      if (e.length === 10) {
+                        handleMobileChange(e);
+                      }
+                    }}
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors?.mobileNumber && <CardLabelError>{errors.mobileNumber.message}</CardLabelError>}
 
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
+          {/* Name */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
               {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="name"
-              rules={{
-                required: "Name is required",
-                minLength: { value: 2, message: "Name must be at least 2 characters" },
-              }}
-              render={(props) => (
-                <TextInput
-                
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
-          </div>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="name"
+                rules={{
+                  required: "Name is required",
+                  minLength: { value: 2, message: "Name must be at least 2 characters" },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    error={errors?.name?.message}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors?.name && <CardLabelError>{errors.name.message}</CardLabelError>}
 
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
+          {/* Email */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
               {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="emailId"
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
-                  message: "Invalid email format",
-                },
-              }}
-              render={(props) => (
-                <TextInput
-                 
-                  value={props.value}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
-          </div>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="emailId"
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
+                    message: "Invalid email format",
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors?.emailId && <CardLabelError>{errors.emailId.message}</CardLabelError>}
 
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
+          {/* Address */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
               {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="address"
-              rules={{
-                required: "Address is required",
-                minLength: { value: 5, message: "Address must be at least 5 characters" },
-              }}
-              render={(props) => (
-                <TextArea
-                 
-                  name="address"
-                  value={props.value}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
-          </div>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="address"
+                rules={{
+                  required: "Address is required",
+                  minLength: { value: 5, message: "Address must be at least 5 characters" },
+                }}
+                render={(props) => (
+                  <TextArea
+                    name="address"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors?.address && <CardLabelError>{errors.address.message}</CardLabelError>}
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />

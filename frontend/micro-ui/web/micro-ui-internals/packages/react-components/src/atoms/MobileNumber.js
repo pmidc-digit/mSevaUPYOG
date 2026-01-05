@@ -14,7 +14,7 @@ const MobileNumber = (props) => {
 
   return (
     <React.Fragment>
-      <div className="field-container">
+      <div className="form-field">
         <div className={`text-input ${user_type === "EMPLOYEE"? "" : "text-mobile-input-width"} ${props.className}`} style={{ position: "relative" }}>
           {!props.hideSpan && (
             <span className="mobile-number-prefix">

@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@mseva/digit-ui-react-components": "1.0.8",
-    "@pmidc/upyog-css": "1.2.2",
+    "@pmidc/upyog-css": "1.2.8",
     "@mseva/digit-ui-module-ptr": "1.1.95",
     "@mseva/digit-ui-libraries": "1.1.50",
     "@mseva/digit-ui-module-bills": "1.0.8",
@@ -50,7 +50,7 @@
     "@mseva/digit-ui-module-mcollect": "1.0.14",
     "@mseva/digit-ui-module-challangeneration": "1.0.27",
     "@mseva/digit-ui-module-garbagecollection": "1.0.31",
-    "@mseva/digit-ui-module-rentandlease": "1.0.29",
+    "@mseva/digit-ui-module-rentandlease": "1.0.32",
     "@mseva/digit-ui-module-noc": "1.0.35",
     "@mseva/digit-ui-module-pgr": "1.0.18",
     "@mseva/digit-ui-module-swach": "1.0.47",

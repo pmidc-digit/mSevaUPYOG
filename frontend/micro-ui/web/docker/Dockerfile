@@ -26,7 +26,7 @@ RUN yarn add @mseva/upyog-ui-module-asset@1.1.28
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.18
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.27
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.31
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.29
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.32
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.60
 ARG WORK_DIR
 WORKDIR /app

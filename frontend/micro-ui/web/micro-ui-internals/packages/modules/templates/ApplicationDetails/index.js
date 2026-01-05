@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
-import { Loader,SubmitBar } from "@mseva/digit-ui-react-components";
+import { Loader, SubmitBar } from "@mseva/digit-ui-react-components";
 
 import ActionModal from "./Modal";
 
@@ -13,8 +13,8 @@ import ApplicationDetailsActionBar from "./components/ApplicationDetailsActionBa
 import ApplicationDetailsWarningPopup from "./components/ApplicationDetailsWarningPopup";
 
 const ApplicationDetails = (props) => {
-  let isEditApplication=window.location.href.includes("editApplication") && window.location.href.includes("bpa") ;
-    const tenantId = Digit.ULBService.getCurrentTenantId();
+  let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = Digit.ULBService.getStateId();
   const { isLoadingg, data: blockReason } = Digit.Hooks.obps.useMDMS(state, "BPA", ["BlockReason"]);
   const { t } = useTranslation();
@@ -53,19 +53,20 @@ const ApplicationDetails = (props) => {
     oldValue,
     isInfoLabel = false,
     clearDataDetails,
-    propertyId
+    propertyId,
   } = props;
-  
+
   useEffect(() => {
     if (showToast && workflowDetails && workflowDetails.revalidate) {
       workflowDetails.revalidate();
     }
   }, [showToast]);
- 
+
   function onActionSelect(action) {
+    console.log("action====", action);
     if (action) {
-      if(action?.action=="EDIT PAY 2" && window.location.href.includes("bpa")){
-        window.location.assign(window.location.href.split("bpa")[0]+"editApplication/bpa"+window.location.href.split("bpa")[1]);
+      if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
+        window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
       }
       // if(action?.isToast){
       //   setShowToast({ key: "error", error: { message: action?.toastMessage } });
@@ -77,19 +78,20 @@ const ApplicationDetails = (props) => {
         if (action?.redirectionUrll?.action === "ACTIVATE_CONNECTION") {
           // window.location.assign(`${window.location.origin}digit-ui/employee/ws/${action?.redirectionUrll?.pathname}`, { data: action?.redirectionUrll?.state });
 
-          history.push(`${action?.redirectionUrll?.pathname}`, JSON.stringify({ data: action?.redirectionUrll?.state, url: `${location?.pathname}${location.search}` }));
-        }
-        else if (action?.redirectionUrll?.action === "RE-SUBMIT-APPLICATION"){
+          history.push(
+            `${action?.redirectionUrll?.pathname}`,
+            JSON.stringify({ data: action?.redirectionUrll?.state, url: `${location?.pathname}${location.search}` })
+          );
+        } else if (action?.redirectionUrll?.action === "RE-SUBMIT-APPLICATION") {
           history.push(`${action?.redirectionUrll?.pathname}`, { data: action?.redirectionUrll?.state });
-        }
-        else {
+        } else {
           window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
         }
-      } else if (!action?.redirectionUrl && action?.action!="EDIT PAY 2") {
+      } else if (!action?.redirectionUrl && action?.action != "EDIT PAY 2") {
         setShowModal(true);
-      } else if(action?.redirectionUrl?.state?.applicationData?.workflowCode === "DIRECTRENEWAL"){
+      } else if (action?.redirectionUrl?.state?.applicationData?.workflowCode === "DIRECTRENEWAL") {
         setShowModal(true);
-      }else {
+      } else {
         history.push({
           pathname: action.redirectionUrl?.pathname,
           state: { ...action.redirectionUrl?.state },
@@ -111,21 +113,26 @@ const ApplicationDetails = (props) => {
     setWarningPopUp(false);
   };
 
-  console.log("ActionsInPayment2", workflowDetails)
+  console.log("ActionsInPayment2", workflowDetails);
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
-    if(data?.Property?.workflow?.comment?.length == 0 || (data?.Licenses?.[0]?.action === "INITIATE"? data?.Licenses?.[0]?.additionalDetail?.validityYears?.length == 0 : data?.Licenses?.[0]?.comment?.length == 0) || data?.WaterConnection?.comment?.length == 0 || data?.SewerageConnection?.comment?.length == 0 || data?.BPA?.comment?.length == 0)
-    {
-      if(data?.Licenses?.[0]?.action === "INITIATE"){
-        alert(t("Please fill in the validity before submitting"))
-      }else {
-        alert(t("Please fill in the comments before submitting"))
+    if (
+      data?.Property?.workflow?.comment?.length == 0 ||
+      (data?.Licenses?.[0]?.action === "INITIATE"
+        ? data?.Licenses?.[0]?.additionalDetail?.validityYears?.length == 0
+        : data?.Licenses?.[0]?.comment?.length == 0) ||
+      data?.WaterConnection?.comment?.length == 0 ||
+      data?.SewerageConnection?.comment?.length == 0 ||
+      data?.BPA?.comment?.length == 0
+    ) {
+      if (data?.Licenses?.[0]?.action === "INITIATE") {
+        alert(t("Please fill in the validity before submitting"));
+      } else {
+        alert(t("Please fill in the comments before submitting"));
       }
-    }
-    else if( data?.BPA?.businessService=="BPA" && !data?.BPA?.additionalDetails?.blockingReason && data?.BPA?.workflow?.action=="BLOCK"){
-      alert(t("Please select Blocking reason"))
-    }
-    else{
+    } else if (data?.BPA?.businessService == "BPA" && !data?.BPA?.additionalDetails?.blockingReason && data?.BPA?.workflow?.action == "BLOCK") {
+      alert(t("Please select Blocking reason"));
+    } else {
       setIsEnableLoader(true);
       if (typeof data?.customFunctionToExecute === "function") {
         data?.customFunctionToExecute({ ...data });
@@ -176,23 +183,22 @@ const ApplicationDetails = (props) => {
             }
             if (data?.Amendments?.length > 0) {
               //RAIN-6981 instead just show a toast here with appropriate message
-              //show toast here and return 
+              //show toast here and return
               //history.push("/digit-ui/employee/ws/response-bill-amend", { status: true, state: data?.Amendments?.[0] })
-  
+
               if (variables?.AmendmentUpdate?.workflow?.action.includes("SEND_BACK")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_SEND_BACK_UPDATE_SUCCESS") })
+                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_SEND_BACK_UPDATE_SUCCESS") });
               } else if (variables?.AmendmentUpdate?.workflow?.action.includes("RE-SUBMIT")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") })
+                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") });
               } else if (variables?.AmendmentUpdate?.workflow?.action.includes("APPROVE")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_APPROVE_UPDATE_SUCCESS") })
+                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_APPROVE_UPDATE_SUCCESS") });
+              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
+                setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") });
               }
-              else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") })
-              }
-              return
+              return;
             }
-            if(data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber){
-              if(data?.Licenses[0]?.businessService?.includes("BPAREG")){
+            if (data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber) {
+              if (data?.Licenses[0]?.businessService?.includes("BPAREG")) {
                 setShowToast({ key: "success", action: selectedAction });
                 data.selectedAction = selectedAction;
                 history.push(`/digit-ui/employee/obps/stakeholder-response`, { data: data });
@@ -216,53 +222,60 @@ const ApplicationDetails = (props) => {
                   }
                 }, 3000);
               }
-            } catch(e) { /* swallow */ }
+            } catch (e) {
+              /* swallow */
+            }
             queryClient.clear();
             queryClient.refetchQueries("APPLICATION_SEARCH");
             //push false status when reject
-  
           },
         });
       }
       closeModal();
     }
-  
   };
 
   if (isLoading || isEnableLoader) {
     return <Loader />;
   }
-  const onSubmit =async(data)=> {
+  const onSubmit = async (data) => {
     console.log("JJJJJJ", data);
-    const bpaApplicationDetails = await Digit.OBPSService.BPASearch(tenantId, {applicationNo: applicationData?.applicationNo});
+    const bpaApplicationDetails = await Digit.OBPSService.BPASearch(tenantId, { applicationNo: applicationData?.applicationNo });
     const riskType = Digit.Utils.obps.calculateRiskType(
       mdmsData?.BPA?.RiskTypeComputation,
       applicationDetails?.edcrDetails?.planDetail?.plot?.area,
       applicationDetails?.edcrDetails?.planDetail?.blocks
     );
-    const bpaDetails={
-      BPA:bpaApplicationDetails.BPA[0]
-    }
-    bpaDetails.BPA.riskType=riskType
-    bpaDetails.BPA.workflow={
-                "action": "EDIT PAY 2",
-                "assignes": [],
-                "comments": null,
-                "varificationDocuments": null
-            }
+    const bpaDetails = {
+      BPA: bpaApplicationDetails.BPA[0],
+    };
+    bpaDetails.BPA.riskType = riskType;
+    bpaDetails.BPA.workflow = {
+      action: "EDIT PAY 2",
+      assignes: [],
+      comments: null,
+      varificationDocuments: null,
+    };
     // bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
     // bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges") ||"0";
     // bpaDetails.BPA.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment")|| "0";
     // bpaDetails.BPA.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc"|| "NA");
     // bpaDetails.BPA.additionalDetails.lessAdjustmentFeeFiles=JSON.parse(sessionStorage.getItem("uploadedFileLess"));
-   
-    if(parseInt(sessionStorage.getItem("lessAdjusment"))>(parseInt(sessionStorage.getItem("development"))+parseInt(sessionStorage.getItem("otherCharges"))+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES)+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_LABOUR_CESS)+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES)+parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS))){
+
+    if (
+      parseInt(sessionStorage.getItem("lessAdjusment")) >
+      parseInt(sessionStorage.getItem("development")) +
+        parseInt(sessionStorage.getItem("otherCharges")) +
+        parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES) +
+        parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_LABOUR_CESS) +
+        parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES) +
+        parseInt(bpaDetails?.BPA?.additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS)
+    ) {
       alert(t("Enterd Less Adjustment amount is invalid"));
+    } else {
+      const response = await Digit.OBPSService.update(bpaDetails, tenantId);
+      window.location.assign(window.location.href.split("/editApplication")[0] + window.location.href.split("editApplication")[1]);
     }
-    else{
-        const response = await Digit.OBPSService.update(bpaDetails, tenantId); 
-        window.location.assign(window.location.href.split("/editApplication")[0]+window.location.href.split("editApplication")[1]);
-          }    
   };
 
   return (
@@ -316,22 +329,26 @@ const ApplicationDetails = (props) => {
             />
           ) : null}
           <ApplicationDetailsToast t={t} showToast={showToast} closeToast={closeToast} businessService={businessService} />
-          {!isEditApplication?  (<div>
-          {!(window.location.href.includes("citizen")&&window.location.href.includes("/pt/"))&&  
-          <ApplicationDetailsActionBar
-            workflowDetails={workflowDetails}
-            displayMenu={displayMenu}
-            onActionSelect={onActionSelect}
-            setDisplayMenu={setDisplayMenu}
-            businessService={businessService}
-            forcedActionPrefix={forcedActionPrefix}
-            ActionBarStyle={ActionBarStyle}
-            MenuStyle={MenuStyle}
-          />
-          }
-          </div>):(<div >
-            <SubmitBar style={{ marginRight:20}} label={t("BPA_EDIT_UPDATE")} onSubmit={onSubmit}  id/>
-            </div>)}          
+          {!isEditApplication ? (
+            <div>
+              {!(window.location.href.includes("citizen") && window.location.href.includes("/pt/")) && (
+                <ApplicationDetailsActionBar
+                  workflowDetails={workflowDetails}
+                  displayMenu={displayMenu}
+                  onActionSelect={onActionSelect}
+                  setDisplayMenu={setDisplayMenu}
+                  businessService={businessService}
+                  forcedActionPrefix={forcedActionPrefix}
+                  ActionBarStyle={ActionBarStyle}
+                  MenuStyle={MenuStyle}
+                />
+              )}
+            </div>
+          ) : (
+            <div>
+              <SubmitBar style={{ marginRight: 20 }} label={t("BPA_EDIT_UPDATE")} onSubmit={onSubmit} id />
+            </div>
+          )}
         </React.Fragment>
       ) : (
         <Loader />

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { useHistory, useLocation } from "react-router-dom";
+import { Loader } from "../../../../components/Loader";
 
 //   const dispatch = useDispatch();
 //   const currentStepData = useSelector(function (state) {
@@ -51,6 +52,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const history = useHistory();
   const dispatch = useDispatch();
+  const [getLoader, setLoader] = useState(false);
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
@@ -85,9 +87,17 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
     formdata.calculation.applicationNumber = formdata.applicationNumber;
     formdata.action = "APPLY";
+    setLoader(true);
+    try {
+      const response = await Digit.TLService.update({ Licenses: [formdata] }, tenantId);
 
-    const response = await Digit.TLService.update({ Licenses: [formdata] }, tenantId);
-    return response?.ResponseInfo?.status === "successful";
+      setLoader(false);
+      return response?.ResponseInfo?.status === "successful";
+    } catch (error) {
+      setLoader(false);
+      return error;
+    }
+
     // console.log("onSubmit data in step 4: ", formdata);
   };
 
@@ -115,6 +125,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber} // Current step number
         onBackClick={onGoBack} // Handle back button click
       />
+      {getLoader && <Loader page={true} />}
     </React.Fragment>
   );
 };

@@ -8,6 +8,7 @@ export const BADGE_STYLES = {
 
 export const PRIMARY_COLOR = "#a82227";
 export const OBPS_GROUP_ID = "025";
+export const LINEAR_BLUE_GRADIENT = "linear-gradient(135deg, #2563eb, #1e40af)";
 
 // Utility: Fetch and cache OBPS roles
 export const fetchOBPSRoles = async (stateId) => {

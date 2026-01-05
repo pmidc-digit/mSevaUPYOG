@@ -3,7 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { transformBookingResponseToBookingData, ChallanData, amountToWords ,getLocationName,formatDate } from "../../index";
+import { transformBookingResponseToBookingData, ChallanData, amountToWords, getLocationName, formatDate } from "../../index";
 
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
@@ -54,10 +54,10 @@ const WrapPaymentComponent = (props) => {
   console.log("applicationDetails rn here", applicationDetails);
 
   const { data: cluapplicationdetails } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: consumerCode }, tenantId, {});
-  const { data:layoutapplicationdetails } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: consumerCode }, tenantId)
+  const { data: layoutapplicationdetails } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: consumerCode }, tenantId);
 
-  console.log('cluapplicationdetails', cluapplicationdetails)
-  console.log('layoutapplicationdetails', layoutapplicationdetails)
+  console.log("cluapplicationdetails", cluapplicationdetails);
+  console.log("layoutapplicationdetails", layoutapplicationdetails);
   let challanEmpData = ChallanData(tenantId, consumerCode);
 
   const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
@@ -253,7 +253,7 @@ const WrapPaymentComponent = (props) => {
     let paymentArray = [];
     const tenantId = paymentData?.tenantId;
 
-    let licenseSection, licenseType, usage, fileNo,fileStoreTenant;
+    let licenseSection, licenseType, usage, fileNo, fileStoreTenant;
 
     if (applicationDetails) {
       licenseSection = applicationDetails?.applicationDetails?.find((section) => section?.title === "BPA_LICENSE_DETAILS_LABEL");
@@ -261,12 +261,13 @@ const WrapPaymentComponent = (props) => {
       licenseType = t(licenseSection?.values?.find((val) => val?.title === "BPA_LICENSE_TYPE")?.value);
     }
 
-    const sourceData = bpaData?.[0] || cluapplicationdetails?.resData?.Clu?.[0]?.cluDetails || layoutapplicationdetails?.resData?.Layout?.[0]?.layoutDetails;
+    const sourceData =
+      bpaData?.[0] || cluapplicationdetails?.resData?.Clu?.[0]?.cluDetails || layoutapplicationdetails?.resData?.Layout?.[0]?.layoutDetails;
 
     if (sourceData) {
       fileNo = `PB/${districtCode}/${ulbCode}/${+sourceData?.approvalNo?.slice(-6) + 500000}`;
       console.log("newCode", fileNo);
-      usage = sourceData?.additionalDetails?.usage || sourceData?.additionalDetails?.siteDetails?.buildingCategory?.name ;
+      usage = sourceData?.additionalDetails?.usage || sourceData?.additionalDetails?.siteDetails?.buildingCategory?.name;
       console.log("usage", usage);
     }
 
@@ -320,7 +321,11 @@ const WrapPaymentComponent = (props) => {
         paymentArray[0] = payments.Payments[0];
         if (business_service == "WS" || business_service == "SW") {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
-        } else if (paymentData.paymentDetails[0].businessService.includes("BPA") ||paymentData.paymentDetails[0].businessService.includes("clu")||paymentData.paymentDetails[0].businessService.includes("layout")) {
+        } else if (
+          paymentData.paymentDetails[0].businessService.includes("BPA") ||
+          paymentData.paymentDetails[0].businessService.includes("clu") ||
+          paymentData.paymentDetails[0].businessService.includes("layout")
+        ) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
           let updatedpayments;
           if (paymentData.paymentDetails[0].businessService.includes("BPAREG")) {
@@ -363,14 +368,17 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);      
-          }
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);
+        }
       }
     }
     fileStoreTenant = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
 
-    const fileStore = fileStoreTenant && fileStoreTenant[response.filestoreIds[0]] ? fileStoreTenant : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0], });    
-    
+    const fileStore =
+      fileStoreTenant && fileStoreTenant[response.filestoreIds[0]]
+        ? fileStoreTenant
+        : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
+
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
@@ -544,8 +552,11 @@ const WrapPaymentComponent = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
-      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
-      console.log('location', location)
+      const location = await getLocationName(
+        applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
+        applicationDetails?.challans?.[0]?.additionalDetail?.longitude
+      );
+      console.log("location", location);
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -557,7 +568,7 @@ const WrapPaymentComponent = (props) => {
         const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { challan: { ...application,  ...(payments?.Payments?.[0] || {}),location } },
+          { challan: { ...application, ...(payments?.Payments?.[0] || {}), location } },
           "challan-notice"
         );
         fileStoreId = response?.filestoreIds[0];
@@ -620,18 +631,18 @@ const WrapPaymentComponent = (props) => {
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
       let application = {
-                    hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
-                      return {
-                        ...app,
-                        bookingSlotDetails: [...(app.bookingSlotDetails || [])]
-                          .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
-                          .map((slot) => ({
-                            ...slot,
-                            bookingDate: formatDate(slot.bookingDate),
-                            bookingEndDate: formatDate(slot.bookingEndDate),
-                  })),
-                };
-              }),
+        hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
+          };
+        }),
       };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -1045,7 +1056,7 @@ const WrapPaymentComponent = (props) => {
           {t("TL_RECEIPT")}
         </div>
       ) : null}
-      {business_service == "TL" ? (
+      {/* {business_service == "TL" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1053,7 +1064,7 @@ const WrapPaymentComponent = (props) => {
           </svg>
           {t("TL_CERTIFICATE")}
         </div>
-      ) : null}
+      ) : null} */}
       {business_service == "sv-services" ? (
         <div
           className="primary-label-btn d-grid"
@@ -1291,7 +1302,7 @@ const WrapPaymentComponent = (props) => {
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
       ) : null} */}
-      {business_service === "BPAREG" ?  (
+      {business_service === "BPAREG" ? (
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px" }}>
           <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
           <Link to={`/digit-ui/citizen`}>
@@ -1312,11 +1323,7 @@ const WrapPaymentComponent = (props) => {
               marginTop: "15px",
             }}
           >
-            {printing ? (
-              <Loader />
-            ) : (
-                  <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
-            )}
+            {printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />}
             {/* {!(business_service === "TL") && !business_service?.includes("PT") && (
             <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
           )}

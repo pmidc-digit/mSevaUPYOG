@@ -143,10 +143,7 @@ const Home = ({
               }}
             >
               {/* Back Button - Outside purple card */}
-              <BackButton
-                className="back-btn2"
-               
-              />
+              <BackButton className="back-btn2" />
 
               {/* Breadcrumb - Outside purple card */}
               <div
@@ -192,7 +189,7 @@ const Home = ({
                 </h1>
 
                 {/* Subtitle */}
-                <p
+                {/* <p
                   style={{
                     fontSize: isMobile ? "14px" : "16px",
                     color: "rgba(255, 255, 255, 0.95)",
@@ -205,7 +202,7 @@ const Home = ({
                   {t(`${code.toUpperCase()}_SUBTITLE`) ||
                     t("APPLY_RENEW_MANAGE_" + code.toUpperCase() + "_ONLINE") ||
                     "Apply, renew, and manage your services online"}
-                </p>
+                </p> */}
               </div>
 
               {/* Services Section Header */}
@@ -400,7 +397,9 @@ const Home = ({
           </ErrorBoundary>
         </Switch>
       </div>
-              <div><DashboardFooter /></div>
+      <div>
+        <DashboardFooter />
+      </div>
     </div>
   );
 };

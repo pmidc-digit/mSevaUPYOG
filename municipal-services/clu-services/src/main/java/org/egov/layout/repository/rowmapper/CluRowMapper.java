@@ -137,11 +137,14 @@ public class CluRowMapper implements ResultSetExtractor<List<Clu>> {
 		if (!StringUtils.isEmpty(documentsJson)) {
 			try {
 				List<Document> documents = new Gson().fromJson(documentsJson, new TypeToken<List<Document>>() {}.getType());
+
 				for (Document doc : documents) {
-					// Optional: set tenantId or other fields if needed
-					doc.setDocumentUid(doc.getUuid()); // if you need to copy uuid to documentUid
-					doc.setLayoutId(noc.getId());
-					noc.addDocumentsItem(doc);
+					if(doc.getUuid() !=null) {
+						// Optional: set tenantId or other fields if needed
+						doc.setDocumentUid(doc.getUuid()); // if you need to copy uuid to documentUid
+						doc.setLayoutId(noc.getId());
+						noc.addDocumentsItem(doc);
+					}
 				}
 			} catch (JsonSyntaxException e) {
 				log.error("Failed to parse documents JSON", e);

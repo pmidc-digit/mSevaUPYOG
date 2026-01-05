@@ -37,12 +37,13 @@ const MyApplications = ({ view }) => {
           ?.join(", ");
         return (
           <div key={`card-${index}`}>
+           
             <Card>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={t(application?.Applications?.applicationNo)} />
               <KeyNote keyValue={t("TL_LOCALIZATION_OWNER_NAME")} note={t(ownerNames)} />
               <KeyNote keyValue={t("TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL")} note={t(application?.TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL)} />
 
-              <div style={{ display: "flex", gap: "20px" }}>
+              <div className="action-button-myapplication" >
                 {/* {application?.Applications?.applicationStatus !== "PENDINGPAYMENT" && ( */}
                 <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.applicationNo}`}>
                   <SubmitBar label={t("CS_VIEW_DETAILS")} />
@@ -51,9 +52,9 @@ const MyApplications = ({ view }) => {
 
                 {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
                   <Link to={`/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`}>
-                    <div>
+                
                       <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
-                    </div>
+                   
                   </Link>
                 )}
               </div>

@@ -541,7 +541,7 @@ export const CreateComplaint = ({ parentUrl }) => {
     }
   }, [propertyId]);
   return (
-    <div className="swach">
+    <div className="employeeCard">
       <FormComposer
         heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
         config={config}

@@ -75,11 +75,8 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
       {/* <KeyNote keyValue={t("CHB_COMMUNITY_HALL_NAME")} note={t(`${application?.communityHallCode}`)} /> */}
       <KeyNote keyValue={t("CHB_BOOKING_DATE")} note={getBookingDateRange(application?.bookingSlotDetails)} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
-      <div
-        style={{
-          display: "flex",
-          gap: "15px",
-        }}
+      <div className="action-button-myapplication"
+       
       >
         <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />

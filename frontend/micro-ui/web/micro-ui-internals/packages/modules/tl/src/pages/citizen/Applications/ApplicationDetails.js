@@ -292,16 +292,6 @@ const TLApplicationDetails = () => {
           },
         ];
 
-  function onActionSelect(action) {
-    console.log("actionINCITIZENRENEWAL", action);
-    setDisplayMenu(false);
-    window.location.href = "/digit-ui/citizen/tl/tradelicence/renew-trade/" + "PB-TL-2024-02-28-062772" + "/" + tenantId;
-  }
-
-  function isActionRenew() {
-    return actions?.some((action) => action?.action === "RENEWAL_SUBMIT_BUTTON");
-  }
-
   // console.log("DisplayMenuValue",displayMenu, (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions))
 
   const ownersSequences =

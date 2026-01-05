@@ -1,21 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { CardLabel } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import TLDocument from "./TLDocumets";
-
+import { Controller, useForm } from "react-hook-form";
 
 const TLSummaryPage = ({ config, formData, onSelect }) => {
   const { t } = useTranslation();
   const createdResponse = formData?.CreatedResponse || {};
-  const {
-    tradeLicenseDetail = {},
-    calculation = {},
-    status,
-    applicationType,
-    licenseType,
-    tradeName,
-    commencementDate,
-  } = createdResponse;
+  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate } = createdResponse;
+  const [getDeclare, setDeclare] = useState(false);
+  const { control } = useForm();
 
   const owners = tradeLicenseDetail?.owners || [];
   const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
@@ -33,7 +27,7 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
     return date.toLocaleDateString();
   };
 
-  console.log("formData in Summary", formData)
+  console.log("formData in Summary", formData);
 
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
@@ -115,12 +109,38 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
       <h2 className="bpa-summary-heading">{t("Documents Uploaded")}</h2>
       <div className="bpa-summary-section">
         {Array.isArray(formData?.Documents?.documents?.documents) && formData.Documents.documents.documents.length > 0 ? (
-          <TLDocument value={{ workflowDocs: formData.Documents.documents.documents }} ></TLDocument>
+          <TLDocument value={{ workflowDocs: formData.Documents.documents.documents }}></TLDocument>
         ) : (
           <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
         )}
       </div>
 
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+        <Controller
+          name="termsAccepted"
+          control={control}
+          rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+          render={(props) => (
+            <input
+              id="termsAccepted"
+              type="checkbox"
+              checked={props.value || false}
+              onChange={(e) => {
+                const checkStatus = { consentValue: e.target.checked };
+                // onSelect("tradedetils", e.target.checked);
+                onSelect(config.key, { ...formData[config.key], ...checkStatus });
+                props.onChange(e.target.checked);
+
+                setDeclare(e.target.checked);
+              }}
+              style={{ width: "18px", height: "18px", cursor: "pointer" }}
+            />
+          )}
+        />
+        <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0 }}>
+          {t("TL_DECLARATION_MESSAGE")}
+        </label>
+      </div>
     </div>
   );
 };

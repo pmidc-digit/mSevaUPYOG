@@ -372,29 +372,44 @@ public class FireStair extends FeatureProcess {
                 LOG.info("flrHt___" + flrHt);
                 
 	            if(flrHt != null) {
-	                BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
-//	            	BigDecimal riserHeight = BigDecimal.ZERO;
-//	            	if (flrHt != null && totalRisers.compareTo(BigDecimal.ZERO) > 0) {
-//	            	    riserHeight = flrHt.divide(totalRisers,3,RoundingMode.HALF_UP);
-//	            	    LOG.info("Calculated Riser Height (m): " + riserHeight);
-//	            	}
+	                //BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
+	            	BigDecimal riserHeight = BigDecimal.ZERO;
+	            	if (flrHt != null && totalRisers != null && totalRisers.compareTo(BigDecimal.ZERO) > 0) {
+	            	    riserHeight = flrHt.divide(totalRisers,2,RoundingMode.HALF_UP);
+	            	    LOG.info("Calculated Riser Height (m): " + riserHeight);
+	            	}
 	            
-	                if (floor != null) {	                    
-	                    String floorNumber = "" + floor.getNumber().toString();
-	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
-	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
-	                    } else {
-	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
-	                    }
-	                } else {	                	
-	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
-	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
-	                                Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
-	                    } else {
-	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
-	                                Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
-	                    }
-	                }
+//	                if (floor != null) {	                    
+//	                    String floorNumber = "" + floor.getNumber().toString();
+//	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
+//	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
+//	                    } else {
+//	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
+//	                    }
+//	                } else {	                	
+//	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
+//	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
+//	                                Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
+//	                    } else {
+//	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
+//	                                Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
+//	                    }
+//	                }
+	                
+	             // Floor number handling
+	            	String floorNumber = (floor != null && floor.getNumber() != null)
+	            	        ? floor.getNumber().toString()
+	            	        : " ";
+
+	            	// Condition: riserHeight > 0 AND <= 0.19
+	            	boolean isRiserHeightValid = riserHeight.compareTo(BigDecimal.ZERO) > 0 
+	            			&& riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
+
+	            	setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION,
+	            			String.valueOf(MAXIMUM_HEIGHT_0_19),riserHeight.toString(), isRiserHeightValid
+	            	                ? Result.Accepted.getResultVal()
+	            	                : Result.Not_Accepted.getResultVal(),
+	            	                scrutinyDetailLandingHeight);
                 } 
             }else {
             	if(!isTypicalRepeat) {

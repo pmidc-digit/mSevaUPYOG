@@ -202,7 +202,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           formData?.cpt?.details &&
           (isEmpNewApplication || isEmpRenewLicense || isEmpEdit) && (
             <LabelFieldPair>
-              <div className="field">
+              <div className="form-field">
                 <CheckBox
                   label={t("TL_COMMON_SAME_AS_PROPERTY_OWNERS")}
                   onChange={selectisSameAsPropertyOwner}

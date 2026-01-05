@@ -185,14 +185,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
 
   return (
     <React.Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ width: "100%" }}>
+      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+        <div className="card" style={{ width: "100%" }}>
           {/* mobile number */}
-          <div style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
+             
               control={control}
               name="mobileNumber"
               rules={{
@@ -228,7 +229,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           </div>
 
           {/* name */}
-          <div style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -259,7 +260,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           </div>
 
           {/* email */}
-          <div style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -291,7 +292,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
           </div>
 
-          <div style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>

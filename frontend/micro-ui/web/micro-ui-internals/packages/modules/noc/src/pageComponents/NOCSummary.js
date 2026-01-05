@@ -117,9 +117,9 @@ const getFloorLabel = (index) => {
         {renderLabel(t("NOC_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.netTotalArea)}
         {renderLabel(t("NOC_ROAD_WIDTH_AT_SITE_LABEL"), formData?.siteDetails?.roadWidthAtSite)}
         {renderLabel(t("NOC_BUILDING_STATUS_LABEL"), formData?.siteDetails?.buildingStatus?.name)}
-        {renderLabel(t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"), formData?.siteDetails?.isBasementAreaAvailable?.code)}
+        {formData?.siteDetails?.isBasementAreaAvailable && renderLabel(t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"), formData?.siteDetails?.isBasementAreaAvailable?.code)}
 
-        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && renderLabel(t("NOC_BASEMENT_AREA_LABEL"), formData?.siteDetails?.basementArea)}
+        {formData?.siteDetails?.basementArea && renderLabel(t("NOC_BASEMENT_AREA_LABEL"), formData?.siteDetails?.basementArea)}
         
         {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && formData?.siteDetails?.floorArea?.map((floor, index) =>
            renderLabel(getFloorLabel(index), floor?.value)

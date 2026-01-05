@@ -110,7 +110,7 @@ const SelectStreet = ({ t, config, onSelect, userType, formData, formState, setE
             {t(input.label)}
             {config.isMandatory ? " * " : null}
           </CardLabel>
-          <div className="field">
+          <div className="form-field">
             <Controller
               control={control}
               defaultValue={formData?.cpt?.details?.address?.[input.name] || formData?.address?.[input.name]}

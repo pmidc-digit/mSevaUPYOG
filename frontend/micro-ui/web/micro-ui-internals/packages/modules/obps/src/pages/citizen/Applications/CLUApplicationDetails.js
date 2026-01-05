@@ -28,6 +28,7 @@ import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDet
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
 import { amountToWords } from "../../../utils/index";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -530,7 +531,7 @@ const CLUApplicationDetails = () => {
         )}
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card>
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -548,7 +549,9 @@ const CLUApplicationDetails = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions && actions.length > 0 && (
         <ActionBar>

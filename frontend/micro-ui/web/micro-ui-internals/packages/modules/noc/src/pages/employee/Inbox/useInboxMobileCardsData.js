@@ -13,9 +13,9 @@ const useInboxMobileCardsData = ({parentRoute, table }) => {
             [t("TL_COMMON_TABLE_COL_APP_DATE")]:  format(new Date(date), 'dd/MM/yyyy'),
             // [t("NOC_MODULE_SOURCE_LABEL")]: t(`MODULE_${source}`),
             // [t("ES_INBOX_LOCALITY")]: locality,
+            [t("NOC_PRIMARY_OWNER_NAME_LABEL")]: t(owner),
             [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(status),
             //  [t("ES_INBOX_LOCALITY")]: t(locality),
-
             // [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: t(sla)
     }))

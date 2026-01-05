@@ -43,6 +43,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       //   disableSortBy: true,
       // },
       {
+        Header: t("NOC_PRIMARY_OWNER_NAME_LABEL"),
+        accessor: (row) => row?.owner,
+        disableSortBy: true,
+      },
+      {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: (row) => t(row?.status),
         disableSortBy: true,
@@ -50,11 +55,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       // {
       //   Header: t("ES_INBOX_LOCALITY"),
       //   accessor: (row) => t(row?.locality),
-      //   disableSortBy: true,
-      // },
-      // {
-      //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-      //   accessor: (row) => row?.owner,
       //   disableSortBy: true,
       // },
       // {

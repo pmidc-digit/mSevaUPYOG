@@ -113,7 +113,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
         <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
           {t("TL_LOCALIZATION_TRADE_ADDRESS")}
         </CardLabel>
-        <div className="field">
+        <div className="form-field">
           <TextInput name="address" onChange={setOwnerPermanentAddress} value={permanentAddress} disable={isrenewtrade || editScreen}  placeholder={t("Enter Official Correspondence Address")}/>
         </div>
       </LabelFieldPair>

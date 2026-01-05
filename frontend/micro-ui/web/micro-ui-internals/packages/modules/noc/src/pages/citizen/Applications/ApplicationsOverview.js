@@ -29,6 +29,7 @@ import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import {EmployeeData} from "../../../utils/index";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -416,10 +417,7 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
-              <Row
-                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
-                text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
-              />
+              {detail?.isBasementAreaAvailable && <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}  text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}/>}
 
               {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"} />}
 
@@ -515,7 +513,7 @@ const CitizenApplicationOverview = () => {
             )}
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card>
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -533,7 +531,9 @@ const CitizenApplicationOverview = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions && actions.length > 0 && (
         <ActionBar>

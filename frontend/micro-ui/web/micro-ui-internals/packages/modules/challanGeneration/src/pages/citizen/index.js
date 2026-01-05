@@ -19,7 +19,7 @@ const App = () => {
   console.log("here coming");
 
   return (
-    <span className={"mcollect-citizen"}>
+    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
         <AppContainer>
           <BackButton style={{ top: "55px" }}>Back</BackButton>

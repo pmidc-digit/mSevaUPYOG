@@ -42,6 +42,16 @@ const useCLUTableConfig = ({
           row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : "",
       },
       {
+        Header: t("BPA_PRIMARY_OWNER_NAME_LABEL"),
+        accessor: (row) => t(`${row?.owner}`),
+        disableSortBy: true,
+      },
+      {
+        Header: t("BPA_PROFESSIONAL_NAME_LABEL"),
+        accessor: (row) => t(`${row?.professionalName}`),
+        disableSortBy: true,
+      },
+      {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         // accessor: (row) => t(row?.status),
         accessor: (row) => t(`BPA_STATUS_${row?.status}`),

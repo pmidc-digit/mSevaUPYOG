@@ -120,7 +120,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
       {units.map((unit, index) => (
         <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
       ))}
-      {!isRenewal && <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits} style={{ width: "fit-content" }} />}
+      {!isRenewal && <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits}  />}
     </React.Fragment>
   );
 };
@@ -511,7 +511,7 @@ const TradeUnitForm = (_props) => {
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}`}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"uom"}
@@ -541,7 +541,7 @@ const TradeUnitForm = (_props) => {
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"uomValue"}

@@ -26,6 +26,7 @@ import NOCDocument from "../../../pageComponents/NOCDocument";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -397,7 +398,9 @@ const getFloorLabel = (index) => {
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
 
-              <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} />
+              {/* <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} /> */}
+
+              {detail?.isBasementAreaAvailable && <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}  text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}/>}
 
               {detail?.buildingStatus == "Built Up" && 
                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"}/>
@@ -494,7 +497,7 @@ const getFloorLabel = (index) => {
             )}
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card>
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -512,7 +515,9 @@ const getFloorLabel = (index) => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions?.length >0 && (
         <ActionBar>

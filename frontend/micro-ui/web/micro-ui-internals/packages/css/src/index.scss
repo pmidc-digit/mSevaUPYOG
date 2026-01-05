@@ -137,6 +137,7 @@
 @import "./components/SurveyModal.scss";
 
 @import "./modules/adv/index.scss";
+@import "./modules/hrms/index.scss";
 .display-none {
   display: none;
 }
@@ -910,10 +911,10 @@
   font-size: 1.2rem;
 }
 
-.ndc_property_search .text-input {
+/*.ndc_property_search .text-input {
   width: 100%;
   max-width: 300px;
-}
+} */
 
 .action-bar-wrap {
   display: flex;

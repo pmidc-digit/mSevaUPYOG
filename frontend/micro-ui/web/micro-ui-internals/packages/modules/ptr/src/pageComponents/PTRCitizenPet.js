@@ -337,13 +337,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   }, [petAgeVal]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form className="card" onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("PTR_PET_DETAILS")}</CardSectionHeader>
 
       {/* PET NAME */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_PET_NAME")} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="petName"
@@ -439,7 +439,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {/* COLOR */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("PTR_COLOR")}`} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="petColor"
@@ -466,7 +466,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {/* PET AGE */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_PET_AGE")} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="petAge"
@@ -543,7 +543,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {/* VACCINATED DATE */}
       <LabelFieldPair style={{ marginTop: "20px" }}>
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATED_DATE")} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="lastVaccineDate"
@@ -573,7 +573,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {/* VACCINATION NUMBER */}
       <LabelFieldPair style={{ marginTop: "15px" }}>
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="vaccinationNumber"
@@ -599,7 +599,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {/* DOCTOR NAME */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_DOCTOR_NAME")} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="doctorName"
@@ -620,7 +620,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {/* CLINIC NAME */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_CLINIC_NAME")} *</CardLabel>
-        <div className="field">
+        <div className="form-field">
           <Controller
             control={control}
             name="clinicName"

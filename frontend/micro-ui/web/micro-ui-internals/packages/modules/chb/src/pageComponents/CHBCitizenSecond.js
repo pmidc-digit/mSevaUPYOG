@@ -195,10 +195,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   return (
     <React.Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
+      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+        <div className="card">
           {/* SELECT_HALL_NAME */}
-          <div>
+          <div className="label-field-pair">
             <CardLabel>
               {t("SELECT_HALL_NAME")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -234,7 +234,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             <CardLabel>
               {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div style={{ width: "100%" }} className="field">
+            <div style={{ width: "100%" }} className="form-field">
               <Controller
                 control={control}
                 name={"startDate"}
@@ -266,7 +266,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             <CardLabel>
               {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div style={{ width: "100%" }} className="field">
+            <div style={{ width: "100%" }} className="form-field">
               <Controller
                 control={control}
                 name={"endDate"}
@@ -315,7 +315,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </LabelFieldPair>
 
           {/* HALL_CODE */}
-          <div style={{ marginTop: "20px" }}>
+          <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
               {t("HALL_CODE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -343,7 +343,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
           {/* AVAILABLE_SLOTS */}
           {getSlots?.length > 0 && (
-            <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+            <div className="label-field-pair" style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
                 {t("AVAILABLE_SLOTS")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -493,9 +493,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             </div>
           )}
 
-          <div style={{ display: showInfo ? "block" : "none" }}>
+          <div className="label-field-pair" style={{ display: showInfo ? "block" : "none" }}>
             {/* CHB_PURPOSE */}
-            <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+            <div className="label-field-pair" style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
                 {t("CHB_PURPOSE")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -519,7 +519,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             </div>
 
             {/* CHB_SPECIAL_CATEGORY */}
-            <div style={{ marginBottom: "20px" }}>
+            <div className="label-field-pair" style={{ marginBottom: "20px" }}>
               <CardLabel>
                 {t("CHB_SPECIAL_CATEGORY")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
@@ -547,7 +547,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               <CardLabel className="card-label-smaller">
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="form-field" style={{ width: "100%" }}>
                 <Controller
                   control={control}
                   name={"purposeDescription"}

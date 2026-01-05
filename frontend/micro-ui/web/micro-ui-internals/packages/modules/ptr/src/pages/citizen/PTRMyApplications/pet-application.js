@@ -42,7 +42,7 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
       <KeyNote keyValue={t("PTR_APPLICATION_CATEGORY")} note={t("PTR_APPLICATION")} />
       <KeyNote keyValue={t("PTR_SEARCH_PET_TYPE")} note={application?.petDetails?.petType} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`PTR_COMMON_${application?.status}`)} />
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div className="action-button-myapplication">
         {application?.status == "Pending" ? (
           <Link to={`/digit-ui/citizen/payment/collect/PTR/${application?.applicationNumber}/${application?.tenantId}`}>
             <SubmitBar label={"Pending For Payment"} />

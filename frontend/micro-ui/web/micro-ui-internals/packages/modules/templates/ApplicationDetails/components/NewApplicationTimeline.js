@@ -27,7 +27,7 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   return (
     <div className="custom-doc-container">
       {documents?.map((document, idx) => {
-        const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
+        const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId || document?.documentUid);
         if (!documentLink) return null;
         return (
           <a key={idx} target="_blank" rel="noopener noreferrer" href={documentLink} className="custom-doc-link">

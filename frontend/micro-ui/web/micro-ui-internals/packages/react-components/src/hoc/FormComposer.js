@@ -101,12 +101,12 @@ export const FormComposer = (props) => {
       case "textarea":
         // if (populators.defaultValue) setTimeout(setValue(populators?.name, populators.defaultValue));
         return (
-          <TextArea className="field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
+          <TextArea className="form-field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
         );
       case "mobileNumber":
         return (
           <Controller
-            render={(props) => <MobileNumber className="field" onChange={props.onChange} value={props.value} disable={disable} />}
+            render={(props) => <MobileNumber className="form-field" onChange={props.onChange} value={props.value} disable={disable} />}
             defaultValue={populators.defaultValue}
             name={populators?.name}
             control={control}
@@ -265,7 +265,7 @@ export const FormComposer = (props) => {
                       {errors && errors[field.populators?.name] && Object.keys(errors[field.populators?.name]).length ? (
                         <CardLabelError>{t(field.populators.error || errors[field.populators?.name]?.message)}</CardLabelError>
                       ) : null}
-                      <div style={field.withoutLabel ? { width: "100%" } : {}} className="field">
+                      <div style={field.withoutLabel ? { width: "100%" } : {}} className="form-field">
                         {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
                         {field?.description && (
                           <CardLabel
@@ -294,7 +294,7 @@ export const FormComposer = (props) => {
                         {field.labelChildren && field.labelChildren}
                       </CardLabel>
                     )}
-                    <div style={field.withoutLabel ? { width: "100%", ...props?.fieldStyle } : {}} className="field">
+                    <div style={field.withoutLabel ? { width: "100%", ...props?.fieldStyle } : {}} className="form-field">
                       {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
                       {field?.description && <CardText style={{ fontSize: "14px", marginTop: "-24px" }}>{t(field?.description)}</CardText>}
                     </div>

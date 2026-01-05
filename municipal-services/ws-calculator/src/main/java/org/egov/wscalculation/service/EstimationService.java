@@ -441,8 +441,10 @@ public class EstimationService {
 				return waterConnection.getPipeSize();
 		} else if (waterConnection.getConnectionType().equals(WSCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(WSCalculationConstant.plotBasedConst)) {
-			if (property.getLandArea() != null && property.getLandArea() > 0)
-				return property.getLandArea();
+				return  (property.getLandArea() != null && property.getLandArea() > 0)
+						? property.getLandArea()
+						: (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0)
+						? property.getSuperBuiltUpArea().doubleValue() : 0.0 ;
 		}
 		return 0.0;
 	}
@@ -582,13 +584,14 @@ public class EstimationService {
 		if (feeObj.get(WSCalculationConstant.WS_SECURITY_CHARGE_CONST) != null) {
 
 			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
-
-			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+				        ? BigDecimal.ZERO
+				        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
+			
+			if ((connection_plotSize == null || connection_plotSize.compareTo(BigDecimal.ZERO) == 0 )|| connection_propertyType == null || connection_propertyType.equals(""))
 				connection_propertyType = "DEFAULT"; // default securityCharge to be applied from mdms
 			else if (connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL"))
 				connection_propertyType = "DOMESTIC";
@@ -649,11 +652,11 @@ public class EstimationService {
 		if (feeObj.get(WSCalculationConstant.WS_CONNECTION_FEE_CONST) != null) {
 
 			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+			        ? BigDecimal.ZERO
+			        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
 
 			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
 				connection_propertyType = "DEFAULT"; // default connectionFee to be applied from mdms

@@ -214,7 +214,9 @@ const Home = () => {
             ?.map((item) => ({
               name: t(item.label),
               Icon: getIconForService(item.code),
-              onClick: () => history.push(item.navigationUrl),
+              onClick: () => {
+                window.location.href = item.navigationUrl;
+              },
             })),
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };

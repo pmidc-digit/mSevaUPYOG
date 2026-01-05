@@ -103,6 +103,7 @@ const OwnerForm = (_props) => {
 
   useEffect(() => {
     if (window.location.href.includes("tl/renew-application-details") && formData?.cpt?.details) {
+      console.log("formData===", formData);
       if (typeOfOwner === "INSTITUTIONAL") {
         setValue("instituionName", owner?.instituionName);
         setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
@@ -158,6 +159,8 @@ const OwnerForm = (_props) => {
   };
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
+
+  console.log("check formData===", formData);
 
   return (
     <React.Fragment>
@@ -639,6 +642,7 @@ const OwnerForm = (_props) => {
                         message: "Enter a valid 10-digit mobile number",
                       },
                     }}
+                    // defaultValue={}
                     render={(props) => (
                       <MobileNumber
                         placeholder={t("TL_NEW_OWNER_DETAILS_MOB_NO_PLACEHOLDER")}
@@ -1010,6 +1014,8 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
   if (isEditScreen) {
     return <React.Fragment />;
   }
+
+  console.log("newchecformData", formData);
 
   return (
     <React.Fragment>

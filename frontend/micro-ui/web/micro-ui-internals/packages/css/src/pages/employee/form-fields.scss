@@ -1,9 +1,9 @@
-.form-field{
+.form-field, .field{
     @apply w-full
 }
 
 @screen dt {
-    .form-field{
+    .form-field, .field{
         @apply w-full
     }
 

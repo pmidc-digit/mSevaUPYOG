@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
-import Card from "../../../../react-components/src/atoms/Card";
 import CardHeader from "../../../../react-components/src/atoms/CardHeader";
 import CardText from "../../../../react-components/src/atoms/CardText";
 import CardLabelError from "../../../../react-components/src/atoms/CardLabelError";
@@ -99,7 +98,7 @@ const LocationSearchCard = ({
   };
 
   return (
-    <Card>
+    <div>
       <div style={{ display: "flex" }}>
         <svg
           style={{ marginTop: Webview ? "16px" : "8px", Webview }}
@@ -164,7 +163,7 @@ const LocationSearchCard = ({
       </div>
       <SubmitBar label={"Pick"} onSubmit={onSubmit} disabled={isDisabled} />
       {/* {skip ? <LinkButton onClick={skip} label={skipAndContinueText} /> : null} */}
-    </Card>
+    </div>
   );
 };
 

@@ -240,7 +240,7 @@ function CHBSelectDocument({
       ) : null}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller"></CardLabel>
-        <div className="field">
+        <div className="form-field">
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

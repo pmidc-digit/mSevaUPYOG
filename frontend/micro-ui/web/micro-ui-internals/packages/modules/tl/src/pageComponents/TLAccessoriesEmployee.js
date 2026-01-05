@@ -124,7 +124,7 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
         <LinkButton
           label={`${t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}`}
           onClick={addAccessories}
-          style={{ width: "fit-content" }}
+         
         />
       )}
     </React.Fragment>
@@ -346,7 +346,7 @@ const AccessoriersForm = (_props) => {
               {getValues("uom") ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} `}
               <span className={getValues("uom") ? "requiredField" : ""}>{getValues("uom") ? "*" : ""}</span>
             </CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"uom"}
@@ -376,7 +376,7 @@ const AccessoriersForm = (_props) => {
               {accessor?.accessoryCategory?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}  `}
               <span className={accessor?.accessoryCategory?.uom ? "requiredField" : ""}>{accessor?.accessoryCategory?.uom ? "*" : ""}</span>
             </CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"uomValue"}
@@ -417,7 +417,7 @@ const AccessoriersForm = (_props) => {
               {accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")}` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}
               <span className={accessor?.accessoryCategory?.code ? "requiredField" : ""}>{accessor?.accessoryCategory?.code ? "*" : ""}</span>
             </CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"count"}

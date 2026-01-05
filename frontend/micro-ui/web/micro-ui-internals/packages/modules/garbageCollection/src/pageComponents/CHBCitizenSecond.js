@@ -208,7 +208,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   return (
     <React.Fragment>
-      <form style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
+      <form className="employeeCard" style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
         <div>
           {/* property id */}
           <div style={{ marginBottom: "20px" }}>

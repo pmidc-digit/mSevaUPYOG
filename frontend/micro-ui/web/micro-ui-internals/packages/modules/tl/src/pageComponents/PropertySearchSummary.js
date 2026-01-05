@@ -188,7 +188,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
               {`${t(propertyIdInput.label)}`}
               {propertyIdInput.isMandatory ? "*" : null}
             </CardLabel>
-            <div className="field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
+            <div className="form-field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
               <TextInput
                 key={propertyIdInput.name}
                 value={getValue(propertyIdInput.name)} //{propertyId}
@@ -282,7 +282,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
                     : ""
                 }`}
               >
-                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ width: "fit-content" }} />
+                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")}  />
               </Link>
             </React.Fragment>
           ) : null}

@@ -13,10 +13,11 @@ const App = () => {
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("CitizenApplicationOverview");
 
   return (
-    <span className={"tl-citizen"}>
-      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
+    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
+     
       <Switch>
         <AppContainer>
+           <BackButton>{t("CS_COMMON_BACK")}</BackButton>
           <PrivateRoute path={`${path}/new-application`} component={NewNDCStepForm} />
           <PrivateRoute path={`${path}/my-application`} component={MyApplications} />
           <PrivateRoute path={`${path}/response/:id`} component={NDCResponseCitizen} />

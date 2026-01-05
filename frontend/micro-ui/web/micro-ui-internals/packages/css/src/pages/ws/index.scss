@@ -1,6 +1,6 @@
 .alignmentSettle {
   /* Desktop: 4 fields per row */
-  .form-field {
+  .form-field , .field{
     width: calc(25% - 15px) !important;
     margin-right: 15px !important;
     margin-bottom: 16px !important;
@@ -41,7 +41,7 @@
 
   /* Tablet: 2 fields per row */
   @media (max-width: 1024px) {
-    .form-field {
+    .form-field , .field{
       width: calc(50% - 10px) !important;
       min-width: calc(50% - 10px) !important;
       max-width: calc(50% - 10px) !important;
@@ -65,7 +65,7 @@
 
   /* Mobile: 1 field per row */
   @media (max-width: 640px) {
-    .form-field {
+    .form-field , .field{
       width: 100% !important;
       min-width: 100% !important;
       max-width: 100% !important;
@@ -92,7 +92,7 @@
 
   /* Small mobile optimization */
   @media (max-width: 480px) {
-    .form-field {
+    .form-field , .field{
       margin-bottom: 10px !important;
     }
     

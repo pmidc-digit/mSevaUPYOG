@@ -4,10 +4,12 @@ import { useHistory, useLocation } from "react-router-dom";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { convertDateToEpoch } from "../../../../utils";
+import { Loader } from "../../../../components/Loader";
 
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
   const tenants = Digit.Hooks.tl.useTenants();
+  const [getLoader, setLoader] = useState(false);
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
   // delete
@@ -257,12 +259,19 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
     console.log("formData in step 2: ", formData);
-    const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
-    if (response?.ResponseInfo?.status === "successful") {
-      dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-      console.log("response in step 2: ", response.Licenses[0]);
+    setLoader(true);
+    try {
+      const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
+      setLoader(false);
+      if (response?.ResponseInfo?.status === "successful") {
+        dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+        console.log("response in step 2: ", response.Licenses[0]);
+      }
+      return response?.ResponseInfo?.status === "successful";
+    } catch (error) {
+      setLoader(false);
+      return error;
     }
-    return response?.ResponseInfo?.status === "successful";
   };
 
   function onGoBack(data) {
@@ -294,6 +303,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         onBackClick={onGoBack}
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {getLoader && <Loader page={true} />}
     </React.Fragment>
   );
 };

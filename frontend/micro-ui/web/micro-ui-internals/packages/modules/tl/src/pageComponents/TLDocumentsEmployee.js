@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
+import { Loader } from "../components/Loader";
 
 const TLDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -20,19 +21,18 @@ const TLDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   const ckeckingLocation = window.location.href.includes("renew-application-details");
 
-
   const tlDocuments = documentsData?.TradeLicense?.documentObj;
   const tlDocumentsList = tlDocuments?.["0"]?.allowedDocs;
 
   let finalTlDocumentsList = [];
   if (tlDocumentsList && tlDocumentsList.length > 0) {
-    tlDocumentsList.map(data => {
+    tlDocumentsList.map((data) => {
       if ((!ckeckingLocation || previousLicenseDetails?.action == "SENDBACKTOCITIZEN") && data?.applicationType?.includes("NEW")) {
         finalTlDocumentsList.push(data);
       } else if (ckeckingLocation && previousLicenseDetails?.action != "SENDBACKTOCITIZEN" && data?.applicationType?.includes("RENEWAL")) {
         finalTlDocumentsList.push(data);
       }
-    })
+    });
   }
 
   const goNext = () => {
@@ -89,14 +89,15 @@ function SelectDocument({
   formState,
   fromRawData,
   key,
-  id
+  id,
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState("");
   const [file, setFile] = useState(null);
+  const [getLoader, setLoader] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
-  const acceptFormat = doc?.documentType === "OWNERPHOTO"?".jpg,.png,.jpeg":".jpg,.png,.pdf,.jpeg"
+  const acceptFormat = doc?.documentType === "OWNERPHOTO" ? ".jpg,.png,.jpeg" : ".jpg,.png,.pdf,.jpeg";
 
   function selectfile(e, key) {
     e.target.files[0].documentType = key;
@@ -145,7 +146,7 @@ function SelectDocument({
               documentType: selectedDocument?.documentType,
               fileStoreId: uploadedFile,
               tenantId: tenantId,
-              id: selectedDocument?.id
+              id: selectedDocument?.id,
             },
           ];
         } else {
@@ -154,7 +155,7 @@ function SelectDocument({
             {
               documentType: selectedDocument?.documentType,
               fileStoreId: uploadedFile,
-              tenantId: tenantId
+              tenantId: tenantId,
             },
           ];
         }
@@ -179,23 +180,24 @@ function SelectDocument({
     (async () => {
       setError(null);
       if (file) {
-        if(!(acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)))
-        {
+        if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
           setError(t("PT_UPLOAD_FORMAT_NOT_SUPPORTED"));
-        }
-        else if (file.size >= 5242880) {
+        } else if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
           // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
+          setLoader(true);
           try {
             setUploadedFile(null);
             const response = await Digit.UploadServices.Filestorage("TL", file, Digit.ULBService.getStateId());
+            setLoader(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
+            setLoader(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -212,20 +214,22 @@ function SelectDocument({
         }
       }
     }
-  }, [doc])
+  }, [doc]);
   return (
     <div style={{ marginBottom: "24px" }}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {doc?.documentType != "OLDLICENCENO" ?
-            `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} ` :
-            `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `}
-            <span className={doc?.documentType != "OLDLICENCENO" ? "requiredField": ""}>{doc?.documentType != "OLDLICENCENO" ? "*":""}</span>
+          {doc?.documentType != "OLDLICENCENO"
+            ? `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `
+            : `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `}
+          <span className={doc?.documentType != "OLDLICENCENO" ? "requiredField" : ""}>{doc?.documentType != "OLDLICENCENO" ? "*" : ""}</span>
         </CardLabel>
         <div className="form-field">
           <UploadFile
             id={id}
-            onUpload={(e) => { selectfile(e, doc?.documentType.replaceAll(".", "_")) }}
+            onUpload={(e) => {
+              selectfile(e, doc?.documentType.replaceAll(".", "_"));
+            }}
             onDelete={() => {
               setUploadedFile(null);
             }}
@@ -237,6 +241,7 @@ function SelectDocument({
           />
         </div>
       </LabelFieldPair>
+      {getLoader && <Loader page={true} />}
     </div>
   );
 }

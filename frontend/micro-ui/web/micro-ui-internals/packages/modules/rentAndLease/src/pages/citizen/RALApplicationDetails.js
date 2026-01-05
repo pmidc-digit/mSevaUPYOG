@@ -122,7 +122,7 @@ const RALApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("RAL_CITIZEN_DETAILS")}</CardSubHeader>
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
@@ -132,7 +132,7 @@ const RALApplicationDetails = () => {
                   <React.Fragment key={owner.ownerId || index}>
                     {multipleOwners && (
                       <CardSectionHeader className="ral-app-details-owner-header">
-                        {t("RAL_OWNER")} {index + 1}
+                        {t("RAL_APPLICANT")} {index + 1}
                       </CardSectionHeader>
                     )}
                     <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={owner?.name || t("CS_NA")} />

@@ -103,8 +103,7 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
 
   const data = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
   // Assuming data is latest first, we don't reverse.
-  const sortedData = data?.filter(val => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
-  console.log("sortedData", sortedData);
+  const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
 
   return (
     <React.Fragment>

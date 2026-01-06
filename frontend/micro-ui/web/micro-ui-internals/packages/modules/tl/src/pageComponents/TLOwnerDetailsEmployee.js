@@ -69,11 +69,12 @@ const OwnerForm = (_props) => {
   // });
 
   const typeOfOwner = useMemo(() => {
+
     if (formData?.ownershipCategory?.code?.includes("SINGLEOWNER")) return "SINGLEOWNER";
     if (formData?.ownershipCategory?.code?.includes("INSTITUTIONAL")) return "INSTITUTIONAL";
     else return "MULTIOWNER";
   }, [formData?.ownershipCategory]);
-
+  
   const ownerTypesMenu = useMemo(
     () =>
       mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
@@ -110,6 +111,8 @@ const OwnerForm = (_props) => {
         setValue("designation", owner?.designation);
         setValue("mobileNumber", owner?.mobileNumber);
         setValue("altContactNumber", owner?.altContactNumber);
+        setValue("relationship", owner?.relationship);
+        setValue("gender", owner?.gender);
         setValue("emailId", owner?.emailId);
         setValue("emailId", owner?.emailId);
       } else {
@@ -452,7 +455,7 @@ const OwnerForm = (_props) => {
               <CardLabelError>
                 {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
               </CardLabelError>
-              <LabelFieldPair>
+              
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
                     {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
@@ -518,6 +521,7 @@ const OwnerForm = (_props) => {
                     )}
                   />
                 </LabelFieldPair>
+                <LabelFieldPair>
                 <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
               </LabelFieldPair>
 

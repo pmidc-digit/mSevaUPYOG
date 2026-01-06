@@ -505,7 +505,7 @@ const TLApplicationDetails = () => {
                         className="border-none"
                         // style={{ border: "none" }}
                         label={t("TL_NEW_TRADE_DETAILS_TRADE_SUBTYPE_LABEL")}
-                        text={t(`TL_${ele?.tradeType}`)}
+                        text={t(`TRADELICENSE_TRADETYPE_${ele?.tradeType?.replace(/[.-]/g, "_")}`)}
                         textStyle={{ wordBreak: "break-word" }}
                         // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                       />

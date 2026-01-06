@@ -29,6 +29,8 @@ import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import {EmployeeData} from "../../../utils/index";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import NOCImageView from "../../../pageComponents/NOCImageView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -119,11 +121,14 @@ const CitizenApplicationOverview = () => {
 
       const Documents = nocObject?.documents || [];
 
+      const ownerPhotoList = nocObject?.nocDetails?.additionalDetails?.ownerPhotos || [];  
+
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
+        ownerPhotoList: ownerPhotoList
       };
 
       setDisplayData(finalDisplayData);
@@ -340,9 +345,17 @@ const CitizenApplicationOverview = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+  };
+
   if (isLoading) {
     return <Loader />;
   }
+
+  console.log("displayData=>", displayData);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -359,6 +372,11 @@ const CitizenApplicationOverview = () => {
         )}
       </div>
 
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <NOCImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      </Card>
+
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
       <React.Fragment>
         <Card>
@@ -369,7 +387,7 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
               <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
               <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.dateOfBirth || "N/A"} />
+              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
               <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
               <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
@@ -512,7 +530,7 @@ const CitizenApplicationOverview = () => {
             )}
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card>
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -530,7 +548,9 @@ const CitizenApplicationOverview = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions && actions.length > 0 && (
         <ActionBar>

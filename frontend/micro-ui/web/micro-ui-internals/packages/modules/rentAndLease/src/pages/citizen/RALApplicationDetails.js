@@ -122,20 +122,19 @@ const RALApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
-             {/* {multipleOwners && (
-                      <CardSectionHeader className="ral-app-details-owner-header">
-                        {t("RAL_OWNER")} {index + 1}
-                      </CardSectionHeader>
-                    )} */}
-            {
-              applicationData?.OwnerInfo?.map((owner, index) => {
+          <CardSubHeader className="ral-card-subheader-24">{t("RAL_CITIZEN_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            {applicationData?.OwnerInfo?.length ? (
+              applicationData.OwnerInfo.map((owner, index) => {
                 const multipleOwners = applicationData?.OwnerInfo?.length > 1;
 
                 return (
-                   <StatusTable style={{marginTop:"25px"}} key={owner.ownerId || index}>
-                 
-                   
+                  <React.Fragment key={owner.ownerId || index}>
+                    {multipleOwners && (
+                      <CardSectionHeader className="ral-app-details-owner-header">
+                        {t("RAL_APPLICANT")} {index + 1}
+                      </CardSectionHeader>
+                    )}
                     <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={owner?.name || t("CS_NA")} />
                     <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                     <Row label={t("CORE_MOBILE_NUMBER")} text={owner?.mobileNo || t("CS_NA")} />
@@ -147,12 +146,13 @@ const RALApplicationDetails = () => {
                       label={t("CORE_COMMON_PINCODE")}
                       text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
                     />
-                 
-                  </StatusTable>
+                  </React.Fragment>
                 );
-              }
+              })
+            ) : (
+              <Row label={t("OWNER")} text={t("CS_NA")} />
             )}
-       
+          </StatusTable>
 
           <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>

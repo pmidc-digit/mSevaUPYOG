@@ -4,6 +4,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { convertDateToEpoch } from "../../../../utils";
+import { Loader } from "../../../../components/Loader";
 
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
@@ -18,6 +19,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const tenants = Digit.Hooks.tl.useTenants();
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
+  const [getLoader, setLoader] = useState(false);
   // delete
   const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
@@ -287,12 +289,19 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
     console.log("formData in step 2: ", formData);
-    const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
-    if (response?.ResponseInfo?.status === "successful") {
-      dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-      console.log("response in step 2: ", response.Licenses[0]);
+    setLoader(true);
+    try {
+      const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
+      if (response?.ResponseInfo?.status === "successful") {
+        dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+        console.log("response in step 2: ", response.Licenses[0]);
+      }
+      setLoader(false);
+      return response?.ResponseInfo?.status === "successful";
+    } catch (error) {
+      setLoader(false);
+      return error;
     }
-    return response?.ResponseInfo?.status === "successful";
   };
 
   function onGoBack(data) {
@@ -323,6 +332,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         className="employeeCard"
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {getLoader && <Loader page={true} />}
     </React.Fragment>
   );
 };

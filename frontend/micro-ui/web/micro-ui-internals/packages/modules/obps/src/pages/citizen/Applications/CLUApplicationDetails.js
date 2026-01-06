@@ -28,6 +28,8 @@ import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDet
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
 import { amountToWords } from "../../../utils/index";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import CLUImageView from "../../../pageComponents/CLUImgeView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -113,11 +115,14 @@ const CLUApplicationDetails = () => {
 
       const Documents = cluObject?.documents || [];
 
+      const ownerPhotoList = cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];  
+
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
+        ownerPhotoList: ownerPhotoList
       };
 
       setDisplayData(finalDisplayData);
@@ -187,7 +192,7 @@ const CLUApplicationDetails = () => {
         const application = applicationDetails?.Clu;
         const approvecomments = approveComments?.[0];
         const finalComment = approvecomments
-      ? `The above approval is subjected to followings conditions: ${approvecomments}`
+      ? `The above approval is subjected to the following conditions: ${approvecomments}`
       : "";
       console.log('application', application)
       if (!application) {
@@ -346,6 +351,12 @@ const CLUApplicationDetails = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+  };
+
   console.log("displayData==>", displayData);
 
   if (isLoading) {
@@ -367,6 +378,11 @@ const CLUApplicationDetails = () => {
         )}
       </div>
 
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      </Card>
+
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
       <React.Fragment>
         <Card>
@@ -377,7 +393,7 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
               <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={detail?.dateOfBirth || "N/A"} />
+              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
               <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
               <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
               </StatusTable>
@@ -530,7 +546,7 @@ const CLUApplicationDetails = () => {
         )}
       </Card>
 
-      {workflowDetails?.data?.timeline && (
+      {/* {workflowDetails?.data?.timeline && (
         <Card>
           <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
@@ -548,7 +564,9 @@ const CLUApplicationDetails = () => {
             </ConnectingCheckPoints>
           )}
         </Card>
-      )}
+      )} */}
+
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions && actions.length > 0 && (
         <ActionBar>

@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 const LayoutDocumentView = ({documents}) => {
   const { t } = useTranslation();
 
+  console.log("=== LayoutDocumentView Debug ===")
+  console.log("documents prop:", documents)
+
   function routeTo(jumpTo) {
     window.open(jumpTo, "_blank");
   }
@@ -30,16 +33,19 @@ const LayoutDocumentView = ({documents}) => {
         },
   ];
 
+ // Map documents - handle both uuid and documentUid for compatibility
  const documentObj = {
   value: {
     workflowDocs: documents?.map(doc => ({
       documentType: doc?.documentType || "",
-      filestoreId: doc?.filestoreId || "",
-      documentUid: doc?.documentUid || "",
-      documentAttachment: doc?.documentAttachment || ""
+      filestoreId: doc?.filestoreId || doc?.uuid || "",
+      documentUid: doc?.documentUid || doc?.uuid || "",
+      documentAttachment: doc?.documentAttachment || doc?.uuid || ""
     }))
    }
   };
+
+  console.log("documentObj for hook:", documentObj)
 
  const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.obps.useLayoutDocumentSearch(
     documentObj,
@@ -47,16 +53,22 @@ const LayoutDocumentView = ({documents}) => {
       enabled: documents?.length > 0 ? true : false
     }
   );
+
+  console.log("urlsList from hook:", urlsList)
   
   const mappedDocuments = documents?.map(doc => {
-   const { documentUid, documentType } = doc;
-   const url = urlsList?.pdfFiles?.[documentUid]; 
+   // Use uuid or documentUid as the key
+   const docId = doc?.documentUid || doc?.uuid;
+   const { documentType } = doc;
+   const url = urlsList?.pdfFiles?.[docId]; 
    return {
-    documentUid,
+    documentUid: docId,
     documentType,
     url
   };
   });
+
+  console.log("mappedDocuments:", mappedDocuments)
 
   const documentsData = useMemo(() => {
      return (mappedDocuments)?.map((doc, index) => ({
@@ -66,9 +78,11 @@ const LayoutDocumentView = ({documents}) => {
      }));
     }, [mappedDocuments]);
 
+  console.log("documentsData for table:", documentsData)
+
   return (
     <div>
-      {documentsData && 
+      {documentsData && documentsData.length > 0 && 
         <Table
           className="customTable table-border-style"
           t={t}
@@ -81,6 +95,11 @@ const LayoutDocumentView = ({documents}) => {
           isPaginationRequired={false}
         />
       }
+      {(!documentsData || documentsData.length === 0) && (
+        <div style={{ padding: "16px", textAlign: "center", color: "#666" }}>
+          {t("NO_DOCUMENTS_UPLOADED") || "No documents uploaded"}
+        </div>
+      )}
     </div>
   )
 }

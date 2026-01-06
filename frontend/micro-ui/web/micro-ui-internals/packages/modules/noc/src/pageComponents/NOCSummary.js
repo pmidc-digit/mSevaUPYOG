@@ -15,6 +15,43 @@ function NOCSummary({ currentStepData:formData, t }) {
 
   console.log("formData in Summary Page", formData);
 
+  const pageStyle = {
+    padding: "16px",
+    background: "#fff",
+  };
+ 
+  const headingStyle = {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#0b4b66",
+    marginBottom: "12px",
+    marginTop: "20px",
+    borderBottom: "2px solid #0b4b66",
+    paddingBottom: "8px",
+  };
+ 
+  const sectionStyle = {
+    background: "#fafafa",
+    padding: "16px",
+    borderRadius: "4px",
+    marginBottom: "16px",
+    border: "1px solid #e0e0e0",
+  };
+ 
+  const labelFieldPairStyle = {
+    display: "flex",
+    flexDirection: "row",
+    marginBottom: "8px",
+    alignItems: "flex-start",
+  };
+ 
+  const boldLabelStyle = {
+    fontWeight: "600",
+ 
+    minWidth: "200px",
+    marginRight: "16px",
+  };
+
   const coordinates = useSelector(function (state) {
       return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
@@ -30,8 +67,8 @@ function NOCSummary({ currentStepData:formData, t }) {
   console.log("coordinates in summary page", coordinates);
 
   const renderLabel = (label, value) => (
-    <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -57,21 +94,27 @@ const getFloorLabel = (index) => {
   const userInfo = Digit.UserService.getUser();
   const currentUser=userInfo?.info?.type;
 
+  const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+  };
+
   let docs = formData?.documents?.documents?.documents;
   console.log("documents here in summary", docs);
 
   return (
-    <div className="bpa-summary-page">
+    <div style={pageStyle}>
 
-          <h2 className="bpa-summary-heading">{t("OWNER_OWNERPHOTO")}</h2>
-          <div className="bpa-summary-section">
+          <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
+          <div style={sectionStyle}>
            <NOCImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
           </div>
       
       {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
         return (
-        <div key={index} className="bpa-summary-section">
-         <h2 className="bpa-summary-heading">
+        <div key={index} style={sectionStyle}>
+         <h2 style={headingStyle}>
            {index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}
          </h2>
 
@@ -80,7 +123,7 @@ const getFloorLabel = (index) => {
          {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
          {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
          {renderLabel(t("NOC_APPLICANT_PROPERTY_ID_LABEL"), owner?.propertyId)}
-         {renderLabel(t("NOC_APPLICANT_DOB_LABEL"), owner?.dateOfBirth)}
+         {renderLabel(t("NOC_APPLICANT_DOB_LABEL"), formatDate(owner?.dateOfBirth))}
          {renderLabel(t("NOC_APPLICANT_GENDER_LABEL"), owner?.gender?.code)}
          {renderLabel(t("NOC_APPLICANT_ADDRESS_LABEL"), owner?.address)}
         </div>
@@ -91,8 +134,8 @@ const getFloorLabel = (index) => {
       {formData?.applicationDetails?.professionalName && 
         (
         <React.Fragment>
-        <h2 className="bpa-summary-heading">{t("NOC_PROFESSIONAL_DETAILS")}</h2>
-          <div className="bpa-summary-section">
+        <h2 style={headingStyle}>{t("NOC_PROFESSIONAL_DETAILS")}</h2>
+          <div style={sectionStyle}>
             {renderLabel(t("NOC_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("NOC_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
             {renderLabel(t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
@@ -103,8 +146,8 @@ const getFloorLabel = (index) => {
          </React.Fragment>
         )}
         
-      <h2 className="bpa-summary-heading">{t("NOC_SITE_DETAILS")}</h2>
-      <div className="bpa-summary-section">
+      <h2 style={headingStyle}>{t("NOC_SITE_DETAILS")}</h2>
+      <div style={sectionStyle}>
         {renderLabel(t("NOC_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
         {renderLabel(t("NOC_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
         {renderLabel(t("NOC_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -137,8 +180,8 @@ const getFloorLabel = (index) => {
         {renderLabel(t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"), formData?.siteDetails?.khewatAndKhatuniNo)}
       </div>
 
-      <h2 className="bpa-summary-heading">{t("NOC_SPECIFICATION_DETAILS")}</h2>
-      <div className="bpa-summary-section">
+      <h2 style={headingStyle}>{t("NOC_SPECIFICATION_DETAILS")}</h2>
+      <div style={sectionStyle}>
         {renderLabel(t("NOC_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
         {renderLabel(t("NOC_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.specificationBuildingCategory?.name)}
         
@@ -147,8 +190,8 @@ const getFloorLabel = (index) => {
         {renderLabel(t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code)}
       </div>
 
-      <h2 className="bpa-summary-heading">{t("NOC_SITE_COORDINATES_LABEL")}</h2>
-      <div className="bpa-summary-section">
+      <h2 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h2>
+      <div style={sectionStyle}>
         {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
         {renderLabel(t("COMMON_LONGITUDE1_LABEL"),coordinates?.Longitude1)}
         
@@ -156,8 +199,8 @@ const getFloorLabel = (index) => {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      {/* <h2 className="bpa-summary-heading">{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div className="bpa-summary-section">
+      {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div style={sectionStyle}>
         {Array.isArray(formData?.documents?.documents?.documents) && formData.documents.documents.documents.length > 0 ? (
           <div className="documentsContainerStyle">
           <NOCDocument value={{ workflowDocs: formData.documents.documents.documents }}></NOCDocument>
@@ -166,18 +209,18 @@ const getFloorLabel = (index) => {
           <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
         )}
       </div> */}
-      <h2 className="bpa-summary-heading">{t("NOC_UPLOADED_OWNER_ID")}</h2>
-      <div className="bpa-summary-section">
+      <h2 style={headingStyle}>{t("NOC_UPLOADED_OWNER_ID")}</h2>
+      <div style={sectionStyle}>
         {ownerIds?.ownerIdList?.length > 0 && <NOCDocumentTableView documents={ownerIds?.ownerIdList} />}
       </div>
 
-      <h2 className="bpa-summary-heading">{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div className="bpa-summary-section">
+      <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div style={sectionStyle}>
         {formData?.documents?.documents?.documents?.length > 0 && <NOCDocumentTableView documents={formData?.documents?.documents?.documents}/>}
       </div>
 
-      <h2 className="bpa-summary-heading">{t("NOC_FEE_DETAILS_LABEL")}</h2>
-      <div className="bpa-summary-section">
+      <h2 style={headingStyle}>{t("NOC_FEE_DETAILS_LABEL")}</h2>
+      <div style={sectionStyle}>
         {formData && <NOCFeeEstimationDetails formData={formData}/>}
       </div>
 

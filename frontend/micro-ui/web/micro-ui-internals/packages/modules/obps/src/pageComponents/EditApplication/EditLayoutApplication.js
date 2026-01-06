@@ -359,26 +359,26 @@ const EditLayoutApplication = () => {
 
       const updatedApplicantDetails = {
         ...applicantDetails,
-        applicantGender: menu.find((obj) => obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender),
+        applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
       };
 
-      const districtObj = cities.find((obj) => obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district);
+      const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);
       setSelectedDistrict(districtObj);
 
       const updatedSiteDetails = {
         ...siteDetails,
-        localityAreaType: areaTypeOptions.find(
-          (obj) => obj.name === siteDetails?.localityAreaType?.name || obj.name === siteDetails?.localityAreaType
+        localityAreaType: areaTypeOptions?.find(
+          (obj) => obj?.name === siteDetails?.localityAreaType?.name || obj?.name === siteDetails?.localityAreaType
         ),
-        ulbName: ulbListOptions.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
-        roadType: roadTypeData.find((obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType),
-        buildingStatus: buildingTypeData.find((obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus),
-        isBasementAreaAvailable: options.find(
-          (obj) => obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable
+        ulbName: ulbListOptions?.find((obj) => obj?.name === siteDetails?.ulbName?.name || obj?.name === siteDetails?.ulbName),
+        roadType: roadTypeData?.find((obj) => obj?.name === siteDetails?.roadType?.name || obj?.name === siteDetails?.roadType),
+        buildingStatus: buildingTypeData?.find((obj) => obj?.name === siteDetails?.buildingStatus?.name || obj?.name === siteDetails?.buildingStatus),
+        isBasementAreaAvailable: options?.find(
+          (obj) => obj?.code === siteDetails?.isBasementAreaAvailable?.code || obj?.code === siteDetails?.isBasementAreaAvailable
         ),
         district: districtObj,
-        buildingCategory: buildingCategoryData.find(
-          (obj) => obj.name === siteDetails?.buildingCategory?.name || obj.name === siteDetails?.buildingCategory
+        buildingCategory: buildingCategoryData?.find(
+          (obj) => obj?.name === siteDetails?.buildingCategory?.name || obj?.name === siteDetails?.buildingCategory
         ),
         // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
         // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import ActionModal from "../components/Modal";
 import { convertEpochFormateToDate, pdfDownloadLink } from "../components/Utils";
+import { LINEAR_BLUE_GRADIENT } from "../utils/empMappingUtils";
 
 // Constants
 const OBPS_GROUP_ID = "025";
@@ -250,17 +251,7 @@ const HRMSEMPMAPDetails = () => {
         Header: t("HR_CATEGORY_LABEL"),
         accessor: "category",
         Cell: ({ value }) => (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              backgroundColor: "#E0F2FE",
-              color: "#0369A1",
-              borderRadius: "12px",
-              fontSize: "13px",
-              fontWeight: "500",
-            }}
-          >
+          <span className="hrms-badge hrms-badge--category">
             {value}
           </span>
         ),
@@ -269,17 +260,7 @@ const HRMSEMPMAPDetails = () => {
         Header: t("HR_SUB_CATEGORY_LABEL"),
         accessor: "subCategory",
         Cell: ({ value }) => (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              backgroundColor: "#DBEAFE",
-              color: "#1E40AF",
-              borderRadius: "12px",
-              fontSize: "13px",
-              fontWeight: "500",
-            }}
-          >
+          <span className="hrms-badge hrms-badge--subcategory">
             {value}
           </span>
         ),
@@ -307,17 +288,7 @@ const HRMSEMPMAPDetails = () => {
         Header: t("HR_ZONE_LABEL"),
         accessor: "zone",
         Cell: ({ value }) => (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              backgroundColor: "#D1F2EB",
-              color: "#0D6759",
-              borderRadius: "12px",
-              fontSize: "13px",
-              fontWeight: "500",
-            }}
-          >
+          <span className="hrms-badge hrms-badge--zone">
             {value}
           </span>
         ),
@@ -327,24 +298,13 @@ const HRMSEMPMAPDetails = () => {
         accessor: "roles",
         Cell: ({ value }) => {
           if (!value || value === "No OBPS Roles") {
-            return <span style={{ color: "#666", fontSize: "13px" }}>{value || "No OBPS Roles"}</span>;
+            return <span className="hrms-text-secondary" style={{ fontSize: "13px" }}>{value || "No OBPS Roles"}</span>;
           }
           const roleArray = value.split(", ");
           return (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+            <div className="hrms-flex hrms-flex-wrap" style={{ gap: "4px" }}>
               {roleArray.map((role, idx) => (
-                <span
-                  key={idx}
-                  style={{
-                    display: "inline-block",
-                    padding: "4px 12px",
-                    backgroundColor: "#E9D5FF",
-                    color: "#7C3AED",
-                    borderRadius: "12px",
-                    fontSize: "13px",
-                    fontWeight: "500",
-                  }}
-                >
+                <span key={idx} className="hrms-badge hrms-badge--role">
                   {role}
                 </span>
               ))}
@@ -357,14 +317,7 @@ const HRMSEMPMAPDetails = () => {
         Cell: ({ row }) => (
           <button
             onClick={() => handleDelete(row.original.id, row.original.employeeUUID)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#D4351C",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "500",
-            }}
+            className="hrms-delete-btn"
             disabled={mappingLoading}
           >
             {t("COMMON_DELETE")}
@@ -463,7 +416,7 @@ const HRMSEMPMAPDetails = () => {
                   onClick={handleDeleteAll}
                   disabled={mappingLoading}
                   style={{
-                    backgroundColor: "#D4351C",
+                    background: LINEAR_BLUE_GRADIENT,
                     color: "white",
                     border: "none",
                     padding: "10px 20px",

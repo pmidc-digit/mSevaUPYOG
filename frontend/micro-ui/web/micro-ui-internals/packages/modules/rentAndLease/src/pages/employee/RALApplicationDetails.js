@@ -62,6 +62,12 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
+  console.log("workflowDetails", workflowDetails);
+
+  if (workflowDetails?.data?.actionState && !workflowDetails.isLoading) {
+    workflowDetails.data.actionState.nextActions = workflowDetails.data.nextActions;
+  }
+
   const handleNavigation = () => {
     const timer = setTimeout(() => {
       history.push("/digit-ui/employee/rentandlease/inbox");
@@ -78,10 +84,10 @@ const RALApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";
     });
 
   if (
@@ -105,8 +111,6 @@ const RALApplicationDetails = () => {
     }
     return true;
   });
-
-  console.log("actions", actions);
 
   const closeToast = () => {
     setShowToast(null);
@@ -331,17 +335,17 @@ const RALApplicationDetails = () => {
           <Header className="ral-header-32">{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
         </div>
         <Card>
-          <CardSubHeader className="ral-card-subheader-24">{t("RENT_LEASE_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("RAL_CITIZEN_DETAILS")}</CardSubHeader>
           <StatusTable>
             {applicationData?.OwnerInfo?.length ? (
               applicationData.OwnerInfo.map((owner, index) => {
                 const multipleOwners = applicationData.OwnerInfo.length > 1;
 
                 return (
-                  <React.Fragment key={owner.ownerId || index}>
+                  <React.Fragment key={owner?.ownerId || index}>
                     {multipleOwners && (
                       <CardSectionHeader className="ral-app-details-owner-header">
-                        {t("RAL_OWNER")} {index + 1}
+                        {t("RAL_APPLICANT")} {index + 1}
                       </CardSectionHeader>
                     )}
 

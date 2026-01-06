@@ -78,6 +78,9 @@ const TLApplicationDetails = () => {
     setMutationHappened(false);
   }, []);
 
+  const { data: menuList, isLoading: TLLoading } = Digit.Hooks.useCustomMDMS(tenantId, "TradeLicense", [{ name: "TradeType" }]);
+  console.log("menuList", menuList?.TradeLicense?.TradeType);
+
   const { data: paymentsHistory } = Digit.Hooks.tl.useTLPaymentHistory(tenantId, id);
   useEffect(() => {
     if (application) {
@@ -152,7 +155,6 @@ const TLApplicationDetails = () => {
       let actionData = workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
         return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
       });
-      console.log("application?.applicationData?.status", application, rolecheck);
 
       if (
         rolecheck &&
@@ -161,7 +163,6 @@ const TLApplicationDetails = () => {
           application?.[0]?.status === "CANCELLED" ||
           application?.[0]?.status === "MANUALEXPIRED") /* && renewalPending==="true" */ /* && duration <= renewalPeriod */
       ) {
-        console.log("application?.applicationData?.status", application?.[0]?.status);
         if (workflowDetails?.data /* && allowedToNextYear */) {
           if (!workflowDetails?.data?.actionState) {
             workflowDetails.data.actionState = {};
@@ -265,6 +266,16 @@ const TLApplicationDetails = () => {
     propertyAddress = getAddress(PTData?.Properties[0]?.address, t);
   }
 
+  const checkDownload = menuList?.TradeLicense?.TradeType;
+
+  const tradeType = application?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
+
+  const checkFinalData = checkDownload?.filter((item) => item?.code == tradeType);
+
+  console.log("checkFinalData", checkFinalData);
+
+  const isTestApplication = checkFinalData?.[0]?.ishazardous;
+
   const dowloadOptions =
     paymentsHistory?.Payments?.length > 0 &&
     application?.[0]?.status !== "EXPIRED" &&
@@ -272,10 +283,14 @@ const TLApplicationDetails = () => {
     application?.[0]?.status !== "PENDINGPAYMENT" &&
     application?.[0]?.status !== "MANUALEXPIRED"
       ? [
-          {
-            label: t("TL_CERTIFICATE"),
-            onClick: downloadTLcertificate,
-          },
+          ...(!isTestApplication
+            ? [
+                {
+                  label: t("TL_CERTIFICATE"),
+                  onClick: downloadTLcertificate,
+                },
+              ]
+            : []),
           {
             label: t("CS_COMMON_PAYMENT_RECEIPT"),
             onClick: downloadPaymentReceipt,
@@ -291,16 +306,6 @@ const TLApplicationDetails = () => {
             onClick: handleDownloadPdf,
           },
         ];
-
-  function onActionSelect(action) {
-    console.log("actionINCITIZENRENEWAL", action);
-    setDisplayMenu(false);
-    window.location.href = "/digit-ui/citizen/tl/tradelicence/renew-trade/" + "PB-TL-2024-02-28-062772" + "/" + tenantId;
-  }
-
-  function isActionRenew() {
-    return actions?.some((action) => action?.action === "RENEWAL_SUBMIT_BUTTON");
-  }
 
   // console.log("DisplayMenuValue",displayMenu, (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions))
 
@@ -505,7 +510,7 @@ const TLApplicationDetails = () => {
                         className="border-none"
                         // style={{ border: "none" }}
                         label={t("TL_NEW_TRADE_DETAILS_TRADE_SUBTYPE_LABEL")}
-                        text={t(`TL_${ele?.tradeType}`)}
+                        text={t(`TRADELICENSE_TRADETYPE_${ele?.tradeType?.replace(/[.-]/g, "_")}`)}
                         textStyle={{ wordBreak: "break-word" }}
                         // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                       />

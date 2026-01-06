@@ -16,8 +16,8 @@ import { Loader } from "../../../../challanGeneration/src/components/Loader";
 const createApplicationConfig = [
   {
     head: "PROPERTY DETAILS",
-    // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
-    stepLabel: "Property Details",
+    stepLabel: "ES_TITILE_PROPERTY_DETAILS",
+    // stepLabel: "Property Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -30,7 +30,7 @@ const createApplicationConfig = [
   },
   {
     head: "OWNER DETAILS",
-    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    stepLabel: "RAL_TITILE_OWNER_DETAILS",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -73,8 +73,8 @@ const createApplicationConfig = [
 const createEmployeeConfig = [
   {
     head: "PROPERTY DETAILS",
-    // stepLabel: "ES_TITILE_PROPERTY_DETAILS",
-    stepLabel: "Property Details",
+    stepLabel: "ES_TITILE_PROPERTY_DETAILS",
+    // stepLabel: "Property Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -87,7 +87,7 @@ const createEmployeeConfig = [
   },
   {
     head: "OWNER DETAILS",
-    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    stepLabel: "RAL_TITILE_OWNER_DETAILS",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -134,7 +134,6 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
   const [showToast, setShowToast] = useState(null);
   const [loading, setLoading] = useState(false);
   const formState = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer || { formData: {}, step: 1 });
-  const formData = formState?.formData || {};
   const step = formState?.step || 1;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 

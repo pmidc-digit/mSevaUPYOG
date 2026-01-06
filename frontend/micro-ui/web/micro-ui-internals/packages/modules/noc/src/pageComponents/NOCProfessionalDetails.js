@@ -111,9 +111,9 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -143,9 +143,9 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalEmailId?.message || ""}</CardLabelError>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalEmailId?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -174,9 +174,9 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalRegId?.message || ""}</CardLabelError>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalRegId?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -205,9 +205,9 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -225,9 +225,9 @@ const NOCProfessionalDetails = (_props) => {
             }}
             render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true"/>}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalMobileNumber?.message || ""}</CardLabelError>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalMobileNumber?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("NOC_PROFESSIONAL_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -261,9 +261,9 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalAddress?.message || ""}</CardLabelError>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalAddress?.message || ""}</CardLabelError>
     </React.Fragment>
   );
 };

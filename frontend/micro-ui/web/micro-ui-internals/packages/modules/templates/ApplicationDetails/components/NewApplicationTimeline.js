@@ -27,7 +27,7 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   return (
     <div className="custom-doc-container">
       {documents?.map((document, idx) => {
-        const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
+        const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId || document?.documentUid);
         if (!documentLink) return null;
         return (
           <a key={idx} target="_blank" rel="noopener noreferrer" href={documentLink} className="custom-doc-link">
@@ -103,8 +103,7 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
 
   const data = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
   // Assuming data is latest first, we don't reverse.
-  const sortedData = data?.filter(val => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
-  console.log("sortedData", sortedData);
+  const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
 
   return (
     <React.Fragment>

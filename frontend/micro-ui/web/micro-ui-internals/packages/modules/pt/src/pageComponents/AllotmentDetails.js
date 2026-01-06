@@ -176,7 +176,7 @@ const setData=(config,data)=>{
           </div>
         </LabelFieldPair>
         {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            <CardLabelError className="ral-error-label">
               {formState.errors?.[config.key]?.message}
             </CardLabelError>
           ) : null}
@@ -211,7 +211,7 @@ const setData=(config,data)=>{
           </div>
         </LabelFieldPair>
         {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            <CardLabelError className="ral-error-label">
               {formState.errors?.[config.key]?.message}
             </CardLabelError>
           ) : null}

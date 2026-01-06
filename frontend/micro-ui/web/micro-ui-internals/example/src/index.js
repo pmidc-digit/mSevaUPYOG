@@ -55,7 +55,6 @@ import "@pmidc/upyog-css";
 // import * as comps from "@mseva/digit-ui-react-components";
 
 import { pgrCustomizations, pgrComponents } from "./pgr";
-
 var Digit = window.Digit || {};
 
 const enabledModules = [

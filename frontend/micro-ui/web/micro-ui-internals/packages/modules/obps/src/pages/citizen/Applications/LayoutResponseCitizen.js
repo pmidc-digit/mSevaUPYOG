@@ -1,6 +1,6 @@
 
 import React, { useState } from "react"
-import { Banner, Card, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components"
+import { Banner, Card, ActionBar, SubmitBar,Loader } from "@mseva/digit-ui-react-components"
 import { useTranslation } from "react-i18next"
 import { useHistory, useLocation } from "react-router-dom"
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData"
@@ -12,6 +12,8 @@ const LayoutResponseCitizen = (props) => {
   const { t } = useTranslation()
   const history = useHistory()
   const [pdfError, setPdfError] = useState(null)
+  const [downloading, setDownloading] = useState(false);
+  
 
   const layoutData = state?.data?.Layout?.[0]
   console.log("layoutData in response page", layoutData)
@@ -38,13 +40,22 @@ const LayoutResponseCitizen = (props) => {
   }
 
   const handleDownloadPdf = async () => {
-    const Property = layoutData;
+    try{
+      setDownloading(true);
+      const Property = layoutData;
     //console.log("tenants in NOC", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t);
+    const ulbType = tenantInfo?.city?.ulbType;
+    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo,ulbType, t);
     //console.log("acknowledgementData in citizen NOC", acknowledgementData);
     // Digit.Utils.pdf.generate(acknowledgementData);
-    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    } catch(err){
+      console.log('err', err)
+    }finally{
+      setDownloading(false);
+    }
+    
   };
 
   return (
@@ -58,6 +69,7 @@ const LayoutResponseCitizen = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
+        {downloading && <Loader />}
         {layoutData?.applicationStatus !== "REJECTED" ? (
           <div>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pgr.contract.ServiceRequest;
 import org.egov.pgr.model.user.UserResponse;
+import org.egov.pgr.producer.PGRProducer;
 import org.egov.pgr.service.GrievanceService;
 import org.egov.pgr.utils.PGRConstants;
 import org.egov.pgr.utils.ReportUtils;
@@ -35,6 +36,13 @@ public class DgrIntegration {
 
     @Value("${dgr.g2g.host}")
     public String DGR_G2G_HOST;
+    
+    @Value("${kafka.topic.store.dgr.complaint.id}")
+    public String drgPgrId;
+
+    @Value("${kafka.topic.store.failed.topic}")
+    public String failedDgrTopic;
+
 
     // URLs
     @Value("${dgr.token.url}")
@@ -71,6 +79,10 @@ public class DgrIntegration {
 
     @Autowired
     private PGRConstants constants;
+    
+	@Autowired
+	private PGRProducer pGRProducer;
+
 
     /* =========================
        Kafka Listener
@@ -98,7 +110,7 @@ public class DgrIntegration {
 
             List<Map<String, Object>> services = (List<Map<String, Object>>) record.get("services");
             String tenantId = (String) services.get(0).get("tenantId");
-
+            
             Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
             Long userId = Long.valueOf(userInfo.get("id").toString());
             List<Long> userIds = Collections.singletonList(userId);
@@ -320,12 +332,41 @@ public class DgrIntegration {
             String municipalityId = safeString(selectedMunicipality.get("Respective_GOI_LGD_Code"), "0");
             String municipalityName = safeString(selectedMunicipality.get("Municipality_Name"));
             String municipalityNameLocal = safeString(selectedMunicipality.get("Municipality_Name_Local_Lang"));
+            org.egov.pgr.model.Service pgrService =
+                    serviceReqRequest.getServices().get(0);
+
+            // Name
+            String citizenName =
+                    pgrService.getFirstName() != null
+                            ? pgrService.getFirstName()
+                            : (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
+                                ? safeValue(userResponse.getUser().get(0).getName(), constants.DEFAULT_CITIZEN_NAME)
+                                : constants.DEFAULT_CITIZEN_NAME);
+
+            // Email
+            String citizenEmail =
+                    pgrService.getEmail() != null
+                            ? pgrService.getEmail()
+                            : (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
+                                ? safeValue(userResponse.getUser().get(0).getEmailId(), constants.DEFAULT_CITIZEN_EMAIL)
+                                : constants.DEFAULT_CITIZEN_EMAIL);
+
+            // Mobile
+            String citizenMobile =
+                    pgrService.getPhone() != null
+                            ? pgrService.getPhone()
+                            : (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
+                                ? safeValue(userResponse.getUser().get(0).getMobileNumber(), constants.DEFAULT_CITIZEN_MOBILE)
+                                : constants.DEFAULT_CITIZEN_MOBILE);
+
+
+
 
             // 16. Prepare payload
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("Citizen_Name", userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty() ? safeValue(userResponse.getUser().get(0).getName(), constants.DEFAULT_CITIZEN_NAME) : constants.DEFAULT_CITIZEN_NAME);
-            requestBody.put("Citizen_Email", userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty() ? safeValue(userResponse.getUser().get(0).getEmailId(), constants.DEFAULT_CITIZEN_EMAIL) : constants.DEFAULT_CITIZEN_EMAIL);
-            requestBody.put("Citizen_Mobile_No", userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty() ? safeValue(userResponse.getUser().get(0).getMobileNumber(), constants.DEFAULT_CITIZEN_MOBILE) : constants.DEFAULT_CITIZEN_MOBILE);
+            requestBody.put("Citizen_Name", citizenName);
+            requestBody.put("Citizen_Email", citizenEmail);
+            requestBody.put("Citizen_Mobile_No", citizenMobile);
             requestBody.put("Citizen_Address", fullAddress);
 
             requestBody.put("Citizen_District_ID", districtId);
@@ -387,7 +428,9 @@ public class DgrIntegration {
             log.info("Category ID: {}", catSubCat.get("Category_ID"));
             log.info("Sub-Category ID: {}", catSubCat.get("Sub_Category_ID"));
 
-
+            Map<String, Object> eventPayload = new HashMap<>();
+            eventPayload.put("serviceRequest", serviceReqRequest);
+            eventPayload.put("timestamp", System.currentTimeMillis());
             // 17. Call CreateGrievance API
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -395,17 +438,65 @@ public class DgrIntegration {
             headers.set("Accept", "application/json, text/plain, */*");
             headers.set("Accept-Language", "en-US,en;q=0.9");
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-log.info("CreateGrievance Response Body: {}", response.getBody());
-            return response.getBody();
+            HttpEntity<Map<String, Object>> entity =
+                    new HttpEntity<>(requestBody, headers);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error calling CreateGrievance API: " + e.getMessage();
+            String responseBody;
+
+            try {
+                ResponseEntity<String> response =
+                        restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+                responseBody = response.getBody();
+
+            } catch (Exception ex) {
+
+                log.error("Error calling CreateGrievance API", ex);
+
+                Map<String, Object> failedPayload = new HashMap<>();
+                failedPayload.put("serviceRequest", serviceReqRequest);
+                failedPayload.put("error", ex.getMessage());
+                failedPayload.put("status", "FAILED");
+
+                pGRProducer.push(failedDgrTopic, failedPayload);
+
+                return "Error calling CreateGrievance API: " + ex.getMessage();
+            }
+
+            String grievanceId = null;
+            try {
+                grievanceId = JsonPath.read(responseBody, "$.data[0].Grievance_id");
+            } catch (Exception e) {
+                log.error("Grievance_id not found in response");
+            }
+
+            if (grievanceId != null && !grievanceId.trim().isEmpty()) {
+
+                log.info("DGR Grievance ID: {}", grievanceId);
+
+                serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
+
+
+                pGRProducer.push(drgPgrId, serviceReqRequest);
+
+            } else {
+
+                log.error("DGR Grievance ID missing. Response: {}", responseBody);
+
+                Map<String, Object> failedPayload = new HashMap<>();
+                failedPayload.put("serviceRequest", serviceReqRequest);
+                failedPayload.put("dgrResponse", responseBody);
+                failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
+                failedPayload.put("status", "FAILED");
+
+                pGRProducer.push(failedDgrTopic, failedPayload);
+            }
+		
+            return responseBody;
+        }
+        finally {
+            log.info("CreateGrievance API call completed");
         }
     }
-
     // Helper method for safe value
     private String safeValue(String value, String defaultVal) {
         return (value == null || value.trim().isEmpty()) ? defaultVal : value;

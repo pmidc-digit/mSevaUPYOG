@@ -67,6 +67,14 @@ public class Service   {
   @JsonProperty("address")
   
   private String address;
+  
+@JsonProperty("dgr_grievance_id")
+  
+  private String dgrPgrId;
+
+@JsonProperty("dgr_employee_name")
+
+private String dgrEmployeeName;
 
   @JsonProperty("email")
   @Email

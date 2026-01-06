@@ -232,7 +232,7 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "CHB",
-      moduleName: "Community Hall Booking",
+      moduleName: "Venue Booking",
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",

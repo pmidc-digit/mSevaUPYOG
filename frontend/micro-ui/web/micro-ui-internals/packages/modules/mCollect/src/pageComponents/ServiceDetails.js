@@ -1,15 +1,27 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, DatePicker, Loader, CardSectionHeader,TextArea } from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  LabelFieldPair,
+  Dropdown,
+  TextInput,
+  LinkButton,
+  CardLabelError,
+  MobileNumber,
+  DatePicker,
+  Loader,
+  CardSectionHeader,
+  TextArea,
+} from "@mseva/digit-ui-react-components";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import * as func from "../pages/employee/Utils/Category";
 import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import _ from "lodash";
-import { getUniqueItemsFromArray, commonTransform, stringReplaceAll,getPattern, convertEpochToDate } from "../utils";
+import { getUniqueItemsFromArray, commonTransform, stringReplaceAll, getPattern, convertEpochToDate } from "../utils";
 
 const createConsumerDetails = (getCities) => ({
-   city: getCities()[0] ? getCities()[0] : "",
+  city: getCities()[0] ? getCities()[0] : "",
   category: "",
   categoryType: "",
   fromDate: "",
@@ -18,9 +30,8 @@ const createConsumerDetails = (getCities) => ({
 });
 
 const ServiceDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-  if(window.location.href.includes("modify-challan") && sessionStorage.getItem("mcollectEditObject"))
-  {
-    formData = JSON.parse(sessionStorage.getItem("mcollectEditObject"))
+  if (window.location.href.includes("modify-challan") && sessionStorage.getItem("mcollectEditObject")) {
+    formData = JSON.parse(sessionStorage.getItem("mcollectEditObject"));
   }
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -34,13 +45,20 @@ const ServiceDetails = ({ config, onSelect, userType, formData, setError, formSt
   const [isErrors, setIsErrors] = useState(false);
   const stateCode = window?.globalConfigs?.getConfig("STATE_LEVEL_TENANT_ID");
   const data = Digit.Hooks.mcollect.useCommonMDMS(stateCode, "common-masters", ["HierarchyType"]);
-  const type = data &&  data.data &&  data.data[`common-masters`] && data.data[`common-masters`]["HierarchyType"] && data.data[`common-masters`]["HierarchyType"][0];
+  const type =
+    data &&
+    data.data &&
+    data.data[`common-masters`] &&
+    data.data[`common-masters`]["HierarchyType"] &&
+    data.data[`common-masters`]["HierarchyType"][0];
   const [pincode, setPincode] = useState("");
   const [selectedLocality, setSelectedLocality] = useState("");
   const [TaxHeadMaster, setAPITaxHeadMaster] = useState([]);
 
-  const {Categories : categoires , data: categoriesandTypes} = Digit.Hooks.mcollect.useMCollectCategory(tenantId,"[?(@.type=='Adhoc' && @.isActive==true)]");
-
+  const { Categories: categoires, data: categoriesandTypes } = Digit.Hooks.mcollect.useMCollectCategory(
+    tenantId,
+    "[?(@.type=='Adhoc' && @.isActive==true)]"
+  );
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     getCities()[0]?.code,
@@ -69,7 +87,6 @@ const ServiceDetails = ({ config, onSelect, userType, formData, setError, formSt
     });
     onSelect(config?.key, data);
   }, [consumerDetails]);
-
 
   const commonProps = {
     focusIndex,
@@ -101,10 +118,11 @@ const ServiceDetails = ({ config, onSelect, userType, formData, setError, formSt
     fetchedLocalities,
     consumerDetails,
   };
-
+  console.log("consumerDetails", consumerDetails);
+  console.log("formData===?", formData);
   return (
     <React.Fragment>
-      {consumerDetails.map((consumerdetail, index) => (
+      {consumerDetails?.map((consumerdetail, index) => (
         <OwnerForm1 key={consumerdetail.key} index={index} consumerdetail={consumerdetail} {...commonProps} />
       ))}
     </React.Fragment>
@@ -145,34 +163,40 @@ const OwnerForm1 = (_props) => {
     fetchedLocalities,
   } = _props;
 
-  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
+  const {
+    control,
+    formState: localFormState,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    trigger,
+    getValues,
+  } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  
-  const selectedCategory = useWatch({control: control, name: "category", defaultValue:""});
-  const categoiresType = Digit.Hooks.mcollect.useMCollectCategoryTypes(selectedCategory,categoriesandTypes);
-  const selectedCategoryType = useWatch({control: control, name: "categoryType", defaultValue:""});
-  const TaxHeadMasterFields = Digit.Hooks.mcollect.useMCollectTaxHeads(selectedCategoryType,categoriesandTypes);
-  const selectedPincode = useWatch({control: control, name: "pincode", defaultValue:""});
+  const selectedCategory = useWatch({ control: control, name: "category", defaultValue: "" });
+  const categoiresType = Digit.Hooks.mcollect.useMCollectCategoryTypes(selectedCategory, categoriesandTypes);
+  const selectedCategoryType = useWatch({ control: control, name: "categoryType", defaultValue: "" });
+  const TaxHeadMasterFields = Digit.Hooks.mcollect.useMCollectTaxHeads(selectedCategoryType, categoriesandTypes);
+  const selectedPincode = useWatch({ control: control, name: "pincode", defaultValue: "" });
 
-  console.log("tax Master Fields", TaxHeadMasterFields)
+  console.log("tax Master Fields", TaxHeadMasterFields);
   useEffect(() => {
-    if(!isEdit)
-    setValue("categoryType","");
-  },[selectedCategory])
+    if (!isEdit) setValue("categoryType", "");
+  }, [selectedCategory]);
 
   useEffect(() => {
-    if(!isEdit){
-    setValue("mohalla","");
+    if (!isEdit) {
+      setValue("mohalla", "");
     }
-  },[selectedPincode])
+  }, [selectedPincode]);
 
   useEffect(() => {
-    if(isEdit)
-    setValue("city",selectedCity);
-  },[selectedCity]);
+    if (isEdit) setValue("city", selectedCity);
+  }, [selectedCity]);
 
   // useEffect(() => {
   //   if(!isEdit)
@@ -182,21 +206,23 @@ const OwnerForm1 = (_props) => {
   // },[TaxHeadMasterFields])
 
   useEffect(() => {
-    if(isEdit && TaxHeadMasterFields && !(formValue[`${formValue?.categoryType?.code?.split(".")[0]}`]))
-    {
+    if (isEdit && TaxHeadMasterFields && !formValue[`${formValue?.categoryType?.code?.split(".")[0]}`]) {
       let cdTax = JSON.parse(sessionStorage.getItem("InitialTaxFeilds"));
-      TaxHeadMasterFields && TaxHeadMasterFields.length>0 && TaxHeadMasterFields?.map((ob) => {
-        setValue(ob.code,cdTax[`${ob.code.split(".")[1]}`]);
-      })
+      console.log("cdTax", cdTax);
+      TaxHeadMasterFields &&
+        TaxHeadMasterFields.length > 0 &&
+        TaxHeadMasterFields?.map((ob) => {
+          setValue("CH.BIDI_AND_CIGRETTE_CHALLAN_TAX", 400);
+        });
     }
-  },[TaxHeadMasterFields])
+  }, [TaxHeadMasterFields]);
 
   useEffect(() => {
     const city = cities ? cities.find((obj) => obj.pincode?.find((item) => item == pincode)) : [];
     if (city?.code) {
       setPincodeNotValid(false);
       setSelectedCity(city);
-      consumerdetail["city"]=city;
+      consumerdetail["city"] = city;
       setSelectedLocality("");
       const __localityList = fetchedLocalities;
       const __filteredLocalities = __localityList.filter((city) => city["pincode"] == pincode);
@@ -214,43 +240,40 @@ const OwnerForm1 = (_props) => {
   }, []);
 
   useEffect(() => {
-    if(Object.entries(formValue).length>0){
-    const keys = Object.keys(formValue);
-    const part = {};
-    keys.forEach((key) => (part[key] = consumerdetail[key]));
-    if (!_.isEqual(formValue, part)) {
-      Object.keys(formValue).map(data => {
-        if (data != "key" && formValue[data] != undefined && formValue[data] != "" && formValue[data] != null && !isErrors) {
-          setIsErrors(true);
-        }
-      });
-      let ob =[{...formValue}];
-      let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData"));
-      mcollectFormValue = {...mcollectFormValue,...ob[0]}
-      sessionStorage.setItem("mcollectFormData",JSON.stringify(mcollectFormValue));
-      setconsumerDetails(ob);
-      trigger();
-    }
+    if (Object.entries(formValue).length > 0) {
+      const keys = Object.keys(formValue);
+      const part = {};
+      keys.forEach((key) => (part[key] = consumerdetail[key]));
+      if (!_.isEqual(formValue, part)) {
+        Object.keys(formValue).map((data) => {
+          if (data != "key" && formValue[data] != undefined && formValue[data] != "" && formValue[data] != null && !isErrors) {
+            setIsErrors(true);
+          }
+        });
+        let ob = [{ ...formValue }];
+        let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData"));
+        mcollectFormValue = { ...mcollectFormValue, ...ob[0] };
+        sessionStorage.setItem("mcollectFormData", JSON.stringify(mcollectFormValue));
+        setconsumerDetails(ob);
+        trigger();
+      }
     }
   }, [formValue]);
 
-console.log("consumerDetail",consumerdetail)
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
-    }
-    else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
+    } else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
       clearErrors(config.key);
     }
   }, [errors]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-    <div  style={isMobile?{}:{marginTop:"-50px"}}>
+    <div style={isMobile ? {} : { marginTop: "-50px" }}>
       <div style={{ marginBottom: "16px" }}>
         <div>
-        <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
-      <LabelFieldPair>
+          <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
+          <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_CITY_LABEL")} * `}</CardLabel>
             <Controller
               name="city"
@@ -275,9 +298,9 @@ console.log("consumerDetail",consumerdetail)
                 />
               )}
             />
-        </LabelFieldPair>
-        <LabelFieldPair>
-            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t("UC_SERVICE_CATEGORY_LABEL")} * `}</CardLabel>
+          </LabelFieldPair>
+          <LabelFieldPair>
+            <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_SERVICE_CATEGORY_LABEL")} * `}</CardLabel>
             <Controller
               name="category"
               rules={{ required: t("REQUIRED_FIELD") }}
@@ -288,7 +311,7 @@ console.log("consumerDetail",consumerdetail)
                   isMandatory
                   className="form-field"
                   selected={props.value}
-                  optionCardStyles={{maxHeight:"960%"}}
+                  optionCardStyles={{ maxHeight: "960%" }}
                   //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
                   // disable={financialYearOptions?.length === 1}
                   id="businessService"
@@ -341,7 +364,7 @@ console.log("consumerDetail",consumerdetail)
                 render={(props) => (
                   <DatePicker
                     date={props.value}
-                    // date={CommencementDate} 
+                    // date={CommencementDate}
                     name="fromDate"
                     onChange={props.onChange}
                     //disabled={isRenewal}
@@ -362,7 +385,7 @@ console.log("consumerDetail",consumerdetail)
                 render={(props) => (
                   <DatePicker
                     date={props.value}
-                    // date={CommencementDate} 
+                    // date={CommencementDate}
                     name="toDate"
                     onChange={props.onChange}
                     //disabled={isRenewal}
@@ -370,47 +393,53 @@ console.log("consumerDetail",consumerdetail)
                 )}
               />
             </div>
-          </LabelFieldPair> 
-          {TaxHeadMasterFields && TaxHeadMasterFields.length>0 && TaxHeadMasterFields.map((tax) => 
-          <div>
-          <LabelFieldPair>
-            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t(stringReplaceAll(tax?.name,".","_"))}`}{tax.isRequired?'*':''}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={tax?.code}
-                defaultValue={consumerdetail[tax?.code]}
-                isMandatory={tax.isRequired}
-                componentInFront={<div className="employee-card-input employee-card-input--front">₹</div>}
-                rules={tax.isRequired?{ required: t("REQUIRED_FIELD")}:"" }
-                render={(props) => (
-                  <div style={{display:"flex"}}>
-                  <div className="employee-card-input employee-card-input--front">₹</div>
-                  <TextInput
-                    value={props.value}
-                    //className="employee-card-input employee-card-input--front"
-                    componentInFront={<div className="employee-card-input employee-card-input--front">₹</div>}
-                    autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: consumerdetail.key, type: tax?.code });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    //disable={isRenewal}
-                  />
+          </LabelFieldPair>
+          {TaxHeadMasterFields &&
+            TaxHeadMasterFields.length > 0 &&
+            TaxHeadMasterFields.map((tax) => (
+              <div>
+                <LabelFieldPair>
+                  <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>
+                    {`${t(stringReplaceAll(tax?.name, ".", "_"))}`}
+                    {tax.isRequired ? "*" : ""}
+                  </CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={tax?.code}
+                      defaultValue={consumerdetail[tax?.code]}
+                      isMandatory={tax.isRequired}
+                      componentInFront={<div className="employee-card-input employee-card-input--front">₹</div>}
+                      rules={tax.isRequired ? { required: t("REQUIRED_FIELD") } : ""}
+                      render={(props) => (
+                        <div style={{ display: "flex" }}>
+                          <div className="employee-card-input employee-card-input--front">₹</div>
+                          <TextInput
+                            value={props.value}
+                            //className="employee-card-input employee-card-input--front"
+                            componentInFront={<div className="employee-card-input employee-card-input--front">₹</div>}
+                            autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                            //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
+                            onChange={(e) => {
+                              props.onChange(e.target.value);
+                              setFocusIndex({ index: consumerdetail.key, type: tax?.code });
+                            }}
+                            onBlur={(e) => {
+                              setFocusIndex({ index: -1 });
+                              props.onBlur(e);
+                            }}
+                            //disable={isRenewal}
+                          />
+                        </div>
+                      )}
+                    />
                   </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair> 
-          </div>)}
-         
+                </LabelFieldPair>
+              </div>
+            ))}
+
           <LabelFieldPair>
-            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t("UC_COMMENT_LABEL")}`}</CardLabel>
+            <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_COMMENT_LABEL")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -421,7 +450,7 @@ console.log("consumerDetail",consumerdetail)
                   <TextArea
                     value={props.value}
                     autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    errorStyle={(localFormState.touched.Comment && errors?.Comment?.message) ? true : false}
+                    errorStyle={localFormState.touched.Comment && errors?.Comment?.message ? true : false}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       //setFocusIndex({ index: consumerdetail.key, type: "ConsumerName" });
@@ -437,7 +466,7 @@ console.log("consumerDetail",consumerdetail)
             </div>
           </LabelFieldPair>
         </div>
-    </div>
+      </div>
     </div>
   );
 };

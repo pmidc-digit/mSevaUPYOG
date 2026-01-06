@@ -11,12 +11,12 @@ export const configMCollectRejectApplication = ({ t, action }) => {
       {
         body: [
           {
-            label: t("CANCEL_COMMENT_LABEL"),
+            label: `${t("CS_COMMON_COMMENTS")} *`,
             type: "textarea",
             populators: {
               name: "comments",
             },
-          }
+          },
         ],
       },
     ],

@@ -1,7 +1,10 @@
-.card, .card {
+.card,
+.card {
   box-shadow: none;
 }
-.card, .card, .card {
+.card,
+.card,
+.card {
   box-shadow: none;
 }
 
@@ -15,7 +18,6 @@
   position: relative;
   overflow: visible;
   margin-bottom: 15px;
-
 
   .card-header {
     font-size: 20px;
@@ -103,8 +105,6 @@
       font-size: 16px !important;
     }
   }
-
-
 }
 
 .validation-error {
@@ -132,7 +132,7 @@
   box-shadow: 0 12px 32px rgba(30, 58, 138, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-   overflow: visible !important;
+  overflow: visible !important;
 
   .card-header {
     font-size: 22px;
@@ -224,8 +224,6 @@
     letter-spacing: 0.3px;
   }
 
-
-
   .card-search-heading {
     margin-right: 0px !important;
     margin-left: 0px !important;
@@ -261,8 +259,8 @@
   border: 1px solid #e1e8f0;
 }
 
-.card-link{
-   height: 40px;
+.card-link {
+  height: 40px;
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   color: white;
   text-align: center;
@@ -293,7 +291,8 @@
   }
 }
 
-.submit-bar, .bpa-owner-submit-back {
+.submit-bar,
+.bpa-owner-submit-back {
   height: 40px;
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   color: white;
@@ -398,7 +397,6 @@ button.card-link.submit-bar {
   }
 }
 
-
 @media (min-width: 1024px) {
   .submit-bar,
   .submit-bar-disabled {
@@ -427,8 +425,6 @@ button.card-link.submit-bar {
     .card-text-primary {
       font-size: 16px;
     }
-
-
   }
 
   .employeeCard {
@@ -485,14 +481,11 @@ button.card-link.submit-bar {
       font-size: 16px;
     }
 
-
     .label-field-pair {
       display: flex;
       align-items: center;
 
-
-
-     /* .field {
+      /* .field {
         width: 100%;
         max-width: 500px;
         margin-right: 0;
@@ -500,6 +493,11 @@ button.card-link.submit-bar {
           margin-right: unset;
         }
       } */
+    }
+
+    .field-container {
+      span {
+      }
     }
   }
 }
@@ -631,7 +629,7 @@ button.card-link.submit-bar {
     align-items: flex-start;
     flex-wrap: wrap;
   }
-  
+
   .employee .employeeCard .card-label {
     width: 40%;
   }
@@ -641,7 +639,7 @@ button.card-link.submit-bar {
   .employee .employeeCard .form-field {
     width: 40%;
   }
-  
+
   /* Error label - positioned below the input field (aligned with field, not label) */
   /* Target error labels both inside and after label-field-pair */
   .employee .employeeCard .label-field-pair .card-label-error,
@@ -677,12 +675,12 @@ button.card-link.submit-bar {
   .employee .employeeCard .form-field {
     width: 100%;
   }
-  
+
   .employee .employeeCard .label-field-pair {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   /* Error label - full width on mobile, positioned below field */
   .employee .employeeCard .label-field-pair .card-label-error,
   .employee .employeeCard .label-field-pair + .card-label-error {
@@ -700,5 +698,3 @@ button.card-link.submit-bar {
 .employee-login-page .form-field {
   width: 100% !important;
 }
-
-

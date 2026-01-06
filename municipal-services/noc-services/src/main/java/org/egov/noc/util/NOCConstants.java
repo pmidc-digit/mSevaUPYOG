@@ -82,4 +82,6 @@ public class NOCConstants {
 
 	public static final String PARSING_ERROR = "PARSING_ERROR";
 
+	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
+
 }

@@ -84,6 +84,7 @@ public class NOCUtil {
 
 		nocMasterDtls.add(MasterDetail.builder().name(NOCConstants.NOC_TYPE).filter(nocFilterCode).build());
 		nocMasterDtls.add(MasterDetail.builder().name(NOCConstants.NOC_DOC_TYPE_MAPPING).build());
+		nocMasterDtls.add(MasterDetail.builder().name(NOCConstants.WORKFLOW_CONFIG).build());
 		ModuleDetail nocModuleDtls = ModuleDetail.builder().masterDetails(nocMasterDtls)
 				.moduleName(NOCConstants.NOC_MODULE).build();
 		

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   TextInput,
   CardLabel,
-  MobileNumber,
   TextArea,
   ActionBar,
   SubmitBar,
@@ -112,7 +111,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* Mobile Number */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
-          <div className="form-field">
+          <div className="form-field" style={{ display: "flex", alignItems: "center" }}>
+            <div className="employee-card-input employee-card-input--front">+91</div>
             <Controller
               control={control}
               name="mobileNumber"
@@ -124,26 +124,26 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 },
               }}
               render={({ value, onChange, onBlur }) => (
-                <MobileNumber
+                <TextInput
                   value={value}
                   onChange={(e) => {
-                    onChange(e);
+                    onChange(e.target.value);
                     setValue("name", "");
                     // ✅ updates react-hook-form
-                    if (e.length === 10) {
-                      handleMobileChange(e); // 🔥 only then fire API
+                    if (e.target.value.length === 10) {
+                      handleMobileChange(e.target.value); // 🔥 only then fire API
                     }
                   }}
                   onBlur={(e) => {
                     onBlur(e);
-                    // trigger("mobileNumber");
+                    trigger("mobileNumber");
                   }}
                   t={t}
                 />
               )}
             />
-            {errors.mobileNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("mobileNumber")}</CardLabelError>}
           </div>
+          {errors.mobileNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("mobileNumber")}</CardLabelError>}
         </LabelFieldPair>
 
         {/* First Name */}

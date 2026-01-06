@@ -767,7 +767,7 @@ function ApplicationDetailsContent({
       ))}
       {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
       <PaymentHistory payments={payments} />
-      {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG" && (
+      {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
 

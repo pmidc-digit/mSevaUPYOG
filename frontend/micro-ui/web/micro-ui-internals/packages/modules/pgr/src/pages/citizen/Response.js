@@ -1,10 +1,10 @@
-import React ,{useState}from "react";
+import React, { useState } from "react";
 import { Card, Banner, CardText, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PgrRoutes, getRoute } from "../../constants/Routes";
 import { useTranslation } from "react-i18next";
-import getPGRcknowledgementData from "../../utils/getPGRcknowledgementData"
+import getPGRcknowledgementData from "../../utils/getPGRcknowledgementData";
 
 const GetActionMessage = ({ action }) => {
   const { t } = useTranslation();
@@ -49,23 +49,39 @@ const Response = (props) => {
   const appState = useSelector((state) => state)["pgr"];
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-  const [enable, setEnable] = useState(false)
-  let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
-  const { isLoading, error, isError, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:localStorage.getItem("CITIZEN.CITY"), id },{ enabled: enable ? true : false});
-const complaintDetails = appState
+  const [enable, setEnable] = useState(false);
+  let id = appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId;
+  const { isLoading, error, isError, revalidate } = Digit.Hooks.pgr.useComplaintDetails(
+    { tenantId: localStorage.getItem("CITIZEN.CITY"), id },
+    { enabled: enable ? true : false }
+  );
+  const complaintDetails = appState;
   const handleDownloadPdf = async (e) => {
+    console.log("appState===", appState);
+    // return;
     const tenantInfo = tenants.find((tenant) => tenant.code === localStorage.getItem("CITIZEN.CITY"));
-    e.preventDefault()
-    setEnable(true)
-    const data = await getPGRcknowledgementData({complaintDetails, tenantInfo, t})
+    e.preventDefault();
+    setEnable(true);
+    const data = await getPGRcknowledgementData({ complaintDetails, tenantInfo, t });
     Digit.Utils.pdf.generate(data);
   };
   return (
     <Card>
       {appState.complaints.response && <BannerPicker response={appState} />}
       {appState.complaints.response && <TextPicker response={appState} />}
-     
-      {appState.complaints.response?.ServiceWrappers?.[0]?.workflow.action == "RATE" ?"": <div className="PGR-Citizen-response-marginBottom"><SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) =>{handleDownloadPdf(e)}} /></div>}
+
+      {/* {appState.complaints.response?.ServiceWrappers?.[0]?.workflow.action == "RATE" ? (
+        ""
+      ) : (
+        <div className="PGR-Citizen-response-marginBottom">
+          <SubmitBar
+            label={t("PT_DOWNLOAD_ACK_FORM")}
+            onSubmit={(e) => {
+              handleDownloadPdf(e);
+            }}
+          />
+        </div>
+      )} */}
       <Link to="/digit-ui/citizen">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>

@@ -10,21 +10,22 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
   // let isEditProperty = formData?.isEditProperty || false;
-  let isEdit = window.location.href.includes("/edit-application/")||window.location.href.includes("renew-trade");
+  let isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("renew-trade");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("tl/renew-application-details");
-   const [localFormData, setLocalFormData] = useState({});
-  const { 
-      control,
-      formState: localFormState,
-      watch, 
-      setError: setLocalError,
-      clearErrors: clearLocalErrors,
-      setValue, 
-      trigger,
-      getValues } = useForm();
+  const [localFormData, setLocalFormData] = useState({});
+  const {
+    control,
+    formState: localFormState,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    trigger,
+    getValues,
+  } = useForm();
 
-      const formValue=watch();
-  
+  const formValue = watch();
+
   //if (formData?.isUpdateProperty) isEditProperty = true;
   const inputs = [
     {
@@ -39,22 +40,22 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
         max: "9999999",
         title: t("CORE_COMMON_PINCODE_INVALID"),
       },
-      placeholder:"TL_NEW_TRADE_DETAILS_PIN_PLACEHOLDER"
+      placeholder: "TL_NEW_TRADE_DETAILS_PIN_PLACEHOLDER",
     },
   ];
   const [pincodeServicability, setPincodeServicability] = useState(null);
 
-   useEffect(() => {
-      console.log("formValue in useEffect of TLSelectPincode ", formValue);
-      
-      const keys = Object.keys(formValue);
-      const part = {};
-      keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-  
-      if (!_.isEqual(formValue, part)) {
-        onSelect(config.key, { ...formData[config.key], ...formValue });
-        trigger();
-      }
+  useEffect(() => {
+    console.log("formValue in useEffect of TLSelectPincode ", formValue);
+
+    const keys = Object.keys(formValue);
+    const part = {};
+    keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
+
+    if (!_.isEqual(formValue, part)) {
+      onSelect(config.key, { ...formData[config.key], ...formValue });
+      trigger();
+    }
   }, [localFormData]);
 
   // useEffect(() => {
@@ -66,8 +67,6 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   // useEffect(() => {
   //   onSelect(config?.key?.pincode, pincode);
   // },[pincode])
-
-
 
   function onChange(e) {
     setPincode(e.target.value);
@@ -87,7 +86,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const goNext = async (data) => {
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == data?.pincode));
     if (foundValue) {
-      console.log("pincode",pincode);
+      console.log("pincode", pincode);
       onSelect(config.key.pincode, { pincode });
     } else {
       setPincodeServicability("TL_COMMON_PINCODE_NOT_SERVICABLE");
@@ -112,29 +111,28 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
               // ValidationRequired={true}
               // validation={type="number"}
             /> */}
-            <Controller 
+            <Controller
               control={control}
               name={input.name}
-              defaultValue={pincode || formData?.cpt?.details?.address?.pincode} 
+              defaultValue={pincode || formData?.cpt?.details?.address?.pincode}
               render={(props) => (
-                <TextInput 
+                <TextInput
                   id={input.name}
                   key={input.name}
                   value={props.value}
+                  maxlength={6}
                   onChange={(e) => {
                     props.onChange(e.target.value);
                     //onChange(e);
                     setLocalFormData((prev) => ({
-                        ...prev,
-                        [input.name]: e.target.value,
+                      ...prev,
+                      [input.name]: e.target.value,
                     }));
                   }}
                   placeholder={t(`${input.placeholder}`)}
                 />
-
               )}
             />
-
           </div>
         </LabelFieldPair>
       );
@@ -143,17 +141,17 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const onSkip = () => onSelect();
   return (
     <React.Fragment>
-    {window.location.href.includes("/citizen") ? <Timeline currentStep={2}/> : null}
-    <FormStep
-      t={t}
-      config={{ ...config, inputs }}
-      onSelect={goNext}
-      _defaultValues={{ pincode }}
-      onChange={onChange}
-      onSkip={onSkip}
-      forcedError={t(pincodeServicability)}
-      isDisabled={!pincode || isEdit}
-    ></FormStep>
+      {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
+      <FormStep
+        t={t}
+        config={{ ...config, inputs }}
+        onSelect={goNext}
+        _defaultValues={{ pincode }}
+        onChange={onChange}
+        onSkip={onSkip}
+        forcedError={t(pincodeServicability)}
+        isDisabled={!pincode || isEdit}
+      ></FormStep>
     </React.Fragment>
   );
 };

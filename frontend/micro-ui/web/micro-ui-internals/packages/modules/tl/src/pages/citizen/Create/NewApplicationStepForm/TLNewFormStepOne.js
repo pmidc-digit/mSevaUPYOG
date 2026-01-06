@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components"; // Added Toast here
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
-import { useState } from "react"; // Added useState for error handling
 import _ from "lodash"; // You are already using _
 
 const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+
+  const TLNewApplicationModal = Digit?.ComponentRegistryService?.getComponent("TLNewApplicationModal");
 
   const currentStepData = useSelector(function (state) {
     return state.tl.tlNewApplicationForm.formData && state.tl.tlNewApplicationForm.formData[config.key]
@@ -93,6 +95,10 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     setError("");
   };
 
+  useEffect(() => {
+    setShowApplicationModal(true);
+  }, []);
+
   return (
     <React.Fragment>
       <FormComposer
@@ -106,6 +112,8 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
         className="card"
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+
+      {showApplicationModal ? <TLNewApplicationModal /> : null}
     </React.Fragment>
   );
 };

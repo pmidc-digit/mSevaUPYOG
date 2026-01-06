@@ -69,12 +69,11 @@ const OwnerForm = (_props) => {
   // });
 
   const typeOfOwner = useMemo(() => {
-
     if (formData?.ownershipCategory?.code?.includes("SINGLEOWNER")) return "SINGLEOWNER";
     if (formData?.ownershipCategory?.code?.includes("INSTITUTIONAL")) return "INSTITUTIONAL";
     else return "MULTIOWNER";
   }, [formData?.ownershipCategory]);
-  
+
   const ownerTypesMenu = useMemo(
     () =>
       mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
@@ -104,6 +103,7 @@ const OwnerForm = (_props) => {
 
   useEffect(() => {
     if (window.location.href.includes("tl/renew-application-details") && formData?.cpt?.details) {
+      console.log("formData===", formData);
       if (typeOfOwner === "INSTITUTIONAL") {
         setValue("instituionName", owner?.instituionName);
         setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
@@ -160,13 +160,15 @@ const OwnerForm = (_props) => {
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
 
+  console.log("check formData===", formData);
+
   return (
     <React.Fragment>
       {/* <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(errors)}> */}
       <div>
         <div className="clu-doc-required-card no-width">
           {allOwners?.length > 1 ? (
-            <div >
+            <div>
               <div onClick={() => removeOwner(owner)}>
                 <span>
                   <svg
@@ -452,77 +454,105 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError>
-                {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
-              </CardLabelError>
-              
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">
-                    {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
-                    <span className="requiredField">*</span>
-                  </CardLabel>
-                  <Controller
-                    control={control}
-                    name={"relationship"}
-                    defaultValue={owner?.relationship || ""}
-                    rules={{ required: "RelationShip Required" }}
-                    render={(props) => (
-                      <Dropdown
-                        className="form-field"
-                        selected={props.value}
-                        errorStyle={localFormState.touched.relationship && errors?.relationship?.message ? true : false}
-                        select={(e) => {
-                          if (e?.code != owner?.relationship?.code && isRenewal)
-                            setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
-                          props.onChange(e);
-                        }}
-                        onBlur={props.onBlur}
-                        //disable={isRenewal}
-                        option={[
-                          { i18nKey: "COMMON_RELATION_FATHER", code: "FATHER" },
-                          { i18nKey: "COMMON_RELATION_HUSBAND", code: "HUSBAND" },
-                        ]}
-                        optionKey="i18nKey"
-                        t={t}
-                        placeholder={t("TL_NEW_OWNER_DETAILS_FATHER_NAME_PLACEHOLDER")}
-                      />
-                    )}
-                  />
-                </LabelFieldPair>
-                <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+              <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <Controller
+                  control={control}
+                  name={"relationship"}
+                  defaultValue={owner?.relationship || ""}
+                  rules={{ required: "RelationShip Required" }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      selected={props.value}
+                      errorStyle={localFormState.touched.relationship && errors?.relationship?.message ? true : false}
+                      select={(e) => {
+                        if (e?.code != owner?.relationship?.code && isRenewal)
+                          setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                        props.onChange(e);
+                      }}
+                      onBlur={props.onBlur}
+                      //disable={isRenewal}
+                      option={[
+                        { i18nKey: "COMMON_RELATION_FATHER", code: "FATHER" },
+                        { i18nKey: "COMMON_RELATION_HUSBAND", code: "HUSBAND" },
+                      ]}
+                      optionKey="i18nKey"
+                      t={t}
+                      placeholder={t("TL_NEW_OWNER_DETAILS_FATHER_NAME_PLACEHOLDER")}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <Controller
+                  control={control}
+                  name={"gender"}
+                  defaultValue={owner?.gender || ""}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      selected={props.value}
+                      // disable={isRenewal}
+                      errorStyle={localFormState.touched.gender && errors?.gender?.message ? true : false}
+                      select={(e) => {
+                        if (e?.code != owner?.gender?.code && isRenewal)
+                          setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                        props.onChange(e);
+                      }}
+                      onBlur={props.onBlur}
+                      option={genderTypeMenu}
+                      optionKey="i18nKey"
+                      t={t}
+                      placeholder={t("TL_NEW_OWNER_DETAILS_GENDER_PLACEHOLDER")}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              <LabelFieldPair>
+                <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
 
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
-                    {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
+                    {`${t("CORE_COMMON_DOB")}`}
                     <span className="requiredField">*</span>
                   </CardLabel>
                   <Controller
                     control={control}
-                    name={"gender"}
-                    defaultValue={owner?.gender || ""}
-                    rules={{ required: t("REQUIRED_FIELD") }}
+                    name={"dob"}
+                    defaultValue={owner?.dob || ""}
                     render={(props) => (
-                      <Dropdown
-                        className="form-field"
-                        selected={props.value}
-                        // disable={isRenewal}
-                        errorStyle={localFormState.touched.gender && errors?.gender?.message ? true : false}
-                        select={(e) => {
-                          if (e?.code != owner?.gender?.code && isRenewal)
+                      <TextInput
+                        value={props.value}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "dob"}
+                        errorStyle={localFormState.touched.dob && errors?.dob?.message ? true : false}
+                        onChange={(e) => {
+                          if (e.target.value != owner?.dob && isRenewal)
                             setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
-                          props.onChange(e);
+                          props.onChange(e.target.value);
+                          setFocusIndex({ index: owner.key, type: "dob" });
                         }}
                         onBlur={props.onBlur}
-                        option={genderTypeMenu}
-                        optionKey="i18nKey"
-                        t={t}
-                        placeholder={t("TL_NEW_OWNER_DETAILS_GENDER_PLACEHOLDER")}
+                        // disable={isRenewal}
+                        // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        placeholder={t("Enter Official Correspondence Address")}
                       />
                     )}
                   />
                 </LabelFieldPair>
-                <LabelFieldPair>
-                <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+                <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError>
               </LabelFieldPair>
 
               <LabelFieldPair>
@@ -612,6 +642,7 @@ const OwnerForm = (_props) => {
                         message: "Enter a valid 10-digit mobile number",
                       },
                     }}
+                    // defaultValue={}
                     render={(props) => (
                       <MobileNumber
                         placeholder={t("TL_NEW_OWNER_DETAILS_MOB_NO_PLACEHOLDER")}
@@ -659,9 +690,7 @@ const OwnerForm = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError>
-                {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
-              </CardLabelError>
+              <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
@@ -696,6 +725,7 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
@@ -727,6 +757,39 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+
+              {/* dob */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`${t("CORE_COMMON_DOB")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <Controller
+                  control={control}
+                  name={"dob"}
+                  defaultValue={owner?.dob || ""}
+                  render={(props) => (
+                    <TextInput
+                      type="date"
+                      value={props.value}
+                      autoFocus={focusIndex.index === owner?.key && focusIndex.type === "dob"}
+                      errorStyle={localFormState.touched.dob && errors?.dob?.message ? true : false}
+                      onChange={(e) => {
+                        if (e.target.value != owner?.dob && isRenewal)
+                          setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                        props.onChange(e.target.value);
+                        setFocusIndex({ index: owner.key, type: "dob" });
+                      }}
+                      onBlur={props.onBlur}
+                      // disable={isRenewal}
+                      // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                      placeholder={t("Enter Official Correspondence Address")}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError>
+
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -952,6 +1015,8 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
     return <React.Fragment />;
   }
 
+  console.log("newchecformData", formData);
+
   return (
     <React.Fragment>
       {owners.map((owner, index) => (
@@ -960,9 +1025,7 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
         <div>
           <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} />
-          <CardLabelError>
-            {t(formState.errors?.mulipleOwnerError?.message || "")}
-          </CardLabelError>
+          <CardLabelError>{t(formState.errors?.mulipleOwnerError?.message || "")}</CardLabelError>
         </div>
       ) : null}
     </React.Fragment>

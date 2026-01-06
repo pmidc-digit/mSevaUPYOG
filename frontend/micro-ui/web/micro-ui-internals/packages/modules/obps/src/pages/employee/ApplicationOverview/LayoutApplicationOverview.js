@@ -23,6 +23,7 @@ import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
 import { Loader } from "../../../config/Loader";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -663,26 +664,7 @@ function onActionSelect(action) {
         </Card>
       )}
 
-      {workflowDetails?.data?.timeline && (
-        <Card id="timeline">
-          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-          {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-          ) : (
-            <ConnectingCheckPoints>
-              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                <CheckPoint
-                  key={index}
-                  keyValue={index}
-                  isCompleted={index === 0}
-                  label={t("LAYOUT_STATUS_" + checkpoint.status)}
-                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                />
-              ))}
-            </ConnectingCheckPoints>
-          )}
-        </Card>
-      )}
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions?.length > 0 && (
         <ActionBar>

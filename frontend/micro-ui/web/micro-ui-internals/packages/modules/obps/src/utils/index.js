@@ -1018,6 +1018,8 @@ export const getBusinessServices = (businessService, status) => {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
   } else if (businessService === "BPA_OC") {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
+  } else {
+    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
   }
   return billBusinessService;
 };

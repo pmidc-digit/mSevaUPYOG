@@ -127,6 +127,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   }, [data, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
   const todayISO = new Date().toISOString().split("T")[0];
+  const minStartDate = new Date();
+  minStartDate.setMonth(minStartDate.getMonth() - 11);
+  const minStartDateISO = minStartDate.toISOString().split("T")[0];
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -246,7 +249,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Property Type Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_TYPE")} <span>*</span>
+          {t("RENT_LEASE_PROPERTY_TYPE")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -262,7 +265,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Property Specific Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_SPECIFIC")} <span>*</span>
+          {t("RENT_LEASE_PROPERTY_SPECIFIC")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -278,7 +281,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Location Type Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_LOCATION_TYPE")} <span>*</span>
+          {t("RENT_LEASE_LOCATION_TYPE")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -294,7 +297,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Property Name Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_NAME")} <span>*</span>
+          {t("RENT_LEASE_PROPERTY_NAME")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -322,7 +325,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Property ID */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_ID")} <span>*</span>
+          {t("RENT_LEASE_PROPERTY_ID")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -341,7 +344,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Start Date */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RAL_START_DATE")} <span>*</span>
+          {t("RAL_START_DATE")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -351,16 +354,16 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
               required: t("PTR_FIELD_REQUIRED"),
               validate: (value) => {
                 if (!value) return t("PTR_FIELD_REQUIRED");
-                const today = new Date(todayISO);
+                const minStart = new Date(minStartDateISO);
                 const chosen = new Date(value);
-                if (chosen < today) return t("PTR_START_DATE_NOT_IN_PAST");
+                if (chosen < minStart) return t("RAL_START_DATE_TOO_OLD");
                 return true;
               },
             }}
             render={({ value, onChange }) => (
               <TextInput
                 type="date"
-                min={todayISO}
+                min={minStartDateISO}
                 value={value || ""}
                 onChange={(e) => {
                   const newStart = e.target.value;

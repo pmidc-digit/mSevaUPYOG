@@ -139,9 +139,9 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
+              {errors?.mobileNumber && <CardLabelError style={{ marginTop: "4px" }}>{errors.mobileNumber.message}</CardLabelError>}
             </div>
           </LabelFieldPair>
-          {errors?.mobileNumber && <CardLabelError>{errors.mobileNumber.message}</CardLabelError>}
 
           {/* Name */}
           <LabelFieldPair>
@@ -170,9 +170,9 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
+              {errors?.name && <CardLabelError style={{ marginTop: "4px" }}>{errors.name.message}</CardLabelError>}
             </div>
           </LabelFieldPair>
-          {errors?.name && <CardLabelError>{errors.name.message}</CardLabelError>}
 
           {/* Email */}
           <LabelFieldPair>
@@ -203,9 +203,9 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
+              {errors?.emailId && <CardLabelError style={{ marginTop: "4px" }}>{errors.emailId.message}</CardLabelError>}
             </div>
           </LabelFieldPair>
-          {errors?.emailId && <CardLabelError>{errors.emailId.message}</CardLabelError>}
 
           {/* Address */}
           <LabelFieldPair>
@@ -234,9 +234,9 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
+              {errors?.address && <CardLabelError style={{ marginTop: "4px" }}>{errors.address.message}</CardLabelError>}
             </div>
           </LabelFieldPair>
-          {errors?.address && <CardLabelError>{errors.address.message}</CardLabelError>}
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />

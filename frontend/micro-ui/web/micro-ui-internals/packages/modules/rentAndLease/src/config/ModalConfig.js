@@ -43,8 +43,8 @@ export const ModalConfig = ({
         {
           body: [
             {
-              label: `${t("RAL_TRADE_LICENSE_NUMBER")} *`,
-              isMandatory: false,
+              label: t("RAL_TRADE_LICENSE_NUMBER"),
+              isMandatory: true,
               type: "text",
               validation: {
                 // required: true,
@@ -92,7 +92,8 @@ export const ModalConfig = ({
             ),
           },
           {
-            label: `${t("CS_COMMON_COMMENTS")} *`,
+            label: t("CS_COMMON_COMMENTS"),
+            isMandatory: true,
             type: "textarea",
             populators: {
               name: "comments",

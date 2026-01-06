@@ -300,7 +300,7 @@ const InspectionReportForm = (_props) => {
         return fieldoptions;
     }
 
-    const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px", maxWidth:"950px", minWidth:"280px", borderRadius:"4px" };
+    const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     return (
         <React.Fragment>
             <div style={{ marginBottom: "16px", maxWidth: "950px" }}>

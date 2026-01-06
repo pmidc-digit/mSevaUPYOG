@@ -27,9 +27,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     { code: "MULTIPLE", name: t("RAL_MULTIPLE") },
   ];
 
-  console.log("hereemeee");
-  console.log(currentStepData, currentStepData);
-
   const {
     control,
     handleSubmit,
@@ -223,12 +220,12 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       <CardSectionHeader className="card-section-header">{t("RAL_CITIZEN_DETAILS")}</CardSectionHeader>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RAL_OWNERSHIP_TYPE") || "Ownership Type"} <span>*</span>
+          {t("RAL_OWNERSHIP_TYPE") || "Tenant Type"} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
           name="ownershipType"
-          rules={{ required: t("PTR_FIELD_REQUIRED") || "Ownership Type is required" }}
+          rules={{ required: t("PTR_FIELD_REQUIRED") || "Tenant Type is required" }}
           render={(props) => (
             <Dropdown
               className="form-field"
@@ -257,7 +254,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Mobile Number */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span>*</span>
+                {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -291,7 +288,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Name */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("ES_NEW_APPLICATION_APPLICANT_NAME")} <span>*</span>
+                {t("ES_NEW_APPLICATION_APPLICANT_NAME")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -317,7 +314,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Email */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("NOC_APPLICANT_EMAIL_LABEL")} <span>*</span>
+                {t("NOC_APPLICANT_EMAIL_LABEL")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -343,7 +340,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Address */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("PT_COMMON_COL_ADDRESS")} <span>*</span>
+                {t("PT_COMMON_COL_ADDRESS")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
               <div className="field">
                 <Controller
@@ -369,7 +366,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Pincode */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("CORE_COMMON_PINCODE")} <span>*</span>
+                {t("CORE_COMMON_PINCODE")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
               <div className="field">
                 <Controller

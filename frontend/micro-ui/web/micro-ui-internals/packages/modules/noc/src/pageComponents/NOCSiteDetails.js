@@ -206,9 +206,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.plotNo ? errors.plotNo.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.plotNo ? errors.plotNo.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("NOC_PROPOSED_SITE_ADDRESS")}<span className="requiredField">*</span></CardLabel>
@@ -239,12 +239,13 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ULB_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             {!isUlbListLoading && (
               <Controller
                 control={control}
@@ -266,8 +267,9 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ULB_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -321,9 +323,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.khasraNo?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.khasraNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_HADBAST_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -354,12 +356,13 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.hadbastNo?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.hadbastNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ROAD_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             {!isRoadTypeLoading && (
               <Controller
                 control={control}
@@ -372,8 +375,9 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.roadType?.message || ""}</CardLabelError>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -404,9 +408,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -437,9 +441,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_NET_TOTAL_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -472,9 +476,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.netTotalArea?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ROAD_WIDTH_AT_SITE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -505,12 +509,13 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_BUILDING_STATUS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             {!isBuildingTypeLoading && (
               <Controller
                 control={control}
@@ -531,12 +536,14 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.buildingStatus?.message || ""}</CardLabelError>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
           
           {buildingStatus?.code === "BUILTUP" && (
              <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <div className="field">
              <Controller
               control={control}
               name={"isBasementAreaAvailable"}
@@ -557,9 +564,10 @@ const basementAreaValues= watch("basementArea");
                 />
               )}
             />
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
+            </div>
           </LabelFieldPair>
           )}
-          <CardLabelError style={errorStyle}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
 
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
@@ -595,12 +603,12 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.basementArea ? errors.basementArea.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
           
             )
           }
-          <CardLabelError style={errorStyle}>{errors?.basementArea ? errors.basementArea.message : ""}</CardLabelError>
           
           
           {buildingStatus?.code === "BUILTUP" && areaFields.map((field, index) => (
@@ -714,12 +722,13 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.wardNo?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_DISTRICT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
               <Controller
                 control={control}
                 name={"district"}
@@ -742,11 +751,13 @@ const basementAreaValues= watch("basementArea");
                   
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.district?.message || ""}</CardLabelError>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ZONE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             {!isZoneListLoading && (
               <Controller
                 control={control}
@@ -765,8 +776,9 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.zone?.message || ""}</CardLabelError>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_SITE_VILLAGE_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -797,9 +809,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.villageName?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_SITE_COLONY_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -830,9 +842,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.colonyName?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.colonyName?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_SITE_VASIKA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -863,9 +875,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -896,9 +908,9 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
+              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.khewatAndKhatuniNo?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.khewatAndKhatuniNo?.message || ""}</CardLabelError>
         </div>
         <BreakLine />
       </div>

@@ -36,16 +36,18 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     const applicant = Digit.UserService.getUser()?.info || {};
     console.log("inputData", inputData);
 
-    const owners = [
-      {
-        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        name: user?.info?.name,
-        mobileNumber: user?.info?.mobileNumber,
-        gender: formData?.NDCDetails?.PropertyDetails?.gender,
-        emailId: user?.info?.emailId,
-        type: user?.info?.type,
-      },
-    ];
+    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+
+    // const owners = [
+    //   {
+    //     // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+    //     name: user?.info?.name,
+    //     mobileNumber: user?.info?.mobileNumber,
+    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
+    //     emailId: user?.info?.emailId,
+    //     type: user?.info?.type,
+    //   },
+    // ];
 
     // Pick the source of truth for the application
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};

@@ -11,7 +11,6 @@ const MCollectAcknowledgement = () => {
   const { isEdit } = Digit.Hooks.useQueryParams();
   useEffect(() => {
     setParams(func.getQueryStringParams(location.search)); // result: '?query=abc'
-
   }, [location]);
   const { t } = useTranslation();
 
@@ -25,12 +24,12 @@ const MCollectAcknowledgement = () => {
       {params?.applicationStatus === "CANCELLED" ? (
         <Card>
           <Banner
-            message={t("UC_BILL_CANCELLED_SUCCESS_MESSAGE")}
+            message={t("COMMON_APPLICATION_CANCELLED_LABEL")}
             applicationNumber={params?.challanNumber}
             info={t("UC_CHALLAN_NO")}
             successful={true}
           />
-          <CardText>{t("UC_BILL_CANCELLED_SUCCESS_SUB_MESSAGE")}</CardText>
+          {/* <CardText>{t("UC_BILL_CANCELLED_SUCCESS_SUB_MESSAGE")}</CardText> */}
           {"generatePdfKey" ? (
             <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printReciept}>
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -66,7 +65,7 @@ const MCollectAcknowledgement = () => {
           ) : null}
           <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
             <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
-              <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
 
             <Link

@@ -143,7 +143,7 @@ public class PGRRequestValidator {
 				}
 			}
 			
-			if (serviceRequest.getServices().get(0).getAuditDetails().getCreatedTime() > 1767225599000L) {
+			if (serviceRequest.getServices().get(0).getAuditDetails().getCreatedTime() > 1767225599000L && serviceRequest.getServices().get(0).getSource() != SourceEnum.IVR ) {
 			    // Add existing invalid createdTime error
 
 			    // Add custom error for DGR PGR Service

@@ -47,7 +47,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.8;">
       
       <h1 style="text-align:center; font-weight:bold; font-size:22px; margin-bottom:40px; letter-spacing:0.5px; color:#1a1a1a;">
-        SELF-DECLARATION FOR COMMUNITY HALL BOOKING
+        SELF-DECLARATION FOR VENUE BOOKING
       </h1>
 
       <div style="margin-bottom:32px; line-height:1.8;">
@@ -60,7 +60,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       <div style="margin-left:10px; line-height:1.9;">
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">1.</span>
-          <span>I want to book the community hall <strong>${getModalData?.communityHallName}</strong> for the purpose of <strong>${
+          <span>I want to book the Venue <strong>${getModalData?.communityHallName}</strong> for the purpose of <strong>${
     getModalData?.purpose?.name
   }</strong>.</span>
         </div>
@@ -72,7 +72,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">3.</span>
-          <span>The Municipal Corporation / Council will have the right to deduct charges for cleanliness, electricity, or any maintenance of the community hall.</span>
+          <span>The Municipal Corporation / Council will have the right to deduct charges for cleanliness, electricity, or any maintenance of the Venue.</span>
         </div>
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
@@ -87,7 +87,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">6.</span>
-          <span>I will ensure proper cleanliness of the community hall.</span>
+          <span>I will ensure proper cleanliness of the Venue.</span>
         </div>
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
@@ -102,17 +102,17 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">9.</span>
-          <span>I will play DJ music at low volume only up to 10 PM in the community hall, as per government guidelines.</span>
+          <span>I will play DJ music at low volume only up to 10 PM in the Venue, as per government guidelines.</span>
         </div>
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">10.</span>
-          <span>I will be responsible if any illegal electricity connection is used in the community hall.</span>
+          <span>I will be responsible if any illegal electricity connection is used in the Venue.</span>
         </div>
 
         <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
           <span style="min-width:35px; font-weight:600; color:#333;">11.</span>
-          <span>I have checked the current status of the community hall and I am ready to proceed with the booking.</span>
+          <span>I have checked the current status of the Venue and I am ready to proceed with the booking.</span>
         </div>
       </div>
 

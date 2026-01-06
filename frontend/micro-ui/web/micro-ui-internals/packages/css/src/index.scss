@@ -162,7 +162,7 @@
 .w-fullwidth {
   @apply w-full;
 }
-.stepper{
+.stepper {
   padding: 10px;
 }
 .margin-unset {
@@ -200,6 +200,7 @@
 
 .dark {
   @apply text-text-primary;
+  width: auto !important;
 }
 
 .mrlg {
@@ -232,8 +233,8 @@
   margin-top: 32;
   margin-left: auto;
 }
-.ws-citizen-wrapper{
-  padding:15px;
+.ws-citizen-wrapper {
+  padding: 15px;
 }
 
 .application-details-link-button {
@@ -485,10 +486,10 @@
   width: 100%;
 }
 
-.employeeCard,
+/*.employeeCard,
 .text-mobile-input-width {
   max-width: 100%;
-}
+}*/
 
 .custom-time-picker {
   @apply w-full;
@@ -582,7 +583,7 @@
     }
   }
 }
-.tl-citizen{
+.tl-citizen {
   width: 100%;
   padding: 10px;
 }
@@ -948,7 +949,7 @@
 }
 
 .step-label {
-  font-size: 17px !important;
+  font-size: 12px !important;
 }
 
 .modal-action .employeeCard {
@@ -1131,7 +1132,7 @@
   font-size: 22px !important;
   font-weight: 500 !important;
 }
-.user-profile{
+.user-profile {
   margin-top: 3rem;
   width: 70%;
 }
@@ -1158,13 +1159,11 @@
   overflow: hidden;
 
   @media (min-width: 768px) {
-
     margin: 16px;
     gap: 24px;
     max-width: none;
 
     &.employee {
-
     }
   }
 }
@@ -1347,7 +1346,9 @@
 /* Global Responsive Font Sizes for Mobile */
 @media only screen and (max-width: 768px) {
   /* Headers with 32px should become 18px on mobile */
-  h1, h2, h3,
+  h1,
+  h2,
+  h3,
   .card-header,
   .heading,
   .header-title,
@@ -1368,7 +1369,8 @@
   }
 
   /* Headers with ~24px should become 15px on mobile */
-  h5, h6,
+  h5,
+  h6,
   .card-section-header {
     font-size: 15px !important;
   }
@@ -1380,3 +1382,4 @@
     font-size: 14px !important;
   }
 }
+

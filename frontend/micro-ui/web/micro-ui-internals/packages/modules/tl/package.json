@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-tl",
-  "version": "1.0.24",
+  "version": "1.0.23",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

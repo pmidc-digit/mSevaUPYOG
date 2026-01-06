@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { useHistory, useLocation } from "react-router-dom";
+import { Loader } from "../../../../components/Loader";
 
 //   const dispatch = useDispatch();
 //   const currentStepData = useSelector(function (state) {
@@ -50,13 +51,15 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   //let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
 
   const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
-
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
   let tenantId;
   if (currentUserType === "CITIZEN") {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   } else {
     tenantId = Digit.ULBService.getCurrentPermanentCity();
   }
+  const [getLoader, setLoader] = useState(false);
 
   const history = useHistory();
   const dispatch = useDispatch();
@@ -73,8 +76,13 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Function to handle the "Next" button click
   const goNext = (data) => {
-    console.log("Full form data submitted: ", formData);
+    console.log("checkDFpmr=====", formData);
+    console.log("data=====?", data);
 
+    if (!data?.SummaryTL?.consentValue) {
+      setError(`Please select checkbox`);
+      setShowToast(true);
+    }
     const res = onSubmit(formData?.CreatedResponse);
     console.log("API response: ", res);
 
@@ -95,15 +103,27 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
     formdata.calculation.applicationNumber = formdata.applicationNumber;
     formdata.action = "APPLY";
+    setLoader(true);
+    try {
+      const response = await Digit.TLService.update({ Licenses: [formdata] }, tenantId);
+      setLoader(false);
+      return response?.ResponseInfo?.status === "successful";
+    } catch (error) {
+      setLoader(false);
+      return error;
+    }
 
-    const response = await Digit.TLService.update({ Licenses: [formdata] }, tenantId);
-    return response?.ResponseInfo?.status === "successful";
     // console.log("onSubmit data in step 4: ", formdata);
   };
 
   // Function to handle the "Back" button click
   const onGoBack = (data) => {
     onBackClick(config.key, data);
+  };
+
+  const closeToast = () => {
+    setShowToast(false);
+    setError("");
   };
 
   // Function to handle form value changes
@@ -126,6 +146,8 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
         onBackClick={onGoBack} // Handle back button click
         className="employeeCard"
       />
+      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {getLoader && <Loader page={true} />}
     </React.Fragment>
   );
 };

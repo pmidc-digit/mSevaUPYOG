@@ -267,14 +267,14 @@ const LayoutApplicantDetails = (_props) => {
         key: "true",
         warning: false,
         error: false,
-        message: t("USER_DETAILS_FETCHED_SUCCESSFULLY"),
+        message: t("Applicant details fetched successfully"),
       })
     } catch (error) {
       console.error("Error fetching user details:", error)
       setShowToast({
         key: "true",
         error: true,
-        message: t("ERROR_FETCHING_USER_DETAILS"),
+        message: t("Error fetching applicant details"),
       })
     } finally {
       setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: false }))

@@ -236,9 +236,13 @@ function SelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
+            accept={acceptFormat}
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
             buttonType="button"
           />
+          <div style={{ fontSize: "12px", color: "#505A5F", marginTop: "4px" }}>
+            {t("Allowed file types")}: {acceptFormat}
+          </div>
         </div>
       </LabelFieldPair>
       {getLoader && <Loader page={true} />}

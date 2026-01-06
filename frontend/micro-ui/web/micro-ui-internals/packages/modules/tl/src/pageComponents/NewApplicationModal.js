@@ -72,8 +72,13 @@ const NewApplicationModal = ({}) => {
   };
   const [showToast, setShowToast] = useState(true);
 
+  const isCitizen = window.location.href.includes("citizen");
+
   const handleSubmit = () => {
-    history.replace(`/digit-ui/employee/tl/new-application`);
+    if (isCitizen) {
+      // history.replace(`/digit-ui/citizen/tl/tradelicence/new-application`);
+      setShowToast(false);
+    } else history.replace(`/digit-ui/employee/tl/tradelicence/new-application`);
   };
 
   return (
@@ -93,14 +98,16 @@ const NewApplicationModal = ({}) => {
             <Card>
               {/* <CardHeader>{!config.isMutation ? t("PT_DOC_REQ_SCREEN_HEADER") : t("PT_REQIURED_DOC_TRANSFER_OWNERSHIP")}</CardHeader> */}
               <div>
-                <CardSubHeader  style={{color:"#0d43a7"}}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_HEADING")}</CardSubHeader>
-                
-                <CardText style={{color:"#0d43a7"}}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_LABEL")}</CardText>
-                <CardText style={{color:"#0d43a7"}}>{t("TRADELICENSE_OWNER_OWNERSHIPPROOF_LABEL")}</CardText>
-                <CardText style={{color:"#0d43a7"}}>{t("TRADELICENSE_OWNER_OWNERPHOTO_LABEL")}</CardText>
-                <CardText style={{color:"#0d43a7"}}>{t("TRADELICENSE_OWNER_OLDLICENCENO_LABEL")}</CardText>
+                <CardSubHeader style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_HEADING")}</CardSubHeader>
 
-                <CardSectionSubText className={"primaryColor"}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_OWNERIDPROOF_DESCRIPTION_NOTE")}</CardSectionSubText>
+                <CardText style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_LABEL")}</CardText>
+                <CardText style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OWNERSHIPPROOF_LABEL")}</CardText>
+                <CardText style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OWNERPHOTO_LABEL")}</CardText>
+                <CardText style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OLDLICENCENO_LABEL")}</CardText>
+
+                <CardSectionSubText className={"primaryColor"}>
+                  {t("TRADELICENSE_OWNER_OWNERIDPROOF_OWNERIDPROOF_DESCRIPTION_NOTE")}
+                </CardSectionSubText>
 
                 {/* <div ref={printRef}>
                   {Array.isArray(mutationDocuments)

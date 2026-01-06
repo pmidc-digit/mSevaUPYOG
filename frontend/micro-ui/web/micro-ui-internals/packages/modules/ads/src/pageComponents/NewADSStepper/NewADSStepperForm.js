@@ -180,7 +180,7 @@ const NewADSStepperForm = ({ userType }) => {
   const createTime = formData?.reservationExpiry;
 
   return (
-    <div className="card">
+    <div className="employeeCard">
       <CardHeader className="ads-heading-large" divider={true}>
         {t("ADS_REGISTRATION_APPLICATION")}
         {createTime && (

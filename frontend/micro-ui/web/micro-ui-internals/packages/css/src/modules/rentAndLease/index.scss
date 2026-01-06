@@ -15,8 +15,15 @@
 
 .ral-error-label {
   width: 70%;
-  margin-left: 30%;
+  margin-left: 1%;
   margin-top: -18px;
+}
+
+/* Desktop view - margin-left 50% */
+@media (min-width: 768px) {
+  .ral-error-label {
+    margin-left: 50%;
+  }
 }
 
 .ral-applicant-container {

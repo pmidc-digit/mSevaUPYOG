@@ -23,6 +23,7 @@ import {
   createMappingCombinations,
   transformMappingData,
   calculatePagination,
+  LINEAR_BLUE_GRADIENT
 } from "../utils/empMappingUtils";
 
 const EmpMaping = () => {
@@ -451,7 +452,7 @@ const EmpMaping = () => {
                 onClick={handleSearch}
                 disabled={!filterULB}
                 style={{
-                  backgroundColor: filterULB ? PRIMARY_COLOR : "#ccc",
+                  background: filterULB ? LINEAR_BLUE_GRADIENT : "#ccc",
                   color: "white",
                   border: "none",
                   padding: "10px 24px",
@@ -462,7 +463,7 @@ const EmpMaping = () => {
                   opacity: filterULB ? 1 : 0.6,
                 }}
               >
-                🔍 {t("COMMON_SEARCH")}
+                {t("COMMON_SEARCH")}
               </button>
 
               <button
@@ -470,8 +471,8 @@ const EmpMaping = () => {
                 disabled={!filterULB && !filterEmployee && !filterCategory}
                 style={{
                   backgroundColor: "white",
-                  color: PRIMARY_COLOR,
-                  border: `1px solid ${PRIMARY_COLOR}`,
+                  color: LINEAR_BLUE_GRADIENT,
+                  border: `1px solid ${LINEAR_BLUE_GRADIENT}`,
                   padding: "10px 24px",
                   borderRadius: "4px",
                   cursor: !filterULB && !filterEmployee && !filterCategory ? "not-allowed" : "pointer",
@@ -487,7 +488,7 @@ const EmpMaping = () => {
             <button
               onClick={handleAddNew}
               style={{
-                backgroundColor: PRIMARY_COLOR,
+                background: "linear-gradient(135deg, #2563eb, #1e40af)",
                 color: "white",
                 border: "none",
                 padding: "10px 20px",
@@ -719,7 +720,7 @@ const EmpMaping = () => {
                   onClick={handleAddToList}
                   style={{
                     padding: "10px 24px",
-                    backgroundColor: PRIMARY_COLOR,
+                    background: LINEAR_BLUE_GRADIENT,
                     color: "white",
                     border: "none",
                     borderRadius: "4px",

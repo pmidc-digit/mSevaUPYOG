@@ -80,6 +80,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    width: 100%;
   }
 
   .card-label-error {
@@ -499,12 +500,6 @@ button.card-link.submit-bar {
           margin-right: unset;
         }
       } */
-    }
-
-    .field-container {
-      span {
-       
-      }
     }
   }
 }

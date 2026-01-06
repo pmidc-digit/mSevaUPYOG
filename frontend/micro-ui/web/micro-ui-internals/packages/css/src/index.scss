@@ -137,6 +137,7 @@
 @import "./components/SurveyModal.scss";
 
 @import "./modules/adv/index.scss";
+@import "./modules/hrms/index.scss";
 .display-none {
   display: none;
 }
@@ -618,8 +619,6 @@
   .full-width-card {
     @apply w-full !important;
   }
-}
-.applications-list-container {
 }
 .complaint-summary {
   @media (min-width: 780px) {
@@ -1161,9 +1160,6 @@
     margin: 16px;
     gap: 24px;
     max-width: none;
-
-    &.employee {
-    }
   }
 }
 
@@ -1340,6 +1336,16 @@
 
 .user-profile-full-width {
   width: 100%;
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+}
+
+audio, canvas, embed, iframe, img, object, svg, video {
+    display: block;
+    vertical-align: middle;
 }
 
 /* Global Responsive Font Sizes for Mobile */

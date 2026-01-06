@@ -633,13 +633,13 @@ button.card-link.submit-bar {
   }
   
   .employee .employeeCard .card-label {
-    width: 30%;
+    width: 40%;
   }
   .employee .employeeCard .field {
-    width: 50%;
+    width: 40%;
   }
   .employee .employeeCard .form-field {
-    width: 50%;
+    width: 40%;
   }
   
   /* Error label - positioned below the input field (aligned with field, not label) */
@@ -651,7 +651,24 @@ button.card-link.submit-bar {
     margin-top: -10px !important;
     margin-bottom: 8px !important;
   }
+  
+  /* BPA Workflow Action Modal - card-label and fields auto width */
+  .popup-module .card-label,
+  .popup-module .field,
+  .popup-module .form-field {
+    width: auto;
+  }
+  
+  
 }
+
+.BPAemployeeCard.bpa-workflow-modal-form .card-label {
+  width: 100% !important;
+}
+.BPAemployeeCard.bpa-workflow-modal-form .form-field {
+  width: 100% !important;
+}
+
 
 /* Mobile - full width for labels and fields */
 @media (max-width: 767px) {

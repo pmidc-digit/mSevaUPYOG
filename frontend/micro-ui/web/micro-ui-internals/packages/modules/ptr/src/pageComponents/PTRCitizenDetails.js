@@ -8,6 +8,7 @@ import {
   CardLabelError,
   LabelFieldPair,
   CardSectionHeader,
+  MobileNumber,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
@@ -112,7 +113,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
           <div className="form-field" style={{ display: "flex", alignItems: "center" }}>
-            <div className="employee-card-input employee-card-input--front">+91</div>
+           
             <Controller
               control={control}
               name="mobileNumber"
@@ -124,7 +125,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 },
               }}
               render={({ value, onChange, onBlur }) => (
-                <TextInput
+                <MobileNumber
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
@@ -163,7 +164,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 minLength: { value: 2, message: "Minimum 2 characters" },
               }}
               render={({ value, onChange, onBlur }) => (
-                <TextInput
+                <MobileNumber
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
                   onBlur={(e) => {

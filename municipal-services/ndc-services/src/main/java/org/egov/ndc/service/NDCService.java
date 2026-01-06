@@ -242,7 +242,11 @@ public class NDCService {
 			throw new CustomException("EG_NDC_TENANT_ID_NULL", "Tenant ID must not be null");
 		}
 
-		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+		boolean isSpecificLookup = !CollectionUtils.isEmpty(criteria.getApplicationNo())
+				|| !CollectionUtils.isEmpty(criteria.getUuid()) || criteria.getMobileNumber()!=null || criteria.getName()!=null;
+		if (!isSpecificLookup) {
+			criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+		}
 
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
 			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
@@ -265,8 +269,12 @@ public class NDCService {
 		if (CollectionUtils.isEmpty(applications))
 			return Collections.emptyList();
 		enrichmentService.enrichApplicationCriteriaWithOwnerids(criteria, applications);
-		UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-		enrichmentService.enrichOwner(userDetailResponse, applications);
+		UserResponse userDetailResponse = null;
+		if (!CollectionUtils.isEmpty(criteria.getOwnerIds())) {
+			userDetailResponse = userService.getUser(criteria, requestInfo);
+			enrichmentService.enrichOwner(userDetailResponse, applications);
+		}
+
 		return applications;
 	}
 

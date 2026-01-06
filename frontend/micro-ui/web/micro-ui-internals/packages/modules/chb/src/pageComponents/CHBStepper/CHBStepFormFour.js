@@ -57,11 +57,25 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // Pick the source of truth for the application
     const baseApplication = inputData?.venueDetails?.[0] || {};
     const hallInfo = currentStepData?.ownerDetails?.hallsBookingApplication || {};
+    console.log("inputData===", inputData);
+
+    const owners = [
+      {
+        name: baseApplication?.owners?.[0]?.name,
+        mobileNumber: baseApplication?.owners?.[0]?.mobileNumber,
+        emailId: baseApplication?.owners?.[0]?.emailId,
+        type: "CITIZEN",
+      },
+    ];
+
+    const { owners: _baseOwners, ...baseWithoutOwners } = baseApplication || {};
+    const { owners: _hallOwners, ...hallWithoutOwners } = hallInfo || {};
 
     // Clone and modify workflow action
     const updatedApplication = {
-      ...baseApplication,
-      ...hallInfo,
+      ...baseWithoutOwners,
+      ...hallWithoutOwners,
+      owners,
       purpose: {
         purpose: hallInfo?.purpose?.purpose?.code,
       },
@@ -85,6 +99,10 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const payload = {
       hallsBookingApplication: updatedApplication,
     };
+
+    console.log("payload====", payload);
+
+    // return;
 
     return payload;
   }

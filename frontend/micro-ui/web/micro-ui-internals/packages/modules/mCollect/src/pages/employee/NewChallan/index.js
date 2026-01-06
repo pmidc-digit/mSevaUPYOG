@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Toast, Header, Loader } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast, Header } from "@mseva/digit-ui-react-components";
 import { newConfig as newConfigMcollect } from "../../../config/config";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { stringReplaceAll } from "../../../utils";
+import { Loader } from "../../../components/Loader";
 //import { convertDateToEpoch } from "../../../utils";
 
 const getformDataforEdit = (ChallanData, fetchBillData) => {
@@ -19,6 +20,7 @@ const getformDataforEdit = (ChallanData, fetchBillData) => {
       ...ChallanData[0].address.locality,
       i18nkey: `${stringReplaceAll(ChallanData[0].tenantId, ".", "_").toUpperCase()}_ADMIN_${ChallanData[0]?.address?.locality?.code}`,
     },
+    amount: fetchBillData?.Bill?.[0]?.totalAmount,
     category: {
       code: ChallanData[0].businessService,
       i18nkey: `BILLINGSERVICE_BUSINESSSERVICE_${ChallanData[0]?.businessService.split(".")[0].toUpperCase()}`,
@@ -59,6 +61,7 @@ const NewChallan = ({ ChallanData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   const { url } = useRouteMatch();
+  const [getLoading, setLoading] = useState(false);
   let isEdit = false;
 
   if (url.includes("modify-challan")) {
@@ -181,8 +184,10 @@ const NewChallan = ({ ChallanData }) => {
     }
 
     if (isEdit) {
+      setLoading(true);
       Digit.MCollectService.update({ Challan: Challan }, tenantId)
         .then((result, err) => {
+          setLoading(false);
           if (result.challans && result.challans.length > 0) {
             const challan = result.challans[0];
             sessionStorage.removeItem("mcollectEditObject");
@@ -199,24 +204,37 @@ const NewChallan = ({ ChallanData }) => {
             });
           }
         })
-        .catch((e) => setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message }));
+        .catch((e) => {
+          setLoading(false);
+          setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message });
+        });
     } else {
+      setLoading(true);
       Digit.MCollectService.create({ Challan: Challan }, tenantId)
         .then((result, err) => {
+          setLoading(false);
           if (result.challans && result.challans.length > 0) {
             const challan = result.challans[0];
             sessionStorage.removeItem("mcollectFormData");
-            Digit.MCollectService.generateBill(challan.challanNo, tenantId, challan.businessService, "challan").then((response) => {
-              if (response.Bill && response.Bill.length > 0) {
-                history.push(
-                  `/digit-ui/employee/mcollect/acknowledgement?purpose=challan&status=success&tenantId=${tenantId}&billNumber=${response.Bill[0].billNumber}&serviceCategory=${response.Bill[0].businessService}&challanNumber=${response.Bill[0].consumerCode}`,
-                  { from: url }
-                );
-              }
-            });
+            setLoading(true);
+            Digit.MCollectService.generateBill(challan.challanNo, tenantId, challan.businessService, "challan")
+              .then((response) => {
+                setLoading(false);
+                if (response.Bill && response.Bill.length > 0) {
+                  history.push(
+                    `/digit-ui/employee/mcollect/acknowledgement?purpose=challan&status=success&tenantId=${tenantId}&billNumber=${response.Bill[0].billNumber}&serviceCategory=${response.Bill[0].businessService}&challanNumber=${response.Bill[0].consumerCode}`,
+                    { from: url }
+                  );
+                }
+              })
+              .catch((err) => {
+                setLoading(false);
+                console.log("err", err);
+              });
           }
         })
         .catch((e) => {
+          setLoading(false);
           setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message });
         });
     }
@@ -248,7 +266,7 @@ const NewChallan = ({ ChallanData }) => {
         <Header>{isEdit ? t("UC_UPDATE_CHALLAN"):t("UC_COMMON_HEADER")}</Header>
       </div> */}
       {isEdit && !JSON.parse(sessionStorage.getItem("mcollectEditObject")) && !defaultUpdatedValue ? (
-        <Loader />
+        <Loader page={true} />
       ) : (
         <FormComposer
           heading={isEdit ? t("UC_UPDATE_CHALLAN") : t("UC_COMMON_HEADER")}
@@ -271,6 +289,7 @@ const NewChallan = ({ ChallanData }) => {
         />
       )}
       {showToast && <Toast error={showToast?.key === "error" ? true : false} label={showToast?.label} onClose={closeToast} />}
+      {getLoading && <Loader page={true} />}
     </div>
   );
 };

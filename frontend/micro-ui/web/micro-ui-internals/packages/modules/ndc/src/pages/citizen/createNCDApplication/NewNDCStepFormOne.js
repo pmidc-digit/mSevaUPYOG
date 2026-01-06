@@ -50,7 +50,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const createApplication = async (data) => {
-    setLoader(true);
+    // setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
@@ -58,7 +58,24 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     // Build owners array
     // const owners = data?.cpt?.details?.owners;
 
-    const owners = (data?.cpt?.details?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+    // const owners = (data?.cpt?.details?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+
+    const owners = (data?.cpt?.details?.owners || []).map(({ status, uuid, ...rest }) => {
+      if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
+        return {
+          ...rest,
+          emailId: data?.PropertyDetails?.email, // ✅ inject email
+          isPrimaryOwner: true,
+        };
+      }
+
+      return rest; // ✅ keep others unchanged
+    });
+
+    console.log("data==", data);
+    console.log("owners==", owners);
+
+    // return;
 
     // Prepare NdcDetails
     const ndcDetails = [];

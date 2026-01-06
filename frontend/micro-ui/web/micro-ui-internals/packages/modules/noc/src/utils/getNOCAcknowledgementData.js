@@ -18,7 +18,6 @@ const getFloorLabel = (index, t) => {
     else if (lastDigit === 2) suffix = "nd";
     else if (lastDigit === 3) suffix = "rd";
   }
-
   return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
 };
 

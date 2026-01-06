@@ -30,6 +30,7 @@ import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
 import { amountToWords } from "../../../utils/index";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -700,26 +701,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         )}
 
 
-      {workflowDetails?.data?.timeline && (
-        <Card id="timeline">
-          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-          {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-          ) : (
-            <ConnectingCheckPoints>
-              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                <CheckPoint
-                  key={index}
-                  keyValue={index}
-                  isCompleted={index === 0}
-                  label={t("LAYOUT_STATUS_" + checkpoint.status)}
-                  customChild={getTimelineCaptions(checkpoint, index, arr)}
-                />
-              ))}
-            </ConnectingCheckPoints>
-          )}
-        </Card>
-      )}
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions && actions.length > 0 && (
         <ActionBar>

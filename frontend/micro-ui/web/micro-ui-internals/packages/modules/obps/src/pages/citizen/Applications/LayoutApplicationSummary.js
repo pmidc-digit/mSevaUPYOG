@@ -182,7 +182,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
       const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, "", t);
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);

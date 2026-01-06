@@ -187,7 +187,7 @@ const CLUApplicationDetails = () => {
         const application = applicationDetails?.Clu;
         const approvecomments = approveComments?.[0];
         const finalComment = approvecomments
-      ? `The above approval is subjected to followings conditions: ${approvecomments}`
+      ? `The above approval is subjected to the following conditions: ${approvecomments}`
       : "";
       console.log('application', application)
       if (!application) {

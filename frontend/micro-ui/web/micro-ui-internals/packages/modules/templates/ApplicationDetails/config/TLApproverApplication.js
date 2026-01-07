@@ -17,10 +17,12 @@ export const configTLApproverApplication = ({
   if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE") checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
+  const isCancelAction = action?.action === "CANCEL";
+
   return {
     label: {
       heading: `WF_${action?.action}_APPLICATION`,
-      submit: `WF_${businessService?.toUpperCase()}_${action?.action}`,
+      submit: isCancelAction ? "WF_CANCEL_LICENSE" : `WF_${businessService?.toUpperCase()}_${action?.action}`,
       cancel: "WF_EMPLOYEE_NEWTL_CANCEL",
     },
     form: [

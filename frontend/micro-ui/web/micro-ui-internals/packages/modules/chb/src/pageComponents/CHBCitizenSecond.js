@@ -202,39 +202,41 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             <CardLabel>
               {t("SELECT_HALL_NAME")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name={"siteId"}
-              rules={{ required: t("HALL_NAME_REQ") }}
-              render={(props) => (
-                <Dropdown
-                  style={{ marginBottom: 0 }}
-                  className="form-field"
-                  select={(e) => {
-                    props.onChange(e);
-                    fiterHalls(e);
-                    // Reset dependent fields properly
-                    setValue("hallCode", null);
-                    setValue("startDate", "");
-                    setValue("endDate", "");
-                    setSlots([]); // also clear any previous slots
-                    setShowInfo(false); // hide extra info until hallCode re-selected
-                  }}
-                  selected={props.value}
-                  option={CHBLocations?.CHB?.CommunityHalls}
-                  optionKey="name"
-                />
-              )}
-            />
-            {errors.siteId && <p style={{ color: "red" }}>{errors.siteId.message}</p>}
+            <div className="form-field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name={"siteId"}
+                rules={{ required: t("HALL_NAME_REQ") }}
+                render={(props) => (
+                  <Dropdown
+                    style={{ marginBottom: 0 }}
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                      fiterHalls(e);
+                      // Reset dependent fields properly
+                      setValue("hallCode", null);
+                      setValue("startDate", "");
+                      setValue("endDate", "");
+                      setSlots([]); // also clear any previous slots
+                      setShowInfo(false); // hide extra info until hallCode re-selected
+                    }}
+                    selected={props.value}
+                    option={CHBLocations?.CHB?.CommunityHalls}
+                    optionKey="name"
+                  />
+                )}
+              />
+              {errors.siteId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.siteId.message}</p>}
+            </div>
           </div>
 
           {/* SELECT_DATE */}
-          <LabelFieldPair style={{ marginTop: "20px" }}>
+          <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
               {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div style={{ width: "100%" }} className="form-field">
+            <div className="form-field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name={"startDate"}
@@ -257,16 +259,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.startDate && <p style={{ color: "red" }}>{errors.startDate.message}</p>}
+              {errors.startDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.startDate.message}</p>}
             </div>
-          </LabelFieldPair>
+          </div>
 
           {/* SELECT End DATE */}
-          <LabelFieldPair style={{ marginTop: "20px" }}>
+          <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
               {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div style={{ width: "100%" }} className="form-field">
+            <div className="form-field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name={"endDate"}
@@ -310,35 +312,37 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.endDate && <p style={{ color: "red" }}>{errors.endDate.message}</p>}
+              {errors.endDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.endDate.message}</p>}
             </div>
-          </LabelFieldPair>
+          </div>
 
           {/* HALL_CODE */}
           <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
               {t("HALL_CODE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name={"hallCode"}
-              rules={{ required: t("HALL_CODE_REQ") }}
-              render={(props) => (
-                <Dropdown
-                  style={{ marginBottom: 0 }}
-                  className="form-field"
-                  select={(e) => {
-                    props.onChange(e);
-                    slotsSearch(e);
-                  }}
-                  selected={props.value}
-                  option={getHallCodes}
-                  optionKey="HallCode"
-                  disable={errors.endDate || errors.startDate}
-                />
-              )}
-            />
-            {errors.hallCode && <p style={{ color: "red" }}>{errors.hallCode.message}</p>}
+            <div className="form-field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name={"hallCode"}
+                rules={{ required: t("HALL_CODE_REQ") }}
+                render={(props) => (
+                  <Dropdown
+                    style={{ marginBottom: 0 }}
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                      slotsSearch(e);
+                    }}
+                    selected={props.value}
+                    option={getHallCodes}
+                    optionKey="HallCode"
+                    disable={errors.endDate || errors.startDate}
+                  />
+                )}
+              />
+              {errors.hallCode && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.hallCode.message}</p>}
+            </div>
           </div>
 
           {/* AVAILABLE_SLOTS */}
@@ -347,28 +351,27 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               <CardLabel>
                 {t("AVAILABLE_SLOTS")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-
-              <Controller
-                control={control}
-                name="slots"
-                rules={{
-                  validate: (value) => {
-                    if (!value || value.length === 0) {
-                      return t("PLEASE_SELECT_AT_LEAST_ONE_SLOT");
-                    }
-                    return true;
-                  },
-                }}
-                render={(field) => (
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                      gap: "16px",
-                      marginTop: "20px",
-                      width: "100%",
-                    }}
-                  >
+              <div className="form-field" style={{ width: "100%" }}>
+                <Controller
+                  control={control}
+                  name="slots"
+                  rules={{
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return t("PLEASE_SELECT_AT_LEAST_ONE_SLOT");
+                      }
+                      return true;
+                    },
+                  }}
+                  render={(field) => (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                        gap: "16px",
+                        width: "100%",
+                      }}
+                    >
                     {getSlots?.map((slot, idx) => {
                       const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
                       const isChecked = field.value?.some(
@@ -488,63 +491,67 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   </div>
                 )}
               />
-
-              {errors.slots && <p style={{ color: "red" }}>{errors.slots.message}</p>}
+                {errors.slots && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.slots.message}</p>}
+              </div>
             </div>
           )}
 
-          <div className="label-field-pair" style={{ display: showInfo ? "block" : "none" }}>
+          <div style={{ display: showInfo ? "block" : "none" }}>
             {/* CHB_PURPOSE */}
-            <div className="label-field-pair" style={{ marginTop: "20px", marginBottom: "20px" }}>
+            <div className="label-field-pair" style={{ marginTop: "20px" }}>
               <CardLabel>
                 {t("CHB_PURPOSE")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <Controller
-                control={control}
-                name={"purpose"}
-                defaultValue={null}
-                rules={{ required: t("CHB_PURPOSE_REQUIRED") }}
-                render={(props) => (
-                  <Dropdown
-                    style={{ marginBottom: 0 }}
-                    className="form-field"
-                    select={props.onChange}
-                    selected={props.value}
-                    option={CHBPurpose?.CHB?.Purpose}
-                    optionKey="name"
-                  />
-                )}
-              />
-              {errors.purpose && <p style={{ color: "red" }}>{errors.purpose.message}</p>}
+              <div className="form-field" style={{ width: "100%" }}>
+                <Controller
+                  control={control}
+                  name={"purpose"}
+                  defaultValue={null}
+                  rules={{ required: t("CHB_PURPOSE_REQUIRED") }}
+                  render={(props) => (
+                    <Dropdown
+                      style={{ marginBottom: 0 }}
+                      className="form-field"
+                      select={props.onChange}
+                      selected={props.value}
+                      option={CHBPurpose?.CHB?.Purpose}
+                      optionKey="name"
+                    />
+                  )}
+                />
+                {errors.purpose && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purpose.message}</p>}
+              </div>
             </div>
 
             {/* CHB_SPECIAL_CATEGORY */}
-            <div className="label-field-pair" style={{ marginBottom: "20px" }}>
+            <div className="label-field-pair" style={{ marginTop: "20px" }}>
               <CardLabel>
                 {t("CHB_SPECIAL_CATEGORY")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <Controller
-                control={control}
-                name={"specialCategory"}
-                defaultValue={null}
-                rules={{ required: t("CHB_SPECIAL_CATEGORY_REQUIRED") }}
-                render={(props) => (
-                  <Dropdown
-                    style={{ marginBottom: 0 }}
-                    className="form-field"
-                    select={props.onChange}
-                    selected={props.value}
-                    option={SpecialCategory?.CHB?.SpecialCategory}
-                    optionKey="name"
-                  />
-                )}
-              />
-              {errors.specialCategory && <p style={{ color: "red" }}>{errors.specialCategory.message}</p>}
+              <div className="form-field" style={{ width: "100%" }}>
+                <Controller
+                  control={control}
+                  name={"specialCategory"}
+                  defaultValue={null}
+                  rules={{ required: t("CHB_SPECIAL_CATEGORY_REQUIRED") }}
+                  render={(props) => (
+                    <Dropdown
+                      style={{ marginBottom: 0 }}
+                      className="form-field"
+                      select={props.onChange}
+                      selected={props.value}
+                      option={SpecialCategory?.CHB?.SpecialCategory}
+                      optionKey="name"
+                    />
+                  )}
+                />
+                {errors.specialCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specialCategory.message}</p>}
+              </div>
             </div>
 
             {/* CHB_PURPOSE_DESCRIPTION */}
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">
+            <div className="label-field-pair" style={{ marginTop: "20px" }}>
+              <CardLabel>
                 {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
               <div className="form-field" style={{ width: "100%" }}>
@@ -570,9 +577,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.purposeDescription && <p style={{ color: "red" }}>{errors.purposeDescription.message}</p>}
+                {errors.purposeDescription && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purposeDescription.message}</p>}
               </div>
-            </LabelFieldPair>
+            </div>
 
             {!isCitizen && (
               <React.Fragment>

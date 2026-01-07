@@ -136,13 +136,7 @@ const CreateEmployee = () => {
   console.log("Checking config in create employee:", mdmsData?.config ? true : false);
   return (
     <div>
-      <div
-        style={
-          isMobile
-            ? { marginLeft: "-12px", fontFamily: "calibri", color: "#FF0000" }
-            : { marginLeft: "15px", fontFamily: "calibri", color: "#FF0000" }
-        }
-      >
+      <div className="hrms-header-wrapper" style={{ fontFamily: "calibri", color: "#FF0000" }}>
         <Header>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</Header>
       </div>
       <FormComposer

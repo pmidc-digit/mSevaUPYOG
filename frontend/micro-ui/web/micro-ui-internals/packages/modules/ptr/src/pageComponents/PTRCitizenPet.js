@@ -292,7 +292,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   // helper: parse the custom age string into { years, months, totalYears }
   const parsePetAge = (raw) => {
@@ -363,78 +363,78 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
+          {errors.petName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petName")}</CardLabelError>}
         </div>
       </LabelFieldPair>
-      {errors.petName && <CardLabelError style={errorStyle}>{getErrorMessage("petName")}</CardLabelError>}
 
       {/* PET TYPE */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_SEARCH_PET_TYPE")} *</CardLabel>
-
-        <Controller
-          control={control}
-          name="petType"
-          rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
-          render={(props) => (
-            <Dropdown
-              className="form-field"
-              select={props.onChange}
-              selected={props.value}
-              option={mdmsPetData?.petTypes}
-              optionKey="name"
-              disable={checkForRenew}
-            />
-          )}
-        />
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="petType"
+            rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
+            render={(props) => (
+              <Dropdown
+                select={props.onChange}
+                selected={props.value}
+                option={mdmsPetData?.petTypes}
+                optionKey="name"
+                disable={checkForRenew}
+              />
+            )}
+          />
+          {errors.petType && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petType")}</CardLabelError>}
+        </div>
       </LabelFieldPair>
-      {errors.petType && <CardLabelError style={errorStyle}>{getErrorMessage("petType")}</CardLabelError>}
 
       {/* BREED TYPE */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_SEARCH_BREED_TYPE")} *</CardLabel>
-
-        <Controller
-          control={control}
-          name="breedType"
-          rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
-          render={(props) => {
-            const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
-            return (
-              <Dropdown
-                className="form-field"
-                select={props.onChange}
-                selected={props.value}
-                option={filteredBreeds}
-                optionKey="name"
-                disable={checkForRenew}
-              />
-            );
-          }}
-        />
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="breedType"
+            rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
+            render={(props) => {
+              const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
+              return (
+                <Dropdown
+                  select={props.onChange}
+                  selected={props.value}
+                  option={filteredBreeds}
+                  optionKey="name"
+                  disable={checkForRenew}
+                />
+              );
+            }}
+          />
+          {errors.breedType && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("breedType")}</CardLabelError>}
+        </div>
       </LabelFieldPair>
-      {errors.breedType && <CardLabelError style={errorStyle}>{getErrorMessage("breedType")}</CardLabelError>}
 
       {/* PET GENDER */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_PET_GENDER")} *</CardLabel>
-
-        <Controller
-          control={control}
-          name="petGender"
-          rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
-          render={(props) => (
-            <Dropdown
-              className="form-field"
-              select={props.onChange}
-              selected={props.value}
-              option={mdmsPetData?.genderTypes}
-              optionKey="name"
-              disable={checkForRenew}
-            />
-          )}
-        />
+        <div className="form-field">
+          <Controller
+            control={control}
+            name="petGender"
+            rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
+            render={(props) => (
+              <Dropdown
+                select={props.onChange}
+                selected={props.value}
+                option={mdmsPetData?.genderTypes}
+                optionKey="name"
+                disable={checkForRenew}
+              />
+            )}
+          />
+          {errors.petGender && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petGender")}</CardLabelError>}
+        </div>
       </LabelFieldPair>
-      {errors.petGender && <CardLabelError style={errorStyle}>{getErrorMessage("petGender")}</CardLabelError>}
 
       {/* COLOR */}
       <LabelFieldPair>
@@ -459,9 +459,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
+          {errors.petColor && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petColor")}</CardLabelError>}
         </div>
       </LabelFieldPair>
-      {errors.petColor && <CardLabelError style={errorStyle}>{getErrorMessage("petColor")}</CardLabelError>}
 
       {/* PET AGE */}
       <LabelFieldPair>
@@ -531,7 +531,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             )}
           />
           {errors.petAge && (
-            <CardLabelError style={{ width: "70%", fontSize: "12px", marginTop: "-18px" }}>{getErrorMessage("petAge")}</CardLabelError>
+            <CardLabelError className="ptr-error-label" >{getErrorMessage("petAge")}</CardLabelError>
           )}
 
           <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
@@ -566,9 +566,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
+          {errors.lastVaccineDate && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
         </div>
       </LabelFieldPair>
-      {errors.lastVaccineDate && <CardLabelError style={errorStyle}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
 
       {/* VACCINATION NUMBER */}
       <LabelFieldPair style={{ marginTop: "15px" }}>
@@ -592,9 +592,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
+          {errors.vaccinationNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("vaccinationNumber")}</CardLabelError>}
         </div>
       </LabelFieldPair>
-      {errors.vaccinationNumber && <CardLabelError style={errorStyle}>{getErrorMessage("vaccinationNumber")}</CardLabelError>}
 
       {/* DOCTOR NAME */}
       <LabelFieldPair>
@@ -613,9 +613,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
             )}
           />
+          {errors.doctorName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("doctorName")}</CardLabelError>}
         </div>
       </LabelFieldPair>
-      {errors.doctorName && <CardLabelError style={errorStyle}>{getErrorMessage("doctorName")}</CardLabelError>}
 
       {/* CLINIC NAME */}
       <LabelFieldPair>
@@ -629,9 +629,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}
           />
+          {errors.clinicName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("clinicName")}</CardLabelError>}
         </div>
       </LabelFieldPair>
-      {errors.clinicName && <CardLabelError style={errorStyle}>{getErrorMessage("clinicName")}</CardLabelError>}
 
       <ActionBar>
         <SubmitBar

@@ -494,11 +494,6 @@ button.card-link.submit-bar {
         }
       } */
     }
-
-    .field-container {
-      span {
-      }
-    }
   }
 }
 
@@ -620,4 +615,78 @@ button.card-link.submit-bar {
   max-width: 85vw;
   width: 100%;
   margin: 0;
+}
+
+/* Employee side only - card-label and field widths (desktop only) */
+@media (min-width: 768px) {
+  .employee .employeeCard .label-field-pair {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .employee .employeeCard .card-label {
+    width: 40%;
+  }
+  .employee .employeeCard .field {
+    width: 40%;
+  }
+  .employee .employeeCard .form-field {
+    width: 40%;
+  }
+
+  /* Error label - positioned below the input field (aligned with field, not label) */
+  /* Target error labels both inside and after label-field-pair */
+  .employee .employeeCard .label-field-pair .card-label-error,
+  .employee .employeeCard .label-field-pair + .card-label-error {
+    width: 50% !important;
+    margin-left: 50% !important;
+    margin-top: -10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* BPA Workflow Action Modal - card-label and fields auto width */
+  .popup-module .card-label,
+  .popup-module .field,
+  .popup-module .form-field {
+    width: auto;
+  }
+}
+
+.BPAemployeeCard.bpa-workflow-modal-form .card-label {
+  width: 100% !important;
+}
+.BPAemployeeCard.bpa-workflow-modal-form .form-field {
+  width: 100% !important;
+}
+
+/* Mobile - full width for labels and fields */
+@media (max-width: 767px) {
+  .employee .employeeCard .card-label,
+  .employee .employeeCard .field,
+  .employee .employeeCard .form-field {
+    width: 100%;
+  }
+
+  .employee .employeeCard .label-field-pair {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Error label - full width on mobile, positioned below field */
+  .employee .employeeCard .label-field-pair .card-label-error,
+  .employee .employeeCard .label-field-pair + .card-label-error {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 2px !important;
+    margin-bottom: 8px !important;
+  }
+}
+
+/* Login page - form-field full width (employeeCard with headerStyle login header) */
+.employeeCard .headerStyle + .card-label-desc ~ div .form-field,
+.employee-login-container .form-field,
+.employee-login-form .form-field,
+.employee-login-page .form-field {
+  width: 100% !important;
 }

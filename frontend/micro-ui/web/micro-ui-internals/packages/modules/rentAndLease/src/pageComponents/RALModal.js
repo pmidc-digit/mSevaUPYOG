@@ -50,7 +50,8 @@ const RALModal = ({
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: allRolesNew?.map((role) => ({ code: role })),
+      roles:
+        action?.assigneeRoles?.length > 0 ? action?.assigneeRoles?.map((role) => ({ code: role })) : allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }

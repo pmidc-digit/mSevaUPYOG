@@ -85,13 +85,13 @@ const NOCSpecificationDetails = (_props) => {
                 />
               )}
             />
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError>
           </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError>
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_BUILDING_CATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-          {/* <div className="field"> */}
+          <div className="field">
           {!isLoading && buildingCategory.length > 0 && (
             <Controller
               control={control}
@@ -112,14 +112,15 @@ const NOCSpecificationDetails = (_props) => {
               )}
             />
           )}
-          {/* </div> */}
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>
           {errors?.specificationBuildingCategory ? errors.specificationBuildingCategory.message : ""}
         </CardLabelError>
+          </div>
+        </LabelFieldPair>
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_NOC_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+          <div className="field">
             {!isNocTypeLoading && (
                 <Controller
                   control={control}
@@ -132,11 +133,13 @@ const NOCSpecificationDetails = (_props) => {
               )}
               />
             )}
+            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationNocType?.message || ""}</CardLabelError>
+          </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.specificationNocType?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_RESTRICTED_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+          <div className="field">
           <Controller
             control={control}
             name={"specificationRestrictedArea"}
@@ -154,11 +157,13 @@ const NOCSpecificationDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationRestrictedArea?.message || ""}</CardLabelError>
+          </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.specificationRestrictedArea?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+          <div className="field">
           <Controller
             control={control}
             name={"specificationIsSiteUnderMasterPlan"}
@@ -176,8 +181,9 @@ const NOCSpecificationDetails = (_props) => {
               />
             )}
           />
+          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationIsSiteUnderMasterPlan?.message || ""}</CardLabelError>
+          </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.specificationIsSiteUnderMasterPlan?.message || ""}</CardLabelError>
       </div>
     </React.Fragment>
   );

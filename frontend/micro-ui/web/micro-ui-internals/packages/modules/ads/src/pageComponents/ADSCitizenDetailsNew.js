@@ -159,7 +159,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   const mandatoryStyle = { color: "red" };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form className="card" onSubmit={handleSubmit(onSubmit)}>
       <div style={{ maxWidth: !isCitizen && "500px" }}>
         <CardLabel className="card-label-smaller">
           {`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span style={mandatoryStyle}>*</span>{" "}

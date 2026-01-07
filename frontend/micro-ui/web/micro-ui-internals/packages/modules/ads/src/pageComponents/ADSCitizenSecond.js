@@ -233,7 +233,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </button>
         </div>
       )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form className="card" onSubmit={handleSubmit(onSubmit)}>
         {/* <LabelFieldPair> */}
         <CardLabel>
           {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>

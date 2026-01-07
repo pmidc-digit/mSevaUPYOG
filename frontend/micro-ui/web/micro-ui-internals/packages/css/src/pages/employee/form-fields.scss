@@ -11,3 +11,11 @@
         @apply w-full !important   
     }
 }
+
+employee-form-first {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    width: 100%;
+    flex-direction: column;
+}

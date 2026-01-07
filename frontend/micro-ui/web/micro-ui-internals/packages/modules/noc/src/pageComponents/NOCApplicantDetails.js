@@ -299,7 +299,8 @@ const getOwnerDetails = async (idx) => {
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-              <div style={{ display: "flex" }} className="field">
+              <div className="field">
+                <div style={{ display: "flex" }}>
                 <Controller
                   control={control}
                   name={`owners[${index}].mobileNumber`}
@@ -328,9 +329,10 @@ const getOwnerDetails = async (idx) => {
                   {" "}
                   <SearchIcon />{" "}
                 </div>
+                </div>
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.mobileNumber?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -359,9 +361,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.ownerOrFirmName?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.ownerOrFirmName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -390,9 +392,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.emailId?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.emailId?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
@@ -424,9 +426,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -458,9 +460,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.address?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.address?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -492,9 +494,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.propertyId?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.propertyId?.message || ""}</CardLabelError>
           
 
             <LabelFieldPair>
@@ -532,9 +534,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.dateOfBirth?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message || ""}</CardLabelError>
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -558,9 +560,9 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.gender?.message || ""}</CardLabelError>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.gender?.message || ""}</CardLabelError>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
               <CardLabel className="card-label-smaller">{t("NOC_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>

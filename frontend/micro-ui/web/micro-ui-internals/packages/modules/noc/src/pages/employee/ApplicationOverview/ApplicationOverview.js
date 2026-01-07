@@ -102,10 +102,13 @@ const NOCEmployeeApplicationOverview = () => {
   const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
+  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
+   console.log("businessService here==>", businessServiceCode);
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "obpas_noc",//businessService
+    moduleCode: businessServiceCode,//businessService
   });
 
   console.log("workflowDetails here=>", workflowDetails);
@@ -119,14 +122,22 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   useEffect(() => {
-      let WorkflowService = null;
+      if (isLoading || !tenantId || !businessServiceCode) return;
+
       (async () => {
+        try{
         setLoader(true);
-        WorkflowService = await Digit.WorkflowService.init(tenantId, "obpas_noc");
+        const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
+        console.log("wf=>", wf);
         setLoader(false);
-        setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
+        setWorkflowService(wf?.BusinessServices?.[0]?.states);
+        }catch(e){
+         console.error("Error Occurred", e);
+        }finally{
+          setLoader(false);
+        }
       })();
-  }, [tenantId]);
+  }, [tenantId, businessServiceCode, isLoading]);
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);

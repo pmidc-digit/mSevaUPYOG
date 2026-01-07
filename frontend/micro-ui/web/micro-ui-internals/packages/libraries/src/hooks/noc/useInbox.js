@@ -20,7 +20,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
       moduleName: "noc-service",
     //   businessService: businessService?.code ? [businessService?.code] : businessServiceArray,
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
-      businessService:["obpas_noc"],
+      businessService:["obpas_noc", "NOC_NP", "NOC_MC"],
     },
     
     moduleSearchCriteria: {

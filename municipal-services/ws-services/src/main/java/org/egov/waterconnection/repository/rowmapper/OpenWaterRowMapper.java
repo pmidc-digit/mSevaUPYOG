@@ -68,6 +68,16 @@ public class OpenWaterRowMapper implements ResultSetExtractor<List<WaterConnecti
                 currentWaterConnection.setAuditDetails(auditdetails);
 
                 connectionListMap.put(Id, currentWaterConnection);
+                
+                String relatedSwConnection = rs.getString("relatedswconn");
+				if (relatedSwConnection == null || relatedSwConnection.trim().isEmpty() ||
+				        "null".equalsIgnoreCase(relatedSwConnection.trim())) {	
+					currentWaterConnection.setRelatedSwConnection(null);	}
+				    else {
+				    	relatedSwConnection = relatedSwConnection.trim();
+				    	relatedSwConnection = relatedSwConnection.replaceAll("[^a-zA-Z0-9]", "");
+				    	currentWaterConnection.setRelatedSwConnection(relatedSwConnection);;
+				    }
             }
             addChildrenToProperty(rs, currentWaterConnection);
         }

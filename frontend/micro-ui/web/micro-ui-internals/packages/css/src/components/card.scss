@@ -262,7 +262,7 @@
 .card-link {
   height: 40px;
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-  color: white;
+  color: white !important;
   text-align: center;
   outline: none;
   width: 175px;
@@ -277,10 +277,20 @@
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32);
+    color: white !important;
   }
 
   &:focus {
     outline: none;
+    color: white !important;
+  }
+
+  &:active {
+    color: white !important;
+  }
+
+  &:visited {
+    color: white !important;
   }
 
   header {
@@ -627,7 +637,7 @@ button.card-link.submit-bar {
   .employee .employeeCard .label-field-pair {
     display: flex;
     align-items: flex-start;
-    flex-wrap: wrap;
+
   }
 
   .employee .employeeCard .card-label {
@@ -637,7 +647,7 @@ button.card-link.submit-bar {
     width: 40%;
   }
   .employee .employeeCard .form-field {
-    width: 40%;
+    width: 100%;
   }
 
   /* Error label - positioned below the input field (aligned with field, not label) */
@@ -696,5 +706,26 @@ button.card-link.submit-bar {
 .employee-login-container .form-field,
 .employee-login-form .form-field,
 .employee-login-page .form-field {
+  width: 100% !important;
+}
+
+/* OBPS Search Application - Mobile Number Full Width */
+.obps-search-mobile-wrapper {
+  width: 100% !important;
+  display: flex !important;
+}
+
+.obps-search-mobile-wrapper .employee-select-wrap {
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+.obps-search-mobile-wrapper .form-field {
+  width: 100% !important;
+}
+.BPAemployeeCard .employeeCard .form-field {
+  width: 100% !important;
+}
+.BPAemployeeCard .employeeCard .card-label {
   width: 100% !important;
 }

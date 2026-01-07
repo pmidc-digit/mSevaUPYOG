@@ -121,6 +121,7 @@ const ActionModal = ({ t, closeModal, submitAction, actionData, action, applicat
         <FormComposer
           cardStyle={{ minWidth: "unset", paddingRight: "unset", marginRight:"18px",paddingBottom:"64px" }}
           config={config?.form}
+          className="BPAemployeeCard bpa-workflow-modal-form"
           noBoxShadow
           inline
           childrenAtTheBottom

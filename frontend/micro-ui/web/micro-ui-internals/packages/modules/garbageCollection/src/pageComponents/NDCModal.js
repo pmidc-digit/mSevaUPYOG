@@ -162,7 +162,7 @@ const NDCModal = ({
       actionSaveOnSubmit={() => {}}
       formId="modal-action"
     >
-      <FormComposer config={config.form} noBoxShadow inline childrenAtTheBottom onSubmit={submit} formId="modal-action" />
+      <FormComposer config={config.form} className="BPAemployeeCard bpa-workflow-modal-form" noBoxShadow inline childrenAtTheBottom onSubmit={submit} formId="modal-action" />
       {/* )} */}
       {/* {showToast && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />} */}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}

@@ -239,6 +239,7 @@ const RALModal = ({
       ) : ( */}
       <FormComposer
         config={config.form}
+        className="BPAemployeeCard bpa-workflow-modal-form"
         noBoxShadow
         inline
         childrenAtTheBottom

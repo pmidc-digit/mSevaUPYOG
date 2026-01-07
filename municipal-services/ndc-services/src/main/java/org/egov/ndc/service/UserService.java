@@ -241,6 +241,7 @@ public class UserService {
 		owner.setUuid(userResponse.getUser().get(0).getUuid());
 		owner.setId(userResponse.getUser().get(0).getId());
 		owner.setUserName((userResponse.getUser().get(0).getMobileNumber()));
+		owner.setEmailId(userResponse.getUser().get(0).getEmailId());
 		owner.setCreatedDate(System.currentTimeMillis());
 		owner.setLastModifiedDate(System.currentTimeMillis());
 		owner.setActive(userResponse.getUser().get(0).getActive());

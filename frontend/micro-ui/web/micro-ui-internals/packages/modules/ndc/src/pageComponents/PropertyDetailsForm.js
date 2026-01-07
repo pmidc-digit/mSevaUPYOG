@@ -29,6 +29,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
+  const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
   const [showToast, setShowToast] = useState(null);
   const [propertyLoader, setPropertyLoader] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
@@ -36,6 +37,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const propertyId = formData?.cpt?.details?.propertyId;
   const [propertyDetails, setPropertyDetails] = useState(formData?.PropertyDetails || {});
   const [selectedRow, setSelectedRow] = useState(null);
+
+  console.log("apiDataCheck", apiDataCheck);
+  console.log("formData==?/??", formData);
+  console.log("checkApiDataCheck====", checkApiDataCheck?.Applications?.[0]);
 
   const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
     tenantId,
@@ -106,8 +111,12 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     // let lastName;
     // if (fullName?.length > 1) {
     //   lastName = fullName?.[fullName.length - 1];
+
+    console.log("ownerObj?.emailId", ownerObj?.emailId);
+    console.log("formData?.PropertyDetails?.email", formData?.PropertyDetails?.email);
+    console.log("emailApi", emailApi);
     // }
-    const email = ownerObj?.emailId || formData?.PropertyDetails?.email || emailApi || "";
+    const email = ownerObj?.emailId || emailApi || "";
     const mobileNumber = ownerObj?.mobileNumber;
     const address = ownerObj?.permanentAddress;
 
@@ -403,6 +412,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [showToast]);
 
+  useEffect(() => {
+    // checkApiDataCheck?.Applications?.[0]
+    // setSelectedRow
+    if (checkApiDataCheck?.Applications?.[0] || apiDataCheck?.[0]) {
+      const checkOwners = checkApiDataCheck?.Applications?.[0]?.owners || apiDataCheck?.[0]?.owners;
+      const filterRow = checkOwners?.find((owner) => owner?.isPrimaryOwner);
+      // const primaryOwner = ndcObject?.owners?.find((owner) => owner?.isPrimaryOwner) || ndcObject?.owners?.[0]; // fallback if none marked
+      console.log("filterRow===", filterRow);
+      setSelectedRow(filterRow);
+    }
+  }, [checkApiDataCheck, apiDataCheck]);
+
   return (
     <div style={{ marginBottom: "16px" }}>
       {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
@@ -634,7 +655,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             <Table
               className="customTable table-border-style"
               t={t}
-              data={formData?.cpt?.details?.owners}
+              data={formData?.cpt?.details?.owners || []}
               columns={applicationFeeColumns}
               getCellProps={() => ({ style: {} })}
               disableSort={true}

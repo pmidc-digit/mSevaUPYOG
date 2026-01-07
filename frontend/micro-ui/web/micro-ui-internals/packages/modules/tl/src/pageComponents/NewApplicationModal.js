@@ -75,10 +75,11 @@ const NewApplicationModal = ({}) => {
   const isCitizen = window.location.href.includes("citizen");
 
   const handleSubmit = () => {
+    //debugger
     if (isCitizen) {
       // history.replace(`/digit-ui/citizen/tl/tradelicence/new-application`);
       setShowToast(false);
-    } else history.replace(`/digit-ui/employee/tl/tradelicence/new-application`);
+    } else history.replace(`/digit-ui/employee/tl/new-application`);
   };
 
   return (

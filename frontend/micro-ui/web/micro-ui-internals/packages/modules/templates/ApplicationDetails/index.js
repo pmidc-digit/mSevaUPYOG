@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
@@ -64,9 +64,13 @@ const ApplicationDetails = (props) => {
 
   function onActionSelect(action) {
     console.log("action====", action);
+    console.log("applicationDetails===>",applicationDetails)
     if (action) {
       if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
+      }
+      if(action.action == "PAY" && window.location.href.includes("tl")){
+        history.push(`/digit-ui/employee/payment/collect/${applicationDetails.applicationData.businessService}/${applicationDetails.applicationData.applicationNumber}`)
       }
       // if(action?.isToast){
       //   setShowToast({ key: "error", error: { message: action?.toastMessage } });

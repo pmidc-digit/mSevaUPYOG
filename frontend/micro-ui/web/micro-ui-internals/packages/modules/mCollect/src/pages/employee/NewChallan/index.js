@@ -261,13 +261,15 @@ const NewChallan = ({ ChallanData }) => {
   }
 
   return (
-    <div>
+    <div >
       {/* <div style={isMobile?{}:{ marginLeft: "15px" }}>
         <Header>{isEdit ? t("UC_UPDATE_CHALLAN"):t("UC_COMMON_HEADER")}</Header>
       </div> */}
       {isEdit && !JSON.parse(sessionStorage.getItem("mcollectEditObject")) && !defaultUpdatedValue ? (
         <Loader page={true} />
       ) : (
+        <div className="card">
+
         <FormComposer
           heading={isEdit ? t("UC_UPDATE_CHALLAN") : t("UC_COMMON_HEADER")}
           //isDisabled={!canSubmit}
@@ -287,6 +289,7 @@ const NewChallan = ({ ChallanData }) => {
           onFormValueChange={onFormValueChange}
           breaklineStyle={{ border: "0px" }}
         />
+        </div>
       )}
       {showToast && <Toast error={showToast?.key === "error" ? true : false} label={showToast?.label} onClose={closeToast} />}
       {getLoading && <Loader page={true} />}

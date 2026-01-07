@@ -11,7 +11,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
       <React.Fragment>
         <div className="search-container" style={{ width: "100%", marginLeft: "24px" }}>
           <div className="search-complaint-container">
-            <div className="complaint-input-container" style={{ textAlign: "start" }}>
+            <div className="complaint-input-container" style={{ textAlign: "start", display:"flex" }}>
               <SearchField>
                 <label>{t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
                 <TextInput name="applicationNumber" inputRef={registerRef({})} />

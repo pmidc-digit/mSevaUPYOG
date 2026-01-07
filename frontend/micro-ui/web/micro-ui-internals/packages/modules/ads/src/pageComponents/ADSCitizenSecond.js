@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 // import { useDispatch } from "react-redux";
-import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, CardLabelError } from "@mseva/digit-ui-react-components";
+import { CardLabel, Dropdown, ActionBar, SubmitBar, Toast, CardLabelError, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import ADSAddressField from "./ADSAddressField";
 import AvailabilityModal from "./ADSAvailibilityModal";
@@ -234,18 +234,18 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </div>
       )}
       <form className="card" onSubmit={handleSubmit(onSubmit)}>
-        {/* <LabelFieldPair> */}
+        <LabelFieldPair>
         <CardLabel>
           {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>
         </CardLabel>
-        <div className="ads-form-field">
+        <div className="form-field">
           <Controller
             control={control}
             name="siteId"
             rules={{ required: t("ADS_SITE_NAME_REQUIRED") }}
             render={(props) => (
               <Dropdown
-                className="ads-form-field"
+               
                 option={locationOptions}
                 optionKey="name"
                 selected={props.value}
@@ -258,7 +258,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           />
         </div>
 
-        {/* </LabelFieldPair> */}
+        </LabelFieldPair>
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
         {guidance && adsForLocation?.length > 0 && <div className="ads-guidance-box">⚠️ {guidance}</div>}
@@ -297,15 +297,15 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         )}
 
         {/* Geo Location */}
-        {/* <LabelFieldPair> */}
+        <LabelFieldPair>
         <CardLabel>{t("CS_COMPLAINT_DETAILS_GEO_LOCATION")}</CardLabel>
         <Controller
           control={control}
           name="geoLocation"
           // rules={{ required: "Geo Location is required" }}
-          render={(props) => <ADSAddressField value={props.value} onChange={props.onChange} t={t} />}
+          render={(props) => <ADSAddressField classname="form-field" value={props.value} onChange={props.onChange} t={t} />}
         />
-        {/* </LabelFieldPair> */}
+        </LabelFieldPair>
         {/* {errors.geoLocation && <CardLabelError style={errorStyle}>{errors.geoLocation.message}</CardLabelError>} */}
 
         <ActionBar>

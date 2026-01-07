@@ -584,7 +584,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {!isCitizen && (
               <React.Fragment>
                 {/* Discount Amount */}
-                <div style={{ marginBottom: "20px", width: "100%" }}>
+                <div className="label-field-pair" style={{ marginTop: "20px" }}>
                   <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
                   <Controller
                     control={control}
@@ -608,7 +608,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
 
                 {/* Discount Reason */}
-                <div style={{ marginBottom: "20px", width: "100%" }}>
+                <div className="label-field-pair" style={{ marginTop: "20px" }}>
                   <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
                     control={control}

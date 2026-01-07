@@ -47,9 +47,7 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
           onBlur={onBlur}
           disabled={true}
           placeholder={t("ADS_LOCATION")}
-          style={{
-            maxWidth: !isCitizen && "330px", // or undefined if you don’t want any width
-          }}
+         
         />
         {/* <div>
           <button

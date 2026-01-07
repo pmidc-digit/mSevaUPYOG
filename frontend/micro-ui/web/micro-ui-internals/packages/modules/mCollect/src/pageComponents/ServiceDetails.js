@@ -270,8 +270,7 @@ const OwnerForm1 = (_props) => {
 
   return (
     <div style={isMobile ? {} : { marginTop: "-50px" }}>
-      <div style={{ marginBottom: "16px" }}>
-        <div>
+
           <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_CITY_LABEL")} * `}</CardLabel>
@@ -354,7 +353,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_FROM_DATE_LABEL")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 name="fromDate"
                 rules={{ required: t("REQUIRED_FIELD") }}
@@ -375,7 +374,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_TO_DATE_LABEL")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 name="toDate"
                 rules={{ required: t("REQUIRED_FIELD") }}
@@ -403,7 +402,7 @@ const OwnerForm1 = (_props) => {
                     {`${t(stringReplaceAll(tax?.name, ".", "_"))}`}
                     {tax.isRequired ? "*" : ""}
                   </CardLabel>
-                  <div className="field">
+                  <div className="form-field">
                     <Controller
                       control={control}
                       name={tax?.code}
@@ -440,7 +439,7 @@ const OwnerForm1 = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_COMMENT_LABEL")}`}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"Comment"}
@@ -466,8 +465,7 @@ const OwnerForm1 = (_props) => {
             </div>
           </LabelFieldPair>
         </div>
-      </div>
-    </div>
+
   );
 };
 

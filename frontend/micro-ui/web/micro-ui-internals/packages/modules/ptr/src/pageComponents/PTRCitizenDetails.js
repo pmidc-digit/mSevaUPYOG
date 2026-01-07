@@ -143,8 +143,9 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 />
               )}
             />
+              {errors.mobileNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("mobileNumber")}</CardLabelError>}
           </div>
-          {errors.mobileNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("mobileNumber")}</CardLabelError>}
+        
         </LabelFieldPair>
 
         {/* First Name */}
@@ -164,7 +165,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 minLength: { value: 2, message: "Minimum 2 characters" },
               }}
               render={({ value, onChange, onBlur }) => (
-                <MobileNumber
+                <TextInput
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
                   onBlur={(e) => {

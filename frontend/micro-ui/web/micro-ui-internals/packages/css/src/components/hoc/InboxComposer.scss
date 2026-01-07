@@ -1,9 +1,5 @@
-.InboxComposerWrapper {
-  .form-field-flex-one {
-    .form-field , .field{
-      @apply flex-1;
-    }
-  }
+.complaint-input-container{
+  display: flex;
 }
 
 .inboxPopupMobileWrapper {
@@ -95,7 +91,7 @@
       flex-wrap: unset;
       justify-content: unset;
       margin-bottom: 0;
-      .complaint-input-container {
+     .complaint-input-container  {
         display: grid !important;
         grid-template-columns: 33.33% 33.33% 33.33%;
       }

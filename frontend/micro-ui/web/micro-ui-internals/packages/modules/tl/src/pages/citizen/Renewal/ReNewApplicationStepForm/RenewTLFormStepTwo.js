@@ -18,6 +18,8 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
+  console.log("need to check formData", formData);
+
   const validateOwnerDetails = (data) => {
     const { ownershipCategory, owners } = data || {};
     const missingFields = [];
@@ -60,7 +62,6 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const onSubmit = async (data) => {
-    
     // let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
 
@@ -123,10 +124,10 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let owners = [];
     if (OwnerDetails?.owners?.length > 0) {
       OwnerDetails.owners.map((owner, index) => {
-        console.log("gender-ownerType-relationship",owner?.gender?.code, owner?.relationship?.code, owner?.ownerType?.code)
+        console.log("gender-ownerType-relationship", owner?.gender?.code, owner?.relationship?.code, owner?.ownerType?.code);
         const gender = owner?.gender?.code;
         const relationship = owner?.relationship?.code;
-        const ownerType = owner?.ownerType?.code
+        const ownerType = owner?.ownerType?.code;
 
         let obj = {
           name: owner?.name || "",

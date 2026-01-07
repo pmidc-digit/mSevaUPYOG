@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-bills",
-  "version": "1.0.10",
+  "version": "1.0.9",
   "description": "BILLS",
   "license": "MIT",
   "main": "dist/index.js",

@@ -16,7 +16,7 @@
     "@mseva/digit-ui-module-fsm": "1.0.6",
     "@mseva/digit-ui-module-mcollect": "1.0.14",
     "@mseva/digit-ui-module-noc": "1.0.38",
-    "@mseva/digit-ui-module-pgr": "1.0.19",
+    "@mseva/digit-ui-module-pgr": "1.0.21",
     "@mseva/digit-ui-module-receipts": "1.0.4",
     "@mseva/digit-ui-module-ws": "1.0.15",
     "@mseva/digit-ui-module-hrms": "1.0.12",

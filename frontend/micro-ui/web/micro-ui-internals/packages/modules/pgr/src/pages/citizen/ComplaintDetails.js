@@ -19,11 +19,12 @@ import {
   Toast,
 } from "@mseva/digit-ui-react-components";
 
-import TimeLine from "../../components/TimeLine";
+// import TimeLine from "../../components/TimeLine";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
-const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage,ulb }) => {
+const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage, ulb }) => {
   //const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || complaintDetails.service.tenantId;
-  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId ;
+  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
   let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "PGR" });
   const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.pgr.useMDMS.ComplainClosingTime(tenantId);
 
@@ -37,31 +38,34 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage,ulb })
 
   return (
     !workFlowDetails.isLoading && (
-      <TimeLine
-        // isLoading={workFlowDetails.isLoading}
-        data={workFlowDetails.data}
-        serviceRequestId={id}
-        complaintWorkflow={complaintDetails.workflow}
-        rating={complaintDetails.audit.rating}
-        zoomImage={zoomImage}
-        complaintDetails={complaintDetails}
-        ComplainMaxIdleTime={ComplainMaxIdleTime}
-      />
+      <React.Fragment>
+        {/* <TimeLine
+          // isLoading={workFlowDetails.isLoading}
+          data={workFlowDetails.data}
+          serviceRequestId={id}
+          complaintWorkflow={complaintDetails.workflow}
+          rating={complaintDetails.audit.rating}
+          zoomImage={zoomImage}
+          complaintDetails={complaintDetails}
+          ComplainMaxIdleTime={ComplainMaxIdleTime}
+        /> */}
+        <NewApplicationTimeline workflowDetails={workFlowDetails} t={Digit.Utils.locale.getTransformedLocale} />
+      </React.Fragment>
     )
   );
 };
 
 const ComplaintDetailsPage = (props) => {
   let { t } = useTranslation();
-   let { fullUrlAndUlb} = useParams();
+  let { fullUrlAndUlb } = useParams();
 
   const parts = fullUrlAndUlb?.split("/");
   const ulb = parts[parts.length - 1];
   const id = parts.slice(0, parts.length - 1).join("/");
 
   //let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
-  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId ;
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id});
+  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
 
   const [imageShownBelowComplaintDetails, setImageToShowBelowComplaintDetails] = useState({});
 
@@ -76,7 +80,7 @@ const ComplaintDetailsPage = (props) => {
   const [disableComment, setDisableComment] = useState(true);
 
   const [loader, setLoader] = useState(false);
-  const [viewTimeline, setViewTimeline]=useState(false);
+  // const [viewTimeline, setViewTimeline] = useState(false);
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(ulb, "admin", {}, t);
   const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
@@ -84,9 +88,8 @@ const ComplaintDetailsPage = (props) => {
   const localityName = localityObj?.name || "";
   const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
   const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
-  
-  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
 
+  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
 
   useEffect(() => {
     (async () => {
@@ -108,14 +111,14 @@ const ComplaintDetailsPage = (props) => {
   function onCloseImageZoom() {
     setImageZoom(null);
   }
-  
-  const handleViewTimeline=()=>{ 
-    const timelineSection=document.getElementById('timeline');
-      if(timelineSection){
-        timelineSection.scrollIntoView({behavior: 'smooth'});
-      } 
-      setViewTimeline(true);   
-  };
+
+  // const handleViewTimeline = () => {
+  //   const timelineSection = document.getElementById("timeline");
+  //   if (timelineSection) {
+  //     timelineSection.scrollIntoView({ behavior: "smooth" });
+  //   }
+  //   setViewTimeline(true);
+  // };
   const onWorkFlowChange = (data) => {
     let timeline = data?.timeline;
     timeline && timeline[0].timeLineActions?.filter((e) => e === "COMMENT").length ? setDisableComment(false) : setDisableComment(true);
@@ -157,14 +160,11 @@ const ComplaintDetailsPage = (props) => {
   return (
     <React.Fragment>
       <div className="complaint-summary pgr-citizen-complaint-details-page">
-        <div 
-        className="pgr-complaintDetails-headerTimeline-spaceclass"
-        >
-        <Header>{t(`${LOCALIZATION_KEY.CS_HEADER}_COMPLAINT_SUMMARY`)}</Header>
-        <div 
-        >
-        <LinkButton label={t("VIEW_TIMELINE")}  onClick={handleViewTimeline} ></LinkButton>
-        </div>
+        <div className="pgr-complaintDetails-headerTimeline-spaceclass">
+          <Header>{t(`${LOCALIZATION_KEY.CS_HEADER}_COMPLAINT_SUMMARY`)}</Header>
+          {/* <div>
+            <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
+          </div> */}
         </div>
         {Object.keys(complaintDetails).length > 0 ? (
           <React.Fragment>
@@ -172,20 +172,20 @@ const ComplaintDetailsPage = (props) => {
               <CardSubHeader>{t(`SERVICEDEFS.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>
               <StatusTable>
                 {Object.keys(complaintDetails.details)
-                .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
-                .map((flag, index, arr) => (
-                  <Row
-                    key={index}
-                    label={t(flag)}
-                    text={
-                      Array.isArray(complaintDetails.details[flag])
-                        ? complaintDetails.details[flag].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
-                        : t(complaintDetails.details[flag]) || "N/A"
-                    }
-                    // last={index === arr.length - 1}
-                  />
-                ))}
-              <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} last={true} />
+                  .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
+                  .map((flag, index, arr) => (
+                    <Row
+                      key={index}
+                      label={t(flag)}
+                      text={
+                        Array.isArray(complaintDetails.details[flag])
+                          ? complaintDetails.details[flag].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
+                          : t(complaintDetails.details[flag]) || "N/A"
+                      }
+                      // last={index === arr.length - 1}
+                    />
+                  ))}
+                <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} last={true} />
               </StatusTable>
               {imageShownBelowComplaintDetails?.thumbs ? (
                 <DisplayPhotos srcs={imageShownBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
@@ -193,10 +193,10 @@ const ComplaintDetailsPage = (props) => {
               {imageZoom ? <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} /> : null}
             </Card>
             <Card>
-            <div id="timeline">
-              {complaintDetails?.service && (
-                <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} ulb={ulb} />
-              )}
+              <div id="timeline">
+                {complaintDetails?.service && (
+                  <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} ulb={ulb} />
+                )}
               </div>
             </Card>
             {/* <Card>

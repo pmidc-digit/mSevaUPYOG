@@ -73,6 +73,22 @@ export const getNOCSanctionLetter = async (application, t,EmpData) => {
     ? new Date(Number(nocDetails?.SubmittedOn))?.toLocaleDateString("en-GB")
     : "";
 
+  const getFloorLabel = (index) => {
+    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+
+    const floorNumber = index;
+    const lastDigit = floorNumber % 10;
+    const lastTwoDigits = floorNumber % 100;
+
+    let suffix = "th";
+    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+      if (lastDigit === 1) suffix = "st";
+      else if (lastDigit === 2) suffix = "nd";
+      else if (lastDigit === 3) suffix = "rd";
+    }
+
+    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+  };
   let floorArea = [];
   let basementArea = site?.basementArea || " ";
   let totalFloorArea = site?.totalFloorArea || " ";
@@ -80,7 +96,7 @@ export const getNOCSanctionLetter = async (application, t,EmpData) => {
   if (site?.buildingStatus === "Built Up") {
     floorArea = (site?.floorArea || [])?.map((f, idx) => ({
       ...f,
-      floorNo: `Floor No ${idx + 1}`,
+      floorNo: getFloorLabel(idx),
     }));
   } else {
     floorArea = (site?.floorArea && site?.floorArea?.length > 0)

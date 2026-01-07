@@ -51,12 +51,6 @@ const LayoutResponseEmployee = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        {layoutData?.applicationStatus !== "REJECTED" ? (
-          <div>
-            <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
-            {pdfError && <div style={{ color: "red", padding: "10px", marginTop: "10px" }}>{pdfError}</div>}
-          </div>
-        ) : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("Go To Inbox")} onSubmit={onGoToLayout} />

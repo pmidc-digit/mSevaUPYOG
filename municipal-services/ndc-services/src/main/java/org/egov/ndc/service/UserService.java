@@ -253,14 +253,10 @@ public class UserService {
 		userSearchRequest.setRequestInfo(requestInfo);
 		userSearchRequest.setActive(true);
 		userSearchRequest.setUserType(owner.getType());
-		if(StringUtils.isNotBlank(owner.getMobileNumber())) {
+		if(StringUtils.isBlank(owner.getUuid()) && StringUtils.isNotBlank(owner.getMobileNumber())) {
 			userSearchRequest.setMobileNumber(owner.getMobileNumber());
-			if (StringUtils.isNotBlank(owner.getUserName()))
-				userSearchRequest.setUserName(owner.getMobileNumber());
-			else
-				userSearchRequest.setUserName(owner.getMobileNumber());
-
-		}
+            userSearchRequest.setUserName(owner.getMobileNumber());
+        }
 		if(StringUtils.isNotBlank(owner.getUuid()))
 			userSearchRequest.setUuid(Arrays.asList(owner.getUuid()));
 		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);

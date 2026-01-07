@@ -64,14 +64,14 @@ public class GateService  extends FeatureProcess {
 	        }
 
 	    } else {
-	        LOG.error("Main gate not defined in the drawing.");
+	        //LOG.error("Main gate not defined in the drawing.");
 	        //errors.put("Main gate not defined", "Main gate not defined in the drawing");
 	        //plan.addErrors(errors);
 	    }
 
 	    // --- Validation ---
 	    if (!gateDefined) {
-	        LOG.warn("Gate details missing. Marking as Not Accepted.");
+	        //LOG.warn("Gate details missing. Marking as Not Accepted.");
 	        details.put(PROVIDED, "0.00");
 	        details.put(STATUS, Result.Not_Accepted.getResultVal());
 	    } else if (gateHeight.compareTo(BigDecimal.ZERO) > 0) {
@@ -80,7 +80,7 @@ public class GateService  extends FeatureProcess {
 	        details.put(STATUS, Result.Accepted.getResultVal());
 
 	    } else {
-	        LOG.warn("Gate length is zero or negative. Not Accepted.");
+	        //LOG.warn("Gate length is zero or negative. Not Accepted.");
 	        details.put(PROVIDED, gateHeight.toPlainString() + " m");
 	        details.put(STATUS, Result.Not_Accepted.getResultVal());
 	    }

@@ -65,31 +65,22 @@ public class DxfFileConstants {
     public static final String F_CB = "F-CB";// Commercial Building
     //public static final String F_IT = "F-IT";// IT / ITES Buildings
     
-    // New category as per 2025 byLaws
-    public static final String F_SCC = "F-SCC";// Shopping Complex/Center
-    public static final String F_RS = "F-RS"; //Retail Shops
-    public static final String F_R = "F-R"; //Restaurants (F-R)
-    public static final String F_FP = "F-FP";// Food Plazas (F-FP)
-    public static final String F_FC = "F-FC";//Fitness Center (F-FC)
-    public static final String F_CC = "F-CC"; //Call Center (F-CC) 
-    public static final String F_CO = "F-CO";//Corporate Offices (F-CO)
-    public static final String F_B = "F-B";//Bank (F-B)
-    public static final String F_DS   = "F-DS";   // Departmental Store
-    public static final String F_BS   = "F-BS";   // Bank Services
-    public static final String F_BO   = "F-BO";   // Business Office
-    public static final String F_IT   = "F-IT";   // IT Office
-    public static final String F_O    = "F-O";    // Office
-    public static final String F_S    = "F-S";    // Shop
-    public static final String F_SM   = "F-SM";   // Super Market
-    public static final String F_WS   = "F-WS";   // Wholesale Stores
-    public static final String F_M    = "F-M";    // Mercantile
-    public static final String F_SRM  = "F-SRM";  // Showroom
-    public static final String F_SCO  = "F-SCO";  // SCO / SCF
-    public static final String F_BTH  = "F-BTH";  // Booth
-    public static final String F_DBTH = "F-DBTH"; // Double Storey Booth
-    public static final String F_SSTY = "F-SSTY"; // Shops (1/2/3 Storey)
-    public static final String F_GBA  = "F-GBA";  // Goods Booking Agencies
-    public static final String F_SC   = "F-SC";   // Scheme Commercial
+    // New category as per 2018 byLaws
+    public static final String F_RB = "F-RB"; // Restaurants/Banquet Halls
+    public static final String F_HM = "F-HM"; // Hotels/Motels
+    public static final String F_SCC = "F-SCC"; // Shops/Showrooms/Commercial Complexes etc.
+    public static final String F_PO = "F-PO"; // Private Offices
+    public static final String F_B = "F-B"; //Banks
+    public static final String F_LB = "F-LB";//Club/ Guest House / Lodging & Boarding / Service Apartments
+    public static final String F_D = "F-D";//Dhaba (F-B)
+    public static final String F_CA   = "F-CA";   // Cinemas and Auditoriums
+    public static final String F_VGP   = "F-VGP";   // Video Games Parlors
+    public static final String F_BU   = "F-BU";   // Boutiques
+    public static final String F_PFSF   = "F-PFSF";   // Petrol Filling Station – Four Wheeler
+    public static final String F_PFST    = "F-PFST";    // Petrol Filling Station – Two W
+    public static final String F_PFSS    = "F-PFSS";    // Petrol Filling Station Service
+    public static final String F_PS    = "F-PS";   // Petrol Station
+    public static final String F_CNGS  = "F-CNGS";   // Compressed Natural Gas Station
 
     // new Occupancy for Industry as per 2025 byLaws
     public static final String G_GTKS   = "G-GTKS";    // Industrial Plotted - General, Textile, Knitwear, Sports

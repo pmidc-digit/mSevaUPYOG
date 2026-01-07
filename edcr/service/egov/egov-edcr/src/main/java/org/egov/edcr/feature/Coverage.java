@@ -337,7 +337,7 @@ public class Coverage extends FeatureProcess {
 //			processCoverage(pl,mostRestrictiveOccupancy, totalCoverageArea, 
 //					permissibleCoverageValue,coverageArea,plotArea);
 			}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) {
-				processCoverage(pl, mostRestrictiveOccupancy, totalCoverageArea,
+				processCoverage(pl, mostRestrictiveOccupancy, totalCoverage,
 						permissibleCoverageValue,coverageArea,plotArea);
 			} 
 			else {

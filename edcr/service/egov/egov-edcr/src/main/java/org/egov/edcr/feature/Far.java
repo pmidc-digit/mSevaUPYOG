@@ -1082,55 +1082,36 @@ public class Far extends FeatureProcess {
 		else if (codes.contains(G_F))
 			return codesMap.get(G_F);
 		
+		else if (codes.contains(F_RB))
+		    return codesMap.get(F_RB);
+		else if (codes.contains(F_HM))
+		    return codesMap.get(F_HM);
 		else if (codes.contains(F_SCC))
-		    return codesMap.get(F_SCC);
-		else if (codes.contains(F_RS))
-		    return codesMap.get(F_RS);
-		else if (codes.contains(F_R))
-		    return codesMap.get(F_R);
-		else if (codes.contains(F_FP))
-		    return codesMap.get(F_FP);
-		else if (codes.contains(F_FC))
-		    return codesMap.get(F_FC);
-		else if (codes.contains(F_CC))
-		    return codesMap.get(F_CC);
-		else if (codes.contains(F_CO))
-		    return codesMap.get(F_CO);
+			return codesMap.get(F_SCC);
+		else if (codes.contains(F_PO))
+		    return codesMap.get(F_PO);
 		else if (codes.contains(F_B))
 		    return codesMap.get(F_B);
-
-		else if (codes.contains(F_DS))
-		    return codesMap.get(F_DS);
-		else if (codes.contains(F_BS))
-		    return codesMap.get(F_BS);
-		else if (codes.contains(F_BO))
-		    return codesMap.get(F_BO);
-		else if (codes.contains(F_IT))
-		    return codesMap.get(F_IT);
-		else if (codes.contains(F_O))
-		    return codesMap.get(F_O);
-		else if (codes.contains(F_S))
-		    return codesMap.get(F_S);
-		else if (codes.contains(F_SM))
-		    return codesMap.get(F_SM);
-		else if (codes.contains(F_WS))
-		    return codesMap.get(F_WS);
-		else if (codes.contains(F_M))
-		    return codesMap.get(F_M);
-		else if (codes.contains(F_SRM))
-		    return codesMap.get(F_SRM);
-		else if (codes.contains(F_SCO))
-		    return codesMap.get(F_SCO);
-		else if (codes.contains(F_BTH))
-		    return codesMap.get(F_BTH);
-		else if (codes.contains(F_DBTH))
-		    return codesMap.get(F_DBTH);
-		else if (codes.contains(F_SSTY))
-		    return codesMap.get(F_SSTY);
-		else if (codes.contains(F_GBA))
-		    return codesMap.get(F_GBA);
-		else if (codes.contains(F_SC))
-		    return codesMap.get(F_SC);
+		else if (codes.contains(F_LB))
+		    return codesMap.get(F_LB);
+		else if (codes.contains(F_D))
+		    return codesMap.get(F_D);
+		else if (codes.contains(F_CA))
+		    return codesMap.get(F_CA);
+		else if (codes.contains(F_VGP))
+		    return codesMap.get(F_VGP);
+		else if (codes.contains(F_BU))
+		    return codesMap.get(F_BU);
+		else if (codes.contains(F_PFSF))
+		    return codesMap.get(F_PFSF);
+		else if (codes.contains(F_PFST))
+		    return codesMap.get(F_PFST);
+		else if (codes.contains(F_PFSS))
+		    return codesMap.get(F_PFSS);
+		else if (codes.contains(F_PS))
+		    return codesMap.get(F_PS);
+		else if (codes.contains(F_CNGS))
+		    return codesMap.get(F_CNGS);
 
 		
 		else

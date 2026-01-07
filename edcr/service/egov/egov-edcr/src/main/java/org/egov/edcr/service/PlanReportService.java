@@ -103,6 +103,12 @@ public class PlanReportService {
     @Value("${edcr.service.url:}")
     private String edcr_internal_service_url;
     
+    @Value("${edcr.report.mseva.logo.url:}")
+    private String edcr_mseva_logo_url;
+    
+    @Value("${edcr.report.logodep.url:}")
+    private String edcr_logodep_url;
+    
     @Autowired
     private CityService cityService;
     @Autowired
@@ -719,14 +725,16 @@ public class PlanReportService {
         valuesMap.put("blockCount",
                 plan.getBlocks() != null && !plan.getBlocks().isEmpty() ? plan.getBlocks().size() : 0);
         valuesMap.put("surrenderRoadArea", plan.getTotalSurrenderRoadArea());
-        String imageURL = ReportUtil.getImageURL("/egi/resources/global/images/mseva.png");
+        LOG.info("mseva logo url : " + edcr_mseva_logo_url);
+        //String imageURL = ReportUtil.getImageURL("/egi/resources/global/images/mseva.png");
         //LOG.info("edcr internal service url : " + edcr_internal_service_url);
 
         //String imageURL = edcr_internal_service_url +"/egi/resources/global/images/mseva.png";
-        valuesMap.put("egovLogo", imageURL);
-        String domainurl = ReportUtil.getImageURL("/egi/resources/global/images/logo_dep.png");
+        valuesMap.put("egovLogo", edcr_mseva_logo_url);
+        LOG.info("logo dept url : " + edcr_logodep_url);
+        //String domainurl = ReportUtil.getImageURL("/egi/resources/global/images/logo_dep.png");
         //String domainurl = edcr_internal_service_url + "/egi/resources/global/images/logo_dep.png";
-        valuesMap.put("cityLogo", domainurl);
+        valuesMap.put("cityLogo", edcr_logodep_url);
         //new fields added into Plot Details
         valuesMap.put("numberOfFloors", plan.getPlanInformation().getNumberOfFloors());
         valuesMap.put("ulbType", plan.getPlanInformation().getUlbType());

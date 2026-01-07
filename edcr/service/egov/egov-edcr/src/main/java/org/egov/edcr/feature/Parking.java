@@ -56,7 +56,7 @@ import static org.egov.edcr.constants.DxfFileConstants.F_H;
 import static org.egov.edcr.constants.DxfFileConstants.F_RT;
 import static org.egov.edcr.constants.DxfFileConstants.F_LD;
 import static org.egov.edcr.constants.DxfFileConstants.F_CB;
-import static org.egov.edcr.constants.DxfFileConstants.F_IT;
+//import static org.egov.edcr.constants.DxfFileConstants.F_IT;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.PARKING_SLOT;
 import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;

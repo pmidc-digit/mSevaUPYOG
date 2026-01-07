@@ -153,10 +153,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {
   console.log("[v0] layoutFormData", layoutFormData)
+  console.log("[v0] layoutFormData.documents", layoutFormData?.documents)
+  console.log("[v0] layoutFormData.documents.documents", layoutFormData?.documents?.documents)
+  console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
   
-  // <CHANGE> Check if we're in EDIT mode or NEW mode
+  // Check if we're in EDIT mode or NEW mode
   // In NEW mode: data is at layoutFormData.apiData.Layout[0]
-  // In EDIT mode: data is at layoutFormData.apiData directly
+  // In EDIT mode (from edit application page): data is at layoutFormData.apiData directly
   const isEditMode = !layoutFormData?.apiData?.Layout
   const layoutData = isEditMode 
     ? layoutFormData?.apiData 
@@ -165,12 +168,57 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("[v0] isEditMode:", isEditMode)
   console.log("[v0] layoutData:", layoutData)
 
-    // For Update API: Use original owners from API response (preserve full structure)
+  // Get documents from Redux (following CLU pattern - 3 levels deep)
+  const docsArrayFromRedux = layoutFormData?.documents?.documents?.documents || [];
+  console.log("[v0] docsArrayFromRedux:", docsArrayFromRedux);
+
+    // For Update API: Merge original owners from API response with newly added applicants from Redux
     // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
-    const owners = layoutData?.owners || [];
+    const ownersFromApi = layoutData?.owners || [];
+    
+    // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
+    const applicantsFromRedux = layoutFormData?.applicants || [];
+    const newlyAddedApplicants = applicantsFromRedux.slice(1).filter(app => app?.name); // Filter out empty entries
+    
+    // Map newly added applicants to owner format for API
+    const mappedNewApplicants = newlyAddedApplicants
+      .filter(newApp => !ownersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber))
+      .map((applicant, index) => {
+        // Get document files for this applicant
+        const docFiles = layoutFormData?.documentUploadedFiles || {};
+        const photoFiles = layoutFormData?.photoUploadedFiles || {};
+        const applicantIndex = applicantsFromRedux.indexOf(applicant);
+        
+        // For new applicants, don't send uuid - let backend create/assign it
+        // Sending uuid with mobileNumber causes InvalidUserSearchCriteriaException
+        const ownerObj = {
+          name: applicant.name,
+          mobileNumber: applicant.mobileNumber,
+          emailId: applicant.emailId,
+          fatherOrHusbandName: applicant.fatherOrHusbandName,
+          permanentAddress: applicant.address,
+          dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
+          gender: applicant.gender?.code || applicant.gender,
+          additionalDetails: {
+            ownerPhoto: photoFiles[applicantIndex]?.fileStoreId || null,
+            documentFile: docFiles[applicantIndex]?.fileStoreId || null,
+          },
+        };
+        
+        return ownerObj;
+      });
+    
+    // Merge: existing owners from API + newly added applicants
+    const owners = [...ownersFromApi, ...mappedNewApplicants];
+    
+    console.log("[v0] ownersFromApi:", ownersFromApi);
+    console.log("[v0] applicantsFromRedux:", applicantsFromRedux);
+    console.log("[v0] newlyAddedApplicants:", newlyAddedApplicants);
+    console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
+    console.log("[v0] final merged owners:", owners);
 
   const updatedApplication = {
-    ...layoutData,  // <CHANGE> Use layoutData instead of hardcoded path
+    ...layoutData,
    
     workflow: {
       action: selectedAction?.action || "",
@@ -196,18 +244,95 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         coordinates: { ...coordinates },
       },
     },
+    // Initialize empty documents array - will be populated below
     documents: [],
     owners: owners,  // ← Top-level owners array (preserved from API response)
   };
 
-    const docsArray = layoutFormData?.documents?.documents?.documents || [];
-    docsArray.forEach((doc) => {
-      updatedApplication.documents.push({
-        uuid: doc?.documentUid || doc?.uuid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.filestoreId || doc?.documentAttachment,
+    // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========
+    // CLU uses: cluFormData?.documents?.documents?.documents
+    console.log("[v0] layoutFormData?.documents:", layoutFormData?.documents);
+    console.log("[v0] layoutFormData?.documents?.documents:", layoutFormData?.documents?.documents);
+    console.log("[v0] layoutFormData?.documents?.documents?.documents:", layoutFormData?.documents?.documents?.documents);
+    
+    if (isEditMode) {
+      // EDIT MODE: Merge API documents with Redux documents (like CLU)
+      const apiResponseDocuments = layoutData?.documents || [];
+      const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
+      
+      console.log("[v0] EDIT MODE - apiResponseDocuments:", apiResponseDocuments);
+      
+      // Update existing API documents with new filestoreIds from Redux
+      const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
+        const fileStoreId = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid 
+          || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.filestoreId
+          || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
+        return {
+          ...doc,
+          uuid: fileStoreId || doc.uuid,
+          documentAttachment: fileStoreId || doc.documentAttachment,
+        };
       });
+      
+      // Find newly added documents that don't exist in API response
+      const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
+      
+      const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
+        return {
+          uuid: doc?.documentUid || doc?.uuid,
+          documentType: doc?.documentType,
+          documentAttachment: doc?.filestoreId || doc?.documentAttachment,
+        };
+      });
+      
+      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
+      console.log("[v0] EDIT MODE - overallDocs:", overallDocs);
+      
+      overallDocs.forEach((doc) => {
+        updatedApplication?.documents?.push({ ...doc });
+      });
+      
+    } else {
+      // NEW MODE: Use Redux documents directly (like CLU)
+      console.log("[v0] NEW MODE - docsArrayFromRedux:", docsArrayFromRedux);
+      
+      docsArrayFromRedux.forEach((doc) => {
+        updatedApplication.documents.push({
+          uuid: doc?.documentUid || doc?.uuid,
+          documentType: doc?.documentType,
+          documentAttachment: doc?.filestoreId || doc?.documentAttachment,
+        });
+      });
+    }
+
+    // Add documents for newly added owners (photo and ID proof)
+    const docFiles = layoutFormData?.documentUploadedFiles || {};
+    const photoFiles = layoutFormData?.photoUploadedFiles || {};
+    
+    // For newly added applicants, add their documents with proper document type keys
+    // The key in docFiles/photoFiles corresponds to the applicant index in applicantsFromRedux
+    newlyAddedApplicants.forEach((applicant, index) => {
+      const applicantIndex = applicantsFromRedux.indexOf(applicant);
+      const ownerIndex = ownersFromApi.length + index; // Position in final owners array
+      
+      // Add photo document
+      if (photoFiles[applicantIndex]?.fileStoreId) {
+        updatedApplication.documents.push({
+          documentType: ownerIndex === 0 ? "OWNER.OWNERPHOTO" : `OWNER.OWNERPHOTO_${ownerIndex}`,
+          documentAttachment: photoFiles[applicantIndex].fileStoreId,
+        });
+      }
+      
+      // Add ID proof document
+      if (docFiles[applicantIndex]?.fileStoreId) {
+        updatedApplication.documents.push({
+          documentType: ownerIndex === 0 ? "OWNER.OWNERVALIDID" : `OWNER.OWNERVALIDID_${ownerIndex}`,
+          documentAttachment: docFiles[applicantIndex].fileStoreId,
+        });
+      }
     });
+
+    console.log("[v0] final documents array:", updatedApplication.documents);
 
     const payload = {
       Layout: updatedApplication,

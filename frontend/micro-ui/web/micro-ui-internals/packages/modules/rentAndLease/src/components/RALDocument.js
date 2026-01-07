@@ -11,7 +11,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 
 function RALDocuments({ value = {}, Code, index }) {
   const { t } = useTranslation();
-  const { isLoading,  data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
+  const { isLoading, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
 
   const documents = value?.documents
     ? value.documents.documents
@@ -24,23 +24,21 @@ function RALDocuments({ value = {}, Code, index }) {
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
-      <React.Fragment>
-        {data?.pdfFiles && (
-          <div style={{ display: "flex", flexWrap: "wrap" }}>
-            {documents?.map((document, index) => {
-              let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
-              return (
-                <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
-                  <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                  {/* <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`NDC_${document?.documentType}_LABEL`)}</p> */}
-                </a>
-              );
-            })}
-          </div>
-        )}
-      </React.Fragment>
-    </div>
+    <React.Fragment>
+      {data?.pdfFiles && (
+        <div style={{ display: "flex", flexWrap: "wrap" }}>
+          {documents?.map((document, index) => {
+            let documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
+            return (
+              <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
+                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
+                {/* <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`NDC_${document?.documentType}_LABEL`)}</p> */}
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </React.Fragment>
   );
 }
 

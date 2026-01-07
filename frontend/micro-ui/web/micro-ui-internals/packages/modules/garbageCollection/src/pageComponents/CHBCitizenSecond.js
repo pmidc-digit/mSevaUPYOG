@@ -251,10 +251,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           {(propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) && (
             <div>
               {/* property type  */}
-              <div style={{ marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel>
                   {`${t("NDC_MSG_PROPERTY_TYPE_LABEL")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
+                <div className="form-field">
                 <Controller
                   control={control}
                   name={"propertyType"}
@@ -272,14 +273,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.propertyType && <p style={{ color: "red" }}>{errors.propertyType.message}</p>}
-              </div>
+                {errors?.propertyType && <p style={{ color: "red", marginTop: "4px" }}>{errors.propertyType.message}</p>}
+                </div>
+              </LabelFieldPair>
 
               {/* plot size */}
-              <div className="form-field" style={{ marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel>
                   {`${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
+                <div className="form-field">
                 <Controller
                   control={control}
                   name="plotSize"
@@ -297,14 +300,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.plotSize && <p style={{ color: "red" }}>{errors.plotSize.message}</p>}
-              </div>
+                {errors?.plotSize && <p style={{ color: "red", marginTop: "4px" }}>{errors.plotSize.message}</p>}
+                </div>
+              </LabelFieldPair>
 
               {/* location */}
-              <div className="form-field" style={{ marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel>
                   {`${t("GC_LOCATION")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
+                <div className="form-field">
                 <Controller
                   control={control}
                   name="location"
@@ -322,14 +327,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.location && <p style={{ color: "red" }}>{errors.location.message}</p>}
-              </div>
+                {errors?.location && <p style={{ color: "red", marginTop: "4px" }}>{errors.location.message}</p>}
+                </div>
+              </LabelFieldPair>
 
               {/* frequency type  */}
-              <div style={{ marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel>
                   {`${t("GC_FREQUENCY")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
+                <div className="form-field">
                 <Controller
                   control={control}
                   name={"frequency"}
@@ -347,14 +354,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.frequency && <p style={{ color: "red" }}>{errors.frequency.message}</p>}
-              </div>
+                {errors?.frequency && <p style={{ color: "red", marginTop: "4px" }}>{errors.frequency.message}</p>}
+                </div>
+              </LabelFieldPair>
 
               {/* waste type  */}
-              <div style={{ marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel>
                   {`${t("GC_WASTE_TYPE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
+                <div className="form-field">
                 <Controller
                   control={control}
                   name={"typeOfWaste"}
@@ -372,14 +381,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.typeOfWaste && <p style={{ color: "red" }}>{errors.typeOfWaste.message}</p>}
-              </div>
+                {errors?.typeOfWaste && <p style={{ color: "red", marginTop: "4px" }}>{errors.typeOfWaste.message}</p>}
+                </div>
+              </LabelFieldPair>
 
               {/* connectionCategory type  */}
-              <div style={{ marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel>
                   {`${t("GC_CONNECTION_TYPE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
+                <div className="form-field">
                 <Controller
                   control={control}
                   name={"connectionCategory"}
@@ -397,8 +408,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.connectionCategory && <p style={{ color: "red" }}>{errors.connectionCategory.message}</p>}
-              </div>
+                {errors?.connectionCategory && <p style={{ color: "red", marginTop: "4px" }}>{errors.connectionCategory.message}</p>}
+                </div>
+              </LabelFieldPair>
             </div>
           )}
         </div>

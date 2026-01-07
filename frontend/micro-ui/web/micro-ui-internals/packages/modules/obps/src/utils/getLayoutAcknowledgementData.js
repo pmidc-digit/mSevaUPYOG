@@ -316,8 +316,7 @@ const getDocuments = async (appData, t) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid)
 
             return {
-              title: t(document?.documentType || t("CS_NA")),
-              value: pdfDocumentName(documentLink, index) || t("CS_NA"),
+              title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")
             }
           })
         : {
@@ -330,12 +329,10 @@ const getDocuments = async (appData, t) => {
 export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, t) => {
   const stateCode = Digit.ULBService.getStateId()
   const appData = applicationDetails || {}
-
+ console.log('appData', appData)
   let detailsArr = [],
-    imageURL = ""
-  const ownerObj = appData?.documents?.find((doc) => doc?.documentType === "OWNER.OWNERPHOTO") || null
-  const ownerFileStoreId = ownerObj?.documentAttachment || ""
-
+  imageURL = ""
+  const ownerFileStoreId= appData?.layoutDetails?.additionalDetails?.applicationDetails?.primaryOwnerPhoto || "";
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode)
 
   const fileData = result?.data?.fileStoreIds?.[0]
@@ -343,6 +340,7 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
 
   if (appData?.layoutDetails?.additionalDetails?.applicationDetails?.professionalName)
     detailsArr.push(getProfessionalDetails(appData, t))
+  console.log('imageURL', imageURL)
 
   return {
     t: t,
@@ -359,7 +357,7 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
       getCoordinateDetails(appData, t),
-      getDocuments(appData, t),
+      await getDocuments(appData, t),
     ],
     imageURL,
     ulbType

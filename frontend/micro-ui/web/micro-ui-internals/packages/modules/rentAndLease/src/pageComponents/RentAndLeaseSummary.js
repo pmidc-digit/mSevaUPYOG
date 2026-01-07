@@ -43,7 +43,7 @@ function RentAndLeaseSummary({ t }) {
       <Card className="summary-section">
         <div>
           <div className="ral-summary-header-row">
-            <h3 className="ral-summary-heading">{t("ADS_APPLICANT_DETAILS")}</h3>
+            <h3 className="ral-summary-heading">{t("RAL_CITIZEN_DETAILS")}</h3>
           </div>
 
           {applicantDetails.length > 0 ? (

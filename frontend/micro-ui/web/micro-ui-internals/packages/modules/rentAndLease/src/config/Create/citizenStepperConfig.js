@@ -32,8 +32,6 @@ export const employeeConfig = [
     ],
   },
 
-  
-
   {
     head: "ES_TITILE_DOCUMENT_DETAILS",
     stepNumber: 3,
@@ -98,8 +96,6 @@ export const citizenConfig = [
       },
     ],
   },
-
-  
 
   {
     head: "ES_TITILE_DOCUMENT_DETAILS",

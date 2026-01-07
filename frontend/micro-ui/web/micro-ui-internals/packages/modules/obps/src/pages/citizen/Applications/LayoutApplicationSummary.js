@@ -30,6 +30,7 @@ import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
 import { amountToWords } from "../../../utils/index";
+import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -124,7 +125,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const state = Digit.ULBService.getStateId()
 
 // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
-  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId)
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
 
@@ -160,8 +161,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
     return null;
   };
 
-  console.log(applicationDetails,data, "DATALAYOUT")
+  console.log("=== LayoutApplicationSummary Debug ===")
+  console.log("Raw data from hook:", data)
+  console.log("applicationDetails (data?.resData):", applicationDetails)
+  console.log("Layout array:", applicationDetails?.Layout)
+  console.log("First Layout object:", applicationDetails?.Layout?.[0])
   console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
+  console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
+  console.log("=== End Debug ===")
   const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
@@ -182,7 +189,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
       const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, "", t);
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);
@@ -194,11 +201,18 @@ const [viewTimeline, setViewTimeline] = useState(false);
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
 
+    console.log("=== useEffect for displayData ===")
+    console.log("layoutObject:", layoutObject)
+    console.log("layoutObject?.documents:", layoutObject?.documents)
+
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
       const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
       const Documents = layoutObject?.documents || []
+
+      console.log("Documents array:", Documents)
+      console.log("Documents length:", Documents.length)
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -207,6 +221,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         Documents: Documents.length > 0 ? Documents : [],
       }
 
+      console.log("finalDisplayData:", finalDisplayData)
       setDisplayData(finalDisplayData)
     }
   }, [applicationDetails?.Layout])
@@ -510,8 +525,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
               <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
               <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
               <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
-              <Row label={t("OWNER_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
-              <Row label={t("OWNER_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
+              <Row label={t("Photo") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
+              <Row label={t("ID Proof") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
             </StatusTable>
           </div>
         ))}
@@ -552,7 +567,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
               <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
               <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
               <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_DATE")} value={detail?.professionalRegistrationValidity} />
+              <RenderRow label={t("Registration Date")} value={detail?.professionalRegistrationValidity} />
 
             </StatusTable>
           </div>
@@ -686,26 +701,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         )}
 
 
-      {workflowDetails?.data?.timeline && (
-        <Card id="timeline">
-          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-          {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-          ) : (
-            <ConnectingCheckPoints>
-              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                <CheckPoint
-                  key={index}
-                  keyValue={index}
-                  isCompleted={index === 0}
-                  label={t("LAYOUT_STATUS_" + checkpoint.status)}
-                  customChild={getTimelineCaptions(checkpoint, index, arr)}
-                />
-              ))}
-            </ConnectingCheckPoints>
-          )}
-        </Card>
-      )}
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions && actions.length > 0 && (
         <ActionBar>

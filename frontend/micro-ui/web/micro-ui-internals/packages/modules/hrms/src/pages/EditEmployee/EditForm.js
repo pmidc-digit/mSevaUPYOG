@@ -6,7 +6,6 @@ import { newConfig } from "../../components/config/config";
 import { convertEpochToDate } from "../../components/Utils";
 
 const EditForm = ({ tenantId, data }) => {
-  console.log('data in edit form', data)
   const { t } = useTranslation();
   const history = useHistory();
   const [canSubmit, setSubmitValve] = useState(false);
@@ -161,7 +160,14 @@ const EditForm = ({ tenantId, data }) => {
   };
 
   const onSubmit = (input) => {
-    if (input.Jurisdictions.filter(juris => juris.tenantId == tenantId && juris.isActive !== false).length == 0) {
+    const stateCode = tenantId.split('.')[0];
+    const hasValidJurisdiction = input.Jurisdictions.some(juris => {
+      const isActive = juris.isActive !== false;
+      const matchesState = juris.tenantId?.startsWith(stateCode + ".");
+      return isActive && matchesState;
+    });
+    
+    if (!hasValidJurisdiction) {
       setShowToast({ key: true, label: "ERR_BASE_TENANT_MANDATORY" });
       return;
     }
@@ -218,7 +224,7 @@ const EditForm = ({ tenantId, data }) => {
             body: config.body.filter((a) => !a.hideInEmployee),
           };
         })}
-        fieldStyle={{ marginRight: 0 }}
+        className="hrms-mr-0"
         onSubmit={onSubmit}
         defaultValues={defaultValues}
         onFormValueChange={onFormValueChange}

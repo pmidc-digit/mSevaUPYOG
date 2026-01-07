@@ -27,6 +27,7 @@ import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import NOCImageView from "../../../pageComponents/NOCImageView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -190,6 +191,8 @@ const NOCEmployeeApplicationOverview = () => {
        const coordinates = nocObject?.nocDetails?.additionalDetails?.coordinates;
 
       const Documents= nocObject?.documents || [];
+
+      const ownerPhotoList = nocObject?.nocDetails?.additionalDetails?.ownerPhotos || [];
       
       //console.log("applicantDetails",applicantDetails);
       //console.log("siteDetails", siteDetails);
@@ -198,7 +201,8 @@ const NOCEmployeeApplicationOverview = () => {
        applicantDetails: applicantDetails ? [applicantDetails] : [],
        siteDetails: siteDetails ? [siteDetails] : [],
        coordinates: coordinates ? [coordinates]: [],
-       Documents: Documents.length > 0 ? Documents: []
+       Documents: Documents.length > 0 ? Documents: [],
+       ownerPhotoList: ownerPhotoList
       };
 
       setDisplayData(finalDisplayData);
@@ -332,6 +336,12 @@ const getFloorLabel = (index) => {
   //   return <Loader />;
   // }
 
+  const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+  };
+
   console.log("displayData here", displayData);
 
   return (
@@ -339,6 +349,11 @@ const getFloorLabel = (index) => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div>
+
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <NOCImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      </Card>
 
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
       <React.Fragment>
@@ -350,7 +365,7 @@ const getFloorLabel = (index) => {
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
               <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
               <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.dateOfBirth || "N/A"} />
+              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
               <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
               <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />

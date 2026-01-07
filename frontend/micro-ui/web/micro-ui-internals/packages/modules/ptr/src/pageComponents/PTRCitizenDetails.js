@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   TextInput,
   CardLabel,
-  MobileNumber,
   TextArea,
   ActionBar,
   SubmitBar,
@@ -112,7 +111,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         {/* Mobile Number */}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} *</CardLabel>
-          <div className="form-field">
+          <div className="form-field" style={{ display: "flex", alignItems: "center" }}>
+            <div className="employee-card-input employee-card-input--front">+91</div>
             <Controller
               control={control}
               name="mobileNumber"
@@ -124,27 +124,27 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 },
               }}
               render={({ value, onChange, onBlur }) => (
-                <MobileNumber
+                <TextInput
                   value={value}
                   onChange={(e) => {
-                    onChange(e);
+                    onChange(e.target.value);
                     setValue("name", "");
                     // ✅ updates react-hook-form
-                    if (e.length === 10) {
-                      handleMobileChange(e); // 🔥 only then fire API
+                    if (e.target.value.length === 10) {
+                      handleMobileChange(e.target.value); // 🔥 only then fire API
                     }
                   }}
                   onBlur={(e) => {
                     onBlur(e);
-                    // trigger("mobileNumber");
+                    trigger("mobileNumber");
                   }}
                   t={t}
                 />
               )}
             />
           </div>
+          {errors.mobileNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("mobileNumber")}</CardLabelError>}
         </LabelFieldPair>
-        {errors.mobileNumber && <CardLabelError style={errorStyle}>{getErrorMessage("mobileNumber")}</CardLabelError>}
 
         {/* First Name */}
         <LabelFieldPair>
@@ -174,9 +174,9 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 />
               )}
             />
+            {errors.name && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("name")}</CardLabelError>}
           </div>
         </LabelFieldPair>
-        {errors.name && <CardLabelError style={errorStyle}>{getErrorMessage("name")}</CardLabelError>}
 
         {/* Email */}
         <LabelFieldPair>
@@ -205,9 +205,9 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 />
               )}
             />
+            {errors.emailId && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("emailId")}</CardLabelError>}
           </div>
         </LabelFieldPair>
-        {errors.emailId && <CardLabelError style={errorStyle}>{getErrorMessage("emailId")}</CardLabelError>}
 
         {/* Father/Husband Name */}
         <LabelFieldPair>
@@ -237,9 +237,9 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 />
               )}
             />
+            {errors.fatherOrHusbandName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
           </div>
         </LabelFieldPair>
-        {errors.fatherOrHusbandName && <CardLabelError style={errorStyle}>{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
 
         {/* Address */}
         <LabelFieldPair>
@@ -269,9 +269,9 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 />
               )}
             />
+            {errors.address && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("address")}</CardLabelError>}
           </div>
         </LabelFieldPair>
-        {errors.address && <CardLabelError style={errorStyle}>{getErrorMessage("address")}</CardLabelError>}
 
         {/* Pincode */}
         <LabelFieldPair>
@@ -300,9 +300,9 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 />
               )}
             />
+            {errors.pincode && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("pincode")}</CardLabelError>}
           </div>
         </LabelFieldPair>
-        {errors.pincode && <CardLabelError style={errorStyle}>{getErrorMessage("pincode")}</CardLabelError>}
 
         <ActionBar>
           <SubmitBar label={t("Next")} submit="submit" />

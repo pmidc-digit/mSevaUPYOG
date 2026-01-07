@@ -80,6 +80,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    width: 100%;
   }
 
   .card-label-error {
@@ -500,12 +501,6 @@ button.card-link.submit-bar {
         }
       } */
     }
-
-    .field-container {
-      span {
-       
-      }
-    }
   }
 }
 
@@ -628,3 +623,65 @@ button.card-link.submit-bar {
   width: 100%;
   margin: 0;
 }
+
+/* Employee side only - card-label and field widths (desktop only) */
+@media (min-width: 768px) {
+  .employee .employeeCard .label-field-pair {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .employee .employeeCard .card-label {
+    width: 30%;
+  }
+  .employee .employeeCard .field {
+    width: 50%;
+  }
+  .employee .employeeCard .form-field {
+    width: 50%;
+  }
+  
+  /* Error label - positioned below the input field (aligned with field, not label) */
+  /* Target error labels both inside and after label-field-pair */
+  .employee .employeeCard .label-field-pair .card-label-error,
+  .employee .employeeCard .label-field-pair + .card-label-error {
+    width: 50% !important;
+    margin-left: 50% !important;
+    margin-top: -10px !important;
+    margin-bottom: 8px !important;
+  }
+}
+
+/* Mobile - full width for labels and fields */
+@media (max-width: 767px) {
+  .employee .employeeCard .card-label,
+  .employee .employeeCard .field,
+  .employee .employeeCard .form-field {
+    width: 100%;
+  }
+  
+  .employee .employeeCard .label-field-pair {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  /* Error label - full width on mobile, positioned below field */
+  .employee .employeeCard .label-field-pair .card-label-error,
+  .employee .employeeCard .label-field-pair + .card-label-error {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 2px !important;
+    margin-bottom: 8px !important;
+  }
+}
+
+/* Login page - form-field full width (employeeCard with headerStyle login header) */
+.employeeCard .headerStyle + .card-label-desc ~ div .form-field,
+.employee-login-container .form-field,
+.employee-login-form .form-field,
+.employee-login-page .form-field {
+  width: 100% !important;
+}
+
+

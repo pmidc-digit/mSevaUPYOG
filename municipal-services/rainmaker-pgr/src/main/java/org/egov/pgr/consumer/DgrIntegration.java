@@ -198,7 +198,19 @@ public class DgrIntegration {
                     tenantIds,
                     "pb"
             );
-            String districtName = JsonPath.read(msevaDistrictByTenantid, "$.MdmsRes.tenant.tenants[0].city.districtName");
+         // 1. Get district from tenant MDMS (KEEP THIS)
+            String msevaDistrict = JsonPath.read(
+                msevaDistrictByTenantid,
+                "$.MdmsRes.tenant.tenants[0].city.districtName"
+            );
+
+            // 2. Match it in mapping JSON
+            String districtName = JsonPath.read(
+                msevaDistrictByTenantid,
+                "$.thirdpartydistrictmapping[0].districts[?(@.msevaname=='"
+                + msevaDistrict + "')].msevaname[0]"
+            );
+
 
             // 4. Get third-party mapping from MDMS
             Object thirdyPartyDistrictName = reportUtils.getDisrict(

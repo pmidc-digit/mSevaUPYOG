@@ -102,29 +102,30 @@ public class AllotmentValidator {
 		}
 		
 		String id = allotementRequest.getAllotment().get(0).getId();
-		if (id == null) {
-			Set<String> propertyIds=new HashSet<>();
-			propertyIds.add(propertyId);
-			Set<Status> status=new HashSet<>();
-			status.add(Status.APPROVED);
-			status.add(Status.REQUEST_FOR_DISCONNECTION);
-			AllotmentCriteria allotmentCriteria=AllotmentCriteria
-					.builder()
-					.status(status)
-					.propertyId(propertyIds)
-					.isExpaireFlag(false)
-					.tenantId(tenantId)
-					.currentDate(RLConstants.CURRENT_DATE)
-					.build();
-			
-			AllotmentDetails allotmentDetails = allotmentRepository
-					.getAllotmentSearch(allotmentCriteria)
-					.stream().findFirst().orElse(null);
-			if ((allotmentDetails != null)) {
-				throw new CustomException("PROPERTY ID INFO ERROR",
-						"PropertyID already existing , please provide another property Id information");
-			}
-		}
+//		if (id == null) {
+//			Set<String> propertyIds=new HashSet<>();
+//			propertyIds.add(propertyId);
+//			Set<Status> status=new HashSet<>();
+//			status.add(Status.APPROVED);
+//			status.add(Status.REQUEST_FOR_DISCONNECTION);
+//			AllotmentCriteria allotmentCriteria=AllotmentCriteria
+//					.builder()
+//					.status(status)
+//					.propertyId(propertyIds)
+//					.isExpaireFlag(false)
+//					.tenantId(tenantId)
+//					.currentDate(RLConstants.CURRENT_DATE)
+//					.build();
+//			
+//			AllotmentDetails allotmentDetails = allotmentRepository
+//					.getAllotmentSearch(allotmentCriteria)
+//					.stream().findFirst().orElse(null);
+//			if ((allotmentDetails != null)) {
+//				throw new CustomException("PROPERTY ID INFO ERROR",
+//						"PropertyID already existing , please provide another property Id information");
+//			}
+//		}
+		
 //		long uniqueAadharNumberSet = owners.stream().map(owner -> owner.getAadharCardNumber().trim()).distinct().count();
 //		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();
 //	    Set<String> uniquePanNumberSet = owners.stream()

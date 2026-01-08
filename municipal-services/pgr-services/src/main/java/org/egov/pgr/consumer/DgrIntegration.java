@@ -395,6 +395,7 @@ public class DgrIntegration {
         requestBody.put("Citizen_District_ID", districtId);
         requestBody.put("Citizen_Tehsil_ID", tehsilId);
         requestBody.put("Citizen_Village_ID", 0);
+        requestBody.put("Referrence_ID", serviceReqRequest.getService().getServiceRequestId());
         requestBody.put("Citizen_Municipality_ID", municipalityId);
         requestBody.put("Citizen_District", districtNameGgr);
         requestBody.put("Citizen_Tehsil", tehsilName);

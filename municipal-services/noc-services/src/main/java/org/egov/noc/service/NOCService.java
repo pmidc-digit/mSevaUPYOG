@@ -34,6 +34,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -88,7 +89,8 @@ public class NOCService {
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-			wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
+			String businessService = JsonPath.read(nocRequest.getNoc().getNocDetails().getAdditionalDetails(), "$.businessService");
+			wfIntegrator.callWorkFlow(nocRequest, businessService);
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
@@ -142,6 +144,7 @@ public class NOCService {
 		} else {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
+		String businessServiceName = JsonPath.read(additionalDetails, "$.businessService");
 		Noc searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
 		if (owners != null) {
@@ -154,10 +157,10 @@ public class NOCService {
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
-				wfIntegrator.callWorkFlow(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
-				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
+				wfIntegrator.callWorkFlow(nocRequest, businessServiceName);
+				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
+						nocRequest.getRequestInfo(), businessServiceName);
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
 				else
@@ -187,10 +190,10 @@ public class NOCService {
 					getCalculation(nocRequest);
 				}
 				
-				wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
-				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
+				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);
+				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
+						nocRequest.getRequestInfo(), businessServiceName);
 
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);

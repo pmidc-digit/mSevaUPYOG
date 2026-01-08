@@ -130,7 +130,7 @@ public class BPAValidator {
 							documentNs = docType;
 						}
 
-						addedDocTypes.add(documentNs);
+						addedDocTypes.add(docType);
 					});
 					requiredDocTypes.forEach(docType -> {
 						String docType1 = docType.toString();

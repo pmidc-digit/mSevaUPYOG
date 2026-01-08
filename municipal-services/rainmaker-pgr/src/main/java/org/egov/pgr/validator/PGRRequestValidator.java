@@ -143,12 +143,14 @@ public class PGRRequestValidator {
 				}
 			}
 			
-			if (serviceRequest.getServices().get(0).getAuditDetails().getCreatedTime() > 1767225599000L) {
+			if (serviceRequest.getServices().get(0).getAuditDetails().getCreatedTime() > 1767225599000L && serviceRequest.getServices().get(0).getSource() != SourceEnum.IVR ) {
 			    // Add existing invalid createdTime error
 
 			    // Add custom error for DGR PGR Service
-			    errorMap.put("ACTION_NOT_ALLOWED_CODE", 
-			                 "Action cannot be performed for this request. Please resolve on DGR PGR Service.");
+			  errorMap.put(
+							    "ACTION_NOT_ALLOWED_CODE",
+							    "Action cannot be performed on mSeva. Please assign or resolve the above grievance on https://connect.punjab.gov.in/ portal."
+							);
 			}
 
 

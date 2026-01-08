@@ -55,9 +55,10 @@ export const TableConfig = (t) => ({
       {
         Header: t("BOOKING_STATUS"),
         Cell: ({ row }) => {
-          return GetCell(t(`${row?.original?.searchData?.["bookingStatus"]}` || `${row?.original?.workflowData?.state?.["applicationStatus"]}` ));
+          return GetCell(t(`${row?.original?.searchData?.["bookingStatus"]}` || `${row?.original?.workflowData?.state?.["applicationStatus"]}`));
         },
-        mobileCell: (original) => GetMobCell(t(`ES_ADS_COMMON_STATUS_${original?.searchData?.["bookingStatus"] || original?.workflowData?.state?.["applicationStatus"]}`)),
+        mobileCell: (original) =>
+          GetMobCell(t(`ES_ADS_COMMON_STATUS_${original?.searchData?.["bookingStatus"] || original?.workflowData?.state?.["applicationStatus"]}`)),
       },
 
       {
@@ -74,6 +75,6 @@ export const TableConfig = (t) => ({
         },
       },
     ],
-    serviceRequestIdKey: (original) => original?.[t("ADS_INBOX_UNIQUE_BOOKING_NUMBER")]?.props?.children,
+    serviceRequestIdKey: (original) => original?.[t("ADS_BOOKING_NO")]?.props?.children,
   },
 });

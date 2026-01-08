@@ -319,11 +319,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         onBackClick={onGoBack}
       />
       <ActionBar>
-        <SubmitBar
-          label={t("CS_COMMON_BACK")}
-          onSubmit={() => onGoBack(currentStepData)}
-          style={{ backgroundColor: "white", color: "#2947a3", border: "1px solid", marginRight: "10px" }}
-        />
+        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={() => onGoBack(currentStepData)} />
 
         {displayMenu && actions && actions.length > 0 ? (
           // <Menu options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />

@@ -106,7 +106,9 @@ const ADSDocumentDetails = ({
       if (!isRequired && doc.required) count = count + 1;
     });
     if ((count == "0" || count == 0) && documents.length > 0) setEnableSubmit(false);
-    else setEnableSubmit(true);
+    else {
+      setEnableSubmit(true);
+    }
   }, [documents, checkRequiredFields]);
 
   return (
@@ -310,6 +312,8 @@ function ADSSelectDocument({
             buttonType="button"
             error={!uploadedFile}
           />
+          {/* Inline file validation error */}
+          {!uploadedFile && <CardLabelError className="ral-error-label">{t("CS_FILE_REQUIRED")}</CardLabelError>}
         </div>
       </LabelFieldPair>
     </div>

@@ -61,6 +61,22 @@ function RentAndLeaseSummary({ t }) {
                 {renderRow(t("CORE_COMMON_EMAIL_ID"), applicant?.emailId)}
                 {renderRow(t("ADDRESS"), applicant?.address)}
                 {renderRow(t("CORE_COMMON_PINCODE"), applicant?.pincode)}
+                {applicant?.panDocument && (
+                  <div className="ral-summary-row">
+                    <div className="ral-summary-label">{t("RAL_PAN_DOCUMENT")}</div>
+                    <div className="ral-summary-doc-card">
+                      <RALDocuments value={{ documents: { documents: [applicant.panDocument] } }} Code="PAN" index={0} />
+                    </div>
+                  </div>
+                )}
+                {applicant?.aadhaarDocument && (
+                  <div className="ral-summary-row">
+                    <div className="ral-summary-label">{t("RAL_AADHAAR_DOCUMENT")}</div>
+                    <div className="ral-summary-doc-card">
+                      <RALDocuments value={{ documents: { documents: [applicant.aadhaarDocument] } }} Code="AADHAAR" index={0} />
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           ) : (

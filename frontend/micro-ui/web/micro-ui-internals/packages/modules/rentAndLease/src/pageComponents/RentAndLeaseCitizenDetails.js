@@ -12,6 +12,8 @@ import {
   LabelFieldPair,
   CardSectionHeader,
   Dropdown,
+  UploadFile,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../redux/action/RentAndLeaseNewApplicationActions";
 
@@ -79,6 +81,10 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           name: a?.name,
           mobileNo: a?.mobileNumber,
           emailId: a?.emailId,
+          additionalDetails: {
+            panDocument: a?.panDocument,
+            aadhaarDocument: a?.aadhaarDocument,
+          },
           correspondenceAddress: {
             pinCode: a?.pincode,
             city: a?.city || "",
@@ -183,7 +189,15 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     if (ownershipType === "SINGLE") {
       // ensure exactly one applicant
       if (fields.length === 0) {
-        append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" });
+        append({
+          mobileNumber: "",
+          emailId: "",
+          name: "",
+          address: "",
+          pincode: "",
+          panDocument: null,
+          aadhaarDocument: null,
+        });
       } else if (fields.length > 1) {
         reset({ ownershipType: "SINGLE", applicants: [fields[0]] });
       }
@@ -195,8 +209,24 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         reset({
           ownershipType: "MULTIPLE",
           applicants: [
-            { mobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
-            { mobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
+            {
+              mobileNumber: "",
+              emailId: "",
+              name: "",
+              address: "",
+              pincode: "",
+              panDocument: null,
+              aadhaarDocument: null,
+            },
+            {
+              mobileNumber: "",
+              emailId: "",
+              name: "",
+              address: "",
+              pincode: "",
+              panDocument: null,
+              aadhaarDocument: null,
+            },
           ],
         });
       }
@@ -238,6 +268,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           )}
         />
       </LabelFieldPair>
+      {errors?.ownershipType && <CardLabelError className="ral-error-label">{errors.ownershipType.message}</CardLabelError>}
       {watch("ownershipType") &&
         fields?.map((field, index) => (
           <div key={field?.id} className="ral-applicant-container">
@@ -395,6 +426,100 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
               </div>
             </LabelFieldPair>
             {getErrorMessage("pincode", index) && <CardLabelError className="ral-error-label">{getErrorMessage("pincode", index)}</CardLabelError>}
+
+            {getErrorMessage("pincode", index) && <CardLabelError className="ral-error-label">{getErrorMessage("pincode", index)}</CardLabelError>}
+
+            {/* PAN Document */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {t("RAL_PAN_DOCUMENT")} <span className="mandatory-asterisk">*</span>
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={`applicants.${index}.panDocument`}
+                  rules={{ required: t("RAL_PAN_DOC_REQUIRED") }}
+                  render={({ value, onChange }) => (
+                    <UploadFile
+                      onUpload={async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          triggerLoader(true);
+                          try {
+                            const response = await Digit.UploadServices.Filestorage("RAL", file, Digit.ULBService.getStateId());
+                            if (response?.data?.files?.length > 0) {
+                              onChange({
+                                fileStoreId: response.data.files[0].fileStoreId,
+                                fileName: file.name,
+                                documentType: "PAN",
+                              });
+                            }
+                          } catch (err) {
+                            triggerToast(t("FILE_UPLOAD_FAILED"), true);
+                          } finally {
+                            triggerLoader(false);
+                          }
+                        }
+                      }}
+                      onDelete={() => onChange(null)}
+                      message={value ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("CS_ACTION_NO_FILEUPLOADED")}
+                      accept=".pdf, .jpeg, .jpg, .png"
+                      buttonType="button"
+                      error={errors?.applicants?.[index]?.panDocument}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.applicants?.[index]?.panDocument && (
+              <CardLabelError className="ral-error-label">{errors.applicants[index].panDocument.message}</CardLabelError>
+            )}
+
+            {/* Aadhaar Document */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {t("RAL_AADHAAR_DOCUMENT")} <span className="mandatory-asterisk">*</span>
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={`applicants.${index}.aadhaarDocument`}
+                  rules={{ required: t("RAL_AADHAAR_DOC_REQUIRED") }}
+                  render={({ value, onChange }) => (
+                    <UploadFile
+                      onUpload={async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          triggerLoader(true);
+                          try {
+                            const response = await Digit.UploadServices.Filestorage("RAL", file, Digit.ULBService.getStateId());
+                            if (response?.data?.files?.length > 0) {
+                              onChange({
+                                fileStoreId: response.data.files[0].fileStoreId,
+                                fileName: file.name,
+                                documentType: "AADHAAR",
+                              });
+                            }
+                          } catch (err) {
+                            triggerToast(t("FILE_UPLOAD_FAILED"), true);
+                          } finally {
+                            triggerLoader(false);
+                          }
+                        }
+                      }}
+                      onDelete={() => onChange(null)}
+                      message={value ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("CS_ACTION_NO_FILEUPLOADED")}
+                      accept=".pdf, .jpeg, .jpg, .png"
+                      buttonType="button"
+                      error={errors?.applicants?.[index]?.aadhaarDocument}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.applicants?.[index]?.aadhaarDocument && (
+              <CardLabelError className="ral-error-label">{errors.applicants[index].aadhaarDocument.message}</CardLabelError>
+            )}
           </div>
         ))}
 
@@ -404,7 +529,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           <SubmitBar
             label={<span>➕{t("RAL_ADD_APPLICANT")}</span>}
             className="ral-add-applicant-btn"
-            onSubmit={() => append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
+            onSubmit={() => append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "", panDocument: null, aadhaarDocument: null })}
           />
         </div>
       )}

@@ -239,6 +239,8 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
               emailId: owner?.emailId,
               pincode: owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode,
               address: owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || "",
+              panDocument: owner?.additionalDetails?.panDocument || null,
+              aadhaarDocument: owner?.additionalDetails?.aadhaarDocument || null,
             }));
 
             const ownershipType = applicants.length > 1 ? "MULTIPLE" : "SINGLE";

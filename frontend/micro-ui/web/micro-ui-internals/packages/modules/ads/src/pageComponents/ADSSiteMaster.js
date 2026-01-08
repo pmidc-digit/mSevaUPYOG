@@ -35,8 +35,6 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
     advertisementType: "",
     // startDate: "",
     // endDate: "",
-    // bookingFromTime: nowHM,
-    // bookingToTime: nowHM,
     availabilityStatus: "", // will hold selected option (object or code)
     gstApplicable: false, // boolean
     cowCessApplicable: false, // boolean
@@ -65,8 +63,6 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
     reset({
       ...initialFormDefaults,
       ...ad,
-      bookingFromTime: ad.bookingFromTime || nowHM,
-      bookingToTime: ad.bookingToTime || nowHM,
     });
     setEditingIndex(idx);
     setPlaceNameState(ad.geoLocation?.formattedAddress || "");
@@ -116,14 +112,12 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
       reset({
         ...initialFormDefaults,
         ...ad,
-        bookingFromTime: ad.bookingFromTime || nowHM,
-        bookingToTime: ad.bookingToTime || nowHM,
       });
       setEditingIndex(idx);
       setPlaceNameState(ad.geoLocation?.formattedAddress || "");
     };
     // reset form and restore time defaults
-    reset({ ...initialFormDefaults, bookingFromTime: nowHM, bookingToTime: nowHM });
+    reset({ ...initialFormDefaults });
     setPlaceNameState("");
   });
 
@@ -132,7 +126,7 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
     // if the currently edited item was removed, clear editing state & reset form
     if (editingIndex === idx) {
       setEditingIndex(null);
-      reset({ ...initialFormDefaults, bookingFromTime: nowHM, bookingToTime: nowHM });
+      reset({ ...initialFormDefaults });
       setPlaceNameState("");
     } else if (editingIndex !== null && editingIndex > idx) {
       // if we removed an earlier item, shift editing index left by one
@@ -181,8 +175,8 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
         addType: d.advertisementType?.code || d.advertisementType,
         bookingDate: d.startDate,
         endDate: d.endDate,
-        bookingFromTime: d.bookingFromTime,
-        bookingToTime: d.bookingToTime,
+        bookingFromTime: "06:00",
+        bookingToTime: "05:59",
         advertisementId: d.siteId || "",
         cartId: d.siteId || "",
         cartAddress: d.cartAddress || "",
@@ -202,7 +196,6 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
       },
     };
 
-
     // build a flat siteDetails object that matches your form field names
 
     dispatch(UPDATE_ADSNewApplication_FORM("applicantDetail", formData.applicantDetail));
@@ -214,23 +207,17 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
     // dispatch(UPDATE_ADSNewApplication_FORM("bookingId", data.bookingId));
     // dispatch(UPDATE_ADSNewApplication_FORM("mode_payment", data.mode_payment));
 
-    dispatch(UPDATE_ADSNewApplication_FORM("bookingFromTime", data.bookingFromTime));
-    dispatch(UPDATE_ADSNewApplication_FORM("bookingToTime", data.bookingToTime));
-
     const fallbackData = {
       draft: true,
       bookingApplication: formData,
     };
-
 
     try {
       const payload = {
         bookingApplication: formData,
       };
 
-
       const response = await Digit.ADSServices.create(payload, tenantId);
-
 
       const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
@@ -241,7 +228,7 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
         setAdsList([]);
         setEditingIndex(null);
-        reset({ ...initialFormDefaults, bookingFromTime: nowHM, bookingToTime: nowHM });
+        reset({ ...initialFormDefaults });
         goNext(response);
       } else {
         console.error("ADS create failed:", response);
@@ -257,14 +244,11 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   useEffect(() => {
-
     const formattedData = currentStepData?.siteDetails || currentStepData;
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
-      if (!formattedData.bookingFromTime) setValue("bookingFromTime", nowHM);
-      if (!formattedData.bookingToTime) setValue("bookingToTime", nowHM);
     }
   }, [currentStepData, setValue]);
 

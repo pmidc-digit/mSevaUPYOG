@@ -380,10 +380,17 @@ public class DgrIntegration {
 
 
        // User userInfo = serviceReqRequest.getRequestInfo() != null ? serviceReqRequest.getRequestInfo().getUserInfo() : null;
+        String citizenName =
+        	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+        	              userInfo != null ? userInfo.getName() : null);
 
-        String citizenName = safeValue(userInfo != null ? userInfo.getName() : null, constants.DEFAULT_CITIZEN_NAME);
-        String citizenEmail = safeValue(userInfo != null ? userInfo.getEmailId() : null, constants.DEFAULT_CITIZEN_EMAIL);
-        String citizenMobile = safeValue(userInfo != null ? userInfo.getMobileNumber() : null, constants.DEFAULT_CITIZEN_MOBILE);
+        	String citizenEmail =
+        	    safeValue(constants.DEFAULT_CITIZEN_EMAIL,
+        	              userInfo != null ? userInfo.getEmailId() : null);
+
+        	String citizenMobile =
+        	    safeValue(constants.DEFAULT_CITIZEN_MOBILE,
+        	              userInfo != null ? userInfo.getMobileNumber() : null);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("Referrence_ID", serviceReqRequest.getService().getServiceRequestId());
@@ -409,8 +416,17 @@ public class DgrIntegration {
         requestBody.put("Application_District_Name", districtNameGgr);
         requestBody.put("Category_ID", catSubCat.getOrDefault("Category_ID", "0"));
         requestBody.put("Sub_Category_ID", catSubCat.getOrDefault("Sub_Category_ID", "0"));
-        requestBody.put("Application_Title", safeValue(serviceReqRequest.getService().getDescription(), constants.DEFAULT_CITIZEN_NAME));
-        requestBody.put("Application_Description", safeValue(serviceReqRequest.getService().getDescription(), constants.DEFAULT_CITIZEN_NAME));
+        requestBody.put(
+        	    "Application_Title",
+        	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+        	              serviceReqRequest.getService().getDescription())
+        	);
+
+        	requestBody.put(
+        	    "Application_Description",
+        	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+        	              serviceReqRequest.getService().getDescription())
+        	);
         requestBody.put("Application_Department_Name", constants.DEPARTMENT_NAME);
         requestBody.put("reopen", true);
         requestBody.put("Citizen_Type", constants.CITIZEN_TYPE);

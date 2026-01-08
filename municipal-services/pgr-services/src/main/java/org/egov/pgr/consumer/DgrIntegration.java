@@ -82,6 +82,7 @@ public class DgrIntegration {
     @Autowired
     private PGRConstants constants;
     
+    @Autowired
     private Producer producer;
 
     /* =========================

@@ -54,6 +54,7 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
 
   useEffect(() => {
     if (apiDataCheck && ndcReasonOptions?.length > 0) {
+      console.log("check apiDataCheck", apiDataCheck);
       // find the matching option from MDMS
       const matchedOption = ndcReasonOptions.find((opt) => opt?.code === apiDataCheck?.[0]?.reason);
       if (matchedOption) {

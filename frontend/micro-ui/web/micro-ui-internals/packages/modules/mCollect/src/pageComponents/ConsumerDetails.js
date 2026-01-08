@@ -154,12 +154,11 @@ const OwnerForm1 = (_props) => {
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
     <React.Fragment>
-      <div>
-        <div>
+
           <CardSectionHeader>{t("CONSUMERDETAILS")}</CardSectionHeader>
           <LabelFieldPair>
             <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_CONS_NAME_LABEL")} * `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"ConsumerName"}
@@ -190,7 +189,7 @@ const OwnerForm1 = (_props) => {
           <CardLabelError style={errorStyle}>{localFormState.touched.ConsumerName ? errors?.ConsumerName?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel style={{ paddingTop: "10px" }} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")}`}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"mobileNumber"}
@@ -237,8 +236,7 @@ const OwnerForm1 = (_props) => {
             />
             </div>
             </LabelFieldPair>   */}
-        </div>
-      </div>
+
     </React.Fragment>
   );
 };

@@ -61,60 +61,71 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{ display: "grid" }}>
-              <span className="complaint-input">
-                <Label>{t("CS_COMMON_COMPLAINT_NO")}.</Label>
-                <TextInput
-                  // {...register("serviceRequestId", {
-                  //   pattern: {
-                  //     value: /(?!^$)([^\s])/,
-                  //     message: t("INVALID_COMPLAINT_NO"),
-                  //   },
-                  // })}
-                  // style={{ marginBottom: "8px" }}
-                  name="serviceRequestId"
-                  placeholder="Complaint No."
-                  // value={complaintNo}
-                  // onChange={setComplaint}
-                  inputRef={register({
-                    pattern: /(?!^$)([^\s])/,
-                  })}
-                  style={{ marginBottom: "8px" }}
-                />
-                {errors.serviceRequestId && <p style={{ color: "red", fontSize: "12px" }}>{errors.serviceRequestId.message}</p>}
-              </span>
-              <span className="mobile-input">
-                <Label>{t("CS_COMMON_MOBILE_NO")}.</Label>
-                <TextInput
-                  // {...register("mobileNumber", {
-                  //   pattern: {
-                  //     value: /^[6-9]\d{9}$/,
-                  //     message: t("INVALID_MOBILE_NO"),
-                  //   },
-                  // })}
-                  name="mobileNumber"
-                  placeholder="Mobile No."
-                  // value={mobileNo}
-                  // onChange={setMobile}
-                  inputRef={register({
-                    pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: "Invalid mobile number",
-                    },
-                  })}
-                />
-                {errors.mobileNumber && <p style={{ color: "red", fontSize: "12px" }}>{errors.mobileNumber.message}</p>}
-              </span>
+            <div className="complaint-input-container" style={{ textAlign: "start" }}>
+              <div className="input-fields">
+                <span className="complaint-input">
+                  <h4 className="h4">{t("CS_COMMON_COMPLAINT_NO")}.</h4>
+                  <div className="text-input  undefined">
+                    <TextInput
+                      // {...register("serviceRequestId", {
+                      //   pattern: {
+                      //     value: /(?!^$)([^\s])/,
+                      //     message: t("INVALID_COMPLAINT_NO"),
+                      //   },
+                      // })}
+                      // style={{ marginBottom: "8px" }}
+                      name="serviceRequestId"
+                      placeholder="Complaint No."
+                      // value={complaintNo}
+                      // onChange={setComplaint}
+                      inputRef={register({
+                        pattern: /(?!^$)([^\s])/,
+                      })}
+                      style={{ marginBottom: "8px" }}
+                    />
+                  </div>
+                  {errors.serviceRequestId && <p style={{ color: "red", fontSize: "12px" }}>{errors.serviceRequestId.message}</p>}
+                </span>
+              </div>
+              <div className="input-fields">
+                <span className="complaint-input">
+                  <h4 className="h4">{t("CS_COMMON_MOBILE_NO")}.</h4>
+                  <div className="text-input  undefined">
+                    <TextInput
+                      // {...register("mobileNumber", {
+                      //   pattern: {
+                      //     value: /^[6-9]\d{9}$/,
+                      //     message: t("INVALID_MOBILE_NO"),
+                      //   },
+                      // })}
+                      name="mobileNumber"
+                      placeholder="Mobile No."
+                      // value={mobileNo}
+                      // onChange={setMobile}
+                      inputRef={register({
+                        pattern: {
+                          value: /^[6-9]\d{9}$/,
+                          message: "Invalid mobile number",
+                        },
+                      })}
+                    />
+                  </div>
+                  {errors.mobileNumber && <p style={{ color: "red", fontSize: "12px" }}>{errors.mobileNumber.message}</p>}
+                </span>
+              </div>
               {type === "desktop" && (
-                <SubmitBar
-                  style={{ marginTop: 32, marginLeft: "16px", width: "calc( 100% - 16px )" }}
-                  label={t("ES_COMMON_SEARCH")}
-                  submit={true}
-                  // disabled={Object.keys(errors).filter((i) => errors[i]).length}
-                />
+                <div className="search-action-wrapper" style={{ width: "100%" }}>
+                  <SubmitBar
+                    className="submit-bar-search"
+                    label={t("ES_COMMON_SEARCH")}
+                    submit={true}
+                    // disabled={Object.keys(errors).filter((i) => errors[i]).length}
+                  />
+                  <span className="clear-search" style={{ paddingTop: "9px" }}>
+                    {clearAll()}
+                  </span>
+                </div>
               )}
-            </div>
-            {type === "desktop" && <span className="clear-search">{clearAll()}</span>}
           </div>
         </div>
         {type === "mobile" && (
@@ -122,7 +133,9 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
             <SubmitBar label="Search" submit={true} />
           </ActionBar>
         )}
+          </div>
       </React.Fragment>
+    
     </form>
   );
 };

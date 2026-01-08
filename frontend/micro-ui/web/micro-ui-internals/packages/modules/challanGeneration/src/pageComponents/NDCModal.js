@@ -99,6 +99,7 @@ const NDCModal = ({ t, action, closeModal, submitAction, showErrorToast, errorOn
 
   return (
     <Modal
+       className="BPAemployeeCard bpa-workflow-modal-form"
       headerBarMain={<Heading label={t(config.label.heading)} />}
       headerBarEnd={<CloseBtn onClick={closeModal} />}
       actionCancelLabel={t(config.label.cancel)}

@@ -207,47 +207,49 @@ const [ulbValue,setUlbValue]=useState("")
                 </span>
               </div>
             )}
-            <div className="complaint-input-container group-complaint-input-container " style={{ width: "100%" }}>
+            <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
                   <div key={input.name} className="input-fields">
-                    <span className={"mobile-input"}>
-                      <Label>{t(input.label)}</Label>
-                      {!input.type ? (
-                        <Controller
-                          render={(props) => {
+                    <span className={"complaint-input"}>
+                      <h4 className="h4">{t(input.label)}</h4>
+                      <div className="text-input  undefined">
+                        {!input.type ? (
+                          <Controller
+                            render={(props) => {
 
-                            return (
-                              <div className="field-container">
-                                {input?.componentInFront ? (
-                                  <span className="employee-card-input employee-card-input--front" style={{ flex: "none" }}>
-                                    {input?.componentInFront}
-                                  </span>
-                                ) : null}
-                                <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
-                              </div>
-                            );
-                          }}
-                          name={input.name}
-                          control={control}
-                          defaultValue={""}
-                        />
-                      ) : (
-                        <Controller
-                          render={(props) => {
+                              return (
+                                <div className="field-container">
+                                  {input?.componentInFront ? (
+                                    <span className="employee-card-input employee-card-input--front" style={{ flex: "none" }}>
+                                      {input?.componentInFront}
+                                    </span>
+                                  ) : null}
+                                  <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
+                                </div>
+                              );
+                            }}
+                            name={input.name}
+                            control={control}
+                            defaultValue={""}
+                          />
+                        ) : (
+                          <Controller
+                            render={(props) => {
 
-                            const Comp = fieldComponents?.[input.type];
-                            if (input.type === 'dropdown') {
-                              return <Comp option={input.option} optionKey={"name"} value={input?.defaultValue || props.value} selected={input.selected} select={input.select} t={t} defaultValue={input.defaultValue} onChange={props.onChange}/>
-                            }
-                            return <Comp onChange={props.onChange} value={props.value} />;
-                          }}
-                          name={input.name}
-                          control={control}
-                          defaultValue={input?.defaultValue}
-                        />
-                      )}
+                              const Comp = fieldComponents?.[input.type];
+                              if (input.type === 'dropdown') {
+                                return <Comp option={input.option} optionKey={"name"} value={input?.defaultValue || props.value} selected={input.selected} select={input.select} t={t} defaultValue={input.defaultValue} onChange={props.onChange}/>
+                              }
+                              return <Comp onChange={props.onChange} value={props.value} />;
+                            }}
+                            name={input.name}
+                            control={control}
+                            defaultValue={input?.defaultValue}
+                          />
+                        )}
+                      </div>
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
                       <span
@@ -288,12 +290,7 @@ const [ulbValue,setUlbValue]=useState("")
 
             </div>
             {isInboxPage && (
-              <div className="inbox-action-container">
-                {type === "desktop" && !mobileView && (
-                  <span style={{ paddingTop: "9px" }} className="clear-search">
-                    {clearAll()}
-                  </span>
-                )}
+              <div className="search-action-wrapper" style={{width: "100%"}}>
                 {type === "desktop" && !mobileView && (
                   <SubmitBar
                     style={{ marginTop: "unset" }}
@@ -302,6 +299,11 @@ const [ulbValue,setUlbValue]=useState("")
                     label={t("ABG_SEARCH_BUTTON")}
                     submit
                   />
+                )}
+                {type === "desktop" && !mobileView && (
+                  <span style={{ paddingTop: "9px" }} className="clear-search">
+                    {clearAll()}
+                  </span>
                 )}
               </div>
             )}
@@ -320,5 +322,6 @@ const [ulbValue,setUlbValue]=useState("")
     </React.Fragment>
   );
 };
+
 
 export default SearchApplication;

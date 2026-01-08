@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-mcollect",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "license": "MIT",
   "description": "Digit Misc Collections Module",
   "main": "dist/index.js",

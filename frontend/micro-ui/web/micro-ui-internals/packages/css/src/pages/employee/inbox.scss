@@ -307,6 +307,7 @@
           /* display: inline-block !important; */
           display: grid !important;
           grid-template-columns: 33.33% 33.33% 33.33%;
+          width:100% !important;
 
           &.for-pt {
             &.for-search {

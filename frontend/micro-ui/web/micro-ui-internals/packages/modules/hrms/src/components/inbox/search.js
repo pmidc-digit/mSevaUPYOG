@@ -56,49 +56,66 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{ width: "100%" }}>
+            <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
                   <div key={input.name} className="input-fields">
-                    <span className={"mobile-input"}>
-                      <Label>{input.label}</Label>
-                      {input.type !== "date" ? (
-                        <div className="field-container">
-                          {input?.componentInFront ? (
-                            <span className="employee-card-input employee-card-input--front">
-                              {input?.componentInFront}
-                            </span>
-                          ) : null}
-                          <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
-                        </div>
-                      ) : (
-                        <Controller
-                          render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
-                          name={input.name}
-                          control={control}
-                          defaultValue={null}
-                        />
-                      )}{" "}
+                    <span className={"complaint-input"}>
+                      <h4 className="h4">{input.label}</h4>
+                      <div className="text-input  undefined">
+                        {input.type !== "date" ? (
+                          <div className="field-container">
+                            {input?.componentInFront ? (
+                              <span className="employee-card-input employee-card-input--front">
+                                {input?.componentInFront}
+                              </span>
+                            ) : null}
+                            <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
+                          </div>
+                        ) : (
+                          <Controller
+                            render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
+                            name={input.name}
+                            control={control}
+                            defaultValue={null}
+                          />
+                        )}
+                      </div>
                     </span>
                   </div>
                 ))}
             </div>
-            <div className="inbox-action-container">
-              {type === "desktop" && !mobileView && (
-                <span style={{ paddingTop: "9px" }} className="clear-search">
-                  {clearAll()}
-                </span>
-              )}
-              {type === "desktop" && !mobileView && (
+            {isInboxPage && (
+              <div className="search-action-wrapper" style={{width: "100%"}}>
+                {type === "desktop" && !mobileView && (
+                  <SubmitBar
+                    style={{ marginTop: "unset" }}
+                    className="submit-bar-search"
+                    label={t("ES_COMMON_SEARCH")}
+                    submit
+                  />
+                )}
+                {type === "desktop" && !mobileView && (
+                  <span style={{ paddingTop: "9px" }} className="clear-search">
+                    {clearAll()}
+                  </span>
+                )}
+              </div>
+            )}
+            {type === "desktop" && !mobileView && !isInboxPage && (
+              <div className="search-action-wrapper">
                 <SubmitBar
                   style={{ marginTop: "unset" }}
                   className="submit-bar-search"
                   label={t("ES_COMMON_SEARCH")}
                   submit
                 />
-              )}
-            </div>
+                <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  {clearAll()}
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

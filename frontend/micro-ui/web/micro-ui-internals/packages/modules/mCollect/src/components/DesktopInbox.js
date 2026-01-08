@@ -73,28 +73,28 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       },
       mobileCell: (original) => GetMobCell(`BILLINGSERVICE_BUSINESSSERVICE_${original?.["businessService"]}`),
     },
-    {
-      Header: t("UC_RECEPIT_NO_LABEL"),
-      Cell: ({ row }) => {
-        return row.original?.["receiptNumber"] ? GetCell(`${row.original?.["receiptNumber"]}`) : "-";
-      },
-      mobileCell: (original) => GetMobCell(original?.["receiptNumber"]) || "-",
-    },
-    {
-      Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
-      Cell: ({ row }) => {
-        const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
-        return GetCell(t(`${dueDate}`));
-      },
-      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
-    },
-    {
-      Header: t("UC_COMMON_TOTAL_AMT"),
-      Cell: ({ row }) => {
-        return GetCell(t(`${row.original?.totalAmount}`));
-      },
-      mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
-    },
+    // {
+    //   Header: t("UC_RECEPIT_NO_LABEL"),
+    //   Cell: ({ row }) => {
+    //     return row.original?.["receiptNumber"] ? GetCell(`${row.original?.["receiptNumber"]}`) : "-";
+    //   },
+    //   mobileCell: (original) => GetMobCell(original?.["receiptNumber"]) || "-",
+    // },
+    // {
+    //   Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
+    //   Cell: ({ row }) => {
+    //     const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
+    //     return GetCell(t(`${dueDate}`));
+    //   },
+    //   mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
+    // },
+    // {
+    //   Header: t("UC_COMMON_TOTAL_AMT"),
+    //   Cell: ({ row }) => {
+    //     return GetCell(t(`${row.original?.totalAmount}`));
+    //   },
+    //   mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
+    // },
     {
       Header: t("UC_COMMON_TABLE_COL_STATUS"),
       Cell: ({ row }) => {
@@ -103,38 +103,38 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       },
       mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
     },
-    {
-      Header: t("WS_COMMON_TABLE_COL_ACTION"),
-      Cell: ({ row }) => {
-        const amount = row.original?.totalAmount;
-        let action = "ACTIVE";
-        if (amount > 0) action = "COLLECT";
-        if (action == "COLLECT") {
-          return (
-            <div>
-              <span className="link">
-                <Link
-                  to={{
-                    pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
-                  }}
-                >
-                  {t(`UC_${action}`)}
-                </Link>
-              </span>
-            </div>
-          );
-        } else if (row.original?.applicationStatus == "PAID") {
-          return (
-            <div>
-              <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
-            </div>
-          );
-        } else {
-          return GetCell(t(`${"CS_NA"}`));
-        }
-      },
-      mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
-    },
+    // {
+    //   Header: t("WS_COMMON_TABLE_COL_ACTION"),
+    //   Cell: ({ row }) => {
+    //     const amount = row.original?.totalAmount;
+    //     let action = "ACTIVE";
+    //     if (amount > 0) action = "COLLECT";
+    //     if (action == "COLLECT") {
+    //       return (
+    //         <div>
+    //           <span className="link">
+    //             <Link
+    //               to={{
+    //                 pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
+    //               }}
+    //             >
+    //               {t(`UC_${action}`)}
+    //             </Link>
+    //           </span>
+    //         </div>
+    //       );
+    //     } else if (row.original?.applicationStatus == "PAID") {
+    //       return (
+    //         <div>
+    //           <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
+    //         </div>
+    //       );
+    //     } else {
+    //       return GetCell(t(`${"CS_NA"}`));
+    //     }
+    //   },
+    //   mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+    // },
   ];
 
   let result;

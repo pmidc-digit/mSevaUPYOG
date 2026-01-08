@@ -128,34 +128,36 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className={"complaint-input-container for-pt " + (!isInboxPage ? "for-search" : "")} style={{ width: "100%", display:"grid" }}>
+            <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
                   <div key={input.name} className="input-fields">
                     {/* <span className={index === 0 ? "complaint-input" : "mobile-input"}> */}
-                    <span className={"mobile-input"}>
-                      <Label>{t(input.label) + ` ${input.isMendatory ? "*" : ""}`}</Label>
-                      {!input.type ? (
-                        <Controller
-                          render={(props) => {
-                            return <TextInput onChange={props.onChange} value={props.value} />;
-                          }}
-                          name={input.name}
-                          control={control}
-                          defaultValue={""}
-                        />
-                      ) : (
-                        <Controller
-                          render={(props) => {
-                            const Comp = fieldComponents?.[input.type];
-                            return <Comp formValue={form} setValue={setValue} onChange={props.onChange} value={props.value} />;
-                          }}
-                          name={input.name}
-                          control={control}
-                          defaultValue={""}
-                        />
-                      )}
+                    <span className={"complaint-input"}>
+                      <h4 className="h4">{t(input.label) + ` ${input.isMendatory ? "*" : ""}`}</h4>
+                      <div className="text-input  undefined">
+                        {!input.type ? (
+                          <Controller
+                            render={(props) => {
+                              return <TextInput onChange={props.onChange} value={props.value} />;
+                            }}
+                            name={input.name}
+                            control={control}
+                            defaultValue={""}
+                          />
+                        ) : (
+                          <Controller
+                            render={(props) => {
+                              const Comp = fieldComponents?.[input.type];
+                              return <Comp formValue={form} setValue={setValue} onChange={props.onChange} value={props.value} />;
+                            }}
+                            name={input.name}
+                            control={control}
+                            defaultValue={""}
+                          />
+                        )}
+                      </div>
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
                       <span
@@ -169,13 +171,24 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
 
               {isInboxPage && (
-                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
-                  <div>{clearAll()}</div>
+                <div className="search-action-wrapper" style={{width: "100%"}}>
+                  {type === "desktop" && !mobileView && (
+                    <SubmitBar
+                      className="submit-bar-search"
+                      label={t("ES_COMMON_SEARCH")}
+                      submit
+                    />
+                  )}
+                  {type === "desktop" && !mobileView && (
+                    <span style={{ paddingTop: "9px" }} className="clear-search">
+                      {clearAll()}
+                    </span>
+                  )}
                 </div>
               )}
 
-              {type === "desktop" && !mobileView && (
-                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
+              {type === "desktop" && !mobileView && !isInboxPage && (
+                <div className="search-action-wrapper">
                   <SubmitBar
                     className="submit-bar-search"
                     label={t("ES_COMMON_SEARCH")}
@@ -183,7 +196,9 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     submit
                   />
                   {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  {!isInboxPage && <div>{clearAll()}</div>}
+                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                    {clearAll()}
+                  </div>
                 </div>
               )}
             </div>

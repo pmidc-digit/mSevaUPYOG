@@ -469,7 +469,7 @@ public class DgrIntegration {
                 failedPayload.put("error", ex.getMessage());
                 failedPayload.put("status", "FAILED");
 
-                pGRProducer.push(failedDgrTopic, failedPayload);
+                pGRProducer.push(failedDgrTopic,serviceReqRequest.getServices().get(0).getServiceRequestId(), failedPayload);
 
                 return "Error calling CreateGrievance API: " + ex.getMessage();
             }
@@ -488,7 +488,7 @@ public class DgrIntegration {
                 serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
 
 
-                pGRProducer.push(drgPgrId, serviceReqRequest);
+                pGRProducer.push(drgPgrId, grievanceId,serviceReqRequest);
 
             } else {
 
@@ -500,7 +500,7 @@ public class DgrIntegration {
                 failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
                 failedPayload.put("status", "FAILED");
 
-                pGRProducer.push(failedDgrTopic, failedPayload);
+                pGRProducer.push(failedDgrTopic,serviceReqRequest.getServices().get(0).getServiceRequestId(), failedPayload);
             }
 		
             return responseBody;

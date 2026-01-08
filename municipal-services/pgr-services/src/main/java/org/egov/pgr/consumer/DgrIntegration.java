@@ -457,8 +457,15 @@ public class DgrIntegration {
     }
 
     // Helper method for safe value
-    private String safeValue(String value, String defaultVal) {
-        return (value == null || value.trim().isEmpty()) ? defaultVal : value;
+    private String safeValue(String defaultVal, String... values) {
+        if (values != null) {
+            for (String v : values) {
+                if (v != null && !v.trim().isEmpty()) {
+                    return v;
+                }
+            }
+        }
+        return defaultVal;
     }
 
     /* =========================

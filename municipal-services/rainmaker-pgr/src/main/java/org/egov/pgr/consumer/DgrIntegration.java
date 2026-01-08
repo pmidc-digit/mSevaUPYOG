@@ -199,17 +199,17 @@ public class DgrIntegration {
                     "pb"
             );
          // 1. Get district from tenant MDMS (KEEP THIS)
-            String msevaDistrict = JsonPath.read(
+            String districtName = JsonPath.read(
                 msevaDistrictByTenantid,
                 "$.MdmsRes.tenant.tenants[0].city.districtName"
             );
 
-            // 2. Match it in mapping JSON
-            String districtName = JsonPath.read(
-                msevaDistrictByTenantid,
-                "$.thirdpartydistrictmapping[0].districts[?(@.msevaname=='"
-                + msevaDistrict + "')].msevaname[0]"
-            );
+//            // 2. Match it in mapping JSON
+//            String districtName = JsonPath.read(
+//                msevaDistrictByTenantid,
+//                "$.thirdpartydistrictmapping[0].districts[?(@.msevaname=='"
+//                + msevaDistrict + "')].msevaname[0]"
+//            );
 
 
             // 4. Get third-party mapping from MDMS
@@ -275,8 +275,9 @@ public class DgrIntegration {
             // 12. Map district
             List<Map<String, Object>> districts = JsonPath.read(
                     thirdyPartyDistrictName,
-                    "$.MdmsRes.tenant.thirdpartydistrictmapping[0].thirdpartydistrictmapping.districts"
+                    "$.MdmsRes.tenant.thirdpartydistrictmapping[0].districts"
             );
+
             
             String mohallaCode = mohallaCodes.stream()
                     .collect(Collectors.joining(", "));

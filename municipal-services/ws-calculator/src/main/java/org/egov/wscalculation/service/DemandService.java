@@ -2125,5 +2125,50 @@ public class DemandService {
 		return response;
 		
 	}	
+	
+	
+	
+	
+	
+	public List<Demand> searchDemandForBreakdownCalculation(
+	        String tenantId,
+	        Set<String> consumerCodes,
+	        RequestInfo requestInfo) {
+
+	    Object result = serviceRequestRepository.fetchResult(
+	            getDemandSearchURLForWS(tenantId, consumerCodes),
+	            RequestInfoWrapper.builder()
+	                    .requestInfo(requestInfo)
+	                    .build()
+	    );
+
+	    log.info("Demand search (Breakdown) response: {}", result);
+
+	    try {
+	        return mapper.convertValue(result, DemandResponse.class).getDemands();
+	    } catch (IllegalArgumentException e) {
+	        throw new CustomException(
+	                "EG_WS_PARSING_ERROR",
+	                "Failed to parse Demand Search response for Breakdown"
+	        );
+	    }
+	}
+	
+	
+	
+	public StringBuilder getDemandSearchURLForWS(
+	        String tenantId,
+	        Set<String> consumerCodes) {
+
+	    StringBuilder url = new StringBuilder(configs.getBillingServiceHost());
+
+	    url.append(configs.getDemandSearchEndPoint());
+	    url.append("?tenantId=").append(tenantId);
+	    url.append("&businessService=").append(configs.getBusinessService()); // ✅ WS
+	    url.append("&consumerCode=").append(StringUtils.join(consumerCodes, ','));
+
+	    return url;
+	}
+
 
 }

@@ -55,6 +55,11 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 	@Autowired
 	private DemandService demandService;
+	
+    // Add this if not already present
+    @Autowired
+    private MeterService meterService;
+
 
 	@Autowired
 	private MasterDataService masterDataService;
@@ -319,69 +324,96 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				}
 		}
 		
-//	    PI-20289 Metered Breakdown penalty enable and working new logic
-
 		
-		boolean isBreakdownPenaltyEnabled = false;
-		int breakdownPenaltyRate = 1;
+		
+		
+		boolean isBreakdownAvgEnabled = false;
 
-		Object bpObj = masterMap.get(WSCalculationConstant.Billing_Period_Master);
+		Object obj = masterMap.get(WSCalculationConstant.Billing_Period_Master);
 
-		if (bpObj instanceof List) {
+		if (obj instanceof List) {
+		    List<?> billingFrequencyList = (List<?>) obj;
 
-		    @SuppressWarnings("unchecked")
-		    List<Map<String, Object>> billingPeriods =
-		            (List<Map<String, Object>>) bpObj;
+		    for (Object o : billingFrequencyList) {
+		        if (!(o instanceof Map)) continue;
 
-		    for (Map<String, Object> bp : billingPeriods) {
+		        Map<?, ?> freq = (Map<?, ?>) o;
 
-		        String connectionType = (String) bp.get("connectionType");
+		        log.info("MDMS CHECK >>> {}", freq);
 
-		        if (WSCalculationConstant.meteredConnectionType
-		                .equalsIgnoreCase(connectionType)) {
+		        boolean active = Boolean.parseBoolean(String.valueOf(freq.get("active")));
+		        boolean avgFlag = Boolean.parseBoolean(
+		                String.valueOf(freq.get("isBreakdownAverageApplicable"))
+		        );
 
-		            isBreakdownPenaltyEnabled =
-		                    Boolean.TRUE.equals(bp.get("isBreakdownPenaltyEnabled"));
+		        String connType = String.valueOf(freq.get("connectionType"));
 
-		            if (bp.get("breakdownPenaltyRate") != null) {
-		                breakdownPenaltyRate =
-		                        ((Number) bp.get("breakdownPenaltyRate")).intValue();
-		            }
+		        if (active
+		                && WSCalculationConstant.meteredConnectionType
+		                        .equalsIgnoreCase(connType)
+		                && avgFlag) {
+
+		            isBreakdownAvgEnabled = true;
 		            break;
 		        }
 		    }
 		}
+
+		log.info("FINAL FLAG | isBreakdownAvgEnabled={}", isBreakdownAvgEnabled);
 		
-		// === Breakdown Penalty Logic ===
 		if (WSCalculationConstant.meteredConnectionType
-		        .equalsIgnoreCase(waterConnection.getConnectionType())) {
+		        .equalsIgnoreCase(waterConnection.getConnectionType())
+		        && MeterReading.MeterStatusEnum.BREAKDOWN.equals(criteria.getMeterStatus())
+		        && isBreakdownAvgEnabled) {
 
-		    String currentStatus = criteria.getMeterStatus().toString();
-		    String previousStatus = wSCalculationDao.getPreviousMeterStatus(
-		            criteria.getTenantId(),
-		            criteria.getConnectionNo()
-		    );
+				    log.info("BREAKDOWN triggered for connection {}", criteria.getConnectionNo());
 
-		    log.info("Breakdown penalty check | current={} previous={}",
-		            currentStatus, previousStatus);
+				    // Fetch previous meter reading
+				    MeterReading previousReading = meterService.searchMeterReadings(
+				            MeterReadingSearchCriteria.builder()
+				                    .tenantId(criteria.getTenantId())
+				                    .connectionNos(Collections.singleton(criteria.getConnectionNo()))
+				                    .build(),
+				            requestInfo
+				    ).stream()
+				     .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
+				     .skip(1) // skip current
+				     .findFirst()
+				     .orElse(null);
 
-		    if (isBreakdownPenaltyEnabled
-		            && WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(currentStatus)
-		            && WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(previousStatus)) {
+				    if (previousReading != null && MeterReading.MeterStatusEnum.BREAKDOWN.equals(previousReading.getMeterStatus())) {
+				        // Consecutive BREAKDOWN → use previous charge + penalty
+				        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
+				        penalty = waterCharge.multiply(BigDecimal.valueOf(2)).setScale(2, RoundingMode.HALF_UP);
+				        log.info("Consecutive BREAKDOWN: charge={} penalty={}", waterCharge, penalty);
+				    } else {
+				        // First BREAKDOWN → take last 3 demands average (min 1)
+				        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
+				        log.info("First BREAKDOWN: charge={}", waterCharge);
+				    }
 
-		        BigDecimal breakdownPenalty = waterCharge
-		                .multiply(BigDecimal.valueOf(breakdownPenaltyRate))
-		                .setScale(2, RoundingMode.HALF_UP);
+				    // Add WS_CHARGE estimate
+				    estimates.removeIf(e -> TaxHeadCategory.CHARGES.equals(e.getCategory()));
+				    estimates.add(TaxHeadEstimate.builder()
+				            .taxHeadCode(WSCalculationConstant.WS_CHARGE)
+				            .estimateAmount(waterCharge)
+				            .category(TaxHeadCategory.CHARGES)
+				            .build());
 
-		        penalty = penalty.add(breakdownPenalty);
+				    // Add penalty estimate if any
+				    if (penalty.compareTo(BigDecimal.ZERO) > 0) {
+				        estimates.add(TaxHeadEstimate.builder()
+				                .taxHeadCode(WSCalculationConstant.WS_BREAKDOWN_PENALTY)
+				                .estimateAmount(penalty)
+				                .category(TaxHeadCategory.PENALTY)
+				                .build());
+				    }
 
-		        estimates.add(TaxHeadEstimate.builder()
-		                .taxHeadCode(WSCalculationConstant.WS_BREAKDOWN_PENALTY)
-		                .estimateAmount(breakdownPenalty)
-		                .category(TaxHeadCategory.PENALTY)
-		                .build());
-		    }
-		}
+				    log.info("BREAKDOWN calculation completed | charge={} penalty={}", waterCharge, penalty);
+				}
+
+
+		
 //	    PI-20289 Metered Breakdown penalty enable and working new logic
 
 		TaxHeadEstimate decimalEstimate = payService.roundOfDecimals(taxAmt.add(penalty).add(waterCharge).add(fee),
@@ -401,8 +433,119 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				.tenantId(criteria.getTenantId()).taxHeadEstimates(estimates).billingSlabIds(billingSlabIds)
 				.connectionNo(criteria.getConnectionNo()).applicationNO(criteria.getApplicationNo()).build();
 	}
+	
+	// =====================================================
+	// Utilities
+	// =====================================================
+	
+	
+	// Utility: fetch charge from demand matching meter reading period
+	private BigDecimal getChargeFromDemand(
+	        MeterReading reading,
+	        CalculationCriteria criteria,
+	        RequestInfo requestInfo) {
 
-	/**
+	    List<Demand> demands = demandService.searchDemandForBreakdownCalculation(
+	            criteria.getTenantId(),
+	            Collections.singleton(criteria.getConnectionNo()),
+	            requestInfo
+	    );
+
+	    if (CollectionUtils.isEmpty(demands)) {
+	        log.warn("No demands found for connection {}", criteria.getConnectionNo());
+	        return BigDecimal.ZERO;
+	    }
+
+	    long readingFrom = reading.getLastReadingDate();
+	    long readingTo   = reading.getCurrentReadingDate();
+
+	    log.info("Finding demand for reading window [{} - {}]", readingFrom, readingTo);
+
+	    // 1️⃣ Try matching by period overlap
+	    for (Demand d : demands) {
+	        boolean overlaps =
+	                readingFrom <= d.getTaxPeriodTo() &&
+	                readingTo   >= d.getTaxPeriodFrom();
+
+	        if (overlaps) {
+	            BigDecimal amount = extractWsCharge(d);
+	            log.info("Matched demand {} with WS_CHARGE {}", d.getId(), amount);
+	            return amount;
+	        }
+	    }
+
+	    // 2️⃣ Fallback: pick latest ACTIVE demand
+	    Demand latestDemand = demands.stream()
+	            .filter(d -> Demand.StatusEnum.ACTIVE.equals(d.getStatus()))
+	            .max(Comparator.comparing(Demand::getTaxPeriodTo))
+	            .orElse(null);
+
+	    if (latestDemand != null) {
+	        BigDecimal amount = extractWsCharge(latestDemand);
+	        log.warn("Fallback used. Latest ACTIVE demand {} with WS_CHARGE {}",
+	                latestDemand.getId(), amount);
+	        return amount;
+	    }
+
+	    log.error("No matching or fallback demand found");
+	    return BigDecimal.ZERO;
+	}
+
+	private BigDecimal extractWsCharge(Demand demand) {
+	    return demand.getDemandDetails().stream()
+	            .filter(dd -> WSCalculationConstant.WS_CHARGE
+	                    .equalsIgnoreCase(dd.getTaxHeadMasterCode()))
+	            .map(DemandDetail::getTaxAmount)
+	            .findFirst()
+	            .orElse(BigDecimal.ZERO);
+	}
+
+	// Utility: average of last 3 WS_CHARGE demands
+	private BigDecimal getAverageFromLastThreeDemands(
+	        CalculationCriteria criteria,
+	        RequestInfo requestInfo) {
+
+	    List<Demand> demands = demandService.searchDemandForBreakdownCalculation(
+	            criteria.getTenantId(),
+	            Collections.singleton(criteria.getConnectionNo()),
+	            requestInfo
+	    );
+
+	    if (CollectionUtils.isEmpty(demands)) {
+	        log.warn("No demands found for averaging");
+	        return BigDecimal.ZERO;
+	    }
+
+	    demands.sort(Comparator.comparing(Demand::getTaxPeriodTo).reversed());
+
+	    BigDecimal total = BigDecimal.ZERO;
+	    int count = 0;
+
+	    for (Demand d : demands) {
+	        BigDecimal wsCharge = extractWsCharge(d);
+
+	        if (wsCharge.compareTo(BigDecimal.ZERO) > 0) {
+	            total = total.add(wsCharge);
+	            count++;
+	            log.info("Including demand {} with WS_CHARGE {}", d.getId(), wsCharge);
+	        }
+
+	        if (count == 3) break;
+	    }
+
+	    if (count == 0) {
+	        log.error("No valid WS_CHARGE found in demands");
+	        return BigDecimal.ZERO;
+	    }
+
+	    BigDecimal avg = total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
+	    log.info("Average WS_CHARGE from {} demands = {}", count, avg);
+
+	    return avg;
+	}
+	
+	
+		/**
 	 * 
 	 * @param request   would be calculations request
 	 * @param masterMap master data

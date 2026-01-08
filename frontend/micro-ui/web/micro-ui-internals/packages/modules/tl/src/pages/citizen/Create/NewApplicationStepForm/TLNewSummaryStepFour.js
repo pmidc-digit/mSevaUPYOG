@@ -63,7 +63,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const history = useHistory();
   const dispatch = useDispatch();
-
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
@@ -74,26 +74,56 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     });
   }, []);
 
+  // Monitor checkbox state and enable/disable button
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.declarationChecked) {
+        setIsButtonDisabled(false);
+      } else {
+        setIsButtonDisabled(true);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
   // Function to handle the "Next" button click
-  const goNext = (data) => {
-    console.log("checkDFpmr=====", formData);
-    console.log("data=====?", data);
+  // const goNext = (data) => {
+  //   // console.log("checkDFpmr=====", formData);
+  //   // console.log("data=====?", data);
 
-    if (!data?.SummaryTL?.consentValue) {
-      setError(`Please select checkbox`);
+  //   if (!data?.SummaryTL?.consentValue) {
+  //     setError(`Please select checkbox`);
+  //     setShowToast(true);
+  //   }
+  //   const res = onSubmit(formData?.CreatedResponse);
+  //   console.log("API response: ", res);
+
+  //   if (res) {
+  //     // console.log("Submission successful, moving to next step.");
+  //     // history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
+  //     history.replace(`/digit-ui/citizen/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
+  //   } else {
+  //     // console.error("Submission failed, not moving to next step.");
+  //   }
+  //   // onGoNext();
+  // };
+
+    const goNext = async (data) => {
+    // Double check before submission
+    if (!window.declarationChecked) {
+      setError("Please accept the declaration to proceed");
       setShowToast(true);
+      return;
     }
-    const res = onSubmit(formData?.CreatedResponse);
-    console.log("API response: ", res);
 
+    const res = await onSubmit(formData?.CreatedResponse);
+    
     if (res) {
-      console.log("Submission successful, moving to next step.");
-      // history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
       history.replace(`/digit-ui/citizen/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {
-      console.error("Submission failed, not moving to next step.");
+      setError("Submission failed. Please try again.");
+      setShowToast(true);
     }
-    // onGoNext();
   };
 
   const onSubmit = async (data) => {
@@ -145,6 +175,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber} // Current step number
         onBackClick={onGoBack} // Handle back button click
         className="employeeCard"
+        isDisabled={isButtonDisabled}
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       {getLoader && <Loader page={true} />}

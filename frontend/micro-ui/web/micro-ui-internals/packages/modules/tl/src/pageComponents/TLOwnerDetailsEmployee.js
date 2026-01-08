@@ -162,7 +162,6 @@ const OwnerForm = (_props) => {
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
 
-  console.log("check formData===", formData);
   useEffect(function () {
   if (owner && owner.gender) {
     var genderObj = genderTypeMenu.find(function (g) {
@@ -173,18 +172,26 @@ const OwnerForm = (_props) => {
     }
   }
 }, [owner]);
-//console.log("Hello Ownere",owner)
+
   return (
     <React.Fragment>
       {/* <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(errors)}> */}
       <div>
         <div className="clu-doc-required-card no-width">
           {allOwners?.length > 1 ? (
-            <div>
-              <div onClick={() => removeOwner(owner)}>
-                <span>
+            <div style={{ 
+            display: "flex", 
+            justifyContent: "flex-end", 
+            marginBottom: "16px",
+            paddingRight: "8px" 
+          }}>
+              <div onClick={() => removeOwner(owner)} style={{ 
+                cursor: "pointer",
+                padding: "4px"
+              }}>
+                {/* <span> */}
                   <svg
-                    style={{ float: "right", position: "relative", bottom: "5px" }}
+                    // style={{ float: "right", position: "relative", bottom: "5px" }}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
@@ -193,7 +200,7 @@ const OwnerForm = (_props) => {
                   >
                     <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#494848" />
                   </svg>
-                </span>
+                {/* </span> */}
               </div>
             </div>
           ) : null}
@@ -971,17 +978,17 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const isEditScreen = pathname.includes("/modify-application/");
   let isSameAsPropertyOwner = formData?.ownershipCategory?.isSameAsPropertyOwner;
   const formDataOwners = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-  const [owners, setOwners] = useState(formDataOwners?.applicationData?.tradeLicenseDetail?.owners || [createOwnerDetails()]);
+  const [owners, setOwners] = useState(
+    formDataOwners?.OwnerDetails?.owners || 
+    formDataOwners?.applicationData?.tradeLicenseDetail?.owners || 
+    formData?.owners ||
+    [createOwnerDetails()]
+  );
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [previousLicenseDetails, setPreviousLicenseDetails] = useState(formData?.tradedetils1 || []);
-
-  //console.log("check owner", formData?.owners);
-  //console.log("check formDataOwners", formDataOwners?.applicationData?.tradeLicenseDetail?.owners);
-  //console.log("check createOwnerDetails", createOwnerDetails());
-
 
   const { data: mdmsData, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", [
     "UsageCategory",
@@ -1100,8 +1107,6 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
   if (isEditScreen) {
     return <React.Fragment />;
   }
-
-  console.log("newchecformData", formData);
 
   return (
     <React.Fragment>

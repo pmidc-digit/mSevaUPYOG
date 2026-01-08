@@ -164,13 +164,17 @@ function SelectDocument({
 
     if (!isHidden) {
       const isRenewal = window.location.href.includes("renew-application-details");
-      if (!isRenewal) {
+      const isOwnerPhoto = doc?.documentType === "OWNERPHOTO"
+      if (!isRenewal && !isOwnerPhoto) {
         if (!uploadedFile || !selectedDocument?.documentType) {
           addError();
         } else if (uploadedFile && selectedDocument?.documentType) {
           removeError();
         }
-      }
+      }else if (isOwnerPhoto) {
+      // Always remove error for OWNERPHOTO since it's optional
+      removeError();
+    }
     } else if (isHidden) {
       removeError();
     }
@@ -222,7 +226,10 @@ function SelectDocument({
           {doc?.documentType != "OLDLICENCENO"
             ? `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `
             : `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `}
-          <span className={doc?.documentType != "OLDLICENCENO" ? "requiredField" : ""}>{doc?.documentType != "OLDLICENCENO" ? "*" : ""}</span>
+          {/* <span className={doc?.documentType != "OLDLICENCENO" ? "requiredField" : ""}>{doc?.documentType != "OLDLICENCENO" ? "*" : ""}</span> */}
+          <span className={doc?.documentType != "OLDLICENCENO" && doc?.documentType != "OWNERPHOTO" ? "requiredField" : ""}>
+            {doc?.documentType != "OLDLICENCENO" && doc?.documentType != "OWNERPHOTO" ? "*" : ""}
+          </span>
         </CardLabel>
         <div className="form-field">
           <UploadFile

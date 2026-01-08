@@ -75,6 +75,13 @@ public class Service   {
         @JsonProperty("applicationStatus")
         private String applicationStatus = null;
 
+        @JsonProperty("dgr_grievance_id")
+        
+        private String dgrPgrId;
+
+      @JsonProperty("dgr_employee_name")
+
+      private String dgrEmployeeName;
         @NotNull
         @SafeHtml
         @JsonProperty("source")

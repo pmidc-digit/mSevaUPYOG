@@ -12,6 +12,8 @@ const GetSlaCell = (value) => {
 
 const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams }) => {
   const { t } = useTranslation();
+   const tenantIdMap = new Map(data?.map(item => [item.serviceRequestId, item.tenantId]) || []);
+  
   const localizedData = data?.map(({ locality, tenantId, serviceRequestId, complaintSubType, sla, status, taskOwner }) => ({
     [t("CS_COMMON_COMPLAINT_NO")]: serviceRequestId,
     [t("CS_ADDCOMPLAINT_COMPLAINT_SUB_TYPE")]: t(`SERVICEDEFS.${complaintSubType.toUpperCase()}`),
@@ -30,7 +32,11 @@ const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams }
       <ComplaintCard
         data={localizedData}
         onFilterChange={onFilterChange}
-        serviceRequestIdKey={t("CS_COMMON_COMPLAINT_NO")}
+        serviceRequestIdKey={(row) => {
+          const serviceRequestId = row[t("CS_COMMON_COMPLAINT_NO")];
+          const tenantId = tenantIdMap.get(serviceRequestId);
+          return `${serviceRequestId}/${tenantId}`;
+        }}
         onSearch={onSearch}
         searchParams={searchParams}
       />

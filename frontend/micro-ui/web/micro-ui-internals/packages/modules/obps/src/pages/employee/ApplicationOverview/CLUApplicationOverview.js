@@ -19,8 +19,10 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
+  Table,
+  Modal,
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { composeInitialProps, useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
@@ -30,6 +32,8 @@ import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementD
 import CLUModal from "../../../pageComponents/CLUModal";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
+import { SiteInspection } from "../../../pageComponents/SiteInspection";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -80,6 +84,21 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
+const Close = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => {
+  return (
+    <div className="icon-bg-secondary" onClick={props.onClick}>
+      <Close />
+    </div>
+  );
+};
+
 const CLUEmployeeApplicationDetails = () => {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -96,13 +115,19 @@ const CLUEmployeeApplicationDetails = () => {
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const isMobile = window?.Digit?.Utils?.browser?.isMobile();
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here==>", applicationDetails);
+  console.log("applicationDetails here===>", applicationDetails);
+  const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
+      documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
+  } : {})
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
-  console.log("businessService here", businessServiceCode);
+  console.log("businessService here", businessServiceCode, siteImages);
   
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -111,6 +136,44 @@ const CLUEmployeeApplicationDetails = () => {
   });
 
   console.log("workflowDetails here=>", workflowDetails);
+
+  const geoLocations = useMemo(() => {
+    if (siteImages?.documents && siteImages?.documents.length > 0) {
+      return siteImages?.documents?.map((img) => {
+        return {
+          latitude: img?.latitude || "",
+          longitude: img?.longitude || "",
+        }
+      })
+    }
+  }, [siteImages]);
+
+  const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+    title: value?.documentType,
+    fileStoreId: value?.filestoreId,
+  })), [siteImages])
+
+  const documentsColumnsSiteImage = [
+    {
+      Header: t("BPA_SITES"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
+      accessor: "fileStoreId",
+      Cell: ({ value }) => {
+        return value ? (
+          <LinkButton style={{ float: "right", display: "inline" }}
+            label={t("View")}
+            onClick={() => routeToImage(value)}
+          />
+        ) : (
+          t("CS_NA")
+        )
+      },
+    }
+  ];
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -208,8 +271,58 @@ const CLUEmployeeApplicationDetails = () => {
       };
 
       setDisplayData(finalDisplayData);
+
+      const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages
+
+      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
     }
   }, [applicationDetails?.Clu]);
+
+  function routeToImage(filestoreId) {
+    getUrlForDocumentView(filestoreId)
+  }
+  
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], state);
+      if (result?.data) {
+        const fileUrl = result.data[filestoreId];
+        if (fileUrl) {
+          // window.open(fileUrl, "_blank");
+          if(!isMobile){
+            window.open(fileUrl, "_blank");
+          }else{
+            setShowImageModal(true);
+            setImageUrl(fileUrl);            
+          }         
+        } else {
+          // if (props?.setError) {
+          //   props?.setError(t("CS_FILE_FETCH_ERROR"));
+          // } else {
+            console.error(t("CS_FILE_FETCH_ERROR"))
+          // }
+        }
+      } else {
+        // if (props?.setError) {
+        //   props?.setError(t("CS_FILE_FETCH_ERROR"));
+        // } else {
+          console.error(t("CS_FILE_FETCH_ERROR"))
+        // }
+      }
+    } catch (e) {
+      // if (props?.setError) {
+      //   props?.setError(t("CS_FILE_FETCH_ERROR"));
+      // } else {
+        console.error(t("CS_FILE_FETCH_ERROR"))
+      // }
+    }
+  }
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    setImageUrl(null);
+  }
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -234,7 +347,11 @@ const CLUEmployeeApplicationDetails = () => {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {
+    } else {      
+      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+        setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
+        return;
+      }
       setShowModal(true);
       setSelectedAction(action);
     }
@@ -246,6 +363,13 @@ const CLUEmployeeApplicationDetails = () => {
 
     const updatedApplicant = {
       ...payloadData,
+      cluDetails: {
+        ...payloadData.cluDetails,
+        additionalDetails: {
+          ...payloadData.cluDetails?.additionalDetails,
+          siteImages: siteImages?.documents || [],
+        }
+      },
       workflow: {},
     };
 
@@ -516,6 +640,36 @@ const CLUEmployeeApplicationDetails = () => {
         </Card>
       )} */}
 
+      {
+        applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 &&
+        <Card>
+          <div id="fieldInspection"></div>
+          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+        </Card>
+      }
+      {
+          applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
+            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+            <Table
+              className="customTable table-border-style"
+              t={t}
+              data={documentData}
+              columns={documentsColumnsSiteImage}
+              getCellProps={() => ({ style: {} })}
+              disableSort={false}
+              autoSort={true}
+              manualPagination={false}
+              isPaginationRequired={false}
+            />
+            {geoLocations?.length > 0 &&
+                <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CustomLocationSearch position={geoLocations}/>
+                </React.Fragment>
+            }
+          </Card>
+        }
+
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions?.length > 0 && (
@@ -533,6 +687,21 @@ const CLUEmployeeApplicationDetails = () => {
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}
+
+      {showImageModal && <Modal
+        headerBarEnd={<CloseBtn onClick={closeImageModal} />}
+      >
+        {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
+        {imageUrl?.toLowerCase().endsWith(".pdf") ? (
+          <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">{t("CS_VIEW_DOCUMENT")}</a>
+        ) : (
+          <img
+            src={imageUrl}
+            alt="Preview"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
+        )}
+      </Modal>}
 
       {showModal ? (
         <CLUModal

@@ -319,7 +319,7 @@ public class DgrIntegration {
         // District mapping
         List<Map<String, Object>> districts = JsonPath.read(
                 thirdPartyDistrictName,
-                "$.MdmsRes.tenant.thirdpartydistrictmapping[0].thirdpartydistrictmapping.districts"
+                "$.MdmsRes.tenant.thirdpartydistrictmapping[0].districts"
         );
 
         String dgrName = districts.stream()

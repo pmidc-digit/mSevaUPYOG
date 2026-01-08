@@ -348,28 +348,33 @@ public class DgrIntegration {
                     serviceReqRequest.getServices().get(0);
 
             // Name
-            String citizenName =
-                    pgrService.getFirstName() != null
-                            ? pgrService.getFirstName()
-                            : (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
-                                ? safeValue(userResponse.getUser().get(0).getName(), constants.DEFAULT_CITIZEN_NAME)
-                                : constants.DEFAULT_CITIZEN_NAME);
+         // Name
+            String citizenName = safeValue(
+                    pgrService.getFirstName(), // old structure
+                    pgrService.getCitizen() != null ? pgrService.getCitizen().getName() : null, // new JSON
+                    userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
+                            ? userResponse.getUser().get(0).getName() : null, // fallback from userResponse
+                    constants.DEFAULT_CITIZEN_NAME // final default
+            );
 
             // Email
-            String citizenEmail =
-                    pgrService.getEmail() != null
-                            ? pgrService.getEmail()
-                            : (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
-                                ? safeValue(userResponse.getUser().get(0).getEmailId(), constants.DEFAULT_CITIZEN_EMAIL)
-                                : constants.DEFAULT_CITIZEN_EMAIL);
+            String citizenEmail = safeValue(
+                    pgrService.getEmail(),
+                    pgrService.getCitizen() != null ? pgrService.getCitizen().getEmailId() : null,
+                    userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
+                            ? userResponse.getUser().get(0).getEmailId() : null,
+                    constants.DEFAULT_CITIZEN_EMAIL
+            );
 
             // Mobile
-            String citizenMobile =
-                    pgrService.getPhone() != null
-                            ? pgrService.getPhone()
-                            : (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
-                                ? safeValue(userResponse.getUser().get(0).getMobileNumber(), constants.DEFAULT_CITIZEN_MOBILE)
-                                : constants.DEFAULT_CITIZEN_MOBILE);
+            String citizenMobile = safeValue(
+                    pgrService.getPhone(),
+                    pgrService.getCitizen() != null ? pgrService.getCitizen().getMobileNumber() : null,
+                    userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
+                            ? userResponse.getUser().get(0).getMobileNumber() : null,
+                    constants.DEFAULT_CITIZEN_MOBILE
+            );
+
 
 
 
@@ -510,10 +515,16 @@ public class DgrIntegration {
         }
     }
     // Helper method for safe value
-    private String safeValue(String value, String defaultVal) {
-        return (value == null || value.trim().isEmpty()) ? defaultVal : value;
+    private String safeValue(String defaultVal, String... values) {
+        if (values != null) {
+            for (String v : values) {
+                if (v != null && !v.trim().isEmpty()) {
+                    return v;
+                }
+            }
+        }
+        return defaultVal;
     }
-
     /* =========================
        Helper APIs
        ========================= */

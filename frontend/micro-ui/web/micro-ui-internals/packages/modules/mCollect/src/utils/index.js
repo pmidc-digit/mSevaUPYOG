@@ -88,9 +88,11 @@ export const printPdf = (blob) => {
   }
 };
 
-export const downloadAndPrintChallan = async (challanNo, mode) => {
+export const downloadAndPrintChallan = async (challanNo, mode, setLoading) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  setLoading(true);
   const response = await Digit.MCollectService.downloadPdf(challanNo, tenantId);
+  setLoading(false);
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     mode == "print"
@@ -99,7 +101,7 @@ export const downloadAndPrintChallan = async (challanNo, mode) => {
   }
 };
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, mode) => {
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, mode, setLoading) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const data = await Digit.PaymentService.getReciept(tenantId, bussinessService, { consumerCodes: consumerCode });
   const payments = data?.Payments[0];
@@ -110,7 +112,9 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
   if (payments?.fileStoreId) {
     response = { filestoreIds: [payments?.fileStoreId] };
   }
+  setLoading(true);
   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+  setLoading(false);
   window.open(fileStore[response?.filestoreIds[0]], "_blank");
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {

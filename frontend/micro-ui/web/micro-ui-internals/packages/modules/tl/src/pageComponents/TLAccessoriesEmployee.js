@@ -288,11 +288,13 @@ const AccessoriersForm = (_props) => {
   const errorStyle = {
     // width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px"
   };
+  //console.log("allAccessoriesList",accessor)
   return (
     <React.Fragment>
       <div>
         <div className="clu-doc-required-card no-width">
           {allAccessoriesList?.length > 1 ? (
+            
             <div >
               <div onClick={() => removeAccessor(accessor)}>
                 <span>
@@ -320,7 +322,9 @@ const AccessoriersForm = (_props) => {
               render={(props) => (
                 <Dropdown
                   className="form-field"
-                  selected={props.value}
+                  selected={
+                    props.value?.i18nKey === "NA" ? undefined : props.value
+                  }
                   select={(e) => {
                     setValue("uom", e?.uom ? e?.uom : "");
                     if (e?.uom !== accessor?.accessoryCategory?.uom) setValue("uomValue", "");

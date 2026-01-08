@@ -15,10 +15,14 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
 
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.OwnerDetails);
+  
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
+  console.log("formData ===>",formData)
+
   const validateOwnerDetails = (data) => {
+    debugger
     const { ownershipCategory, owners } = data || {};
     const missingFields = [];
 
@@ -36,10 +40,11 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
 
     const validateOwner = (owner, index = 1) => {
+      debugger
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
-      if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
-      if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
+      if (!owner?.gender) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.relationship) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };
 
@@ -210,7 +215,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     //   return;
     // }
 
-    const missingFields = validateOwnerDetails(localStepData);
+    const missingFields = validateOwnerDetails(formData?.OwnerDetails);
 
     if (missingFields.length > 0) {
       setError(`Please fill the following fields: ${missingFields.join(", ")}`);

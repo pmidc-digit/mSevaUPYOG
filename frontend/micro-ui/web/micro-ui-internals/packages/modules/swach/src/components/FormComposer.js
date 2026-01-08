@@ -12,6 +12,7 @@ import {
   ActionBar,
   SubmitBar,
   LabelFieldPair,
+  MobileNumber,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
@@ -43,6 +44,19 @@ export const FormComposer = (props) => {
     const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
     switch (type) {
       case "text":
+        // Check if this is a mobile number field
+        if (populators.name === "mobileNumber") {
+          return (
+            <MobileNumber 
+              className="field desktop-w-full" 
+              {...populators} 
+              inputRef={register(populators.validation)}
+              value={value}
+              placeholder={populators.placeholder || ""}
+              t={t}
+            />
+          );
+        }
         return (
           <div className="field-container">
             {populators.componentInFront ? populators.componentInFront : null}

@@ -152,7 +152,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         <FormComposer
           config={config.form}
           cardStyle={{marginLeft:"0px",marginRight:"0px", marginTop:"-25px"}}
-          className="BPAemployeeCard"
+          className="BPAemployeeCard bpa-workflow-modal-form"
           noBoxShadow
           inline
           childrenAtTheBottom

@@ -447,7 +447,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Rent Amount */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RAL_RENT_AMOUNT")} <span>*</span>
+          {t("RAL_RENT_AMOUNT")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -463,7 +463,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Penalty Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("PENALTY_TYPE")} <span>*</span>
+          {t("PENALTY_TYPE")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <div className="form-field">
           <Controller
@@ -481,7 +481,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       {/* Security Amount */}
       <LabelFieldPair>
         <CardLabel>
-          {t("RAL_SECURITY_AMOUNT")} <span>*</span>
+          {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <div className="form-field">
           <Controller

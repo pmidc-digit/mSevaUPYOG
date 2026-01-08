@@ -63,7 +63,7 @@ const ConnectionDetailsModal = ({
       {PTALoading ? (
         <Loader />
       ) : (
-        <FormComposer config={config.form} noBoxShadow inline childrenAtTheBottom onSubmit={{}} defaultValues={defaultValues} formId="modal-action" />
+        <FormComposer config={config.form} className="BPAemployeeCard bpa-workflow-modal-form" noBoxShadow inline childrenAtTheBottom onSubmit={{}} defaultValues={defaultValues} formId="modal-action" />
       )}
     </Modal>
   ) : (

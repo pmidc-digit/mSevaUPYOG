@@ -12,10 +12,16 @@
     }
 }
 
-employee-form-first {
+.employee-form-first {
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
     width: 100%;
     flex-direction: column;
+}
+.complaint-input-container .form-field {
+    width: 100% !important;
+}
+.complaint-input-container .complaint-input .form-field {
+    width: 100% !important;
 }

@@ -39,7 +39,7 @@ const LanguageSelection = () => {
         <SubmitBar style={{ width: "100%" }} label={t(`CORE_COMMON_CONTINUE`)} onSubmit={handleSubmit} />
       </Card>
 
-      <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"#152265",textAlign:"center" }}>
+      <div style={{ display:"none",width: '100%', position: 'fixed', bottom: 0,backgroundColor:"#152265",textAlign:"center" }}>
       <div style={{backgroundColor:'#F5FBFF', width:'100%',minHeight:'100px'}}></div>
       <div style={{backgroundColor:'#294A97', width:'100%',minHeight:'200px'}}>
    </div>

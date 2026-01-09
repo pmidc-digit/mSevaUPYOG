@@ -312,8 +312,12 @@ public class EstimationService {
 	    	                    break;
 	    	                }
 
-	    	                BigDecimal slabRange = BigDecimal
-	    	                        .valueOf(slab.getTo() - slab.getFrom() + 1);
+	    	                double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
+	    	                double slabTo   = slab.getTo();
+
+	    	                BigDecimal slabRange = BigDecimal.valueOf(
+	    	                        slabTo - slabFrom + 1
+	    	                );
 
 	    	                BigDecimal billableUnits = remainingConsumption.min(slabRange);
 

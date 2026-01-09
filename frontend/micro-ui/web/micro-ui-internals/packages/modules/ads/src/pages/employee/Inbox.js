@@ -23,7 +23,6 @@ const Inbox = ({
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
   const [TableConfig, setTableConfig] = useState(() => Digit.ComponentRegistryService?.getComponent("ADSInboxTableConfig"));
@@ -104,7 +103,7 @@ const Inbox = ({
           parentRoute={parentRoute}
           searchParams={searchParams}
           sortParams={sortParams}
-          linkPrefix={`${parentRoute}/application-details/`}
+          linkPrefix={`${parentRoute}/applicationsearch/application-details/`}
           tableConfig={rest?.tableConfig ? rest?.tableConfig : TableConfig(t)["ADS"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}

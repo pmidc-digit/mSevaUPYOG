@@ -22,7 +22,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
-      setError(`You haven't uploaded: ${missingFields[0].replace(".", "_").toUpperCase()}`);
+      setError(`${t(missingFields[0].replace(/\./g, "_").toUpperCase())} is required`);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);

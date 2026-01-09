@@ -150,9 +150,13 @@ const CitizenApplicationOverview = () => {
     //console.log("tenants", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
+    const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+    const ulbType = site?.ulbType;
+    const ulbName = site?.ulbName?.city?.name;
 
-    Digit.Utils.pdf.generate(acknowledgementData);
+    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+
+    Digit.Utils.pdf.generateFormatted(acknowledgementData);
   };
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {

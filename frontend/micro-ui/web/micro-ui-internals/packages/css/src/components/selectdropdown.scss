@@ -95,9 +95,30 @@
     }
   }
 
+  #jk-dropdown-unique{
+     right: 0px;
+    left: -56px;
+    width: 100% !important;
+    min-width: 150px;
+    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
+    max-height: 250px !important;
+    overflow: auto;
+    z-index: 1000 !important;
+    @apply absolute z-20 mt-xs bg-white;
+
+    p {
+      padding-top: 14px;
+      @apply w-full h-12 pl-sm text-text-primary text-form-field;
+
+      &:hover {
+        @apply bg-grey-mid;
+      }
+    }
+  }
+
   .options-card {
     right: 0px;
-    left: -56px;
+    left: 0px;
     width: 100% !important;
     min-width: 150px;
     box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);

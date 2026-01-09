@@ -192,6 +192,14 @@ const Home = () => {
       setShowSurveyModal(true);
       sessionStorage.setItem("survey_modal_shown", "true");
     }
+
+    // Clean up session storage on component mount
+    sessionStorage.removeItem("type");
+    sessionStorage.removeItem("pincode");
+    sessionStorage.removeItem("tenantId");
+    sessionStorage.removeItem("localityCode");
+    sessionStorage.removeItem("landmark");
+    sessionStorage.removeItem("propertyid");
   }, [UserType]);
 
   const allCitizenServicesProps = {
@@ -214,9 +222,7 @@ const Home = () => {
             ?.map((item) => ({
               name: t(item.label),
               Icon: getIconForService(item.code),
-              onClick: () => {
-                window.location.href = item.navigationUrl;
-              },
+              onClick: () => history.push(item.navigationUrl),
             })),
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
@@ -251,13 +257,6 @@ const Home = () => {
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
-
-  sessionStorage.removeItem("type");
-  sessionStorage.removeItem("pincode");
-  sessionStorage.removeItem("tenantId");
-  sessionStorage.removeItem("localityCode");
-  sessionStorage.removeItem("landmark");
-  sessionStorage.removeItem("propertyid");
 
   return isLoading ? (
     <Loader />

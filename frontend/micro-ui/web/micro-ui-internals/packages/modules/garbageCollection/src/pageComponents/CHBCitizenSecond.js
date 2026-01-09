@@ -273,9 +273,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.propertyType && <p style={{ color: "red", marginTop: "4px" }}>{errors.propertyType.message}</p>}
+               
                 </div>
               </LabelFieldPair>
+               {errors?.propertyType && <p style={{ color: "red", marginTop: "4px" }}>{errors.propertyType.message}</p>}
 
               {/* plot size */}
               <LabelFieldPair>
@@ -300,9 +301,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.plotSize && <p style={{ color: "red", marginTop: "4px" }}>{errors.plotSize.message}</p>}
+               
                 </div>
               </LabelFieldPair>
+               {errors?.plotSize && <p style={{ color: "red", marginTop: "4px" }}>{errors.plotSize.message}</p>}
 
               {/* location */}
               <LabelFieldPair>
@@ -327,9 +329,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.location && <p style={{ color: "red", marginTop: "4px" }}>{errors.location.message}</p>}
+               
                 </div>
               </LabelFieldPair>
+               {errors?.location && <p style={{ color: "red", marginTop: "4px" }}>{errors.location.message}</p>}
 
               {/* frequency type  */}
               <LabelFieldPair>
@@ -354,9 +357,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.frequency && <p style={{ color: "red", marginTop: "4px" }}>{errors.frequency.message}</p>}
+               
                 </div>
               </LabelFieldPair>
+               {errors?.frequency && <p style={{ color: "red", marginTop: "4px" }}>{errors.frequency.message}</p>}
 
               {/* waste type  */}
               <LabelFieldPair>
@@ -381,9 +385,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.typeOfWaste && <p style={{ color: "red", marginTop: "4px" }}>{errors.typeOfWaste.message}</p>}
+               
                 </div>
               </LabelFieldPair>
+               {errors?.typeOfWaste && <p style={{ color: "red", marginTop: "4px" }}>{errors.typeOfWaste.message}</p>}
 
               {/* connectionCategory type  */}
               <LabelFieldPair>
@@ -408,9 +413,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors?.connectionCategory && <p style={{ color: "red", marginTop: "4px" }}>{errors.connectionCategory.message}</p>}
+               
                 </div>
               </LabelFieldPair>
+               {errors?.connectionCategory && <p style={{ color: "red", marginTop: "4px" }}>{errors.connectionCategory.message}</p>}
             </div>
           )}
         </div>

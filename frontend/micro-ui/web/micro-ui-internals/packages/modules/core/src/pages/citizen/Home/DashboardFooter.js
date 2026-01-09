@@ -1,19 +1,18 @@
-import { useTranslation } from "react-i18next"
-import { useHistory } from "react-router-dom"
-import React from "react"
-
+import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
+import React from "react";
 
 const DashboardFooter = () => {
-  const { t } = useTranslation()
-  const history = useHistory()
+  const { t } = useTranslation();
+  const history = useHistory();
 
   // Styles moved to Dashboarnew-dfooter.css
 
   const handleNavigation = (path) => {
     if (path) {
-      history.push(path)
+      history.push(path);
     }
-  }
+  };
 
   return (
     <footer className="new-df-footer">
@@ -22,9 +21,7 @@ const DashboardFooter = () => {
           {/* About Section */}
           <div className="new-df-column">
             <h3 className="new-df-heading">About mSeva Punjab</h3>
-            <p className="new-df-text">
-              A digital initiative by the Government of Punjab to provide seamless access to citizen services.
-            </p>
+            <p className="new-df-text">A digital initiative by the Government of Punjab to provide seamless access to citizen services.</p>
           </div>
 
           {/* Quick Links Section */}
@@ -58,11 +55,11 @@ const DashboardFooter = () => {
 
         {/* Copyright Section */}
         <div className="new-df-bottom">
-          <p className="new-df-copyright">© 2025 mSeva Punjab. All rights reserved. | Powered by UPMCOG</p>
+          <p className="new-df-copyright">Powered by DIGIT | UPYOG License | Copyright © 2026</p>
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default DashboardFooter
+export default DashboardFooter;

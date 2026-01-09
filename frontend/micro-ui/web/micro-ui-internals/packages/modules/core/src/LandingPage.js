@@ -77,10 +77,10 @@ const LandingPage = () => {
       <Header />
       
       {/* Main Content */}
-      <MiddleSection/>
+      {/* <MiddleSection/> */}
       
       {/* Help Section */}
-      <HelpSection/>
+      {/* <HelpSection/> */}
       
       {/* About Section */}
       <AboutSection/>

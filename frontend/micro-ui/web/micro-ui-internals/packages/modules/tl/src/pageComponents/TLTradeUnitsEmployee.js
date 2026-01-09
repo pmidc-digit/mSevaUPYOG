@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, Loader, LinkLabel} from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -58,6 +58,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
   const addNewUnits = () => {
     const newUnit = createUnitDetails();
     setUnits((prev) => [...prev, newUnit]);
+    
   };
 
   const removeUnit = (unit) => {
@@ -120,7 +121,10 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
       {units.map((unit, index) => (
         <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
       ))}
-      {!isRenewal && <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits}  />}
+      {!isRenewal && <LinkLabel   className="tl-add-action-button"        
+           onClick={addNewUnits}>
+        {t("TL_ADD_TRADE_UNITS")}
+      </LinkLabel>}
     </React.Fragment>
   );
 };
@@ -341,11 +345,19 @@ const TradeUnitForm = (_props) => {
       <div>
         <div className="clu-doc-required-card no-width">
           {allUnits?.length > 1 ? (
-            <div>
-              <div onClick={() => removeUnit(unit)}>
-                <span>
+            <div
+            style={{ 
+            display: "flex", 
+            justifyContent: "flex-end", 
+            marginBottom: "16px",
+            paddingRight: "8px" }}>
+              <div onClick={() => removeUnit(unit)}
+                style={{ 
+                cursor: "pointer",
+                padding: "4px"
+              }}>
+                
                   <svg
-                    style={{ float: "right", position: "relative", bottom: "5px" }}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
@@ -354,7 +366,7 @@ const TradeUnitForm = (_props) => {
                   >
                     <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#494848" />
                   </svg>
-                </span>
+                
               </div>
             </div>
           ) : null}

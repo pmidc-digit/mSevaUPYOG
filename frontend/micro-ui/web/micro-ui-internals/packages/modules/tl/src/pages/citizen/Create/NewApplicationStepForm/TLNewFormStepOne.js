@@ -66,7 +66,6 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
     const missingFields = validateStepData(currentStepData);
 

@@ -260,7 +260,7 @@ const Home = ({
               </div>
 
               {/* Statistics and Info Section */}
-              <StaticDynamicCard moduleCode={code?.toUpperCase()} />
+              {/* <StaticDynamicCard moduleCode={code?.toUpperCase()} /> */}
             </div>
           </div>
         </Route>

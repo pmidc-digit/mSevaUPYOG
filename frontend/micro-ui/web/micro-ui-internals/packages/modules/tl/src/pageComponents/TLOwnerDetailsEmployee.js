@@ -9,6 +9,7 @@ import {
   MobileNumber,
   CardSectionHeader,
   TextInput,
+  LinkLabel
 } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
@@ -1115,7 +1116,9 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       ))}
       {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
         <div>
-          <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} />
+          {/* <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} /> */}
+          <LinkLabel onClick={addNewOwner}      className="tl-add-action-button"    > {t("TL_NEW_OWNER_DETAILS_ADD_OWN")}
+          </LinkLabel>
           <CardLabelError>{t(formState.errors?.mulipleOwnerError?.message || "")}</CardLabelError>
         </div>
       ) : null}

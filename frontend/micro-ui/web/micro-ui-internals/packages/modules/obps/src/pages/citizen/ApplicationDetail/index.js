@@ -29,7 +29,7 @@ const DownloadCertificateButton = ({ applicationNumber }) => {
       if (!tenantInfo) return;
 
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
-      Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+      Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error("Error generating acknowledgement PDF", err);
     }

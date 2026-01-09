@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 //
 import StepWrapper from "./StepWrapper";
 
 const Stepper = ({ stepsList = [], onSubmit, step, setStep }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   const enabledStepsList = stepsList.filter((item) => item.isStepEnabled);
   const { t } = useTranslation();
 

@@ -75,7 +75,16 @@ public class CalculationService {
 	                		criteria.getApplicationNumber() + "  NOC application with this number does not exist ");
 			 
 			
-			List<TaxHeadEstimate> estimates;
+			List<TaxHeadEstimate> estimates = new LinkedList<>();
+			
+			if(((Map<String, Object>)criteria.getNoc().getNocDetails().getAdditionalDetails()).containsKey("calculations")) {
+				String filter = "$.calculations.[?(@.isLatest == true)].taxHeadEstimates.*";
+				List<Map> userCalculations = JsonPath.read(criteria.getNoc().getNocDetails().getAdditionalDetails(), filter);
+				for(Map userCalculation : userCalculations){
+					TaxHeadEstimate taxHeadEstimate = mapper.convertValue(userCalculation, TaxHeadEstimate.class);
+					estimates.add(taxHeadEstimate);
+				}
+			}
 			
 			String tenantId = criteria.getTenantId();
 			BigDecimal plotArea = new BigDecimal(0);
@@ -109,7 +118,9 @@ public class CalculationService {
 				
 			}
 			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, NOCConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
-			estimates = calculateFee(mdmsData, plotArea, builtUpArea, basementArea, roadType);
+			if(estimates.isEmpty())
+				estimates = calculateFee(mdmsData, plotArea, builtUpArea, basementArea, roadType);
+			
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
 			

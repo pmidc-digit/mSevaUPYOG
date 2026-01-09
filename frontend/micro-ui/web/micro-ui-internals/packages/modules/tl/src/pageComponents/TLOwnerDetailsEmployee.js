@@ -186,10 +186,34 @@ const OwnerForm = (_props) => {
             marginBottom: "16px",
             paddingRight: "8px" 
           }}>
-              <div onClick={() => removeOwner(owner)} style={{ 
-                cursor: "pointer",
-                padding: "4px"
-              }}>
+              <div onClick={() => removeOwner(owner)} 
+               onMouseEnter={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.opacity = "0.8";
+                  e.currentTarget.style.background = "linear-gradient(135deg, #2563eb, #1e40af)";
+                  e.currentTarget.style.borderRadius = "6px";
+                  path.style.fill = "#FFFFFF"; // White icon on blue gradient
+                }}
+                onMouseLeave={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.opacity = "1";
+                  path.style.fill = "#6b7280"; // Gray color default
+                }}
+                style={{
+                  cursor: "pointer",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                  backgroundColor: "transparent",
+                }}
+              >
                 {/* <span> */}
                   <svg
                     // style={{ float: "right", position: "relative", bottom: "5px" }}
@@ -584,6 +608,7 @@ const OwnerForm = (_props) => {
                     defaultValue={owner?.dob || ""}
                     render={(props) => (
                       <TextInput
+                      type="date"
                         value={props.value}
                         autoFocus={focusIndex.index === owner?.key && focusIndex.type === "dob"}
                         errorStyle={localFormState.touched.dob && errors?.dob?.message ? true : false}
@@ -1117,7 +1142,22 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
         <div>
           {/* <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} /> */}
-          <LinkLabel onClick={addNewOwner}      className="tl-add-action-button"    > {t("TL_NEW_OWNER_DETAILS_ADD_OWN")}
+          <LinkLabel onClick={addNewOwner}      
+           style={{
+            display: "inline-block",
+            padding: "8px 16px",
+            background: "linear-gradient(135deg, #2563eb, #1e40af)",
+            color: "#FFFFFF",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: "600",
+            textDecoration: "none",
+            marginTop: "16px",
+            marginBottom: "8px",
+            border: "none",
+            transition: "background-color 0.2s ease"
+          }}   > {t("TL_NEW_OWNER_DETAILS_ADD_OWN")}
           </LinkLabel>
           <CardLabelError>{t(formState.errors?.mulipleOwnerError?.message || "")}</CardLabelError>
         </div>

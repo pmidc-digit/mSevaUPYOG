@@ -35,7 +35,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
 
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
+      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );

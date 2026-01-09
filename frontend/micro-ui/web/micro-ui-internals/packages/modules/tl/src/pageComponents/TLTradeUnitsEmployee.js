@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, Loader, LinkLabel} from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  LabelFieldPair,
+  Dropdown,
+  TextInput,
+  LinkButton,
+  CardLabelError,
+  MobileNumber,
+  Loader,
+  LinkLabel,
+} from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -58,7 +68,6 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
   const addNewUnits = () => {
     const newUnit = createUnitDetails();
     setUnits((prev) => [...prev, newUnit]);
-    
   };
 
   const removeUnit = (unit) => {
@@ -121,10 +130,28 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
       {units.map((unit, index) => (
         <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
       ))}
-      {!isRenewal && <LinkLabel   className="tl-add-action-button"        
-           onClick={addNewUnits}>
-        {t("TL_ADD_TRADE_UNITS")}
-      </LinkLabel>}
+      {!isRenewal && (
+        <LinkLabel
+          style={{
+            display: "inline-block",
+            padding: "8px 16px",
+            background: "linear-gradient(135deg, #2563eb, #1e40af)",
+            color: "#FFFFFF",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: "600",
+            textDecoration: "none",
+            marginTop: "16px",
+            marginBottom: "8px",
+            border: "none",
+            transition: "background-color 0.2s ease",
+          }}
+          onClick={addNewUnits}
+        >
+          {t("TL_ADD_TRADE_UNITS")}
+        </LinkLabel>
+      )}
     </React.Fragment>
   );
 };
@@ -346,27 +373,43 @@ const TradeUnitForm = (_props) => {
         <div className="clu-doc-required-card no-width">
           {allUnits?.length > 1 ? (
             <div
-            style={{ 
-            display: "flex", 
-            justifyContent: "flex-end", 
-            marginBottom: "16px",
-            paddingRight: "8px" }}>
-              <div onClick={() => removeUnit(unit)}
-                style={{ 
-                cursor: "pointer",
-                padding: "4px"
-              }}>
-                
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#494848" />
-                  </svg>
-                
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "16px",
+                paddingRight: "8px",
+              }}
+            >
+              <div
+                onClick={() => removeUnit(unit)}
+                onMouseEnter={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.opacity = "0.8";
+                  path.style.fill = "#2341e9b2"; // Red color on hover
+                }}
+                onMouseLeave={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.opacity = "1";
+                  path.style.fill = "#6b7280"; // Gray color default
+                }}
+                style={{
+                  cursor: "pointer",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#494848" />
+                </svg>
               </div>
             </div>
           ) : null}
@@ -583,7 +626,7 @@ const TradeUnitForm = (_props) => {
                       setFocusIndex({ index: unit.key, type: "uomValue" });
                     }}
                     disable={!unit?.tradeSubType?.uom}
-                    onBlur={props.onBlur}                    
+                    onBlur={props.onBlur}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                   />
                 )}

@@ -86,6 +86,16 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        closeToast();
+      }, 3000); 
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+  
+
   // Function to handle the "Next" button click
   // const goNext = (data) => {
   //   // console.log("checkDFpmr=====", formData);
@@ -174,7 +184,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)} // Submit button label
         currentStep={config.currStepNumber} // Current step number
         onBackClick={onGoBack} // Handle back button click
-        className="employeeCard"
+        className=""
         isDisabled={isButtonDisabled}
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}

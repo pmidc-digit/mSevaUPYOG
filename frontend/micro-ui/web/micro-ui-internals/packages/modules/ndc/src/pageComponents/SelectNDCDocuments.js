@@ -149,7 +149,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
         <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
-        <div className="field">
+        <div className="form-field">
           <UploadFile
             id={"tl-doc"}
             onUpload={selectfile}

@@ -1348,22 +1348,16 @@ audio, canvas, embed, iframe, img, object, svg, video {
     vertical-align: middle;
 }
 
+
 /* Global Responsive Font Sizes for Mobile */
 @media only screen and (max-width: 768px) {
-  /* Headers with 32px should become 18px on mobile */
-  h1,
-  h2,
-  h3,
-  .card-header,
-  .heading,
-  .header-title,
-  .page-header,
-  .section-header,
-  .landing-card-header,
-  .employee-upyog-title,
-  header,
-  .survey-card-header {
-    font-size: 18px !important;
+  .card-header, .employee-upyog-title, .header-title, .heading, .landing-card-header, .page-header, .section-header, .survey-card-header, h1, h2, h3, header {
+    font-size: 14px !important;
+
+  .complaint-input-container {
+    display: flex;
+    flex-direction: column;
+  }
   }
 
   /* Headers with ~28px should become 16px on mobile */

@@ -8,6 +8,7 @@
   box-shadow: none;
 }
 
+
 .card {
   padding: 20px 24px 28px 24px;
   max-width: 95vw;
@@ -300,6 +301,27 @@
     line-height: 40px;
   }
 }
+
+/* Mobile view styles for card-link */
+@media only screen and (max-width: 640px) {
+  .card-link {
+    height: 32px;
+    width: 140px;
+    font-size: 11px;
+    padding: 6px 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    header {
+      line-height: 32px;
+      font-size: 11px;
+    }
+  }
+}
+
+/*button on mobile view for the file upload section to be small */
+/* selector-button-border */
 
 .submit-bar,
 .bpa-owner-submit-back {

@@ -648,7 +648,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {`${t("ADD_SEWERAGE")}`}
           </button>
 
-          <div style={{ marginTop: "40px" }}>
+          <div style={{ marginTop: "40px", marginBottom: "20px" }}>
             <p style={{ color: " green", fontSize: "14px", paddingBottom: "10px" }}>
               Please Select One Owner Name Who will have the access of No Due Certificate
             </p>

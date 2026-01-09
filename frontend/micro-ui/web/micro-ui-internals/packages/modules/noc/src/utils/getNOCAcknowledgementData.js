@@ -275,55 +275,91 @@ const getSpecificationDetails = (appData, t) => {
   };
 };
 
-const getCoordinateDetails = (appData, t) => {
-  let values = [
-    {
-      title: t("COMMON_LATITUDE1_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.coordinates?.Latitude1 || "N/A",
-    },
-    {
-      title: t("COMMON_LONGITUDE1_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.coordinates?.Longitude1  || "N/A",
-    },
-    {
-      title: t("COMMON_LATITUDE2_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.coordinates?.Latitude2 ||  "N/A",
-    },
-    {
-      title: t("COMMON_LONGITUDE2_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.coordinates?.Longitude2 || "N/A",
-    },
-  ];
+
+
+const getDocuments = async (appData, t) => {
+  const filteredDocs = appData?.documents?.filter(
+    (doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
+  );
+
+  const filesArray = filteredDocs?.map((value) => value?.uuid);
+
+  const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
+
+  console.log("res here==>", res);
 
   return {
-    title: t("NOC_SITE_COORDINATES_LABEL"),
-    values: values,
+    title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
+    values:
+      filteredDocs?.length > 0
+        ? filteredDocs.map((document, index) => {
+            const documentLink = pdfDownloadLink(res?.data, document?.uuid);
+            return {
+              title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA"),
+              value: " ",
+              link: documentLink || "",
+            };
+          })
+        : [
+            {
+              title: t("PT_NO_DOCUMENTS"),
+              value: "NA",
+            },
+          ],
   };
 };
 
-const getDocuments = async (appData, t) => {
-  const filesArray = appData?.documents?.map((value) => value?.uuid);
-  const res = filesArray?.length>0 && await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId());
-  //console.log("res here==>", res);
+
+const getSitePhotographs = async (appData, t) => {
+  const sitePhotoDocs = appData?.documents?.filter(
+    (doc) =>
+      doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
+      doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  );
+
+  const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid);
+
+  const res =
+    fileStoreIds?.length > 0 &&
+    (await Digit.UploadServices.Filefetch(
+      fileStoreIds,
+      Digit.ULBService.getStateId()
+    ));
+
+  const coords = appData?.nocDetails?.additionalDetails?.coordinates || {};
+
+  const values =
+    sitePhotoDocs?.length > 0
+      ? sitePhotoDocs.map((doc) => {
+          const documentLink = pdfDownloadLink(res?.data, doc?.uuid);
+
+          // Decide which lat/long to use based on type
+          let lat = "N/A";
+          let long = "N/A";
+          if (doc.documentType === "OWNER.SITEPHOTOGRAPHONE") {
+            lat = coords?.Latitude1 || "N/A";
+            long = coords?.Longitude1 || "N/A";
+          }
+          if (doc.documentType === "OWNER.SITEPHOTOGRAPHTWO") {
+            lat = coords?.Latitude2 || "N/A";
+            long = coords?.Longitude2 || "N/A";
+          }
+
+          return {
+            // Title includes photo label + coordinates
+            title:
+              (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) +
+              ` (Lat: ${lat}, Long: ${long})`,
+            value: " ",
+            link: documentLink || ""
+          };
+        })
+      : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
 
   return {
-    title: t("NOC_TITILE_DOCUMENT_UPLOADED"),
-    values:
-      appData?.documents?.length > 0
-        ? appData.documents.map((document, index) => {
-            let documentLink = pdfDownloadLink(res?.data, document?.uuid);
-            //   let documentName= pdfDocumentName(documentLink, index)
-           // console.log("doc link", documentLink);
-
-            return {
-              title: t(document?.documentType?.replace(/\./g, "_")) ||  t("CS_NA"),
-          
-            };
-          })
-        : {
-            title: t("PT_NO_DOCUMENTS"),
-            value: " ",
-          },
+    title: t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW"),
+    isAttachments: true,
+    values
   };
 };
 
@@ -331,7 +367,7 @@ const getDocuments = async (appData, t) => {
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData=applicationDetails || {};
-  //console.log("appData here in DownloadACK", appData);
+  console.log("appData here in DownloadACK", appData);
 
   let detailsArr=[], imageURL="";
   const ownerFileStoreId= appData?.nocDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
@@ -359,8 +395,8 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,u
         ...getApplicantDetails(appData, t),
         getSiteDetails(appData, t), 
         getSpecificationDetails(appData, t),
-        getCoordinateDetails(appData,t),
-        await getDocuments(appData,t)
+        await getDocuments(appData,t),
+        await getSitePhotographs(appData,t)
     ],
     imageURL,
     ulbType,

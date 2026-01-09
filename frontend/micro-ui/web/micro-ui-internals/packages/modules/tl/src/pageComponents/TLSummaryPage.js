@@ -1,15 +1,19 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { CardLabel } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import TLDocument from "./TLDocumets";
-import { Controller, useForm } from "react-hook-form";
 
-const TLSummaryPage = ({ config, formData, onSelect }) => {
+const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const { t } = useTranslation();
+  
+  // Get formData directly from Redux to prevent data loss
+  const reduxFormData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
+  const formData = reduxFormData || propsFormData || {};
+  
   const createdResponse = formData?.CreatedResponse || {};
   const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate } = createdResponse;
-  const [getDeclare, setDeclare] = useState(false);
-  const { control } = useForm();
+  const [isChecked, setIsChecked] = useState(false);
 
   const owners = tradeLicenseDetail?.owners || [];
   const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
@@ -31,7 +35,7 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
 
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
+      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -115,7 +119,7 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         )}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+      {/* <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
         <Controller
           name="termsAccepted"
           control={control}
@@ -136,6 +140,23 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
               style={{ width: "18px", height: "18px", cursor: "pointer" }}
             />
           )}
+        />
+        <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0 }}>
+          {t("TL_DECLARATION_MESSAGE")}
+        </label>
+      </div> */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginTop: "20px" }}>
+        <input
+          id="termsAccepted"
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setIsChecked(checked);
+            // Save to window so Step 4 can access it
+            window.declarationChecked = checked;
+          }}
+          style={{ width: "18px", height: "18px", cursor: "pointer" }}
         />
         <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0 }}>
           {t("TL_DECLARATION_MESSAGE")}

@@ -238,6 +238,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           )}
         />
       </LabelFieldPair>
+      {errors?.ownershipType && <CardLabelError className="ral-error-label">{errors.ownershipType.message}</CardLabelError>}
       {watch("ownershipType") &&
         fields?.map((field, index) => (
           <div key={field?.id} className="ral-applicant-container">

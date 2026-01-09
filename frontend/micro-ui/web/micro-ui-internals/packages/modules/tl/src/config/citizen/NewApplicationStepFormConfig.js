@@ -52,7 +52,7 @@ export const config = [
     ],
   },
   {
-    head: "TL_NEW_APPLICATION_PROPERTY",
+    head: "TL_NEW_TRADE_DETAILS_PT_ID_LABEL",
     stepNumber: 1,
     body: [
       {

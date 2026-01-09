@@ -7,11 +7,11 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   const { t } = useTranslation();
 
   const allLinks = [
-    {
-      text: t("ES_TITLE_NEW_ADD_BOOKING"),
-      link: "/digit-ui/employee/ads/bookad",
-      roles: [],
-    },
+    // {
+    //   text: t("ES_TITLE_NEW_ADD_BOOKING"),
+    //   link: "/digit-ui/employee/ads/bookad",
+    //   roles: [],
+    // },
     // {
     //   text: t("ADS_MY_APPLICATIONS"),
     //   link: `/digit-ui/employee/ads/my-applications`,
@@ -27,7 +27,6 @@ const InboxLinks = ({ parentRoute, businessService }) => {
     //   link: `/digit-ui/employee/ads/site-master-details`,
     //   roles: [],
     // },
-
     // {
     //   text: "ES_COMMON_APPLICATION_SEARCH",
     //   link: `/digit-ui/employee/ads/application-search`,

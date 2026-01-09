@@ -1387,4 +1387,22 @@ audio, canvas, embed, iframe, img, object, svg, video {
     font-size: 14px !important;
   }
 }
-
+.link-button-margin {
+  margin-top: 10px;
+}
+.tl-add-action-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #FFFFFF !important;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none !important;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
@@ -55,6 +55,16 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        closeToast();
+      }, 3000); 
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+ 
 
   return (
     <React.Fragment>

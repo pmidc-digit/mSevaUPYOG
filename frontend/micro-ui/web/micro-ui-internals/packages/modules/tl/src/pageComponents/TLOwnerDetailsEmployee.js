@@ -9,6 +9,7 @@ import {
   MobileNumber,
   CardSectionHeader,
   TextInput,
+  LinkLabel
 } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
@@ -162,7 +163,6 @@ const OwnerForm = (_props) => {
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
 
-  console.log("check formData===", formData);
   useEffect(function () {
   if (owner && owner.gender) {
     var genderObj = genderTypeMenu.find(function (g) {
@@ -173,18 +173,50 @@ const OwnerForm = (_props) => {
     }
   }
 }, [owner]);
-//console.log("Hello Ownere",owner)
+
   return (
     <React.Fragment>
       {/* <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(errors)}> */}
       <div>
         <div className="clu-doc-required-card no-width">
           {allOwners?.length > 1 ? (
-            <div>
-              <div onClick={() => removeOwner(owner)}>
-                <span>
+            <div style={{ 
+            display: "flex", 
+            justifyContent: "flex-end", 
+            marginBottom: "16px",
+            paddingRight: "8px" 
+          }}>
+              <div onClick={() => removeOwner(owner)} 
+               onMouseEnter={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.opacity = "0.8";
+                  e.currentTarget.style.background = "linear-gradient(135deg, #2563eb, #1e40af)";
+                  e.currentTarget.style.borderRadius = "6px";
+                  path.style.fill = "#FFFFFF"; // White icon on blue gradient
+                }}
+                onMouseLeave={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.opacity = "1";
+                  path.style.fill = "#6b7280"; // Gray color default
+                }}
+                style={{
+                  cursor: "pointer",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                  backgroundColor: "transparent",
+                }}
+              >
+                {/* <span> */}
                   <svg
-                    style={{ float: "right", position: "relative", bottom: "5px" }}
+                    // style={{ float: "right", position: "relative", bottom: "5px" }}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
@@ -193,7 +225,7 @@ const OwnerForm = (_props) => {
                   >
                     <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#494848" />
                   </svg>
-                </span>
+                {/* </span> */}
               </div>
             </div>
           ) : null}
@@ -576,6 +608,7 @@ const OwnerForm = (_props) => {
                     defaultValue={owner?.dob || ""}
                     render={(props) => (
                       <TextInput
+                      type="date"
                         value={props.value}
                         autoFocus={focusIndex.index === owner?.key && focusIndex.type === "dob"}
                         errorStyle={localFormState.touched.dob && errors?.dob?.message ? true : false}
@@ -971,17 +1004,17 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const isEditScreen = pathname.includes("/modify-application/");
   let isSameAsPropertyOwner = formData?.ownershipCategory?.isSameAsPropertyOwner;
   const formDataOwners = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-  const [owners, setOwners] = useState(formDataOwners?.applicationData?.tradeLicenseDetail?.owners || [createOwnerDetails()]);
+  const [owners, setOwners] = useState(
+    formDataOwners?.OwnerDetails?.owners || 
+    formDataOwners?.applicationData?.tradeLicenseDetail?.owners || 
+    formData?.owners ||
+    [createOwnerDetails()]
+  );
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [previousLicenseDetails, setPreviousLicenseDetails] = useState(formData?.tradedetils1 || []);
-
-  //console.log("check owner", formData?.owners);
-  //console.log("check formDataOwners", formDataOwners?.applicationData?.tradeLicenseDetail?.owners);
-  //console.log("check createOwnerDetails", createOwnerDetails());
-
 
   const { data: mdmsData, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", [
     "UsageCategory",
@@ -1101,8 +1134,6 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
     return <React.Fragment />;
   }
 
-  console.log("newchecformData", formData);
-
   return (
     <React.Fragment>
       {owners.map((owner, index) => (
@@ -1110,7 +1141,24 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       ))}
       {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
         <div>
-          <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} />
+          {/* <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} /> */}
+          <LinkLabel onClick={addNewOwner}      
+           style={{
+            display: "inline-block",
+            padding: "8px 16px",
+            background: "linear-gradient(135deg, #2563eb, #1e40af)",
+            color: "#FFFFFF",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: "600",
+            textDecoration: "none",
+            marginTop: "16px",
+            marginBottom: "8px",
+            border: "none",
+            transition: "background-color 0.2s ease"
+          }}   > {t("TL_NEW_OWNER_DETAILS_ADD_OWN")}
+          </LinkLabel>
           <CardLabelError>{t(formState.errors?.mulipleOwnerError?.message || "")}</CardLabelError>
         </div>
       ) : null}

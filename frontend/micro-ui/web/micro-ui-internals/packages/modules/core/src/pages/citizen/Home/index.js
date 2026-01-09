@@ -360,7 +360,7 @@ const Home = () => {
           </div>
         )} */}
 
-          <div className="UpdatesSection" style={{ marginTop: "40px" }}>
+          <div className="UpdatesSection" style={{display:"none", marginTop: "40px" }}>
             <CardBasedOptions {...allInfoAndUpdatesProps} />
           </div>
 

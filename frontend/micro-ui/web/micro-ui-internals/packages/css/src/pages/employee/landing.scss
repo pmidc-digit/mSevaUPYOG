@@ -1145,9 +1145,13 @@
    About Section
    ======================================== */
 
-.landing-about-section {
+/* .landing-about-section {
   padding: 80px 20px;
   background: #ffffff;
+} */
+
+.landing-about-section{
+  display: none;
 }
 
 .landing-about-container {

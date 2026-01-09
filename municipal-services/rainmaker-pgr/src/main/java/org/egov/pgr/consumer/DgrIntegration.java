@@ -347,33 +347,39 @@ public class DgrIntegration {
             String municipalityNameLocal = safeString(selectedMunicipality.get("Municipality_Name_Local_Lang"));
             org.egov.pgr.model.Service pgrService =
                     serviceReqRequest.getServices().get(0);
-
-            // Name
-         // Name
+           
             String citizenName = safeValue(
-                    pgrService.getFirstName(), // old structure
-                    pgrService.getCitizen() != null ? pgrService.getCitizen().getName() : null, // new JSON
+                    constants.DEFAULT_CITIZEN_NAME,                 // DEFAULT FIRST
+                    pgrService.getFirstName(),                      // old structure
+                    pgrService.getCitizen() != null
+                            ? pgrService.getCitizen().getName()
+                            : null,
                     userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
-                            ? userResponse.getUser().get(0).getName() : null, // fallback from userResponse
-                    constants.DEFAULT_CITIZEN_NAME // final default
+                            ? userResponse.getUser().get(0).getName()
+                            : null
             );
-
-            // Email
+            
             String citizenEmail = safeValue(
+                    constants.DEFAULT_CITIZEN_EMAIL,
                     pgrService.getEmail(),
-                    pgrService.getCitizen() != null ? pgrService.getCitizen().getEmailId() : null,
+                    pgrService.getCitizen() != null
+                            ? pgrService.getCitizen().getEmailId()
+                            : null,
                     userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
-                            ? userResponse.getUser().get(0).getEmailId() : null,
-                    constants.DEFAULT_CITIZEN_EMAIL
+                            ? userResponse.getUser().get(0).getEmailId()
+                            : null
             );
 
-            // Mobile
+            
             String citizenMobile = safeValue(
+                    constants.DEFAULT_CITIZEN_MOBILE,
                     pgrService.getPhone(),
-                    pgrService.getCitizen() != null ? pgrService.getCitizen().getMobileNumber() : null,
+                    pgrService.getCitizen() != null
+                            ? pgrService.getCitizen().getMobileNumber()
+                            : null,
                     userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()
-                            ? userResponse.getUser().get(0).getMobileNumber() : null,
-                    constants.DEFAULT_CITIZEN_MOBILE
+                            ? userResponse.getUser().get(0).getMobileNumber()
+                            : null
             );
 
 
@@ -413,9 +419,18 @@ public class DgrIntegration {
                             ? catSubCat.get("Sub_Category_ID").toString()
                             : "0");
 
-            requestBody.put("Application_Title", safeValue(serviceReqRequest.getServices().get(0).getDescription(), constants.DEFAULT_CITIZEN_NAME));
-            requestBody.put("Application_Description", safeValue(serviceReqRequest.getServices().get(0).getDescription(), constants.DEFAULT_CITIZEN_NAME));
-            requestBody.put("Application_Department_Name", constants.DEPARTMENT_NAME);
+            requestBody.put(
+            	    "Application_Title",
+            	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+            	              serviceReqRequest.getServices().get(0).getDescription())
+            	);
+
+            	requestBody.put(
+            	    "Application_Description",
+            	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+            	              serviceReqRequest.getServices().get(0).getDescription())
+            	);
+            	requestBody.put("Application_Department_Name", constants.DEPARTMENT_NAME);
             requestBody.put("reopen", true);
             requestBody.put("Citizen_Type", constants.CITIZEN_TYPE);
             requestBody.put("Citizen_Company_Name", "");

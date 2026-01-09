@@ -129,16 +129,21 @@ const SearchApplication = ({ onSearch, type, onClose, searchParams, isInboxPage,
                   </span>
                 </div>
               ))}
-              {type === "desktop" && !mobileView && (
-                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
-                  <div>{clearAll()}</div>
+              {type === "desktop" && !mobileView && isInboxPage && (
+                <div className="search-action-wrapper" style={{width: "100%"}}>
+                  <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
+                  <span style={{ paddingTop: "9px" }} className="clear-search">
+                    {clearAll()}
+                  </span>
                 </div>
               )}
 
-              {type === "desktop" && !mobileView && (
-                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
+              {type === "desktop" && !mobileView && !isInboxPage && (
+                <div className="search-action-wrapper">
                   <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
-                  {!isInboxPage && <div>{clearAll()}</div>}
+                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                    {clearAll()}
+                  </div>
                 </div>
               )}
             </div>

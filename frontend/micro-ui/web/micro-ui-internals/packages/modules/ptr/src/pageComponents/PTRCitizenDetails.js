@@ -85,7 +85,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     return fallbackMessages[fieldName] || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px" };
 
   const handleMobileChange = async (value) => {
     setLoader(true);

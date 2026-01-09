@@ -363,7 +363,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petName")}</CardLabelError>}
+          {errors.petName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petName")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -385,7 +385,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petType && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petType")}</CardLabelError>}
+          {errors.petType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petType")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -410,7 +410,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               );
             }}
           />
-          {errors.breedType && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("breedType")}</CardLabelError>}
+          {errors.breedType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("breedType")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -432,7 +432,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petGender && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petGender")}</CardLabelError>}
+          {errors.petGender && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petGender")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -459,7 +459,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petColor && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petColor")}</CardLabelError>}
+          {errors.petColor && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petColor")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -531,7 +531,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             )}
           />
           {errors.petAge && (
-            <CardLabelError className="ptr-error-label" >{getErrorMessage("petAge")}</CardLabelError>
+            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petAge")}</p>
           )}
 
           <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
@@ -566,7 +566,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.lastVaccineDate && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
+          {errors.lastVaccineDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("lastVaccineDate")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -592,7 +592,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.vaccinationNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("vaccinationNumber")}</CardLabelError>}
+          {errors.vaccinationNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("vaccinationNumber")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -613,7 +613,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
             )}
           />
-          {errors.doctorName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("doctorName")}</CardLabelError>}
+          {errors.doctorName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("doctorName")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -629,7 +629,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}
           />
-          {errors.clinicName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("clinicName")}</CardLabelError>}
+          {errors.clinicName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("clinicName")}</p>}
         </div>
       </LabelFieldPair>
 

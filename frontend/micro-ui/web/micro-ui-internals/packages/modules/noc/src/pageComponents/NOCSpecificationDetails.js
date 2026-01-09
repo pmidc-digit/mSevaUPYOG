@@ -11,7 +11,6 @@ import {
   SubmitBar,
   CardSectionHeader,
   Loader,
-  CardLabelError,
   UploadFile,
 } from "@mseva/digit-ui-react-components";
 
@@ -85,7 +84,7 @@ const NOCSpecificationDetails = (_props) => {
                 />
               )}
             />
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError>
+            {errors?.specificationPlotArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationPlotArea.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -112,9 +111,7 @@ const NOCSpecificationDetails = (_props) => {
               )}
             />
           )}
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>
-          {errors?.specificationBuildingCategory ? errors.specificationBuildingCategory.message : ""}
-        </CardLabelError>
+          {errors?.specificationBuildingCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationBuildingCategory.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -133,7 +130,7 @@ const NOCSpecificationDetails = (_props) => {
               )}
               />
             )}
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationNocType?.message || ""}</CardLabelError>
+            {errors?.specificationNocType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationNocType.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -157,7 +154,7 @@ const NOCSpecificationDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationRestrictedArea?.message || ""}</CardLabelError>
+          {errors?.specificationRestrictedArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationRestrictedArea.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -181,7 +178,7 @@ const NOCSpecificationDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.specificationIsSiteUnderMasterPlan?.message || ""}</CardLabelError>
+          {errors?.specificationIsSiteUnderMasterPlan && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationIsSiteUnderMasterPlan.message}</p>}
           </div>
         </LabelFieldPair>
       </div>

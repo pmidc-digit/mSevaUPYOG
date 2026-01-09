@@ -11,7 +11,7 @@ function ADSSummary({ t }) {
 
   const rawFormData = useSelector((state) => state?.ads?.ADSNewApplicationFormReducer?.formData);
   const formData = React.useMemo(() => rawFormData || {}, [rawFormData]);
-  const applicant = formData?.CreatedResponse?.applicantDetail || {};
+  const applicant = formData?.ownerDetails?.applicantDetail || formData?.CreatedResponse?.applicantDetail || {};
   const address = formData?.ownerDetails?.address || formData?.CreatedResponse?.address || {};
   // const cartArray = Array.isArray(formData.ads?.selectedCards) ? formData.ads?.selectedCards : [];
 

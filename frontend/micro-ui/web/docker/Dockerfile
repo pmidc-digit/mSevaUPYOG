@@ -11,7 +11,7 @@ RUN yarn add @mseva/digit-ui-module-noc@1.0.38
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.13
 RUN yarn add @mseva/digit-ui-module-core@1.0.64
-RUN yarn add @mseva/digit-ui-module-common@1.1.72
+RUN yarn add @mseva/digit-ui-module-common@1.1.73
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.1.98
@@ -20,7 +20,7 @@ RUN yarn add @mseva/digit-ui-module-pt@1.0.39
 RUN yarn add @mseva/digit-ui-module-tl@1.0.25
 RUN yarn add @mseva/digit-ui-module-obps@1.1.57
 RUN yarn add @mseva/digit-ui-module-sv@1.1.35
-RUN yarn add @mseva/upyog-ui-module-ads@1.1.67
+RUN yarn add @mseva/upyog-ui-module-ads@1.1.68
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.75
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.29
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.19

@@ -203,6 +203,8 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           textDecoration: "none",
           fontSize: "0.9375rem",
           fontWeight: isActive ? "500" : "400",
+          marginLeft: "10px",
+          marginRight: "10px",
         }}
       >
         <span style={{ display: "flex", alignItems: "center", minWidth: "20px" }}>{leftIcon}</span>
@@ -253,7 +255,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
         text: (
           <React.Fragment>
             {t("CS_COMMON_HELPLINE")}
-            <div className="telephone" style={{ marginTop: "-10%" }}>
+            <div className="telephone" >
               <div className="link">
                 <a href={`tel:${filteredTenantContact}`}>{filteredTenantContact}</a>
               </div>

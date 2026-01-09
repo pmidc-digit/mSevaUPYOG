@@ -192,40 +192,40 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             <CardLabel>
               {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-             
-              control={control}
-              name="mobileNumber"
-              rules={{
-                required: "Mobile number is required",
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: "Enter a valid 10-digit mobile number",
-                },
-              }}
-              render={(props) => (
-                <MobileNumber
-                  
-                  value={props.value}
-                  onChange={(e) => {
-                    props.onChange(e);
-                    setValue("name", "");
-                    setValue("emailId", "");
-                    setValue("address", "");
-                    setUser("");
-                    setShowOtp(false);
-                    // ✅ updates react-hook-form
-                    if (e.length === 10) {
-                      handleMobileChange(e); // 🔥 only then fire API
-                    }
-                    // debouncedHandleMobileChange(e);
-                  }}
-                  onBlur={props.onBlur}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+            <div className="form-field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name="mobileNumber"
+                rules={{
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={(props) => (
+                  <MobileNumber
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      setValue("name", "");
+                      setValue("emailId", "");
+                      setValue("address", "");
+                      setUser("");
+                      setShowOtp(false);
+                      // ✅ updates react-hook-form
+                      if (e.length === 10) {
+                        handleMobileChange(e); // 🔥 only then fire API
+                      }
+                      // debouncedHandleMobileChange(e);
+                    }}
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+            </div>
           </div>
 
           {/* name */}
@@ -233,30 +233,31 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             <CardLabel>
               {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="name"
-              rules={{
-                required: "Name is required",
-                minLength: { value: 2, message: "Name must be at least 2 characters" },
-              }}
-              render={(props) => (
-                <TextInput
-                 
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  disabled={getUser?.name}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
+            <div className="form-field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name="name"
+                rules={{
+                  required: "Name is required",
+                  minLength: { value: 2, message: "Name must be at least 2 characters" },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    error={errors?.name?.message}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled={getUser?.name}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.name && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.name.message}</p>}
+            </div>
           </div>
 
           {/* email */}
@@ -264,62 +265,64 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             <CardLabel>
               {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="emailId"
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
-                  message: "Invalid email format",
-                },
-              }}
-              render={(props) => (
-                <TextInput
-                 
-                  value={props.value}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  disabled={getUser?.emailId}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
+            <div className="form-field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name="emailId"
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
+                    message: "Invalid email format",
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled={getUser?.emailId}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+            </div>
           </div>
 
           <div className="label-field-pair" style={{ marginBottom: "20px" }}>
             <CardLabel>
               {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <Controller
-              control={control}
-              name="address"
-              rules={{
-                required: "Address is required",
-                minLength: { value: 5, message: "Address must be at least 5 characters" },
-              }}
-              render={(props) => (
-                <TextArea
-                 
-                  name="address"
-                  value={props.value}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  disabled={getUser?.permanentAddress}
-                  t={t}
-                />
-              )}
-            />
-            {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
+            <div className="form-field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name="address"
+                rules={{
+                  required: "Address is required",
+                  minLength: { value: 5, message: "Address must be at least 5 characters" },
+                }}
+                render={(props) => (
+                  <TextArea
+                    name="address"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled={getUser?.permanentAddress}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.address.message}</p>}
+            </div>
           </div>
 
           {/* checkbox self declaration */}

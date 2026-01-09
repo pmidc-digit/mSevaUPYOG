@@ -283,7 +283,7 @@ const TLApplicationDetails = () => {
     application?.[0]?.status !== "PENDINGPAYMENT" &&
     application?.[0]?.status !== "MANUALEXPIRED"
       ? [
-          ...(!isTestApplication
+          ...(!isTestApplication || (isTestApplication && application?.[0]?.status === "APPROVED")
             ? [
                 {
                   label: t("TL_CERTIFICATE"),

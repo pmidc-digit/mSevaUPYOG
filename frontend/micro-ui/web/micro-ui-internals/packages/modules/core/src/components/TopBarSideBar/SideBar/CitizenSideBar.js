@@ -143,7 +143,7 @@ export const CitizenSideBar = ({
         text: (
           <React.Fragment>
             {t("CS_COMMON_HELPLINE")}
-            <div className="telephone" style={{ marginTop: "-10%" }}>
+            <div className="telephone" >
               <div className="link">
                 <a href={`tel:${filteredTenantContact}`}>{filteredTenantContact}</a>
               </div>

@@ -9,7 +9,6 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
-  CardLabelError,
   UploadFile
 } from "@mseva/digit-ui-react-components";
 
@@ -206,7 +205,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.plotNo ? errors.plotNo.message : ""}</CardLabelError>
+              {errors?.plotNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -239,7 +238,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
+              {errors?.proposedSiteAddress && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.proposedSiteAddress.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -267,7 +266,7 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
+            {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -323,7 +322,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.khasraNo?.message || ""}</CardLabelError>
+              {errors?.khasraNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.khasraNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -356,7 +355,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.hadbastNo?.message || ""}</CardLabelError>
+              {errors?.hadbastNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.hadbastNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -375,7 +374,7 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.roadType?.message || ""}</CardLabelError>
+            {errors?.roadType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadType.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -408,7 +407,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
+              {errors?.areaLeftForRoadWidening && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaLeftForRoadWidening.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -441,7 +440,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
+              {errors?.netPlotAreaAfterWidening && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.netPlotAreaAfterWidening.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -476,7 +475,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.netTotalArea?.message || ""}</CardLabelError>
+              {errors?.netTotalArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.netTotalArea.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -509,7 +508,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
+              {errors?.roadWidthAtSite && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadWidthAtSite.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -536,7 +535,7 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.buildingStatus?.message || ""}</CardLabelError>
+            {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.buildingStatus.message}</p>}
             </div>
           </LabelFieldPair>
           
@@ -564,7 +563,7 @@ const basementAreaValues= watch("basementArea");
                 />
               )}
             />
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
+            {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
             </div>
           </LabelFieldPair>
           )}
@@ -603,7 +602,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.basementArea ? errors.basementArea.message : ""}</CardLabelError>
+              {errors?.basementArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.basementArea.message}</p>}
             </div>
           </LabelFieldPair>
           
@@ -648,7 +647,7 @@ const basementAreaValues= watch("basementArea");
                 />
                 
                   {errors?.floorArea?.[index]?.value && (
-                   <CardLabelError className={errorStyle}>{errors.floorArea[index].value.message}</CardLabelError>
+                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.floorArea[index].value.message}</p>
                   )}
 
                 </React.Fragment>
@@ -722,7 +721,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.wardNo?.message || ""}</CardLabelError>
+              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.wardNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -751,7 +750,7 @@ const basementAreaValues= watch("basementArea");
                   
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.district?.message || ""}</CardLabelError>
+              {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.district.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -776,7 +775,7 @@ const basementAreaValues= watch("basementArea");
                 )}
               />
             )}
-            <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.zone?.message || ""}</CardLabelError>
+            {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.zone.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -809,7 +808,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.villageName?.message || ""}</CardLabelError>
+              {errors?.villageName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.villageName.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -842,7 +841,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.colonyName?.message || ""}</CardLabelError>
+              {errors?.colonyName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.colonyName.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -875,7 +874,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
+              {errors?.vasikaNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.vasikaNumber.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -908,7 +907,7 @@ const basementAreaValues= watch("basementArea");
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.khewatAndKhatuniNo?.message || ""}</CardLabelError>
+              {errors?.khewatAndKhatuniNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.khewatAndKhatuniNo.message}</p>}
             </div>
           </LabelFieldPair>
         </div>

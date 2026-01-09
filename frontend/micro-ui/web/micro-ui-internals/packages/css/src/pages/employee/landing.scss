@@ -505,7 +505,7 @@
       width: 48%;
     }
   }
-  .top-section-parent {
+  /* .top-section-parent {
     position: relative;
     width: 100%;
     background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #0ea5e9 100%);
@@ -515,6 +515,10 @@
     @media (max-width: 768px) {
       padding: 30px 15px 50px;
     }
+  } */
+
+  .top-section-parent {
+    display: none;
   }
 
   .top-section-wrapper {
@@ -1141,9 +1145,13 @@
    About Section
    ======================================== */
 
-.landing-about-section {
+/* .landing-about-section {
   padding: 80px 20px;
   background: #ffffff;
+} */
+
+.landing-about-section{
+  display: none;
 }
 
 .landing-about-container {
@@ -1286,15 +1294,21 @@
   color: #ffffff;
 }
 
-.landing-footer-partners {
+/* Please do not remove until binit sir and palam sir approves */
+
+/* .landing-footer-partners {
   background: #f8fafc;
   padding: 40px 20px;
-}
+} */
 
-.landing-footer-partners-container {
+/* .landing-footer-partners-container {
   max-width: 1200px;
   margin: 0 auto;
   text-align: center;
+} */
+
+.landing-footer-partners-container{
+  display: none;
 }
 
 .landing-footer-partners-title {
@@ -1341,8 +1355,14 @@
   }
 }
 
-.landing-footer-main {
+/* Please do not remove until binit sir and palam sir approves */
+
+/*.landing-footer-main {
   padding: 60px 20px;
+} */
+
+.landing-footer-main {
+  display: none;
 }
 
 .landing-footer-container {

@@ -203,7 +203,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [currentStepData, locationOptions]);
 
-  const errorStyle = { marginTop: "-18px", color: "red" };
+  const errorStyle = { color: "red" };
 
   const guidance = getScheduleMessage(scheduleType, t);
 

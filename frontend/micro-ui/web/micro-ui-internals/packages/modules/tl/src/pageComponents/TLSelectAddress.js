@@ -28,7 +28,7 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
       : pincode
       ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
       : allCities;
-
+console.log("citiesInTLSelectAddress", cities);
   const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city || null);
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
@@ -191,7 +191,7 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
                 disable={true}
                 option={cities}
                 select={props.onChange}
-                optionKey="code"
+                optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
                 placeholder={t("TL_SELECT_CITY_PLACEHOLDER")}

@@ -9,24 +9,23 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
-  CardLabelError,
   UploadFile,
 } from "@mseva/digit-ui-react-components";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 const LayoutSiteDetails = (_props) => {
   let tenantId;
-    if(window.location.pathname.includes("employee")){
+  if (window.location.pathname.includes("employee")) {
     tenantId = window.localStorage.getItem("Employee.tenant-id");
-    }else{
+  } else {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
-    }
+  }
   //console.log("tenantId here", tenantId);
 
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
-console.log(currentStepData, "DTATA TO BE MAPPED");
+  console.log(currentStepData, "DTATA TO BE MAPPED");
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
   console.log(applicationNo, "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
@@ -147,7 +146,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
   useEffect(() => {
     // Skip if already initialized or if currentStepData has district
     if (isDistrictInitialized) return;
-    
+
     // First priority: restore from currentStepData
     if (currentStepData?.siteDetails?.district) {
       setSelectedCity(currentStepData.siteDetails.district);
@@ -155,11 +154,11 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
       setIsDistrictInitialized(true);
       return;
     }
-    
+
     // Second priority: auto-select based on tenantId
     if (tenantId && allCities?.length > 0) {
       const defaultCity = allCities.find((city) => city.code === tenantId);
-      console.log(defaultCity, 'DDDDD');
+      console.log(defaultCity, "DDDDD");
       if (defaultCity) {
         setSelectedCity(defaultCity);
         setValue("district", defaultCity);
@@ -224,7 +223,7 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                 control={control}
                 name="plotNo"
                 defaultValue=""
-                 rules={{
+                rules={{
                   required: t("REQUIRED_FIELD"),
                   maxLength: {
                     value: 200,
@@ -244,9 +243,9 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+              {errors?.plotNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotNo.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.plotNo ? errors.plotNo.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")}*</CardLabel>
@@ -274,35 +273,39 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+              {errors?.proposedSiteAddress && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.proposedSiteAddress.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}*</CardLabel>
-            {!isUlbListLoading && (
-              <Controller
-                control={control}
-                name={"ulbName"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      setUlbName(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={ulbListOptions}
-                    optionKey="displayName"
-                    t={t}
-                     disable={currentStepData?.apiData?.applicationNo ? true: false}
-                  />
-                )}
-              />
-            )}
+            <div className="field">
+              {!isUlbListLoading && (
+                <Controller
+                  control={control}
+                  name={"ulbName"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        setUlbName(e);
+                        props.onChange(e);
+                      }}
+                      selected={props.value}
+                      option={ulbListOptions}
+                      optionKey="displayName"
+                      t={t}
+                      disable={currentStepData?.apiData?.applicationNo ? true : false}
+                    />
+                  )}
+                />
+              )}
+              {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}*</CardLabel>
@@ -353,9 +356,9 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+              {errors?.khasraNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.khasraNo.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.khasraNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_HADBAST_NO_LABEL")}`}*</CardLabel>
@@ -366,11 +369,11 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                 defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  
-                maxLength: {
-                  value: 200,
-                  message: t("MAX_200_CHARACTERS_ALLOWED"),
-                },
+
+                  maxLength: {
+                    value: 200,
+                    message: t("MAX_200_CHARACTERS_ALLOWED"),
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -384,29 +387,31 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+              {errors?.hadbastNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.hadbastNo.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.hadbastNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_TYPE_LABEL")}`}*</CardLabel>
-            {!isRoadTypeLoading && (
-              <Controller
-                control={control}
-                name={"roadType"}
-                defaultValue={currentStepData?.siteDetails?.roadType || currentStepData?.apiData?.layoutDetails?.additionalDetails?.siteDetails?.roadType || ""}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
-                )}
-              />
-            )}
+            <div className="field">
+              {!isRoadTypeLoading && (
+                <Controller
+                  control={control}
+                  name={"roadType"}
+                  defaultValue={
+                    currentStepData?.siteDetails?.roadType || currentStepData?.apiData?.layoutDetails?.additionalDetails?.siteDetails?.roadType || ""
+                  }
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
+                  )}
+                />
+              )}
+              {errors?.roadType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.roadType.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
-
-
 
           {/* <CHANGE> Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
@@ -436,13 +441,16 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                     disable={currentStepData?.apiData?.applicationNo ? true: false}
+                    disable={currentStepData?.apiData?.applicationNo ? true : false}
                   />
                 )}
               />
+
+              {errors?.areaLeftForRoadWidening && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaLeftForRoadWidening.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
           {/* <CHANGE> Add Net Plot Area After Widening field (B) */}
           <LabelFieldPair>
@@ -469,17 +477,19 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}
-                    
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disable={currentStepData?.apiData?.applicationNo ? true: false}
+                    disable={currentStepData?.apiData?.applicationNo ? true : false}
                   />
                 )}
               />
+
+              {errors?.netPlotAreaAfterWidening && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netPlotAreaAfterWidening.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
 
           {/* <CHANGE> Add Net Total Area field (A+B) - disabled/readonly */}
           <LabelFieldPair>
@@ -513,13 +523,16 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.netTotalArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netTotalArea.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
 
           {/* <CHANGE> Remove old areaLeftForRoadWidening, netPlotAreaAfterWidening fields if they exist elsewhere */}
 
-          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
+          {errors?.areaLeftForRoadWidening && (
+            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaLeftForRoadWidening.message}</p>
+          )}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`}*</CardLabel>
@@ -547,63 +560,72 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.roadWidthAtSite && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadWidthAtSite.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}*</CardLabel>
-            {!isBuildingTypeLoading && (
-              <Controller
-                control={control}
-                name={"buildingStatus"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                defaultValue={currentStepData?.siteDetails?.layoutNonSchemeType || null}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      setBuildingStatus(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={buildingType}
-                    optionKey="name"
-                    disable={isEditMode}
-                    t={t}
-                  />
-                )}
-              />
-            )}
+            <div className="field">
+              {!isBuildingTypeLoading && (
+                <Controller
+                  control={control}
+                  name={"buildingStatus"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  defaultValue={currentStepData?.siteDetails?.layoutNonSchemeType || null}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        setBuildingStatus(e);
+                        props.onChange(e);
+                      }}
+                      selected={props.value}
+                      option={buildingType}
+                      optionKey="name"
+                      disable={isEditMode}
+                      t={t}
+                    />
+                  )}
+                />
+              )}
+              {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.buildingStatus.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}*</CardLabel>
-            {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
-              <Controller
-                control={control}
-                name={"buildingCategory"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                defaultValue={currentStepData?.siteDetails?.buildingCategory || currentStepData?.apiData?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory || ""}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      setSelectedBuildingCategory(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={buildingCategory}
-                    optionKey="name"
-                    t={t}
-                    disable={currentStepData?.apiData?.Clu?.applicationNo ? true: false}
-                  />
-                )}
-              />
-            )}
+            <div className="field">
+              {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
+                <Controller
+                  control={control}
+                  name={"buildingCategory"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  defaultValue={
+                    currentStepData?.siteDetails?.buildingCategory ||
+                    currentStepData?.apiData?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory ||
+                    ""
+                  }
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        setSelectedBuildingCategory(e);
+                        props.onChange(e);
+                      }}
+                      selected={props.value}
+                      option={buildingCategory}
+                      optionKey="name"
+                      t={t}
+                      disable={currentStepData?.apiData?.Clu?.applicationNo ? true : false}
+                    />
+                  )}
+                />
+              )}
+              {errors?.buildingCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.buildingCategory.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError>
 
           {(selectedBuildingCategory?.name?.toLowerCase().includes("residential") || !selectedBuildingCategory) && (
             <React.Fragment>
@@ -638,9 +660,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderResidentialUseInSqM && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderResidentialUseInSqM.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderResidentialUseInSqM?.message || ""}</CardLabelError>
 
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
@@ -677,9 +702,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderResidentialUseInPct && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderResidentialUseInPct.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderResidentialUseInPct?.message || ""}</CardLabelError>
             </React.Fragment>
           )}
 
@@ -716,9 +744,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderCommercialUseInSqM && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommercialUseInSqM.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderCommercialUseInSqM?.message || ""}</CardLabelError>
 
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
@@ -755,9 +786,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderCommercialUseInPct && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommercialUseInPct.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderCommercialUseInPct?.message || ""}</CardLabelError>
             </React.Fragment>
           )}
 
@@ -809,9 +843,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderInstutionalUseInSqM && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInSqM.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderInstutionalUseInSqM?.message || ""}</CardLabelError>
 
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
@@ -860,34 +897,39 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderInstutionalUseInPct && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInPct.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderInstutionalUseInPct?.message || ""}</CardLabelError>
             </React.Fragment>
           )}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_TYPE_LABEL")}`}*</CardLabel>
-            {!mdmsLoading && (
-              <Controller
-                control={control}
-                name={"schemeType"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={props.onChange}
-                    selected={props.value}
-                    option={schemeTypeOptions}
-                    optionKey="name"
-                    t={t}
-                    disable={isEditMode}
-                  />
-                )}
-              />
-            )}
+            <div className="field">
+              {!mdmsLoading && (
+                <Controller
+                  control={control}
+                  name={"schemeType"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={props.onChange}
+                      selected={props.value}
+                      option={schemeTypeOptions}
+                      optionKey="name"
+                      t={t}
+                      disable={isEditMode}
+                    />
+                  )}
+                />
+              )}
+              {errors?.schemeType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.schemeType.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.schemeType?.message || ""}</CardLabelError>
 
           {buildingStatus?.code === "BUILTUP" && (
             <LabelFieldPair>
@@ -895,7 +937,6 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
               <Controller
                 control={control}
                 name={"isBasementAreaAvailable"}
-                
                 rules={{
                   required: t("REQUIRED_FIELD"),
                 }}
@@ -915,7 +956,9 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
               />
             </LabelFieldPair>
           )}
-          <CardLabelError style={errorStyle}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
+          {errors?.isBasementAreaAvailable && (
+            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isBasementAreaAvailable.message}</p>
+          )}
 
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
@@ -948,10 +991,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                     />
                   )}
                 />
+                {errors?.basementArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.basementArea.message}</p>}
               </div>
             </LabelFieldPair>
           )}
-          <CardLabelError style={errorStyle}>{errors?.basementArea ? errors.basementArea.message : ""}</CardLabelError>
 
           {buildingStatus?.code === "BUILTUP" &&
             areaFields.map((field, index) => (
@@ -1033,16 +1076,16 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   control={control}
                   name="totalFloorArea"
                   defaultValue={totalArea}
-                   rules={{
-                   pattern: {
-                  value: /^[0-9]*\.?[0-9]+$/,
-                  message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                },
-                maxLength: {
-                  value: 200,
-                  message: t("MAX_200_CHARACTERS_ALLOWED"),
-                },
-                }}
+                  rules={{
+                    pattern: {
+                      value: /^[0-9]*\.?[0-9]+$/,
+                      message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                    },
+                    maxLength: {
+                      value: 200,
+                      message: t("MAX_200_CHARACTERS_ALLOWED"),
+                    },
+                  }}
                   render={(props) => (
                     <TextInput
                       value={props.value}
@@ -1067,7 +1110,6 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                 control={control}
                 name="wardNo"
                 defaultValue=""
-                
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   maxLength: {
@@ -1087,52 +1129,56 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.wardNo.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}*</CardLabel>
-            <Controller
-                           control={control}
-                           name={"district"}
-                           rules={{
-                             required: t("REQUIRED_FIELD"),
-                           }}
-                           render={(props) => (
-                             <Dropdown 
-                             className="form-field" 
-                             select={(e)=>{
-                               setSelectedCity(e)
-                               props.onChange(e)
-                             }} 
-                             selected={props.value} 
-                             option={cities.sort((a, b) => a.name.localeCompare(b.name))} 
-                             optionKey="name" 
-                             disable="true"
-                             t={t}
-                             />
-                             
-                           )}
-                         />
+            <div className="field">
+              <Controller
+                control={control}
+                name={"district"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      setSelectedCity(e);
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={cities.sort((a, b) => a.name.localeCompare(b.name))}
+                    optionKey="name"
+                    disable="true"
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.district.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}*</CardLabel>
-            <Controller
-              control={control}
-              name={"zone"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              t={t}
-              render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="i18nkey" t={t} />
-              )}
-            />
+            <div className="field">
+              <Controller
+                control={control}
+                name={"zone"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                t={t}
+                render={(props) => (
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={localities} optionKey="i18nkey" t={t} />
+                )}
+              />
+              {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.zone.message}</p>}
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}*</CardLabel>
@@ -1160,9 +1206,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.villageName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.villageName.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL")}`}*</CardLabel>
@@ -1192,9 +1239,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.totalAreaUnderLayout && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.totalAreaUnderLayout.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.totalAreaUnderLayout?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL")}`}*</CardLabel>
@@ -1224,9 +1274,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderRoadWidening && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderRoadWidening.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderRoadWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL")}`}*</CardLabel>
@@ -1256,9 +1309,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.netSiteArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netSiteArea.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netSiteArea?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL")}`}</CardLabel>
@@ -1287,9 +1341,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderEWSInSqM && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderEWSInSqM.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderEWSInSqM?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL")}`}</CardLabel>
@@ -1322,9 +1377,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderEWSInPct && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderEWSInPct.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderEWSInPct?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`}*</CardLabel>
@@ -1354,9 +1410,10 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.balanceAreaInSqM && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.balanceAreaInSqM.message}</p>}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.balanceAreaInSqM?.message || ""}</CardLabelError>
 
           {(selectedBuildingCategory?.name?.toLowerCase().includes("community") || !selectedBuildingCategory) && (
             <React.Fragment>
@@ -1387,9 +1444,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderCommunityCenterInSqM && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommunityCenterInSqM.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderCommunityCenterInSqM?.message || ""}</CardLabelError>
 
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL")}`}</CardLabel>
@@ -1422,9 +1482,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                       />
                     )}
                   />
+
+                  {errors?.areaUnderCommunityCenterInPct && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommunityCenterInPct.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{errors?.areaUnderCommunityCenterInPct?.message || ""}</CardLabelError>
             </React.Fragment>
           )}
 
@@ -1455,9 +1518,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderParkInSqM && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkInSqM.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderParkInSqM?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL")}`}</CardLabel>
@@ -1490,9 +1556,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderParkInPct && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkInPct.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderParkInPct?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL")}`}</CardLabel>
@@ -1521,9 +1590,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderRoadInSqM && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderRoadInSqM.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderRoadInSqM?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL")}`}</CardLabel>
@@ -1556,9 +1628,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderRoadInPct && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderRoadInPct.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderRoadInPct?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL")}`}</CardLabel>
@@ -1587,9 +1662,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderParkingInSqM && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkingInSqM.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderParkingInSqM?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL")}`}</CardLabel>
@@ -1622,9 +1700,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderParkingInPct && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkingInPct.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderParkingInPct?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL")}`}</CardLabel>
@@ -1653,9 +1734,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderOtherAmenitiesInSqM && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderOtherAmenitiesInSqM.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderOtherAmenitiesInSqM?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL")}`}</CardLabel>
@@ -1688,9 +1772,12 @@ console.log(currentStepData, "DTATA TO BE MAPPED");
                   />
                 )}
               />
+
+              {errors?.areaUnderOtherAmenitiesInPct && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderOtherAmenitiesInPct.message}</p>
+              )}
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaUnderOtherAmenitiesInPct?.message || ""}</CardLabelError>
         </div>
         <BreakLine />
         {}

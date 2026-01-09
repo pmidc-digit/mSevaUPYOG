@@ -31,6 +31,7 @@ const SearchFormFieldsComponent = (props) => {
       <SearchField>
         <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
         <MobileNumber
+         className="fields"
           name="mobileNumber"
           inputRef={register({
             minLength: {
@@ -49,9 +50,12 @@ const SearchFormFieldsComponent = (props) => {
           })}
           type="number"
           componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
+         
           //maxlength={10}
         />
-        <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
+       
+          <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
+     
       </SearchField>
 
       <SearchField className="submit">

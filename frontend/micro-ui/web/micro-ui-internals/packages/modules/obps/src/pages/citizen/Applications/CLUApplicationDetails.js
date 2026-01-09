@@ -18,6 +18,7 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
+  CheckBox
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,7 @@ import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementD
 import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
+import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -359,6 +361,18 @@ const CLUApplicationDetails = () => {
 
   console.log("displayData==>", displayData);
 
+  const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
+  console.log("coordinates==>", coordinates);
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+
+  console.log("sitePhotoGrahphs==>", sitePhotographs);
+  console.log("remainingDocs==>", remainingDocs);
+
+  const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const combinedOwnersName = ownersList?.join(", ");
+  console.log("combinerOwnersName", combinedOwnersName);
+
   if (isLoading) {
     return <Loader />;
   }
@@ -508,7 +522,7 @@ const CLUApplicationDetails = () => {
         ))}
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
         {displayData?.coordinates?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -521,6 +535,13 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+      </Card> */}
+
+      <Card>
+      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+      <StatusTable>
+        {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />)}
+      </StatusTable>
       </Card>
 
       <Card>
@@ -530,7 +551,7 @@ const CLUApplicationDetails = () => {
 
       <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{displayData?.Documents?.length > 0 && <CLUDocumentTableView documents={displayData.Documents} />}</StatusTable>
+        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
 
       <Card>
@@ -545,6 +566,13 @@ const CLUApplicationDetails = () => {
           />
         )}
       </Card>
+
+      <CheckBox
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
+          combinedOwnersName
+        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      />      
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>

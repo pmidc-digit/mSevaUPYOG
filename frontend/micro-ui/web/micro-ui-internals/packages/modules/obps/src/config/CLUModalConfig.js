@@ -22,7 +22,7 @@ export const CLUModalConfig = ({
   return {
     label: {
       heading: action?.action === "APPROVE" ? `WF_EMPLOYEE_APPROVE_APPLICATION` : `WF_EMPLOYEE_FORWARD_APPLICATION`,
-      // submit: `WF_EMPLOYEE_BPA_${action?.action}`,
+      //submit: `WF_EMPLOYEE_BPA_${action?.action}`,
       submit: (applicationData?.[0]?.applicationStatus === "DOCUMENTVERIFY_MTP/ME") && (applicationData?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService === "clu_mco") ? `WF_EMPLOYEE_BPA_JC_${action?.action}` :  `WF_EMPLOYEE_BPA_${action?.action}`,
       cancel: "WF_EMPLOYEE_BPA_CANCEL",
     },

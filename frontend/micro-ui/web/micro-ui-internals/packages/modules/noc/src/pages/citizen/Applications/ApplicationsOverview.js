@@ -135,6 +135,8 @@ const CitizenApplicationOverview = () => {
     }
   }, [applicationDetails?.Noc]);
 
+  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
+
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -239,7 +241,7 @@ const CitizenApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "obpas_noc", // businessService
+    moduleCode: businessServiceCode, // businessService
     // role: "EMPLOYEE",
   });
 

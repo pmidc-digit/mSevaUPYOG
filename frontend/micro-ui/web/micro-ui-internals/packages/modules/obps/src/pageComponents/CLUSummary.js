@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CLUImageView from "./CLUImgeView";
 import CLUDocumentTableView from "./CLUDocumentTableView";
 import CLUFeeEstimationDetails from "./CLUFeeEstimationDetails";
+import CLUSitePhotographs from "./CLUSitePhotographs";
 
 function CLUSummary({ currentStepData: formData, t }) {
   console.log("formData in Summary Page", formData);
@@ -34,6 +35,8 @@ function CLUSummary({ currentStepData: formData, t }) {
 
   let docs = formData?.documents?.documents?.documents;
   console.log("documents here in summary", docs);
+  const sitePhotographs= formData?.documents?.documents?.documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
   return (
     <div className="employee-main-application-details">
@@ -156,13 +159,20 @@ function CLUSummary({ currentStepData: formData, t }) {
       </StatusTable>
       </Card>
 
-      <Card>
+      {/* <Card>
       <CardSubHeader>{t("BPA_SITE_COORDINATES_LABEL")}</CardSubHeader>
       <StatusTable>
         <Row label={t("COMMON_LATITUDE1_LABEL")} text={coordinates?.Latitude1 || "N/A"}/>
         <Row label={t("COMMON_LONGITUDE1_LABEL")} text={coordinates?.Longitude1 || "N/A"}/>
         <Row label={t("COMMON_LATITUDE2_LABEL")} text={coordinates?.Latitude2 || "N/A"}/>
         <Row label={t("COMMON_LONGITUDE2_LABEL")} text={coordinates?.Longitude2 || "N/A"}/>
+      </StatusTable>
+      </Card> */}
+
+      <Card>
+      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+      <StatusTable>
+        {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />)}
       </StatusTable>
       </Card>
       
@@ -176,7 +186,7 @@ function CLUSummary({ currentStepData: formData, t }) {
       <Card>
       <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
       <StatusTable>
-        {formData?.documents?.documents?.documents?.length > 0 && <CLUDocumentTableView documents={formData?.documents?.documents?.documents} />}
+        {remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}
       </StatusTable>
       </Card>
      

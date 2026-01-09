@@ -241,6 +241,7 @@ const jsPdfGeneratorFormatted = async ({
     ? await getBase64FromUrl(finalUrl)
     : baseUrl;
 
+  const contentFormatted = await createContentFormatted( details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit );
   const dd = {
     
 background: [
@@ -255,12 +256,12 @@ background: [
     header: {},
     content: [
       ...createHeaderFormatted(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
-      ...createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit)
+      ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
       if (currentPage === pageCount) {
         return {
-          text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+          text: "- Note: This is a system generated acknowledgement and does not require any signature",
           font: "Hind",
           fontSize: 11,
           color: "#6f777c",
@@ -1801,75 +1802,155 @@ function createHeader(headerDetails, logo, tenantId) {
   return headerData;
 }
 
-function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
-  const detailsHeaders = [];
-  console.log("details here are: ",details)
-  console.log("createcontent func here")
-  details.forEach((detail) => {
-  if (detail?.values?.length > 0) {
-  const headerRow = [
-    {
-      text: detail?.title,
-      color: "#454545",
-      style: "header",
-      fontSize: 14,
-      bold: true,
-      colSpan: 2,
-      alignment: "left",
-      fillColor: "#ffffff",
-      border: [true, true, true, false] // top + left/right borders
-    },
-    {}
-  ];
+async function buildAttachment(doc) {
+  try {
+    const baseUrl = window.location.origin;
+    let finalUrl;
 
-  const valueRows = detail.values.map((indData, i, arr) => {
-    const isLast = i === arr.length - 1;
-    return [
-      {
-        text: indData?.title,
-        style: "header",
-        fontSize: 9,
-        margin: [10, 2, 0, 2],
-        border: isLast ? [true, false, false, true] : [true, false, false, false]
-        // left border always true, bottom border true only for last row
-      },
-      {
-        text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
-        fontSize: 9,
-        margin: [0, 2, 0, 2],
-        border: isLast ? [false, false, true, true] : [false, false, true, false]
-        // right border always true, bottom border true only for last row
-      }
-    ];
-  });
+    if (doc?.link?.includes("filestore")) {
+      const splitURL = doc.link.split("filestore")?.[1];
+      finalUrl = `${baseUrl}/filestore${splitURL}`;
+    } else {
+      finalUrl = doc.link;
+    }
 
-  detailsHeaders.push({
-    table: {
-      widths: [225, 250], // absolute widths
-      body: [headerRow, ...valueRows]
-    },
-    layout: {
-      fillColor: function (rowIndex) {
-        return rowIndex > 0 && rowIndex % 2 === 1 ? "#f5f5f5" : null;
-      },
-      hLineWidth: () => 1,
-      vLineWidth: () => 1,
-      hLineColor: () => "#cccccc",
-      vLineColor: () => "#cccccc"
-    },
-    margin: [10, 2, 10, 2]
-  });
+    const base64Image = finalUrl ? await getBase64FromUrl(finalUrl) : null;
+    return base64Image;
+  } catch (err) {
+    console.error("Error converting attachment:", err);
+    return null;
+  }
 }
 
 
 
+async function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+  const detailsHeaders = [];
 
+  console.log("details here are: ", details);
+  console.log("createcontent func here");
 
-});
+  for (const detail of details) {
+    if (detail?.values?.length > 0) {
+      const headerRow = [
+        {
+          text: detail?.title,
+          color: "#454545",
+          style: "header",
+          fontSize: 14,
+          bold: true,
+          colSpan: 2,
+          alignment: "left",
+          fillColor: "#ffffff",
+          border: [true, true, true, false]
+        },
+        {}
+      ];
 
+      let valueRows;
+
+      if (detail?.isAttachments) {
+        valueRows = [];
+        for (let i = 0; i < detail.values.length; i++) {
+          const doc = detail.values[i];
+          const isLast = i === detail.values.length - 1;
+
+          const base64Image = await buildAttachment(doc);
+
+          if (base64Image) {
+            valueRows.push([
+              {
+                text: doc?.title || "Document",
+                style: "header",
+                fontSize: 9,
+                margin: [10, 2, 0, 2],
+                border: isLast ? [true, false, false, true] : [true, false, false, false]
+              },
+              {
+                image: base64Image, 
+                width: 100,
+                height: 100,
+                margin: [0, 2, 0, 2],
+                border: isLast ? [false, false, true, true] : [false, false, true, false]
+              }
+            ]);
+          } else {
+            valueRows.push([
+              {
+                text: doc?.title || "Document",
+                style: "header",
+                fontSize: 9,
+                margin: [10, 2, 0, 2],
+                border: isLast ? [true, false, false, true] : [true, false, false, false]
+              },
+              {
+                text: doc?.link ? "View" : (doc.value || "NA"),
+                link: doc?.link || undefined,
+                color: doc?.link ? "blue" : "black",
+                fontSize: 9,
+                margin: [0, 2, 0, 2],
+                border: isLast ? [false, false, true, true] : [false, false, true, false]
+              }
+            ]);
+          }
+        }
+
+        if (detail?.values?.length === 1 && detail.values[0].value === "NA") {
+          valueRows = [[
+            {
+              text: detail?.values[0].title,
+              colSpan: 2,
+              alignment: "center",
+              fontSize: 9,
+              margin: [0, 4, 0, 4],
+              border: [true, false, true, true]
+            },
+            {}
+          ]];
+        }
+      } else {
+        valueRows = detail?.values?.map((indData, i, arr) => {
+          const isLast = i === arr.length - 1;
+          return [
+            {
+              text: indData?.title,
+              style: "header",
+              fontSize: 9,
+              margin: [10, 2, 0, 2],
+              border: isLast ? [true, false, false, true] : [true, false, false, false]
+            },
+            {
+              text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
+              fontSize: 9,
+              margin: [0, 2, 0, 2],
+              border: isLast ? [false, false, true, true] : [false, false, true, false]
+            }
+          ];
+        });
+      }
+
+      detailsHeaders.push({
+        table: {
+          widths: [225, 250],
+          body: [headerRow, ...valueRows]
+        },
+        layout: {
+          fillColor: function (rowIndex) {
+            return rowIndex > 0 && rowIndex % 2 === 1 ? "#f5f5f5" : null;
+          },
+          hLineWidth: () => 1,
+          vLineWidth: () => 1,
+          hLineColor: () => "#cccccc",
+          vLineColor: () => "#cccccc"
+        },
+        margin: [10, 2, 10, 2]
+      });
+    }
+  }
 
   return detailsHeaders;
 }
+
 
 function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());

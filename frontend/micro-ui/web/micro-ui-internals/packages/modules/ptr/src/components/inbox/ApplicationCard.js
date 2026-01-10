@@ -84,27 +84,27 @@ export const ApplicationCard = ({
             }}
           />
         )}
-        <FilterAction
+        {/* <FilterAction
           text="SORT"
           handleActionClick={() => {
             setType("SORT");
             setPopup(true);
           }}
-        />
+        /> */}
       </div>
       {result}
       {popup && (
         <PopUp>
           {type === "FILTER" && (
             <div className="popup-module">
-              {<FilterComp onFilterChange={onSearchFilter} Close={handlePopupClose} type="mobile" searchParams={searchParams} />}
+              {<FilterComp onFilterChange={onSearchFilter} onClose={handlePopupClose} type="mobile" searchParams={searchParams} />}
             </div>
           )}
-          {type === "SORT" && (
+          {/* {type === "SORT" && (
             <div className="popup-module">
               {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} onSort={onSort} />}
             </div>
-          )}
+          )} */}
           {type === "SEARCH" && (
             <div className="popup-module">
               <SearchApplication

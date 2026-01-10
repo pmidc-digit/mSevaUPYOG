@@ -928,7 +928,6 @@
 
 .ndc_card_labels {
   width: 100%;
-  
 }
 
 .downLoadButton {
@@ -965,7 +964,6 @@
 }
 
 @media screen and (max-width: 768px) {
-
   .action-bar-wrap {
     padding: 10px 10px;
     text-align: center;
@@ -1336,26 +1334,44 @@
   width: 100%;
 }
 
-img, video {
-    max-width: 100%;
-    height: auto;
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
-audio, canvas, embed, iframe, img, object, svg, video {
-    display: block;
-    vertical-align: middle;
+audio,
+canvas,
+embed,
+iframe,
+img,
+object,
+svg,
+video {
+  display: block;
+  vertical-align: middle;
 }
-
 
 /* Global Responsive Font Sizes for Mobile */
 @media only screen and (max-width: 768px) {
-  .card-header, .employee-upyog-title, .header-title, .heading, .landing-card-header, .page-header, .section-header, .survey-card-header, h1, h2, h3, header {
+  .card-header,
+  .employee-upyog-title,
+  .header-title,
+  .heading,
+  .landing-card-header,
+  .page-header,
+  .section-header,
+  .survey-card-header,
+  h1,
+  h2,
+  h3,
+  header {
     font-size: 14px !important;
 
-  .complaint-input-container {
-    display: flex;
-    flex-direction: column;
-  }
+    .complaint-input-container {
+      display: flex;
+      flex-direction: column;
+    }
   }
 
   /* Headers with ~28px should become 16px on mobile */
@@ -1386,7 +1402,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
   display: inline-block;
   padding: 8px 16px;
   background: linear-gradient(135deg, #2563eb, #1e40af);
-  color: #FFFFFF !important;
+  color: #ffffff !important;
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
@@ -1397,4 +1413,8 @@ audio, canvas, embed, iframe, img, object, svg, video {
   border: none;
   transition: background-color 0.2s ease, transform 0.1s ease;
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.svgPrimaryH16px {
+  display: none !important;
 }

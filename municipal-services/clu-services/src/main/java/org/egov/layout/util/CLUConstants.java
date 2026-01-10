@@ -1,5 +1,8 @@
 package org.egov.layout.util;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -87,5 +90,11 @@ public class CLUConstants {
 	public static final String AIRPORT_NOC_TYPE = "AIRPORT_AUTHORITY";
 
 	public static final String PARSING_ERROR = "PARSING_ERROR";
+	
+	public static final String ACTION_STATUS_APPLICATION_FEE = "PENDINGAPPLICATIONPAYMENT";
+	
+	public static final String ACTION_STATUS_SANCTION_FEE = "PENDINGSANCTIONPAYMENT";
 
+	public static final List<String> BUSINESS_SERVICE_LIST = Arrays.asList("CLU.PAY1", "CLU.PAY2", "CLU");
+	
 }

@@ -133,13 +133,14 @@ public class CLUService {
 		return Arrays.asList(nocRequest.getLayout());
 	}
 
-	public void getCalculation(CluRequest request){
+	public void getCalculation(CluRequest request, String feeType){
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
 				.layout(request.getLayout())
 				.tenantId(request.getLayout().getTenantId())
 				.applicationNumber(request.getLayout().getApplicationNo())
+				.feeType(feeType)
 				.build();
 		calculationCriteriaList.add(calculationCriteria);
 
@@ -212,11 +213,6 @@ public class CLUService {
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
-				
-				if (nocRequest.getLayout().getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_APPROVE)) {
-					getCalculation(nocRequest);
-				}
-				
 
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
@@ -230,7 +226,12 @@ public class CLUService {
 				nocRepository.update(nocRequest, Boolean.FALSE);
 			}
 		}
-
+		
+		if (CLUConstants.ACTION_STATUS_APPLICATION_FEE.equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus()))
+			getCalculation(nocRequest, "PAY1");
+		
+		if (CLUConstants.ACTION_STATUS_SANCTION_FEE.equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus()))
+			getCalculation(nocRequest, "PAY2");
 
 		return Arrays.asList(nocRequest.getLayout());
 	}

@@ -13,7 +13,7 @@ public class CLUConstants {
 	public static final String NOC_MODULE = "NOC";
 	public static final String CLU_MODULE = "CLU";
 	public static final String NOC_FEE_MODULE = "NocFee";
-	public static final String LAYOUT_BUSINESS_SERVICE = "clu";
+	public static final String LAYOUT_BUSINESS_SERVICE = "CLU";
 	public static final String SEPARATER = "&";
 	public static final String NOC_TYPE = "NOC";
 	public static final String CONSUMER_CODE_SEARCH_FIELD_NAME = "consumerCode=";
@@ -102,19 +102,21 @@ public class CLUConstants {
 	
 	public static final String MDMS_CHARGES_TYPE_CODE  = "103";
 
-	public static final String NOC_PROCESSING_FEES = "CLU_PROCESSING_FEES";
+	public static final String CLU_PROCESSING_FEE = "CLU_PROCESSING_FEE";
 
-	public static final String NOC_CLU_CHARGES = "CLU_CLU_CHARGES";
+	public static final String CLU_CHARGES = "CLU_CLU_CHARGES";
 
-	public static final String NOC_EXTERNAL_DEVELOPMENT_CHARGES = "CLU_EXTERNAL_DEVELOPMENT_CHARGES";
+	public static final String CLU_EXTERNAL_DEVELOPMENT_CHARGES = "CLU_EXTERNAL_DEVELOPMENT_CHARGES";
 
-	public static final String NOC_URBAN_DEVELOPMENT_CESS = "CLU_URBAN_DEVELOPMENT_CESS";
+	public static final String CLU_URBAN_DEVELOPMENT_CESS = "CLU_URBAN_DEVELOPMENT_CESS";
 
 
 	
 	public static final BigDecimal SQYARD_TO_SQFEET = BigDecimal.valueOf(9.0);
 	
 	public static final BigDecimal SQMETER_TO_SQYARD = BigDecimal.valueOf(1.19599);
+	
+	public static final BigDecimal ACAR_TO_SQYARD = BigDecimal.valueOf(4840.00);
 	
 	public static final String MDMS_CHARGES_TYPE  = "ChargesType";
 	
@@ -127,5 +129,9 @@ public class CLUConstants {
 	public static final String INVALID_APPLICATION_NUMBER = "INVALID APPLICATION NUMBER";
 
 	public static final String MDMS_ROUNDOFF_TAXHEAD = "TL_ROUNDOFF";
+	
+	public static final String FEE_TYPE_PAY1 = "PAY1"; 
+	
+	public static final String FEE_TYPE_PAY2 = "PAY2";
 		
 }

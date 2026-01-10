@@ -42,7 +42,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const checkForRenew = id == "renew-application";
 
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max
   const minVaccineDate = new Date();
   minVaccineDate.setFullYear(minVaccineDate.getFullYear() - 20);
   const minVaccineDateStr = minVaccineDate.toISOString().split("T")[0];

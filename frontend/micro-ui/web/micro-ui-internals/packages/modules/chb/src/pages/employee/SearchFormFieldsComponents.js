@@ -22,10 +22,6 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
                 <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
                 <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
-              {/* <SearchField>
-                <label>{t("NDC_MSG_PROPERTY_LABEL")}</label>
-                <TextInput name="propertyId" inputRef={registerRef({})} />
-              </SearchField> */}
               <div className="search-action-wrapper" style={{ width: "100%" }}>
                 {searchFieldComponents}
               </div>
@@ -39,12 +35,12 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
   return (
     <>
       <SearchField>
-        <label>{t("NOC_APPLICATION_NUMBER_LABEL")}</label>
+        <label>{t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
         <TextInput name="applicationNumber" inputRef={registerRef({})} />
       </SearchField>
       <SearchField>
-        <label>{t("NOC_BPA_APPLICATION_NUMBER_LABEL")}</label>
-        <TextInput name="sourceRefId" inputRef={registerRef({})} />
+        <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
+        <TextInput name="mobileNumber" inputRef={registerRef({})} />
       </SearchField>
     </>
   );

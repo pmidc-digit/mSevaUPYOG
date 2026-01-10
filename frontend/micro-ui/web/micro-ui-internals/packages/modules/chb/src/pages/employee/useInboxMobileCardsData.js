@@ -52,7 +52,7 @@ const useInboxMobileCardsData = ({ parentRoute, table }) => {
     data: dataForMobileInboxCards,
     linkPrefix: `${parentRoute}/applicationsearch/application-details/`,
     serviceRequestIdKey: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
-    MobileSortFormValues,
+    // MobileSortFormValues,
   };
 };
 

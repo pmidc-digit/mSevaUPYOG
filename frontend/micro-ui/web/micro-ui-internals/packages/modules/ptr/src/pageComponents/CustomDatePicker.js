@@ -56,7 +56,9 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
   return (
     <div
       style={{ position: "relative", maxWidth: "540px", cursor: "pointer" }}
-      onMouseDown={openCalendar} // triggers on click anywhere in container
+      onMouseDown={openCalendar}
+      onTouchStart={openCalendar}
+      // onMouseDown={openCalendar} // triggers on click anywhere in container
     >
       <TextInput
         value={inputValue}

@@ -78,8 +78,7 @@ public class PaymentUpdateService {
 			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 			String tenantIdFromPaymentDetails = paymentRequest.getPayment().getTenantId();
 			for(PaymentDetail paymentDetail : paymentDetails){
-				if (paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(LAYOUTConstants.LAYOUT_MODULE )) {
-					log.info("Start PaymentUpdateService.process method.");
+				if (LAYOUTConstants.BUSINESS_SERVICE_LIST.contains(paymentDetail.getBusinessService().toUpperCase())) {					log.info("Start PaymentUpdateService.process method.");
 					LayoutSearchCriteria searchCriteria = new LayoutSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
 					searchCriteria.setApplicationNo(paymentDetail.getBill().getConsumerCode());

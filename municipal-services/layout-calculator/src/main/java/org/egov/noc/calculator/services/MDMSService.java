@@ -69,20 +69,21 @@ public class MDMSService {
      * @return MDMS data for Sanction Fee Charges
      */
     public Object getMDMSSanctionFeeCharges (RequestInfo requestInfo, String tenantId, String code,
-    		String category, String fromFY) {
+    		String category, String fromFY,String feeType) {
     	
-    	MdmsCriteriaReq mdmsCriteriaReq = getMDMSSanctionFeeRequest(requestInfo, tenantId, code, category, fromFY);
+    	MdmsCriteriaReq mdmsCriteriaReq = getMDMSSanctionFeeRequest(requestInfo, tenantId, code, category, fromFY,feeType);
 		StringBuilder url = getMdmsSearchUrl();
 		Object result = serviceRequestRepository.fetchResult(url , mdmsCriteriaReq);
 		return result;
 	}
 
 	private MdmsCriteriaReq getMDMSSanctionFeeRequest(RequestInfo requestInfo, String tenantId, String code,
-			String category, String fromFY) {
+			String category, String fromFY,String feeType) {
         
         List<MasterDetail> sanctionFeeChargesDetails = new ArrayList<>();
         Long currentTime = System.currentTimeMillis();
-        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.Category == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+//        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.Category == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
         sanctionFeeChargesDetails.add(MasterDetail.builder().name(LAYOUTConstants.MDMS_CHARGES_TYPE).filter(filterCodeForCharges).build());
         ModuleDetail fyModuleDtls = ModuleDetail.builder().masterDetails(sanctionFeeChargesDetails)
                 .moduleName(LAYOUTConstants.LAYOUT_MODULE.toLowerCase()).build();

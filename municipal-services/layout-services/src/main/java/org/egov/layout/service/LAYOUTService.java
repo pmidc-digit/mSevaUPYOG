@@ -156,13 +156,14 @@ public class LAYOUTService {
 		return Arrays.asList(nocRequest.getLayout());
 	}
 
-	public void getCalculation(LayoutRequest request){
+	public void getCalculation(LayoutRequest request,String feeType ){
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
 				.layout(request.getLayout())
 				.tenantId(request.getLayout().getTenantId())
 				.applicationNumber(request.getLayout().getApplicationNo())
+				.feeType(feeType)
 				.build();
 		calculationCriteriaList.add(calculationCriteria);
 
@@ -234,11 +235,9 @@ public class LAYOUTService {
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
-				
-				if (nocRequest.getLayout().getWorkflow().getAction().equalsIgnoreCase(LAYOUTConstants.ACTION_APPROVE)) {
-					getCalculation(nocRequest);
-				}
-				
+
+
+
 				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
@@ -252,6 +251,11 @@ public class LAYOUTService {
 				nocRepository.update(nocRequest, Boolean.FALSE);
 			}
 		}
+		if (LAYOUTConstants.ACTION_STATUS_APPLICATION_FEE.equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus()))
+			getCalculation(nocRequest, "PAY1");
+
+		if (LAYOUTConstants.ACTION_STATUS_SANCTION_FEE.equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus()))
+			getCalculation(nocRequest, "PAY2");
 
 
 		return Arrays.asList(nocRequest.getLayout());

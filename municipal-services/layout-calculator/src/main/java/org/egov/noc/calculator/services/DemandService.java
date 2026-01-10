@@ -46,10 +46,10 @@ public class DemandService {
     @Autowired
     private DemandRepository demandRepository;
 
-    public List<Demand> generateDemands(RequestInfo requestInfo, List<Calculation> calculations) {
+    public List<Demand> generateDemands(RequestInfo requestInfo, List<Calculation> calculations,String feeType) {
     	
         
-        return createDemand(requestInfo,calculations);
+        return createDemand(requestInfo,calculations,feeType);
     }
 
 
@@ -180,7 +180,7 @@ public class DemandService {
      * @param calculations List of calculation object
      * @return Demands that are created
      */
-    private List<Demand> createDemand(RequestInfo requestInfo,List<Calculation> calculations){
+    private List<Demand> createDemand(RequestInfo requestInfo,List<Calculation> calculations,String feeType){
         List<Demand> demands = new LinkedList<>();
         for(Calculation calculation : calculations) {
             Layout noc = null;
@@ -229,8 +229,8 @@ public class DemandService {
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId())
                     .consumerCode(calculation.getApplicationNumber())
-                    .consumerType("LAYOUT_APPLICATION_FEE")
-                    .businessService(LAYOUTConstants.LAYOUT_BUSINESS_SERVICE)
+                    .consumerType("LAYOUT-" + LAYOUTConstants.MDMS_CHARGES_TYPE_CODE)
+                    .businessService(LAYOUTConstants.LAYOUT_BUSINESS_SERVICE + "." + feeType)
                     .payer(owner)
                     .minimumAmountPayable(nocConfiguration.getMinimumPayableAmount())
                     .taxPeriodFrom(calculation.getTaxPeriodFrom())

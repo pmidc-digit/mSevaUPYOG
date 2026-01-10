@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Card, DetailsCard, Loader, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
+import { Card, DetailsCard, Loader, PopUp, SearchAction, CloseSvg } from "@mseva/digit-ui-react-components";
 import { FilterAction } from "@mseva/digit-ui-react-components";
 import SearchApplication from "./search";
 import SortBy from "./SortBy";
@@ -97,7 +97,7 @@ export const ApplicationCard = ({
         <PopUp>
           {type === "FILTER" && (
             <div className="popup-module">
-              {<FilterComp onFilterChange={onSearchFilter} Close={handlePopupClose} type="mobile" searchParams={searchParams} />}
+              {<FilterComp onFilterChange={onSearchFilter} onClose={handlePopupClose} type="mobile" searchParams={searchParams} />}
             </div>
           )}
           {type === "SORT" && (

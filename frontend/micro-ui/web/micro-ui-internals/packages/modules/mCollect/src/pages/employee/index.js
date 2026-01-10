@@ -77,7 +77,7 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox
                 parentRoute={path}
                 businessService="PT"
-                filterComponent="MCOLLECT_INBOX_FILTER"
+                filterComponent="MCOLLECT_INBOX_FILTER_NEW"
                 initialStates={inboxInitialState}
                 isInbox={true}
               />

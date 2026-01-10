@@ -13,7 +13,6 @@ import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
-import CustomDatePicker from "./CustomDatePicker";
 import { Loader } from "../components/Loader";
 
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
@@ -43,7 +42,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const checkForRenew = id == "renew-application";
 
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max
+  const todayStr = today.toISOString().split("T")[0];
   const minVaccineDate = new Date();
   minVaccineDate.setFullYear(minVaccineDate.getFullYear() - 20);
   const minVaccineDateStr = minVaccineDate.toISOString().split("T")[0];
@@ -551,12 +550,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               required: t("PTR_VACCINATION_DATE_REQUIRED"),
             }}
             render={(props) => (
-              <CustomDatePicker
+             <TextInput
+               style={{ marginBottom: 0 }}
+                type={"date"}
+                className="form-field"
                 value={props.value}
-                // min={minVaccineDateStr}
-                // max={todayStr}
                 min={minDate}
-                max={maxDate}
+                max={maxDate || todayStr}
                 onChange={(e) => props.onChange(e.target.value)}
                 onBlur={() => {
                   trigger("lastVaccineDate");

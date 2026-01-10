@@ -63,7 +63,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {wfDocuments?.length > 0 && (
         <div>
           <div>
-            <NOCDocument value={{ workflowDocs: wfDocuments}} index={index}/>
+            <NOCDocument value={{ workflowDocs: wfDocuments }} index={index} />
           </div>
         </div>
       )}
@@ -79,7 +79,6 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
-
 const NOCEmployeeApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -88,7 +87,7 @@ const NOCEmployeeApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
-  
+
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
@@ -99,7 +98,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
 
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
-  const applicationDetails= data?.resData;
+  const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
@@ -155,8 +154,8 @@ const NOCEmployeeApplicationOverview = () => {
     setShowErrorToastt(null);
   };
 
-//   const { data: storeData } = Digit.Hooks.useStore.getInitData();
-//   const { tenants } = storeData || {};
+  //   const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  //   const { tenants } = storeData || {};
 
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -171,16 +170,16 @@ const NOCEmployeeApplicationOverview = () => {
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-  useEffect(()=>{
-        if(workflowDetails){
-          workflowDetails.revalidate();
-        }
-  
-        if(data){
-          data.revalidate();
-        }
-  },[])
-  
+  useEffect(() => {
+    if (workflowDetails) {
+      workflowDetails.revalidate();
+    }
+
+    if (data) {
+      data.revalidate();
+    }
+  }, []);
+
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
@@ -189,42 +188,40 @@ const NOCEmployeeApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-   console.log("actions here", actions);
+  console.log("actions here", actions);
 
-  useEffect(()=>{
+  useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
 
-    if(nocObject){
+    if (nocObject) {
       const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails;
 
       const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails;
 
-       const coordinates = nocObject?.nocDetails?.additionalDetails?.coordinates;
+      const coordinates = nocObject?.nocDetails?.additionalDetails?.coordinates;
 
-      const Documents= nocObject?.documents || [];
+      const Documents = nocObject?.documents || [];
 
       const ownerPhotoList = nocObject?.nocDetails?.additionalDetails?.ownerPhotos || [];
-      
+
       //console.log("applicantDetails",applicantDetails);
       //console.log("siteDetails", siteDetails);
-        
+
       const finalDisplayData = {
-       applicantDetails: applicantDetails ? [applicantDetails] : [],
-       siteDetails: siteDetails ? [siteDetails] : [],
-       coordinates: coordinates ? [coordinates]: [],
-       Documents: Documents.length > 0 ? Documents: [],
-       ownerPhotoList: ownerPhotoList
+        applicantDetails: applicantDetails ? [applicantDetails] : [],
+        siteDetails: siteDetails ? [siteDetails] : [],
+        coordinates: coordinates ? [coordinates] : [],
+        Documents: Documents.length > 0 ? Documents : [],
+        ownerPhotoList: ownerPhotoList,
       };
 
       setDisplayData(finalDisplayData);
     }
+  }, [applicationDetails?.Noc]);
 
-  },[applicationDetails?.Noc])
-  
-   
   function onActionSelect(action) {
     console.log("selected action", action);
-    const appNo= applicationDetails?.Noc?.[0]?.applicationNo;
+    const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
@@ -236,15 +233,14 @@ const NOCEmployeeApplicationOverview = () => {
 
     if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
-    }
-    else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning:true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL"});
-      setTimeout(()=>{setShowToast(null);},3000);
-    }
-    else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+    } else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
-    } 
-    else if (action?.action == "PAY") {
+    } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       setShowModal(true);
@@ -253,9 +249,9 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const submitAction = async (data) => {
-    const payloadData = applicationDetails?.Noc?.[0]|| {};
+    const payloadData = applicationDetails?.Noc?.[0] || {};
 
-   // console.log("data ==>", data);
+    // console.log("data ==>", data);
 
     const updatedApplicant = {
       ...payloadData,
@@ -272,52 +268,51 @@ const NOCEmployeeApplicationOverview = () => {
       documents: filtData?.wfDocuments,
     };
 
-   // console.log("updatedApplicant", updatedApplicant);
+    // console.log("updatedApplicant", updatedApplicant);
 
     const finalPayload = {
-      Noc: {...updatedApplicant},
+      Noc: { ...updatedApplicant },
     };
 
     console.log("final Payload ", finalPayload);
 
     try {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-      
-      if(response?.ResponseInfo?.status === "successful"){
-        if(filtData?.action === "CANCEL"){
-          setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+
+      if (response?.ResponseInfo?.status === "successful") {
+        if (filtData?.action === "CANCEL") {
+          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
           }, 3000);
-        }
-        else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
+        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           console.log("We are calling employee response page");
           history.replace({
-           pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
-           state: { data: response }
+            pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            state: { data: response },
           });
-        }
-        else{
-           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
-          setShowToast({ key: "true", success:true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
+        } else {
+          //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
           }, 3000);
         }
-      }
-      else{
-        setShowToast({ key: "true", warning:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
-        setSelectedAction(null); 
+      } else {
+        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+        setSelectedAction(null);
       }
     } catch (err) {
-      setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }finally{
-      setTimeout(()=>{setShowToast(null);},3000);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
@@ -326,31 +321,31 @@ const NOCEmployeeApplicationOverview = () => {
     setShowModal(false);
   };
 
-const getFloorLabel = (index) => {
-  if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+  const getFloorLabel = (index) => {
+    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
 
-  const floorNumber = index;
-  const lastDigit = floorNumber % 10;
-  const lastTwoDigits = floorNumber % 100;
+    const floorNumber = index;
+    const lastDigit = floorNumber % 10;
+    const lastTwoDigits = floorNumber % 100;
 
-  let suffix = "th";
-  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-    if (lastDigit === 1) suffix = "st";
-    else if (lastDigit === 2) suffix = "nd";
-    else if (lastDigit === 3) suffix = "rd";
-  }
+    let suffix = "th";
+    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+      if (lastDigit === 1) suffix = "st";
+      else if (lastDigit === 2) suffix = "nd";
+      else if (lastDigit === 3) suffix = "rd";
+    }
 
-  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
-};
+    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+  };
 
   // if (isLoading) {
   //   return <Loader />;
   // }
 
   const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   console.log("displayData here", displayData);
@@ -358,52 +353,54 @@ const getFloorLabel = (index) => {
   return (
     <div className={"employee-main-application-details"}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
-        <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+        <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
       </div>
 
       <Card>
         <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+        <NOCImageView
+          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+        />
       </Card>
 
-      {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
-      <React.Fragment>
-        <Card>
-          <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
+      {displayData?.applicantDetails?.[0]?.owners?.map((detail, index) => (
+        <React.Fragment>
+          <Card>
+            <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
-              <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
-              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
-              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
-              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
+                <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+                <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+                <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+                <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
+                <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
+                <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+                <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
               </StatusTable>
             </div>
-        </Card>
+          </Card>
         </React.Fragment>
       ))}
 
-        {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
-         displayData?.applicantDetails?.map((detail, index) => (
+      {displayData?.applicantDetails?.some((detail) => detail?.professionalName?.trim()?.length > 0) &&
+        displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
-           <Card>
-          <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
-            </StatusTable>
-          </div>
-          </Card>
+            <Card>
+              <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
+              <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+                <StatusTable>
+                  <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
+                </StatusTable>
+              </div>
+            </Card>
           </React.Fragment>
         ))}
-      
 
       <Card>
         <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
@@ -423,22 +420,23 @@ const getFloorLabel = (index) => {
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
-
               {/* <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} /> */}
 
-              {detail?.isBasementAreaAvailable && <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}  text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}/>}
+              {detail?.isBasementAreaAvailable && (
+                <Row
+                  label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
+                  text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"}
+                />
+              )}
 
-              {detail?.buildingStatus == "Built Up" && 
-               <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"}/>
-              }
+              {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"} />}
 
-              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>(
-               <Row label={getFloorLabel(index)} text={floor.value || "N/A"}/>
-              ))}
+              {detail?.buildingStatus == "Built Up" &&
+                detail?.floorArea?.map((floor, index) => <Row label={getFloorLabel(index)} text={floor.value || "N/A"} />)}
 
-              {detail?.buildingStatus == "Built Up" && 
-               <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"}/>
-              }
+              {detail?.buildingStatus == "Built Up" && (
+                <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"} />
+              )}
 
               <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
               <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
@@ -448,8 +446,6 @@ const getFloorLabel = (index) => {
               <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
               <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
               <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
-
-
             </StatusTable>
           </div>
         ))}
@@ -461,34 +457,47 @@ const getFloorLabel = (index) => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
-              <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"} />
+              <Row
+                label={t("NOC_BUILDING_CATEGORY_LABEL")}
+                text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
+              />
 
               <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
-              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"} />
-              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"} />
+              <Row
+                label={t("NOC_RESTRICTED_AREA_LABEL")}
+                text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
+              />
+              <Row
+                label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
+                text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"}
+              />
             </StatusTable>
           </div>
         ))}
       </Card>
 
-    <Card>
-       <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-          {displayData?.coordinates?.map((detail, index) => (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-              <StatusTable>
-                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-                </StatusTable>
-              </div>
-            ))}
-    </Card>
+      <Card>
+        <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
+        {displayData?.coordinates?.map((detail, index) => (
+          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <StatusTable>
+              <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+              <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+              <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+              <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
 
-    <Card>
-      <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
-      <StatusTable>{applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && <NOCDocumentTableView documents={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds} />}</StatusTable>
-    </Card>
+      <Card>
+        <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
+        <StatusTable>
+          {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
+            <NOCDocumentTableView documents={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds} />
+          )}
+        </StatusTable>
+      </Card>
 
       {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
@@ -503,24 +512,20 @@ const getFloorLabel = (index) => {
 
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-         <StatusTable>
-          {displayData?.Documents?.length >0 && 
-           <NOCDocumentTableView documents={displayData.Documents}/>
-          }
-         </StatusTable>
+        <StatusTable>{displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}</StatusTable>
       </Card>
 
       <Card>
-       <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
-          {applicationDetails?.Noc?.[0]?.nocDetails &&  (
-              <NOCFeeEstimationDetails 
-                  formData={{
-                    apiData:{...applicationDetails},
-                    applicationDetails:{...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails},
-                    siteDetails: {...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails} 
-                  }}
-              />
-            )}
+        <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Noc?.[0]?.nocDetails && (
+          <NOCFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
+            }}
+          />
+        )}
       </Card>
 
       {/* {workflowDetails?.data?.timeline && (
@@ -545,7 +550,7 @@ const getFloorLabel = (index) => {
 
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-      {actions?.length >0 && (
+      {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
@@ -585,10 +590,11 @@ const getFloorLabel = (index) => {
         />
       ) : null}
 
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && (
+        <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
+      )}
 
       {(isLoading || getLoader) && <Loader page={true} />}
-
     </div>
   );
 };

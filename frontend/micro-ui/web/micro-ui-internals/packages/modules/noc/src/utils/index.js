@@ -6,18 +6,18 @@ export const shouldHideBackButton = (config = []) => {
 
 /* methid to get date from epoch */
 export const convertEpochToDate = (dateEpoch) => {
-    // Returning null in else case because new Date(null) returns initial date from calender
-    if (dateEpoch) {
-        const dateFromApi = new Date(dateEpoch);
-        let month = dateFromApi.getMonth() + 1;
-        let day = dateFromApi.getDate();
-        let year = dateFromApi.getFullYear();
-        month = (month > 9 ? "" : "0") + month;
-        day = (day > 9 ? "" : "0") + day;
-        return `${day}/${month}/${year}`;
-    } else {
-        return null;
-    }
+  // Returning null in else case because new Date(null) returns initial date from calender
+  if (dateEpoch) {
+    const dateFromApi = new Date(dateEpoch);
+    let month = dateFromApi.getMonth() + 1;
+    let day = dateFromApi.getDate();
+    let year = dateFromApi.getFullYear();
+    month = (month > 9 ? "" : "0") + month;
+    day = (day > 9 ? "" : "0") + day;
+    return `${day}/${month}/${year}`;
+  } else {
+    return null;
+  }
 };
 
 export const EmployeeData = (tenantId, consumerCode) => {
@@ -43,48 +43,52 @@ export const EmployeeData = (tenantId, consumerCode) => {
         name: officerRaw?.user?.name,
         department: officerAssignment?.department,
         designation: officerAssignment?.designation,
-
       }
     : null;
 
   return { officer };
 };
 export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
-    if (searcher == "") return str;
-    while (str.includes(searcher)) {
-      str = str.replace(searcher, replaceWith);
-    }
-    return str;
-  };
+  if (searcher == "") return str;
+  while (str.includes(searcher)) {
+    str = str.replace(searcher, replaceWith);
+  }
+  return str;
+};
 
-export const businessServiceList = (isCode= false) => {
-    let isSearchScreen = window.location.href.includes("/search");
-    const availableBusinessServices = [{
-        code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
-        active: true,
-        roles: ["FIRE_NOC_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
-    }, {
-        code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
-        active: true,
-        roles: ["AIRPORT_AUTHORITY_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
-    }];
+export const businessServiceList = (isCode = false) => {
+  let isSearchScreen = window.location.href.includes("/search");
+  const availableBusinessServices = [
+    {
+      code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+      active: true,
+      roles: ["FIRE_NOC_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+    },
+    {
+      code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+      active: true,
+      roles: ["AIRPORT_AUTHORITY_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
+    },
+  ];
 
-    const newAvailableBusinessServices = [];
-    const loggedInUserRoles = Digit.UserService.getUser().info.roles;
-    availableBusinessServices.map(({ roles }, index) => {
-        roles.map((role) => {
-            loggedInUserRoles.map((el) => {
-                if (el.code === role) {
-                    isCode ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code) : newAvailableBusinessServices.push(availableBusinessServices?.[index])
-                }
-            })
-        })
+  const newAvailableBusinessServices = [];
+  const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+  availableBusinessServices.map(({ roles }, index) => {
+    roles.map((role) => {
+      loggedInUserRoles.map((el) => {
+        if (el.code === role) {
+          isCode
+            ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code)
+            : newAvailableBusinessServices.push(availableBusinessServices?.[index]);
+        }
+      });
     });
+  });
 
-    return newAvailableBusinessServices;
-}
+  return newAvailableBusinessServices;
+};
 
 export const pdfDocumentName = (documentLink = "", index = 0) => {
   let documentName = decodeURIComponent(documentLink.split("?")[0].split("/").pop().slice(13)) || `Document - ${index + 1}`;
@@ -92,7 +96,6 @@ export const pdfDocumentName = (documentLink = "", index = 0) => {
 };
 
 export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
-
   let downloadLink = documents[fileStoreId] || "";
   let differentFormats = downloadLink?.split(",") || [];
   let fileURL = "";
@@ -105,7 +108,7 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
   return fileURL;
 };
 
-export const getPattern = type => {
+export const getPattern = (type) => {
   switch (type) {
     case "Name":
       return /^[^{0-9}^\$\"<>?\\\\~!@#$%^()+={}\[\]*,/_:;“”‘’]{1,50}$/i;
@@ -125,7 +128,7 @@ export const getPattern = type => {
     case "PAN":
       return /^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/i;
     case "TradeName":
-      return /^[-@.\/#&+\w\s]*$/
+      return /^[-@.\/#&+\w\s]*$/;
     //return /^[^\$\"'<>?\\\\~`!@#$%^()+={}\[\]*,.:;“”‘’]{1,100}$/i;
     case "Date":
       return /^[12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/i;
@@ -167,7 +170,7 @@ export const getPattern = type => {
     case "ChequeNo":
       return /^(?!0{6})[0-9]{6}$/;
     case "Comments":
-      return /^[^\$\"'<>?\\\\~`!@$%^()+={}\[\]*.:;“”‘’]{1,50}$/i;
+      return /^[^\$"'<>?\\~`!@$%^()+={}\[\]*.:;“”‘’]{1,}$/i;
     case "OldLicenceNo":
       return /^[a-zA-Z0-9-/]{0,64}$/;
   }

@@ -8,7 +8,7 @@ import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 import NOCFeeEstimationDetails from "./NOCFeeEstimationDetails";
 
-function NOCSummary({ currentStepData:formData, t }) {
+function NOCSummary({ currentStepData: formData, t }) {
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -16,45 +16,44 @@ function NOCSummary({ currentStepData:formData, t }) {
   console.log("formData in Summary Page", formData);
 
   const coordinates = useSelector(function (state) {
-      return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+    return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
 
   const ownerPhotos = useSelector(function (state) {
-      return state?.noc?.NOCNewApplicationFormReducer?.ownerPhotos || [];
+    return state?.noc?.NOCNewApplicationFormReducer?.ownerPhotos || [];
   });
 
   const ownerIds = useSelector(function (state) {
-      return state?.noc?.NOCNewApplicationFormReducer?.ownerIds || [];
+    return state?.noc?.NOCNewApplicationFormReducer?.ownerIds || [];
   });
 
   console.log("coordinates in summary page", coordinates);
 
 
-const getFloorLabel = (index) => {
-  if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+  const getFloorLabel = (index) => {
+    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
 
-  const floorNumber = index;
-  const lastDigit = floorNumber % 10;
-  const lastTwoDigits = floorNumber % 100;
+    const floorNumber = index;
+    const lastDigit = floorNumber % 10;
+    const lastTwoDigits = floorNumber % 100;
 
-  let suffix = "th";
-  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-    if (lastDigit === 1) suffix = "st";
-    else if (lastDigit === 2) suffix = "nd";
-    else if (lastDigit === 3) suffix = "rd";
-  }
+    let suffix = "th";
+    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+      if (lastDigit === 1) suffix = "st";
+      else if (lastDigit === 2) suffix = "nd";
+      else if (lastDigit === 3) suffix = "rd";
+    }
 
-  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
-};
-
+    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+  };
 
   const userInfo = Digit.UserService.getUser();
-  const currentUser=userInfo?.info?.type;
+  const currentUser = userInfo?.info?.type;
 
   const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   let docs = formData?.documents?.documents?.documents;
@@ -89,10 +88,8 @@ const getFloorLabel = (index) => {
         </Card>
         )
       })}
-        
-      
-      {formData?.applicationDetails?.professionalName && 
-        (
+
+      {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
         <Card>
         <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
